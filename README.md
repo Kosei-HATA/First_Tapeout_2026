@@ -16,7 +16,7 @@ Projects + Presentations + Kick_off_presentation.pdf
          + Scripts
 ```
 
-Projects の下は、Creater/PM で管理お願いします。公開可能なファイル以外は、各自で管理ください。必要に応じて PR をしていただければ、事務局で main をアップデートします。他の Project とも共有をお願いします。
+Projects の下は、Creator/PM で管理お願いします。公開可能なファイル以外は、各自で管理ください。必要に応じて PR をしていただければ、事務局で main をアップデートします。他の Project とも共有をお願いします。
 
 
 

@@ -1,0 +1,38 @@
+• 時間・サンプリング
+•  duration_s = 10.0 s 
+•  fs_mod_hz = 16000 Hz （ΣΔ変調クロック）
+•  osr = 64  →  fs_out_hz = 250 Hz （出力サンプル）
+• 乱数シード:  42 （再現性あり）
+• 入力EEGモデル（差動）
+• chごとに
+• 基本波: 振幅  a_uv = 12 + 4*ch [µV] 
+• 周波数  f_hz = 8 + 0.7*ch [Hz] 
+• 追加波:  0.35*a_uv  を  f_hz+2 [Hz] 
+• 低周波ドリフト:  8 µV @ 0.2 Hz 
+• ch0なら
+ 12 µV @ 8 Hz + 4.2 µV @ 10 Hz + 8 µV @ 0.2 Hz 
+• 電極/ノイズモデル
+• 共通モード:  200 µV @ 50 Hz 
+• 電極雑音:  N(0, 2 µV)  を  Vpos/Vneg  それぞれ独立付加
+• 生成式:
+•  Vpos = CM + EEG/2 + noise_p 
+•  Vneg = CM - EEG/2 + noise_n 
+• アナログ前段
+• HPF:  0.5 Hz （1次）
+• LPF:  30 Hz （1次）
+• 差動化後、MUXで選択chを通す
+• PGA利得:  1000x 
+• ADCモデル
+• 差動フルスケール:  ±50 mV 
+• 正規化:  x_norm = clip(pga_out / 50mV, ±0.999) 
+• 1次1bit ΣΔ変調器
+• デシメーション:  64点平均 
+• デジタル出力/転送
+• ADCコード化:  int16 （ -32768..32767 相当スケール）
+• SPI:  frame_bits = 24 
+• 必要レート:  250 * 24 = 6000 bps 
+•  spi_clk = 1 MHz （余裕あり）
+• 今CLIで変更できる項目
+•  --channels --selected-channel --duration --fs-mod --osr --pga-gain --adc-fs-mv 
+• 例:
+ python eeg_soc_sim.py --selected-channel 2 --pga-gain 800 --osr 128 

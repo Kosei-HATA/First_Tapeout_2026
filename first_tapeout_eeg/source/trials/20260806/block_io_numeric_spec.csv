@@ -1,0 +1,10 @@
+block,input_signal,input_min,input_max,input_rms,input_unit,input_dom_freq_hz,output_signal,output_min,output_max,output_rms,output_unit,output_dom_freq_hz,note
+Xtal/PLL,xtal_ref,,,,,,mod_clk,16000,16000,16000,Hz,,converter clock
+PrecisionVoltage,analog_supply,,,,,,adc_full_scale_diff,-50.000,50.000,,mV,,reference range
+Diff-In,v_pos_sel,-215.581,214.262,141.549,uV,50.000,raw_diff_sel=vpos-vneg,-31.812,32.405,10.994,uV,8.000,v_neg_rms=141.535 uV
+Filter (0.5-30Hz),raw_diff_sel,-31.812,32.405,10.994,uV,8.000,filtered_diff_sel,-18.408,18.335,8.869,uV,8.000,band-limited EEG
+MUX,filtered_diff_ch[0..7],-18.408,18.335,8.869,uV,8.000,mux_out_ch0,-18.408,18.335,8.869,uV,8.000,selected channel only
+DiffAmp (PGA),mux_out,-18.408,18.335,8.869,uV,8.000,pga_out,-18.408,18.335,8.869,mV,8.000,gain=1000.0x
+SD-ADC + Decimation,pga_out,-18.408,18.335,8.869,mV,8.000,adc_out,-18750.000,18750.000,8875.770,uV,8.000,sd_bit_pos_ratio=0.498825
+FIFO Unit,adc_out_code,-12288,12288,5816.825,LSB(int16),,fifo_frame_code,-12288,12288,5816.825,LSB(int16),,buffered transfer
+SPI,fifo_frame_code,-12288,12288,5816.825,LSB(int16),,serial_rate,6000,6000,6000,bps,,spi_clk=1000000 Hz

@@ -32,7 +32,4 @@
 • SPI:  frame_bits = 24 
 • 必要レート:  250 * 24 = 6000 bps 
 •  spi_clk = 1 MHz （余裕あり）
-• 今CLIで変更できる項目
-•  --channels --selected-channel --duration --fs-mod --osr --pga-gain --adc-fs-mv 
-• 例:
- python eeg_soc_sim.py --selected-channel 2 --pga-gain 800 --osr 128 
+

@@ -1,0 +1,24 @@
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_cascode.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_cascode_cmfb.spice
+.param VDD=1.8 VCM=0.9 VBN=0.65
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VCP_SRC VCP 0 0.65
+VCN_SRC VCN 0 1.15
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VCM_REF VBN VCP VCN OUTP OUTN VDD18 0 eeg_fd_ota_cascode_cmfb
+CLOADP OUTP 0 1p
+CLOADN OUTN 0 1p
+.control
+set noaskquit
+dc VCN_SRC 0.55 1.25 0.025 VCP_SRC 0.30 1.10 0.025
+let vcmout=(v(OUTP)+v(OUTN))/2
+let idd=-i(VDD_SRC)
+wrdata ../results/cascode_bias_sweep.csv v(VCN) v(VCP) vcmout idd
+quit
+.endc
+.end

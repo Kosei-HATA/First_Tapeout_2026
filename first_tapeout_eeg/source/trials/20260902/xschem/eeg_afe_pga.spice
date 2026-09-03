@@ -1,0 +1,36 @@
+* Tapeout-ready chopped PGA front-end:
+* internal-chopper OTA (eeg_fd_ota_chopped_full2) + input caps + selectable
+* feedback cap bank (x8/16/32/64) + pseudo-resistor summing-node bias.
+* Gain = 32p / Cf_total. Selects S8 S16 S32 S64 (one-hot, active high).
+.subckt eeg_afe_pga ELP ELN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 RST VDD18 VSS params: CIN=32p
+CINP ELP INP {CIN}
+CINN ELN INN {CIN}
+* feedback bank, cross-coupled (negative feedback)
+CF64P OUTN INP 0.5p
+CF64N OUTP INN 0.5p
+CFB32P OUTN F32P 0.5p
+CFB32N OUTP F32N 0.5p
+CFB16P OUTN F16P 1.5p
+CFB16N OUTP F16N 1.5p
+CFB8P OUTN F8P 3.5p
+CFB8N OUTP F8N 3.5p
+* note: select switches connect bank caps to the summing nodes
+XS32P F32P INP S32 NS32 VDD18 VSS eeg_tg_lowq
+XS32N F32N INN S32 NS32 VDD18 VSS eeg_tg_lowq
+XS16P F16P INP S16 NS16 VDD18 VSS eeg_tg_lowq
+XS16N F16N INN S16 NS16 VDD18 VSS eeg_tg_lowq
+XS8P F8P INP S8 NS8 VDD18 VSS eeg_tg_lowq
+XS8N F8N INN S8 NS8 VDD18 VSS eeg_tg_lowq
+* select complements
+BS8 NS8 0 V=v(VDD18)-v(S8)
+BS16 NS16 0 V=v(VDD18)-v(S16)
+BS32 NS32 0 V=v(VDD18)-v(S32)
+* pseudo-resistor bias for the summing nodes
+XPRP INP VCM_REF eeg_pseudo_res
+XRSTP INP VCM_REF RST NRST VDD18 VSS eeg_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD18 VSS eeg_tg_lowq
+BRST NRST 0 V=v(VDD18)-v(RST)
+XPRN INN VCM_REF eeg_pseudo_res
+* chopped OTA core
+XAFE INP INN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD18 VSS eeg_fd_ota_chopped_full2
+.ends

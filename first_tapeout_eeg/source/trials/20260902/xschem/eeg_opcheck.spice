@@ -1,0 +1,28 @@
+* OP check: plain two-stage high-gain OTA, DC input
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+op
+print v(OUTP) v(OUTN) v(XAFE.N1P) v(XAFE.N1N) v(XAFE.VBP1) v(XAFE.VBP2) v(XAFE.VCM1) v(XAFE.VCM2)
+print i(VDD_SRC)
+print @m.xafe.xstg1.xm1[id] @m.xafe.xstg1.xm1[vgs] @m.xafe.xstg1.xm1[vds] @m.xafe.xstg1.xm1[vdsat]
+print @m.xafe.xstg1.xm3[id] @m.xafe.xstg1.xm3[vgs] @m.xafe.xstg1.xm3[vds]
+print @m.xafe.xstg1.xm5[id] @m.xafe.xstg1.xm5[vgs] @m.xafe.xstg1.xm5[vds] @m.xafe.xstg1.xm5[vdsat]
+print @m.xafe.xm21[id] @m.xafe.xm21[vgs] @m.xafe.xm21[vds] @m.xafe.xm21[vdsat]
+print @m.xafe.xm23[id] @m.xafe.xm23[vgs] @m.xafe.xm23[vds]
+print @m.xafe.xcm2.xm6[id] @m.xafe.xcm2.xm6[vgs] @m.xafe.xcm2.xm7[id] @m.xafe.xcm2.xm10[id]
+quit
+.endc
+.end

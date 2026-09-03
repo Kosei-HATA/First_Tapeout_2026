@@ -1,0 +1,25 @@
+* Two-stage OTA with diode-load CMFB: tran stability + op + AC gain check.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp_dl.spice
+.include eeg_fd_ota_twostage_dl.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63 W91=0.5 L91=1 W92=1.19 L92=4
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_dl W91={W91} L91={L91} W92={W92} L92={L92}
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 2n 0.5m
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_min min vcmout
+meas tran vcm_max max vcmout
+meas tran vcm_end find vcmout at=0.49m
+print v(OUTP) v(XAFE.N1P) v(XAFE.VBP1) v(XAFE.VBP2) i(VDD_SRC)
+quit
+.endc
+.end

@@ -1,0 +1,22 @@
+.subckt eeg_fd_ota_twostage INP INN VCM_REF VBN OUTP OUTN VDD18 VSS
+* Stage 1: verified fully differential OTA and local CMFB.
+XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VDD18 VSS eeg_fd_ota_core
+XCM1 VCM1 VCM_REF VBN VBP1 VDD18 VSS eeg_cmfb_amp
+
+* Stage 2: two NMOS common-source branches with PMOS current-source loads.
+XM21 OUTP N1P VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=4 nf=1
+XM22 OUTN N1N VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=4 nf=1
+XM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=16 nf=2
+XM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=16 nf=2
+
+* Output CMFB uses resistive averaging and controls the PMOS loads.
+RCMO1 OUTP VCM2 100k
+RCMO2 OUTN VCM2 100k
+XCM2 VCM2 VCM_REF VBN VBP2 VDD18 VSS eeg_cmfb_amp
+
+* Same-side Miller compensation; Rz may be tuned after the first AC sweep.
+RZP N1P NZP {RZ}
+CCP NZP OUTP {CCOMP}
+RZN N1N NZN {RZ}
+CCN NZN OUTN {CCOMP}
+.ends eeg_fd_ota_twostage

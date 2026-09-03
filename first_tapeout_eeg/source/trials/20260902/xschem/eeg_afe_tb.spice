@@ -1,0 +1,16 @@
+* test5 EEG AFE transistor-level verification harness
+* Connect XAFE to the xschem-generated DUT after schematic capture.
+.param VDD=1.8 VCM=0.9 VDIFF=100u VCMNOISE=100m
+VDD vdd 0 {VDD}
+VSS vss 0 0
+Vinp inp 0 'VCM + VDIFF/2' AC 0.5
+Vinn inn 0 'VCM - VDIFF/2' AC -0.5
+* XAFE inp inn outp outn vcm vdd vss eeg_chopper_afe
+Vcm vcm 0 {VCM}
+.control
+echo "Instantiate eeg_chopper_afe before running model-backed analysis"
+* ac dec 100 0.01 10k
+* noise v(outp,outn) Vinp dec 100 0.5 100
+quit
+.endc
+.end

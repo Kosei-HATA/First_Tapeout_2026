@@ -1,0 +1,39 @@
+* Chopped PGA x32 + behavioral DC servo (G-source), 512 ms
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.param VDD=1.80 VCM=0.9 TCHOP=125u KSERVO=200u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 SIN({VCM} 100u 8)
+VSIGN SIGN 0 SIN({VCM} 100u 8 0 0 180)
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_full2
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+* behavioral DC servo: LPF each output, inject counter-current at summing nodes
+RLPFP OUTP LPFP 10Meg
+CLPFP LPFP 0 100p
+RLPFN OUTN LPFN 10Meg
+CLPFN LPFN 0 100p
+GSERVOP VCM_REF INP LPFP LPFN {KSERVO}
+GSERVON VCM_REF INN LPFN LPFP {KSERVO}
+.nodeset v(OUTP)=0.93 v(OUTN)=0.93 v(INP)=0.9 v(INN)=0.9 v(LPFP)=0.93 v(LPFN)=0.93
+.control
+set noaskquit
+tran 50n 1.024s
+wrdata ../results/afe_servo.csv time v(OUTP)-v(OUTN)
+quit
+.endc
+.end

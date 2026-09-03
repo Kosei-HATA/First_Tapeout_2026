@@ -1,0 +1,4 @@
+.subckt eeg_fd_ota_cmfb_closed INP INN VCM_REF VBN OUTP OUTN VDD18 VSS
+XCORE INP INN VBP VBN OUTP OUTN VCM_SENSE VDD18 VSS eeg_fd_ota_core
+XCMFB VCM_SENSE VCM_REF VBN VBP VDD18 VSS eeg_cmfb_amp
+.ends eeg_fd_ota_cmfb_closed

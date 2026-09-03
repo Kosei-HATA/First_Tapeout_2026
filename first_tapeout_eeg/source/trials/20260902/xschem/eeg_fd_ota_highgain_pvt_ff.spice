@@ -1,0 +1,5 @@
+* FF, high supply, cold
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice ff
+.param VDD=1.98 VCM=0.99 VBN=0.63
+.temp -40
+.include eeg_fd_ota_highgain_pvt_body.inc

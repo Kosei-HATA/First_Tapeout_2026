@@ -1,0 +1,23 @@
+* NAND gates for the quantizer SR latch
+.subckt eeg_nand2 A B Y VDD18 VSS
+XMN1 Y A N1 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1
+XMN2 N1 B VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1
+XMP1 Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=1
+XMP2 Y B VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=1
+.ends
+
+* 2nd-order 1-bit fully-differential SC Sigma-Delta modulator, 16 kHz.
+* Coefficients (verified vs z-domain model): a1=a2=0.5 (CS/CI), c1=1, c2=2.
+*   CS=4p, CI=8p; int1 CDAC=4p (weight a1*c1=0.5), int2 CDAC=8p (weight 1.0)
+* int1 DAC: BIT=1 selects VN on P side (subtract). int2 DAC: BIT=1 selects VP.
+* Quantizer: strong-arm regenerates during PH2; NAND SR latch holds the bit
+* (both comparator outputs high during PH1 precharge -> latch holds).
+* BIT=1 corresponds to o2<0 (QP low sets Q).
+.subckt eeg_sdm2 VINP VINN VCM_REF VP VN BIT NBIT OUTP2 OUTN2 PH1 NPH1 PH2 NPH2 CMPCK VDD18 VSS params: CS=4p CI=8p
+XINT1 VINN VINP VCM_REF BIT VP VN O1P O1N PH1 NPH1 PH2 NPH2 VDD18 VSS eeg_sd_int CS={CS} CDAC={CS} CI={CI}
+XINT2 O1N O1P VCM_REF BIT VP VN OUTP2 OUTN2 PH1 NPH1 PH2 NPH2 VDD18 VSS eeg_sd_int2 CS={CS} CDAC={2*CS} CI={CI}
+XCMP OUTP2 OUTN2 QP QN CMPCK VDD18 VSS eeg_strongarm
+* NAND SR latch: S_=QP, R_=QN; BIT=Q, NBIT=QB
+XND1 QP NBIT BIT VDD18 VSS eeg_nand2
+XND2 QN BIT NBIT VDD18 VSS eeg_nand2
+.ends

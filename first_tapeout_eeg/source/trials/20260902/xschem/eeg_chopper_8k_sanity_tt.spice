@@ -1,0 +1,34 @@
+* test6 8 kHz CMOS input/output chopper switching sanity test
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_cmos_chopper.spice
+.param VDD=1.8 VCM=0.9 FCHOP=8k TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+* 2.5 us non-overlap around each half-period boundary.
+VPHI PHI 0 PULSE(0 {VDD} 1.25u 20n 20n 60u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 63.75u 20n 20n 60u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 SIN({VCM} 0.5m 100)
+VSIGN SIGN 0 SIN({VCM} 0.5m 100 0 0 180)
+XCHIN SIGP SIGN CHP CHN PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper
+* Ideal 32 V/V differential core isolates switch verification from OTA settling.
+BRAWP RAWP 0 V={VCM}+16*(v(CHP)-v(CHN))
+BRAWN RAWN 0 V={VCM}-16*(v(CHP)-v(CHN))
+XCHOUT RAWP RAWN OUTP OUTN PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 0.1u 12m 2m
+let vind=v(SIGP)-v(SIGN)
+let vch=v(CHP)-v(CHN)
+let voutd=v(OUTP)-v(OUTN)
+meas tran vin_pp pp vind from=2m to=12m
+meas tran vch_pp pp vch from=2m to=12m
+meas tran vout_pp pp voutd from=2m to=12m
+meas tran out_max max voutd from=2m to=12m
+meas tran out_min min voutd from=2m to=12m
+wrdata ../results/chopper_8k_sanity_tt.csv time vind vch voutd v(PHI) v(PHIB)
+quit
+.endc
+.end

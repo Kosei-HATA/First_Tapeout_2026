@@ -1,0 +1,35 @@
+#### Project-local xschemrc for OSBCIChip/xschem
+#### SkyWater 130 PDK configuration
+
+#### Set the Sky130 PDK root to the volare-installed PDK.
+#### This directory must contain the `sky130A/` (or `sky130B/`) process directory.
+set env(PDK_ROOT) /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af
+
+#### Select the process variant: sky130A (default) or sky130B
+set env(PDK) sky130A
+
+#### Point xschem to the local source tree so standard device symbols
+#### (vsource, gnd, capa, lab_pin, code_shown, ...) are found.
+#### NOTE: leave XSCHEM_SHAREDIR to xschem's auto-detection. Setting it to
+#### the bare source root breaks init (xschem.tcl lives in src/), which
+#### aborts xschemrc processing and loses the sky130 symbol libraries.
+#### set XSCHEM_SHAREDIR /Users/noah/xschem
+
+#### Source the PDK-provided xschemrc. This loads the symbol libraries,
+#### device colors, DRC procedures, and SKYWATER_MODELS / SKYWATER_STDCELLS variables.
+source $env(PDK_ROOT)/$env(PDK)/libs.tech/xschem/xschemrc
+
+#### The PDK xschemrc resets XSCHEM_LIBRARY_PATH and assumes the standard
+#### xschem_library lives under $XSCHEM_SHAREDIR. In this source-tree build
+#### (/Users/noah/xschem) the library is a sibling of src/, so re-add it,
+#### otherwise basic devices (vsource, gnd, capa, lab_pin, ...) go missing.
+append XSCHEM_LIBRARY_PATH :/Users/noah/xschem/xschem_library/devices
+append XSCHEM_LIBRARY_PATH :/Users/noah/xschem/xschem_library
+
+#### Uncomment the next line to open the project's schematic on startup.
+#### Otherwise xschem starts with an empty schematic when launched from here.
+# set XSCHEM_START_WINDOW {1samp.sch}
+
+#### If you prefer the PDK welcome page with example circuits, comment out
+#### the line below. The welcome page is useful when learning the PDK symbols.
+unset XSCHEM_START_WINDOW

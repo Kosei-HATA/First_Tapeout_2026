@@ -1,0 +1,45 @@
+* Chopper isolation experiments, Sky130A TT 27 C 1.8 V, DC differential input.
+* MODE=0: both choppers frozen straight (plain OTA transient sanity)
+* MODE=1: input chopper active, mid frozen straight
+* MODE=2: mid chopper active, input frozen straight
+* MODE=3: both active
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_chopped_highgain.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63 TCHOP=125u MODE=3
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+* input chopper clocks: active when MODE is 1 or 3
+BPHII PHII 0 V=(MODE==1||MODE==3)?v(PHI):{VDD}
+BPHIBI PHIBI 0 V=(MODE==1||MODE==3)?v(PHIB):0
+* mid chopper clocks: active when MODE is 2 or 3
+BPHIM PHIM 0 V=(MODE==2||MODE==3)?v(PHI):{VDD}
+BPHIBM PHIBM 0 V=(MODE==2||MODE==3)?v(PHIB):0
+BNPHII NPHII 0 V={VDD}-v(PHII)
+BNPHIBI NPHIBI 0 V={VDD}-v(PHIBI)
+BNPHIM NPHIM 0 V={VDD}-v(PHIM)
+BNPHIBM NPHIBM 0 V={VDD}-v(PHIBM)
+* pure DC differential input, 10 uV offset-equivalent
+VSIGP INP 0 {VCM+5u}
+VSIGN INN 0 {VCM-5u}
+XAFE INP INN VCM_REF VBN OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD18 0 eeg_fd_ota_chopped_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 1u 3m
+let voutd=v(OUTP)-v(OUTN)
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_min min vcmout from=1m to=3m
+meas tran vcm_max max vcmout from=1m to=3m
+meas tran vcm_end find vcmout at=2.9m
+meas tran voutd_end find voutd at=2.9m
+wrdata ../results/chop_isolation_m@{MODE}.csv time voutd vcmout
+quit
+.endc
+.end

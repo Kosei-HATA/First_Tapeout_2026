@@ -1,0 +1,36 @@
+* Internal chopper OTA (stable CMFB) open-loop verification, Sky130A TT 27 C.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp_dl.spice
+.include eeg_fd_ota_chopped_dl.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63 TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+* 8 kHz chopper clocks, ~100 ns non-overlap at each boundary.
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+* 100 Hz, 5 uV amplitude differential input around VCM.
+VSIGP INP 0 SIN({VCM} 5u 100)
+VSIGN INN 0 SIN({VCM} 5u 100 0 0 180)
+XAFE INP INN VCM_REF VBN OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_dl
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 50n 13m 2m
+let vind=v(INP)-v(INN)
+let voutd=v(OUTP)-v(OUTN)
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vout_pk find voutd at=12.5m
+meas tran vout_tr find voutd at=7.5m
+meas tran ripple_pp pp voutd from=12.3m to=12.7m
+meas tran vcm_pp pp vcmout from=2m to=13m
+meas tran vcm_settled find vcmout at=12.5m
+wrdata ../results/chopped_dl_openloop_tt.csv time vind voutd vcmout
+quit
+.endc
+.end

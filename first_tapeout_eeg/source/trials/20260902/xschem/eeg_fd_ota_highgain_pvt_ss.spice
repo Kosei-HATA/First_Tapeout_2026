@@ -1,0 +1,5 @@
+* SS, low supply, hot
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice ss
+.param VDD=1.62 VCM=0.81 VBN=0.63
+.temp 125
+.include eeg_fd_ota_highgain_pvt_body.inc

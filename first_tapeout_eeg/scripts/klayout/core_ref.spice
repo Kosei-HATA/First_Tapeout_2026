@@ -1,0 +1,29 @@
+* LVS reference netlist for eeg_fd_ota_core_soft (KLayout sky130.lvs deck).
+*
+* Derived from source/trials/20260902/xschem/eeg_fd_ota_core_soft.spice with the
+* conventions the KLayout sky130 LVS deck's SPICE reader requires:
+*   - M elements: "M<n> D G S B <model> L=..u W=..u"  (SI units; the reader
+*     stores lengths in um, so 4u matches extracted L=4).
+*   - Resistors: "R<n> A B BULK <value> <model> W=..u L=..u" positional-value
+*     form: 3 nets -> DeviceClassResistorWithBulk (terminal W = bulk = VSS);
+*     the positional value overrides the " R=0" the deck's reader appends.
+*     W/L must match extraction (BResistor device class compares W and L):
+*     L = N_segments * 34.5 um (poly_res marker length minus 0.12 um).
+*   - MMDP/MMDN are the common-centroid dummy fingers of the M1/M2 strip
+*     (gate tied to VSS); they extract as real devices, so they live here.
+*   - RLOAD is 2Meg as specified for layout (the trial schematic's default
+*     RLOAD=500k is overridden here intentionally).
+*   - Bulk node VSS: run the deck with -rd lvs_sub=VSS so the global
+*     substrate net is named VSS on both sides.
+.subckt eeg_fd_ota_core_soft INP INN VBP VBN OUTP OUTN VCM_SENSE VCM_REF VDD18 VSS
+MM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=240u
+MM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=240u
+MMDP OUTP VSS TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=20u
+MM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=48u
+MM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=48u
+MM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=96u
+RRCM1 OUTP VCM_SENSE VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRCM2 OUTN VCM_SENSE VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRLOADP OUTP VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRLOADN OUTN VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+.ends eeg_fd_ota_core_soft

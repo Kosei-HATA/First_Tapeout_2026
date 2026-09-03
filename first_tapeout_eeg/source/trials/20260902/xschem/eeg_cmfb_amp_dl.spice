@@ -1,0 +1,11 @@
+* Low-gain CMFB error amp: diode-connected PMOS loads, no mirror.
+* M9 (diode) sets the natural VBP level; the sense tap divider (external
+* RTAP) attenuates loop gain to ~ -20 dB so total CM loop gain ~ 50 dB.
+* Polarity: VCM_SENSE up -> M6 current up -> M7/M9 current down -> VBP up.
+.subckt eeg_cmfb_amp_dl VCM_SENSE VCM_REF VBN VBP VDD18 VSS params: W9=0.5 L9=4
+XM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=2 nf=1
+XM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=2 nf=1
+XM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=2 nf=1
+XM9 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L={L9} W={W9} nf=1
+XM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=2 W=8 nf=2
+.ends

@@ -1,0 +1,3 @@
+#!/bin/sh
+# shim: sky130.lvs logger calls Linux `pmap`; macOS lacks it. Output just needs to be non-empty.
+echo "0000000000 total    12345K"

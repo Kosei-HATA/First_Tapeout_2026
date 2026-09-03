@@ -1,0 +1,54 @@
+* Internal-chopper PGA x32 (stable CMFB): AC (frozen chopper) + tran (chopped).
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp_dl.spice
+.include eeg_fd_ota_chopped_dl.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63 TCHOP=125u CHOP=1
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+* chopper clocks: 8 kHz when CHOP=1, frozen straight when CHOP=0
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+BPHI PHIU 0 V=(CHOP==1)?v(PHI):{VDD}
+BPHIB PHIBU 0 V=(CHOP==1)?v(PHIB):0
+BNPHI NPHIU 0 V={VDD}-v(PHIU)
+BNPHIB NPHIBU 0 V={VDD}-v(PHIBU)
+* input: AC 0.5 for closed-loop AC; 500 uV 100 Hz sine for tran
+VSIGP SIGP 0 DC {VCM} SIN({VCM} 500u 100) AC 0.5 0
+VSIGN SIGN 0 DC {VCM} SIN({VCM} 500u 100 0 0 180) AC 0.5 180
+* Cin/Cf = 32, cross-coupled negative feedback
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF VBN OUTP OUTN PHIU NPHIU PHIBU NPHIBU PHIU NPHIU PHIBU NPHIBU VDD18 0 eeg_fd_ota_chopped_dl
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+ac dec 100 0.01 10Meg
+let voutdiff=v(OUTP)-v(OUTN)
+let vindiff=v(SIGP)-v(SIGN)
+let clgain=voutdiff/vindiff
+let clgain_db=db(clgain)
+let clm=mag(clgain)
+meas ac gain_10hz find clm at=10
+meas ac gain_100hz find clm at=100
+meas ac gain_peak max clm
+tran 50n 15m 5m
+let voutd=v(OUTP)-v(OUTN)
+let vind=v(SIGP)-v(SIGN)
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vout_pk find voutd at=12.5m
+meas tran vout_tr find voutd at=7.5m
+meas tran vcm_pp pp vcmout from=5m to=15m
+meas tran vcm_settled find vcmout at=12.5m
+meas tran ripple_pp pp voutd from=12.3m to=12.7m
+wrdata ../results/chopped_pga32_dl.csv time vind voutd vcmout
+quit
+.endc
+.end

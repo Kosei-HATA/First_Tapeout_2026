@@ -1,0 +1,44 @@
+* Control experiment: ideal input modulation, real OTA and static PGA32
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63 TCHOP=125u
+.temp 27
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VPHI PHI 0 PULSE(0 {VDD} 0.05u 10n 10n 62.4u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 10n 10n 62.4u {TCHOP})
+VSIGP SIGP 0 SIN({VCM} 25u 100)
+VSIGN SIGN 0 SIN({VCM} 25u 100 0 0 180)
+BCHOPSIGN CHOPSIGN 0 V=(v(PHI)-v(PHIB))/{VDD}
+BCHP CHP 0 V={VCM}+0.5*(v(SIGP)-v(SIGN))*v(CHOPSIGN)
+BCHN CHN 0 V={VCM}-0.5*(v(SIGP)-v(SIGN))*v(CHOPSIGN)
+CINP CHP SUMP 32p
+CINN CHN SUMN 32p
+CFP OUTN SUMP 1p
+CFN OUTP SUMN 1p
+RBIASP SUMP VCM_REF 1T
+RBIASN SUMN VCM_REF 1T
+XOTA SUMP SUMN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+BDEMOD DEMOD 0 V=(v(OUTP)-v(OUTN))*v(CHOPSIGN)
+RLP DEMOD FILT 10k
+CLP FILT 0 10n
+.control
+set noaskquit
+tran 0.5u 20m 5m
+let vsigd=v(SIGP)-v(SIGN)
+let voutd=v(OUTP)-v(OUTN)
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vin_pp pp vsigd from=10m to=20m
+meas tran raw_pga_pp pp voutd from=10m to=20m
+meas tran demod_filt_pp pp v(FILT) from=10m to=20m
+meas tran vcm_avg avg vcmout from=10m to=20m
+meas tran vcm_pp pp vcmout from=10m to=20m
+wrdata ../results/ideal_input_mod_pga32_control_tt.csv time vsigd voutd v(FILT) vcmout v(PHI) v(PHIB)
+quit
+.endc
+.end

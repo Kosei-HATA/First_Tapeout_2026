@@ -1,0 +1,27 @@
+* Per-loop ground truth transient. WHICH=1: VBP1 forced, loop2 active. WHICH=2: VBP2 forced, loop1 active.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_semifree.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VB1 VBP1F 0 0.5889
+VB2 VBP2F 0 0.4155
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+@XLINE@
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 2n 0.2m
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_min min vcmout
+meas tran vcm_max max vcmout
+meas tran vcm_end find vcmout at=0.19m
+meas tran n1_end find v(XAFE.N1P) at=0.19m
+quit
+.endc
+.end

@@ -1,0 +1,7 @@
+* Pseudo-resistor: two diode-connected PMOS sharing a floating mid node.
+* Huge small-signal resistance near |A-B|~0 (Gohm range); one side diode-
+* conducts on large excursions for overload/offset recovery.
+.subckt eeg_pseudo_res A B
+XMP1 M M A A sky130_fd_pr__pfet_01v8 L=4 W=1 nf=1
+XMP2 M M B B sky130_fd_pr__pfet_01v8 L=4 W=1 nf=1
+.ends

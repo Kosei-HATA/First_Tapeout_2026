@@ -1,0 +1,40 @@
+* External-chopper AFE v4: input mod chopper + CT PGA (full2_nc) + output demod
+* chopper. Both choppers OUTSIDE the feedback loop. Same 8 kHz phases.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.include eeg_fd_ota_full2_nc.spice
+.param VDD=1.80 VCM=0.9 TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+* input signal
+VSIGP SIGP 0 SIN({VCM} 100u 8)
+VSIGN SIGN 0 SIN({VCM} 100u 8 0 0 180)
+* input mod chopper
+XCHIN SIGP SIGN SIGCP SIGCN PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper_lowq
+* capacitively-coupled PGA running at 8 kHz
+CINP SIGCP INP 32p
+CINN SIGCN INN 32p
+CFP OUTP_A INP 1p
+CFN OUTN_A INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XOTA INP INN VCM_REF OUTP_A OUTN_A VDD18 0 eeg_fd_ota_full2_nc
+* output demod chopper
+XCHOUT OUTP_A OUTN_A OUTP OUTN PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper_lowq
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.nodeset v(OUTP_A)=0.93 v(OUTN_A)=0.93 v(INP)=0.9 v(INN)=0.9
+.control
+set noaskquit
+tran 50n 512m
+wrdata ../results/afe_ext.csv time v(OUTP)-v(OUTN) v(OUTP_A)-v(OUTN_A)
+quit
+.endc
+.end

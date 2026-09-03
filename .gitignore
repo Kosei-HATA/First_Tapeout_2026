@@ -20,3 +20,8 @@ vendor/
 .env.*
 *.pem
 *.key
+
+# Ignore large simulation results and binaries
+first_tapeout_eeg/source/trials/**/results/
+~$*.docx
+

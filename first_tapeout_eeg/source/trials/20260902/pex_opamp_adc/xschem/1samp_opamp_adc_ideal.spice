@@ -1,0 +1,26 @@
+* Ideal-opamp inverting amplifier with 1-bit ADC
+* Used to verify ADC operation before transistor-level implementation
+
+V1 VDD 0 1.8
+Vref Vref 0 0.9
+
+* Input signal (1mVpp sine at 100Hz, DC=0.9V)
+Vi input 0 SIN(0.9 1m 100)
+R2 input inv 1k
+R1 inv Vout 99k
+
+* Ideal op-amp: Vout = Vref - gain*(inv - Vref)
+Eopamp Vout 0 Vref inv 1e6
+
+* 1-bit ADC comparator: Dout = 1.8V if Vout > 0.9V, else 0V
+Bcmp Dout 0 V=(V(Vout)>0.9)*1.8
+
+.control
+op
+tran 10u 30m
+save all
+write 1samp_opamp_adc_ideal.raw
+wrdata 1samp_opamp_adc_ideal.txt V(input) V(Vout) V(Dout)
+.endc
+
+.end

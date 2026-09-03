@@ -1,0 +1,10 @@
+.subckt eeg_fd_ota_core INP INN VBP VBN OUTP OUTN VCM_SENSE VDD18 VSS
+* Device dimensions mirror eeg_fd_ota_core.sch. Initial sizing only.
+XM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=120 nf=12
+XM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=120 nf=12
+XM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=24 nf=4
+XM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=24 nf=4
+XM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=2 W=48 nf=8
+RCM1 OUTP VCM_SENSE 50k
+RCM2 OUTN VCM_SENSE 50k
+.ends eeg_fd_ota_core

@@ -1,0 +1,16 @@
+.subckt eeg_tg_lowq A B EN ENB VDD18 VSS
+* Minimum-size complementary pass gate.
+XMN B EN A VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 nf=1
+XMP B ENB A VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1.68 nf=1
+* Half-size dummy devices at the high-impedance B side. Their gates switch in
+* the opposite direction at turn-off to cancel first-order channel charge.
+XMND B ENB B VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 nf=1
+XMPD B EN B VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 nf=1
+.ends eeg_tg_lowq
+
+.subckt eeg_cmos_chopper_lowq INP INN OUTP OUTN PHI NPHI PHIB NPHIB VDD18 VSS
+XSP INP OUTP PHI NPHI VDD18 VSS eeg_tg_lowq
+XSN INN OUTN PHI NPHI VDD18 VSS eeg_tg_lowq
+XCP INP OUTN PHIB NPHIB VDD18 VSS eeg_tg_lowq
+XCN INN OUTP PHIB NPHIB VDD18 VSS eeg_tg_lowq
+.ends eeg_cmos_chopper_lowq

@@ -1,0 +1,34 @@
+* test6 Gate 6B: closed-loop CMFB nominal verification
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_cmfb_closed.spice
+
+.param VDD=1.8 VCM=0.9 VBN=0.65
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 DC {VCM} AC 0.5 0
+VINN INN 0 DC {VCM} AC 0.5 180
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_cmfb_closed
+CLOADP OUTP 0 1p
+CLOADN OUTN 0 1p
+
+.control
+set noaskquit
+op
+let idd=-i(VDD_SRC)
+let vcmout=(v(OUTP)+v(OUTN))/2
+print v(OUTP) v(OUTN) vcmout idd
+wrdata ../results/cmfb_tt_op.csv v(OUTP) v(OUTN) vcmout idd
+tran 10u 20m
+wrdata ../results/cmfb_tt_startup.csv time v(OUTP) v(OUTN)
+ac dec 100 0.1 10Meg
+let vdiff=v(OUTP)-v(OUTN)
+let gain_db=db(vdiff)
+meas ac gain_10hz_db find gain_db at=10
+meas ac gain_100hz_db find gain_db at=100
+wrdata ../results/cmfb_tt_diff_ac.csv frequency gain_db
+quit
+.endc
+.end

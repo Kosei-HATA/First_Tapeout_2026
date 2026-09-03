@@ -1,0 +1,10 @@
+* CMFB amp with lead-compensated feedback cap (series R zero) - sweepable
+.subckt eeg_cmfb_amp_lead VCM_SENSE VCM_REF VBN VBP VDD18 VSS params: RZERO=0 CCM=2p
+XM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=20 nf=4
+XM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=20 nf=4
+XM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=8 nf=2
+XM9 VBP NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=8 nf=2
+XM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=2 W=8 nf=2
+CCMFB VBP NZER {CCM}
+RZER NZER VCM_SENSE {RZERO}
+.ends eeg_cmfb_amp_lead

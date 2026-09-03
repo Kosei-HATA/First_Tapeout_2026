@@ -1,0 +1,26 @@
+* test6 unchopped input-referred noise, EEG/ADC band 0.5-250 Hz
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63
+.temp 27
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINN INN 0 DC {VCM}
+VDIFF INP INN DC 0 AC 1
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+op
+noise v(OUTP,OUTN) VDIFF dec 100 0.5 250
+setplot noise1
+wrdata ../results/noise_unchopped_0p5_250hz.csv frequency inoise_spectrum onoise_spectrum
+setplot noise2
+print inoise_total onoise_total
+quit
+.endc
+.end

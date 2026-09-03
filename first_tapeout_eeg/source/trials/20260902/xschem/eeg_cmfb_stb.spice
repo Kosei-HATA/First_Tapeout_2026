@@ -1,0 +1,37 @@
+* CMFB loop-gain (stb) analysis, Sky130A TT 27 C 1.8 V.
+* Voltage injection via huge L (DC close) / C (AC inject).
+* sed tokens: @SNSR@ @SNSA@ @SHORTA@ @SHORTB@ select which loop is broken.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain_stb.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VCM_REF VBN OUTP OUTN VCM1R VCM1A VCM2R VCM2A VDD18 0 eeg_fd_ota_twostage_highgain_stb
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+* broken loop: DC close through L, AC injection through C at the amp-pin node
+LSNS @SNSR@ @SNSA@ 1e6
+VINJ INJ 0 DC 0 AC 1
+CINJ @SNSA@ INJ 1e6
+* intact loop: shorted
+VSHORT @SHORTA@ @SHORTB@ 0
+.control
+set noaskquit
+op
+ac dec 50 1 1G
+* loop gain T = -v(return)/v(injected)
+let t_gain = -v(@SNSR@)/v(@SNSA@)
+let t_db = db(t_gain)
+let t_ph = 180/pi*ph(t_gain)
+meas ac xover when t_db=0 fall=last
+meas ac pm_plus when t_ph=-180 rise=1
+meas ac lg_10hz find t_db at=10
+wrdata ../results/cmfb_stb_@TAG@.csv frequency t_db t_ph
+quit
+.endc
+.end

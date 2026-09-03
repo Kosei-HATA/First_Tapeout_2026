@@ -1,0 +1,11 @@
+.subckt eeg_fd_ota_core_highgain INP INN VBP VBN OUTP OUTN VCM_SENSE VDD18 VSS
+* High-gain variant: preserve the verified W/L ratios while doubling channel
+* length. This raises output resistance without increasing nominal branch current.
+XM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W=240 nf=24
+XM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W=240 nf=24
+XM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=96 nf=16
+RCM1 OUTP VCM_SENSE 5Meg
+RCM2 OUTN VCM_SENSE 5Meg
+.ends eeg_fd_ota_core_highgain

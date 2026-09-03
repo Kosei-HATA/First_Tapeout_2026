@@ -1,0 +1,12 @@
+.subckt eeg_cmos_chopper INP INN OUTP OUTN PHI NPHI PHIB NPHIB VDD18 VSS
+* Straight connections during PHI.
+XMNSP OUTP PHI INP VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.5 nf=1
+XMPSP OUTP NPHI INP VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+XMNSN OUTN PHI INN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.5 nf=1
+XMPSN OUTN NPHI INN VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+* Crossed connections during PHIB. Complementary PMOS gates use PHI.
+XMNCP OUTN PHIB INP VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.5 nf=1
+XMPCP OUTN NPHIB INP VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+XMNCN OUTP PHIB INN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.5 nf=1
+XMPCN OUTP NPHIB INN VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+.ends eeg_cmos_chopper

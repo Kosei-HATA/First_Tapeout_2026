@@ -1,0 +1,38 @@
+* Plant AC measurement: VBP1 -> N1 CM (stage 1), VBP2 -> OUT CM (stage 2).
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.subckt eeg_fd_ota_forced_vbp INP INN VBN OUTP OUTN VBP1 VBP2 VDD18 VSS
+XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VDD18 VSS eeg_fd_ota_core_highgain
+XM21 OUTP N1P VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM22 OUTN N1N VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+XM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+RCMO1 OUTP VCM2 5Meg
+RCMO2 OUTN VCM2 5Meg
+RZP N1P NZP 1
+CCP NZP OUTP 10p
+RZN N1N NZN 1
+CCN NZN OUTN 10p
+.ends eeg_fd_ota_forced_vbp
+.param VDD=1.8 VCM=0.9 VBN=0.63
+VDD_SRC VDD18 0 {VDD}
+VBN_SRC VBN 0 {VBN}
+* DC bias at the closed-loop op values, AC stimulus on VBP1
+VB1 VBP1 0 DC 0.5889 AC 1
+VB2 VBP2 0 DC 0.4155
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VBN OUTP OUTN VBP1 VBP2 VDD18 0 eeg_fd_ota_forced_vbp
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+ac dec 40 1 1G
+let n1cm_db = db(v(XAFE.N1P))
+let n1cm_ph = 180/pi*ph(v(XAFE.N1P))
+let outcm_db = db(v(OUTP))
+let outcm_ph = 180/pi*ph(v(OUTP))
+wrdata ../results/plant_vbp1.csv frequency n1cm_db n1cm_ph outcm_db outcm_ph
+quit
+.endc
+.end

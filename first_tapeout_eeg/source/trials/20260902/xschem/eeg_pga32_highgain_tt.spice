@@ -1,0 +1,43 @@
+* test6 high-gain OTA with differential capacitive PGA feedback, gain about 32
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain.spice
+.param VDD=1.8 VCM=0.9
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 0.65
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SIGN 0 DC {VCM} AC 0.5 180
+
+* Cin/Cf = 32. Cross-coupled feedback gives negative differential feedback.
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+op
+let idd=-i(VDD_SRC)
+let vcmout=(v(OUTP)+v(OUTN))/2
+wrdata ../results/pga32_highgain_tt_op.csv v(OUTP) v(OUTN) vcmout idd
+ac dec 100 0.01 10Meg
+let voutdiff=v(OUTP)-v(OUTN)
+let vindiff=v(SIGP)-v(SIGN)
+let clgain=voutdiff/vindiff
+let clgain_db=db(clgain)
+let clphase=180/pi*ph(clgain)
+meas ac gain_10hz find mag(clgain) at=10
+meas ac gain_100hz find mag(clgain) at=100
+meas ac gain_10hz_db find clgain_db at=10
+meas ac gain_100hz_db find clgain_db at=100
+wrdata ../results/pga32_highgain_tt_ac.csv frequency clgain_db clphase
+quit
+.endc
+.end

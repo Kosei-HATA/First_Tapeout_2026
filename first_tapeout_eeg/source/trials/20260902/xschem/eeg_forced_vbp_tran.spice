@@ -1,0 +1,38 @@
+* Discriminator: two-stage OTA with CMFB amps REMOVED, VBP1/VBP2 forced to op values.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.subckt eeg_fd_ota_forced_vbp INP INN VBN OUTP OUTN VBP1 VBP2 VDD18 VSS
+XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VDD18 VSS eeg_fd_ota_core_highgain
+XM21 OUTP N1P VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM22 OUTN N1N VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+XM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+RCMO1 OUTP VCM2 5Meg
+RCMO2 OUTN VCM2 5Meg
+RZP N1P NZP 1
+CCP NZP OUTP 10p
+RZN N1N NZN 1
+CCN NZN OUTN 10p
+.ends eeg_fd_ota_forced_vbp
+.param VDD=1.8 VCM=0.9 VBN=0.63 VBP1=0.5889 VBP2=0.4155
+VDD_SRC VDD18 0 {VDD}
+VBN_SRC VBN 0 {VBN}
+VB1 VBP1 0 {VBP1}
+VB2 VBP2 0 {VBP2}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VBN OUTP OUTN VBP1 VBP2 VDD18 0 eeg_fd_ota_forced_vbp
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 2n 0.3m
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_min min vcmout
+meas tran vcm_max max vcmout
+meas tran vcm_end find vcmout at=0.29m
+wrdata ../results/forced_vbp_tran.csv time vcmout v(XAFE.N1P)
+quit
+.endc
+.end

@@ -1,0 +1,39 @@
+* test6 direct comparison: baseline versus dummy-compensated chopper
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_cmos_chopper.spice
+.include eeg_tg_lowq.spice
+.param VDD=1.8 VCM=0.9 TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+* Approximately 100 ns non-overlap between active phases.
+VPHI PHI 0 PULSE(0 {VDD} 0.05u 10n 10n 62.4u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 10n 10n 62.4u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VINP INP 0 {VCM+0.5m}
+VINN INN 0 {VCM-0.5m}
+
+XBASE INP INN BOP BON PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper
+XLOWQ INP INN QOP QON PHI NPHI PHIB NPHIB VDD18 0 eeg_cmos_chopper_lowq
+CBOP BOP 0 5p
+CBON BON 0 5p
+CQOP QOP 0 5p
+CQON QON 0 5p
+RBOP BOP 0 1G
+RBON BON 0 1G
+RQOP QOP 0 1G
+RQON QON 0 1G
+.control
+set noaskquit
+tran 0.02u 2m 0.2m
+let bdiff=v(BOP)-v(BON)
+let qdiff=v(QOP)-v(QON)
+let bvcm=(v(BOP)+v(BON))/2
+let qvcm=(v(QOP)+v(QON))/2
+meas tran baseline_vcm_pp pp bvcm from=0.5m to=2m
+meas tran lowq_vcm_pp pp qvcm from=0.5m to=2m
+meas tran baseline_diff_pp pp bdiff from=0.5m to=2m
+meas tran lowq_diff_pp pp qdiff from=0.5m to=2m
+wrdata ../results/chopper_lowq_compare_tt.csv time bdiff qdiff bvcm qvcm v(PHI) v(PHIB)
+quit
+.endc
+.end

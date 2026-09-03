@@ -1,0 +1,14 @@
+.subckt eeg_fd_ota_cascode INP INN VBP VBN VCP VCN OUTP OUTN VCM_SENSE VDD18 VSS
+* Telescopic fully differential OTA for 1.8 V operation.
+XM1 NDP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=120 nf=12
+XM2 NDN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=120 nf=12
+XMNCP OUTP VCN NDP VSS sky130_fd_pr__nfet_01v8 L=2 W=48 nf=8
+XMNCN OUTN VCN NDN VSS sky130_fd_pr__nfet_01v8 L=2 W=48 nf=8
+XMPBP NSP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=24 nf=4
+XMPBN NSN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=24 nf=4
+XMPCP OUTP VCP NSP VDD18 sky130_fd_pr__pfet_01v8 L=2 W=48 nf=8
+XMPCN OUTN VCP NSN VDD18 sky130_fd_pr__pfet_01v8 L=2 W=48 nf=8
+XMTAIL TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=2 W=48 nf=8
+RCM1 OUTP VCM_SENSE 50k
+RCM2 OUTN VCM_SENSE 50k
+.ends eeg_fd_ota_cascode

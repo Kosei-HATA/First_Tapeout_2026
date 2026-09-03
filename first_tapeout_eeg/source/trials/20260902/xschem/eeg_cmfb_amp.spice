@@ -1,0 +1,10 @@
+.subckt eeg_cmfb_amp VCM_SENSE VCM_REF VBN VBP VDD18 VSS
+* NMOS differential error amplifier. Positive VCM error raises VBP, reducing
+* PMOS load current and pulling the main OTA output common mode downward.
+XM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=20 nf=4
+XM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2 W=20 nf=4
+XM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=8 nf=2
+XM9 VBP NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=8 nf=2
+XM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=2 W=8 nf=2
+CCMFB VBP VCM_SENSE 2p
+.ends eeg_cmfb_amp

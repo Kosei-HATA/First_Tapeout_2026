@@ -1,0 +1,35 @@
+* SDM bring-up: 16 kHz 2-phase non-overlap clocks, 32 Hz 15 mV input, 40 ms tran.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.include eeg_fd_ota_full2_nc.spice
+.include eeg_sd_int.spice
+.include eeg_sd_int2.spice
+.include eeg_strongarm.spice
+.include eeg_sdm2.spice
+.param VDD=1.80 VCM=0.9 TCLK=62.5u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+* PH1: high 2u..30u. PH2: high 32.5u..60.5u. non-overlap 2.5u, edges 100n.
+VPH1 PH1 0 PULSE(0 {VDD} 2u 100n 100n 27.9u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 32.5u 100n 100n 27.9u {TCLK})
+VCMPCK CMPCK 0 PULSE(0 {VDD} 55u 100n 100n 5.3u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+* differential input 32 Hz, 15 mV amplitude around VCM
+VINP VINP 0 SIN({VCM} 15m 32)
+VINN VINN 0 SIN({VCM} 15m 32 0 0 180)
+XSDM VINP VINN VCM_REF VP VN BIT NBIT O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD18 0 eeg_sdm2
+.nodeset v(BIT)=1.8 v(NBIT)=0 v(O2P)=0.93 v(O2N)=0.93 v(XSDM.XINT1.INP)=0.9 v(XSDM.XINT1.INN)=0.9 v(XSDM.XINT2.INP)=0.9 v(XSDM.XINT2.INN)=0.9
+.nodeset v(XSDM.XINT1.INP)=0.9 v(XSDM.XINT1.INN)=0.9 v(XSDM.XINT2.INP)=0.9 v(XSDM.XINT2.INN)=0.9
+.control
+set noaskquit
+tran 100n 40m
+wrdata ../results/sdm2_bringup.csv time v(VINP)-v(VINN) v(O2P)-v(O2N) v(BIT)
+quit
+.endc
+.end

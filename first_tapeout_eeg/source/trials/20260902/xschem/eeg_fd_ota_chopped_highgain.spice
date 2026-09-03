@@ -1,0 +1,22 @@
+.subckt eeg_fd_ota_chopped_highgain INP INN VCM_REF VBN OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD18 VSS
+* Internal chopper-stabilized variant of eeg_fd_ota_twostage_highgain.
+* Input modulation before the differential pair; demodulation between stage 1
+* and stage 2. Stage 2, both CMFB loops and the capacitive feedback network
+* stay in continuous time. Input and mid choppers have separate clock ports
+* so either can be frozen for isolation tests.
+XCHIN INP INN INP_M INN_M PHII NPHII PHIBI NPHIBI VDD18 VSS eeg_cmos_chopper_lowq
+XSTG1 INP_M INN_M VBP1 VBN N1P N1N VCM1 VDD18 VSS eeg_fd_ota_core_highgain
+XCM1 VCM1 VCM_REF VBN VBP1 VDD18 VSS eeg_cmfb_amp
+XCHMID N1P N1N N2P N2N PHIM NPHIM PHIBM NPHIBM VDD18 VSS eeg_cmos_chopper_lowq
+XM21 OUTP N2P VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM22 OUTN N2N VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+XM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+RCMO1 OUTP VCM2 5Meg
+RCMO2 OUTN VCM2 5Meg
+XCM2 VCM2 VCM_REF VBN VBP2 VDD18 VSS eeg_cmfb_amp
+RZP N2P NZP 1
+CCP NZP OUTP 10p
+RZN N2N NZN 1
+CCN NZN OUTN 10p
+.ends eeg_fd_ota_chopped_highgain

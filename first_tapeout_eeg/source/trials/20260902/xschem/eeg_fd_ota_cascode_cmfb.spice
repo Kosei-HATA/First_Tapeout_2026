@@ -1,0 +1,4 @@
+.subckt eeg_fd_ota_cascode_cmfb INP INN VCM_REF VBN VCP VCN OUTP OUTN VDD18 VSS
+XCORE INP INN VBP VBN VCP VCN OUTP OUTN VCM_SENSE VDD18 VSS eeg_fd_ota_cascode
+XCMFB VCM_SENSE VCM_REF VBN VBP VDD18 VSS eeg_cmfb_amp
+.ends eeg_fd_ota_cascode_cmfb

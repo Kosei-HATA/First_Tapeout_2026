@@ -1,0 +1,25 @@
+* Minimal reproduction: plain two-stage high-gain OTA, DC input, transient.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core_highgain.spice
+.include eeg_cmfb_amp.spice
+.include eeg_fd_ota_twostage_highgain.spice
+.param VDD=1.8 VCM=0.9 VBN=0.63
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XAFE INP INN VCM_REF VBN OUTP OUTN VDD18 0 eeg_fd_ota_twostage_highgain
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+tran 2n 0.3m
+let vcmout=(v(OUTP)+v(OUTN))/2
+let voutd=v(OUTP)-v(OUTN)
+wrdata ../results/plain_ota_tran.csv time vcmout voutd v(XAFE.VBP1) v(XAFE.VBP2) v(XAFE.N1P) v(XAFE.N1N)
+meas tran vcm_min min vcmout
+meas tran vcm_max max vcmout
+quit
+.endc
+.end

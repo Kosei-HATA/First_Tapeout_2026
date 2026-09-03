@@ -1,0 +1,45 @@
+* test6 Gate 6A: Sky130 TT nominal verification of eeg_fd_ota_core
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core.spice
+
+.param VDD=1.8 VCM=0.9 VBP=0.585 VBN=0.65
+VDD_SRC VDD18 0 {VDD}
+VBP_SRC VBP 0 {VBP}
+VBN_SRC VBN 0 {VBN}
+
+* Differential stimulus: total differential AC magnitude is 1 V.
+VINP INP 0 DC {VCM} AC 0.5 0
+VINN INN 0 DC {VCM} AC 0.5 180
+XOTA INP INN VBP VBN OUTP OUTN VCM_SENSE VDD18 0 eeg_fd_ota_core
+
+* The following capacitors represent the next-stage input load.
+CLOADP OUTP 0 1p
+CLOADN OUTN 0 1p
+
+.control
+set noaskquit
+op
+let idd=-i(VDD_SRC)
+print v(OUTP) v(OUTN) v(VCM_SENSE) idd
+wrdata ../results/ota_tt_op.csv v(OUTP) v(OUTN) v(VCM_SENSE) idd
+
+ac dec 100 0.1 10Meg
+let vdiff=v(OUTP)-v(OUTN)
+let gain_db=db(vdiff)
+meas ac gain_10hz_db find gain_db at=10
+meas ac gain_100hz_db find gain_db at=100
+meas ac ugf_hz when gain_db=0 fall=1
+wrdata ../results/ota_tt_diff_ac.csv frequency gain_db
+
+* Common-mode run. Alter both sources to 1 V AC in phase.
+alter @VINP[acmag]=1
+alter @VINP[acphase]=0
+alter @VINN[acmag]=1
+alter @VINN[acphase]=0
+ac dec 100 0.1 10Meg
+let cm_out_db=db((v(OUTP)+v(OUTN))/2)
+meas ac cm_gain_10hz_db find cm_out_db at=10
+wrdata ../results/ota_tt_cm_ac.csv frequency cm_out_db
+quit
+.endc
+.end

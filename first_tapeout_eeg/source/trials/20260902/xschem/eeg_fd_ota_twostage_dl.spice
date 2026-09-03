@@ -1,0 +1,19 @@
+* Two-stage high-gain OTA, stable CMFB version:
+* diode-load low-gain CMFB amps + resistive sense tap (RTAP) for -20 dB.
+.subckt eeg_fd_ota_twostage_dl INP INN VCM_REF VBN OUTP OUTN VDD18 VSS params: W91=0.5 L91=1 W92=1.19 L92=4 RTAP=278k
+XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VDD18 VSS eeg_fd_ota_core_highgain
+RTAP1 VCM1 VCM_REF {RTAP}
+XCM1 VCM1 VCM_REF VBN VBP1 VDD18 VSS eeg_cmfb_amp_dl W9={W91} L9={L91}
+XM21 OUTP N1P VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM22 OUTN N1N VSS VSS sky130_fd_pr__nfet_01v8 L=12 W=12 nf=2
+XM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+XM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 nf=8
+RCMO1 OUTP VCM2 5Meg
+RCMO2 OUTN VCM2 5Meg
+RTAP2 VCM2 VCM_REF {RTAP}
+XCM2 VCM2 VCM_REF VBN VBP2 VDD18 VSS eeg_cmfb_amp_dl W9={W92} L9={L92}
+RZP N1P NZP 1
+CCP NZP OUTP 10p
+RZN N1N NZN 1
+CCN NZN OUTN 10p
+.ends

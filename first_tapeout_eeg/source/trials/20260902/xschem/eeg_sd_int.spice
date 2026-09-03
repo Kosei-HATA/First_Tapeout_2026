@@ -1,0 +1,48 @@
+* Fully-differential parasitic-insensitive SC integrator with 1-bit DAC input.
+* Topology per side (P side shown; N side mirrored):
+*   phi1: Cs left<-input, Cs right<-VCM ; Cd left<- (VP if BIT=1 else VN), Cd right<-VCM
+*   phi2: Cs left->VCM, Cs right->summing node INP ; Cd likewise into INP
+*   Ci: cross-coupled integration cap OUTN->INP (negative feedback, PGA-style)
+* The OTA is eeg_fd_ota_full2_nc (non-chopped, bias gen included).
+.subckt eeg_sd_int INP_S INN_S VCM_REF BIT VP VN OUTP OUTN PH1 NPH1 PH2 NPH2 VDD18 VSS params: CS=4p CDAC=4p CI=4p VDDV=1.8
+XOTA INP INN VCM_REF OUTP OUTN VDD18 VSS eeg_fd_ota_full2_nc
+* ---- input sampling caps ----
+CSP CSLP CSRP {CS}
+CSN CSLN CSRN {CS}
+* P1 switches: left->input, right->VCM
+XS1A CSLP INP_S PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1B CSRP VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1C CSLN INN_S PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1D CSRN VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+* P2 switches: left->VCM, right->summing node
+XS2A CSLP VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2B CSRP INP PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2C CSLN VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2D CSRN INN PH2 NPH2 VDD18 VSS eeg_tg_lowq
+* ---- DAC caps ----
+CDP CDLP CDRP {CDAC}
+CDN CDLN CDRN {CDAC}
+* P1: left plate to VP (BIT=1) or VN (BIT=0)
+XDPA CDLP VN BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+XDPB CDLP VP BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+XDNA CDLN VN BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+XDNB CDLN VP BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+BBIT1 BIT1 0 V=v(BIT)
+BBIT0 BIT0 0 V=v(VDD18)-v(BIT)
+BNBIT1 NBIT1 0 V=v(VDD18)-v(BIT)
+BNBIT0 NBIT0 0 V=v(BIT)
+* P1 right plates to VCM; P2 dump into summing nodes
+XDP1 CDRP VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XDP2 CDRP INP PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XDN1 CDRN VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XDN2 CDRN INN PH2 NPH2 VDD18 VSS eeg_tg_lowq
+* DAC left plates to VCM during P2
+XDP3 CDLP VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XDN3 CDLN VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+* ---- integration caps (cross-coupled negative feedback) ----
+CIP OUTN INP {CI}
+CIN OUTP INN {CI}
+* summing-node DC bias (pseudo-resistor model)
+RBIASP INP VCM_REF 10G
+RBIASN INN VCM_REF 10G
+.ends

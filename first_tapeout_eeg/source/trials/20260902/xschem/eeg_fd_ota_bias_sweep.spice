@@ -1,0 +1,20 @@
+* test6 automatic PMOS-load bias sweep at fixed VBN
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_fd_ota_core.spice
+.param VDD=1.8 VCM=0.9 VBN=0.65
+VDD_SRC VDD18 0 {VDD}
+VBP_SRC VBP 0 0.8
+VBN_SRC VBN 0 {VBN}
+VINP INP 0 {VCM}
+VINN INN 0 {VCM}
+XOTA INP INN VBP VBN OUTP OUTN VCM_SENSE VDD18 0 eeg_fd_ota_core
+CLOADP OUTP 0 1p
+CLOADN OUTN 0 1p
+.control
+set noaskquit
+dc VBP_SRC 0.20 1.20 0.005
+let idd=-i(VDD_SRC)
+wrdata ../results/ota_vbp_sweep.csv v(VBP) v(VCM_SENSE) idd
+quit
+.endc
+.end

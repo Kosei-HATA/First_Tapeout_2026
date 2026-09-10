@@ -886,54 +886,7 @@
    <references>
    </references>
   </cell>
-  <cell>
-   <name>tg_n</name>
-   <variant/>
-   <layout-name>tg_n</layout-name>
-   <references>
-    <ref>
-     <parent>eeg_tg_lowq</parent>
-     <trans>r0 *1 0,0</trans>
-    </ref>
-   </references>
-  </cell>
  </cells>
  <items>
-  <item>
-   <tags/>
-   <category>'m1.2'</category>
-   <cell>eeg_tg_lowq</cell>
-   <visited>false</visited>
-   <multiplicity>1</multiplicity>
-   <comment/>
-   <image/>
-   <values>
-    <value>edge-pair: (0.845,0.117;0.845,0.745)|(0.8,0.878;0.8,0.25)</value>
-   </values>
-  </item>
-  <item>
-   <tags/>
-   <category>'m1.2'</category>
-   <cell>eeg_tg_lowq</cell>
-   <visited>false</visited>
-   <multiplicity>1</multiplicity>
-   <comment/>
-   <image/>
-   <values>
-    <value>edge-pair: (0.9,0.745;0.9,6.155)|(0.8,6.155;0.8,0.647)</value>
-   </values>
-  </item>
-  <item>
-   <tags/>
-   <category>'m1.2'</category>
-   <cell>tg_n</cell>
-   <visited>false</visited>
-   <multiplicity>1</multiplicity>
-   <comment/>
-   <image/>
-   <values>
-    <value>edge-pair: (0.845,0.117;0.845,0.745)|(0.8,0.878;0.8,0.25)</value>
-   </values>
-  </item>
  </items>
 </report-database>

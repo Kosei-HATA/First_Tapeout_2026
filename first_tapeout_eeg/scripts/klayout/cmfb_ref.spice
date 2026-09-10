@@ -1,0 +1,18 @@
+* LVS reference netlists for the CMFB amps (KLayout sky130.lvs deck).
+* Mirror source/trials/20260902/xschem/eeg_fd_ota_chopped_full2.spice's
+* eeg_cmfb_amp_dl2 with W9=4 (stage 1) and W9=0.5 (stage 2).
+.subckt eeg_cmfb_amp_dl2 VCM_SENSE VCM_REF VBN VBP VDD18 VSS
+MM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2u W=2u
+MM9 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=4u
+MM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=12u
+.ends eeg_cmfb_amp_dl2
+
+.subckt eeg_cmfb_amp_dl2_s2 VCM_SENSE VCM_REF VBN VBP VDD18 VSS
+MM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2u W=2u
+MM9 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=0.5u
+MM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=12u
+.ends eeg_cmfb_amp_dl2_s2

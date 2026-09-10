@@ -21,11 +21,11 @@ TEMPLATE = """* MC run @IDX@: chopped PGA x32, offset+cap mismatch
 .include eeg_fd_ota_core_soft.spice
 .include eeg_bias_gen.spice
 .include eeg_fd_ota_chopped_full2.spice
-.param VDD=1.80 VCM=0.9 TCHOP=125u
+.param VDD=1.80 VCM=0.9 TCHOP=1m
 VDD_SRC VDD18 0 {VDD}
 VREF VCM_REF 0 {VCM}
-VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
-VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
 BNPHI NPHI 0 V={VDD}-v(PHI)
 BNPHIB NPHIB 0 V={VDD}-v(PHIB)
 * CM interference 50 Hz 100 mV on both inputs + differential 8 Hz 100 uV
@@ -45,6 +45,7 @@ CLOADN OUTN 0 5p
 .nodeset v(OUTP)=0.93 v(OUTN)=0.93 v(INP)=0.9 v(INN)=0.9 v(XAFE.N1P)=0.93 v(XAFE.N1N)=0.93 v(XAFE.N2P)=0.93 v(XAFE.N2N)=0.93 v(XAFE.VBP1)=0.6155 v(XAFE.VBP2)=0.3848 v(XAFE.VBN)=0.614 v(XAFE.VBNRAW)=0.614
 .control
 set noaskquit
+save time v(OUTP) v(OUTN)
 tran 50n 145m 100m
 let voutd=v(OUTP)-v(OUTN)
 let vcmout=(v(OUTP)+v(OUTN))/2
@@ -91,7 +92,7 @@ def run(idx, dvos, dcfp, dcfn):
 
 def main():
     N = int(sys.argv[1]) if len(sys.argv) > 1 else 30
-    PAR = int(sys.argv[2]) if len(sys.argv) > 2 else 5
+    PAR = int(sys.argv[2]) if len(sys.argv) > 2 else 3
     rng = np.random.default_rng(20260902)
     dvos = rng.normal(0, 0.5e-3, N)
     dcfp = rng.normal(0, 0.003, N)

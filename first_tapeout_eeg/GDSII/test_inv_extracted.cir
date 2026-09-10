@@ -1,0 +1,8 @@
+* Extracted by KLayout with SKY130 LVS runset on : 05/09/2026 11:02
+
+.SUBCKT eeg_inv A VDD18 VSS Y
+M$1 Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 AS=2.04 AD=2.04 PS=6.04
++ PD=6.04
+M$2 Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02 PS=4.04
++ PD=4.04
+.ENDS eeg_inv

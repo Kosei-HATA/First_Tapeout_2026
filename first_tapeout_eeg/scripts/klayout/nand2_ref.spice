@@ -1,0 +1,7 @@
+* LVS reference for eeg_nand2 (KLayout sky130.lvs deck conventions).
+.subckt eeg_nand2 A B Y VDD18 VSS
+MMN1 Y A N1 VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MMN2 N1 B VSS VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MMP1 Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+MMP2 Y B VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+.ends eeg_nand2

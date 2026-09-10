@@ -1,8 +1,16 @@
-* Extracted by KLayout with SKY130 LVS runset on : 03/09/2026 17:04
+* Extracted by KLayout with SKY130 LVS runset on : 04/09/2026 14:58
 
-.SUBCKT eeg_tg_lowq A|B|EN VDD18 VSS
-M$1 A|B|EN A|B|EN A|B|EN VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2.52 AS=2.268
-+ AD=2.268 PS=8.4 PD=8.4
-M$3 A|B|EN A|B|EN A|B|EN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1.26 AS=0.6804
-+ AD=0.6804 PS=4.44 PD=4.44
+.SUBCKT eeg_tg_lowq A B EN ENB VDD18 VSS
+M$1 A ENB B VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1.68 AS=1.7136 AD=1.7136
++ PS=5.4 PD=5.4
+M$2 B EN B VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 AS=0.5544 AD=0.5544 PS=3
++ PD=3
+M$3 A EN A VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=0.84 AS=0.5544 AD=0.5544 PS=3
++ PD=3
+M$4 A EN B VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.84 AS=0.5544 AD=0.5544 PS=3
++ PD=3
+M$5 B ENB B VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 AS=0.126 AD=0.126 PS=1.44
++ PD=1.44
+M$6 A ENB A VSS sky130_fd_pr__nfet_01v8 L=0.15 W=0.42 AS=0.126 AD=0.126 PS=1.44
++ PD=1.44
 .ENDS eeg_tg_lowq

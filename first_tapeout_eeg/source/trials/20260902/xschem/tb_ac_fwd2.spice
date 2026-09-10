@@ -1,0 +1,34 @@
+* forward-path AC: frozen choppers straight, signal at gates
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.temp 27
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2nodsl.spice
+.include eeg_pseudo_res.spice
+.param VDD=1.80 VCM=0.9 TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SIGN 0 DC {VCM} AC 0.5 180
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+XPRP INP VCM_REF eeg_pseudo_res
+XPRN INN VCM_REF eeg_pseudo_res
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_full2
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+ac dec 50 0.01 10Meg
+let g = mag(v(OUTP)-v(OUTN))
+wrdata ../results/ac_fwd.csv g
+quit
+.endc
+.end

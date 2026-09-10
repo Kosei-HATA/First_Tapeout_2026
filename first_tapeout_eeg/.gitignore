@@ -1,0 +1,5 @@
+.DS_Store
+results
+*.lvsdb
+__pycache__/
+scripts/klayout/.venv/

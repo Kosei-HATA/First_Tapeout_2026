@@ -1,0 +1,7 @@
+* LVS reference for eeg_inv (KLayout sky130.lvs deck conventions).
+* Layout-only cell: generates the select/reset complements (NS8/NS16/NS32/
+* NRST) that the schematic expresses with behavioral B-sources.
+.subckt eeg_inv A Y VDD18 VSS
+MMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MMP Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+.ends eeg_inv

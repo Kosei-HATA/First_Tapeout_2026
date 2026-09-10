@@ -1,0 +1,19 @@
+* Extracted by KLayout with SKY130 LVS runset on : 04/09/2026 12:17
+
+.SUBCKT eeg_bias_gen VBN VBNF VBP VDD18 VSS
+M$1 VDD18 VBP VBP VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
++ PS=17.54 PD=17.54
+M$3 VDD18 VBP VBN VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
++ PS=17.54 PD=17.54
+M$5 \$217 VBN VBP VSS sky130_fd_pr__nfet_01v8 L=4 W=40 AS=13.85 AD=13.85
++ PS=50.54 PD=50.54
+M$13 VSS VBN VBN VSS sky130_fd_pr__nfet_01v8 L=4 W=10 AS=6.35 AD=6.35 PS=17.54
++ PD=17.54
+R$213 VBN VDD18 VSS sky130_fd_pr__res_xhigh_po_0p69 R=20000000 L=6900 W=0.69
++ A=4761 P=14076
+R$223 VBNF VBN VSS sky130_fd_pr__res_xhigh_po_0p69 R=1000000 L=345 W=0.69
++ A=238.05 P=703.8
+R$225 VSS \$217 VSS sky130_fd_pr__res_xhigh_po_0p69 R=24985.5072464 L=8.62
++ W=0.69 A=5.9478 P=18.62
+C$226 VSS VBNF sky130_fd_pr__model__cap_mim C=1e-09 A=500000 P=100000
+.ENDS eeg_bias_gen

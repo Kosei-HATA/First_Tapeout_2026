@@ -12,15 +12,15 @@
 .include eeg_sdm2.spice
 .include eeg_sdm1ct.spice
 .include eeg_afe_top.spice
-.param VDD=1.80 VCM=0.9 VCMA=0.927 TCHOP=125u TCLK=62.5u
+.param VDD=1.80 VCM=0.9 VCMA=0.927 TCHOP=1m TCLK=62.5u
 VDD_SRC VDD18 0 {VDD}
 VREF VCM_REF 0 {VCM}
 * references centered on the actual analog CM (~0.927 at TT)
 VVP VP 0 {VCMA+25m}
 VVN VN 0 {VCMA-25m}
 * 8 kHz chopper clocks
-VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 62.35u {TCHOP})
-VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
 BNPHI NPHI 0 V={VDD}-v(PHI)
 BNPHIB NPHIB 0 V={VDD}-v(PHIB)
 * 16 kHz SDM clock (locked to the chopper: 2 chopper periods = 1 sdm period)
@@ -41,6 +41,7 @@ VS64 S64N 0 0
 XTOP ELP2 ELN2 VCM_REF VP VN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB CLK16 NCLK16 BIT NBIT S8N S16N S32N S64N VDD18 0 eeg_afe_top
 .control
 set noaskquit
+save time v(BIT) v(XTOP.PGA_OUTP) v(XTOP.PGA_OUTN)
 tran 100n 1.024s
 wrdata ../results/e2e_1s.csv time v(BIT)
 * note: discard first 60% (AFE pseudo-R startup transient) in analysis

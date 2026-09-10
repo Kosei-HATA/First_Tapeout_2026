@@ -1,0 +1,15 @@
+* LVS reference for eeg_strongarm (KLayout sky130.lvs deck conventions).
+* Mirrors source/trials/20260902/xschem/eeg_strongarm.spice.
+.subckt eeg_strongarm INP INN OUTP OUTN CLK VDD18 VSS
+MM0 NTAIL CLK VSS VSS sky130_fd_pr__nfet_01v8 L=0.15u W=8u
+MM1 D1 INP NTAIL VSS sky130_fd_pr__nfet_01v8 L=0.5u W=4u
+MM2 D2 INN NTAIL VSS sky130_fd_pr__nfet_01v8 L=0.5u W=4u
+MM3 OUTN OUTP D1 VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MM4 OUTP OUTN D2 VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MM5 OUTP OUTN VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1u
+MM6 OUTN OUTP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1u
+MM7 OUTP CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+MM8 OUTN CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+MM9 D1 CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1u
+MM10 D2 CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1u
+.ends eeg_strongarm

@@ -1,0 +1,11 @@
+* LVS reference netlist for eeg_tg_lowq (KLayout sky130.lvs deck).
+* Mirrors source/trials/20260902/xschem/eeg_tg_lowq.spice (with the A-side
+* dummy pair) with the deck conventions (SI units, bulk = VSS via lvs_sub).
+.subckt eeg_tg_lowq A B EN ENB VDD18 VSS
+MMN B EN A VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.84u
+MMP B ENB A VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1.68u
+MMND B ENB B VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.42u
+MMPD B EN B VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=0.84u
+MMNDA A ENB A VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.42u
+MMPDA A EN A VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=0.84u
+.ends eeg_tg_lowq

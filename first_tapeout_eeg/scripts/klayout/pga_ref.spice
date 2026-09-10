@@ -1,0 +1,132 @@
+* LVS reference netlist for eeg_afe_pga (KLayout sky130.lvs deck).
+*
+* Hierarchical mirror of source/trials/20260902/xschem/eeg_afe_pga.spice:
+* input MIM caps (32p) + cross-coupled feedback cap bank (0.5p fixed for
+* x64; 0.5p/1.5p/3.5p switched for x32/x16/x8) + eeg_tg_lowq select/reset
+* switches + eeg_pseudo_res summing-node bias + eeg_fd_ota_chopped_full2.
+* Deck conventions as in full2_ref.spice; MIM A/P in SI (A=m^2, P=m):
+*   CIN  32p : 8x5 array of 20x20   capm -> A=1.6e-8   P=3.2e-3
+*   0.5p    : 1x 20x12.5 capm unit  -> A=2.5e-10  P=6.5e-5
+*   1.5p    : 3x 20x12.5            -> A=7.5e-10  P=1.95e-4
+*   3.5p    : 7x 20x12.5            -> A=1.75e-9  P=4.55e-4
+* The schematic's behavioral complement sources (BS8/BS16/BS32/BRST) are
+* real eeg_inv cells in layout: NS8=~S8, NS16=~S16, NS32=~S32, NRST=~RST.
+
+.subckt eeg_inv A Y VDD18 VSS
+MMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15u W=1u
+MMP Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=2u
+.ends eeg_inv
+
+.subckt eeg_pseudo_res A B
+MMP1 M M A A sky130_fd_pr__pfet_01v8 L=4u W=1u
+MMP2 M M B B sky130_fd_pr__pfet_01v8 L=4u W=1u
+.ends eeg_pseudo_res
+
+.subckt eeg_tg_lowq A B EN ENB VDD18 VSS
+MMN B EN A VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.84u
+MMP B ENB A VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=1.68u
+MMND B ENB B VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.42u
+MMPD B EN B VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=0.84u
+MMNDA A ENB A VSS sky130_fd_pr__nfet_01v8 L=0.15u W=0.42u
+MMPDA A EN A VDD18 sky130_fd_pr__pfet_01v8 L=0.15u W=0.84u
+.ends eeg_tg_lowq
+
+.subckt eeg_cmos_chopper_lowq INP INN OUTP OUTN PHI NPHI PHIB NPHIB VDD18 VSS
+XSP INP OUTP PHI NPHI VDD18 VSS eeg_tg_lowq
+XSN INN OUTN PHI NPHI VDD18 VSS eeg_tg_lowq
+XCP INP OUTN PHIB NPHIB VDD18 VSS eeg_tg_lowq
+XCN INN OUTP PHIB NPHIB VDD18 VSS eeg_tg_lowq
+.ends eeg_cmos_chopper_lowq
+
+.subckt eeg_cmfb_amp_dl2 VCM_SENSE VCM_REF VBN VBP VDD18 VSS
+MM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2u W=2u
+MM9 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=4u
+MM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=12u
+.ends eeg_cmfb_amp_dl2
+
+.subckt eeg_cmfb_amp_dl2_s2 VCM_SENSE VCM_REF VBN VBP VDD18 VSS
+MM6 NLEFT VCM_SENSE NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM7 VBP VCM_REF NTAIL VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MM8 NLEFT NLEFT VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=2u W=2u
+MM9 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=0.5u
+MM10 NTAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=12u
+.ends eeg_cmfb_amp_dl2_s2
+
+.subckt eeg_bias_gen VBN VBNF VBP VDD18 VSS
+MMP1 VBN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=10u
+MMN1 VBN VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=10u
+MMP2 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=10u
+MMN2 VBP VBN SNS2 VSS sky130_fd_pr__nfet_01v8 L=4u W=40u
+RRSET SNS2 VSS VSS 25k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=8.62u
+RRSTART VDD18 VBN VSS 20Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6900u
+RRF VBN VBNF VSS 1Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=345u
+CCF VBNF VSS sky130_fd_pr__model__cap_mim C=1e-9 A=5e-7 P=0.1
+.ends eeg_bias_gen
+
+.subckt eeg_fd_ota_core_soft INP INN VBP VBN OUTP OUTN VCM_SENSE VCM_REF VDD18 VSS
+MM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=240u
+MM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=240u
+MMDP OUTP VSS TAIL VSS sky130_fd_pr__nfet_01v8 L=4u W=20u
+MM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=48u
+MM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=48u
+MM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=96u
+RRCM1 OUTP VCM_SENSE VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRCM2 OUTN VCM_SENSE VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRLOADP OUTP VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRLOADN OUTN VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+.ends eeg_fd_ota_core_soft
+
+.subckt stage2 N2P N2N OUTP OUTN VBP2 VCM2 VCM_REF VDD18 VSS
+MM21 OUTP N2P VSS VSS sky130_fd_pr__nfet_01v8 L=12u W=12u
+MM22 OUTN N2N VSS VSS sky130_fd_pr__nfet_01v8 L=12u W=12u
+MM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12u W=48u
+MM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12u W=48u
+RRCMO1 OUTP VCM2 VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRCMO2 OUTN VCM2 VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRLOADO1 OUTP VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRLOADO2 OUTN VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRZP N2P NZP VSS 20k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6.9u
+RRZN N2N NZN VSS 20k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6.9u
+CCP NZP OUTP sky130_fd_pr__model__cap_mim C=1e-11 A=5e-9 P=1.3e-3
+CCN NZN OUTN sky130_fd_pr__model__cap_mim C=1e-11 A=5e-9 P=1.3e-3
+.ends stage2
+
+.subckt eeg_fd_ota_chopped_full2 INP INN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD18 VSS
+XBG VBNRAW VBN VBP_BIAS VDD18 VSS eeg_bias_gen
+XCHIN INP INN INP_M INN_M PHII NPHII PHIBI NPHIBI VDD18 VSS eeg_cmos_chopper_lowq
+XSTG1 INP_M INN_M VBP1 VBN N1P N1N VCM1 VCM_REF VDD18 VSS eeg_fd_ota_core_soft
+XCM1 VCM1 VCM_REF VBN VBP1 VDD18 VSS eeg_cmfb_amp_dl2
+XCHMID N1P N1N N2P N2N PHIM NPHIM PHIBM NPHIBM VDD18 VSS eeg_cmos_chopper_lowq
+XCM2 VCM2 VCM_REF VBN VBP2 VDD18 VSS eeg_cmfb_amp_dl2_s2
+XS2 N2P N2N OUTP OUTN VBP2 VCM2 VCM_REF VDD18 VSS stage2
+.ends eeg_fd_ota_chopped_full2
+
+.subckt eeg_afe_pga ELP ELN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 RST VDD18 VSS
+CCINP ELP INP sky130_fd_pr__model__cap_mim C=32e-12 A=1.6e-8 P=3.2e-3
+CCINN ELN INN sky130_fd_pr__model__cap_mim C=32e-12 A=1.6e-8 P=3.2e-3
+CCF64P OUTN INP sky130_fd_pr__model__cap_mim C=0.5e-12 A=2.5e-10 P=6.5e-5
+CCF64N OUTP INN sky130_fd_pr__model__cap_mim C=0.5e-12 A=2.5e-10 P=6.5e-5
+CCFB32P OUTN F32P sky130_fd_pr__model__cap_mim C=0.5e-12 A=2.5e-10 P=6.5e-5
+CCFB32N OUTP F32N sky130_fd_pr__model__cap_mim C=0.5e-12 A=2.5e-10 P=6.5e-5
+CCFB16P OUTN F16P sky130_fd_pr__model__cap_mim C=1.5e-12 A=7.5e-10 P=1.95e-4
+CCFB16N OUTP F16N sky130_fd_pr__model__cap_mim C=1.5e-12 A=7.5e-10 P=1.95e-4
+CCFB8P OUTN F8P sky130_fd_pr__model__cap_mim C=3.5e-12 A=1.75e-9 P=4.55e-4
+CCFB8N OUTP F8N sky130_fd_pr__model__cap_mim C=3.5e-12 A=1.75e-9 P=4.55e-4
+XS32P F32P INP S32 NS32 VDD18 VSS eeg_tg_lowq
+XS32N F32N INN S32 NS32 VDD18 VSS eeg_tg_lowq
+XS16P F16P INP S16 NS16 VDD18 VSS eeg_tg_lowq
+XS16N F16N INN S16 NS16 VDD18 VSS eeg_tg_lowq
+XS8P F8P INP S8 NS8 VDD18 VSS eeg_tg_lowq
+XS8N F8N INN S8 NS8 VDD18 VSS eeg_tg_lowq
+XINS8 S8 NS8 VDD18 VSS eeg_inv
+XINS16 S16 NS16 VDD18 VSS eeg_inv
+XINS32 S32 NS32 VDD18 VSS eeg_inv
+XINRST RST NRST VDD18 VSS eeg_inv
+XPRP INP VCM_REF eeg_pseudo_res
+XPRN INN VCM_REF eeg_pseudo_res
+XRSTP INP VCM_REF RST NRST VDD18 VSS eeg_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD18 VSS eeg_tg_lowq
+XAFE INP INN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD18 VSS eeg_fd_ota_chopped_full2
+.ends eeg_afe_pga

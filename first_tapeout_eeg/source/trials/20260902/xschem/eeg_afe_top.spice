@@ -2,10 +2,10 @@
 * (eeg_sdm1ct). Single channel; 8ch MUX handled at pad/test level.
 * References VP/VN and VCM_REF are external pins (tapeout v1: testability and
 * calibration flexibility; a tracking replica reference is a v2 item).
-* Clocks: PHI* = 8 kHz chopper (4 phases), CLK16/NCLK16 = 16 kHz SDM clock.
+* Clocks: PHI* = 1 kHz chopper (4 phases, from eeg_clkgen), CLK16/NCLK16 = 16 kHz SDM clock.
 .subckt eeg_afe_top ELP ELN VCM_REF VP VN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM CLK16 NCLK16 BIT NBIT S8 S16 S32 S64 VDD18 VSS
 * front-end chopped PGA
-XAFE ELP ELN VCM_REF PGA_OUTP PGA_OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 VDD18 VSS eeg_afe_pga
+XAFE ELP ELN VCM_REF PGA_OUTP PGA_OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 VSS VDD18 VSS eeg_afe_pga
 * ADC (CT 1st-order SDM), directly coupled from the PGA output
 XADC PGA_OUTP PGA_OUTN VCM_REF VP VN BIT NBIT ADC_OUTP ADC_OUTN CLK16 NCLK16 VDD18 VSS eeg_sdm1ct
 .ends

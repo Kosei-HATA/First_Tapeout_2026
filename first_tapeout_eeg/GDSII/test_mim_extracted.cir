@@ -1,0 +1,5 @@
+* Extracted by KLayout with SKY130 LVS runset on : 04/09/2026 11:07
+
+.SUBCKT test_mim P1 P2
+C$1 P1 P2 sky130_fd_pr__model__cap_mim C=2e-12 A=1000 P=260
+.ENDS test_mim

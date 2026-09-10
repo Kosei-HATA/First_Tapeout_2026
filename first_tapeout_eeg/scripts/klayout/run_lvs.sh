@@ -11,6 +11,7 @@ PROJ=$(cd "$HERE/../.." && pwd)
 
 GDS=${1:-$PROJ/GDSII/eeg_fd_ota_core_soft.gds}
 REF=${2:-$HERE/core_ref.spice}
+MODE=${3:-flat}
 BASE=$(basename "$GDS" .gds)
 REPORT=$PROJ/GDSII/$BASE.lvsdb
 EXTRACTED=$PROJ/GDSII/${BASE}_extracted.cir
@@ -29,6 +30,6 @@ export PATH="$HERE/bin:$PATH"
     -rd report="$REPORT" \
     -rd target_netlist="$EXTRACTED" \
     -rd lvs_sub=VSS \
-    -rd run_mode=flat -rd scale=false -rd spice_net_names=true \
+    -rd run_mode=$MODE -rd scale=false -rd spice_net_names=true \
     -rd combine=true -rd top_lvl_pins=true -rd purge=true -rd purge_nets=true \
     2>&1 | tee "$LOG" | grep -a "match\|MATCH\|ERROR"

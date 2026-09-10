@@ -1,0 +1,26 @@
+* Extracted by KLayout with SKY130 LVS runset on : 04/09/2026 12:27
+
+.SUBCKT stage2 N2N N2P OUTN OUTP VBP2 VCM2 VCM_REF VDD18 VSS
+M$1 VDD18 VBP2 OUTP VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 AS=16.62 AD=16.62
++ PS=59.54 PD=59.54
+M$9 VDD18 VBP2 OUTN VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 AS=16.62 AD=16.62
++ PS=59.54 PD=59.54
+M$17 VSS N2P OUTP VSS sky130_fd_pr__nfet_01v8 L=12 W=12 AS=7.62 AD=7.62
++ PS=20.54 PD=20.54
+M$19 VSS N2N OUTN VSS sky130_fd_pr__nfet_01v8 L=12 W=12 AS=7.62 AD=7.62
++ PS=20.54 PD=20.54
+R$68 OUTP VCM2 VSS sky130_fd_pr__res_xhigh_po_0p69 R=5000000 L=1725 W=0.69
++ A=1190.25 P=3519
+R$120 OUTN VCM2 VSS sky130_fd_pr__res_xhigh_po_0p69 R=5000000 L=1725 W=0.69
++ A=1190.25 P=3519
+R$138 OUTP VCM_REF VSS sky130_fd_pr__res_xhigh_po_0p69 R=2000000 L=690 W=0.69
++ A=476.1 P=1407.6
+R$158 OUTN VCM_REF VSS sky130_fd_pr__res_xhigh_po_0p69 R=2000000 L=690 W=0.69
++ A=476.1 P=1407.6
+R$161 \$1 N2P VSS sky130_fd_pr__res_xhigh_po_0p69 R=20000 L=6.9 W=0.69 A=4.761
++ P=15.18
+R$162 \$2 N2N VSS sky130_fd_pr__res_xhigh_po_0p69 R=20000 L=6.9 W=0.69 A=4.761
++ P=15.18
+C$163 OUTP \$1 sky130_fd_pr__model__cap_mim C=1e-11 A=5000 P=1300
+C$183 OUTN \$2 sky130_fd_pr__model__cap_mim C=1e-11 A=5000 P=1300
+.ENDS stage2

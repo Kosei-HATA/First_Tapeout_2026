@@ -66,6 +66,9 @@ L_M3L = (70, 5)
 L_VIA3 = (70, 44)
 L_M4 = (71, 20)
 L_M4L = (71, 5)
+L_VIA4 = (71, 44)
+L_M5 = (72, 20)
+L_M5L = (72, 5)
 L_CAPM = (89, 44)   # MIM top electrode (m3 bottom plate / m4 top plate)
 
 DBU = 0.001  # um
@@ -110,15 +113,24 @@ class Layouter:
         (into or self.top).insert(kdb.CellInstArray(cell.cell_index(), tr))
         return tr
 
-    # -- via helpers (conservative enclosures)
+    # -- via helpers (conservative enclosures; centers snapped so the
+    # snapped edges keep the exact via size)
     def via1(self, x, y, cell=None):
+        x, y = u(x) / 1000.0, u(y) / 1000.0
         self.box(L_VIA1, x - 0.075, y - 0.075, x + 0.075, y + 0.075, cell)
 
     def via2(self, x, y, cell=None):
+        x, y = u(x) / 1000.0, u(y) / 1000.0
         self.box(L_VIA2, x - 0.10, y - 0.10, x + 0.10, y + 0.10, cell)
 
     def via3(self, x, y, cell=None):
+        x, y = u(x) / 1000.0, u(y) / 1000.0
         self.box(L_VIA3, x - 0.10, y - 0.10, x + 0.10, y + 0.10, cell)
+
+    def via4(self, x, y, cell=None):
+        """via4 is exactly 0.8x0.8 (deck via4.1a); m4 encloses 0.19, m5 0.31."""
+        x, y = u(x) / 1000.0, u(y) / 1000.0
+        self.box(L_VIA4, x - 0.4, y - 0.4, x + 0.4, y + 0.4, cell)
 
     def via1_array(self, x0, y0, x1, y1, cell=None):
         """Fill a region with via1 (0.15, pitch 0.32)."""
@@ -127,8 +139,8 @@ class Layouter:
     def via2_array(self, x0, y0, x1, y1, cell=None):
         self._via_array(self.via2, 0.20, 0.40, x0, y0, x1, y1, cell)
 
-    def via3_array(self, x0, y0, x1, y1, cell=None):
-        self._via_array(self.via3, 0.20, 0.40, x0, y0, x1, y1, cell)
+    def via3_array(self, x0, y0, x1, y1, cell=None, pitch=0.40):
+        self._via_array(self.via3, 0.20, pitch, x0, y0, x1, y1, cell)
 
     def _via_array(self, via_fn, size, pitch, x0, y0, x1, y1, cell):
         import math
@@ -195,6 +207,15 @@ class Layouter:
             cell, type="sky130_fd_pr__res_xhigh_po_0p69", l=l, w=0.69, gr=0)
         return cell
 
+    def res_pads(self, seg_cell):
+        """(top_yc, bot_yc) of a res segment's m1 terminal pads, cell-local."""
+        ys = []
+        for s in seg_cell.shapes(self.layer(L_M1)).each():
+            b = s.bbox()
+            ys.append((b.bottom + b.top) / 2000.0)
+        ys.sort()
+        return ys[-1], ys[0]
+
     # ------------------------------------------------------------------
     # anchors from generated FET cells
     # ------------------------------------------------------------------
@@ -231,34 +252,46 @@ class Layouter:
         return diff, strips, pads_top, pads_bot
 
     def tie_ring(self, cell, trans, side, y_bus, columns, into=None):
-        """Contact a guard-ring band (li patch + mcon + m1) and strap to a bus.
+        """Contact a guard-ring band (mcon + m1 on the ring li) and strap it.
 
-        side: "bottom" (strap down, nfet psub rings) or "top" (strap up,
-        pfet nwell-tap rings).  trans maps cell-local -> target coordinates.
+        side: "bottom" or "top" band of the ring.  trans maps cell-local ->
+        target coordinates.  The band is located via the tap ring (clean
+        rectangle even for tall-W FETs whose S/D strips poke above the
+        ring), then refined with the ring li so the mcon lands on li.
+        The strap direction follows the bus position.  No new li is drawn
+        (avoids li.3 slivers against the band edges).
         """
-        reg = kdb.Region(cell.begin_shapes_rec(self.layer(L_TAP)))
-        if reg.is_empty():
+        tap = kdb.Region(cell.begin_shapes_rec(self.layer(L_TAP)))
+        li = kdb.Region(cell.begin_shapes_rec(self.layer(L_LI)))
+        if tap.is_empty() or li.is_empty():
             return
-        bb = reg.bbox()
-        band_h = u(0.17)
+        tb = tap.bbox()
         if side == "bottom":
-            strip = kdb.Box(bb.left, bb.bottom, bb.right, bb.bottom + band_h)
+            strip = kdb.Box(tb.left, tb.bottom, tb.right, tb.bottom + u(0.17))
         else:
-            strip = kdb.Box(bb.left, bb.top - band_h, bb.right, bb.top)
-        band = (reg & kdb.Region(strip)).transformed(trans)
+            strip = kdb.Box(tb.left, tb.top - u(0.17), tb.right, tb.top)
+        band_tap = tap & kdb.Region(strip)
+        band = (li & band_tap).transformed(trans)
         if band.is_empty():
             return
-        b = band.bbox()
+        # the strip also catches the ring's corner jogs; take the widest
+        # polygon = the actual horizontal band
+        pieces = sorted(band.each(), key=lambda p: p.bbox().width(),
+                        reverse=True)
+        b = pieces[0].bbox()
         y0, y1 = b.bottom / 1000.0, b.top / 1000.0
+        x0, x1 = b.left / 1000.0, b.right / 1000.0
         yc = (y0 + y1) / 2
         tgt = into or self.top
         for cx in columns:
-            self.box(L_LI, cx - 0.3, y0 - 0.1, cx + 0.3, y1 + 0.1, tgt)
-            for k in (-1, 1):
-                self.box(L_MCON, cx + k * 0.18 - 0.085, yc - 0.085,
-                         cx + k * 0.18 + 0.085, yc + 0.085, tgt)
+            if not (x0 + 0.25 < cx < x1 - 0.25):
+                raise ValueError(f"tie column {cx} too close to band ends "
+                                 f"[{x0}, {x1}]")
+            # no new li: mcon lands directly on the ring's own li band
+            # (avoids li.3 slivers against the band edges)
+            self.box(L_MCON, cx - 0.085, yc - 0.085, cx + 0.085, yc + 0.085, tgt)
             self.box(L_M1, cx - 0.3, y0 - 0.1, cx + 0.3, y1 + 0.1, tgt)
-            if side == "top":
+            if y_bus > yc:
                 self.strap_up(cx, yc, y_bus, tgt)
             else:
                 self.strap_down(cx, yc, y_bus, tgt)
@@ -310,17 +343,29 @@ class Layouter:
                 # end of row: both pads are top pads (even ncols required)
                 assert ncols % 2 == 0, "multi-row banks need even ncols"
                 xj = max(ax, bx)
-                ytop0 = ay + self.SEG_PAD_TOP[0]
-                ytop1 = by + self.SEG_PAD_TOP[1]
-                self.box(L_M1, xj - self.SEG_PAD_X, min(ay, by) + self.SEG_PAD_TOP[0],
-                         xj + self.SEG_PAD_X, max(ay, by) + self.SEG_PAD_TOP[1], into)
+                # jog OUTWARD (away from the bank columns): a straight
+                # vertical link at xj would cross the next row's first
+                # segment's bottom pad and short it
+                xmid = x0 + (ncols - 1) * pitch / 2
+                xo = xj + (1.2 if xj >= xmid else -1.2)
+                self.box(L_M1, min(xj, xo) - self.SEG_PAD_X,
+                         ay + self.SEG_PAD_TOP[0],
+                         max(xj, xo) + self.SEG_PAD_X,
+                         ay + self.SEG_PAD_TOP[1], into)
+                self.box(L_M1, xo - 0.15, ay + self.SEG_PAD_TOP[0],
+                         xo + 0.15, by + self.SEG_PAD_TOP[1], into)
+                self.box(L_M1, min(xj, xo) - self.SEG_PAD_X,
+                         by + self.SEG_PAD_TOP[0],
+                         max(xj, xo) + self.SEG_PAD_X,
+                         by + self.SEG_PAD_TOP[1], into)
         (sx, sy), (ex, ey) = seg_xy(0), seg_xy(nseg - 1)
         return (sx, sy + pad_yc), (ex, ey + pad_yc)
 
     # ------------------------------------------------------------------
     # MIM cap array (capm / m3 bottom sheet / m4 top mesh)
     # ------------------------------------------------------------------
-    def mim_array(self, into, x0, y0, ncols, nrows, cw=20.0, ch=20.0):
+    def mim_array(self, into, x0, y0, ncols, nrows, cw=20.0, ch=20.0,
+                  via_pitch=1.6):
         """Parallel array of capm MIM units. Returns (bot_pt, top_pt, area, perim)
         with bottom/top terminal access points (m3 / m4) and total A/P in um."""
         pitch_x, pitch_y = cw + 2.5, ch + 2.5
@@ -335,22 +380,22 @@ class Layouter:
                 cx0 = x0 + c * pitch_x
                 cy0 = y0 + r * pitch_y
                 self.box(L_CAPM, cx0, cy0, cx0 + cw, cy0 + ch, into)
-                # m4 top plate (inset 0.195) merged into a column bar below
+                # m4 top plate (inset 0.195) merged into a solid sheet below
                 self.via3_array(cx0 + 0.3, cy0 + 0.3, cx0 + cw - 0.3,
-                                cy0 + ch - 0.3, into)
-        # m4 top mesh: column bars + rail on top
-        for c in range(ncols):
-            cx0 = x0 + c * pitch_x
-            self.box(L_M4, cx0 + 0.195, y0 + 0.195,
-                     cx0 + cw - 0.195, y0 + h_tot - 0.195, into)
-        self.box(L_M4, x0 + 0.195, y0 + h_tot + 0.5,
-                 x0 + w_tot - 0.195, y0 + h_tot + 1.1, into)
-        for c in range(ncols):
-            self.box(L_M4, x0 + c * pitch_x + 0.195, y0 + h_tot - 0.195,
-                     x0 + c * pitch_x + cw - 0.195, y0 + h_tot + 0.5, into)
+                                cy0 + ch - 0.3, into, pitch=via_pitch)
+        # m4 top plate: one solid sheet inset 0.195 from the capm field,
+        # with an exit tab at the top center (avoids m4.5ab notch artifacts
+        # that a bar/rail mesh creates under the 3um closing).  The tab is
+        # 1.6 tall so a via3 can land on it with its m4 pad fully inside
+        # (pad overshoot = notch) while its m3 pad clears the bottom sheet.
+        self.box(L_M4, x0 + 0.195, y0 + 0.195,
+                 x0 + w_tot - 0.195, y0 + h_tot - 0.195, into)
+        xm = x0 + w_tot / 2
+        self.box(L_M4, xm - 1.6, y0 + h_tot - 0.195, xm + 1.6,
+                 y0 + h_tot + 1.6, into)
         area = ncols * nrows * cw * ch
         perim = ncols * nrows * 2 * (cw + ch)
-        return ((x0 - 2.0, y0 + 1.0), (x0 + w_tot / 2, y0 + h_tot + 0.8),
+        return ((x0 - 2.0, y0 + 1.0), (xm, y0 + h_tot + 1.0),
                 area, perim)
 
     def set_top(self, cell):

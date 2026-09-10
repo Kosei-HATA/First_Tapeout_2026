@@ -1,0 +1,6 @@
+* Extracted by KLayout with SKY130 LVS runset on : 05/09/2026 11:02
+
+.SUBCKT eeg_pseudo_res A B
+M$1 \$5 \$5 B B sky130_fd_pr__pfet_01v8 L=4 W=1 AS=1.02 AD=1.02 PS=4.04 PD=4.04
+M$2 \$5 \$5 A A sky130_fd_pr__pfet_01v8 L=4 W=1 AS=1.02 AD=1.02 PS=4.04 PD=4.04
+.ENDS eeg_pseudo_res

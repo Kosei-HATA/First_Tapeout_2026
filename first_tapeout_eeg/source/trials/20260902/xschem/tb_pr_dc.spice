@@ -1,0 +1,16 @@
+* pseudo-R incremental resistance: I vs V around 0
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.temp 27
+.include eeg_pseudo_res.spice
+VA A 0 0.9
+VB B 0 0.9
+XPR A B eeg_pseudo_res
+.control
+set noaskquit
+dc VA 0.85 0.95 0.001
+let r = 0.9/slope(v(a)#branch) 
+* simpler: print branch current at a few points
+print v(a) i(VA)
+quit
+.endc
+.end

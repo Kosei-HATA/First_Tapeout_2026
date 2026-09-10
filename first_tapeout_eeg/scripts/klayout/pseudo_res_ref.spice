@@ -1,0 +1,5 @@
+* LVS reference for eeg_pseudo_res (KLayout sky130.lvs deck conventions).
+.subckt eeg_pseudo_res A B
+MMP1 M M A A sky130_fd_pr__pfet_01v8 L=4u W=1u
+MMP2 M M B B sky130_fd_pr__pfet_01v8 L=4u W=1u
+.ends eeg_pseudo_res

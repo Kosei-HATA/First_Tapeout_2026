@@ -1,0 +1,18 @@
+* LVS reference netlist for the stage-2 output stage (KLayout sky130.lvs deck).
+* Devices from eeg_fd_ota_chopped_full2.spice (M21-24, RCMO, RLOADO, RZ, CC).
+* RLOADO=2Meg (20 seg), RCMO=5Meg (50 seg), RZ=20k (1 seg l=6.78),
+* CC=10p each (5x4 of 20x12.5 um capm: A=5000 um2, P=1300 um).
+.subckt stage2 N2P N2N OUTP OUTN VBP2 VCM2 VCM_REF VDD18 VSS
+MM21 OUTP N2P VSS VSS sky130_fd_pr__nfet_01v8 L=12u W=12u
+MM22 OUTN N2N VSS VSS sky130_fd_pr__nfet_01v8 L=12u W=12u
+MM23 OUTP VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12u W=48u
+MM24 OUTN VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=12u W=48u
+RRCMO1 OUTP VCM2 VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRCMO2 OUTN VCM2 VSS 5Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=1725u
+RRLOADO1 OUTP VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRLOADO2 OUTN VCM_REF VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+RRZP N2P NZP VSS 20k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6.9u
+RRZN N2N NZN VSS 20k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6.9u
+CCP NZP OUTP sky130_fd_pr__model__cap_mim C=1e-11 A=5e-9 P=1.3e-3
+CCN NZN OUTN sky130_fd_pr__model__cap_mim C=1e-11 A=5e-9 P=1.3e-3
+.ends stage2

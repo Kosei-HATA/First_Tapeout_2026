@@ -1,0 +1,47 @@
+* Standard verification bench: internal-chopper PGA x32, pseudo-R bias, RST.
+* Lessons baked in: RST clears the t=0 op garbage; pseudo-R settles it in
+* ~0.3-1 s; measure with LS-fit (scripts/lsfit_gain.py), not windowed FFT.
+* sed tokens: tt 1.80 27 tt  (TT: tt 1.80 27)
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.temp 27
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.include eeg_pseudo_res.spice
+.param VDD=1.80 VCM={1.80/2} TCHOP=125u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE({VDD} 0 50n 20n 20n 62.35u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 62.55u 20n 20n 62.35u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 SIN({VCM} 100u 8)
+VSIGN SIGN 0 SIN({VCM} 100u 8 0 0 180)
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+XPRP INP VCM_REF eeg_pseudo_res
+XPRN INN VCM_REF eeg_pseudo_res
+VRST RST 0 PULSE({VDD} 0 5m 100n 100n 1 1)
+BRSTN NRST 0 V={VDD}-v(RST)
+XRSTP INP VCM_REF RST NRST VDD18 0 eeg_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD18 0 eeg_tg_lowq
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_full2
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+* settled-state guide (from the 3 s settle run, TT)
+.control
+set noaskquit
+* limit saved vectors: full-batch save of all nodes needs >10 GB RAM per run
+save time v(OUTP) v(OUTN) i(VDD_SRC)
+tran 100n 200m
+wrdata ../results/diag5.csv time v(OUTP) v(OUTN)
+let idd=-i(VDD_SRC)
+meas tran idd_avg avg idd from=1.4s to=1.536s
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_avg avg vcmout from=1.4s to=1.536s
+quit
+.endc
+.end

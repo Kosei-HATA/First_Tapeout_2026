@@ -1,0 +1,34 @@
+* LVS reference netlist for eeg_dsl (KLayout sky130.lvs deck).
+* Mirrors the eeg_dsl subckt in
+* source/trials/20260902/xschem/eeg_fd_ota_chopped_full2.spice with the
+* deck conventions.  RB1=2Meg (20 seg), CINT=50p (10x16 of 12.5x12.5 um
+* capm: A=25000 um2, P=8000 um).
+*
+* DEVIATION (documented waiver): the schematic ties the bulks of the
+* follower nfets XMF1/XMF2/XMFR to their sources (SAVG/SREF).  The
+* KLayout deck treats the p-substrate as one global net (connect_global
+* (sub, lvs_sub)), so a source-tied bulk is impossible without deep-nwell
+* isolation; the layout connects those bulks to VSS like all other nfets.
+* The reference below reflects the physical layout (bulk = VSS).
+.subckt eeg_dsl GP GN VCM_REF VDD18 VSS
+MMB VBDSL VBDSL VSS VSS sky130_fd_pr__nfet_01v8 L=8u W=2u
+MMPB VBPDSL VBPDSL VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=4u
+MMBB VBPDSL VBDSL VSS VSS sky130_fd_pr__nfet_01v8 L=8u W=1u
+* XMF1/XMF2/XMFR bulks are VSS (global substrate), not SAVG/SREF (see above)
+MMF1 VDD18 GP SAVG VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MMF2 VDD18 GN SAVG VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+* XMT1 and XMT2 (2 x W=0.5) are fully parallel and extract/combine as one
+* W=1 device under combine_devices (same convention as MMDP in core_ref).
+MMT12 SAVG VBDSL VSS VSS sky130_fd_pr__nfet_01v8 L=8u W=1u
+MMFR VDD18 VCM_REF SREF VSS sky130_fd_pr__nfet_01v8 L=2u W=2u
+MMTR SREF VBDSL VSS VSS sky130_fd_pr__nfet_01v8 L=8u W=1u
+MMTL ST VBPDSL VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=8u
+MME1 D1 SAVG ST ST sky130_fd_pr__pfet_01v8 L=2u W=4u
+MME2 VCTL SREF ST ST sky130_fd_pr__pfet_01v8 L=2u W=4u
+MMM1 D1 D1 VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=2u
+MMM2 VCTL D1 VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=2u
+MS1 GP VCTL VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=1u
+MS2 GN VCTL VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=1u
+RRB1 VDD18 VBDSL VSS 2Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=690u
+CCINT VSS VCTL sky130_fd_pr__model__cap_mim C=5e-11 A=2.5e-8 P=8e-3
+.ends eeg_dsl

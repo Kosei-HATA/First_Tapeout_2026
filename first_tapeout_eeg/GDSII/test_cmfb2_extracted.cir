@@ -1,0 +1,14 @@
+* Extracted by KLayout with SKY130 LVS runset on : 04/09/2026 11:52
+
+.SUBCKT eeg_cmfb_amp_dl2_s2 VBN VBP VCM_REF VCM_SENSE VDD18 VSS
+M$1 VDD18 \$12 \$12 VDD18 sky130_fd_pr__pfet_01v8 L=2 W=2 AS=2.04 AD=2.04
++ PS=6.04 PD=6.04
+M$2 VDD18 VBP VBP VDD18 sky130_fd_pr__pfet_01v8 L=4 W=0.5 AS=0.15 AD=0.15
++ PS=1.6 PD=1.6
+M$3 \$4 VCM_REF VBP VSS sky130_fd_pr__nfet_01v8 L=2 W=2 AS=2.04 AD=2.04 PS=6.04
++ PD=6.04
+M$4 VSS VBN \$4 VSS sky130_fd_pr__nfet_01v8 L=4 W=12 AS=7.62 AD=7.62 PS=20.54
++ PD=20.54
+M$6 \$4 VCM_SENSE \$12 VSS sky130_fd_pr__nfet_01v8 L=2 W=2 AS=2.04 AD=2.04
++ PS=6.04 PD=6.04
+.ENDS eeg_cmfb_amp_dl2_s2

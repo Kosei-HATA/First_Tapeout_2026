@@ -1,0 +1,26 @@
+* Extracted by KLayout with SKY130 LVS runset on : 05/09/2026 16:00
+
+.SUBCKT eeg_strongarm CLK INN INP OUTN OUTP VDD18 VSS
+M$1 VDD18 CLK OUTP VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 AS=1.27 AD=1.27
++ PS=5.54 PD=5.54
+M$3 VDD18 CLK \$9 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02
++ PS=4.04 PD=4.04
+M$4 VDD18 CLK OUTN VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 AS=1.27 AD=1.27
++ PS=5.54 PD=5.54
+M$6 VDD18 OUTP OUTN VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=0.275 AD=0.275
++ PS=2.6 PD=2.6
+M$8 VDD18 OUTN OUTP VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=0.275 AD=0.275
++ PS=2.6 PD=2.6
+M$10 VDD18 CLK \$10 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02
++ PS=4.04 PD=4.04
+M$11 \$10 OUTN OUTP VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 AS=0.275 AD=0.275
++ PS=2.6 PD=2.6
+M$13 \$4 INP \$9 VSS sky130_fd_pr__nfet_01v8 L=0.5 W=4 AS=1.77 AD=1.77 PS=8.54
++ PD=8.54
+M$17 \$9 OUTP OUTN VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 AS=0.275 AD=0.275
++ PS=2.6 PD=2.6
+M$19 \$4 INN \$10 VSS sky130_fd_pr__nfet_01v8 L=0.5 W=4 AS=1.77 AD=1.77 PS=8.54
++ PD=8.54
+M$23 VSS CLK \$4 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=8 AS=3.54 AD=3.54
++ PS=13.54 PD=13.54
+.ENDS eeg_strongarm

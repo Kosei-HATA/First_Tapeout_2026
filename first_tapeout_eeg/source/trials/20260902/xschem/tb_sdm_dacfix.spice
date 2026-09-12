@@ -7,6 +7,7 @@
 .include eeg_fd_ota_full2_nc.spice
 .include eeg_strongarm.spice
 .include eeg_sdm2.spice
+.include eeg_pseudo_res.spice
 .include eeg_sdm1ct.spice
 .param VDD=1.80 VCM=0.9 TCLK=62.5u
 VDD_SRC VDD18 0 {VDD}

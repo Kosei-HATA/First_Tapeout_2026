@@ -117,8 +117,8 @@ VOS1 (0 V, DVOS=0) is a direct wire in layout.
 ## Files
 
 - `gen_full2.py` — generator.  Bare `gen_full2.py` builds the full chip to
-  `GDSII/eeg_fd_ota_chopped_full2.gds` (~1865 x 1433 um, dominated by the
-  1 nF CFILT MIM array in the bias generator).  Sub-commands build
+  `GDSII/eeg_fd_ota_chopped_full2.gds` (1415.5 x 873.5 um; 2026-09-11 bias
+  rebuild — was 1865 x 1433 when CFILT was 1 nF).  Sub-commands build
   standalone test GDS for each block: `tg`, `chopper`, `cmfb`, `cmfb2`,
   `bias`, `stage2`, `mim` (-> `GDSII/test_<name>.gds`).
 - `<block>_ref.spice` / `full2_ref.spice` — LVS references.  Conventions
@@ -156,6 +156,48 @@ the 15 chip pins.  Cell names must equal subckt names — they do.
 - Standalone block tests (`test_*.gds` vs their refs, flat mode) all
   match as well.
 
+## 2026-09-11 — bias generator redesign (RSTART/RFILT/CFILT)
+
+Canonical netlist `source/trials/20260902/xschem/eeg_bias_gen.spice`:
+RSTART 20Meg resistor -> `eeg_pseudo_res`, RFILT 1Meg -> 10Meg (100
+segs), CFILT 1nF -> 100pF (5x25 of 20x20 = 125 units, 110 x 560 um —
+portrait orientation keeps the block east edge at the array, not the
+trunks).  New bias_gen bbox: **114.4 x 813.5 um** (was ~562 x 1364).
+`build_pseudo_res` moved to `klayout_common.py` and is IDEMPOTENT
+(returns the existing cell, anchors from its A/B labels, when the layout
+already has one — gen_pga reads full2's GDS, which now contains one
+inside eeg_bias_gen; gen_sdm builds bias and the SDM's own pseudo-Rs in
+one layout).  All re-verified DRC-clean + hier-LVS-matching
+(test_bias.gds vs bias_ref.spice, then full2 vs full2_ref.spice).
+
+New bias_gen structure: FET row + buses unchanged (VBN 8.0 / VBP 9.2 /
+SNS2 10.4 / VSS -3.5 / VDD 13.5 / VBNF 6.8, m3); RFILT bank 5 rows x 20
+at (20,-206.88) (start pad -> VBN via an m2 strap crossing the bank —
+m2 over res cells is free; end pad (58,-11.73) -> VBNF); XRSTART pseudo
+at (88,17.5) with A<-VDD / B<-VBN m2 links at x=96/90; CFILT at
+(0,-790).
+
+Bias-gen lessons (found the hard way, 2026-09-11):
+- The CFILT top-plate tap: the old m3 stub (to y+1.0) + east link worked
+  when xm=280 was east of the VBN bus end; with the 5x25 array xm=55
+  sits UNDER the VBN bus (y 7.7..8.3) and the stub shorted VBNF to VBN.
+  Now: via3 straight onto the VBNF bus, m3 pad 6.5..7.3 (0.4 clear of
+  VBN, encloses the via 0.2 — via3.4 needs 0.06).
+- The pseudo cell's west edge carries the M-link vertical (m3, local y
+  -3.1..3.7): the parents' VDD18 m3 riser (abs x 984.2..984.8 = local
+  84.2..84.8, y13.5..70) ran straight through a cell placed at x=85 —
+  M and B(=VBN) merged into VDD18.  Only visible at full2 level: the
+  standalone test_bias LVS passes either way.  Cell now at x=88.
+- The CFILT top-plate m4 column (3.2 wide, rises at abs 953.4..956.6
+  from y-229 to 7.7) vs full2's VSS trunk (m4, y-12): a crossing is an
+  m4-over-m4 SHORT, and even a <3 um gap notches under m4.5ab's 1.5 um
+  closing.  The trunk now ends at 950.0 (bias VSS riser at 948.5); the
+  same numbers in ota_nc, where the end must still reach x=950 because
+  gen_afe_top taps it through the SDM at SDM-local (1300,1388).
+- The VBNF riser (bias VBNF -> VBN trunk) moved from x=1070 to 986
+  (east of the VDD18 trunk end 984.8 — the riser may not cross that m4
+  trunk); the VBN trunk now ends at 986.3.
+
 ## Routing hazards found the hard way (full2 top level)
 
 - Same-layer crossings of different nets are not DRC errors — only LVS
@@ -178,16 +220,18 @@ the 15 chip pins.  Cell names must equal subckt names — they do.
 
 # `eeg_afe_pga` (chopped PGA front-end)
 
-`gen_pga.py` builds `GDSII/eeg_afe_pga.gds` (~2224 x 1704 um), hier LVS
+`gen_pga.py` builds `GDSII/eeg_afe_pga.gds` (1842.5 x 1144.3 um after the
+2026-09-11 bias rebuild — was 2224 x 1704 when CFILT was 1 nF), hier LVS
 vs `pga_ref.spice` (`run_lvs.sh ... hier`).  **DRC clean + LVS match
-(2026-09-05)**, all 11 circuits.  The verified `eeg_fd_ota_chopped_full2`
-GDS is instanced as a block; the input network west of it: CIN 32p MIM
-arrays (8x5 of 20x20 capm), the cross-coupled feedback bank (unit
-20x12.5 = 0.5 pF; CFB16 = 3 units, CFB8 = 7 units), 8 select/reset
-`eeg_tg_lowq` TGs (P row y=45, N row y=24), 2 `eeg_pseudo_res`, 4
-`eeg_inv` (the schematic's behavioral complement sources become real
-inverters: NS8/NS16/NS32/NRST).  S64 is unused in the schematic (x64 =
-all switches open): a labeled m3 stub provides the pin for LVS.
+(2026-09-05, re-verified 2026-09-11)**, all 11 circuits.  The verified
+`eeg_fd_ota_chopped_full2` GDS is instanced as a block; the input network
+west of it: CIN 32p MIM arrays (8x5 of 20x20 capm), the cross-coupled
+feedback bank (unit 20x12.5 = 0.5 pF; CFB16 = 3 units, CFB8 = 7 units),
+8 select/reset `eeg_tg_lowq` TGs (P row y=45, N row y=24), 2
+`eeg_pseudo_res`, 4 `eeg_inv` (the schematic's behavioral complement
+sources become real inverters: NS8/NS16/NS32/NRST).  S64 is unused in the
+schematic (x64 = all switches open): a labeled m3 stub provides the pin
+for LVS.
 
 Layout rules learned here (now encoded in gen_pga.py):
 - **Huge-metal closing rule (m3.3ab/m4.5ab)**: the deck computes
@@ -206,9 +250,13 @@ Layout rules learned here (now encoded in gen_pga.py):
 - The west-block VSS rail must not cross full2's VDD18 m3 rise at
   x=-405: VSS stops at -406.5 and closes the gap on m2.
 - Outputs loop: stage2 m3 buses -> east at y=-1/0.2 (under everything)
-  -> up at x=1073/1078 (east of the bias VBNF m4 column at 1070) ->
+  -> up at x=1073/1078 (east of the bias VBNF m4 column at 986) ->
   west lanes at y=88/90 (above all full2 trunks) -> via3 down into the
-  bank bottom-plate buses.
+  bank bottom-plate buses.  2026-09-11: the bias CFILT top-plate m4
+  column (100p array, 5x25, xm=55) rises at x 953.4..956.6 through the
+  lanes' path — both lanes duck under it on m3 (via3s at x=949.9/960.1;
+  the m4 pads and lane ends keep a 3.2 um gap to the column, outside
+  m4.5ab's 1.5 um closing radius).
 
 ## Standalone cells
 
@@ -222,9 +270,38 @@ not VDD).
 
 `gen_sdm.py` (no argument) builds the full assembly:
 `GDSII/eeg_sdm1ct.gds` vs `sdm_ref.spice`, DRC-clean + LVS-matching
-(hierarchical, 2026-09-05).  `gen_sdm.py ota_nc` builds the
+(hierarchical; 2026-09-05, re-verified 2026-09-11 after the RF swap and
+again after the bias-gen redesign).  `gen_sdm.py ota_nc` builds the
 `eeg_fd_ota_full2_nc` sub-block alone: `GDSII/test_ota_nc.gds` vs
-`ota_nc_ref.spice`, also DRC-clean + LVS-matching.
+`ota_nc_ref.spice`, also DRC-clean + LVS-matching (rebuilt 2026-09-11
+with the new bias: 1308.7 x 868.5 um).
+
+**2026-09-11 — RF=100Meg lossy-integrator resistors replaced by
+pseudo-resistors** (schematic-verified equal-or-better; RF version
+archived as `source/trials/20260902/xschem/eeg_sdm1ct_rf_archive.spice`).
+The two 1000-segment serpentines (x 44..246, y 42..1145) are gone;
+XRFP (A=OINTN, B=INP) at (70,1105) and XRFN (A=OINTP, B=INN) at
+(170,1070) instance the already-verified `eeg_pseudo_res` (its guard
+rings tie to the A/B buses internally — floating nwells follow their
+sources, so NO supply wiring is needed).  The strip y ~80..1060,
+x 45..265 is now open floor.  CQP/CQN 1pF unchanged.
+2026-09-11 (bias rebuild): the OTA's bias CFILT shrank (1nF -> 100p,
+portrait 5x25), moving the OTA's east edge in by 450 um and its south
+edge out of the floorplan; SDM bbox now **1338.5 x 1397.85 um** (x
+21.7..1360.2, y 80.45..1478.3).
+
+Pseudo-R wiring lessons (encoded in `build_sdm`):
+- A sides rise on **m2** from a via2 on the cell's A bus — m2 crosses
+  the cell's own m3 B bus (and the B-side m3 wires) freely — to via2s
+  on the existing OINTN lane (y1143.5, x=80) / OINTP lane (y1142.5,
+  x=178).  The risers must stop below the m2 CQ-top jog band
+  (y1145.35..1145.65, x 45..196).
+- B sides: m3 west extensions (y 1110.545 / 1075.545) to via3s on the
+  INP (x=30) / INN (x=27) m4 verticals; the band is empty after the RF
+  removal (only m2 crossings: QP/QN verticals, VSS south leg — free).
+- The INP/INN m4 verticals were trimmed to start at y 117.9 / 197.9
+  (their lowest remaining taps); the old RF taps at y 78.3/76.5 are
+  gone.
 
 Assembly lessons (encoded in `build_sdm`):
 - The CQN/CQP top-plate (VSS) wiring cannot use a thin m4 bridge between
@@ -265,30 +342,63 @@ Strongarm lessons (encoded in `build_strongarm`):
 
 # `eeg_afe_top` (analog top) — Tranche 4
 
-`gen_afe_top.py` builds `GDSII/eeg_afe_top.gds` (top cell eeg_afe_top):
-eeg_afe_pga at (0,0) + eeg_sdm1ct at (1578.5,-1100), merged with
-`cell_conflict_resolution = SkipNewCell` (all 39 shared cells probed
-geometrically identical between the two block GDS files, labels aside).
-**DRC-clean + hier LVS-matching (2026-09-05)** vs `afe_top_ref.spice`
+`gen_afe_top.py` builds `GDSII/eeg_afe_top.gds` (top cell eeg_afe_top),
+merged with `cell_conflict_resolution = SkipNewCell` (all shared cells
+probed geometrically identical between the two block GDS files, labels
+aside — including `eeg_pseudo_res` and `eeg_bias_gen`, instanced by both
+blocks and built by the same shared builders).
+**DRC-clean + hier LVS-matching** vs `afe_top_ref.spice`
 (composed verbatim from pga_ref/sdm_ref subckts + the eeg_afe_top subckt
 of source/trials/20260902/xschem/eeg_afe_top.spice; RST = VSS via the
-XAFE pin map).  Die: **4152.9 x 1783.2 um** (7.41 mm^2).
+XAFE pin map).
 
-Top-level wiring strategy:
-- The blocks use nothing above m4, so the five inter-block nets
-  (PGA_OUTP/N, VDD18, VCM_REF, VSS+RST) run on **m5** highways (width
-  2.0, pitch >= 3.6, via4 = exactly 0.8x0.8 with m4/m5 enclosure pads).
-  PGA_OUTP rises to a y=4 trunk and drops at x=1858.5 into VINP; PGA_OUTN
-  dives to a y=-6 trunk and drops at x=1850 into VINN — no crossings.
-  Supplies trunk above both blocks: VDD18 y=420, VCM_REF y=426, VSS
-  y=432 (RST riser at x=-445, PGA VSS riser at x=836 west of everything).
-- Every other block pin gets a same-layer tap + label: m4 pins get m4
-  pads/staggered lane extensions with m4L labels; m3 pins get
-  via3 + m4 pad + m4L label.  Unlabeled top geometry over child metal
-  creates the subcircuit port; the label makes the top-level pin.
-- ADC_OUTP/ADC_OUTN (SDM integrator outputs) are internal nets: tapped
-  (so the subcircuit ports exist) but NOT labeled — a label would create
-  extra top-level pins and break the LVS pin match.
+**2026-09-11 (second reflow): STACKED floorplan** — the caravan analog
+user area (wrapper 2928 x 3528 um) is narrower than the side-by-side top
+was wide (3321 um).  Now: PGA at (0,0), SDM ABOVE it (DX=-725, DY = PGA
+top + 12 um gap - SDM bottom, both from measured bboxes), the SDM nested
+inside the PGA's x-span.  Die: **1842.5 x 2575.15 um** (4.75 mm^2; was
+3321.0 x 1410.55 side-by-side, 4152.9 x 1783.2 / 7.41 mm^2 before the
+bias redesign).  Fits the user area with >1000 um width margin and ~950
+um height margin for power rings.  Supply pins (VDD18/VCM_REF/VSS)
+are m5 trunks at the TOP edge; ELP/ELN/PHI*/S8../RST on the PGA west
+edge; CLK16/NCLK16/BIT/NBIT/VP/VN tapped at the SDM's west side.
+
+Stacked routing (all m5, width 2.0, pitch >= 3.6):
+- PGA_OUTP/OUTN are tapped on the PGA's internal m4 lanes y=90 (OUTP, x
+  -455..1078) / y=88 (OUTN, x -465..1073) at x=-450/-460 and run straight
+  UP the west side to the SDM's VINP/VINN stubs (abs x=-449 = SDM-local
+  276).  Nothing crosses the inter-block gap.
+- Supplies: three m5 trunks above the SDM top (T = sdm_top + 8/14/20).
+  Every riser ascends from its block's m4 lane to its trunk; trunk ends
+  are flush with the riser edges and NESTED (VDD18 innermost x-396..451,
+  VCM_REF x459..471, VSS outermost x499..576) so no riser crosses a
+  foreign trunk: a riser to a higher trunk sits outside every lower
+  trunk's x-span on BOTH sides.  PGA risers at x=-395/460/500, SDM
+  risers at local x=1175/1195/1300 (their lanes are the OTA's supply
+  trunks passing through at SDM-local y1470/1474/1388).
+- RST (PGA m3 stub at (-445,-41.6)): short m5 riser to y=-6, then east
+  to the PGA VSS riser at x=500 — the y=-6 run passes under the OUT
+  risers (which start at y=88/90).
+
+Top-level reflow lessons (2026-09-11):
+- **Subcell nets need PARENT CONTACTS, not just labels**: the deck's
+  must-connect check fires for any named-net subnet inside a subcell
+  that has no port to the parent (labels only count at the top level /
+  for pin creation).  Symptom guide: `[must-connect] In cell <block>:
+  Must-connect subnet of <net> does not have any pin` after a block
+  boundary moved = a top-level tap dangling off the trimmed edge.
+- **Supply risers and trunks on one layer form an ordering puzzle**:
+  with all risers ascending from below, trunk x-spans must nest so that
+  a riser to a higher trunk never crosses a lower trunk.  A lane landing
+  BETWEEN trunks needs 5.2 um (2.0 pad + 2x1.6 spacing) in a 4.0 um
+  gap; a lane ABOVE the trunks makes its riser cross the lower trunks
+  (m5 over m5 merge — the first side-by-side reflow attempt shorted all
+  three supplies this way).
+
+General top-level wiring rules:
+- Unlabeled top geometry over child metal creates the subcircuit port;
+  the label makes the top-level pin.  ADC_OUTP/ADC_OUTN (SDM integrator
+  outputs) are internal nets: tapped but NOT labeled.
 - The PGA PHI clock lanes (0.6 wide, 1.0 pitch) cannot take via pads
   (m4.2); each lane is extended east on m4 past all lane ends —
   longest extension = lowest lane — and labeled on the extension.
@@ -299,10 +409,83 @@ Top-level wiring strategy:
 
 ## Remaining tranches
 
-- None — all four tranches built and verified.  Reminder: the SDM's
-  RF=100Meg pseudo-resistor (1000 segs!) is **intentional** (lossy
-  integrator, DC gain 46 dB, pole ~80 Hz) — do NOT shrink/replace
-  without re-simulation; area-reduction candidates are recorded in
+- None — all four tranches built and verified.  2026-09-11 redesigns:
+  the SDM's RF=100Meg serpentines became pseudo-resistors (Tranche 3
+  section), the bias generator's RSTART/RFILT/CFILT shrank (Tranche 2
+  section), and the top was restacked (PGA below SDM) to fit the caravan
+  analog user area — die 4152.9 x 1783.2 (7.41 mm^2) -> 1842.5 x
+  2575.15 (4.75 mm^2).  Open floor: the SDM strip x 45..265, y ~80..1060
+  (SDM-local).  Further area-reduction candidates are recorded in
   `documentation/final_report_draft.md` section 7.
 
 
+
+# Caravan wrapper integration (`user_analog_project_wrapper`) — 2026-09-12
+
+`gen_wrapper.py` reads the pristine test6 caravan analog wrapper
+(`source/trials/20260820/test6/gds/user_analog_project_wrapper.gds`,
+2920 x 3520 um user area), strips the example POR project, and integrates
+the verified `eeg_afe_top` macro.  Output: `GDSII/user_analog_project_wrapper.gds`.
+Pin map, surgery list and wall/thicket details: `caravel_pinmap.md`.
+
+```bash
+scripts/klayout/.venv/bin/python scripts/klayout/gen_wrapper.py
+scripts/klayout/.venv/bin/python scripts/klayout/check_wrapper_nets.py
+scripts/klayout/run_drc.sh GDSII/user_analog_project_wrapper.gds
+scripts/klayout/run_lvs.sh $(pwd)/GDSII/user_analog_project_wrapper.gds \
+    $(pwd)/scripts/klayout/wrapper_ref.spice hier nopurge
+```
+
+Expected: `NETS OK`; DRC `TOTAL VIOLATIONS: 2` (both inherited m4.5ab —
+see below); LVS `Congratulations! Netlists match.`
+
+## Files
+
+- `gen_wrapper.py` — the whole integration, scripted (no hand edits of
+  the template binary): remove the `user_analog_proj_example` instance;
+  union-find net removal (merged-region per layer + via-layer linking,
+  seeds from label positions) for the example's io_out[11/12/15/16] and
+  gpio_analog[3]/[7] wires and the vssd1 distribution (m3 bar y957..981 +
+  m4 verticals + four io_oeb pulldown resistors); place the macro
+  MIRRORED at (2078, 890) — local (x,y) -> (2078-x, 890+y), abs bbox
+  x 999.7..2842.2, y 99.8..2674.95; route all 23 used pins; add 27
+  deck-visible (*/5) labels; prune orphan cells (else the decks reject
+  the GDS for multiple top cells).
+- `check_wrapper_nets.py` — flatten + union-find + position-matched
+  labels: every labeled group must be fully connected and no two groups
+  may merge.  Prints the net<->labels map; ends `NETS OK`.
+- `wrapper_ref.spice` — `afe_top_ref.spice` verbatim + the
+  `user_analog_project_wrapper` subckt: one XAFE (pin map per
+  caravel_pinmap.md) + the six template clamp res_generic_m3 (5x
+  vssa1<->io_clamp_*, 1x io_analog[4]<->io_clamp_high[0]; deck-extracted
+  params R=1.068 W=11 L=0.25, written as `R=` params — a positional value
+  is mis-parsed as a third node for this 2-terminal class).
+
+## Results
+
+- **DRC**: 2 violations, both m4.5ab on the vssa1 bus appendage
+  (x1787/1797, y3097-3099) — present identically in the pristine
+  template's own DRC (19 total: 14 m4.5ab + 3 m1.3ab + 2 m3.3ab;
+  baseline report `GDSII/user_analog_project_wrapper_template_baseline.drc.txt`).
+  The integration introduces zero new violations.
+- **LVS** (hier, nopurge): netlists match; all 17 circuits pair `Match`
+  in the lvsdb xref.  Extracted: `GDSII/user_analog_project_wrapper_extracted.cir`.
+- **`nopurge` is required** (run_lvs.sh 4th arg): NCLK16 and S64 are
+  unused inside eeg_sdm1ct's / eeg_afe_pga's bodies, so `purge` cascades
+  upwards (child pin purged -> eeg_afe_top port floats -> wrapper
+  io_in[9]/io_in[13] nets dropped) while the ref is never purged.
+  Purge only deletes floating nets — the compare is unaffected.
+
+## Routing conventions (details in caravel_pinmap.md)
+
+- Long flights on m5 (2.0 wide), GPIO stub approaches on m4 (cross m5
+  freely), stacks m4pad+via4+m5pad / m3pad+via3+m4pad onto the 0.56-wide
+  m3 stubs, analog pads reached by m5 runs + via4/via3 stacks, power via
+  m5 risers + 4x4 m4 pads onto the vdda1/vssa1 m4 buses.
+- Two walls: the SDM west-side verticals (x2752.7..2781.3, m3+m4 — cross
+  on m5 only) and the ELP/ELN m5 runs (x2827..2835, full height — cross
+  on m4 only).  The PGA's mirrored m4 thicket (x..2543.3, y889.9..978.59)
+  walls off the PHI-2 lane ends except in4's corridor and the band at
+  lane height; in5/6/7 fan out inside that band.
+- m5 nubs fail m5.1 (euclidian 1.6): every pad/run junction is
+  edge-aligned, and dives overshoot their via4s by 0.71 for enclosure.

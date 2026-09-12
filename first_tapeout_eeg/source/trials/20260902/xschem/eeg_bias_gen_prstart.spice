@@ -1,0 +1,14 @@
+* Pseudo-resistor variant of the bias generator: RSTART (20Meg kickstart)
+* replaced by eeg_pseudo_res. NOTE: unlike the ADC integrator RF (DC drop ~0),
+* RSTART sees a permanent ~1.17 V (VDD18 - VBN). The pseudo-R's large-signal
+* conduction may disturb the gm point. This variant exists to quantify that.
+.subckt eeg_bias_gen_prstart VBN VBNF VBP VDD18 VSS params: RSET=20k RFILT=10Meg CFILT=100p
+XMP1 VBN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 nf=2
+XMN1 VBN VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=10 nf=2
+XMP2 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 nf=2
+XMN2 VBP VBN SNS2 VSS sky130_fd_pr__nfet_01v8 L=4 W=40 nf=8
+RSET SNS2 VSS {RSET}
+XRSTART VDD18 VBN eeg_pseudo_res
+RF VBN VBNF {RFILT}
+CF VBNF VSS {CFILT}
+.ends

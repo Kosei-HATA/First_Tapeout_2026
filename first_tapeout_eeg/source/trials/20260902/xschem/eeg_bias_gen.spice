@@ -1,7 +1,7 @@
 * Constant-gm (beta-multiplier) bias generator with resistor kick-start.
 * VBN: NMOS mirror gate (tails). VBP: PMOS mirror gate (loads).
 * Device L=4 matches the OTA core so mirror ratios hold over PVT.
-.subckt eeg_bias_gen VBN VBNF VBP VDD18 VSS params: RSET=20k RFILT=1Meg CFILT=1n
+.subckt eeg_bias_gen VBN VBNF VBP VDD18 VSS params: RSET=20k RFILT=10Meg CFILT=100p
 * branch 1: VDD -> MP1 -> VBN -> MN1(diode) -> VSS
 XMP1 VBN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 nf=2
 XMN1 VBN VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=10 nf=2
@@ -10,7 +10,10 @@ XMP2 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 nf=2
 XMN2 VBP VBN SNS2 VSS sky130_fd_pr__nfet_01v8 L=4 W=40 nf=8
 RSET SNS2 VSS {RSET}
 * startup: weak leak into VBN kicks the loop out of the zero-current state
-RSTART VDD18 VBN 20Meg
+* 2026-09-11: RSTART 20Meg -> eeg_pseudo_res (verified: startup OK at TT/SS/FF,
+* VBN within 3 mV of resistor version; resistor version in eeg_bias_gen_r_archive.spice).
+* Same day: RFILT 1Meg->10Meg, CFILT 1n->100p (noise-neutral, verified by AC noise cmp).
+XRSTART VDD18 VBN eeg_pseudo_res
 * output filter: kill bias noise at the 8 kHz chop band
 RF VBN VBNF {RFILT}
 CF VBNF VSS {CFILT}

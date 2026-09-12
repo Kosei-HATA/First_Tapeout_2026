@@ -56,9 +56,9 @@ MMN1 VBN VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4u W=10u
 MMP2 VBP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4u W=10u
 MMN2 VBP VBN SNS2 VSS sky130_fd_pr__nfet_01v8 L=4u W=40u
 RRSET SNS2 VSS VSS 25k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=8.62u
-RRSTART VDD18 VBN VSS 20Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=6900u
-RRF VBN VBNF VSS 1Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=345u
-CCF VBNF VSS sky130_fd_pr__model__cap_mim C=1e-9 A=5e-7 P=0.1
+XRSTART VDD18 VBN eeg_pseudo_res
+RRF VBN VBNF VSS 10Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=3450u
+CCF VBNF VSS sky130_fd_pr__model__cap_mim C=1e-10 A=5e-8 P=1e-2
 .ends eeg_bias_gen
 
 .subckt eeg_fd_ota_core_soft INP INN VBP VBN OUTP OUTN VCM_SENSE VCM_REF VDD18 VSS
@@ -162,9 +162,9 @@ RRINP VINP INP VSS 500k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=172.5u
 RRINN VINN INN VSS 500k sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=172.5u
 XOTA INP INN VCM_REF OINTP OINTN VDD18 VSS eeg_fd_ota_full2_nc
 CCIP OINTN INP sky130_fd_pr__model__cap_mim C=2e-11 A=1e-8 P=2e-3
-RRFP OINTN INP VSS 100Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=34500u
+XRFP OINTN INP eeg_pseudo_res
 CCIN OINTP INN sky130_fd_pr__model__cap_mim C=2e-11 A=1e-8 P=2e-3
-RRFN OINTP INN VSS 100Meg sky130_fd_pr__res_xhigh_po_0p69 W=0.69u L=34500u
+XRFN OINTP INN eeg_pseudo_res
 * NRZ DAC (BIT1=NBIT0=BIT wires; NBIT1=BIT0=BITB via XINV)
 XREFP1 VDACP VP BIT BITB VDD18 VSS eeg_tg_lowq
 XREFP0 VDACP VN BITB BIT VDD18 VSS eeg_tg_lowq

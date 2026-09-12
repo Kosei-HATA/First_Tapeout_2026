@@ -417,3 +417,98 @@ class Layouter:
         print("wrote", out_gds)
         print("top bbox (um):", [v / 1000.0 for v in
                                  (bb.left, bb.bottom, bb.right, bb.top)])
+
+
+def fet_anchors(lay, cell, x, y):
+    """Absolute anchors of a placed (unmirrored) FET cell."""
+    diff, strips, ptop, pbot = lay.scan_m1(cell)
+    return {
+        "strips": [(sx + x, (y0 + y1) / 2 + y) for sx, y0, y1 in strips],
+        "g": [(px + x, (y0 + y1) / 2 + y) for px, y0, y1 in pbot],
+        "gt": [(px + x, (y0 + y1) / 2 + y) for px, y0, y1 in ptop],
+    }
+
+
+# ----------------------------------------------------------------------------
+# eeg_pseudo_res: A B
+#   XMP1 M M A A pfet L=4 W=1 nf=1 ; XMP2 M M B B pfet L=4 W=1 nf=1
+# Two diode-connected pfets sharing the floating mid node M.  Each device
+# sits in its OWN nwell (bulk = its source), so the guard rings tie to the
+# A/B buses, not to VDD.  Gates+drains (M) strap down/up to an M link that
+# joins the M bus at the left end; sources strap up to A/B.
+# ----------------------------------------------------------------------------
+def build_pseudo_res(lay):
+    """Build (or fetch) the eeg_pseudo_res cell + its A/B bus anchors.
+
+    Idempotent: if the cell already exists in the layout (built earlier in
+    this run, or read in from a block GDS — e.g. gen_pga reads full2, which
+    contains one inside eeg_bias_gen), returns the existing cell with
+    anchors taken from its A/B labels.  This keeps one definition per
+    layout, which the SkipNewCell GDS-merge identity probe relies on."""
+    cached = getattr(lay, "_pseudo_res_cache", None)
+    if cached is not None:
+        return cached
+    c = lay.ly.cell("eeg_pseudo_res")
+    if c is not None:
+        anchors = {}
+        for s in c.shapes(lay.layer(L_M3L)).each():
+            if s.is_text() and s.text_string in ("A", "B"):
+                t = s.text_trans
+                anchors[s.text_string] = (t.disp.x / 1000.0, t.disp.y / 1000.0)
+        lay._pseudo_res_cache = (c, anchors)
+        return c, anchors
+    mp1 = lay.make_pfet("pr_p1", 4.0, 1.0, 1)
+    mp2 = lay.make_pfet("pr_p2", 4.0, 1.0, 1)
+    c = lay.ly.create_cell("eeg_pseudo_res")
+
+    b1 = mp1.bbox()
+    w1 = b1.right / 1000.0
+    x2 = w1 + 3.0                      # separate nwells: keep rings apart
+    lay.place(mp1, 0.0, 0.0, into=c)
+    lay.place(mp2, x2, 0.0, into=c)
+    g1 = fet_anchors(lay, mp1, 0.0, 0.0)
+    g2 = fet_anchors(lay, mp2, x2, 0.0)
+
+    b2 = mp2.bbox()
+    top = max(b1.top, b2.top) / 1000.0
+    bot = min(b1.bottom, b2.bottom) / 1000.0
+    right = (x2 * 1000 + b2.right) / 1000.0
+
+    Y_M = bot - 1.2
+    Y_ML, Y_A, Y_B = top + 1.2, top + 2.4, top + 3.6
+    XL, XR = -1.0, right + 1.0
+    for y in (Y_M, Y_ML, Y_A, Y_B):
+        lay.bus_m3(XL, XR, y, cell=c)
+
+    # gates (bottom pads) -> M bus, with m1 offset to a clear via column
+    def gate_down(g, x_via):
+        x_pad, y_pad = g["g"][0]
+        lay.box(L_M1, min(x_pad, x_via) - 0.17, y_pad - 0.17,
+                max(x_pad, x_via) + 0.17, y_pad + 0.17, c)
+        lay.via1(x_via, y_pad, c)
+        lay.box(L_M2, x_via - 0.19, Y_M - 0.15, x_via + 0.19, y_pad + 0.17, c)
+        lay.via2(x_via, Y_M, c)
+
+    gate_down(g1, g1["g"][0][0] + 0.6)
+    gate_down(g2, g2["g"][0][0] + 0.6)
+
+    # drains -> M link (up), sources -> A/B (up; m2 crosses lower m3 buses)
+    lay.strap_up(*g1["strips"][0], Y_ML, c)
+    lay.strap_up(*g1["strips"][1], Y_A, c)
+    lay.strap_up(*g2["strips"][0], Y_ML, c)
+    lay.strap_up(*g2["strips"][1], Y_B, c)
+
+    # M link joins the M bus at the left end
+    lay.box(L_M3, XL, Y_M - 0.3, XL + 0.6, Y_ML + 0.3, c)
+
+    # guard rings: mp1 -> A, mp2 -> B (floating nwells follow their source)
+    lay.tie_ring(mp1, kdb.Trans(0, False, 0, 0), "bottom", Y_A,
+                 (g1["strips"][1][0],), into=c)
+    lay.tie_ring(mp2, kdb.Trans(0, False, u(x2), 0), "bottom", Y_B,
+                 (g2["strips"][1][0],), into=c)
+
+    lay.label(L_M3L, "A", XR - 0.5, Y_A, c)
+    lay.label(L_M3L, "B", XR - 0.5, Y_B, c)
+    anchors = {"A": (XR - 0.5, Y_A), "B": (XR - 0.5, Y_B)}
+    lay._pseudo_res_cache = (c, anchors)
+    return c, anchors

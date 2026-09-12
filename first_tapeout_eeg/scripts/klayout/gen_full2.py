@@ -414,7 +414,9 @@ def build_dsl(lay):
 # eeg_bias_gen: VBN VBNF VBP VDD18 VSS
 #   XMP1 VBN VBP VDD18 pfet L=4 W=10 nf=2 ; XMN1 VBN VBN VSS nfet W=10 nf=2 (diode)
 #   XMP2 VBP VBP VDD18 pfet W=10 nf=2 (diode) ; XMN2 VBP VBN SNS2 VSS nfet W=40 nf=8
-#   RSET SNS2 VSS 25k ; RSTART VDD18 VBN 20Meg ; RF VBN VBNF 1Meg ; CF VBNF VSS 1n
+#   RSET SNS2 VSS 25k ; RSTART VDD18 VBN eeg_pseudo_res ; RF VBN VBNF 10Meg ;
+#   CF VBNF VSS 100p      (RSTART/RFILT/CFILT changed 2026-09-11, see canonical
+#   source/trials/20260902/xschem/eeg_bias_gen.spice)
 # ----------------------------------------------------------------------------
 def build_bias(lay):
     mp1 = lay.make_pfet("bg_mp1", 4.0, 5.0, 2)
@@ -441,14 +443,14 @@ def build_bias(lay):
          "mp2": fet_anchors(lay, mp2, XMP2, 0.0)}
 
     # buses (m3): VBN 8.0, VBP 9.2, SNS2 10.4 above; VSS -3.5 below; VDD 13.5
-    # top.  VBN reaches the RSTART end strap (x=160), VDD its start (x=82).
+    # top.  VBN reaches the XRSTART B link (x=90), VDD its A link (x=96).
     Y_VBN, Y_VBP, Y_SNS2, Y_VSS, Y_VDD, Y_VBNF = 8.0, 9.2, 10.4, -3.5, 13.5, 6.8
     XBUS = XR4 + 1.0
-    lay.bus_m3(-1.0, 162.0, Y_VBN, cell=c)
+    lay.bus_m3(-1.0, 90.5, Y_VBN, cell=c)
     lay.bus_m3(-1.0, XBUS, Y_VBP, cell=c)
     lay.bus_m3(-1.0, XBUS, Y_SNS2, cell=c)
     lay.bus_m3(-2.3, XBUS, Y_VSS, cell=c)
-    lay.bus_m3(-1.0, 84.5, Y_VDD, cell=c)
+    lay.bus_m3(-1.0, 96.5, Y_VDD, cell=c)
     lay.bus_m3(20.0, XBUS, Y_VBNF, cell=c)
 
     # mn1 diode: gate bar + G-D short to middle strip, drain -> VBN; sources -> VSS
@@ -520,39 +522,57 @@ def build_bias(lay):
             Y_VSS + 0.15, c)
     lay.via2(RSET_X - 3.0, Y_VSS, c)
 
-    # RFILT: 10 segments at (20..38, -30); a=VBN side, b=VBNF side
-    (ra, _), (rb, _) = lay.res_bank(c, 20.0, -30.0, 10, seg100)
-    lay.strap_up(ra, -30.0 + 18.27, Y_VBN, c)
-    lay.strap_up(rb, -30.0 + 18.27, Y_VBNF, c)
+    # RFILT: 100 segments (10 Meg), 5 rows x 20 anchored (20, -206.88) so the
+    # top row sits at the old y=-30: start pad (20, -188.61) -> VBN (the m2
+    # strap crosses the bank — m2 over the res cells is free, same as the old
+    # RSTART a-strap), end pad (58, -11.73) -> VBNF.
+    rf_a, rf_b = lay.res_bank(c, 20.0, -206.88, 100, seg100, ncols=20)
+    lay.strap_up(rf_a[0], rf_a[1], Y_VBN, c)
+    lay.strap_up(rf_b[0], rf_b[1], Y_VBNF, c)
 
-    # RSTART: 200 segments, 5 rows x 40, anchored (82, -207): start pad at
-    # (82, -188.7) -> VDD18, end pad at (160, -11.85) -> VBN (distinct x!)
-    sa, sb = lay.res_bank(c, 82.0, -207.0, 200, seg100, ncols=40)
-    lay.strap_up(sa[0], sa[1], Y_VDD, c)
-    lay.strap_up(sb[0], sb[1], Y_VBN, c)
+    # RSTART: 20Meg resistor -> eeg_pseudo_res (2026-09-11, startup verified
+    # in simulation).  A=VDD18, B=VBN; the guard rings tie to the A/B buses
+    # internally (floating nwells — NO supply wiring).  Placed east of the
+    # FET row, high enough that the cell's M-link vertical (west edge, local
+    # y -3.085..3.745) clears the VDD bus top (13.8) by >0.3.  Links rise on
+    # m2 from the VDD/VBN bus ends to the A/B buses, in columns clear of the
+    # cell's own m2 (gate downs at local x 3.43..3.81 / 13.39..13.77, source
+    # straps at 0.32..0.7 / 5.34..5.72 / 10.28..10.66 / 15.3..15.68).
+    # WEST EDGE MUST STAY EAST OF x=87: the parents' VDD18 m3 riser runs at
+    # abs x 984.2..984.8 (bias-local 84.2..84.8) straight through y13.5..70 —
+    # a cell at x=85 puts its M-link/B bus right under it (m3 over m3 merge:
+    # M/VBN shorted to VDD18).
+    pr, pr_a = build_pseudo_res(lay)
+    lay.place(pr, 88.0, 17.5, into=c)            # XRSTART
+    lay.join_m3_m2(96.0, Y_VDD, 17.5 + pr_a["A"][1], c)   # A <- VDD18
+    lay.join_m3_m2(90.0, Y_VBN, 17.5 + pr_a["B"][1], c)   # B <- VBN
 
-    # --- CFILT: 1 nF MIM array (25x50 of 20x20) below everything
-    bot, top, area, perim = lay.mim_array(c, 0.0, -1350.0, 25, 50)
+    # --- CFILT: 100 pF MIM array (5x25 of 20x20, 125 units) below everything
+    bot, top, area, perim = lay.mim_array(c, 0.0, -790.0, 5, 25)
     # bottom plate -> VSS: via2s on the m3 tab, then m2 up to the VSS bus
     # (an m3 column would trip m3.3ab where it meets the huge bottom sheet)
-    for yy in (-1349.8, -1349.1):
+    for yy in (-789.8, -789.1):
         lay.via2(-2.0, yy, c)
-    lay.box(L_M2, -2.19, -1350.0, -1.81, Y_VSS + 0.15, c)
+    lay.box(L_M2, -2.19, -790.0, -1.81, Y_VSS + 0.15, c)
     lay.via2(-2.0, Y_VSS, c)
     # top plate tab (m4, at array center xm) -> 3.2-wide m4 column up ->
-    # via3 -> m3 stub onto the extended VBNF bus
+    # via3 straight onto the VBNF bus: the m3 pad (6.5..7.3) merges the bus
+    # and encloses the via by 0.2 on every side, while staying 0.4 clear of
+    # the VBN bus bottom (7.7).  (The old stub-to-7.8 + east link worked
+    # when xm=280 was east of the VBN bus end; at xm=55 it would overlap
+    # the VBN bus and short VBNF to VBN.)  The m4 column crosses the RFILT
+    # bank and the buses — m4 is free over all of them.
     xm = top[0]
     lay.box(L_M4, xm - 1.6, top[1], xm + 1.6, Y_VBNF + 0.9, c)
-    lay.via3(xm, Y_VBNF + 0.7, c)
-    lay.box(L_M3, xm - 0.3, Y_VBNF - 0.3, xm + 0.3, Y_VBNF + 1.0, c)
-    lay.box(L_M3, 20.0, Y_VBNF - 0.3, xm + 0.3, Y_VBNF + 0.3, c)
+    lay.via3(xm, Y_VBNF + 0.2, c)
+    lay.box(L_M3, xm - 0.3, Y_VBNF - 0.3, xm + 0.3, Y_VBNF + 0.5, c)
 
-    for net, xy in (("VBN", (162.0, Y_VBN)), ("VBP", (XBUS, Y_VBP)),
+    for net, xy in (("VBN", (87.0, Y_VBN)), ("VBP", (XBUS, Y_VBP)),
                     ("VDD18", (84.5, Y_VDD)), ("VSS", (XBUS, Y_VSS)),
                     ("VBNF", (XBUS, Y_VBNF))):
         lay.label(L_M3L, net, *xy, c)
 
-    anch = {"VBN": (162.0, Y_VBN), "VBP": (XBUS, Y_VBP), "VDD18": (84.5, Y_VDD),
+    anch = {"VBN": (87.0, Y_VBN), "VBP": (XBUS, Y_VBP), "VDD18": (84.5, Y_VDD),
             "VSS": (XBUS, Y_VSS), "VBNF": (XBUS, Y_VBNF)}
     return c, anch
 
@@ -823,20 +843,26 @@ def build_top(lay):
     lay.label(L_M4L, "VDD18", 400.0, 70.0, top)
 
     # ---- VSS trunk (m4 y=-12) --------------------------------------------
-    h4(-12.0, -400.3, XBUS_BG)
+    # East end stops at 950.0: >=3.0 clear of the CFILT top-plate m4 column
+    # (abs 953.4..956.6, rising from the 100p array) — a crossing would
+    # short VSS to VBNF (m4 over m4), and even a <3 um gap would notch
+    # under m4.5ab's 1.5 um closing.  The bias VSS tap riser moves west to
+    # 948.5 accordingly.  (ota_nc keeps the same numbers: gen_afe_top taps
+    # this trunk through the SDM at SDM-local (1300,1388) = here (950,-12).)
+    h4(-12.0, -400.3, 950.0)
     pad3(-400.0, -4.6); via3(-400.0, -4.6); v4m(-400.0, -12.15, -4.6)
     pad3(332.0, -4.6); via3(332.0, -4.6); v4m(332.0, -12.15, -4.6)
     pad3(0.0, -6.1); via3(0.0, -6.1); v4m(0.0, -12.15, -6.1)
     pad3(162.5, 38.3); via3(162.5, 38.3); v4m(162.5, -12.15, 38.3)
     pad3(712.5, 38.3); via3(712.5, 38.3); v4m(712.5, -12.15, 38.3)
     pad3(XF2, -30.9); via3(XF2, -30.9); v4m(XF2, -30.9, -11.85)
-    pad3(XBUS_BG, -3.5); via3(XBUS_BG, -3.5); v4m(XBUS_BG, -12.15, -3.5)
+    pad3(948.5, -3.5); via3(948.5, -3.5); v4m(948.5, -12.15, -3.5)
     lay.label(L_M4L, "VSS", 400.0, -12.0, top)
 
     # ---- VBN trunk (m4 y=72) ----------------------------------------------
     # CMFB VBN/VCM_REF drops jog out from under the blocks' VDD/VBP buses
     # (abs y 71.0/72.2): an m3 drop through them would merge VBN->VDD/VBP.
-    h4(72.0, 147.8, 1070.3)
+    h4(72.0, 147.8, 986.3)
     # core VBN (0,-14.365 m1): full stack up, east at y-17, up at x=460
     lay.box(L_M1, -0.3, -14.665, 0.3, -14.065, top)
     lay.via1(0.0, -14.365, top)
@@ -850,9 +876,12 @@ def build_top(lay):
     v3m(460.0, 37.0, 72.3); via3(460.0, 72.0)
     h3(39.5, 147.5, 149.8); v3m(147.8, 39.5, 72.3); via3(147.8, 72.0)
     h3(39.5, 697.5, 699.8); v3m(697.8, 39.5, 72.3); via3(697.8, 72.0)
-    # bias VBNF (filtered output) -> trunk, crossing VBNRAW bus on m4
+    # bias VBNF (filtered output) -> trunk: m4 hop east of the VDD18 trunk
+    # end (984.8), then the rise (the rise must not cross the VDD18 trunk —
+    # m4 over m4 would merge; the old x=1070 riser dated from the 20Meg
+    # RSTART bank / 162-long VBNRAW bus)
     pad3(XBUS_BG, 6.8); via3(XBUS_BG, 6.8)
-    h4(6.8, XBUS_BG, 1070.0); v4m(1070.0, 6.8, 72.3)
+    h4(6.8, XBUS_BG, 986.0); v4m(986.0, 6.8, 72.3)
 
     # ---- VCM_REF trunk (m4 y=74) -------------------------------------------
     h4(74.0, 3.0, 855.3)

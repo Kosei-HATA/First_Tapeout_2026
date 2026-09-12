@@ -3,6 +3,7 @@
 .lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
 .include eeg_tg_lowq.spice
 .include eeg_fd_ota_core_soft.spice
+.include eeg_pseudo_res.spice
 .include eeg_bias_gen.spice
 .include eeg_fd_ota_chopped_full2.spice
 .include eeg_fd_ota_full2_nc.spice

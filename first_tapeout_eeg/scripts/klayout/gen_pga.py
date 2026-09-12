@@ -39,69 +39,13 @@ def fet_anchors(lay, cell, x, y):
     }
 
 
-# ----------------------------------------------------------------------------
-# eeg_pseudo_res: A B
+# eeg_pseudo_res: A B — built by klayout_common.build_pseudo_res (shared,
+# idempotent builder; identical cell wherever instanced: PGA input network,
+# SDM integrator feedback, bias-gen RSTART).
 #   XMP1 M M A A pfet L=4 W=1 nf=1 ; XMP2 M M B B pfet L=4 W=1 nf=1
 # Two diode-connected pfets sharing the floating mid node M.  Each device
 # sits in its OWN nwell (bulk = its source), so the guard rings tie to the
-# A/B buses, not to VDD.  Gates+drains (M) strap down/up to an M link that
-# joins the M bus at the left end; sources strap up to A/B.
-# ----------------------------------------------------------------------------
-def build_pseudo_res(lay):
-    mp1 = lay.make_pfet("pr_p1", 4.0, 1.0, 1)
-    mp2 = lay.make_pfet("pr_p2", 4.0, 1.0, 1)
-    c = lay.ly.create_cell("eeg_pseudo_res")
-
-    b1 = mp1.bbox()
-    w1 = b1.right / 1000.0
-    x2 = w1 + 3.0                      # separate nwells: keep rings apart
-    lay.place(mp1, 0.0, 0.0, into=c)
-    lay.place(mp2, x2, 0.0, into=c)
-    g1 = fet_anchors(lay, mp1, 0.0, 0.0)
-    g2 = fet_anchors(lay, mp2, x2, 0.0)
-
-    b2 = mp2.bbox()
-    top = max(b1.top, b2.top) / 1000.0
-    bot = min(b1.bottom, b2.bottom) / 1000.0
-    right = (x2 * 1000 + b2.right) / 1000.0
-
-    Y_M = bot - 1.2
-    Y_ML, Y_A, Y_B = top + 1.2, top + 2.4, top + 3.6
-    XL, XR = -1.0, right + 1.0
-    for y in (Y_M, Y_ML, Y_A, Y_B):
-        lay.bus_m3(XL, XR, y, cell=c)
-
-    # gates (bottom pads) -> M bus, with m1 offset to a clear via column
-    def gate_down(g, x_via):
-        x_pad, y_pad = g["g"][0]
-        lay.box(L_M1, min(x_pad, x_via) - 0.17, y_pad - 0.17,
-                max(x_pad, x_via) + 0.17, y_pad + 0.17, c)
-        lay.via1(x_via, y_pad, c)
-        lay.box(L_M2, x_via - 0.19, Y_M - 0.15, x_via + 0.19, y_pad + 0.17, c)
-        lay.via2(x_via, Y_M, c)
-
-    gate_down(g1, g1["g"][0][0] + 0.6)
-    gate_down(g2, g2["g"][0][0] + 0.6)
-
-    # drains -> M link (up), sources -> A/B (up; m2 crosses lower m3 buses)
-    lay.strap_up(*g1["strips"][0], Y_ML, c)
-    lay.strap_up(*g1["strips"][1], Y_A, c)
-    lay.strap_up(*g2["strips"][0], Y_ML, c)
-    lay.strap_up(*g2["strips"][1], Y_B, c)
-
-    # M link joins the M bus at the left end
-    lay.box(L_M3, XL, Y_M - 0.3, XL + 0.6, Y_ML + 0.3, c)
-
-    # guard rings: mp1 -> A, mp2 -> B (floating nwells follow their source)
-    lay.tie_ring(mp1, kdb.Trans(0, False, 0, 0), "bottom", Y_A,
-                 (g1["strips"][1][0],), into=c)
-    lay.tie_ring(mp2, kdb.Trans(0, False, u(x2), 0), "bottom", Y_B,
-                 (g2["strips"][1][0],), into=c)
-
-    lay.label(L_M3L, "A", XR - 0.5, Y_A, c)
-    lay.label(L_M3L, "B", XR - 0.5, Y_B, c)
-    anchors = {"A": (XR - 0.5, Y_A), "B": (XR - 0.5, Y_B)}
-    return c, anchors
+# A/B buses, not to VDD.
 
 
 # ----------------------------------------------------------------------------
@@ -170,8 +114,9 @@ def build_inv(lay):
 #                  select TGs (P row y45, N row y24), pseudo-Rs (y5),
 #                  inverters (y-30), select lanes (m3, y-38..-48)
 #   summing buses: m4, INP y=15 / INN y=16, x -580..-400 (extend XCHIN rails)
-#   outputs: stage2 buses -> east at y=-1/0.2 (under everything) -> up at
-#   x=1073/1078 (east of the VBNF m4 column at 1070) -> west lanes y=88/90
+#   outputs: stage2 buses -> east at y=-1/0.2 (under everything; m3
+#   underpass at x 949.9..960.1 below the bias CFILT m4 column) -> up at
+#   x=1073/1078 (east of the VBNF m4 column at 986) -> west lanes y=88/90
 #   (above all full2 trunks) -> down into the bank bottom-plate buses.
 # Rules honored throughout: m2 crosses m3/m4 freely (no via2 at crossings),
 # m3 crosses m4 freely, m4-over-m4 / m3-over-m3 merges are the fatal ones;
@@ -503,18 +448,27 @@ def build_pga(lay):
     lay.via2(-452.0, PVDD, top)
 
     # ---- outputs: stage2 buses -> east under everything -> up at x=1073/8 ---
-    # (east of the bias VBNF m4 column at 1070) -> west lanes above all
-    # full2 trunks -> down into the bank bottom-plate buses.  The lanes at
-    # y=88/90 end at x=-465/-455: further west they'd cross CFB16P's m4 top
-    # plate (x -477.8..-457.8, y 250.2..292.3 and the P-row plates).
+    # -> west lanes above all full2 trunks -> down into the bank bottom-plate
+    # buses.  The lanes at y=88/90 end at x=-465/-455: further west they'd
+    # cross CFB16P's m4 top plate (x -477.8..-457.8, y 250.2..292.3 and the
+    # P-row plates).
+    # 2026-09-11: the bias CFILT top-plate m4 column now rises at
+    # x 953.4..956.6 (100p array is 5x25, xm=55): BOTH lanes duck under it
+    # on m3 (m3 under the m4 column is free).  via3 m4 pads and the lane
+    # ends keep a 3.2 um gap to the column — closer than 3.0 and m4.5ab's
+    # 1.5 um closing merges them into the huge sheet -> notch violation.
     via3(749.0, -1.0)                                # OUTP tap (stage2 bus)
-    h4(-1.0, 749.0, 1078.0)
+    h4(-1.0, 749.0, 950.2)
+    via3(949.9, -1.0); h3(-1.0, 949.9, 960.1); via3(960.1, -1.0)
+    h4(-1.0, 959.8, 1078.0)
     v4m(1078.0, -1.0, 90.0)
     h4(90.0, -455.0, 1078.0)
     v4m(-455.0, 90.0, 251.0)
     via3(-455.0, 251.0)                              # -> OUTP bank bus
     via3(799.0, 0.2)                                 # OUTN tap
-    h4(0.2, 799.0, 1073.0)
+    h4(0.2, 799.0, 950.2)
+    via3(949.9, 0.2); h3(0.2, 949.9, 960.1); via3(960.1, 0.2)
+    h4(0.2, 959.8, 1073.0)
     v4m(1073.0, 0.2, 88.0)
     h4(88.0, -465.0, 1073.0)
     v4m(-465.0, 61.4, 88.0)

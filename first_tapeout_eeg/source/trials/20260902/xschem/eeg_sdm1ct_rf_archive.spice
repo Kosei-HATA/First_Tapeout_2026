@@ -1,0 +1,38 @@
+* 1st-order 1-bit continuous-time Sigma-Delta modulator, fs=16 kHz.
+* Fully differential CT integrator (R-C) + NRZ 1-bit DAC (resistive,
+* level-selected, no switched-cap charge dumps) + strong-arm + NAND SR latch.
+* Integrator unity-gain ~ fs: RIN*CI ~ 1/(2*pi*fs).
+* Loop: oint<0 -> BIT=1 -> DAC pulls INP up/INN down -> oint rises (negative FB).
+.subckt eeg_sdm1ct VINP VINN VCM_REF VP VN BIT NBIT OINTP OINTN CLK NCLK VDD18 VSS params: RIN=500k CI=20p RDAC=500k RF=100Meg
+* CT integrator
+RINP VINP INP {RIN}
+RINN VINN INN {RIN}
+XOTA INP INN VCM_REF OINTP OINTN VDD18 VSS eeg_fd_ota_full2_nc
+CIP OINTN INP {CI}
+RFP OINTN INP {RF}
+CIN OINTP INN {CI}
+RFN OINTP INN {RF}
+* NRZ DAC, fully differential: BOTH summing nodes driven every cycle.
+* Differential pull = +/-(VP-VN) independent of summing-node CM; CM step ~0.
+* (Single-ended alternating pull shifted the nodes to ~0.92 V, collapsing the
+*  pull voltage from 25 mV to ~5 mV and injecting signal-dependent CM.)
+XREFP1 VDACP VP BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+XREFP0 VDACP VN BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+XREFN1 VDACN VN BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+XREFN0 VDACN VP BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+RDACP INP VDACP {RDAC}
+RDACN INN VDACN {RDAC}
+BBIT1 BIT1 0 V=v(BIT)
+BNBIT1 NBIT1 0 V=v(VDD18)-v(BIT)
+BBIT0 BIT0 0 V=v(VDD18)-v(BIT)
+BNBIT0 NBIT0 0 V=v(BIT)
+* quantizer
+XCMP OINTP OINTN QP QN CLK VDD18 VSS eeg_strongarm
+* hold caps on comparator outputs: during early eval QP/QN fall together
+* (common-mode); without these the both-low pulse puts the NAND SR latch into
+* an invalid/metastable state (~1.4 V for half a cycle, ~19% wrong decisions).
+CQP QP VSS 1p
+CQN QN VSS 1p
+XND1 QP NBIT BIT VDD18 VSS eeg_nand2
+XND2 QN BIT NBIT VDD18 VSS eeg_nand2
+.ends

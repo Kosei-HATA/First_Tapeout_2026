@@ -1,0 +1,59 @@
+* sdm3_int1: first integrator for the alternating-phase 2nd-order SC SDM.
+* Same sampled parasitic-insensitive input section as eeg_sd_int, but the DAC
+* is DIRECT (no sampling phase): during PH1 the DAC caps discharge to VCM;
+* during PH2 their left plates step VCM -> Vsel (VP if BIT=1 else VN on the
+* P side), dumping CDAC*(Vsel-VCM) into the summing node in the SAME cycle
+* the comparator produced BIT. This same-cycle feedback into int1 (plus the
+* non-delaying int1->int2 cascade from alternating integration phases) makes
+* the loop the true classic 2nd-order modulator, NTF = (1-z^-1)^2:
+*   char poly (1-z^-1)^2 + a2*d1*z^-1 + d2*z^-1*(1-z^-1) = 1
+*   for d2=1, a2*d1=1 (here a2=0.5, d1=2: CDAC=2*CI; a1=2 for STF(DC)=1).
+* Polarity: BIT=1 (means O2D<0) raises OUTD (negative feedback; BIT=1 -> VP
+* on the P side: OUTN falls by CDAC*(VP-VCM)/CI -> OUTP-OUTN rises).
+* A same-phase cascade (eeg_sd_int for both stages) carries a full extra
+* cycle of loop delay and tops out at ~59 dB SQNR behaviorally - that, plus
+* eeg_sd_int2's inverted DAC polarity, is why the abandoned eeg_sdm2 railed.
+.subckt sdm3_int1 INP_S INN_S VCM_REF BIT VP VN OUTP OUTN PH1 NPH1 PH2 NPH2 VDD18 VSS params: CS=8p CDAC=8p CI=4p VDDV=1.8
+XOTA INP INN VCM_REF OUTP OUTN VDD18 VSS eeg_fd_ota_full2_nc
+* ---- input sampling caps (identical phasing to eeg_sd_int) ----
+CSP CSLP CSRP {CS}
+CSN CSLN CSRN {CS}
+XS1A CSLP INP_S PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1B CSRP VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1C CSLN INN_S PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS1D CSRN VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XS2A CSLP VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2B CSRP INP PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2C CSLN VCM_REF PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XS2D CSRN INN PH2 NPH2 VDD18 VSS eeg_tg_lowq
+* ---- direct DAC caps ----
+CDP CDLP CDRP {CDAC}
+CDN CDLN CDRN {CDAC}
+* PH1: both plates to VCM (discharge)
+XDPA CDLP VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XDPB CDRP VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XDNA CDLN VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+XDNB CDRN VCM_REF PH1 NPH1 VDD18 VSS eeg_tg_lowq
+* PH2: right plates to summing nodes
+XDP2 CDRP INP PH2 NPH2 VDD18 VSS eeg_tg_lowq
+XDN2 CDRN INN PH2 NPH2 VDD18 VSS eeg_tg_lowq
+* PH2: left plates step to Vsel (BIT-gated, valid since end of PH1).
+* Gates are analog products of the (RC-filtered, ~2ns) BITF and PH2 edges:
+* zero-time boolean steps both inject unshaped charge noise at the DAC node
+* AND cause ngspice LTE timestep collapse at tight reltol. BITF only moves
+* during PH1 (CMPCK), while PH2=0, so the products are glitch-free.
+BEP BEP 0 V=v(PH2)*v(BIT)/{VDDV}
+BEN BEN 0 V=v(PH2)*({VDDV}-v(BIT))/{VDDV}
+BNEP NBEP 0 V={VDDV}-v(BEP)
+BNEN NBEN 0 V={VDDV}-v(BEN)
+XDPV1 CDLP VP BEP NBEP VDD18 VSS eeg_tg_lowq
+XDPV0 CDLP VN BEN NBEN VDD18 VSS eeg_tg_lowq
+XDNV1 CDLN VN BEP NBEP VDD18 VSS eeg_tg_lowq
+XDNV0 CDLN VP BEN NBEN VDD18 VSS eeg_tg_lowq
+* ---- integration caps (cross-coupled negative feedback) ----
+CIP OUTN INP {CI}
+CIN OUTP INN {CI}
+* summing-node DC bias
+RBIASP INP VCM_REF 10G
+RBIASN INN VCM_REF 10G
+.ends

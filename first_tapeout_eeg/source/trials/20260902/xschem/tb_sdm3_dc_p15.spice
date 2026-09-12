@@ -1,0 +1,36 @@
+* sdm3 DC transfer template: static differential input, 30 ms tran, duty out.
+* VINP/VINN lines are sed-substituted per point by run_sdm3_benches.sh.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_pseudo_res.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.include eeg_fd_ota_full2_nc.spice
+.include eeg_sd_int.spice
+.include sdm3_int1.spice
+.include eeg_strongarm.spice
+.include sdm3_mod.spice
+.param VDD=1.80 VCM=0.9 TCLK=3.90625u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+VPH1 PH1 0 PULSE(0 {VDD} 0.1u 30n 30n 1.62u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 2.053u 30n 30n 1.62u {TCLK})
+VCMPCK CMPCK 0 PULSE(0 {VDD} 1.30u 20n 20n 0.36u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+VINP VINP 0 {VCM+7.5m}
+VINN VINN 0 {VCM-7.5m}
+XSDM VINP VINN VCM_REF VP VN BIT NBIT O1P O1N O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD18 0 sdm3_mod
+.nodeset v(BIT)=1.8 v(NBIT)=0 v(O1P)=0.93 v(O1N)=0.93 v(O2P)=0.93 v(O2N)=0.93
+.nodeset v(XSDM.XINT1.INP)=0.9 v(XSDM.XINT1.INN)=0.9 v(XSDM.XINT2.INP)=0.9 v(XSDM.XINT2.INN)=0.9
+.control
+set noaskquit
+save time v(BIT)
+tran 50n 30m
+wrdata ../results/sdm3_dc_p15.csv time v(BIT)
+quit
+.endc
+.end

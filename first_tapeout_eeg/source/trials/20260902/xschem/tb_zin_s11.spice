@@ -1,0 +1,39 @@
+* Differential input impedance of the closed-loop chopped PGA (frozen straight).
+* Inject AC current between INP/INN; Z = v(INP)-v(INN) / 1A.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_pseudo_res.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2nodsl.spice
+.param VDD=1.80 VCM=0.9
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+* input network as in the real PGA: CIN series, CFB feedback (x32 config)
+* DC bias via 1 Gohm bleeders (do not shunt the AC injection)
+RB1 SIGP VCM_REF 1G
+RB2 SIGN VCM_REF 1G
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_full2
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+* differential AC current injection at the electrode nodes
+IINJ SIGP SIGN DC 0 AC 1
+.control
+set noaskquit
+ac dec 50 0.1 1G
+let zre = real(v(SIGP)-v(SIGN))
+let zim = imag(v(SIGP)-v(SIGN))
+wrdata ../results/zin_s11.csv zre zim
+quit
+.endc
+.end

@@ -1,0 +1,384 @@
+timestamp 1617737150
+version 8.3
+tech sky130A
+style ngspice()
+scale 1000 1 500000
+resistclasses 4400000 2200000 950000 3050000 120000 197000 114000 191000 120000 197000 114000 191000 48200 319800 2000000 48200 48200 12800 125 125 47 47 29 5
+use eeg_tg_lowq eeg_tg_lowq_0 1 0 14400 0 1 0
+use eeg_tg_lowq eeg_tg_lowq_1 1 0 9600 0 1 0
+use eeg_tg_lowq eeg_tg_lowq_2 1 0 4800 0 1 0
+use eeg_tg_lowq eeg_tg_lowq_3 1 0 0 0 1 0
+node "VDD18" 7 5039.76 -200 -1220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2292000 38440 0 0 0 0 0 0
+node "VSS" 7 4933.51 -200 -980 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2292000 38440 0 0 0 0 0 0
+node "INP" 9 2659.18 2840 760 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 547200 9600 2292000 38440 0 0 0 0
+node "INN" 10 2830.58 7640 760 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 595200 10400 2292000 38440 0 0 0 0
+node "PHIB" 22 3574.12 12502 -470 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 653600 17504 35072 1408 2292000 38440 0 0 0 0
+node "OUTN" 16 1709.72 7462 490 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 355680 9664 35072 1408 2292000 38440 0 0 0 0
+node "OUTP" 15 4881.87 2662 490 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 325280 8864 35072 1408 2292000 38440 0 0 0 0
+node "PHI" 21 3299.05 2902 -470 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 592800 15904 35072 1408 2292000 38440 0 0 0 0
+node "NPHI" 23 3879.26 2162 -710 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 659680 17664 35072 1408 2292000 38440 0 0 0 0
+node "NPHIB" 24 7505.02 11762 -710 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 720480 19264 35072 1408 2292000 38440 0 0 0 0
+substrate "SUB" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "NPHIB" "OUTN" 175.789
+cap "NPHI" "OUTN" 177.114
+cap "VSS" "OUTN" 3.16547
+cap "INP" "PHI" 610.146
+cap "NPHIB" "INP" 64.6359
+cap "PHIB" "PHI" 63.039
+cap "INP" "NPHI" 66.9361
+cap "NPHIB" "PHIB" 4857.57
+cap "VDD18" "OUTN" 0.00975193
+cap "PHIB" "NPHI" 4712.49
+cap "PHIB" "VSS" 12.1495
+cap "OUTP" "PHI" 280.121
+cap "NPHIB" "OUTP" 188.618
+cap "PHIB" "VDD18" 0.615688
+cap "OUTP" "NPHI" 189.383
+cap "VSS" "OUTP" 3.16547
+cap "INN" "OUTN" 428.298
+cap "OUTP" "VDD18" 0.00975193
+cap "INN" "INP" 4861.29
+cap "NPHIB" "PHI" 58.3374
+cap "NPHI" "PHI" 4829.94
+cap "INN" "PHIB" 660.158
+cap "NPHIB" "NPHI" 63.1612
+cap "VSS" "PHI" 12.1495
+cap "NPHIB" "VSS" 28.6605
+cap "VSS" "NPHI" 28.6605
+cap "INP" "OUTN" 5067.06
+cap "VDD18" "PHI" 0.615688
+cap "NPHIB" "VDD18" 1.40729
+cap "INN" "OUTP" 455.635
+cap "PHIB" "OUTN" 300.986
+cap "NPHI" "VDD18" 1.40729
+cap "VSS" "VDD18" 3533.5
+cap "PHIB" "INP" 605.572
+cap "OUTP" "OUTN" 4715.54
+cap "INN" "PHI" 5308.12
+cap "OUTP" "INP" 458.372
+cap "NPHIB" "INN" 67.3658
+cap "PHIB" "OUTP" 278.992
+cap "INN" "NPHI" 71.653
+cap "PHI" "OUTN" 303.053
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" -0.546303
+cap "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" -259
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" 1.11311
+cap "eeg_tg_lowq_3/tg_n_0/a_0_0#" "eeg_tg_lowq_3/tg_n_0/a_162_0#" 1.42109e-14
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" -1.42109e-14
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_0_0#" -2.72358
+cap "eeg_tg_lowq_3/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" 123.034
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" 24.9341
+cap "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/tg_n_0/a_0_0#" 1.17317
+cap "eeg_tg_lowq_3/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" -5.50004
+cap "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" "eeg_tg_lowq_3/tg_n_0/a_162_0#" -0.6288
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" -4.02355
+cap "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" 48.7131
+cap "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" -11.4491
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_120_n106#" 4.32939
+cap "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" -259
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/A" 0.0025359
+cap "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/VDD18" 1.01087
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/VDD18" 0.341406
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/A" -5.53642
+cap "eeg_tg_lowq_2/tg_n_0/a_0_0#" "eeg_tg_lowq_3/ENB" 0.00898782
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/EN" 5.40975
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/B" -0.784374
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/A" 16.5981
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/VDD18" 67.4527
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/ENB" 0.005669
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/B" -3.98198
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/B" 1.46995
+cap "eeg_tg_lowq_2/tg_n_0/a_0_0#" "eeg_tg_lowq_3/A" 0.0614756
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/ENB" 0.0100522
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/ENB" -30.0626
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/B" 10.8484
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/ENB" 72.8605
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/A" 0.0308899
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/VDD18" -251.602
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/A" 0.00411305
+cap "eeg_tg_lowq_2/tg_n_0/a_0_0#" "eeg_tg_lowq_3/VDD18" 4.90721
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/VDD18" -200.535
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/VSS" 0.59192
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 8.68558
+cap "eeg_tg_lowq_3/ENB" "eeg_tg_lowq_3/VSS" 1.22629
+cap "eeg_tg_lowq_3/ENB" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" 15.8571
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/EN" 42.9749
+cap "eeg_tg_lowq_2/tg_n_0/a_0_0#" "eeg_tg_lowq_3/EN" 0.0150763
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/EN" 0.457523
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/VDD18" 7.10864
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/tg_n_0/a_162_0#" 0.0190407
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/VSS" -258.971
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" 0.0351964
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_n_0/a_162_0#" -1.14971
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" -11.6939
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_3/EN" 0.0325504
+cap "eeg_tg_lowq_2/tg_n_0/a_0_0#" "eeg_tg_lowq_2/tg_n_0/a_162_0#" 1.42109e-14
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_3/A" 0.151657
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" 2.83267
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" -4.30204
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/ENB" -11.4434
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/A" -5.53642
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_2/EN" 15.1587
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 0.00898782
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/EN" 5.40975
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/B" -1.41317
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/ENB" 23.096
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_2/A" 1.18322
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/EN" 61.9527
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/B" -1.63817
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/A" 16.5244
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_2/A" -6.70556
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/VSS" -259
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/A" 0.0308899
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/A" 0.0614756
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_2/EN" 207.589
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_2/B" 23.2145
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_1/tg_n_0/a_120_n106#" 0.0025359
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/EN" 42.2602
+cap "eeg_tg_lowq_1/tg_nd_0/a_48_n106#" "eeg_tg_lowq_2/ENB" 15.8571
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/EN" 0.0150763
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 4.15995
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_1/tg_n_0/a_120_n106#" 6.24614
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/A" 0.59192
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/EN" 0.0751821
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/VDD18" -199.56
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_2/EN" 0.0737078
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_1/tg_nd_0/a_48_n106#" 1.01087
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/A" 0.151657
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 4.90721
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/A" 0.00411305
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 1.42109e-14
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_1/tg_nd_0/a_48_n106#" 0.234375
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_1/tg_nd_0/a_48_n106#" 1.11311
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_2/VSS" 1.22629
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/A" 4.52564
+cap "eeg_tg_lowq_1/tg_nd_0/a_48_n106#" "eeg_tg_lowq_2/A" 0.0351964
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_2/VSS" -252.548
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/EN" 0.382341
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/VSS" -1.42109e-14
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/VDD18" -0.234271
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/EN" 0.0325504
+cap "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_1/tg_n_0/a_120_n106#" 1.2039
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/EN" 0.714753
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/EN" 10.65
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/A" -0.345476
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/B" -1.41317
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/ENB" -11.4491
+cap "eeg_tg_lowq_1/B" "eeg_tg_lowq_1/ENB" 24.9341
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/VSS" -259
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/ENB" 123.034
+cap "eeg_tg_lowq_1/B" "eeg_tg_lowq_1/EN" 5.99259
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/B" -2.55361
+cap "eeg_tg_lowq_1/B" "eeg_tg_lowq_1/A" -2.89182
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/ENB" 1.17317
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/ENB" 38.9729
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/ENB" 0.0100522
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/VSS" 0.62281
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/VDD18" 0.341406
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/ENB" 0.005669
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_1/VDD18" 1.01087
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/EN" 16.5981
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/ENB" 72.8605
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/EN" 5.48493
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/B" -3.81375
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/B" 9.1852
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 0.0025359
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/VDD18" -5.19094
+cap "eeg_tg_lowq_1/ENB" "eeg_tg_lowq_1/VDD18" -20.4133
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/VDD18" -251.602
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_0/tg_n_0/a_0_0#" 4.22142
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/EN" 12.8185
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/ENB" 0.00898782
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/VDD18" 51.3027
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/EN" 0.0150763
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/VSS" -200.535
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 1.10392
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_1/ENB" 15.8571
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/VDD18" 7.10864
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/VDD18" 4.90721
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/VDD18" 0.312033
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 0.00411305
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/A" 4.52564
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_0/tg_pd_0/w_n184_n257#" -0.546303
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/A" 0.151657
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 0.143576
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 0.0351964
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/ENB" 1.22629
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/VSS" 0.382341
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 30.1564
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/EN" 0.0325504
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_1/VDD18" 10.3245
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 37.8427
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 1.17317
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_1/VSS" -5.64089
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/VSS" -258.971
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 6.46496
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/VDD18" -0.915437
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 0.0190407
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/A" -6.70556
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/A" 0.0100522
+cap "eeg_tg_lowq_0/VDD18" "eeg_tg_lowq_0/A" -5.53642
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/B" 18.4783
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/VDD18" -1.63817
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/VDD18" 8.32597
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/A" -1.42109e-14
+cap "eeg_tg_lowq_0/A" "eeg_tg_lowq_0/EN" 16.5244
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/B" -1.41317
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/EN" 15.1587
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/ENB" -5.80817
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/EN" 158.052
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/VDD18" -259
+cap "eeg_tg_lowq_0/VDD18" "eeg_tg_lowq_0/EN" 61.9527
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/EN" 5.40975
+cap "eeg_tg_lowq_0/VDD18" "eeg_tg_lowq_0/VSS" -147.489
+cap "eeg_tg_lowq_0/EN" "eeg_tg_lowq_0/A" 0.0737078
+cap "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" 30.998
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_120_n106#" 10.3553
+cap "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/tg_n_0/a_0_0#" 112.79
+cap "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" "eeg_tg_lowq_3/tg_n_0/a_120_n106#" -5.21939
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_nd_0/a_48_n106#" 146.112
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" -13.3836
+cap "eeg_tg_lowq_3/tg_p_0/w_n184_n257#" "eeg_tg_lowq_3/tg_n_0/a_120_n106#" 0.197501
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_0_0#" -7.07133
+cap "eeg_tg_lowq_3/tg_n_0/a_162_0#" "eeg_tg_lowq_3/tg_n_0/a_n123_n196#" -0.541515
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/EN" 2.61737
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/ENB" -0.278952
+cap "eeg_tg_lowq_3/ENB" "eeg_tg_lowq_3/B" -2.01694
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/EN" 14.0644
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/B" -0.798359
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/B" 10.3431
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/VDD18" -6.73799
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/B" 102.116
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/EN" 93.5558
+cap "eeg_tg_lowq_3/ENB" "eeg_tg_lowq_3/EN" -5.35221
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_3/B" 79.5105
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/VDD18" 0.284179
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/VDD18" 4.64067
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_3/B" 15.8571
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_3/A" 0.00959712
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 4.81352
+cap "eeg_tg_lowq_3/VSS" "eeg_tg_lowq_3/A" 0.577627
+cap "eeg_tg_lowq_3/A" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 36.1949
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_2/tg_n_0/a_120_n106#" 0.246154
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_3/VSS" 0.0174897
+cap "eeg_tg_lowq_3/EN" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 0.0351781
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_3/A" 1.00084
+cap "eeg_tg_lowq_3/B" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 1.99594
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_3/B" 9.94251e-05
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_n_0/a_120_n106#" 0.197501
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_n_0/a_162_0#" -4.55636
+cap "eeg_tg_lowq_3/VDD18" "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" 2.31199
+cap "eeg_tg_lowq_2/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/tg_n_0/a_162_0#" 0.076777
+cap "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" "eeg_tg_lowq_2/tg_n_0/a_120_n106#" 0.0211456
+cap "eeg_tg_lowq_2/tg_n_0/a_162_0#" "eeg_tg_lowq_2/tg_n_0/a_0_0#" -0.387803
+cap "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" "eeg_tg_lowq_2/tg_n_0/a_162_0#" 9.28845
+cap "eeg_tg_lowq_2/tg_nd_0/a_48_n106#" "eeg_tg_lowq_2/tg_n_0/a_0_0#" 3.93701
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/B" -1.33987
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_2/VDD18" -6.73799
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_2/B" 72.827
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/ENB" -10.5927
+cap "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_2/VDD18" 28.686
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_2/ENB" 134.807
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/VSS" 2.61737
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/VDD18" 13.8975
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/B" 112.394
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_2/ENB" 108.574
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/A" 93.5558
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_2/VDD18" 1.51585
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/A" 1.00084
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/EN" 0.123077
+cap "eeg_tg_lowq_1/tg_n_0/a_162_0#" "eeg_tg_lowq_2/B" 15.8571
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/EN" 0.0351781
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/VDD18" 0.166867
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_2/VSS" 0.577627
+cap "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_2/VDD18" 4.64067
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/A" 25.6529
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_2/VSS" 0.0174897
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/A" 0.00959712
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_2/VDD18" 9.94251e-05
+cap "eeg_tg_lowq_1/tg_n_0/a_0_0#" "eeg_tg_lowq_2/VDD18" 4.81352
+cap "eeg_tg_lowq_1/tg_n_0/a_120_n106#" "eeg_tg_lowq_2/VDD18" 0.284179
+cap "eeg_tg_lowq_2/EN" "eeg_tg_lowq_1/tg_n_0/a_120_n106#" 0.123077
+cap "eeg_tg_lowq_2/B" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 1.99594
+cap "eeg_tg_lowq_2/A" "eeg_tg_lowq_1/tg_n_0/a_0_0#" 10.542
+cap "eeg_tg_lowq_1/ENB" "eeg_tg_lowq_1/VDD18" 30.998
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/B" 87.8026
+cap "eeg_tg_lowq_1/ENB" "eeg_tg_lowq_1/EN" -5.21939
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/VDD18" 0.197501
+cap "eeg_tg_lowq_1/ENB" "eeg_tg_lowq_1/B" 144.095
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/B" -3.04051
+cap "eeg_tg_lowq_1/ENB" "eeg_tg_lowq_1/A" 112.79
+cap "eeg_tg_lowq_1/B" "eeg_tg_lowq_1/VSS" -1.33987
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/A" -0.261165
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/B" 8.44309
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/A" 0.577627
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/EN" 0.123077
+cap "eeg_tg_lowq_1/B" "eeg_tg_lowq_1/A" -15.3634
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/A" 1.00084
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_0/tg_n_0/a_0_0#" 0.0351781
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/ENB" -5.35221
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/A" 9.79571
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/ENB" -0.278952
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/VSS" 2.63486
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/VDD18" 14.0644
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/A" 93.5558
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_1/B" 104.028
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_1/VDD18" -6.47682
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/A" 0.00959712
+cap "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_1/VDD18" 4.64067
+cap "eeg_tg_lowq_0/tg_n_0/a_162_0#" "eeg_tg_lowq_1/B" 15.8571
+cap "eeg_tg_lowq_1/EN" "eeg_tg_lowq_0/tg_n_0/a_120_n106#" 0.123077
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/B" 1.99594
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_1/VDD18" 4.81352
+cap "eeg_tg_lowq_1/A" "eeg_tg_lowq_0/tg_n_0/a_0_0#" 26.3992
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/VDD18" 0.284179
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_1/B" 9.94251e-05
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" 0.0211456
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_1/VDD18" 0.197501
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_0/tg_n_0/a_162_0#" 70.6256
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_0/tg_n_0/a_0_0#" 61.4024
+cap "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_0/tg_n_0/a_162_0#" -4.55636
+cap "eeg_tg_lowq_0/tg_n_0/a_120_n106#" "eeg_tg_lowq_0/tg_n_0/a_162_0#" 0.076777
+cap "eeg_tg_lowq_0/tg_nd_0/a_48_n106#" "eeg_tg_lowq_1/VDD18" 15.1549
+cap "eeg_tg_lowq_0/tg_n_0/a_0_0#" "eeg_tg_lowq_0/tg_n_0/a_162_0#" -0.387803
+cap "eeg_tg_lowq_0/EN" "eeg_tg_lowq_0/VDD18" 13.8975
+cap "eeg_tg_lowq_0/A" "eeg_tg_lowq_0/ENB" 51.1085
+cap "eeg_tg_lowq_0/A" "eeg_tg_lowq_0/VDD18" -6.73799
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/VDD18" 15.8431
+cap "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_0/EN" 2.61737
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/EN" 112.394
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/A" 72.827
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/ENB" 73.4695
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/VDD18" 1.51585
+cap "eeg_tg_lowq_0/A" "eeg_tg_lowq_0/EN" 93.5558
+cap "eeg_tg_lowq_0/B" "eeg_tg_lowq_0/VSS" -1.33987
+cap "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_0/EN" -10.5927
+cap "eeg_tg_lowq_0/EN" "eeg_tg_lowq_0/VDD18" 0.166867
+merge "eeg_tg_lowq_1/B" "eeg_tg_lowq_2/B" -477.818 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -6272 -448 -54000 -1860 0 0 0 0
+merge "eeg_tg_lowq_2/B" "OUTN"
+merge "eeg_tg_lowq_0/SUB" "eeg_tg_lowq_1/SUB" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "eeg_tg_lowq_1/SUB" "eeg_tg_lowq_2/SUB"
+merge "eeg_tg_lowq_2/SUB" "eeg_tg_lowq_3/SUB"
+merge "eeg_tg_lowq_3/SUB" "SUB"
+merge "eeg_tg_lowq_0/ENB" "eeg_tg_lowq_1/ENB" -1763.47 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -214852 -5844 -6272 -448 -54000 -1860 0 0 0 0
+merge "eeg_tg_lowq_1/ENB" "NPHIB"
+merge "eeg_tg_lowq_0/VSS" "eeg_tg_lowq_1/VSS" -5114.21 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2208000 -37760 0 0 0 0 0 0
+merge "eeg_tg_lowq_1/VSS" "eeg_tg_lowq_2/VSS"
+merge "eeg_tg_lowq_2/VSS" "eeg_tg_lowq_3/VSS"
+merge "eeg_tg_lowq_3/VSS" "VSS"
+merge "eeg_tg_lowq_2/ENB" "eeg_tg_lowq_3/ENB" -1779.04 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -301872 -8172 -6272 -448 -108000 -1920 0 0 0 0
+merge "eeg_tg_lowq_3/ENB" "NPHI"
+merge "eeg_tg_lowq_2/EN" "eeg_tg_lowq_3/EN" -1322.65 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -127832 -3516 -6272 -448 -108000 -1920 0 0 0 0
+merge "eeg_tg_lowq_3/EN" "PHI"
+merge "eeg_tg_lowq_0/A" "eeg_tg_lowq_2/A" -442.994 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -14400 -720 -108000 -1920 0 0 0 0
+merge "eeg_tg_lowq_2/A" "INN"
+merge "eeg_tg_lowq_1/A" "eeg_tg_lowq_3/A" -521 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -14400 -720 -72000 -980 0 0 0 0
+merge "eeg_tg_lowq_3/A" "INP"
+merge "eeg_tg_lowq_0/B" "eeg_tg_lowq_3/B" -196.888 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -6272 -448 0 0 0 0 0 0
+merge "eeg_tg_lowq_3/B" "OUTP"
+merge "eeg_tg_lowq_0/EN" "eeg_tg_lowq_1/EN" -1277.41 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -127832 -3516 -6272 -448 -108000 -1920 0 0 0 0
+merge "eeg_tg_lowq_1/EN" "PHIB"
+merge "eeg_tg_lowq_0/VDD18" "eeg_tg_lowq_1/VDD18" -5299.43 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2208000 -37760 0 0 0 0 0 0
+merge "eeg_tg_lowq_1/VDD18" "eeg_tg_lowq_2/VDD18"
+merge "eeg_tg_lowq_2/VDD18" "eeg_tg_lowq_3/VDD18"
+merge "eeg_tg_lowq_3/VDD18" "VDD18"

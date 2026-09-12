@@ -1,0 +1,19 @@
+* Bias generator startup comparison: RSTART=20Meg resistor vs pseudo-resistor.
+* Both instances run side by side on the same VDD ramp; watch VBN settle.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice ff
+.include eeg_pseudo_res.spice
+.include eeg_bias_gen.spice
+.include eeg_bias_gen_prstart.spice
+.param VDD=1.98
+VDD_SRC VDD18 0 PWL(0 0 1u {VDD})
+XBG1 VBN1 VBNF1 VBP1 VDD18 0 eeg_bias_gen RSET=25k
+XBG2 VBN2 VBNF2 VBP2 VDD18 0 eeg_bias_gen_prstart RSET=25k
+.control
+set noaskquit
+save time v(VBN1) v(VBNF1) v(VBP1) v(VBN2) v(VBNF2) v(VBP2)
+tran 10u 50m
+wrdata ../results/bias_start_ff.csv time v(VBN1) v(VBNF1) v(VBP1) v(VBN2) v(VBNF2) v(VBP2)
+quit
+.endc
+.temp -40
+.end

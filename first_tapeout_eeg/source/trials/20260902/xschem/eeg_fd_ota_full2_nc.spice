@@ -1,6 +1,6 @@
 * Non-chopped two-stage OTA on the full2 platform (bias gen + dl CMFB),
 * for the SDM integrators. Choppers omitted; DC bias path via core.
-.subckt eeg_fd_ota_full2_nc INP INN VCM_REF OUTP OUTN VDD18 VSS params: W91=4 L91=4 W92=0.5 L92=4 W10=12 RLOAD=2Meg CC=10p RZ=20k RSET=25k RFILT=1Meg CFILT=1n
+.subckt eeg_fd_ota_full2_nc INP INN VCM_REF OUTP OUTN VDD18 VSS params: W91=4 L91=4 W92=0.5 L92=4 W10=12 RLOAD=2Meg CC=10p RZ=20k RSET=25k RFILT=10Meg CFILT=100p
 XBG VBNRAW VBN VBP_BIAS VDD18 VSS eeg_bias_gen RSET={RSET} RFILT={RFILT} CFILT={CFILT}
 XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VCM_REF VDD18 VSS eeg_fd_ota_core_soft RLOAD={RLOAD}
 XCM1 VCM1 VCM_REF VBN VBP1 VDD18 VSS eeg_cmfb_amp_dl2 W9={W91} L9={L91} W10={W10}

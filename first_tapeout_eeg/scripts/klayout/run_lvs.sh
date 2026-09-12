@@ -1,7 +1,12 @@
 #!/bin/bash
 # Run the sky130A KLayout LVS deck on the generated core GDS (batch mode)
 # against scripts/klayout/core_ref.spice.
-# Usage: scripts/klayout/run_lvs.sh [gds] [ref_spice]
+# Usage: scripts/klayout/run_lvs.sh [gds] [ref_spice] [flat|hier] [nopurge]
+#   nopurge: pass purge=false purge_nets=false — needed for the caravan
+#   wrapper, where purge cascades: NCLK16/S64 are unused inside
+#   eeg_sdm1ct/eeg_afe_pga, so purging the child pins floats the wrapper's
+#   io_in[9]/io_in[13] nets (the ref side is never purged -> top mismatch).
+#   The compare itself is unaffected (purge only deletes floating nets).
 set -euo pipefail
 
 KLAYOUT=/Applications/KLayout/klayout.app/Contents/MacOS/klayout
@@ -12,6 +17,8 @@ PROJ=$(cd "$HERE/../.." && pwd)
 GDS=${1:-$PROJ/GDSII/eeg_fd_ota_core_soft.gds}
 REF=${2:-$HERE/core_ref.spice}
 MODE=${3:-flat}
+PURGE=true
+if [ "${4:-}" = "nopurge" ]; then PURGE=false; fi
 BASE=$(basename "$GDS" .gds)
 REPORT=$PROJ/GDSII/$BASE.lvsdb
 EXTRACTED=$PROJ/GDSII/${BASE}_extracted.cir
@@ -31,5 +38,5 @@ export PATH="$HERE/bin:$PATH"
     -rd target_netlist="$EXTRACTED" \
     -rd lvs_sub=VSS \
     -rd run_mode=$MODE -rd scale=false -rd spice_net_names=true \
-    -rd combine=true -rd top_lvl_pins=true -rd purge=true -rd purge_nets=true \
+    -rd combine=true -rd top_lvl_pins=true -rd purge=$PURGE -rd purge_nets=$PURGE \
     2>&1 | tee "$LOG" | grep -a "match\|MATCH\|ERROR"

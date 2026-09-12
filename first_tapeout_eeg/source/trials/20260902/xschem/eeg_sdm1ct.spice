@@ -3,15 +3,19 @@
 * level-selected, no switched-cap charge dumps) + strong-arm + NAND SR latch.
 * Integrator unity-gain ~ fs: RIN*CI ~ 1/(2*pi*fs).
 * Loop: oint<0 -> BIT=1 -> DAC pulls INP up/INN down -> oint rises (negative FB).
-.subckt eeg_sdm1ct VINP VINN VCM_REF VP VN BIT NBIT OINTP OINTN CLK NCLK VDD18 VSS params: RIN=500k CI=20p RDAC=500k RF=100Meg
+* 2026-09-11: RF (100Meg lossy-integrator ballast) replaced by pseudo-resistors.
+* Verified equal-or-better vs RF version: SNDR 44.2 -> 50.5 dB (TT),
+* PVT 51-64 dB all corners, DC transfer duty=0.5-VIN/100mV exact, same
+* integrator headroom. RF version archived in eeg_sdm1ct_rf_archive.spice.
+.subckt eeg_sdm1ct VINP VINN VCM_REF VP VN BIT NBIT OINTP OINTN CLK NCLK VDD18 VSS params: RIN=500k CI=20p RDAC=500k
 * CT integrator
 RINP VINP INP {RIN}
 RINN VINN INN {RIN}
 XOTA INP INN VCM_REF OINTP OINTN VDD18 VSS eeg_fd_ota_full2_nc
 CIP OINTN INP {CI}
-RFP OINTN INP {RF}
+XRFP OINTN INP eeg_pseudo_res
 CIN OINTP INN {CI}
-RFN OINTP INN {RF}
+XRFN OINTP INN eeg_pseudo_res
 * NRZ DAC, fully differential: BOTH summing nodes driven every cycle.
 * Differential pull = +/-(VP-VN) independent of summing-node CM; CM step ~0.
 * (Single-ended alternating pull shifted the nodes to ~0.92 V, collapsing the

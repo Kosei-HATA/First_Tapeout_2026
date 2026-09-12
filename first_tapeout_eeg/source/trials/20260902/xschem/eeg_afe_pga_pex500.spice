@@ -1,0 +1,1922 @@
+* NGSPICE flat PEX netlist for eeg_afe_pga (sky130A)
+* Devices: magic `ext2spice lvs` netlist, hierarchy inlined by ext2pex.py
+* (parallel fingers/unit devices merged: exact BSIM equivalence);
+* Parasitic capacitors: magic .ext database (node->substrate, cap->coupling)
+* sky130A extraction excludes FET gate/diffusion caps (kept in BSIM
+* ad/as/pd/ps terms), so no double counting. Caps in farads.
+* totals: 544 devices (346 parallel merged), 1367 caps (4087.236 fF substrate + 11459.673 fF coupling)
+
+.subckt eeg_afe_pga S16 NPHIBM OUTP OUTN NPHII S32 S64 PHIM NPHIM PHIBI ELP ELN VDD18 RST VSS S8 PHII PHIBM VCM_REF NPHIBI
+X0 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VDD18 sky130_fd_pr__pfet_01v8 ad=5.1 pd=12.04 as=1.25 ps=5.5 w=5 l=4 nf=1
+X1 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=1.25 pd=5.5 as=5.1 ps=12.04 w=5 l=4 nf=1
+X2 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X3 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X4 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# VDD18 sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X5 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X6 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS VSS sky130_fd_pr__nfet_01v8 ad=1.25 pd=5.5 as=5.1 ps=12.04 w=5 l=4 nf=1
+X7 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS sky130_fd_pr__nfet_01v8 ad=5.1 pd=12.04 as=1.25 ps=5.5 w=5 l=4 nf=1
+X8 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X9 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X10 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# VSS VSS sky130_fd_pr__res_xhigh_po_0p69 l=8.62
+X11 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X12 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X13 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X14 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X15 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X16 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X17 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X19 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X20 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X21 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X22 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X23 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X24 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X25 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X26 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X27 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X28 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X29 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X30 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X31 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X32 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X33 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X34 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VDD18 sky130_fd_pr__pfet_01v8 ad=5.1 pd=12.04 as=1.25 ps=5.5 w=5 l=4 nf=1
+X35 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=1.25 pd=5.5 as=5.1 ps=12.04 w=5 l=4 nf=1
+X36 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X37 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X38 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X39 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X40 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X41 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X42 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X43 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X44 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X45 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X46 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X47 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X48 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X49 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X50 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X51 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X52 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X53 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X54 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X55 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X56 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X57 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X58 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X59 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X60 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X61 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X62 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X63 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X64 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X65 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X66 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X67 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X68 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X69 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X70 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X71 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X72 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X73 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X74 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X75 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X76 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X77 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n27552# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n20245# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X78 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X79 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X80 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X81 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X82 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X83 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X84 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n20245# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n27552# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X85 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X86 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X87 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X88 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X89 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X90 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X91 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X92 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X93 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X94 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X95 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X96 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X97 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X98 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n2557# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n9864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X99 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X100 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X101 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n11401# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n18708# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X102 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n9864# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n2557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X103 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n37933# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n45240# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X104 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n36396# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n29089# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X105 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n18708# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n11401# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X106 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X107 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n29089# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n36396# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X108 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n45240# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n37933# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X109 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# VSS sky130_fd_pr__nfet_01v8 ad=5 pd=22 as=8.85 ps=28.54 w=20 l=4 nf=4
+X112 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VSS sky130_fd_pr__nfet_01v8 ad=8.85 pd=28.54 as=5 ps=22 w=20 l=4 nf=4
+X117 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS sky130_fd_pr__cap_mim_m3_1 l=20 w=2500
+X242 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_370_1493# eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_370_1493# VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X243 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_370_1493# eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X244 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS VSS sky130_fd_pr__nfet_01v8 ad=1.5 pd=6.5 as=6.12 ps=14.04 w=6 l=4 nf=1
+X245 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=6.12 pd=14.04 as=1.5 ps=6.5 w=6 l=4 nf=1
+X246 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=0.15 pd=1.6 as=0.15 ps=1.6 w=0.5 l=4 nf=1
+X247 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VCM_REF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X248 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=4.08 pd=10.04 as=4.08 ps=10.04 w=4 l=4 nf=1
+X249 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VCM_REF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X250 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS VSS sky130_fd_pr__nfet_01v8 ad=1.5 pd=6.5 as=6.12 ps=14.04 w=6 l=4 nf=1
+X251 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=6.12 pd=14.04 as=1.5 ps=6.5 w=6 l=4 nf=1
+X252 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_370_1493# eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_370_1493# VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X253 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_370_1493# eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# VSS sky130_fd_pr__nfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=2 nf=1
+X254 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_58741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X255 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_25141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X256 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_20741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X257 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_36341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X258 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_80341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X259 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_75941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X260 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_69541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X261 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_65141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X262 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_58341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X263 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_29141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X264 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_24741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X265 eeg_fd_ota_chopped_full2_0/stage2_0/m1_19941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_20341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X266 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_35941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X267 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_79941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X268 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_75541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X269 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_69141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X270 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_64741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X271 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_57941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X272 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_28741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X273 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_24341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X274 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/m1_19941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X275 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_35541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X276 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_79541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X277 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_75141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X278 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_68741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X279 eeg_fd_ota_chopped_full2_0/stage2_0/m1_63941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_64341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X280 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_28341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X281 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_23941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X282 eeg_fd_ota_chopped_full2_0/stage2_0/m1_39141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X283 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_35141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X284 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_79141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X285 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_74741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X286 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_68341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X287 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/m1_63941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X288 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_27941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X289 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_23541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X290 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_39141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X291 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_34741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X292 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_78741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X293 eeg_fd_ota_chopped_full2_0/stage2_0/m1_73941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_74341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X294 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_67941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X295 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_27541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X296 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_23141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X297 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_38741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X298 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_34341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X299 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_78341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X300 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/m1_73941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X301 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_27141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X302 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_22741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X303 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_38341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X304 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_33941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X305 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_77941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X306 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_26741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X307 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_22341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X308 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_37941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X309 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_33541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X310 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_26341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X311 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_21941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X312 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_37541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X313 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_25941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X314 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_21541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X315 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_25541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X316 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=6 pd=26 as=10.62 ps=33.54 w=24 l=12 nf=4
+X317 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=10.62 pd=33.54 as=6 ps=26 w=24 l=12 nf=4
+X324 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_33141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X325 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS VSS sky130_fd_pr__nfet_01v8 ad=1.5 pd=6.5 as=6.12 ps=14.04 w=6 l=12 nf=1
+X326 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2N OUTN VSS sky130_fd_pr__nfet_01v8 ad=6.12 pd=14.04 as=1.5 ps=6.5 w=6 l=12 nf=1
+X327 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_32741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X328 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_32341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X329 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_31941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X330 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_31541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X331 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_31141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X332 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_30741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X333 eeg_fd_ota_chopped_full2_0/stage2_0/N2N eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# VSS sky130_fd_pr__res_xhigh_po_0p69 l=6.9
+X334 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_30341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X335 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_45541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X336 eeg_fd_ota_chopped_full2_0/stage2_0/N2P eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# VSS sky130_fd_pr__res_xhigh_po_0p69 l=6.9
+X337 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_29941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X338 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_45141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X339 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_49541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X340 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_29541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X341 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_44741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X342 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_49141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X343 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_53541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X344 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_44341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X345 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_48741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X346 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_53141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X347 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_57541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X348 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_43941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X349 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_48341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X350 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_52741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X351 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_57141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X352 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_43541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X353 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_47941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X354 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_52341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X355 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_56741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X356 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_43141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X357 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_47541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X358 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_51941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X359 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_56341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X360 eeg_fd_ota_chopped_full2_0/stage2_0/m1_61141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X361 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_42741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X362 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_47141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X363 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_51541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X364 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_55941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X365 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_61141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X366 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_67541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X367 eeg_fd_ota_chopped_full2_0/stage2_0/m1_41941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_42341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X368 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_46741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X369 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_51141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X370 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_55541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X371 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_60741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X372 eeg_fd_ota_chopped_full2_0/stage2_0/m1_71141_n15864# VCM_REF VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X373 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_67141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X374 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/m1_41941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X375 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_46341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X376 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_50741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X377 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_55141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X378 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_60341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X379 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77141_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_77541_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X380 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_71141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X381 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_66741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X382 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=6 pd=26 as=10.62 ps=33.54 w=24 l=12 nf=4
+X383 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=10.62 pd=33.54 as=6 ps=26 w=24 l=12 nf=4
+X390 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_45941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X391 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_50341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X392 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_54741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X393 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_59941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X394 eeg_fd_ota_chopped_full2_0/stage2_0/m1_81141_n15864# VCM_REF VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X395 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_77141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X396 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_70741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X397 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_66341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X398 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_49941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X399 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53941_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_54341_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X400 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_59541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X401 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_37141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X402 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80741_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_81141_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X403 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_76741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X404 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_70341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X405 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_65941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X406 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53541_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_53941_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X407 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_59141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X408 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20741_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_21141_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X409 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36341_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_36741_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X410 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80341_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_80741_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X411 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75941_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_76341_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X412 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69541_n15864# eeg_fd_ota_chopped_full2_0/stage2_0/m1_69941_n8557# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X413 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65141_n8557# eeg_fd_ota_chopped_full2_0/stage2_0/m1_65541_n15864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X414 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS VSS sky130_fd_pr__nfet_01v8 ad=1.5 pd=6.5 as=6.12 ps=14.04 w=6 l=12 nf=1
+X415 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2P OUTP VSS sky130_fd_pr__nfet_01v8 ad=6.12 pd=14.04 as=1.5 ps=6.5 w=6 l=12 nf=1
+X416 eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# OUTP sky130_fd_pr__cap_mim_m3_1 l=12.5 w=400
+X417 eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# OUTN sky130_fd_pr__cap_mim_m3_1 l=12.5 w=400
+X456 eeg_fd_ota_chopped_full2_0/stage2_0/N2P PHIBM eeg_fd_ota_chopped_full2_0/stage2_0/N2P VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X457 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN NPHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X458 eeg_fd_ota_chopped_full2_0/stage2_0/N2P NPHIBM eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X459 eeg_fd_ota_chopped_full2_0/stage2_0/N2P NPHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X460 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X461 eeg_fd_ota_chopped_full2_0/stage2_0/N2P PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X462 eeg_fd_ota_chopped_full2_0/stage2_0/N2N PHIBM eeg_fd_ota_chopped_full2_0/stage2_0/N2N VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X463 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP NPHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X464 eeg_fd_ota_chopped_full2_0/stage2_0/N2N NPHIBM eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X465 eeg_fd_ota_chopped_full2_0/stage2_0/N2N NPHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X466 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X467 eeg_fd_ota_chopped_full2_0/stage2_0/N2N PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X468 eeg_fd_ota_chopped_full2_0/stage2_0/N2N PHIM eeg_fd_ota_chopped_full2_0/stage2_0/N2N VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X469 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN NPHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X470 eeg_fd_ota_chopped_full2_0/stage2_0/N2N NPHIM eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X471 eeg_fd_ota_chopped_full2_0/stage2_0/N2N NPHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X472 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X473 eeg_fd_ota_chopped_full2_0/stage2_0/N2N PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X474 eeg_fd_ota_chopped_full2_0/stage2_0/N2P PHIM eeg_fd_ota_chopped_full2_0/stage2_0/N2P VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X475 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP NPHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X476 eeg_fd_ota_chopped_full2_0/stage2_0/N2P NPHIM eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X477 eeg_fd_ota_chopped_full2_0/stage2_0/N2P NPHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X478 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X479 eeg_fd_ota_chopped_full2_0/stage2_0/N2P PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X480 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP PHIBI eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X481 eeg_tg_lowq_3/B NPHIBI eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X482 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP NPHIBI eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X483 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP NPHIBI eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X484 eeg_tg_lowq_3/B PHIBI eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X485 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP PHIBI eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X486 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN PHIBI eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X487 eeg_tg_lowq_7/B NPHIBI eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X488 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN NPHIBI eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X489 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN NPHIBI eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X490 eeg_tg_lowq_7/B PHIBI eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X491 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN PHIBI eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X492 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN PHII eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X493 eeg_tg_lowq_3/B NPHII eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X494 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN NPHII eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X495 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN NPHII eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X496 eeg_tg_lowq_3/B PHII eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X497 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN PHII eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X498 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP PHII eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X499 eeg_tg_lowq_7/B NPHII eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X500 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP NPHII eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X501 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP NPHII eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X502 eeg_tg_lowq_7/B PHII eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X503 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP PHII eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X504 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X505 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X506 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X507 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X508 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X509 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS sky130_fd_pr__nfet_01v8 ad=16.62 pd=59.54 as=12 ps=52 w=48 l=4 nf=8
+X510 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS VSS sky130_fd_pr__nfet_01v8 ad=12 pd=52 as=16.62 ps=59.54 w=48 l=4 nf=8
+X525 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X526 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X527 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X528 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X529 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X530 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X531 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X532 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X533 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X534 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X535 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X536 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X537 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X538 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X539 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X540 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X541 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X542 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X543 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X544 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X545 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X546 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X547 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X548 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS sky130_fd_pr__nfet_01v8 ad=30 pd=126 as=30 ps=126 w=120 l=4 nf=12
+X549 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__nfet_01v8 ad=30 pd=126 as=30 ps=126 w=120 l=4 nf=12
+X550 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=30 pd=126 as=30 ps=126 w=120 l=4 nf=12
+X551 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS sky130_fd_pr__nfet_01v8 ad=30 pd=126 as=30 ps=126 w=120 l=4 nf=12
+X560 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS sky130_fd_pr__nfet_01v8 ad=17.4 pd=23.48 as=2.5 ps=10.5 w=10 l=4 nf=1
+X592 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS sky130_fd_pr__nfet_01v8 ad=2.5 pd=10.5 as=17.4 ps=23.48 w=10 l=4 nf=1
+X598 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X599 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X600 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X601 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X602 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X603 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X604 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X605 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X606 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X607 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X608 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X609 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X610 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X611 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X612 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X613 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X614 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X615 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X616 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X617 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X618 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X619 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X620 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X621 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X622 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X623 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X624 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X625 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X626 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X627 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X628 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X629 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X630 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X631 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X632 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45941_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46341_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X633 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X634 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X635 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X636 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X637 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45541_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45941_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X638 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X639 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X640 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X641 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X642 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X643 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45141_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45541_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X644 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X645 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X646 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X647 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X648 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X649 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X650 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44741_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45141_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X651 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X652 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X653 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X654 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X655 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n28859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X656 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=6 pd=26 as=10.62 ps=33.54 w=24 l=4 nf=4
+X657 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VDD18 sky130_fd_pr__pfet_01v8 ad=10.62 pd=33.54 as=6 ps=26 w=24 l=4 nf=4
+X664 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55541_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55941_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X665 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X666 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44341_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44741_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X667 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X668 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X669 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X670 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X671 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X672 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X673 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55141_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55541_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X674 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_50741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X675 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43941_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44341_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X676 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X677 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X678 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X679 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X680 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X681 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X682 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54741_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55141_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X683 VCM_REF eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_50741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X684 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X685 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n48059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X686 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X687 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X688 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X689 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X690 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54341_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54741_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X691 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X692 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n48059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X693 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X694 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X695 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X696 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30859_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X697 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57259_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56859_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X698 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51259_n3864# VCM_REF VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X699 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X700 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X701 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X702 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31259_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30859_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X703 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57659_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57259_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X704 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X705 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X706 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X707 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31659_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31259_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X708 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 ad=6 pd=26 as=10.62 ps=33.54 w=24 l=4 nf=4
+X709 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VDD18 sky130_fd_pr__pfet_01v8 ad=10.62 pd=33.54 as=6 ps=26 w=24 l=4 nf=4
+X716 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58059_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57659_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X717 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X718 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X719 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32059_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31659_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X720 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58459_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58059_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X721 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X722 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32459_3443# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32059_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X723 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58459_n3864# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X724 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32859_n3864# eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32459_3443# VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X725 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n28859_n3864# eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS sky130_fd_pr__res_xhigh_po_0p69 l=34.5
+X726 VCM_REF eeg_pseudo_res_0/m1_68_66# eeg_pseudo_res_0/m1_68_66# VCM_REF sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X727 eeg_tg_lowq_3/B eeg_pseudo_res_0/m1_68_66# eeg_pseudo_res_0/m1_68_66# eeg_tg_lowq_3/B sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X728 VCM_REF eeg_pseudo_res_1/m1_68_66# eeg_pseudo_res_1/m1_68_66# VCM_REF sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X729 eeg_tg_lowq_7/B eeg_pseudo_res_1/m1_68_66# eeg_pseudo_res_1/m1_68_66# eeg_tg_lowq_7/B sky130_fd_pr__pfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=4 nf=1
+X730 eeg_tg_lowq_3/B S16 eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X731 eeg_tg_lowq_0/A eeg_inv_2/Y eeg_tg_lowq_0/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X732 eeg_tg_lowq_3/B eeg_inv_2/Y eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X733 eeg_tg_lowq_3/B eeg_inv_2/Y eeg_tg_lowq_0/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X734 eeg_tg_lowq_0/A S16 eeg_tg_lowq_0/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X735 eeg_tg_lowq_3/B S16 eeg_tg_lowq_0/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X736 eeg_tg_lowq_3/B S8 eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X737 eeg_tg_lowq_1/A eeg_inv_3/Y eeg_tg_lowq_1/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X738 eeg_tg_lowq_3/B eeg_inv_3/Y eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X739 eeg_tg_lowq_3/B eeg_inv_3/Y eeg_tg_lowq_1/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X740 eeg_tg_lowq_1/A S8 eeg_tg_lowq_1/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X741 eeg_tg_lowq_3/B S8 eeg_tg_lowq_1/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X742 VCM_REF RST VCM_REF VDD18 sky130_fd_pr__pfet_01v8 ad=1.1088 pd=6 as=1.1088 ps=6 w=1.68 l=0.15 nf=2
+X743 eeg_tg_lowq_3/B eeg_inv_0/Y eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X744 VCM_REF eeg_inv_0/Y VCM_REF VSS sky130_fd_pr__nfet_01v8 ad=0.252 pd=2.88 as=0.252 ps=2.88 w=0.84 l=0.15 nf=2
+X745 VCM_REF eeg_inv_0/Y eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X746 eeg_tg_lowq_3/B RST eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X747 VCM_REF RST eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X748 eeg_tg_lowq_3/B S32 eeg_tg_lowq_3/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X749 eeg_tg_lowq_3/A eeg_inv_1/Y eeg_tg_lowq_3/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X750 eeg_tg_lowq_3/B eeg_inv_1/Y eeg_tg_lowq_3/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X751 eeg_tg_lowq_3/B eeg_inv_1/Y eeg_tg_lowq_3/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X752 eeg_tg_lowq_3/A S32 eeg_tg_lowq_3/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X753 eeg_tg_lowq_3/B S32 eeg_tg_lowq_3/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X755 eeg_tg_lowq_7/B eeg_inv_0/Y eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X757 VCM_REF eeg_inv_0/Y eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X758 eeg_tg_lowq_7/B RST eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X759 VCM_REF RST eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X760 eeg_tg_lowq_7/B S8 eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X761 eeg_tg_lowq_5/A eeg_inv_3/Y eeg_tg_lowq_5/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X762 eeg_tg_lowq_7/B eeg_inv_3/Y eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X763 eeg_tg_lowq_7/B eeg_inv_3/Y eeg_tg_lowq_5/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X764 eeg_tg_lowq_5/A S8 eeg_tg_lowq_5/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X765 eeg_tg_lowq_7/B S8 eeg_tg_lowq_5/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X766 eeg_tg_lowq_7/B S16 eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X767 eeg_tg_lowq_6/A eeg_inv_2/Y eeg_tg_lowq_6/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X768 eeg_tg_lowq_7/B eeg_inv_2/Y eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X769 eeg_tg_lowq_7/B eeg_inv_2/Y eeg_tg_lowq_6/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X770 eeg_tg_lowq_6/A S16 eeg_tg_lowq_6/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X771 eeg_tg_lowq_7/B S16 eeg_tg_lowq_6/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X772 eeg_tg_lowq_7/B S32 eeg_tg_lowq_7/B VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X773 eeg_tg_lowq_7/A eeg_inv_1/Y eeg_tg_lowq_7/A VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X774 eeg_tg_lowq_7/B eeg_inv_1/Y eeg_tg_lowq_7/B VSS sky130_fd_pr__nfet_01v8 ad=0.126 pd=1.44 as=0.126 ps=1.44 w=0.42 l=0.15 nf=1
+X775 eeg_tg_lowq_7/B eeg_inv_1/Y eeg_tg_lowq_7/A VDD18 sky130_fd_pr__pfet_01v8 ad=1.7136 pd=5.4 as=1.7136 ps=5.4 w=1.68 l=0.15 nf=1
+X776 eeg_tg_lowq_7/A S32 eeg_tg_lowq_7/A VDD18 sky130_fd_pr__pfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X777 eeg_tg_lowq_7/B S32 eeg_tg_lowq_7/A VSS sky130_fd_pr__nfet_01v8 ad=0.5544 pd=3 as=0.5544 ps=3 w=0.84 l=0.15 nf=1
+X778 VDD18 RST eeg_inv_0/Y VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=0.15 nf=1
+X779 VSS RST eeg_inv_0/Y VSS sky130_fd_pr__nfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=0.15 nf=1
+X780 VDD18 S32 eeg_inv_1/Y VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=0.15 nf=1
+X781 VSS S32 eeg_inv_1/Y VSS sky130_fd_pr__nfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=0.15 nf=1
+X782 VDD18 S16 eeg_inv_2/Y VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=0.15 nf=1
+X783 VSS S16 eeg_inv_2/Y VSS sky130_fd_pr__nfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=0.15 nf=1
+X784 VDD18 S8 eeg_inv_3/Y VDD18 sky130_fd_pr__pfet_01v8 ad=2.04 pd=6.04 as=2.04 ps=6.04 w=2 l=0.15 nf=1
+X785 VSS S8 eeg_inv_3/Y VSS sky130_fd_pr__nfet_01v8 ad=1.02 pd=4.04 as=1.02 ps=4.04 w=1 l=0.15 nf=1
+X786 eeg_tg_lowq_3/B ELN sky130_fd_pr__cap_mim_m3_1 l=20 w=800
+X788 eeg_tg_lowq_7/B ELP sky130_fd_pr__cap_mim_m3_1 l=20 w=800
+X792 eeg_tg_lowq_5/A OUTN sky130_fd_pr__cap_mim_m3_1 l=12.5 w=140
+X793 eeg_tg_lowq_0/A OUTP sky130_fd_pr__cap_mim_m3_1 l=12.5 w=60
+X815 eeg_tg_lowq_6/A OUTN sky130_fd_pr__cap_mim_m3_1 l=12.5 w=60
+X819 eeg_tg_lowq_3/B OUTP sky130_fd_pr__cap_mim_m3_1 l=12.5 w=20
+X823 eeg_tg_lowq_1/A OUTP sky130_fd_pr__cap_mim_m3_1 l=12.5 w=140
+X827 eeg_tg_lowq_7/A OUTN sky130_fd_pr__cap_mim_m3_1 l=12.5 w=20
+X842 eeg_tg_lowq_3/A OUTP sky130_fd_pr__cap_mim_m3_1 l=12.5 w=20
+X864 eeg_tg_lowq_7/B OUTN sky130_fd_pr__cap_mim_m3_1 l=12.5 w=20
+C0 ELN VSS 2.638090e-13
+C1 ELN eeg_tg_lowq_3/B 1.649640e-12
+C4 ELP VSS 2.637180e-13
+C5 ELP eeg_tg_lowq_7/B 1.649630e-12
+C6 NPHIBM OUTN 7.152395e-15
+C10 OUTN OUTP 4.993308e-14
+C13 OUTN VCM_REF 1.401636e-15
+C15 OUTN VSS 1.659602e-13
+C16 OUTN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN 1.426901e-15
+C17 OUTN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 7.085244e-16
+C18 OUTN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 1.088385e-15
+C20 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 1.189328e-15
+C21 OUTN eeg_tg_lowq_0/A 1.531580e-15
+C22 OUTN eeg_tg_lowq_1/A 1.215850e-14
+C23 OUTN eeg_tg_lowq_3/A 1.520450e-15
+C25 OUTN eeg_tg_lowq_5/A 1.872870e-13
+C26 OUTN eeg_tg_lowq_6/A 7.889160e-14
+C27 OUTN eeg_tg_lowq_7/A 2.359180e-14
+C28 OUTN eeg_tg_lowq_7/B 2.421910e-14
+C34 OUTP VCM_REF 5.351555e-15
+C36 OUTP VSS 2.031691e-13
+C38 OUTP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 5.446466e-16
+C47 OUTP eeg_tg_lowq_0/A 7.468640e-14
+C48 OUTP eeg_tg_lowq_1/A 1.869058e-13
+C49 OUTP eeg_tg_lowq_3/A 2.326716e-14
+C50 OUTP eeg_tg_lowq_3/B 2.348810e-14
+C51 OUTP eeg_tg_lowq_5/A 9.308394e-16
+C52 OUTP eeg_tg_lowq_6/A 9.388685e-16
+C53 OUTP eeg_tg_lowq_7/A 9.581515e-16
+C54 OUTP eeg_tg_lowq_7/B 1.189056e-15
+C57 PHIM VCM_REF 3.178203e-15
+C58 RST S16 9.702061e-16
+C59 RST S32 2.897180e-15
+C62 RST VDD18 7.804802e-16
+C63 RST VSS 1.572318e-14
+C64 RST eeg_inv_0/Y 1.602129e-15
+C66 RST eeg_inv_2/Y 7.948240e-16
+C67 RST eeg_inv_3/Y 1.607270e-15
+C73 S16 S32 2.965713e-15
+C74 S16 S8 2.936220e-15
+C76 S16 VDD18 8.569851e-16
+C77 S16 VSS 1.263913e-14
+C78 S16 eeg_inv_0/Y 5.250760e-16
+C80 S16 eeg_inv_2/Y 3.874150e-15
+C90 S32 VDD18 5.584713e-16
+C91 S32 VSS 6.205403e-15
+C93 S32 eeg_inv_1/Y 3.842403e-15
+C97 S32 eeg_tg_lowq_3/B 6.058147e-16
+C104 S8 VSS 8.630804e-15
+C108 S8 eeg_inv_3/Y 3.687484e-15
+C115 VCM_REF VDD18 5.403918e-15
+C116 VCM_REF VSS 5.251564e-14
+C124 VCM_REF eeg_tg_lowq_3/B 1.703838e-15
+C128 VCM_REF eeg_tg_lowq_7/B 1.258160e-15
+C129 VDD18 VSS 3.783017e-14
+C131 VDD18 eeg_inv_0/Y 1.144057e-15
+C133 VDD18 eeg_inv_2/Y 8.589415e-16
+C140 VDD18 eeg_tg_lowq_3/B 2.300143e-15
+C144 VDD18 eeg_tg_lowq_7/B 2.110887e-15
+C150 VSS eeg_inv_0/Y 9.260413e-16
+C151 VSS eeg_inv_1/Y 7.524579e-16
+C152 VSS eeg_inv_2/Y 9.434388e-16
+C153 VSS eeg_inv_3/Y 7.548584e-16
+C159 VSS eeg_tg_lowq_3/B 1.046869e-15
+C163 VSS eeg_tg_lowq_7/B 1.153756e-15
+C167 eeg_inv_0/Y VSS 1.661140e-14
+C168 eeg_inv_0/Y eeg_inv_1/Y 2.847579e-15
+C169 eeg_inv_0/Y eeg_inv_2/Y 3.177184e-15
+C172 eeg_inv_0/Y eeg_tg_lowq_3/B 5.508493e-16
+C173 eeg_inv_0/Y eeg_tg_lowq_7/B 5.955675e-16
+C174 eeg_inv_1/Y VSS 6.503700e-15
+C175 eeg_inv_1/Y eeg_inv_2/Y 2.945199e-15
+C178 eeg_inv_1/Y eeg_tg_lowq_3/B 5.751400e-16
+C181 eeg_inv_2/Y VSS 1.035860e-14
+C182 eeg_inv_2/Y eeg_inv_3/Y 3.285369e-15
+C187 eeg_inv_3/Y VSS 7.444670e-15
+C198 eeg_tg_lowq_0/A VSS 2.551130e-14
+C202 eeg_tg_lowq_0/A eeg_tg_lowq_7/B 5.672617e-16
+C203 eeg_tg_lowq_1/A VSS 3.182830e-14
+C205 eeg_tg_lowq_1/A eeg_tg_lowq_5/A 1.416121e-15
+C207 eeg_tg_lowq_3/A VSS 2.189780e-14
+C208 eeg_tg_lowq_3/A eeg_tg_lowq_3/B 5.800602e-16
+C211 eeg_tg_lowq_3/B VSS 4.877290e-14
+C212 eeg_tg_lowq_3/B eeg_tg_lowq_7/B 1.023261e-14
+C213 eeg_tg_lowq_5/A VSS 2.132890e-14
+C216 eeg_tg_lowq_6/A VSS 1.131540e-14
+C219 eeg_tg_lowq_7/A VSS 4.047010e-15
+C221 eeg_tg_lowq_7/B VSS 6.170890e-14
+C225 NPHIBM PHIBM 3.689518e-14
+C229 NPHIBM VSS 3.774740e-14
+C239 NPHIM PHIBM 3.680056e-14
+C240 NPHIM PHIM 3.702725e-14
+C243 NPHIM VSS 8.383554e-15
+C247 NPHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.024342e-15
+C256 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 6.053202e-15
+C271 PHIBM VSS 9.079500e-15
+C275 PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 8.573296e-16
+C281 PHIM VCM_REF 1.597600e-15
+C283 PHIM VSS 2.788475e-14
+C285 PHIM eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 3.735676e-15
+C290 VCM_REF VDD18 2.925411e-15
+C291 VCM_REF VSS 4.378994e-14
+C292 VCM_REF eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 1.760523e-14
+C293 VCM_REF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 3.039269e-15
+C301 VCM_REF eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 4.836588e-15
+C303 VDD18 VSS 1.098004e-13
+C305 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 2.280093e-14
+C307 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 5.412926e-16
+C308 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE 6.617475e-16
+C322 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 7.394524e-15
+C336 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN 5.272137e-16
+C338 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 5.400498e-16
+C418 VSS eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 5.043700e-15
+C419 VSS eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 6.769180e-16
+C422 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 6.367410e-14
+C473 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/stage2_0/N2P 5.740518e-16
+C474 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 1.125264e-15
+C476 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VSS 8.757940e-15
+C481 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS 1.553050e-14
+C492 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 2.020630e-14
+C493 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP 1.586935e-14
+C494 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 7.513171e-15
+C495 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.119515e-14
+C531 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 2.075320e-14
+C532 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 1.573698e-15
+C533 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.386070e-15
+C534 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 6.056700e-16
+C570 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 2.208780e-14
+C571 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 8.022897e-15
+C575 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 3.127310e-14
+C578 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 2.694470e-15
+C579 eeg_fd_ota_chopped_full2_0/stage2_0/N2N eeg_fd_ota_chopped_full2_0/stage2_0/N2P 2.211146e-15
+C581 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 2.461200e-15
+C583 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VSS 3.113330e-14
+C585 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS 4.437230e-15
+C586 VDD18 VSS 1.072390e-14
+C587 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN 1.083494e-15
+C588 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 1.335704e-15
+C589 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 1.406448e-15
+C591 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 2.065494e-15
+C592 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN 1.960641e-15
+C593 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 5.192045e-12
+C594 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 5.474732e-16
+C599 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 5.870937e-16
+C617 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 2.467770e-14
+C618 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 3.771753e-15
+C619 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 4.597047e-15
+C621 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 1.449157e-15
+C622 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# 9.237684e-16
+C623 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# 9.231557e-16
+C646 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 7.281980e-14
+C647 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 2.246044e-15
+C667 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 5.686547e-16
+C692 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VSS 5.243180e-15
+C693 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 4.554927e-15
+C754 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n20245# VSS 4.394320e-15
+C756 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n37933# VSS 4.394320e-15
+C758 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# VSS 6.618010e-15
+C759 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# VSS 4.381540e-15
+C766 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# VSS 4.381540e-15
+C978 VDD18 VSS 1.198063e-14
+C980 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 2.977050e-15
+C981 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 6.762340e-16
+C982 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VSS 6.072420e-16
+C983 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n27552# VSS 6.746650e-16
+C984 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n20245# VSS 6.746650e-16
+C985 VDD18 VSS 8.414800e-16
+C986 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN 8.460309e-16
+C987 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# 1.314672e-15
+C988 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 1.699680e-15
+C989 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# 5.017998e-16
+C990 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# VSS 3.582030e-15
+C991 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 3.678650e-15
+C992 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# 1.322042e-15
+C994 VDD18 VSS 3.678650e-15
+C995 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/eeg_pseudo_res_0/m1_68_66# 1.322042e-15
+C997 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n36396# VSS 6.746650e-16
+C998 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n29089# VSS 6.746650e-16
+C999 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN 8.327656e-16
+C1000 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 2.737979e-15
+C1001 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n20245# VSS 6.746650e-16
+C1002 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n27552# VSS 6.746650e-16
+C1003 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n27552# VSS 6.746650e-16
+C1004 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n20245# VSS 6.746650e-16
+C1005 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# VSS 6.747650e-16
+C1006 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n29089# VSS 6.746650e-16
+C1007 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n36396# VSS 6.746650e-16
+C1008 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 6.746650e-16
+C1009 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n9864# VSS 6.746650e-16
+C1010 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n36396# VSS 6.746650e-16
+C1011 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n37933# VSS 6.746650e-16
+C1012 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n27552# VSS 6.746650e-16
+C1013 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n20245# VSS 6.746650e-16
+C1014 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n27552# VSS 6.746650e-16
+C1015 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n20245# VSS 6.746650e-16
+C1016 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n2557# VSS 6.746650e-16
+C1017 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n9864# VSS 6.746650e-16
+C1018 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n20245# VSS 6.746650e-16
+C1019 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n27552# VSS 6.746650e-16
+C1020 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n27552# VSS 6.746650e-16
+C1021 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n20245# VSS 6.746650e-16
+C1022 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n18708# VSS 6.746650e-16
+C1023 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n11401# VSS 6.746650e-16
+C1024 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n45240# VSS 6.746650e-16
+C1025 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n37933# VSS 6.746650e-16
+C1026 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n9864# VSS 6.746650e-16
+C1027 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n2557# VSS 6.746650e-16
+C1028 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n27552# VSS 6.746650e-16
+C1029 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n20245# VSS 6.746650e-16
+C1030 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n20245# VSS 6.746650e-16
+C1031 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n27552# VSS 6.746650e-16
+C1032 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n11401# VSS 6.746650e-16
+C1033 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n18708# VSS 6.746650e-16
+C1034 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n2557# VSS 6.746650e-16
+C1035 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n9864# VSS 6.746650e-16
+C1036 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n37933# VSS 6.746650e-16
+C1037 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n45240# VSS 6.746650e-16
+C1038 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n20245# VSS 6.746650e-16
+C1039 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n27552# VSS 6.746650e-16
+C1040 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n27552# VSS 6.746650e-16
+C1041 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n20245# VSS 6.746650e-16
+C1042 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n18708# VSS 6.746650e-16
+C1043 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n11401# VSS 6.746650e-16
+C1044 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n11401# VSS 6.746650e-16
+C1045 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n18708# VSS 6.746650e-16
+C1046 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n18708# VSS 6.746650e-16
+C1047 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n11401# VSS 6.746650e-16
+C1048 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n9864# VSS 6.746650e-16
+C1049 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n2557# VSS 6.746650e-16
+C1050 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n45240# VSS 6.746650e-16
+C1051 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n37933# VSS 6.746650e-16
+C1052 VDD18 VSS 1.198063e-14
+C1053 VDD18 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 3.233324e-15
+C1054 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP VSS 6.072420e-16
+C1055 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n37933# VSS 6.746650e-16
+C1056 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n45240# VSS 6.746650e-16
+C1057 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n27552# VSS 6.746650e-16
+C1058 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n20245# VSS 6.746650e-16
+C1059 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n20245# VSS 6.746650e-16
+C1060 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n27552# VSS 6.746650e-16
+C1061 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n11401# VSS 6.746650e-16
+C1062 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n18708# VSS 6.746650e-16
+C1063 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10859_n11401# VSS 6.746650e-16
+C1064 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n18708# VSS 6.746650e-16
+C1065 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n2557# VSS 6.746650e-16
+C1066 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n9864# VSS 6.746650e-16
+C1067 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n9864# VSS 6.746650e-16
+C1068 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n2557# VSS 6.746650e-16
+C1069 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n36396# VSS 6.746650e-16
+C1070 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n29089# VSS 6.746650e-16
+C1071 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 6.746650e-16
+C1072 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n45240# VSS 6.746650e-16
+C1073 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n45240# VSS 6.746650e-16
+C1074 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5941_n37933# VSS 6.746650e-16
+C1075 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# VSS 6.746650e-16
+C1076 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n27552# VSS 6.746650e-16
+C1077 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n27552# VSS 6.746650e-16
+C1078 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n20245# VSS 6.746650e-16
+C1079 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n18708# VSS 6.746650e-16
+C1080 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n11401# VSS 6.746650e-16
+C1081 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11259_n18708# VSS 6.746650e-16
+C1082 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n20245# VSS 6.746650e-16
+C1083 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n9864# VSS 6.746650e-16
+C1084 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n2557# VSS 6.746650e-16
+C1085 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n2557# VSS 6.746650e-16
+C1086 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n9864# VSS 6.746650e-16
+C1087 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5259_n29089# VSS 6.746650e-16
+C1088 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n36396# VSS 6.746650e-16
+C1089 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n9864# VSS 6.746650e-16
+C1090 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n2557# VSS 6.746650e-16
+C1091 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n37933# VSS 6.746650e-16
+C1092 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5541_n45240# VSS 6.746650e-16
+C1093 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n45240# VSS 6.746650e-16
+C1094 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n37933# VSS 6.746650e-16
+C1095 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n36396# VSS 6.746650e-16
+C1096 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n29089# VSS 6.746650e-16
+C1097 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n29089# VSS 6.746650e-16
+C1098 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n36396# VSS 6.746650e-16
+C1099 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n20245# VSS 6.746650e-16
+C1100 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n27552# VSS 6.746650e-16
+C1101 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n11401# VSS 6.746650e-16
+C1102 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n18708# VSS 6.746650e-16
+C1103 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n2557# VSS 6.746650e-16
+C1104 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n9864# VSS 6.746650e-16
+C1105 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n9864# VSS 6.746650e-16
+C1106 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n2557# VSS 6.746650e-16
+C1107 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5659_n36396# VSS 6.746650e-16
+C1108 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n29089# VSS 6.746650e-16
+C1109 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n45240# VSS 6.746650e-16
+C1110 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_5141_n37933# VSS 6.746650e-16
+C1111 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n37933# VSS 6.746650e-16
+C1112 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9541_n45240# VSS 6.746650e-16
+C1113 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10341_n45240# VSS 6.746650e-16
+C1114 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9941_n37933# VSS 6.746650e-16
+C1115 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6859_n29089# VSS 6.746650e-16
+C1116 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n36396# VSS 6.746650e-16
+C1117 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n27552# VSS 6.746650e-16
+C1118 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n20245# VSS 6.746650e-16
+C1119 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n18708# VSS 6.746650e-16
+C1120 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n11401# VSS 6.746650e-16
+C1121 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n11401# VSS 6.746650e-16
+C1122 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10459_n18708# VSS 6.746650e-16
+C1123 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n9864# VSS 6.746650e-16
+C1124 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n2557# VSS 6.746650e-16
+C1125 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n2557# VSS 6.746650e-16
+C1126 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n9864# VSS 6.746650e-16
+C1127 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6059_n29089# VSS 6.746650e-16
+C1128 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6459_n36396# VSS 6.746650e-16
+C1129 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n37933# VSS 6.746650e-16
+C1130 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4741_n45240# VSS 6.746650e-16
+C1131 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n45240# VSS 6.746650e-16
+C1132 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9141_n37933# VSS 6.746650e-16
+C1133 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7259_n36396# VSS 6.746650e-16
+C1134 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n29089# VSS 6.746650e-16
+C1135 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n20245# VSS 6.746650e-16
+C1136 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n27552# VSS 6.746650e-16
+C1137 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n27552# VSS 6.746650e-16
+C1138 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11541_n20245# VSS 6.746650e-16
+C1139 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n11401# VSS 6.746650e-16
+C1140 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n18708# VSS 6.746650e-16
+C1141 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# VSS 6.746650e-16
+C1142 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n9864# VSS 6.746650e-16
+C1143 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n9864# VSS 6.746650e-16
+C1144 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n2557# VSS 6.746650e-16
+C1145 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n37933# VSS 6.746650e-16
+C1146 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8741_n45240# VSS 6.746650e-16
+C1147 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n29089# VSS 6.746650e-16
+C1148 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n36396# VSS 6.746650e-16
+C1149 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7659_n29089# VSS 6.746650e-16
+C1150 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n36396# VSS 6.746650e-16
+C1151 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10741_n20245# VSS 6.746650e-16
+C1152 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_11141_n27552# VSS 6.746650e-16
+C1153 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3701_n11401# VSS 6.746650e-16
+C1154 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n18708# VSS 6.746650e-16
+C1155 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n18708# VSS 6.746650e-16
+C1156 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n11401# VSS 6.746650e-16
+C1157 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n2557# VSS 6.746650e-16
+C1158 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n9864# VSS 6.746650e-16
+C1159 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n45240# VSS 6.746650e-16
+C1160 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8341_n37933# VSS 6.746650e-16
+C1161 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n36396# VSS 6.746650e-16
+C1162 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n29089# VSS 6.746650e-16
+C1163 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8059_n36396# VSS 6.746650e-16
+C1164 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n29089# VSS 6.746650e-16
+C1165 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4059_n18708# VSS 6.746650e-16
+C1166 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n11401# VSS 6.746650e-16
+C1167 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n11401# VSS 6.746650e-16
+C1168 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n18708# VSS 6.746650e-16
+C1169 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n9864# VSS 6.746650e-16
+C1170 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n2557# VSS 6.746650e-16
+C1171 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n37933# VSS 6.746650e-16
+C1172 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7941_n45240# VSS 6.746650e-16
+C1173 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n29089# VSS 6.746650e-16
+C1174 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n36396# VSS 6.746650e-16
+C1175 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8459_n29089# VSS 6.746650e-16
+C1176 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n36396# VSS 6.746650e-16
+C1177 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4459_n11401# VSS 6.746650e-16
+C1178 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4859_n18708# VSS 6.746650e-16
+C1179 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n2557# VSS 6.746650e-16
+C1180 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n9864# VSS 6.746650e-16
+C1181 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n45240# VSS 6.746650e-16
+C1182 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7541_n37933# VSS 6.746650e-16
+C1183 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n36396# VSS 6.746650e-16
+C1184 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n29089# VSS 6.746650e-16
+C1185 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_8859_n18708# VSS 6.746650e-16
+C1186 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n11401# VSS 6.746650e-16
+C1187 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n9864# VSS 6.746650e-16
+C1188 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n2557# VSS 6.746650e-16
+C1189 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n37933# VSS 6.746650e-16
+C1190 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_7141_n45240# VSS 6.746650e-16
+C1191 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n29089# VSS 6.746650e-16
+C1192 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n36396# VSS 6.746650e-16
+C1193 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9259_n11401# VSS 6.746650e-16
+C1194 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n18708# VSS 6.746650e-16
+C1195 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6341_n45240# VSS 6.746650e-16
+C1196 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_6741_n37933# VSS 6.746650e-16
+C1197 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_10059_n29089# VSS 6.746650e-16
+C1198 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_9659_n36396# VSS 6.746650e-16
+C1199 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_3941_n45240# VSS 6.746650e-16
+C1200 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_4341_n37933# VSS 6.746650e-16
+C1201 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN VSS 1.059610e-14
+C1202 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBP 2.704936e-15
+C1203 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBN eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# 2.781792e-15
+C1206 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/m1_2524_466# VSS 9.907064e-16
+C1208 VCM_REF VSS 6.240538e-16
+C1214 VDD18 VSS 2.668463e-15
+C1217 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 7.519594e-16
+C1219 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 2.369513e-15
+C1221 VSS eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# 5.221927e-16
+C1224 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 1.604850e-15
+C1229 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_370_1493# VSS 9.817690e-16
+C1233 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# VSS 1.236880e-15
+C1236 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VSS 1.787320e-15
+C1238 VDD18 VSS 3.587888e-15
+C1239 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_370_1493# 9.654664e-16
+C1246 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS 7.517030e-16
+C1247 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 9.287020e-16
+C1249 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 2.698520e-15
+C1250 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_s2_0/m1_68_166# 8.339500e-16
+C1252 VDD18 VSS 2.586521e-15
+C1253 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 1.198369e-15
+C1255 VCM_REF VSS 7.517030e-16
+C1262 VCM_REF VSS 6.276408e-16
+C1268 VDD18 VSS 2.546487e-15
+C1269 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 8.003207e-16
+C1273 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 2.369513e-15
+C1277 VSS eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# 5.221927e-16
+C1278 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 1.604850e-15
+C1283 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VSS 2.231260e-15
+C1289 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_370_1493# VSS 9.932130e-16
+C1291 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# VSS 1.237070e-15
+C1292 VDD18 VSS 6.757137e-15
+C1293 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 1.873828e-15
+C1295 VCM_REF VSS 7.517030e-16
+C1301 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 9.287020e-16
+C1303 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 2.698520e-15
+C1304 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_68_166# 8.339500e-16
+C1306 VDD18 VSS 3.587888e-15
+C1307 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/m1_370_1493# 9.654664e-16
+C1309 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS 7.517030e-16
+C1315 OUTN OUTP 1.250905e-14
+C1316 OUTN VCM_REF 1.571540e-15
+C1317 OUTN VDD18 1.639622e-15
+C1318 OUTN VSS 1.333233e-13
+C1321 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 9.326616e-15
+C1322 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 7.778653e-16
+C1323 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# 5.354807e-13
+C1361 OUTP VCM_REF 1.032390e-14
+C1362 OUTP VDD18 2.589536e-15
+C1363 OUTP VSS 1.257606e-13
+C1366 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 4.266178e-15
+C1396 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# 5.354613e-13
+C1400 VCM_REF VDD18 7.328797e-16
+C1401 VCM_REF VSS 1.680760e-14
+C1403 VCM_REF eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 1.478800e-14
+C1408 VDD18 VSS 2.038645e-14
+C1411 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 1.191804e-14
+C1412 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 1.675041e-15
+C1413 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2N 8.833751e-15
+C1414 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2P 1.288700e-15
+C1417 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 6.392800e-15
+C1418 eeg_fd_ota_chopped_full2_0/stage2_0/N2N eeg_fd_ota_chopped_full2_0/stage2_0/N2P 8.621393e-15
+C1422 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 1.400660e-14
+C1426 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VSS 2.125980e-14
+C1427 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 4.555847e-15
+C1428 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS 2.633740e-14
+C1434 eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# VSS 3.339850e-14
+C1459 eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# 2.125553e-15
+C1647 eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# VSS 2.574590e-14
+C1817 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58341_n8557# VSS 6.746650e-16
+C1818 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58741_n15864# VSS 6.746650e-16
+C1819 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24741_n15864# VSS 6.746650e-16
+C1820 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25141_n8557# VSS 6.746650e-16
+C1821 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20341_n8557# VSS 6.746650e-16
+C1822 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20741_n15864# VSS 6.746650e-16
+C1823 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35941_n15864# VSS 6.746650e-16
+C1824 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36341_n8557# VSS 6.746650e-16
+C1825 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79941_n8557# VSS 6.746650e-16
+C1826 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80341_n15864# VSS 6.746650e-16
+C1827 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75541_n15864# VSS 6.746650e-16
+C1828 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75941_n8557# VSS 6.746650e-16
+C1829 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69141_n8557# VSS 6.746650e-16
+C1830 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69541_n15864# VSS 6.746650e-16
+C1831 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64741_n15864# VSS 6.746650e-16
+C1832 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65141_n8557# VSS 6.746650e-16
+C1833 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57941_n15864# VSS 6.746650e-16
+C1834 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58341_n8557# VSS 6.746650e-16
+C1835 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28741_n15864# VSS 6.746650e-16
+C1836 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29141_n8557# VSS 6.746650e-16
+C1837 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24341_n8557# VSS 6.746650e-16
+C1838 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24741_n15864# VSS 6.746650e-16
+C1839 eeg_fd_ota_chopped_full2_0/stage2_0/m1_19941_n15864# VSS 6.746650e-16
+C1840 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20341_n8557# VSS 6.746650e-16
+C1841 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35541_n8557# VSS 6.746650e-16
+C1842 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35941_n15864# VSS 6.746650e-16
+C1843 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79541_n15864# VSS 6.746650e-16
+C1844 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79941_n8557# VSS 6.746650e-16
+C1845 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75141_n8557# VSS 6.746650e-16
+C1846 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75541_n15864# VSS 6.746650e-16
+C1847 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68741_n15864# VSS 6.746650e-16
+C1848 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69141_n8557# VSS 6.746650e-16
+C1849 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64341_n8557# VSS 6.746650e-16
+C1850 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64741_n15864# VSS 6.746650e-16
+C1851 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57541_n8557# VSS 6.746650e-16
+C1852 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57941_n15864# VSS 6.746650e-16
+C1853 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28341_n8557# VSS 6.746650e-16
+C1854 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28741_n15864# VSS 6.746650e-16
+C1855 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23941_n15864# VSS 6.746650e-16
+C1856 eeg_fd_ota_chopped_full2_0/stage2_0/m1_24341_n8557# VSS 6.746650e-16
+C1857 OUTP VSS 6.746650e-16
+C1858 eeg_fd_ota_chopped_full2_0/stage2_0/m1_19941_n15864# VSS 6.746650e-16
+C1859 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35141_n15864# VSS 6.746650e-16
+C1860 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35541_n8557# VSS 6.746650e-16
+C1861 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79141_n8557# VSS 6.746650e-16
+C1862 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79541_n15864# VSS 6.746650e-16
+C1863 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74741_n15864# VSS 6.746650e-16
+C1864 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75141_n8557# VSS 6.746650e-16
+C1865 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68341_n8557# VSS 6.746650e-16
+C1866 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68741_n15864# VSS 6.746650e-16
+C1867 eeg_fd_ota_chopped_full2_0/stage2_0/m1_63941_n15864# VSS 6.746650e-16
+C1868 eeg_fd_ota_chopped_full2_0/stage2_0/m1_64341_n8557# VSS 6.746650e-16
+C1869 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27941_n15864# VSS 6.746650e-16
+C1870 eeg_fd_ota_chopped_full2_0/stage2_0/m1_28341_n8557# VSS 6.746650e-16
+C1871 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23541_n8557# VSS 6.746650e-16
+C1872 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23941_n15864# VSS 6.746650e-16
+C1873 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS 6.746650e-16
+C1874 eeg_fd_ota_chopped_full2_0/stage2_0/m1_39141_n15864# VSS 6.746650e-16
+C1875 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34741_n8557# VSS 6.746650e-16
+C1876 eeg_fd_ota_chopped_full2_0/stage2_0/m1_35141_n15864# VSS 6.746650e-16
+C1877 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78741_n15864# VSS 6.746650e-16
+C1878 eeg_fd_ota_chopped_full2_0/stage2_0/m1_79141_n8557# VSS 6.746650e-16
+C1879 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74341_n8557# VSS 6.746650e-16
+C1880 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74741_n15864# VSS 6.746650e-16
+C1881 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67941_n15864# VSS 6.746650e-16
+C1882 eeg_fd_ota_chopped_full2_0/stage2_0/m1_68341_n8557# VSS 6.746650e-16
+C1883 OUTP VSS 6.746650e-16
+C1884 eeg_fd_ota_chopped_full2_0/stage2_0/m1_63941_n15864# VSS 6.746650e-16
+C1885 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27541_n8557# VSS 6.746650e-16
+C1886 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27941_n15864# VSS 6.746650e-16
+C1887 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23141_n15864# VSS 6.746650e-16
+C1888 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23541_n8557# VSS 6.746650e-16
+C1889 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38741_n8557# VSS 6.746650e-16
+C1890 eeg_fd_ota_chopped_full2_0/stage2_0/m1_39141_n15864# VSS 6.746650e-16
+C1891 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34341_n15864# VSS 6.746650e-16
+C1892 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34741_n8557# VSS 6.746650e-16
+C1893 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78341_n8557# VSS 6.746650e-16
+C1894 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78741_n15864# VSS 6.746650e-16
+C1895 eeg_fd_ota_chopped_full2_0/stage2_0/m1_73941_n15864# VSS 6.746650e-16
+C1896 eeg_fd_ota_chopped_full2_0/stage2_0/m1_74341_n8557# VSS 6.746650e-16
+C1897 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67541_n8557# VSS 6.746650e-16
+C1898 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67941_n15864# VSS 6.746650e-16
+C1899 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27141_n15864# VSS 6.746650e-16
+C1900 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27541_n8557# VSS 6.746650e-16
+C1901 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22741_n8557# VSS 6.746650e-16
+C1902 eeg_fd_ota_chopped_full2_0/stage2_0/m1_23141_n15864# VSS 6.746650e-16
+C1903 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38341_n15864# VSS 6.746650e-16
+C1904 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38741_n8557# VSS 6.746650e-16
+C1905 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33941_n8557# VSS 6.746650e-16
+C1906 eeg_fd_ota_chopped_full2_0/stage2_0/m1_34341_n15864# VSS 6.746650e-16
+C1907 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77941_n15864# VSS 6.746650e-16
+C1908 eeg_fd_ota_chopped_full2_0/stage2_0/m1_78341_n8557# VSS 6.746650e-16
+C1909 OUTN VSS 6.746650e-16
+C1910 eeg_fd_ota_chopped_full2_0/stage2_0/m1_73941_n15864# VSS 6.746650e-16
+C1911 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26741_n8557# VSS 6.746650e-16
+C1912 eeg_fd_ota_chopped_full2_0/stage2_0/m1_27141_n15864# VSS 6.746650e-16
+C1913 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22341_n15864# VSS 6.746650e-16
+C1914 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22741_n8557# VSS 6.746650e-16
+C1915 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37941_n8557# VSS 6.746650e-16
+C1916 eeg_fd_ota_chopped_full2_0/stage2_0/m1_38341_n15864# VSS 6.746650e-16
+C1917 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33541_n15864# VSS 6.746650e-16
+C1918 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33941_n8557# VSS 6.746650e-16
+C1919 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77541_n8557# VSS 6.746650e-16
+C1920 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77941_n15864# VSS 6.746650e-16
+C1921 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26341_n15864# VSS 6.746650e-16
+C1922 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26741_n8557# VSS 6.746650e-16
+C1923 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21941_n8557# VSS 6.746650e-16
+C1924 eeg_fd_ota_chopped_full2_0/stage2_0/m1_22341_n15864# VSS 6.746650e-16
+C1925 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37541_n15864# VSS 6.746650e-16
+C1926 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37941_n8557# VSS 6.746650e-16
+C1927 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33141_n8557# VSS 6.746650e-16
+C1928 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33541_n15864# VSS 6.746650e-16
+C1929 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25941_n8557# VSS 6.746650e-16
+C1930 eeg_fd_ota_chopped_full2_0/stage2_0/m1_26341_n15864# VSS 6.746650e-16
+C1931 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21541_n15864# VSS 6.746650e-16
+C1932 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21941_n8557# VSS 6.746650e-16
+C1933 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37141_n8557# VSS 6.746650e-16
+C1934 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37541_n15864# VSS 6.746650e-16
+C1935 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25541_n15864# VSS 6.746650e-16
+C1936 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25941_n8557# VSS 6.746650e-16
+C1937 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21141_n8557# VSS 6.746650e-16
+C1938 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21541_n15864# VSS 6.746650e-16
+C1939 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25141_n8557# VSS 6.746650e-16
+C1940 eeg_fd_ota_chopped_full2_0/stage2_0/m1_25541_n15864# VSS 6.746650e-16
+C1941 OUTN VDD18 9.216400e-16
+C1943 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 3.596600e-15
+C1944 VDD18 VSS 1.074004e-13
+C1945 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 2.903319e-14
+C1946 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VSS 7.027174e-15
+C1947 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32741_n15864# VSS 6.746650e-16
+C1948 eeg_fd_ota_chopped_full2_0/stage2_0/m1_33141_n8557# VSS 6.746650e-16
+C1950 OUTN eeg_fd_ota_chopped_full2_0/stage2_0/N2N 8.991500e-16
+C1951 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2N 9.971760e-16
+C1952 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 7.765320e-15
+C1953 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32341_n8557# VSS 6.746650e-16
+C1954 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32741_n15864# VSS 6.746650e-16
+C1955 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31941_n15864# VSS 6.746650e-16
+C1956 eeg_fd_ota_chopped_full2_0/stage2_0/m1_32341_n8557# VSS 6.746650e-16
+C1957 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31541_n8557# VSS 6.746650e-16
+C1958 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31941_n15864# VSS 6.746650e-16
+C1959 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31141_n15864# VSS 6.746650e-16
+C1960 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31541_n8557# VSS 6.746650e-16
+C1961 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30741_n8557# VSS 6.746650e-16
+C1962 eeg_fd_ota_chopped_full2_0/stage2_0/m1_31141_n15864# VSS 6.746650e-16
+C1963 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30341_n15864# VSS 6.746650e-16
+C1964 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30741_n8557# VSS 6.746650e-16
+C1965 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 6.668820e-16
+C1967 eeg_fd_ota_chopped_full2_0/stage2_0/m1_12966_n5928# VSS 6.668820e-16
+C1968 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29941_n8557# VSS 6.746650e-16
+C1969 eeg_fd_ota_chopped_full2_0/stage2_0/m1_30341_n15864# VSS 6.746650e-16
+C1970 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45141_n15864# VSS 6.746650e-16
+C1971 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45541_n8557# VSS 6.746650e-16
+C1972 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 6.668820e-16
+C1974 eeg_fd_ota_chopped_full2_0/stage2_0/m1_3966_n5928# VSS 6.668820e-16
+C1975 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29541_n15864# VSS 6.746650e-16
+C1976 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29941_n8557# VSS 6.746650e-16
+C1977 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44741_n8557# VSS 6.746650e-16
+C1978 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45141_n15864# VSS 6.746650e-16
+C1979 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49141_n15864# VSS 6.746650e-16
+C1980 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49541_n8557# VSS 6.746650e-16
+C1981 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29141_n8557# VSS 6.746650e-16
+C1982 eeg_fd_ota_chopped_full2_0/stage2_0/m1_29541_n15864# VSS 6.746650e-16
+C1983 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44341_n15864# VSS 6.746650e-16
+C1984 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44741_n8557# VSS 6.746650e-16
+C1985 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48741_n8557# VSS 6.746650e-16
+C1986 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49141_n15864# VSS 6.746650e-16
+C1987 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53141_n15864# VSS 6.746650e-16
+C1988 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53541_n8557# VSS 6.746650e-16
+C1989 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43941_n8557# VSS 6.746650e-16
+C1990 eeg_fd_ota_chopped_full2_0/stage2_0/m1_44341_n15864# VSS 6.746650e-16
+C1991 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48341_n15864# VSS 6.746650e-16
+C1992 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48741_n8557# VSS 6.746650e-16
+C1993 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52741_n8557# VSS 6.746650e-16
+C1994 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53141_n15864# VSS 6.746650e-16
+C1995 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57141_n15864# VSS 6.746650e-16
+C1996 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57541_n8557# VSS 6.746650e-16
+C1997 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43541_n15864# VSS 6.746650e-16
+C1998 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43941_n8557# VSS 6.746650e-16
+C1999 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47941_n8557# VSS 6.746650e-16
+C2000 eeg_fd_ota_chopped_full2_0/stage2_0/m1_48341_n15864# VSS 6.746650e-16
+C2001 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52341_n15864# VSS 6.746650e-16
+C2002 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52741_n8557# VSS 6.746650e-16
+C2003 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56741_n8557# VSS 6.746650e-16
+C2004 eeg_fd_ota_chopped_full2_0/stage2_0/m1_57141_n15864# VSS 6.746650e-16
+C2005 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43141_n8557# VSS 6.746650e-16
+C2006 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43541_n15864# VSS 6.746650e-16
+C2007 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47541_n15864# VSS 6.746650e-16
+C2008 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47941_n8557# VSS 6.746650e-16
+C2009 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51941_n8557# VSS 6.746650e-16
+C2010 eeg_fd_ota_chopped_full2_0/stage2_0/m1_52341_n15864# VSS 6.746650e-16
+C2011 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56341_n15864# VSS 6.746650e-16
+C2012 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56741_n8557# VSS 6.746650e-16
+C2013 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42741_n15864# VSS 6.746650e-16
+C2014 eeg_fd_ota_chopped_full2_0/stage2_0/m1_43141_n8557# VSS 6.746650e-16
+C2015 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47141_n8557# VSS 6.746650e-16
+C2016 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47541_n15864# VSS 6.746650e-16
+C2017 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51541_n15864# VSS 6.746650e-16
+C2018 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51941_n8557# VSS 6.746650e-16
+C2019 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55941_n8557# VSS 6.746650e-16
+C2020 eeg_fd_ota_chopped_full2_0/stage2_0/m1_56341_n15864# VSS 6.746650e-16
+C2021 eeg_fd_ota_chopped_full2_0/stage2_0/VCM2 VSS 6.746650e-16
+C2022 eeg_fd_ota_chopped_full2_0/stage2_0/m1_61141_n15864# VSS 6.746650e-16
+C2023 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42341_n8557# VSS 6.746650e-16
+C2024 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42741_n15864# VSS 6.746650e-16
+C2025 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46741_n15864# VSS 6.746650e-16
+C2026 eeg_fd_ota_chopped_full2_0/stage2_0/m1_47141_n8557# VSS 6.746650e-16
+C2027 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51141_n8557# VSS 6.746650e-16
+C2028 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51541_n15864# VSS 6.746650e-16
+C2029 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55541_n15864# VSS 6.746650e-16
+C2030 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55941_n8557# VSS 6.746650e-16
+C2031 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60741_n8557# VSS 6.746650e-16
+C2032 eeg_fd_ota_chopped_full2_0/stage2_0/m1_61141_n15864# VSS 6.746650e-16
+C2033 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67141_n15864# VSS 6.746650e-16
+C2034 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67541_n8557# VSS 6.746650e-16
+C2035 eeg_fd_ota_chopped_full2_0/stage2_0/m1_41941_n15864# VSS 6.746650e-16
+C2036 eeg_fd_ota_chopped_full2_0/stage2_0/m1_42341_n8557# VSS 6.746650e-16
+C2037 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46341_n8557# VSS 6.746650e-16
+C2038 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46741_n15864# VSS 6.746650e-16
+C2039 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50741_n15864# VSS 6.746650e-16
+C2040 eeg_fd_ota_chopped_full2_0/stage2_0/m1_51141_n8557# VSS 6.746650e-16
+C2041 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55141_n8557# VSS 6.746650e-16
+C2042 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55541_n15864# VSS 6.746650e-16
+C2043 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60341_n15864# VSS 6.746650e-16
+C2044 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60741_n8557# VSS 6.746650e-16
+C2045 VCM_REF VSS 6.746650e-16
+C2046 eeg_fd_ota_chopped_full2_0/stage2_0/m1_71141_n15864# VSS 6.746650e-16
+C2047 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66741_n8557# VSS 6.746650e-16
+C2048 eeg_fd_ota_chopped_full2_0/stage2_0/m1_67141_n15864# VSS 6.746650e-16
+C2049 OUTN VSS 6.746650e-16
+C2050 eeg_fd_ota_chopped_full2_0/stage2_0/m1_41941_n15864# VSS 6.746650e-16
+C2051 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45941_n15864# VSS 6.746650e-16
+C2052 eeg_fd_ota_chopped_full2_0/stage2_0/m1_46341_n8557# VSS 6.746650e-16
+C2053 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50341_n8557# VSS 6.746650e-16
+C2054 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50741_n15864# VSS 6.746650e-16
+C2055 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54741_n15864# VSS 6.746650e-16
+C2056 eeg_fd_ota_chopped_full2_0/stage2_0/m1_55141_n8557# VSS 6.746650e-16
+C2057 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59941_n8557# VSS 6.746650e-16
+C2058 eeg_fd_ota_chopped_full2_0/stage2_0/m1_60341_n15864# VSS 6.746650e-16
+C2059 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77141_n15864# VSS 6.746650e-16
+C2060 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77541_n8557# VSS 6.746650e-16
+C2061 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70741_n8557# VSS 6.746650e-16
+C2062 eeg_fd_ota_chopped_full2_0/stage2_0/m1_71141_n15864# VSS 6.746650e-16
+C2063 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66341_n15864# VSS 6.746650e-16
+C2064 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66741_n8557# VSS 6.746650e-16
+C2065 OUTP VDD18 9.216400e-16
+C2067 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 3.596600e-15
+C2068 VDD18 VSS 1.074004e-13
+C2069 VDD18 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 2.903319e-14
+C2070 eeg_fd_ota_chopped_full2_0/stage2_0/VBP2 VSS 7.027174e-15
+C2071 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45541_n8557# VSS 6.746650e-16
+C2072 eeg_fd_ota_chopped_full2_0/stage2_0/m1_45941_n15864# VSS 6.746650e-16
+C2073 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49941_n15864# VSS 6.746650e-16
+C2074 eeg_fd_ota_chopped_full2_0/stage2_0/m1_50341_n8557# VSS 6.746650e-16
+C2075 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54341_n8557# VSS 6.746650e-16
+C2076 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54741_n15864# VSS 6.746650e-16
+C2077 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59541_n15864# VSS 6.746650e-16
+C2078 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59941_n8557# VSS 6.746650e-16
+C2079 VCM_REF VSS 6.746650e-16
+C2080 eeg_fd_ota_chopped_full2_0/stage2_0/m1_81141_n15864# VSS 6.746650e-16
+C2081 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76741_n8557# VSS 6.746650e-16
+C2082 eeg_fd_ota_chopped_full2_0/stage2_0/m1_77141_n15864# VSS 6.746650e-16
+C2083 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70341_n15864# VSS 6.746650e-16
+C2084 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70741_n8557# VSS 6.746650e-16
+C2085 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65941_n8557# VSS 6.746650e-16
+C2086 eeg_fd_ota_chopped_full2_0/stage2_0/m1_66341_n15864# VSS 6.746650e-16
+C2087 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49541_n8557# VSS 6.746650e-16
+C2088 eeg_fd_ota_chopped_full2_0/stage2_0/m1_49941_n15864# VSS 6.746650e-16
+C2089 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53941_n15864# VSS 6.746650e-16
+C2090 eeg_fd_ota_chopped_full2_0/stage2_0/m1_54341_n8557# VSS 6.746650e-16
+C2091 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59141_n8557# VSS 6.746650e-16
+C2092 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59541_n15864# VSS 6.746650e-16
+C2093 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36741_n15864# VSS 6.746650e-16
+C2094 eeg_fd_ota_chopped_full2_0/stage2_0/m1_37141_n8557# VSS 6.746650e-16
+C2095 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80741_n8557# VSS 6.746650e-16
+C2096 eeg_fd_ota_chopped_full2_0/stage2_0/m1_81141_n15864# VSS 6.746650e-16
+C2097 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76341_n15864# VSS 6.746650e-16
+C2098 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76741_n8557# VSS 6.746650e-16
+C2099 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69941_n8557# VSS 6.746650e-16
+C2100 eeg_fd_ota_chopped_full2_0/stage2_0/m1_70341_n15864# VSS 6.746650e-16
+C2101 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65541_n15864# VSS 6.746650e-16
+C2102 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65941_n8557# VSS 6.746650e-16
+C2103 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53541_n8557# VSS 6.746650e-16
+C2104 eeg_fd_ota_chopped_full2_0/stage2_0/m1_53941_n15864# VSS 6.746650e-16
+C2105 eeg_fd_ota_chopped_full2_0/stage2_0/m1_58741_n15864# VSS 6.746650e-16
+C2106 eeg_fd_ota_chopped_full2_0/stage2_0/m1_59141_n8557# VSS 6.746650e-16
+C2107 eeg_fd_ota_chopped_full2_0/stage2_0/m1_20741_n15864# VSS 6.746650e-16
+C2108 eeg_fd_ota_chopped_full2_0/stage2_0/m1_21141_n8557# VSS 6.746650e-16
+C2109 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36341_n8557# VSS 6.746650e-16
+C2110 eeg_fd_ota_chopped_full2_0/stage2_0/m1_36741_n15864# VSS 6.746650e-16
+C2111 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80341_n15864# VSS 6.746650e-16
+C2112 eeg_fd_ota_chopped_full2_0/stage2_0/m1_80741_n8557# VSS 6.746650e-16
+C2113 eeg_fd_ota_chopped_full2_0/stage2_0/m1_75941_n8557# VSS 6.746650e-16
+C2114 eeg_fd_ota_chopped_full2_0/stage2_0/m1_76341_n15864# VSS 6.746650e-16
+C2115 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69541_n15864# VSS 6.746650e-16
+C2116 eeg_fd_ota_chopped_full2_0/stage2_0/m1_69941_n8557# VSS 6.746650e-16
+C2117 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65141_n8557# VSS 6.746650e-16
+C2118 eeg_fd_ota_chopped_full2_0/stage2_0/m1_65541_n15864# VSS 6.746650e-16
+C2120 OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2P 8.991500e-16
+C2121 VSS eeg_fd_ota_chopped_full2_0/stage2_0/N2P 9.971760e-16
+C2122 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 7.765320e-15
+C2124 NPHIBM PHIBM 5.228216e-15
+C2127 NPHIBM VSS 7.512014e-15
+C2132 NPHIM PHIBM 4.712490e-15
+C2133 NPHIM PHIM 5.200586e-15
+C2135 NPHIM VSS 3.887486e-15
+C2142 PHIBM VSS 3.602799e-15
+C2143 PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 7.703784e-16
+C2144 PHIBM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 7.157421e-16
+C2148 PHIM VSS 3.328204e-15
+C2149 PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 5.418324e-15
+C2150 PHIM eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 7.203664e-16
+C2153 VDD18 VSS 5.270369e-15
+C2162 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 2.830580e-15
+C2163 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 4.996116e-15
+C2165 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/stage2_0/N2P 5.233646e-16
+C2166 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 2.659180e-15
+C2167 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2N 5.135942e-15
+C2168 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2P 5.252581e-16
+C2169 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 1.709720e-15
+C2170 eeg_fd_ota_chopped_full2_0/stage2_0/N2N eeg_fd_ota_chopped_full2_0/stage2_0/N2P 4.747254e-15
+C2171 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 4.881870e-15
+C2172 NPHIBM PHIBM 1.215812e-15
+C2173 NPHIBM VDD18 5.262242e-16
+C2174 NPHIBM VSS 2.537269e-15
+C2177 PHIBM VDD18 6.588032e-16
+C2178 PHIBM VSS 1.789951e-15
+C2181 VDD18 VSS 3.714735e-15
+C2186 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 2.430800e-15
+C2187 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/stage2_0/N2P 1.492117e-15
+C2188 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 1.462840e-15
+C2192 VDD18 VSS 1.561810e-15
+C2205 VDD18 VSS 2.327590e-15
+C2214 VDD18 VSS 1.561810e-15
+C2223 NPHIBM PHIBM 1.215812e-15
+C2224 NPHIBM VDD18 5.262242e-16
+C2225 NPHIBM VSS 2.537269e-15
+C2228 PHIBM VDD18 6.588032e-16
+C2229 PHIBM VSS 1.789951e-15
+C2232 VDD18 VSS 3.714735e-15
+C2237 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 2.430800e-15
+C2238 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2N 1.492117e-15
+C2239 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 1.462840e-15
+C2243 VDD18 VSS 1.561810e-15
+C2256 VDD18 VSS 2.327590e-15
+C2265 VDD18 VSS 1.561810e-15
+C2274 NPHIM PHIM 1.215812e-15
+C2275 NPHIM VDD18 5.262242e-16
+C2276 NPHIM VSS 2.537269e-15
+C2279 PHIM VDD18 6.588032e-16
+C2280 PHIM VSS 1.789951e-15
+C2283 VDD18 VSS 3.714735e-15
+C2288 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 2.430800e-15
+C2289 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/stage2_0/N2N 1.492117e-15
+C2290 eeg_fd_ota_chopped_full2_0/stage2_0/N2N VSS 1.462840e-15
+C2294 VDD18 VSS 1.561810e-15
+C2307 VDD18 VSS 2.327590e-15
+C2316 VDD18 VSS 1.561810e-15
+C2325 NPHIM PHIM 1.215812e-15
+C2326 NPHIM VDD18 5.262242e-16
+C2327 NPHIM VSS 2.537269e-15
+C2330 PHIM VDD18 6.588032e-16
+C2331 PHIM VSS 1.789951e-15
+C2334 VDD18 VSS 3.714735e-15
+C2339 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 2.430800e-15
+C2340 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/stage2_0/N2P 1.492117e-15
+C2341 eeg_fd_ota_chopped_full2_0/stage2_0/N2P VSS 1.462840e-15
+C2345 VDD18 VSS 1.561810e-15
+C2358 VDD18 VSS 2.327590e-15
+C2367 VDD18 VSS 1.561810e-15
+C2377 NPHIBI PHIBI 5.228216e-15
+C2380 NPHIBI VSS 7.512014e-15
+C2385 NPHII PHIBI 4.712490e-15
+C2386 NPHII PHII 5.200586e-15
+C2388 NPHII VSS 3.887486e-15
+C2395 PHIBI VSS 3.602799e-15
+C2398 PHIBI eeg_tg_lowq_3/B 7.703784e-16
+C2399 PHIBI eeg_tg_lowq_7/B 7.157421e-16
+C2401 PHII VSS 3.328204e-15
+C2404 PHII eeg_tg_lowq_3/B 5.418324e-15
+C2405 PHII eeg_tg_lowq_7/B 7.203664e-16
+C2406 VDD18 VSS 5.270369e-15
+C2415 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 1.709720e-15
+C2416 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP 4.747254e-15
+C2418 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_tg_lowq_7/B 5.135942e-15
+C2419 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 4.881870e-15
+C2420 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_tg_lowq_3/B 5.233646e-16
+C2421 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_tg_lowq_7/B 5.252581e-16
+C2422 eeg_tg_lowq_3/B VSS 2.830580e-15
+C2423 eeg_tg_lowq_3/B eeg_tg_lowq_7/B 4.996116e-15
+C2424 eeg_tg_lowq_7/B VSS 2.659180e-15
+C2425 NPHIBI PHIBI 1.215812e-15
+C2426 NPHIBI VDD18 5.262242e-16
+C2427 NPHIBI VSS 2.537269e-15
+C2430 PHIBI VDD18 6.588032e-16
+C2431 PHIBI VSS 1.789951e-15
+C2434 VDD18 VSS 3.714735e-15
+C2439 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 1.462840e-15
+C2440 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_tg_lowq_3/B 1.492117e-15
+C2441 eeg_tg_lowq_3/B VSS 2.430800e-15
+C2445 VDD18 VSS 1.561810e-15
+C2458 VDD18 VSS 2.327590e-15
+C2467 VDD18 VSS 1.561810e-15
+C2476 NPHIBI PHIBI 1.215812e-15
+C2477 NPHIBI VDD18 5.262242e-16
+C2478 NPHIBI VSS 2.537269e-15
+C2481 PHIBI VDD18 6.588032e-16
+C2482 PHIBI VSS 1.789951e-15
+C2485 VDD18 VSS 3.714735e-15
+C2490 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 1.462840e-15
+C2491 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_tg_lowq_7/B 1.492117e-15
+C2492 eeg_tg_lowq_7/B VSS 2.430800e-15
+C2496 VDD18 VSS 1.561810e-15
+C2509 VDD18 VSS 2.327590e-15
+C2518 VDD18 VSS 1.561810e-15
+C2527 NPHII PHII 1.215812e-15
+C2528 NPHII VDD18 5.262242e-16
+C2529 NPHII VSS 2.537269e-15
+C2532 PHII VDD18 6.588032e-16
+C2533 PHII VSS 1.789951e-15
+C2536 VDD18 VSS 3.714735e-15
+C2541 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 1.462840e-15
+C2542 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_tg_lowq_3/B 1.492117e-15
+C2543 eeg_tg_lowq_3/B VSS 2.430800e-15
+C2547 VDD18 VSS 1.561810e-15
+C2560 VDD18 VSS 2.327590e-15
+C2569 VDD18 VSS 1.561810e-15
+C2578 NPHII PHII 1.215812e-15
+C2579 NPHII VDD18 5.262242e-16
+C2580 NPHII VSS 2.537269e-15
+C2583 PHII VDD18 6.588032e-16
+C2584 PHII VSS 1.789951e-15
+C2587 VDD18 VSS 3.714735e-15
+C2592 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 1.462840e-15
+C2593 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_tg_lowq_7/B 1.492117e-15
+C2594 eeg_tg_lowq_7/B VSS 2.430800e-15
+C2598 VDD18 VSS 1.561810e-15
+C2611 VDD18 VSS 2.327590e-15
+C2620 VDD18 VSS 1.561810e-15
+C2630 VCM_REF VSS 3.540900e-14
+C2632 VCM_REF eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE 1.587590e-14
+C2639 VDD18 VSS 1.621650e-14
+C2640 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 3.427693e-15
+C2641 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE 4.825121e-15
+C2646 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 3.521512e-15
+C2647 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN 1.319906e-14
+C2648 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP 2.891675e-15
+C2649 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 1.737419e-15
+C2650 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 8.481620e-16
+C2651 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 2.612991e-14
+C2652 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 6.189670e-15
+C2655 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 6.839995e-16
+C2656 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VSS 1.400120e-14
+C2659 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP 6.844558e-16
+C2660 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 7.668368e-16
+C2661 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 7.875883e-16
+C2662 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS 2.834530e-14
+C2669 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 1.448180e-14
+C2670 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP 2.623505e-14
+C2671 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 7.379468e-15
+C2672 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.018187e-14
+C2673 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 4.063561e-15
+C2674 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 3.261730e-14
+C2675 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 6.641364e-15
+C2676 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 3.395166e-15
+C2677 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 4.388117e-15
+C2678 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 3.542310e-14
+C2679 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 9.928293e-15
+C2714 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 2.763250e-14
+C2881 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS 1.794040e-14
+C3014 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51259_n3864# VSS 6.746650e-16
+C3015 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51659_3443# VSS 6.746650e-16
+C3016 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51659_3443# VSS 6.746650e-16
+C3017 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52059_n3864# VSS 6.746650e-16
+C3018 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52059_n3864# VSS 6.746650e-16
+C3019 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52459_3443# VSS 6.746650e-16
+C3020 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52459_3443# VSS 6.746650e-16
+C3021 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52859_n3864# VSS 6.746650e-16
+C3022 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n52859_n3864# VSS 6.746650e-16
+C3023 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53259_3443# VSS 6.746650e-16
+C3024 VSS eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF 6.766352e-15
+C3025 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 7.972532e-16
+C3026 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF VSS 2.104804e-14
+C3027 eeg_fd_ota_chopped_full2_0/eeg_bias_gen_0/VBNF eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 6.671600e-15
+C3029 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53259_3443# VSS 6.746650e-16
+C3030 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53659_n3864# VSS 6.746650e-16
+C3031 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31541_n3864# VSS 6.746650e-16
+C3032 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31941_3443# VSS 6.746650e-16
+C3033 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n53659_n3864# VSS 6.746650e-16
+C3034 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54059_3443# VSS 6.746650e-16
+C3035 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31141_3443# VSS 6.746650e-16
+C3036 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31541_n3864# VSS 6.746650e-16
+C3037 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35541_n3864# VSS 6.746650e-16
+C3038 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35941_3443# VSS 6.746650e-16
+C3039 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54059_3443# VSS 6.746650e-16
+C3040 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54459_n3864# VSS 6.746650e-16
+C3041 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39541_n3864# VSS 6.746650e-16
+C3042 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39941_3443# VSS 6.746650e-16
+C3043 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30741_n3864# VSS 6.746650e-16
+C3044 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31141_3443# VSS 6.746650e-16
+C3045 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35141_3443# VSS 6.746650e-16
+C3046 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35541_n3864# VSS 6.746650e-16
+C3047 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54459_n3864# VSS 6.746650e-16
+C3048 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54859_3443# VSS 6.746650e-16
+C3049 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43541_n3864# VSS 6.746650e-16
+C3050 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43941_3443# VSS 6.746650e-16
+C3051 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39141_3443# VSS 6.746650e-16
+C3052 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39541_n3864# VSS 6.746650e-16
+C3053 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30341_3443# VSS 6.746650e-16
+C3054 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30741_n3864# VSS 6.746650e-16
+C3055 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34741_n3864# VSS 6.746650e-16
+C3056 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35141_3443# VSS 6.746650e-16
+C3057 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n54859_3443# VSS 6.746650e-16
+C3058 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55259_n3864# VSS 6.746650e-16
+C3059 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43141_3443# VSS 6.746650e-16
+C3060 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43541_n3864# VSS 6.746650e-16
+C3061 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38741_n3864# VSS 6.746650e-16
+C3062 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39141_3443# VSS 6.746650e-16
+C3063 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29941_n3864# VSS 6.746650e-16
+C3064 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_30341_3443# VSS 6.746650e-16
+C3065 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34341_3443# VSS 6.746650e-16
+C3066 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34741_n3864# VSS 6.746650e-16
+C3067 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42741_n3864# VSS 6.746650e-16
+C3068 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43141_3443# VSS 6.746650e-16
+C3069 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38341_3443# VSS 6.746650e-16
+C3070 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38741_n3864# VSS 6.746650e-16
+C3071 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29541_3443# VSS 6.746650e-16
+C3072 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29941_n3864# VSS 6.746650e-16
+C3073 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33941_n3864# VSS 6.746650e-16
+C3074 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_34341_3443# VSS 6.746650e-16
+C3077 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.412244e-15
+C3078 VSS eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 1.572616e-15
+C3079 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN VSS 3.113808e-14
+C3081 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 1.694693e-14
+C3082 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 1.694693e-14
+C3083 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP VSS 3.114656e-14
+C3084 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.694693e-14
+C3085 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/INP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 1.694693e-14
+C3087 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 2.029956e-15
+C3089 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# 2.196456e-15
+C3090 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n22658_111# VSS 2.094330e-15
+C3091 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42341_3443# VSS 6.746650e-16
+C3092 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42741_n3864# VSS 6.746650e-16
+C3093 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37941_n3864# VSS 6.746650e-16
+C3094 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_38341_3443# VSS 6.746650e-16
+C3095 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29141_n3864# VSS 6.746650e-16
+C3096 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29541_3443# VSS 6.746650e-16
+C3097 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33541_3443# VSS 6.746650e-16
+C3098 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33941_n3864# VSS 6.746650e-16
+C3099 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41941_n3864# VSS 6.746650e-16
+C3100 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_42341_3443# VSS 6.746650e-16
+C3101 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37541_3443# VSS 6.746650e-16
+C3102 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37941_n3864# VSS 6.746650e-16
+C3103 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28741_3443# VSS 6.746650e-16
+C3104 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_29141_n3864# VSS 6.746650e-16
+C3105 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33141_n3864# VSS 6.746650e-16
+C3106 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33541_3443# VSS 6.746650e-16
+C3107 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41541_3443# VSS 6.746650e-16
+C3108 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41941_n3864# VSS 6.746650e-16
+C3109 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37141_n3864# VSS 6.746650e-16
+C3110 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37541_3443# VSS 6.746650e-16
+C3111 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28341_n3864# VSS 6.746650e-16
+C3112 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28741_3443# VSS 6.746650e-16
+C3113 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32741_3443# VSS 6.746650e-16
+C3114 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_33141_n3864# VSS 6.746650e-16
+C3115 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 6.746650e-16
+C3116 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47541_n3864# VSS 6.746650e-16
+C3117 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41141_n3864# VSS 6.746650e-16
+C3118 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41541_3443# VSS 6.746650e-16
+C3119 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS 6.746650e-16
+C3120 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_28341_n3864# VSS 6.746650e-16
+C3121 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32341_n3864# VSS 6.746650e-16
+C3122 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32741_3443# VSS 6.746650e-16
+C3123 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36741_3443# VSS 6.746650e-16
+C3124 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_37141_n3864# VSS 6.746650e-16
+C3125 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53941_n3864# VSS 6.746650e-16
+C3126 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54341_3443# VSS 6.746650e-16
+C3127 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47141_3443# VSS 6.746650e-16
+C3128 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47541_n3864# VSS 6.746650e-16
+C3129 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40741_3443# VSS 6.746650e-16
+C3130 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_41141_n3864# VSS 6.746650e-16
+C3131 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36341_n3864# VSS 6.746650e-16
+C3132 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36741_3443# VSS 6.746650e-16
+C3133 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_31941_3443# VSS 6.746650e-16
+C3134 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_32341_n3864# VSS 6.746650e-16
+C3135 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN VSS 6.746650e-16
+C3136 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57941_n3864# VSS 6.746650e-16
+C3137 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53541_3443# VSS 6.746650e-16
+C3138 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53941_n3864# VSS 6.746650e-16
+C3139 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46741_n3864# VSS 6.746650e-16
+C3140 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_47141_3443# VSS 6.746650e-16
+C3141 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40341_n3864# VSS 6.746650e-16
+C3142 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40741_3443# VSS 6.746650e-16
+C3143 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_35941_3443# VSS 6.746650e-16
+C3144 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_36341_n3864# VSS 6.746650e-16
+C3145 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57541_3443# VSS 6.746650e-16
+C3146 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57941_n3864# VSS 6.746650e-16
+C3147 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53141_n3864# VSS 6.746650e-16
+C3148 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53541_3443# VSS 6.746650e-16
+C3149 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46341_3443# VSS 6.746650e-16
+C3150 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46741_n3864# VSS 6.746650e-16
+C3151 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44859_n3864# VSS 6.746650e-16
+C3152 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45259_3443# VSS 6.746650e-16
+C3153 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_39941_3443# VSS 6.746650e-16
+C3154 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_40341_n3864# VSS 6.746650e-16
+C3155 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57141_n3864# VSS 6.746650e-16
+C3156 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57541_3443# VSS 6.746650e-16
+C3157 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52741_3443# VSS 6.746650e-16
+C3158 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_53141_n3864# VSS 6.746650e-16
+C3159 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45941_n3864# VSS 6.746650e-16
+C3160 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_46341_3443# VSS 6.746650e-16
+C3161 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45259_3443# VSS 6.746650e-16
+C3162 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45659_n3864# VSS 6.746650e-16
+C3163 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40859_n3864# VSS 6.746650e-16
+C3164 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41259_3443# VSS 6.746650e-16
+C3165 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56741_3443# VSS 6.746650e-16
+C3166 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_57141_n3864# VSS 6.746650e-16
+C3167 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52341_n3864# VSS 6.746650e-16
+C3168 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52741_3443# VSS 6.746650e-16
+C3169 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45541_3443# VSS 6.746650e-16
+C3170 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45941_n3864# VSS 6.746650e-16
+C3171 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n45659_n3864# VSS 6.746650e-16
+C3172 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46059_3443# VSS 6.746650e-16
+C3173 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41259_3443# VSS 6.746650e-16
+C3174 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41659_n3864# VSS 6.746650e-16
+C3175 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36859_n3864# VSS 6.746650e-16
+C3176 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37259_3443# VSS 6.746650e-16
+C3177 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56341_n3864# VSS 6.746650e-16
+C3178 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56741_3443# VSS 6.746650e-16
+C3179 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51941_3443# VSS 6.746650e-16
+C3180 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_52341_n3864# VSS 6.746650e-16
+C3181 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45141_n3864# VSS 6.746650e-16
+C3182 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45541_3443# VSS 6.746650e-16
+C3183 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46059_3443# VSS 6.746650e-16
+C3184 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46459_n3864# VSS 6.746650e-16
+C3185 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n41659_n3864# VSS 6.746650e-16
+C3186 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42059_3443# VSS 6.746650e-16
+C3187 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37259_3443# VSS 6.746650e-16
+C3188 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37659_n3864# VSS 6.746650e-16
+C3189 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32859_n3864# VSS 6.746650e-16
+C3190 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33259_3443# VSS 6.746650e-16
+C3191 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55941_3443# VSS 6.746650e-16
+C3192 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_56341_n3864# VSS 6.746650e-16
+C3193 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51541_n3864# VSS 6.746650e-16
+C3194 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51941_3443# VSS 6.746650e-16
+C3195 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44741_3443# VSS 6.746650e-16
+C3196 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_45141_n3864# VSS 6.746650e-16
+C3197 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46459_n3864# VSS 6.746650e-16
+C3198 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46859_3443# VSS 6.746650e-16
+C3199 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42059_3443# VSS 6.746650e-16
+C3200 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42459_n3864# VSS 6.746650e-16
+C3201 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n37659_n3864# VSS 6.746650e-16
+C3202 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38059_3443# VSS 6.746650e-16
+C3203 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33259_3443# VSS 6.746650e-16
+C3204 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33659_n3864# VSS 6.746650e-16
+C3205 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n28859_n3864# VSS 6.746650e-16
+C3206 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29259_3443# VSS 6.746650e-16
+C3207 VDD18 VSS 4.124974e-14
+C3208 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 1.216293e-14
+C3209 VDD18 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 1.242512e-15
+C3210 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VSS 2.342324e-15
+C3211 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP 3.335800e-15
+C3212 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55541_n3864# VSS 6.746650e-16
+C3213 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55941_3443# VSS 6.746650e-16
+C3214 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51141_3443# VSS 6.746650e-16
+C3215 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51541_n3864# VSS 6.746650e-16
+C3216 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44341_n3864# VSS 6.746650e-16
+C3217 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44741_3443# VSS 6.746650e-16
+C3218 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55259_n3864# VSS 6.746650e-16
+C3219 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55659_3443# VSS 6.746650e-16
+C3220 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n46859_3443# VSS 6.746650e-16
+C3221 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47259_n3864# VSS 6.746650e-16
+C3222 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42459_n3864# VSS 6.746650e-16
+C3223 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42859_3443# VSS 6.746650e-16
+C3224 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38059_3443# VSS 6.746650e-16
+C3225 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38459_n3864# VSS 6.746650e-16
+C3226 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n33659_n3864# VSS 6.746650e-16
+C3227 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34059_3443# VSS 6.746650e-16
+C3228 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29259_3443# VSS 6.746650e-16
+C3229 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29659_n3864# VSS 6.746650e-16
+C3230 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55141_3443# VSS 6.746650e-16
+C3231 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55541_n3864# VSS 6.746650e-16
+C3232 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_50741_n3864# VSS 6.746650e-16
+C3233 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_51141_3443# VSS 6.746650e-16
+C3234 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_43941_3443# VSS 6.746650e-16
+C3235 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_44341_n3864# VSS 6.746650e-16
+C3236 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n55659_3443# VSS 6.746650e-16
+C3237 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56059_n3864# VSS 6.746650e-16
+C3238 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47259_n3864# VSS 6.746650e-16
+C3239 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47659_3443# VSS 6.746650e-16
+C3240 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n42859_3443# VSS 6.746650e-16
+C3241 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43259_n3864# VSS 6.746650e-16
+C3242 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38459_n3864# VSS 6.746650e-16
+C3243 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38859_3443# VSS 6.746650e-16
+C3244 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34059_3443# VSS 6.746650e-16
+C3245 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34459_n3864# VSS 6.746650e-16
+C3246 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n29659_n3864# VSS 6.746650e-16
+C3247 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30059_3443# VSS 6.746650e-16
+C3248 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54741_n3864# VSS 6.746650e-16
+C3249 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_55141_3443# VSS 6.746650e-16
+C3250 VCM_REF VSS 6.746650e-16
+C3251 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_50741_n3864# VSS 6.746650e-16
+C3252 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56059_n3864# VSS 6.746650e-16
+C3253 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56459_3443# VSS 6.746650e-16
+C3254 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n47659_3443# VSS 6.746650e-16
+C3255 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n48059_n3864# VSS 6.746650e-16
+C3256 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43259_n3864# VSS 6.746650e-16
+C3257 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43659_3443# VSS 6.746650e-16
+C3258 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n38859_3443# VSS 6.746650e-16
+C3259 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39259_n3864# VSS 6.746650e-16
+C3260 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34459_n3864# VSS 6.746650e-16
+C3261 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34859_3443# VSS 6.746650e-16
+C3262 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30059_3443# VSS 6.746650e-16
+C3263 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30459_n3864# VSS 6.746650e-16
+C3264 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54341_3443# VSS 6.746650e-16
+C3265 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_54741_n3864# VSS 6.746650e-16
+C3266 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56459_3443# VSS 6.746650e-16
+C3267 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56859_n3864# VSS 6.746650e-16
+C3268 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 6.746650e-16
+C3269 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n48059_n3864# VSS 6.746650e-16
+C3270 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n43659_3443# VSS 6.746650e-16
+C3271 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44059_n3864# VSS 6.746650e-16
+C3272 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39259_n3864# VSS 6.746650e-16
+C3273 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39659_3443# VSS 6.746650e-16
+C3274 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n34859_3443# VSS 6.746650e-16
+C3275 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35259_n3864# VSS 6.746650e-16
+C3276 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30459_n3864# VSS 6.746650e-16
+C3277 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30859_3443# VSS 6.746650e-16
+C3278 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n56859_n3864# VSS 6.746650e-16
+C3279 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57259_3443# VSS 6.746650e-16
+C3280 VCM_REF VSS 6.746650e-16
+C3281 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n51259_n3864# VSS 6.746650e-16
+C3282 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44059_n3864# VSS 6.746650e-16
+C3283 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44459_3443# VSS 6.746650e-16
+C3284 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n39659_3443# VSS 6.746650e-16
+C3285 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40059_n3864# VSS 6.746650e-16
+C3286 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35259_n3864# VSS 6.746650e-16
+C3287 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35659_3443# VSS 6.746650e-16
+C3288 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n30859_3443# VSS 6.746650e-16
+C3289 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31259_n3864# VSS 6.746650e-16
+C3290 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57259_3443# VSS 6.746650e-16
+C3291 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57659_n3864# VSS 6.746650e-16
+C3292 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44459_3443# VSS 6.746650e-16
+C3293 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n44859_n3864# VSS 6.746650e-16
+C3294 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40059_n3864# VSS 6.746650e-16
+C3295 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40459_3443# VSS 6.746650e-16
+C3296 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n35659_3443# VSS 6.746650e-16
+C3297 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36059_n3864# VSS 6.746650e-16
+C3298 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31259_n3864# VSS 6.746650e-16
+C3299 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31659_3443# VSS 6.746650e-16
+C3300 VDD18 VSS 4.124974e-14
+C3301 VDD18 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP 1.216293e-14
+C3302 VDD18 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 1.242512e-15
+C3303 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP VSS 2.342324e-15
+C3304 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VBP eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTN 3.335800e-15
+C3305 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n57659_n3864# VSS 6.746650e-16
+C3306 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58059_3443# VSS 6.746650e-16
+C3307 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40459_3443# VSS 6.746650e-16
+C3308 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n40859_n3864# VSS 6.746650e-16
+C3309 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36059_n3864# VSS 6.746650e-16
+C3310 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36459_3443# VSS 6.746650e-16
+C3311 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n31659_3443# VSS 6.746650e-16
+C3312 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32059_n3864# VSS 6.746650e-16
+C3313 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58059_3443# VSS 6.746650e-16
+C3314 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58459_n3864# VSS 6.746650e-16
+C3315 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36459_3443# VSS 6.746650e-16
+C3316 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n36859_n3864# VSS 6.746650e-16
+C3317 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32059_n3864# VSS 6.746650e-16
+C3318 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32459_3443# VSS 6.746650e-16
+C3319 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/OUTP VSS 6.746650e-16
+C3320 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n58459_n3864# VSS 6.746650e-16
+C3321 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32459_3443# VSS 6.746650e-16
+C3322 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n32859_n3864# VSS 6.746650e-16
+C3323 eeg_fd_ota_chopped_full2_0/eeg_cmfb_amp_dl2_0/VCM_SENSE VSS 6.746650e-16
+C3324 eeg_fd_ota_chopped_full2_0/eeg_fd_ota_core_soft_0/m1_n28859_n3864# VSS 6.746650e-16
+C3325 VCM_REF VSS 1.699680e-15
+C3326 VCM_REF eeg_pseudo_res_0/m1_68_66# 5.017998e-16
+C3327 VCM_REF eeg_tg_lowq_3/B 8.460309e-16
+C3328 eeg_pseudo_res_0/m1_68_66# VSS 3.582030e-15
+C3329 eeg_pseudo_res_0/m1_68_66# eeg_tg_lowq_3/B 1.314672e-15
+C3330 eeg_tg_lowq_3/B VSS 8.414800e-16
+C3331 VCM_REF VSS 3.678650e-15
+C3332 VCM_REF eeg_pseudo_res_0/m1_68_66# 1.322042e-15
+C3335 eeg_pseudo_res_0/m1_68_66# eeg_tg_lowq_3/B 1.322042e-15
+C3336 eeg_tg_lowq_3/B VSS 3.678650e-15
+C3337 VCM_REF VSS 1.699680e-15
+C3338 VCM_REF eeg_pseudo_res_1/m1_68_66# 5.017998e-16
+C3339 VCM_REF eeg_tg_lowq_7/B 8.460309e-16
+C3340 eeg_pseudo_res_1/m1_68_66# VSS 3.582030e-15
+C3341 eeg_pseudo_res_1/m1_68_66# eeg_tg_lowq_7/B 1.314672e-15
+C3342 eeg_tg_lowq_7/B VSS 8.414800e-16
+C3343 VCM_REF VSS 3.678650e-15
+C3344 VCM_REF eeg_pseudo_res_1/m1_68_66# 1.322042e-15
+C3347 eeg_pseudo_res_1/m1_68_66# eeg_tg_lowq_7/B 1.322042e-15
+C3348 eeg_tg_lowq_7/B VSS 3.678650e-15
+C3349 S16 VDD18 6.588032e-16
+C3350 S16 VSS 1.789951e-15
+C3351 S16 eeg_inv_2/Y 1.215812e-15
+C3354 VDD18 VSS 3.714735e-15
+C3355 VDD18 eeg_inv_2/Y 5.262242e-16
+C3358 VSS eeg_inv_2/Y 1.446619e-15
+C3361 eeg_inv_2/Y VSS 1.090650e-15
+C3364 eeg_tg_lowq_0/A VSS 2.430800e-15
+C3365 eeg_tg_lowq_0/A eeg_tg_lowq_3/B 1.492117e-15
+C3366 eeg_tg_lowq_3/B VSS 1.462840e-15
+C3370 VDD18 VSS 1.561810e-15
+C3379 VDD18 VSS 2.327590e-15
+C3392 VDD18 VSS 1.561810e-15
+C3401 S8 VDD18 6.588032e-16
+C3402 S8 VSS 1.789951e-15
+C3403 S8 eeg_inv_3/Y 1.215812e-15
+C3406 VDD18 VSS 3.714735e-15
+C3407 VDD18 eeg_inv_3/Y 5.262242e-16
+C3410 VSS eeg_inv_3/Y 1.446619e-15
+C3413 eeg_inv_3/Y VSS 1.090650e-15
+C3416 eeg_tg_lowq_1/A VSS 2.430800e-15
+C3417 eeg_tg_lowq_1/A eeg_tg_lowq_3/B 1.492117e-15
+C3418 eeg_tg_lowq_3/B VSS 1.462840e-15
+C3422 VDD18 VSS 1.561810e-15
+C3431 VDD18 VSS 2.327590e-15
+C3444 VDD18 VSS 1.561810e-15
+C3454 RST VDD18 6.588032e-16
+C3455 RST VSS 1.789951e-15
+C3456 RST eeg_inv_0/Y 1.215812e-15
+C3459 VCM_REF VSS 1.572561e-15
+C3461 VCM_REF eeg_tg_lowq_3/B 1.492117e-15
+C3462 VDD18 VSS 3.714735e-15
+C3463 VDD18 eeg_inv_0/Y 5.262242e-16
+C3465 VSS eeg_inv_0/Y 1.446619e-15
+C3467 eeg_inv_0/Y VSS 1.090650e-15
+C3469 eeg_tg_lowq_3/B VSS 2.430800e-15
+C3475 VDD18 VSS 1.561810e-15
+C3486 VDD18 VSS 2.327590e-15
+C3495 VDD18 VSS 1.561810e-15
+C3504 S32 VDD18 6.588032e-16
+C3505 S32 VSS 1.789951e-15
+C3506 S32 eeg_inv_1/Y 1.215812e-15
+C3509 VDD18 VSS 3.714735e-15
+C3510 VDD18 eeg_inv_1/Y 5.262242e-16
+C3513 VSS eeg_inv_1/Y 1.446619e-15
+C3516 eeg_inv_1/Y VSS 1.090650e-15
+C3519 eeg_tg_lowq_3/A VSS 2.430800e-15
+C3520 eeg_tg_lowq_3/A eeg_tg_lowq_3/B 1.492117e-15
+C3521 eeg_tg_lowq_3/B VSS 1.462840e-15
+C3525 VDD18 VSS 1.561810e-15
+C3534 VDD18 VSS 2.327590e-15
+C3547 VDD18 VSS 1.561810e-15
+C3557 RST VDD18 6.588032e-16
+C3558 RST VSS 1.789951e-15
+C3559 RST eeg_inv_0/Y 1.215812e-15
+C3562 VCM_REF VSS 1.572561e-15
+C3564 VCM_REF eeg_tg_lowq_7/B 1.492117e-15
+C3565 VDD18 VSS 3.714735e-15
+C3566 VDD18 eeg_inv_0/Y 5.262242e-16
+C3568 VSS eeg_inv_0/Y 1.446619e-15
+C3570 eeg_inv_0/Y VSS 1.090650e-15
+C3572 eeg_tg_lowq_7/B VSS 2.430800e-15
+C3578 VDD18 VSS 1.561810e-15
+C3589 VDD18 VSS 2.327590e-15
+C3598 VDD18 VSS 1.561810e-15
+C3607 S8 VDD18 6.588032e-16
+C3608 S8 VSS 1.789951e-15
+C3609 S8 eeg_inv_3/Y 1.215812e-15
+C3612 VDD18 VSS 3.714735e-15
+C3613 VDD18 eeg_inv_3/Y 5.262242e-16
+C3616 VSS eeg_inv_3/Y 1.446619e-15
+C3619 eeg_inv_3/Y VSS 1.090650e-15
+C3622 eeg_tg_lowq_5/A VSS 2.430800e-15
+C3623 eeg_tg_lowq_5/A eeg_tg_lowq_7/B 1.492117e-15
+C3624 eeg_tg_lowq_7/B VSS 1.462840e-15
+C3628 VDD18 VSS 1.561810e-15
+C3637 VDD18 VSS 2.327590e-15
+C3650 VDD18 VSS 1.561810e-15
+C3659 S16 VDD18 6.588032e-16
+C3660 S16 VSS 1.789951e-15
+C3661 S16 eeg_inv_2/Y 1.215812e-15
+C3664 VDD18 VSS 3.714735e-15
+C3665 VDD18 eeg_inv_2/Y 5.262242e-16
+C3668 VSS eeg_inv_2/Y 1.446619e-15
+C3671 eeg_inv_2/Y VSS 1.090650e-15
+C3674 eeg_tg_lowq_6/A VSS 2.430800e-15
+C3675 eeg_tg_lowq_6/A eeg_tg_lowq_7/B 1.492117e-15
+C3676 eeg_tg_lowq_7/B VSS 1.462840e-15
+C3680 VDD18 VSS 1.561810e-15
+C3689 VDD18 VSS 2.327590e-15
+C3702 VDD18 VSS 1.561810e-15
+C3711 S32 VDD18 6.588032e-16
+C3712 S32 VSS 1.789951e-15
+C3713 S32 eeg_inv_1/Y 1.215812e-15
+C3716 VDD18 VSS 3.714735e-15
+C3717 VDD18 eeg_inv_1/Y 5.262242e-16
+C3720 VSS eeg_inv_1/Y 1.446619e-15
+C3723 eeg_inv_1/Y VSS 1.090650e-15
+C3726 eeg_tg_lowq_7/A VSS 2.430800e-15
+C3727 eeg_tg_lowq_7/A eeg_tg_lowq_7/B 1.492117e-15
+C3728 eeg_tg_lowq_7/B VSS 1.462840e-15
+C3732 VDD18 VSS 1.561810e-15
+C3741 VDD18 VSS 2.327590e-15
+C3754 VDD18 VSS 1.561810e-15
+C3764 RST VSS 1.620786e-15
+C3766 VDD18 VSS 1.332013e-15
+C3767 VDD18 eeg_inv_0/Y 7.937490e-16
+C3769 eeg_inv_0/Y VSS 9.197480e-16
+C3773 VDD18 VSS 2.592707e-15
+C3781 S32 VSS 1.620786e-15
+C3783 VDD18 VSS 1.332013e-15
+C3784 VDD18 eeg_inv_1/Y 7.937490e-16
+C3786 eeg_inv_1/Y VSS 9.197480e-16
+C3790 VDD18 VSS 2.592707e-15
+C3798 S16 VSS 1.620786e-15
+C3800 VDD18 VSS 1.332013e-15
+C3801 VDD18 eeg_inv_2/Y 7.937490e-16
+C3803 eeg_inv_2/Y VSS 9.197480e-16
+C3807 VDD18 VSS 2.592707e-15
+C3815 S8 VSS 1.620786e-15
+C3817 VDD18 VSS 1.332013e-15
+C3818 VDD18 eeg_inv_3/Y 7.937490e-16
+C3820 eeg_inv_3/Y VSS 9.197480e-16
+C3824 VDD18 VSS 2.592707e-15
+.ends
+

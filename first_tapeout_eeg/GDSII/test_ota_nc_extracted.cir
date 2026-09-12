@@ -1,29 +1,28 @@
-* Extracted by KLayout with SKY130 LVS runset on : 05/09/2026 21:29
+* Extracted by KLayout with SKY130 LVS runset on : 11/09/2026 19:08
 
 .SUBCKT eeg_fd_ota_full2_nc INN INP OUTN OUTP VCM_REF VDD18 VSS
-X$1 VSS \$2 VDD18 eeg_bias_gen
-X$2 VSS \$2 \$3 VCM_REF VDD18 \$14 eeg_cmfb_amp_dl2_s2
-X$3 OUTP OUTN VSS \$6 \$7 \$14 \$3 VCM_REF VDD18 stage2
+X$1 VSS \$2 \$3 VCM_REF VDD18 \$14 eeg_cmfb_amp_dl2_s2
+X$2 OUTP OUTN VSS \$6 \$7 \$14 \$3 VCM_REF VDD18 stage2
+X$3 VSS \$2 VDD18 eeg_bias_gen
 X$4 VSS \$2 \$11 VCM_REF VDD18 \$8 eeg_cmfb_amp_dl2
 X$5 VSS \$2 INN INP \$7 \$6 \$8 \$11 VCM_REF VDD18 eeg_fd_ota_core_soft
 .ENDS eeg_fd_ota_full2_nc
 
 .SUBCKT eeg_bias_gen VSS VBNF VDD18
-C$1 VSS VBNF sky130_fd_pr__model__cap_mim C=1e-09 A=500000 P=100000
-R$1251 VSS \$214 VSS sky130_fd_pr__res_xhigh_po_0p69 R=24985.5072464 L=8.62
-+ W=0.69 A=5.9478 P=18.62
-M$1252 VDD18 VBP VBP VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
-+ PS=17.54 PD=17.54
-M$1254 VDD18 VBP VBN VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
-+ PS=17.54 PD=17.54
-M$1256 \$214 VBN VBP VSS sky130_fd_pr__nfet_01v8 L=4 W=40 AS=13.85 AD=13.85
+X$105 VDD18 VBN eeg_pseudo_res
+C$1 VSS VBNF sky130_fd_pr__model__cap_mim C=1e-10 A=50000 P=10000
+M$126 VSS VBN VBN VSS sky130_fd_pr__nfet_01v8 L=4 W=10 AS=6.35 AD=6.35 PS=17.54
++ PD=17.54
+M$128 \$104 VBN VBP VSS sky130_fd_pr__nfet_01v8 L=4 W=40 AS=13.85 AD=13.85
 + PS=50.54 PD=50.54
-M$1264 VSS VBN VBN VSS sky130_fd_pr__nfet_01v8 L=4 W=10 AS=6.35 AD=6.35
+R$136 VSS \$104 VSS sky130_fd_pr__res_xhigh_po_0p69 R=24985.5072464 L=8.62
++ W=0.69 A=5.9478 P=18.62
+M$137 VDD18 VBP VBP VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
 + PS=17.54 PD=17.54
-R$1266 VBNF VBN VSS sky130_fd_pr__res_xhigh_po_0p69 R=1000000 L=345 W=0.69
-+ A=238.05 P=703.8
-R$1462 VBN VDD18 VSS sky130_fd_pr__res_xhigh_po_0p69 R=20000000 L=6900 W=0.69
-+ A=4761 P=14076
+R$237 VBNF VBN VSS sky130_fd_pr__res_xhigh_po_0p69 R=10000000 L=3450 W=0.69
++ A=2380.5 P=7038
+M$239 VDD18 VBP VBN VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
++ PS=17.54 PD=17.54
 .ENDS eeg_bias_gen
 
 .SUBCKT stage2 OUTP OUTN VSS N2P N2N VBP2 VCM2 VCM_REF VDD18
@@ -100,3 +99,8 @@ M$174 OUTP INP \$73 VSS sky130_fd_pr__nfet_01v8 L=4 W=240 AS=60 AD=60 PS=252
 M$175 \$73 INN OUTN VSS sky130_fd_pr__nfet_01v8 L=4 W=240 AS=60 AD=60 PS=252
 + PD=252
 .ENDS eeg_fd_ota_core_soft
+
+.SUBCKT eeg_pseudo_res A B
+M$1 \$3 \$3 B B sky130_fd_pr__pfet_01v8 L=4 W=1 AS=1.02 AD=1.02 PS=4.04 PD=4.04
+M$2 \$3 \$3 A A sky130_fd_pr__pfet_01v8 L=4 W=1 AS=1.02 AD=1.02 PS=4.04 PD=4.04
+.ENDS eeg_pseudo_res

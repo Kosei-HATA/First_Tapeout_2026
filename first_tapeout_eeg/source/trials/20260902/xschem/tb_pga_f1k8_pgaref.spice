@@ -1,0 +1,40 @@
+* Pre-layout reference for the PGA-only PEX check: identical drive/load
+* with the schematic eeg_afe_pga (pin order per afe_top_ref.spice).
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.temp 27
+.include eeg_tg_lowq.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.include eeg_pseudo_res.spice
+.include eeg_afe_pga.spice
+.param VDD=1.80 VCM={1.80/2} TCHOP=1m
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP ELP 0 SIN({VCM} 100u 8)
+VSIGN ELN 0 SIN({VCM} 100u 8 0 0 180)
+VRST RST 0 0
+VS8 S8 0 0
+VS16 S16 0 0
+VS32 S32 0 {VDD}
+VS64 S64 0 0
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+XPGA ELP ELN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB S8 S16 S32 S64 RST VDD18 0 eeg_afe_pga
+.nodeset v(OUTP)=0.93 v(OUTN)=0.93
+.control
+set noaskquit
+save time v(OUTP) v(OUTN) i(VDD_SRC)
+tran 100n 0.75s
+wrdata ../results/tb_pga_f1k8_pgaref.csv time v(OUTP) v(OUTN)
+let idd=-i(VDD_SRC)
+meas tran idd_avg avg idd from=0.6s to=0.75s
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_avg avg vcmout from=0.6s to=0.75s
+quit
+.endc
+.end

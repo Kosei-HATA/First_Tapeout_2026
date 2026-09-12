@@ -501,16 +501,21 @@ def build_ota_nc(lay):
     lay.label(L_M4L, "VDD18", 400.0, 70.0, top)
 
     # ---- VSS trunk (m4 y=-12) --------------------------------------------
-    h4(-12.0, -2.3, XBUS_BG)
+    # East end stops at 950.0: >=3.0 clear of the CFILT top-plate m4 column
+    # (ota-local 953.4..956.6 — a crossing would short VSS to VBNF, and a
+    # <3 um gap would notch under m4.5ab).  gen_afe_top taps this trunk
+    # through the SDM at SDM-local (1300,1388) = ota-local (950,-12), so
+    # the end must still reach x=950.  Bias VSS tap riser at 948.5.
+    h4(-12.0, -2.3, 950.0)
     pad3(0.0, -6.1); via3(0.0, -6.1); v4m(0.0, -12.15, -6.1)
     pad3(162.5, 38.3); via3(162.5, 38.3); v4m(162.5, -12.15, 38.3)
     pad3(712.5, 38.3); via3(712.5, 38.3); v4m(712.5, -12.15, 38.3)
     pad3(XF2, -30.9); via3(XF2, -30.9); v4m(XF2, -30.9, -11.85)
-    pad3(XBUS_BG, -3.5); via3(XBUS_BG, -3.5); v4m(XBUS_BG, -12.15, -3.5)
+    pad3(948.5, -3.5); via3(948.5, -3.5); v4m(948.5, -12.15, -3.5)
     lay.label(L_M4L, "VSS", 400.0, -12.0, top)
 
     # ---- VBN trunk (m4 y=72) ----------------------------------------------
-    h4(72.0, 147.8, 1070.3)
+    h4(72.0, 147.8, 986.3)
     lay.box(L_M1, -0.3, -14.665, 0.3, -14.065, top)
     lay.via1(0.0, -14.365, top)
     lay.box(L_M2, -0.19, -16.15, 0.19, -14.2, top)
@@ -524,7 +529,7 @@ def build_ota_nc(lay):
     h3(39.5, 147.5, 149.8); v3m(147.8, 39.5, 72.3); via3(147.8, 72.0)
     h3(39.5, 697.5, 699.8); v3m(697.8, 39.5, 72.3); via3(697.8, 72.0)
     pad3(XBUS_BG, 6.8); via3(XBUS_BG, 6.8)
-    h4(6.8, XBUS_BG, 1070.0); v4m(1070.0, 6.8, 72.3)
+    h4(6.8, XBUS_BG, 986.0); v4m(986.0, 6.8, 72.3)
 
     # ---- VCM_REF trunk (m4 y=74) -------------------------------------------
     h4(74.0, 3.0, 855.3)
@@ -588,9 +593,9 @@ def build_ota_nc(lay):
 #   - INP/INN: via3 on the core's input rails, m4 lanes y1409.5/1410.5 west,
 #     m4 verticals x=30/27 south; taps via via3->m3->via2->m2 jogs.
 #   - OINTP/OINTN: m3 lanes y1399/1400.2 across the core's top (the core has
-#     NO m4/via3 and no m3 in local y -1.5..1.5 — probed); drops at x=38/190
-#     to the RF/CI banks; strongarm feeds at x=200.5..206.8 (OINTP crosses
-#     OINTN's drop on an m4 hop).
+#     NO m4/via3 and no m3 in local y -1.5..1.5 — probed); drops at x=38/50
+#     to the CI banks + pseudo-resistors; strongarm feeds at x=200.5..206.8
+#     (OINTP crosses OINTN's drop on an m4 hop).
 #   - The strongarm's west lanes (CLK/VSS/QP/QN/VDD18) must dodge the QP/QN
 #     verticals (x=42/45): VSS/CLK/VDD18 lanes start at x=46.5+ and bridge
 #     the verticals on m2 dives; QP/QN rise east of the cell to y1364/1365.2
@@ -618,9 +623,17 @@ def build_sdm(lay):
         pad4(x, y)
 
     # ---- passives ------------------------------------------------------------
+    # 2026-09-11: the RF=100Meg lossy-integrator resistors (2x 1000-segment
+    # serpentines, x 44..246 / y 42..1145) were replaced by pseudo-resistors
+    # (schematic-verified equal-or-better).  XRFP/XRFN sit in the reclaimed
+    # strip south of the CQ/OINT lane band; the rest of the strip (y ~80..
+    # 1060, x 45..265) is now open floor.
     seg100 = lay.make_res_seg(34.38)               # 100k per segment
-    rfp_a, rfp_b = lay.res_bank(top, 45.0, 60.0, 1000, seg100, ncols=40)
-    rfn_a, rfn_b = lay.res_bank(top, 165.0, 60.0, 1000, seg100, ncols=40)
+    pr, pr_a = build_pseudo_res(lay)
+    lay.place(pr, 70.0, 1105.0, into=top)          # XRFP: A=OINTN, B=INP
+    lay.place(pr, 170.0, 1070.0, into=top)         # XRFN: A=OINTP, B=INN
+    rfp_ya, rfp_yb = 1105.0 + pr_a["A"][1], 1105.0 + pr_a["B"][1]
+    rfn_ya, rfn_yb = 1070.0 + pr_a["A"][1], 1070.0 + pr_a["B"][1]
     rinp_a, rinp_b = lay.res_bank(top, 280.0, 100.0, 5, seg100)
     rinn_a, rinn_b = lay.res_bank(top, 280.0, 180.0, 5, seg100)
     rdacp_a, rdacp_b = lay.res_bank(top, 280.0, 260.0, 5, seg100)
@@ -717,11 +730,11 @@ def build_sdm(lay):
     via3(453.0, 1415.9)                          # core INP rail
     v4m(453.0, 1409.5, 1415.9)
     h4(1409.5, 29.7, 453.3)
-    v4m(30.0, 78.3, 1409.5)                      # INP vertical (m4)
+    v4m(30.0, 117.9, 1409.5)                     # INP vertical (m4)
     via3(450.0, 1414.6)                          # core INN rail
     v4m(450.0, 1410.5, 1414.6)
     h4(1410.5, 26.7, 450.3)
-    v4m(27.0, 76.5, 1410.5)                      # INN vertical (m4)
+    v4m(27.0, 197.9, 1410.5)                     # INN vertical (m4)
 
     def tap_m2(xv, yj, x_to, y_to=None):
         """m4 vertical at xv -> via3 -> m3 pad -> via2 -> m2 jog -> via1 at
@@ -736,13 +749,11 @@ def build_sdm(lay):
                     max(yj, yt) + 0.2, top)
         lay.via1(x_to, yt, top)
 
-    # INP taps: RFP.a (45,78.27), RINP.b (288,81.73 — the serpentine's END
-    # pad; the returned B terminal is mid-chain for even last-k!), RDACP.a
-    tap_m2(30.0, 78.3, rfp_a[0], rfp_a[1])
+    # INP taps: RINP.b (288,81.73 — the serpentine's END pad; the returned B
+    # terminal is mid-chain for even last-k!), RDACP.a
     tap_m2(30.0, 118.3, 288.0, 81.73)
     tap_m2(30.0, 278.3, rdacp_a[0], rdacp_a[1])
-    # INN taps: RFN.a (165,78.27) via y76.5 jog, RINN.b (288,161.73), RDACN.a
-    tap_m2(27.0, 76.5, rfn_a[0], rfn_a[1])
+    # INN taps: RINN.b (288,161.73), RDACN.a
     tap_m2(27.0, 198.3, 288.0, 161.73)
     tap_m2(27.0, 358.3, rdacn_a[0], rdacn_a[1])
 
@@ -771,9 +782,9 @@ def build_sdm(lay):
     lay.label(L_M3L, "OINTP", 46.0, 1399.0, top)
     lay.label(L_M3L, "OINTN", 39.0, 1400.2, top)
     # OINTN: drop at x=38: m3 above/below the nand-lane band, m2 through it
-    # (1177.6..1210.6).  RFP.b lane at y1143.5 ducks the OINTP drop on m2.
-    # CIP's bottom sheet is fed on M4 (free over the m2/m3 lanes; the lane
-    # ends west of CIP's m4 top plate).
+    # (1177.6..1210.6).  The y1143.5 lane (XRFP.A feed) ducks the OINTP drop
+    # on m2.  CIP's bottom sheet is fed on M4 (free over the m2/m3 lanes; the
+    # lane ends west of CIP's m4 top plate).
     v3m(38.0, 1143.5, 1176.7)
     lay.via2(38.0, 1176.5, top)
     lay.box(L_M2, 37.81, 1176.3, 38.19, 1213.4, top)
@@ -784,14 +795,13 @@ def build_sdm(lay):
     lay.box(L_M2, 48.51, 1143.35, 51.39, 1143.65, top)
     lay.via2(51.2, 1143.5, top)
     h3(1143.5, 50.9, 123.3)
-    lay.strap_up(rfp_b[0], rfp_b[1], 1143.5, top)
     lay.box(L_M3, 295.5, 1249.7, 300.1, 1253.3, top)   # CIP bottom junction
     via3(38.0, 1251.5)
     h4(1251.5, 37.7, 297.8)
     via3(297.5, 1251.5)
     # OINTP: drop at x=50 (m3 below the nand band, m2 through it, m3 above).
-    # RFN.b lane at y1142.5; CIN's bottom sheet fed on m2 at y1138.5 (below
-    # the RF strap columns) + riser at x=240.5 into the RFN.b lane.
+    # The y1142.5 lane feeds XRFN.A (via2 at x=178) and CIN's bottom sheet
+    # (m2 riser at x=417.5).
     v3m(50.0, 1142.5, 1176.7)
     lay.via2(50.0, 1176.5, top)
     lay.box(L_M2, 49.81, 1176.3, 50.19, 1212.2, top)
@@ -802,11 +812,30 @@ def build_sdm(lay):
     lay.box(L_M4, 49.7, 1335.3, 50.3, 1399.35, top)
     via3(50.0, 1399.0)
     h3(1142.5, 49.7, 417.8)
-    lay.strap_up(rfn_b[0], rfn_b[1], 1142.5, top)
     lay.box(L_M3, 415.5, 1249.7, 420.1, 1254.0, top)   # CIN bottom junction
     lay.via2(417.5, 1142.5, top)
     lay.box(L_M2, 417.31, 1142.3, 417.69, 1253.9, top)
     lay.via2(417.5, 1253.7, top)
+    # ---- pseudo-resistors (integrator feedback, ex-RF) ------------------------
+    # The cell's guard rings tie to the A/B buses internally (floating nwells
+    # follow their sources — NOT VDD), so only the two m3 buses need wiring.
+    # A sides: via2 on the A bus -> m2 riser (m2 crosses the cell's own B bus
+    # and the B-side m3 wires freely) -> via2 into the OINTN lane (y1143.5,
+    # XRFP at x=80) / OINTP lane (y1142.5, XRFN at x=178).  The risers stop
+    # below the m2 CQ-top jog band (y1145.35+).
+    # B sides: m3 west extensions to via3s on the INP (x=30) / INN (x=27) m4
+    # verticals — the y~1075/1110 band is empty after the RF removal (m2
+    # crossings: QP/QN verticals and the VSS south leg, all free over/under).
+    lay.via2(80.0, rfp_ya, top)
+    lay.box(L_M2, 79.81, rfp_ya - 0.15, 80.19, 1143.65, top)
+    lay.via2(80.0, 1143.5, top)
+    h3(rfp_yb, 29.7, 69.5)
+    via3(30.0, rfp_yb)
+    lay.via2(178.0, rfn_ya, top)
+    lay.box(L_M2, 177.81, rfn_ya - 0.15, 178.19, 1142.65, top)
+    lay.via2(178.0, 1142.5, top)
+    h3(rfn_yb, 26.7, 169.5)
+    via3(27.0, rfn_yb)
     # OINTx -> strongarm INP/INN (east side): the OINTN drop tops out BELOW
     # the OINTP lane and hops it + the OINTP m4 hop on m4 via a west detour;
     # OINTP hops the OINTN drop's m3 part on m4 (the drop tops at 1397.5).

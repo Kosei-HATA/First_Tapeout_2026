@@ -1,0 +1,35 @@
+* PEX stability check: fixed DC differential input (VOFF param), x32, 1 kHz chop.
+* Watch for oscillation / motorboating on the flat PEX netlist of eeg_afe_top.
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.temp 27
+.include eeg_afe_top_pex.spice
+.param VDD=1.80 VCM={1.80/2} VCMA=0.927 TCHOP=1m TCLK=62.5u VOFF=20m
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCMA+25m}
+VVN VN 0 {VCMA-25m}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VCLK CLK16 0 PULSE(0 {VDD} 0 100n 100n 31.15u {TCLK})
+BNCLK NCLK16 0 V={VDD}-v(CLK16)
+* fixed DC differential input
+VELP ELP 0 {VCM+VOFF/2}
+VELN ELN 0 {VCM-VOFF/2}
+VS8 S8 0 0
+VS16 S16 0 0
+VS32 S32 0 {VDD}
+VS64 S64 0 0
+XTOP ELP ELN VCM_REF VP VN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB CLK16 NCLK16 BIT NBIT S8 S16 S32 S64 VDD18 0 PGA_OUTP PGA_OUTN eeg_afe_top
+.nodeset v(PGA_OUTP)=0.93 v(PGA_OUTN)=0.93 v(BIT)=1.8
+.options reltol=3e-3 trtol=3 gmin=1e-13
+.control
+set noaskquit
+set num_threads=4
+save time v(PGA_OUTP) v(PGA_OUTN) i(VDD_SRC)
+tran 500n 0.875s
+wrdata ../results/tb_pex_dcin_20mv.csv time v(PGA_OUTP) v(PGA_OUTN)
+quit
+.endc
+.end

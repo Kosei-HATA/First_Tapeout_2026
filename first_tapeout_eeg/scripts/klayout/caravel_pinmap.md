@@ -147,3 +147,44 @@ io_analog[5..10]) are unused: no connection, no labels added.
 - vccd1 is intentionally unconnected; the template's VCCD1 label is not
   deck-visible, so the floating vccd1 bus is anonymous in extraction
   (benign — the ref declares the port but nothing hangs off it).
+
+## mpw_precheck (2026-09-12, submission/, cf-precheck v1.3.1, amd64 image)
+
+Run WITHOUT the LVS check (`/tmp/run_precheck.sh`: docker
+chipfoundry/mpw_precheck, volare sky130A, checks = gpio_defines xor
+magic_drc klayout_feol klayout_beol klayout_offgrid
+klayout_met_min_ca_density klayout_pin_label_purposes_overlapping_drawing
+klayout_zeroarea):
+
+- **GPIO Defines: PASS** (the user_defines.v pin remap is accepted).
+- **XOR: PASS** after the boundary-stub restoration step in gen_wrapper.py
+  (the first run FAILED with 11 m3 differences: the example-surgery had
+  removed the pad-boundary stubs of io_out[11/12/15/16], gpio_analog[3]/[7],
+  io_oeb[12] and the vssd1 bar's boundary segment.  They are now restored
+  as plain unlabeled m3, boundary segments only — restoring the full
+  L-wires would cross the macro and merge with macro m3).
+- **Klayout FEOL: PASS (2026-09-13)** — the 2026-09-12 run's 303
+  violations were REAL bugs in our generator placements (not PDK pcell
+  internals as first assumed): res-bank urpm pitch 2.0 (marker is 1.27
+  wide -> 0.73 gap vs 0.84 rule), via3-on-MIM-tab exits putting m3
+  0.5 um over the sized bottom plate (1.2 rule), 0.08-1.0 um nwell
+  slivers between sibling pfet cells (1.27 rule), ring-tap licon
+  columns misaligned ~0.02 in eeg_nand2 (0.32 merged bars), and
+  0.13/0.26 um nsdm/psdm slivers.  Fixed in the generators (bank pitch
+  2.14, mim_array tab_h=3.6 + raised top exits, placement gaps/abutments,
+  strongarm nwell bridges); full details in `README.md` ("2026-09-13:
+  FEOL (MR deck) repair").  Local MR-deck runs (`feol=true`): ZERO on
+  `GDSII/eeg_afe_top.gds` and on this wrapper.
+- BEOL, Offgrid, Metal Density, Pin Label, ZeroArea: all PASS.
+- **2026-09-13 update: FEOL now PASS — all 8 checks PASS (exit 0).**
+  The 303 violations turned out to be real placement bugs in OUR
+  generators, not PDK-cell-internal as first assumed: res-bank urpm
+  pitch 2.0 (1.27-wide markers -> 0.73 gap vs 0.84), via3-on-MIM-tab
+  exits with m3 0.5 um over the bottom plate (1.2 rule), 0.08-1.0 um
+  nwell slivers between sibling pfet cells (1.27 rule), 0.02 um ring-tap
+  licon misalignment in eeg_nand2 (0.32 merged bars), and 0.13/0.26 um
+  nsdm/psdm slivers.  Fixed in the generators (bank pitch 2.14,
+  mim_array tab_h=3.6 + top exits raised, placement gaps/abutments,
+  strongarm nwell bridges).  MR deck (feol=true) is ZERO on
+  `GDSII/eeg_afe_top.gds` and this wrapper; XOR is 0 diffs.  Details:
+  `README.md` "2026-09-13: FEOL (MR deck) repair".

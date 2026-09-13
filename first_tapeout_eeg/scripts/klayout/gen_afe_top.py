@@ -51,7 +51,10 @@ OUT_GDS = os.path.join(PROJECT, "GDSII", "eeg_afe_top.gds")
 STACK_DX = -725.0    # SDM west edge abs -703.3 (nested inside the PGA's
                      # x-span); puts the SDM VINP/VINN stubs (local x=276)
                      # at abs x=-449, 2.0 um west of the RST riser (-445)
-STACK_GAP = 12.0     # PGA top -> SDM bottom
+STACK_GAP = 10.0     # PGA top -> SDM bottom (was 12.0: the CIN/CFB MIM top
+                     # tabs grew +2.0 for MR_capm.SP.2 via3 clearance; the
+                     # -2.0 keeps DY - hence the north supply trunks and the
+                     # macro's north pins - at the wrapper's verified y)
 
 
 def build_top(lay):
@@ -116,8 +119,8 @@ def build_top(lay):
     # breaching m4.2, so each lane is extended past all lane ends, longest
     # = lowest lane, and labeled on the extension)
     for name, yc, x1, lx in (
-            ("PHII", 17.0, -284.91, -290.0), ("NPHII", 18.0, -288.41, -292.0),
-            ("PHIBI", 19.0, -291.91, -295.0), ("NPHIBI", 20.0, -295.41, -300.0)):
+            ("PHII", 18.0, -284.91, -290.0), ("NPHII", 19.0, -288.41, -292.0),
+            ("PHIBI", 20.0, -291.91, -295.0), ("NPHIBI", 21.0, -295.41, -300.0)):
         lay.box(L_M4, -305.6, yc - 0.3, x1, yc + 0.3, top)
         lab4(name, lx, yc)
     for name, yc, x0, x1, lx in (

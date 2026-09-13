@@ -1,4 +1,4 @@
-timestamp 1617737150
+timestamp 1617853827
 version 8.3
 tech sky130A
 style ngspice()
@@ -17,18 +17,18 @@ cap "VSS" "A" 676.56
 cap "VSS" "VDD18" 8.03127
 cap "VDD18" "A" 29.7838
 cap "VSS" "Y" 18.2975
+cap "inv_n_0/a_n123_n196#" "inv_n_0/a_192_n106#" 53.9121
+cap "inv_p_0/w_n184_n257#" "inv_n_0/a_n123_n196#" 32.9049
 cap "inv_n_0/a_n123_n196#" "inv_n_0/a_0_0#" 41.4343
 cap "inv_p_0/w_n184_n257#" "inv_n_0/a_192_n106#" 24.2676
 cap "inv_n_0/a_192_n106#" "inv_n_0/a_0_0#" 29.4327
 cap "inv_p_0/w_n184_n257#" "inv_n_0/a_0_0#" 8.46305
-cap "inv_n_0/a_n123_n196#" "inv_n_0/a_192_n106#" 53.9121
-cap "inv_p_0/w_n184_n257#" "inv_n_0/a_n123_n196#" 32.9049
+cap "inv_p_0/w_n184_n257#" "inv_n_0/a_0_0#" 59.3148
 cap "inv_n_0/a_n123_n196#" "inv_n_0/a_192_n106#" 0.642069
 cap "inv_n_0/a_192_n106#" "inv_n_0/a_0_0#" 42.9498
 cap "inv_n_0/a_n123_n196#" "inv_n_0/a_0_0#" 1.58324
 cap "inv_p_0/w_n184_n257#" "inv_n_0/a_192_n106#" 111.78
 cap "inv_n_0/a_n123_n196#" "inv_p_0/w_n184_n257#" 3.5173
-cap "inv_p_0/w_n184_n257#" "inv_n_0/a_0_0#" 59.3148
 cap "inv_p_0/w_n184_n257#" "inv_n_0/a_0_0#" 18.0498
 cap "inv_n_0/a_192_n106#" "inv_n_0/a_0_0#" 1.48569
 cap "inv_n_0/a_n123_n196#" "inv_n_0/a_0_0#" 10.4508

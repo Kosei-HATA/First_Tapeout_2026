@@ -446,9 +446,14 @@ see below); LVS `Congratulations! Netlists match.`
   union-find net removal (merged-region per layer + via-layer linking,
   seeds from label positions) for the example's io_out[11/12/15/16] and
   gpio_analog[3]/[7] wires and the vssd1 distribution (m3 bar y957..981 +
-  m4 verticals + four io_oeb pulldown resistors); place the macro
-  MIRRORED at (2078, 890) — local (x,y) -> (2078-x, 890+y), abs bbox
-  x 999.7..2842.2, y 99.8..2674.95; route all 23 used pins; add 27
+  m4 verticals + four io_oeb pulldown resistors); restore the 11 removed
+  pad-boundary stubs as unlabeled m3 (boundary band only — the mpw_precheck
+  XOR gate compares the boundary against the golden template); place the
+  macro MIRRORED at (2078, 890) — local (x,y) -> (2078-x, 890+y), abs bbox
+  x 999.7..2842.2, y 99.8..2674.95; route all 23 used pins (2026-09-12
+  pin remap: io_in[0..4]/io_out[0..1] are system-reserved pads, so digital
+  signals use io_in[5..14] + io_in[15..18] + io_out[19..20], 9 on the east
+  edge and 7 via the west-highway m4 lanes at y2676..2698); add the
   deck-visible (*/5) labels; prune orphan cells (else the decks reject
   the GDS for multiple top cells).
 - `check_wrapper_nets.py` — flatten + union-find + position-matched
@@ -475,6 +480,78 @@ see below); LVS `Congratulations! Netlists match.`
   upwards (child pin purged -> eeg_afe_top port floats -> wrapper
   io_in[9]/io_in[13] nets dropped) while the ref is never purged.
   Purge only deletes floating nets — the compare is unaffected.
+- **mpw_precheck** (cf-precheck v1.3.1, submission/, no LVS check):
+  PASS (exit 0), all 8 checks.  GPIO Defines PASS, XOR PASS (after
+  restoring the 11 removed boundary stubs), **Klayout FEOL PASS
+  (2026-09-13, see below)**, BEOL/Offgrid/Metal Density/Pin Label/
+  ZeroArea PASS.
+
+### 2026-09-13: FEOL (MR deck) repair — 303 -> 0
+
+The 2026-09-12 precheck flagged Klayout FEOL with 303 violations and we
+first wrote them off as PDK-generator-inherent.  That attribution was
+WRONG: the shapes live in OUR cells (eeg_bias_gen, stage2,
+eeg_fd_ota_core_soft, eeg_afe_pga, eeg_sdm1ct, eeg_nand2, eeg_strongarm,
+cmfb), and the MR deck (`sky130A_mr.drc` release 2026.03.30, which
+encodes the current SkyWater-required periphery rules that the stock
+`sky130A.lydrc` simply does not check — stock has no urpm spacing rule
+and defaults FEOL=false) was flagging real layout bugs:
+
+- `MR_urpm.SP.1` x245 (min urpm marker spacing 0.84 um): the res banks
+  placed res_xhigh_po segments at 2.0 um pitch; the urpm marker is
+  1.27 um wide -> 0.73 gap.  Fixed: bank pitch 2.14
+  (`klayout_common.py` `RES_BANK_PITCH`, `gen_core.py` `PITCH`).
+- `MR_capm.SP.2` x30 (m3 must clear the sized(0.14) MIM bottom plate by
+  1.2 um, i.e. ~1.48 um raw): every top-plate exit landed a via3 on the
+  1.6-tall m4 tab, putting the via3's m3 pad 0.5 um over the sheet, and
+  the m3 jogs ran 0.45-1.0 um above the sheets.  Fixed: `mim_array`
+  `tab_h=3.6` option + all top exits raised ~+2 um (gen_pga.py
+  CINP/CINN + fx_drop/cf64_route; gen_sdm.py CIP/CIN/CQN/CQP) and the
+  y1143.5 XRFP.A lane ducked under the CQN sheet on m2.
+- `MR_nwell.SP.1` x11 (nwell spacing 1.27, "merged if less"): sibling
+  pfet cells left 0.08-1.0 um nwell slivers.  Fixed: spacing gaps
+  (bg_mp pair 2.21, stage2 X2 2.21), exact ring abutment where tap
+  licon rows align (cmfb m8/m9 -> 7.20 separation; abutment attempted
+  but L=2 vs L=4 tap-licon rows misalign in y), and additive nwell
+  bridge rects in eeg_strongarm rows B/C.
+- `licon.1` x10 + `MR_nsdm.SP.1` x2 (eeg_nand2): mn1/mn2 and mp1/mp2
+  were placed with ~0.02 column misalignment, merging ring-tap licons
+  into 0.32 bars and leaving a 0.13 um nsdm sliver.  Fixed: exact
+  abutment offsets (mn2 3.25, mp2 10.45).
+- `MR_psdm.SP.1` x5 (eeg_bias_gen bg_mn pair): 0.26 um ring-psdm
+  sliver -> placement gap 1.14 (0.40 clear).
+
+Re-verified after regeneration: MR deck feol=true ZERO on
+`GDSII/eeg_afe_top.gds` and on the wrapper, stock deck (BEOL) ZERO on
+both, LVS "Netlists match" at all five hierarchy levels + wrapper
+(hier, nopurge), `check_wrapper_nets.py` NETS OK, and mpw_precheck
+**all 8 checks PASS** (`submission/precheck_results/`, 2026-09-13 run).
+Knock-on fixes the pitch change forced: hardcoded bank end-pad taps in
+gen_sdm.py now compute from `RES_BANK_PITCH`; the PGA MIM tab growth
+(+2.0 um north) is absorbed by `STACK_GAP` 12 -> 10 in gen_afe_top.py
+so the macro's north supply pins stay at the wrapper's verified y.
+
+### 2026-09-13: chopper clock-rail coupling (PEX-caught SDM rail)
+
+The post-layout (PEX) E2E sim railed the SDM (PGA output differential
+walked to -91 mV over ~0.2 s, duty -> 1.0) while the schematic E2E was
+clean (51.08 dB SNDR).  Root cause: inside `build_chopper`
+(eeg_cmos_chopper_lowq) the m4 rail stack was ordered
+OUTP/OUTN/INP/INN/PHI/NPHI/PHIB/NPHIB, putting the PHI rail 1 um above
+the INN rail for its full ~73 um length -> 5.3 fF PHI->INN fringe
+coupling vs 0.61 fF PHI->INP (magic .ext).  The uncancelled asymmetric
+chopper charge injection (dummy devices only cancel intrinsic channel
+charge, not routing parasitics) rectified on the high-Z chopper nodes
+into a differential DC error that the SDM's +/-25 mV DAC could not hold.
+Fix: clock rails moved +1 um (PHI now 2 um from INN) AND a VSS-tied
+guard rail (m4, y=17) inserted between the signal and clock groups
+(strap at x=-2.1..-1.5, west of the TGs; an east strap would have hit
+the N1x drops).  Post-fix extraction: PHI->INN 0.66 fF vs PHI->INP
+0.61 fF.  Hookup knock-ons parameterized: full2 pin labels + mid-chopper
+clock feeds now use the ch_a anchors; gen_pga/gen_afe_top/gen_wrapper/
+check_wrapper_nets clock-pin y bumped +1 um.  Verified: LVS all levels,
+MR/stock DRC clean, precheck all PASS, E2E PEX re-run (see final report
+section 6.1).
 
 ## Routing conventions (details in caravel_pinmap.md)
 
@@ -487,5 +564,12 @@ see below); LVS `Congratulations! Netlists match.`
   on m4 only).  The PGA's mirrored m4 thicket (x..2543.3, y889.9..978.59)
   walls off the PHI-2 lane ends except in4's corridor and the band at
   lane height; in5/6/7 fan out inside that band.
+- West highway (remap): 7 m4 lanes at y2676.4..2698 above the macro top
+  and below the vdda1 riser — the only corridor to the west-edge stubs
+  (NCLK16, S8..S64, BIT, NBIT); m5 north runs per signal, via4 down, m4
+  west, staggered m5 dives to the west stubs.
+- Channel packing (remap): north-going channels run west->east with
+  DESCENDING flight height (an up-channel may not rise through a higher
+  flight's level inside that flight's x-span).
 - m5 nubs fail m5.1 (euclidian 1.6): every pad/run junction is
   edge-aligned, and dives overshoot their via4s by 0.71 for enclosure.

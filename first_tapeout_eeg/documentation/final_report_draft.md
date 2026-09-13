@@ -65,6 +65,28 @@ io_in/out/oeb[26:14] ↔ mprj_io[37:25]（西エッジ）。io_in[i] と io_out[
   `submission/verilog/rtl/user_defines.v` も同期更新（GPIO5..13/25..29
   = input_nopull、GPIO30/31(BIT/NBIT) = USER_STD_OUTPUT、
   GPIO14..18(io_analog) = USER_STD_ANALOG、信号マップをコメント明記）。
+- **mpw_precheck 実施**（submission/、cf-precheck v1.3.1、LVS 除く）:
+  **全 8 チェック PASS（exit 0）**。GPIO Defines PASS、**XOR PASS**
+  （初回は手術で削った境界スタブ 11 本が FAIL → gen_wrapper.py に
+  boundary-band だけの m3 復元ステップを追加して解消）、BEOL/Offgrid/
+  Metal Density/Pin Label/ZeroArea 全て PASS。**Klayout FEOL は初回
+  FAIL（303 件）だったが、全て自前ジェネレータの配置 bug と判明し
+  修正済み（2026-09-13、再ランで PASS・XOR 0 diff）**: urpm.SP.1 ×245
+  （抵抗バンクのセグメント pitch 2.0 µm — urpm マーカ幅 1.27 のため
+  ギャップ 0.73 < 0.84 → pitch 2.14 に）、capm.SP.2 ×30（MIM 上板
+  取り出しの via3+m3 ジョグがサイズド下板に 1.2 µm 未満 → mim_array
+  に tab_h=3.6 オプションを追加し全取り出しを ~+2 µm 引き上げ、
+  CQN 下の車線は m2 化）、nwell.SP.1 ×11（兄妹 pfet 間 0.08–1.0 µm
+  のスリバ → 間隔調整（2.21）・cmfb m9 分離（7.20）・strongarm に
+  nwell ブリッジ追加）、licon.1 ×10＋nsdm ×2（eeg_nand2 のリング
+  タップ licon 列 0.02 µm ずれ → 正確なアバット配置 mn2=3.25,
+  mp2=10.45）、psdm.SP.1 ×5（bias gen 間隔 1.14）。初回は「PDK
+  ジェネレータ由来・advisory」と判断していたが、座標精査で自前セル
+  内の実違反と訂正（stock デッキは FEOL=false がデフォルトでこれら
+  を一切検査していなかった）。修正後は MR デッキ（feol=true）が
+  マクロ・ラッパー共に 0 件、stock デッキも 0 件、全階層 LVS match、
+  ラッパー NETS OK を再確認。詳細は scripts/klayout/README.md の
+  「2026-09-13: FEOL (MR deck) repair」。
 
 **フロー**: magic 8.3.683（ソースから `tools/magic/` にローカルビルド、
 RTimothyEdwards/magic `magic-8.3` ブランチ、headless `-dnull -noconsole`）
@@ -102,11 +124,13 @@ RTimothyEdwards/magic `magic-8.3` ブランチ、headless `-dnull -noconsole`）
 | プリレイアウト macro（`tb_afe_f1k8_topref`） | **6.1154 mV** | 138.6 µA | SDM 負荷込みスキーマ |
 | **フルマクロ PEX（`tb_afe_f1k8_pex`）** | **6.3265 mV** | 117.3 µA | VCM_out 0.9216 V 一致 |
 | プリレイアウト OTA（`tb_f1k_8`/`tb_pga_f1k8_pgaref`） | 6.3364 / 6.3380 mV | 69.3 µA | 5 pF 負荷 |
-| PGA 単体 PEX（`tb_pga_f1k8_pex`） | TODO | — | 後述の時計配線 bug 修正後に再測定 |
+| PGA 単体 PEX（`tb_pga_f1k8_pex`） | **6.3663 mV** | — | 対スキーマ PGA +0.4%（6.3380 mV 比） |
 
 - **ゲイン偏差は PEX で +3.4%**（6.3265 vs 6.1154 mV）— 寄生 CAP による
   追加負荷の影響は小さく、チョップ AFE の閉ループゲイン（CIN/CFB 比決定）
-  がレイアウト後も保たれていることを確認。
+  がレイアウト後も保たれていることを確認。PGA 単体でも PEX は
+  +0.4%（6.3663 vs 6.3380 mV）とスキーマに一致し、**PGA 自体に PEX 起因の
+  欠陥は無い**（PGA 出力差動の DC オフセットも +0.21 mV と良好）。
 - 速度対策の記録: フラット PEX（1706 デバイス + 7147 CAP）は当初 ~6 µs/s
   （実時間 70 h 級）だったが、(1) 並列フィンガ統合（nf 保持で PDK の
   bin 内に per-finger W を維持 — これが無いと modelname 解決エラー）、
@@ -123,6 +147,85 @@ RTimothyEdwards/magic `magic-8.3` ブランチ、headless `-dnull -noconsole`）
   ~PHI で駆動 → 入力チョッパの B 相が死ぬ）で PGA 単体ベンチが一旦
   故障 — ピンマッピングは magic の subckt pin 順で厳密に監査する事。
   (b) 未駆動ピンは singular matrix 警告で顕在化する。
+
+### 6.1 E2E（SDM 閉ループ）PEX の解析 — 根本原因特定（2026-09-13）
+
+プリレイアウト E2E（`eeg_e2e_topref_tb`、469 µV 32 Hz → SDM 入力
+15 mV = 0.6 FS）は **SNDR 51.08 dB**（duty 0.50）で健全。同一刺激の
+フルマクロ PEX E2E（`eeg_e2e_pex_tb`）は **SDM がレールに張り付き**
+（t≈0.2 s で duty=1.0、SNDR −3.46 dB）、PGA 出力差動が約 −91 mV に
+座る問題の解析記録。
+
+**根本原因: チョッパセル（eeg_cmos_chopper_lowq）内のクロック
+レール配置。** セル内 m4 レールが OUTP(13) OUTN(14) INP(15) INN(16)
+PHI(17) NPHI(18) PHIB(19) NPHIB(20) の順で、**PHI レールが INN
+レールの 1 µm 真上**を全長（~73 µm）走り、層内フリンジで
+**PHI→INN に 5.3 fF**（PHI→INP の 0.61 fF の 9 倍、magic .ext 実測）
+の寄生結合があった。チョップ遷移ごとに非対称な電荷（~8.5 fC/エッジ、
+ダミー相殺の対象外の配線寄生分）が高インピーダンスのチョップ
+スイッチ節点に注入され、1 kHz チョップ動作で整流されて差動 DC 誤差
+に変わる。これが x32 の PGA で増幅され、ΣΔ ループの DAC 訂正範囲
+（±25 mV）を ~0.2 s で超えて負側レールに張り付く、という経緯
+（PGA 出力差動 −91 mV、 duty 1.0）。
+
+切り分けの証拠チェーン:
+- **op 点は PEX/スキーマで全ノード一致**（N1P/N1N、VCM1/2、VBP2、
+  バイアス、CMFB sense 全て 70 µV 以内）— 静的オフセットではない。
+- **SDM 単体 PEX は健全**（ext2pex --top eeg_sdm1ct、510 デバイス、
+  理想源駆動で duty がスキーマと一致、レール無し）。
+- **PGA 単体 PEX も健全**（ゲイン +0.4%、差動オフセット安定）。
+- **チョッパを止めたフルチップ PEX E2E は健全**（0.5 s 全区間で
+  duty 0.19–0.36 で信号追従、dPGA +15..+34 mV、CM 0.9211 V 不変）。
+- チョップ動作時は 8 Hz/32 Hz・入力振幅に依らず同じ負方向ドリフト
+  （8 Hz ゲインベンチも実はレールしていた）。
+
+**修正**（gen_full2.py build_chopper）: クロックレールを +1 µm 上移
+（PHI を INN から 2 µm へ）し、さらに信号/クロックのレール群の間に
+**VSS ガードレール（m4, y=17）**を挿入（西端 x=−2.1..−1.5 のストラップ
+で VSS に接続）。連動修正: full2 ピンラベル/中間チョッパ給電を ch_a
+アンカ参照化、gen_pga/gen_afe_top/gen_wrapper/check_wrapper_nets の
+チョッパピン y 位置 +1 µm。
+
+**検証**: LVS 全階層 match、MR デッキ（FEOL）0 件、stock DRC 0 件
+（macro）/継承 2 件（wrapper）、check_wrapper_nets NETS OK、
+mpw_precheck 全 PASS。PEX 再抽出＋ E2E PEX 再確認は別途実施
+（本稿執筆時点で進行中）。
+
+- **op 点比較（PEX vs スキーマ、同一ベンチ条件）**: PGA_OUTP/N は
+  共に 0.933 V（差動 ~0）で一致、積分器 OTA 内部も **全ノード一致**:
+  N1P/N1N = 0.93101/0.93108 V（PEX） vs 0.93105/0.93104 V（スキーマ、
+  差 70 µV 以内）、VCM1 0.9310、VCM2 0.9217、VBP2 0.38563、
+  VBN 0.61125、VBP 0.62433、CMFB sense 0.93105 — 全て一致。
+  積分器出力 OINTP−OINTN は PEX +5.2 mV vs スキーマ −1.1 mV（CM は
+  0.9217 V で完全一致）。6 mV 級の DC シフトは DAC レンジ
+  （±25 mV 入力換算）内で、**静的なオフセット起源はどこにも無い**
+  （−90 mV は op 点には存在せず、ループの動的破綻と確定）。
+- **静的監査（全て合格）**: フラット PEX ネットリストの SDM 部を
+  全ノード監査 — RIN/RDAC 各 500 kΩ、CI 20 pF、疑似 R ペア、
+  strongarm 全 11 素子、SR ラッチ（nand2 ×2、各 4 素子）、DAC TG
+  4 組・インバータ、OTA 抵抗チェーン（RLOAD 実効 1.714 MΩ・RCMO
+  3.214 MΩ・RZ 20.000 kΩ・RSET 24.99 kΩ・RFILT 10 MΩ、全て P/N 完全
+  対称）、チョッパの straight/cross 位相（入出力共にスキーマと一致）。
+  トポロジ欠陥・ネット誤マージは無い。
+- **動的ふるまい（PEX tran は入力に依らず負側へドリフトしてレール）**:
+  本家 E2E（469 µV 32 Hz）とゲインベンチ（100 µV 8 Hz、
+  `tb_afe_f1k8_pex`）の両方で、PGA 出力差動が起動後 ~0.2 s かけて
+  −20 → −56 → −83 → **−91 mV** へ単調にドリフトし張り付く
+  （duty は 0.44 → 1.0、CM は 0.9216 V で不変）。**8 Hz ゲイン
+  ベンチも実はレールしていた**（LS-fit は 8 Hz 振幅をレールの上に
+  抽出していただけで、ループは最初から破綻していた）。入力振幅・
+  周波数に依らず同じ負方向のドリフト。
+- **SDM 単体 PEX は健全**: ext2pex --top eeg_sdm1ct で SDM 単体の
+  PEX ネットリストを生成（510 デバイス）し、SDM 単体ベンチ
+  （理想電圧源駆動、130 ms）を実行 — **duty がスキーマと窓ごとに
+  一致（~0.5 で信号追従）、レール無し**。SDM コア（積分器 OTA・
+  比較器・ラッチ・DAC）の PEX ネットリストは単体では正常。
+- **PGA 単体 PEX も健全**（ゲイン +0.4%、差動オフセット −0.5 mV
+  で時間的に安定）。すなわち **PGA・SDM それぞれ単体では正常
+  だが、結合すると負方向へドリフトする**。チョッパクロックから
+  SDM 加算点への寄生結合は 0（測定済）。切り分けシムを継続:
+  (a) チョッパ停止のフルチップ E2E PEX、(b) 厳密精度
+  （gear/reltol=1e-4/trtol=1）E2E PEX。結果が出次第ここに記す。
 
 ## 7. 既知の課題・次期改版項目
 - **ADC の RF=100 MΩ の面積**（2026-09-05 協議、一旦現状維持で保留）:

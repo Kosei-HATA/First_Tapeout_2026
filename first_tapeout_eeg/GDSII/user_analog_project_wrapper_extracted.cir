@@ -1,4 +1,4 @@
-* Extracted by KLayout with SKY130 LVS runset on : 12/09/2026 19:37
+* Extracted by KLayout with SKY130 LVS runset on : 13/09/2026 07:29
 
 .SUBCKT user_analog_project_wrapper VDDA1 VSS|VSSA1 io_analog[0] io_analog[1]
 + io_analog[2] io_analog[3] io_analog[4] io_clamp_high[0] io_clamp_high[1]
@@ -25,8 +25,8 @@ R$6 io_analog[4] io_clamp_high[0] sky130_fd_pr__res_generic_m3 R=1.06818181818
 
 .SUBCKT eeg_afe_top ELN S64 VSS S32 S16 S8 PHII NPHII PHIBI NPHIBI ELP VDD18
 + PHIM VCM_REF NPHIM PHIBM NPHIBM VP VN BIT NCLK16 NBIT CLK16
-X$1 ELN S64 VSS S32 S16 S8 VSS VDD18 \$19 \$18 PHIBI PHII NPHII NPHIBI ELP
-+ VCM_REF NPHIM PHIM NPHIBM PHIBM eeg_afe_pga
+X$1 ELN S64 VSS S32 S16 S8 VSS VDD18 \$19 \$18 NPHII PHII NPHIBI PHIBI ELP
++ VCM_REF NPHIM PHIM PHIBM NPHIBM eeg_afe_pga
 X$2 \$19 \$18 VDD18 VN BIT VP \$27 VSS NBIT \$26 NCLK16 CLK16 VCM_REF eeg_sdm1ct
 .ENDS eeg_afe_top
 
@@ -39,7 +39,7 @@ X$20 VDD18 VSS BIT \$20 VP \$14 eeg_tg_lowq
 X$25 VSS OINTP OINTN \$33 \$34 VCM_REF VDD18 eeg_fd_ota_full2_nc
 X$26 VSS VDD18 BIT \$20 eeg_inv
 X$27 VSS VDD18 \$30 NBIT BIT eeg_nand2
-X$28 CLK VSS OINTN OINTP \$28 \$30 VDD18 eeg_strongarm
+X$28 CLK VSS OINTN OINTP \$30 VDD18 \$28 eeg_strongarm
 X$29 VSS VDD18 \$28 BIT NBIT eeg_nand2
 X$30 OINTN \$33 eeg_pseudo_res
 X$31 OINTP \$34 eeg_pseudo_res
@@ -57,9 +57,9 @@ R$71 \$14 \$34 VSS sky130_fd_pr__res_xhigh_po_0p69 R=500000 L=172.5 W=0.69
 + A=119.025 P=351.9
 .ENDS eeg_sdm1ct
 
-.SUBCKT eeg_afe_pga ELN S64 RST S32 S16 S8 VSS VDD18 OUTP OUTN PHIBI PHII NPHII
-+ NPHIBI ELP VCM_REF NPHIM PHIM NPHIBM PHIBM
-X$1 VSS OUTN OUTP PHIM NPHIM PHII \$2 \$22 PHIBM NPHIBM NPHII PHIBI NPHIBI
+.SUBCKT eeg_afe_pga ELN S64 RST S32 S16 S8 VSS VDD18 OUTP OUTN NPHII PHII
++ NPHIBI PHIBI ELP VCM_REF NPHIM PHIM PHIBM NPHIBM
+X$1 VSS OUTN OUTP PHIM NPHIM PHII \$22 \$2 PHIBM NPHIBM PHIBI NPHIBI NPHII
 + VDD18 VCM_REF eeg_fd_ota_chopped_full2
 X$2 VDD18 VSS \$4 RST VCM_REF \$2 eeg_tg_lowq
 X$3 VDD18 VSS \$6 S16 \$2 \$37 eeg_tg_lowq
@@ -98,7 +98,7 @@ M$4 Y A \$6 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02 PS=4.04
 + PD=4.04
 .ENDS eeg_nand2
 
-.SUBCKT eeg_strongarm CLK VSS INN INP OUTN OUTP VDD18
+.SUBCKT eeg_strongarm CLK VSS INN INP OUTP VDD18 OUTN
 M$1 VDD18 CLK \$6 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02
 + PS=4.04 PD=4.04
 M$2 VDD18 CLK \$7 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02
@@ -125,7 +125,7 @@ M$23 VSS CLK \$3 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=8 AS=3.54 AD=3.54
 
 .SUBCKT eeg_fd_ota_full2_nc VSS OUTP OUTN INP INN VCM_REF VDD18
 X$1 VSS \$2 \$3 VCM_REF VDD18 \$14 eeg_cmfb_amp_dl2_s2
-X$2 OUTP OUTN \$6 VSS \$7 \$14 \$3 VCM_REF VDD18 stage2
+X$2 OUTP OUTN VSS \$6 \$7 \$14 VCM_REF \$3 VDD18 stage2
 X$3 VSS \$2 VDD18 eeg_bias_gen
 X$4 VSS \$2 \$11 VCM_REF VDD18 \$8 eeg_cmfb_amp_dl2
 X$5 VSS \$2 INN INP \$7 \$6 \$8 \$11 VCM_REF VDD18 eeg_fd_ota_core_soft
@@ -138,25 +138,25 @@ M$2 Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 AS=1.02 AD=1.02 PS=4.04
 + PD=4.04
 .ENDS eeg_inv
 
-.SUBCKT eeg_fd_ota_chopped_full2 VSS OUTN OUTP PHIM NPHIM PHII INN INP PHIBM
-+ NPHIBM NPHII PHIBI NPHIBI VDD18 VCM_REF
-X$1 VDD18 VSS \$2 \$1 NPHIM \$10 \$11 PHIM PHIBM NPHIBM eeg_cmos_chopper_lowq
-X$2 OUTP OUTN \$2 VSS \$1 \$26 \$5 VCM_REF VDD18 stage2
+.SUBCKT eeg_fd_ota_chopped_full2 VSS OUTN OUTP PHIM NPHIM PHII INP INN PHIBM
++ NPHIBM PHIBI NPHIBI NPHII VDD18 VCM_REF
+X$1 VDD18 VSS \$2 \$11 \$10 \$1 PHIM NPHIM PHIBM NPHIBM eeg_cmos_chopper_lowq
+X$2 OUTP OUTN VSS \$2 \$1 \$26 VCM_REF \$5 VDD18 stage2
 X$3 VSS \$3 \$8 \$9 \$11 \$10 \$17 \$23 VCM_REF VDD18 eeg_fd_ota_core_soft
 X$4 VSS \$3 \$23 VCM_REF VDD18 \$17 eeg_cmfb_amp_dl2
 X$5 VSS \$3 VDD18 eeg_bias_gen
 X$6 VSS \$3 \$5 VCM_REF VDD18 \$26 eeg_cmfb_amp_dl2_s2
-X$7 VDD18 VSS \$9 \$8 NPHII INP INN PHII PHIBI NPHIBI eeg_cmos_chopper_lowq
+X$7 VDD18 VSS \$9 INN INP \$8 PHII NPHII PHIBI NPHIBI eeg_cmos_chopper_lowq
 .ENDS eeg_fd_ota_chopped_full2
 
 .SUBCKT eeg_bias_gen VSS VBNF VDD18
 X$105 VDD18 VBN eeg_pseudo_res
 C$1 VSS VBNF sky130_fd_pr__model__cap_mim C=1e-10 A=50000 P=10000
-M$126 VSS VBN VBN VSS sky130_fd_pr__nfet_01v8 L=4 W=10 AS=6.35 AD=6.35 PS=17.54
-+ PD=17.54
-M$128 \$105 VBN VBP VSS sky130_fd_pr__nfet_01v8 L=4 W=40 AS=13.85 AD=13.85
+M$126 \$104 VBN VBP VSS sky130_fd_pr__nfet_01v8 L=4 W=40 AS=13.85 AD=13.85
 + PS=50.54 PD=50.54
-R$136 VSS \$105 VSS sky130_fd_pr__res_xhigh_po_0p69 R=24985.5072464 L=8.62
+M$134 VSS VBN VBN VSS sky130_fd_pr__nfet_01v8 L=4 W=10 AS=6.35 AD=6.35 PS=17.54
++ PD=17.54
+R$136 VSS \$104 VSS sky130_fd_pr__res_xhigh_po_0p69 R=24985.5072464 L=8.62
 + W=0.69 A=5.9478 P=18.62
 M$137 VDD18 VBP VBP VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
 + PS=17.54 PD=17.54
@@ -166,7 +166,7 @@ M$239 VDD18 VBP VBN VDD18 sky130_fd_pr__pfet_01v8 L=4 W=10 AS=6.35 AD=6.35
 + PS=17.54 PD=17.54
 .ENDS eeg_bias_gen
 
-.SUBCKT stage2 OUTP OUTN N2P VSS N2N VBP2 VCM2 VCM_REF VDD18
+.SUBCKT stage2 OUTP OUTN VSS N2P N2N VBP2 VCM_REF VCM2 VDD18
 C$1 OUTP \$3 sky130_fd_pr__model__cap_mim C=1e-11 A=5000 P=1300
 C$21 OUTN \$4 sky130_fd_pr__model__cap_mim C=1e-11 A=5000 P=1300
 R$41 \$3 N2P VSS sky130_fd_pr__res_xhigh_po_0p69 R=20000 L=6.9 W=0.69 A=4.761
@@ -183,9 +183,9 @@ R$86 VCM_REF OUTN VSS sky130_fd_pr__res_xhigh_po_0p69 R=2000000 L=690 W=0.69
 + A=476.1 P=1407.6
 R$93 VCM_REF OUTP VSS sky130_fd_pr__res_xhigh_po_0p69 R=2000000 L=690 W=0.69
 + A=476.1 P=1407.6
-R$123 VCM2 OUTP VSS sky130_fd_pr__res_xhigh_po_0p69 R=5000000 L=1725 W=0.69
-+ A=1190.25 P=3519
 R$128 VCM2 OUTN VSS sky130_fd_pr__res_xhigh_po_0p69 R=5000000 L=1725 W=0.69
++ A=1190.25 P=3519
+R$130 VCM2 OUTP VSS sky130_fd_pr__res_xhigh_po_0p69 R=5000000 L=1725 W=0.69
 + A=1190.25 P=3519
 M$195 VDD18 VBP2 OUTN VDD18 sky130_fd_pr__pfet_01v8 L=12 W=48 AS=16.62 AD=16.62
 + PS=59.54 PD=59.54
@@ -241,7 +241,7 @@ M$175 \$73 INN OUTN VSS sky130_fd_pr__nfet_01v8 L=4 W=240 AS=60 AD=60 PS=252
 + PD=252
 .ENDS eeg_fd_ota_core_soft
 
-.SUBCKT eeg_cmos_chopper_lowq VDD18 VSS OUTP OUTN NPHI INP INN PHI PHIB NPHIB
+.SUBCKT eeg_cmos_chopper_lowq VDD18 VSS OUTP INN INP OUTN PHI NPHI PHIB NPHIB
 X$1 VDD18 VSS NPHI PHI OUTP INP eeg_tg_lowq
 X$2 VDD18 VSS NPHIB PHIB OUTP INN eeg_tg_lowq
 X$3 VDD18 VSS NPHIB PHIB OUTN INP eeg_tg_lowq

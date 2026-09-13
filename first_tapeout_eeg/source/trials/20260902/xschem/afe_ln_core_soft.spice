@@ -1,0 +1,13 @@
+* afe_ln variant of eeg_fd_ota_core_soft: stage-1 core with parameterized
+* input-pair width (S1W/S1NF, canonical 240/24, unit 10u).
+.subckt afe_ln_core_soft INP INN VBP VBN OUTP OUTN VCM_SENSE VCM_REF VDD18 VSS params: RLOAD=500k RCM=5Meg S1W=240 S1NF=24
+XM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W={S1W} nf={S1NF}
+XM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W={S1W} nf={S1NF}
+XM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=96 nf=16
+RCM1 OUTP VCM_SENSE {RCM}
+RCM2 OUTN VCM_SENSE {RCM}
+RLOADP OUTP VCM_REF {RLOAD}
+RLOADN OUTN VCM_REF {RLOAD}
+.ends

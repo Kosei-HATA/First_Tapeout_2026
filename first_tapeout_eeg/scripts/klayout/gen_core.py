@@ -458,20 +458,24 @@ def main():
     pad_top = (17.215, 19.320)
     pad_bot = (-19.320, -17.215)
 
+    PITCH = 2.14
+
     def bank(x0, nseg):
         """Chain of nseg segments starting at x0; returns (termA_x, termB_x)
         absolute x of the two top terminal pads (seg0 top, seg{nseg-1} top)."""
+        # urpm marker is 1.27 wide; MR_urpm.SP.1 needs 0.84 spacing
+        # between markers -> pitch >= 2.11 (2.14 with margin)
         for i in range(nseg):
             rot = 2 if i % 2 else 0  # 0 or 180 deg (Trans rot codes: 2=R180)
             core.top.insert(kdb.CellInstArray(
-                seg.cell_index(), kdb.Trans(rot, False, u(x0 + i * 2.0), 0)))
+                seg.cell_index(), kdb.Trans(rot, False, u(x0 + i * PITCH), 0)))
         for i in range(nseg - 1):
-            xa, xb = x0 + i * 2.0, x0 + (i + 1) * 2.0
+            xa, xb = x0 + i * PITCH, x0 + (i + 1) * PITCH
             if i % 2 == 0:
                 core.box(L_M1, xa - pad_x, pad_bot[0], xb + pad_x, pad_bot[1])
             else:
                 core.box(L_M1, xa - pad_x, pad_top[0], xb + pad_x, pad_top[1])
-        return x0, x0 + (nseg - 1) * 2.0
+        return x0, x0 + (nseg - 1) * PITCH
 
     Y_VCM_S, Y_VCM_R = 33.65, 35.25
     core.bus_m3(-296.0, 296.0, Y_VCM_S)
@@ -484,10 +488,10 @@ def main():
     a, b = bank(-292.0, 20)     # RLOADP
     core_res_connect(core, a, "OUTP", Y_OUTP, pad_top)
     core_res_connect_vcm(core, b, Y_VCM_R, pad_top)
-    a, b = bank(240.0 - 49 * 2.0, 50)   # RCM2
+    a, b = bank(240.0 - 49 * 2.14, 50)   # RCM2
     core_res_connect(core, b, "OUTN", Y_OUTN, pad_top)
     core_res_connect_vcm(core, a, Y_VCM_S, pad_top)
-    a, b = bank(292.0 - 19 * 2.0, 20)   # RLOADN
+    a, b = bank(292.0 - 19 * 2.14, 20)   # RLOADN
     core_res_connect(core, b, "OUTN", Y_OUTN, pad_top)
     core_res_connect_vcm(core, a, Y_VCM_R, pad_top)
 

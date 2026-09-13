@@ -1,0 +1,39 @@
+* afe_ln variant noise bench: full per-device attribution.
+* sed tokens: 240 24 24 4 96 16 2Meg vb
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include afe_ln_core_soft.spice
+.include eeg_pseudo_res.spice
+.include eeg_bias_gen.spice
+.include afe_ln_ota_full2.spice
+.param VDD=1.80 VCM=0.9
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SIGN 0 DC {VCM} AC 0.5 180
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 afe_ln_ota_chopped_full2 S1W={240} S1NF={24} S2W={24} S2NF={4} S2LW={96} S2LNF={16} RLOAD={2Meg}
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+noise v(OUTP,OUTN) VSIGP dec 25 0.1 1Meg 1
+setplot noise1
+wrdata ../results/afe_ln_vb.csv onoise_spectrum onoise.m.xafe.xstg1.xm1.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xstg1.xm2.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xstg1.xm3.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xstg1.xm4.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xstg1.xm5.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xm21.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xm22.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xm23.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xm24.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xcm1.xm8.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xcm1.xm9.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xcm1.xm10.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xcm2.xm8.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xcm2.xm9.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xcm2.xm10.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xbg.xmn1.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xbg.xmn2.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xbg.xmp1.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xbg.xmp2.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xchin.xsp.xmn.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xchin.xsp.xmp.msky130_fd_pr__pfet_01v8 onoise.m.xafe.xchmid.xsp.xmn.msky130_fd_pr__nfet_01v8 onoise.m.xafe.xchmid.xsp.xmp.msky130_fd_pr__pfet_01v8 onoise_r.xafe.xstg1.rloadp onoise_r.xafe.xstg1.rloadn onoise_r.xafe.xstg1.rcm1 onoise_r.xafe.xstg1.rcm2 onoise_r.xafe.rloado1 onoise_r.xafe.rloado2 onoise_r.xafe.rcmo1 onoise_r.xafe.rcmo2
+ac dec 10 1 1k
+let g = mag(v(OUTP)-v(OUTN))
+wrdata ../results/afe_ln_vb_gain.csv g
+let idd = -i(VDD_SRC)
+echo IDD=$&idd
+quit
+.endc
+.end

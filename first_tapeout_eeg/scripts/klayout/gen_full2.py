@@ -135,8 +135,13 @@ def build_chopper(lay, name="eeg_cmos_chopper_lowq"):
         ports[k] = {net: (px + x, py) for net, (px, py) in a.items()}
 
     XR = 3 * pitch + 22.5   # right end of the rails (past the last via3)
+    # Rail order matters: PHI at y=17 sat 1 um above the INN rail and the
+    # parallel m4 fringe gave a 5.3 fF PHI->INN coupling (vs 0.61 fF
+    # PHI->INP at 2 um) — the uncancelled asymmetric chopper charge
+    # injection pumped the summing nodes and railed the SDM in PEX.
+    # Clocks moved 1 um up (PHI now 2 um from INN, matching P-side).
     rails = {"OUTP": 13.0, "OUTN": 14.0, "INP": 15.0, "INN": 16.0,
-             "PHI": 17.0, "NPHI": 18.0, "PHIB": 19.0, "NPHIB": 20.0}
+             "PHI": 18.0, "NPHI": 19.0, "PHIB": 20.0, "NPHIB": 21.0}
     for y in rails.values():
         lay.box(L_M4, -1.0, y - 0.3, XR, y + 0.3, ch)
 
@@ -163,8 +168,20 @@ def build_chopper(lay, name="eeg_cmos_chopper_lowq"):
     tap_m2("CP", "ENB", rails["NPHIB"]); tap_m2("CN", "ENB", rails["NPHIB"])
 
     # VDD18 / VSS m3 rails joining the TG buses across the pitch gaps
-    lay.box(L_M3, -1.0, -4.9, XR, -4.3, ch)
     lay.box(L_M3, -1.0, -6.1, XR, -5.5, ch)
+    lay.box(L_M3, -2.1, -4.9, XR, -4.3, ch)
+
+    # guard rail (m4, y=17, tied to VSS) between the signal and clock rail
+    # groups: even at 2 um the PHI->INN fringe was 2.95 fF (PEX showed the
+    # residual asymmetric chopper injection still rails the SDM); the
+    # interposed quiet rail intercepts the fringe lines.  The tie strap
+    # hangs off the WEST end (x -2.1..-1.5: the TGs' m3 reaches x=-1.0,
+    # the N1x drops sit east of the rails).
+    lay.box(L_M4, -2.1, 16.7, XR, 17.3, ch)
+    lay.box(L_M3, -2.1, -4.6, -1.5, 17.3, ch)
+    lay.box(L_M4, -2.1, -4.9, -1.5, -4.3, ch)
+    lay.via3(-1.8, -4.6, ch)
+    lay.via3(-1.8, 17.0, ch)
 
     for net, y in rails.items():
         lay.label(L_M4L, net, XR - 0.5, y, ch)
@@ -193,13 +210,17 @@ def build_cmfb(lay, w9, name):
     m10 = lay.make_nfet(name + "_m10", 4.0, 6.0, 2)
 
     c = lay.ly.create_cell(name)
+    # m9 clear of m8: x=7.20 leaves the two nwells 1.32 apart (MR_nwell.SP.1
+    # >= 1.27).  Ring abutment is NOT possible here: m8 (L=2) and m9 (L=4)
+    # have different tap-licon row pitches, so any ring overlap merges their
+    # licon columns into bars (licon.1 / MR_licon.SP.1).
     lay.place(m6, 0.0, 0.0, into=c)
     lay.place(m7, 6.0, 0.0, into=c)
     lay.place(m8, 0.0, 8.0, into=c)
-    lay.place(m9, 6.0, 8.0, into=c)
+    lay.place(m9, 7.20, 8.0, into=c)
     lay.place(m10, 2.3, -9.0, into=c)
     g = {"m6": fet_anchors(lay, m6, 0.0, 0.0), "m7": fet_anchors(lay, m7, 6.0, 0.0),
-         "m8": fet_anchors(lay, m8, 0.0, 8.0), "m9": fet_anchors(lay, m9, 6.0, 8.0),
+         "m8": fet_anchors(lay, m8, 0.0, 8.0), "m9": fet_anchors(lay, m9, 7.20, 8.0),
          "m10": fet_anchors(lay, m10, 2.3, -9.0)}
 
     Y_VSNS, Y_VREF, Y_VBN, Y_VSS = -3.2, -4.2, -14.5, -15.7
@@ -233,21 +254,23 @@ def build_cmfb(lay, w9, name):
     lay.strap_up(*g["m6"]["strips"][1], Y_NL, c)
     lay.strap_down(x8d, y8d, Y_NL, c)
 
-    # VBP: m7.s1 up + m9 diode down to Y_VBP bus
+    # VBP: m7.s1 up + m9 diode down to Y_VBP bus (bus end tracks m9's drain
+    # strap column - m9's x moved for the MR_nwell.SP.1 clearance)
     x9d, y9d = g["m9"]["strips"][1]
     x9g, y9g = g["m9"]["g"][0]
     lay.box(L_M1, x9g - 0.17, y9g - 0.17, x9d + 0.17, y9d + 0.17, c)
-    lay.bus_m3(min(g["m7"]["strips"][1][0], x9d) - 0.3, 11.8, Y_VBP, cell=c)
+    lay.bus_m3(min(g["m7"]["strips"][1][0], x9d) - 0.3,
+               max(11.8, x9d + 0.3), Y_VBP, cell=c)
     lay.strap_up(*g["m7"]["strips"][1], Y_VBP, c)
     lay.strap_up(x9d, y9d, Y_VBP, c)
 
     # VDD18: m8.s0 / m9.s0 up + pfet rings
     lay.bus_m3(min(g["m8"]["strips"][0][0], g["m9"]["strips"][0][0]) - 0.3,
-               11.8, Y_VDD, cell=c)
+               max(11.8, g["m9"]["strips"][0][0] + 0.3), Y_VDD, cell=c)
     lay.strap_up(*g["m8"]["strips"][0], Y_VDD, c)
     lay.strap_up(*g["m9"]["strips"][0], Y_VDD, c)
     lay.tie_ring(m8, kdb.Trans(0, False, 0, u(8.0)), "top", Y_VDD, (2.5,), into=c)
-    lay.tie_ring(m9, kdb.Trans(0, False, u(6.0), u(8.0)), "top", Y_VDD, (8.5,), into=c)
+    lay.tie_ring(m9, kdb.Trans(0, False, u(7.20), u(8.0)), "top", Y_VDD, (8.5,), into=c)
     lay.tie_ring(m6, kdb.Trans(0, False, 0, 0), "bottom", Y_VSS, (3.5,), into=c)
     lay.tie_ring(m7, kdb.Trans(0, False, u(6.0), 0), "bottom", Y_VSS, (5.8,), into=c)
     lay.tie_ring(m10, kdb.Trans(0, False, u(2.3), u(-9.0)), "top", Y_VSS, (10.0,), into=c)
@@ -427,11 +450,14 @@ def build_bias(lay):
     c = lay.ly.create_cell("eeg_bias_gen")
 
     # FET row at y=0: nfets left, pfets right; x from actual cell bboxes
-    # (W=10/nf=2 cells are ~11 um wide, W=40/nf=8 ~42 um: do not guess)
+    # (W=10/nf=2 cells are ~11 um wide, W=40/nf=8 ~42 um: do not guess).
+    # Gaps tuned for the MR-deck implant/well spacings: mn1->mn2 1.14 leaves
+    # the ring psdm 0.40 (MR_psdm.SP.1 >= 0.38); mp1->mp2 2.21 leaves the
+    # nwells 1.29 (MR_nwell.SP.1 >= 1.27, else the 0.08 sliver flags).
     XMN1 = 0.0
-    XMN2 = XMN1 + mn1.bbox().right / 1000.0 + 1.0
+    XMN2 = XMN1 + mn1.bbox().right / 1000.0 + 1.14
     XMP1 = XMN2 + mn2.bbox().right / 1000.0 + 1.0
-    XMP2 = XMP1 + mp1.bbox().right / 1000.0 + 1.0
+    XMP2 = XMP1 + mp1.bbox().right / 1000.0 + 2.21
     XR4 = XMP2 + mp2.bbox().right / 1000.0
     lay.place(mn1, XMN1, 0.0, into=c)
     lay.place(mn2, XMN2, 0.0, into=c)
@@ -590,8 +616,10 @@ def build_stage2(lay):
     m24 = lay.make_pfet("s2_m24", 12.0, 6.0, 8)
 
     c = lay.ly.create_cell("stage2")
-    # m23/m24 are ~103 um wide (8 fingers at L=12 pitch): place by bbox
-    X2 = max(m21.bbox().right, m23.bbox().right) / 1000.0 + 1.0
+    # m23/m24 are ~103 um wide (8 fingers at L=12 pitch): place by bbox.
+    # Gap 2.21 leaves the m23/m24 nwells 1.29 apart (MR_nwell.SP.1 >= 1.27;
+    # a 1.0 gap left a 0.08 sliver).
+    X2 = max(m21.bbox().right, m23.bbox().right) / 1000.0 + 2.21
     XR = X2 + m24.bbox().right / 1000.0
     lay.place(m21, 0.0, 0.0, into=c)
     lay.place(m23, 0.0, 14.0, into=c)
@@ -760,12 +788,17 @@ def build_top(lay):
 
     # ---- left-edge pins + input-chopper signal hops ---------------------
     XL = P["chin"][0] - 1.0
-    for net, y in (("INP", 15.0), ("INN", 16.0), ("PHII", 17.0),
-                   ("NPHII", 18.0), ("PHIBI", 19.0), ("NPHIBI", 20.0)):
-        lay.label(L_M4L, net, XL + 1.0, y, top)
+    # pin labels land on the WEST end of XCHIN's rails — y from the chopper
+    # anchors (the clock rails moved +1 um for the PHI/INN coupling fix)
+    for net, cy in (("INP", ch_a["INP"][1]), ("INN", ch_a["INN"][1]),
+                    ("PHII", ch_a["PHI"][1]), ("NPHII", ch_a["NPHI"][1]),
+                    ("PHIBI", ch_a["PHIB"][1]), ("NPHIBI", ch_a["NPHIB"][1])):
+        lay.label(L_M4L, net, XL + 1.0, cy, top)
     # mid-chopper clock feeds (pins at the left edge)
-    for net, yf, xd, yr in (("PHIM", 80.0, 343.0, 17.0), ("NPHIM", 81.0, 346.0, 18.0),
-                            ("PHIBM", 82.0, 349.0, 19.0), ("NPHIBM", 83.0, 355.0, 20.0)):
+    for net, yf, xd, yr in (("PHIM", 80.0, 343.0, ch_a["PHI"][1]),
+                            ("NPHIM", 81.0, 346.0, ch_a["NPHI"][1]),
+                            ("PHIBM", 82.0, 349.0, ch_a["PHIB"][1]),
+                            ("NPHIBM", 83.0, 355.0, ch_a["NPHIB"][1])):
         h4(yf, XL, xd)
         via3(xd, yf)
         v3m(xd, yr - 0.3, yf + 0.3)

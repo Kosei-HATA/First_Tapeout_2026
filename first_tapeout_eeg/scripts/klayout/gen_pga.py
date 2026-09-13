@@ -220,20 +220,23 @@ def build_pga(lay):
         return all_busy + used
 
     # ---- input caps (bottom plate m3 = ELx, top plate m4 = INx) -----------
-    lay.mim_array(top, -760.0, 40.0, 8, 5, cw=20.0, ch=20.0)    # CINP
-    lay.mim_array(top, -760.0, -80.0, 8, 5, cw=20.0, ch=20.0)   # CINN
+    # tab_h=3.6: MR_capm.SP.2 keeps m3 1.2 um off the sized (0.14) bottom
+    # plate, so a via3 landing on the top tab must sit ~3 um above the raw
+    # sheet top (1.6-tall tabs forced the m3 pad 0.5 um over the sheet).
+    lay.mim_array(top, -760.0, 40.0, 8, 5, cw=20.0, ch=20.0, tab_h=3.6)    # CINP
+    lay.mim_array(top, -760.0, -80.0, 8, 5, cw=20.0, ch=20.0, tab_h=3.6)   # CINN
     lay.label(L_M3L, "ELP", -762.0, 41.0, top)   # on CINP bottom tab
     lay.label(L_M3L, "ELN", -762.0, -79.0, top)  # on CINN bottom tab
 
     # ---- feedback bank (bottom m3 = OUTN/OUTP, top m4 = Fx/INx) -----------
-    lay.mim_array(top, -570.0, 60.0, 1, 1, cw=20.0, ch=12.5)    # CFB32P
-    lay.mim_array(top, -535.0, 85.0, 1, 3, cw=20.0, ch=12.5)    # CFB16P
-    lay.mim_array(top, -518.0, 135.0, 1, 7, cw=20.0, ch=12.5)   # CFB8P
-    lay.mim_array(top, -490.0, 60.0, 1, 1, cw=20.0, ch=12.5)    # CF64P
-    lay.mim_array(top, -552.0, 250.0, 1, 1, cw=20.0, ch=12.5)   # CFB32N
-    lay.mim_array(top, -504.0, 250.0, 1, 7, cw=20.0, ch=12.5)   # CFB8N
-    lay.mim_array(top, -478.0, 250.0, 1, 3, cw=20.0, ch=12.5)   # CFB16N
-    lay.mim_array(top, -455.0, 60.0, 1, 1, cw=20.0, ch=12.5)    # CF64N (south:
+    lay.mim_array(top, -570.0, 60.0, 1, 1, cw=20.0, ch=12.5, tab_h=3.6)    # CFB32P
+    lay.mim_array(top, -535.0, 85.0, 1, 3, cw=20.0, ch=12.5, tab_h=3.6)    # CFB16P
+    lay.mim_array(top, -518.0, 135.0, 1, 7, cw=20.0, ch=12.5, tab_h=3.6)   # CFB8P
+    lay.mim_array(top, -490.0, 60.0, 1, 1, cw=20.0, ch=12.5, tab_h=3.6)    # CF64P
+    lay.mim_array(top, -552.0, 250.0, 1, 1, cw=20.0, ch=12.5, tab_h=3.6)   # CFB32N
+    lay.mim_array(top, -504.0, 250.0, 1, 7, cw=20.0, ch=12.5, tab_h=3.6)   # CFB8N
+    lay.mim_array(top, -478.0, 250.0, 1, 3, cw=20.0, ch=12.5, tab_h=3.6)   # CFB16N
+    lay.mim_array(top, -455.0, 60.0, 1, 1, cw=20.0, ch=12.5, tab_h=3.6)    # CF64N (south:
     # short INN drop from here; only F-caps live in the N row)
 
     # ---- summing buses (extend XCHIN's INP/INN rails west) ----------------
@@ -243,12 +246,13 @@ def build_pga(lay):
     # ---- cap top-plate taps ------------------------------------------------
     # NEVER hang thin (<3.2 um) metal off a MIM plate: the huge-metal
     # closing (3 um) leaves a notch -> m3.3ab/m4.5ab.  via3 lands on the
-    # 1.6-tall top tab with its m4 pad fully inside the tab and its m3 pad
-    # 0.5 um above the bottom sheet; then a thin m3 jog and an m2 descent
+    # 3.6-tall top tab with its m4 pad fully inside the tab and its m3 pad
+    # 2.8 um above the bottom sheet (MR_capm.SP.2: m3 must clear the sized
+    # (0.14) plate by 1.2 um); then a thin m3 jog and an m2 descent
     # (m2 crosses m3 sheets / m4 plates / buses freely - no via1s up there).
     def fx_drop(xm, sheet_top, a_span, a_y):
         """Cap top tab (m4) -> TG A bus (m3): via3 on tab, m3 jog, m2 down."""
-        vy = sheet_top + 1.0
+        vy = sheet_top + 3.0
         via3(xm, vy)
         x_tap = pick_x(a_span[0], a_span[1], a_y - 0.15, vy + 0.15, busy())
         note(x_tap, a_y, vy)
@@ -266,7 +270,7 @@ def build_pga(lay):
         """CF64 top tab -> summing bus (m4): via3 on tab, m3 jog, m2 down,
         pad3 -> v3m -> via3 landing.  INN is the upper bus, so the m3 drop
         to INP (y=15) passes under the INN bus freely."""
-        vy = sheet_top + 1.0
+        vy = sheet_top + 3.0
         via3(xm, vy)
         x_tap = pick_x(xr[0], xr[1], 16.9, vy + 0.15, busy())
         note(x_tap, 16.9, vy)
@@ -409,18 +413,18 @@ def build_pga(lay):
     sel_col(-460.5, -442.5, lanes["NRST"], (PENB,))     # XRSTP.ENB
 
     # ---- CINP/CINN top plates -> summing buses (same pattern) --------------
-    via3(-671.25, 151.2)
-    xc = pick_x(-560.5, -530.0, 16.9, 151.35, busy())
-    note(xc, 16.9, 151.2)
-    h3(151.2, -671.6, xc + 0.2)
-    m2col(xc, 17.2, 151.2)
+    via3(-671.25, 153.2)
+    xc = pick_x(-560.5, -530.0, 16.9, 153.35, busy())
+    note(xc, 16.9, 153.2)
+    h3(153.2, -671.6, xc + 0.2)
+    m2col(xc, 17.2, 153.2)
     lay.box(L_M3, xc - 0.3, 16.9, xc + 0.3, 17.5, top)
     v3m(xc, 15.0, 17.2); via3(xc, 15.0)                   # -> INP
-    via3(-671.25, 31.2)
-    xc2 = pick_x(-558.5, -530.0, 16.9, 31.35, busy())
-    note(xc2, 16.9, 31.2)
-    h3(31.2, -671.6, xc2 + 0.2)
-    m2col(xc2, 17.2, 31.2)
+    via3(-671.25, 33.2)
+    xc2 = pick_x(-558.5, -530.0, 16.9, 33.35, busy())
+    note(xc2, 16.9, 33.2)
+    h3(33.2, -671.6, xc2 + 0.2)
+    m2col(xc2, 17.2, 33.2)
     lay.box(L_M3, xc2 - 0.3, 16.9, xc2 + 0.3, 17.5, top)
     v3m(xc2, 16.0, 17.2); via3(xc2, 16.0)                 # -> INN
 
@@ -485,8 +489,10 @@ def build_pga(lay):
     lay.box(L_M3, -570.5, -50.3, -568.5, -49.7, top)   # S64: unused in the
     lay.label(L_M3L, "S64", -569.5, -50.0, top)        # schematic (x64 = all
     # switches open); labeled stub so the pin exists for LVS
-    for net, y in (("PHII", 17.0), ("NPHII", 18.0), ("PHIBI", 19.0),
-                   ("NPHIBI", 20.0)):
+    # chopper clock pins: land on the full2's pin spots (XL+1, ch_a rail y —
+    # clock rails moved +1 um for the PHI/INN coupling fix, see gen_full2)
+    for net, y in (("PHII", 18.0), ("NPHII", 19.0), ("PHIBI", 20.0),
+                   ("NPHIBI", 21.0)):
         lay.label(L_M4L, net, -400.0, y, top)
     for net, y in (("PHIM", 80.0), ("NPHIM", 81.0), ("PHIBM", 82.0),
                    ("NPHIBM", 83.0)):

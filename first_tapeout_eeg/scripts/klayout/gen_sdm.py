@@ -139,20 +139,26 @@ def build_nand2(lay):
     mp2 = lay.make_pfet("nd_p2", 0.15, 2.0, 1)
     c = lay.ly.create_cell("eeg_nand2")
 
+    # Ring-to-ring abutment: the FET cells are designed to share guard-ring
+    # bands.  The x offsets below place the neighbor's ring-tap licon column
+    # EXACTLY on top of the previous cell's (3.25 / 10.45) - a 0.02 offset
+    # merges two 0.17 squares into a 0.32 bar (licon.1) and the small
+    # misalignments leave 0.13 um nsdm/psdm slivers (MR_nsdm/psdm.SP.1).
+    MN2_X, MP2_X = 3.25, 10.45
     lay.place(mn1, 0.0, 0.0, into=c)
-    lay.place(mn2, 3.4, 0.0, into=c)
+    lay.place(mn2, MN2_X, 0.0, into=c)
     lay.place(mp1, 7.2, 0.0, into=c)
-    lay.place(mp2, 11.0, 0.0, into=c)
+    lay.place(mp2, MP2_X, 0.0, into=c)
     g = {"mn1": fet_anchors(lay, mn1, 0.0, 0.0),
-         "mn2": fet_anchors(lay, mn2, 3.4, 0.0),
+         "mn2": fet_anchors(lay, mn2, MN2_X, 0.0),
          "mp1": fet_anchors(lay, mp1, 7.2, 0.0),
-         "mp2": fet_anchors(lay, mp2, 11.0, 0.0)}
+         "mp2": fet_anchors(lay, mp2, MP2_X, 0.0)}
 
     b1, b2 = mn1.bbox(), mp2.bbox()
     bot = min(b1.bottom, mn2.bbox().bottom, mp1.bbox().bottom,
               b2.bottom) / 1000.0
     top_ = max(b1.top, mn2.bbox().top, mp1.bbox().top, b2.top) / 1000.0
-    right = 11.0 + b2.right / 1000.0
+    right = MP2_X + b2.right / 1000.0
 
     Y_A, Y_B, Y_VSS = bot - 1.2, bot - 2.4, bot - 3.6
     Y_Y, Y_VDD = top_ + 1.2, top_ + 2.4
@@ -192,11 +198,11 @@ def build_nand2(lay):
     # lands exactly on the strap's via2 - same net, one legal via2).
     # mn1 has no VSS strap (its source is N1): pick a clear column.
     tie_auto(lay, mn1, 0.0, 0.0, Y_VSS, c)
-    lay.tie_ring(mn2, kdb.Trans(0, False, u(3.4), 0), "bottom", Y_VSS,
+    lay.tie_ring(mn2, kdb.Trans(0, False, u(MN2_X), 0), "bottom", Y_VSS,
                  (g["mn2"]["strips"][1][0],), into=c)
     lay.tie_ring(mp1, kdb.Trans(0, False, u(7.2), 0), "top", Y_VDD,
                  (g["mp1"]["strips"][1][0],), into=c)
-    lay.tie_ring(mp2, kdb.Trans(0, False, u(11.0), 0), "top", Y_VDD,
+    lay.tie_ring(mp2, kdb.Trans(0, False, u(MP2_X), 0), "top", Y_VDD,
                  (g["mp2"]["strips"][1][0],), into=c)
 
     for net, y in (("A", Y_A), ("B", Y_B), ("Y", Y_Y), ("VDD18", Y_VDD),
@@ -418,6 +424,21 @@ def build_strongarm(lay):
     lay.box(L_M2, x_clk - 0.19, gyc - 0.17, x_clk + 0.19, Y_CLK2 + 0.15, c)
     lay.via2(x_clk, Y_CLK2, c)
 
+    # ---- nwell bridges (MR_nwell.SP.1 >= 1.27 um, "merged if less") ---------
+    # The pfet cells' nwells define their bboxes; adjacent cells in rows B/C
+    # sit 0.78-1.0 um apart -> bridge the gaps with nwell rects overlapping
+    # both nwells by 0.3 um and spanning the FULL nwell height (an inset
+    # leaves unbridged slivers at the top/bottom that still flag).
+    def nwell_bridge(dev, xl, xr, yb):
+        lay.box(L_NWELL, xl - 0.3, yb + dev.bbox().bottom / 1000.0,
+                xr + 0.3, yb + dev.bbox().top / 1000.0, c)
+    nwell_bridge(m9, xb[1] + m9.bbox().right / 1000.0,
+                 xb[2] + m9.bbox().left / 1000.0, Y_B)
+    nwell_bridge(m5, xc[0] + m5.bbox().right / 1000.0,
+                 xc[1] + m5.bbox().left / 1000.0, Y_C)
+    nwell_bridge(m7, xc[1] + m7.bbox().right / 1000.0,
+                 xc[2] + m7.bbox().left / 1000.0, Y_C)
+
     # ---- bus links at the west end -------------------------------------------
     lay.join_m3_m2(-2.9, Y_VSS, Y_VSS2, c)
     lay.join_m3_m2(-2.2, Y_CLK, Y_CLK2, c)
@@ -638,10 +659,10 @@ def build_sdm(lay):
     rinn_a, rinn_b = lay.res_bank(top, 280.0, 180.0, 5, seg100)
     rdacp_a, rdacp_b = lay.res_bank(top, 280.0, 260.0, 5, seg100)
     rdacn_a, rdacn_b = lay.res_bank(top, 280.0, 340.0, 5, seg100)
-    cip_bot, cip_top, _, _ = lay.mim_array(top, 300.0, 1250.0, 5, 5, 20.0, 20.0)
-    cin_bot, cin_top, _, _ = lay.mim_array(top, 420.0, 1250.0, 5, 5, 20.0, 20.0)
-    cqn_bot, cqn_top, _, _ = lay.mim_array(top, 60.0, 1145.0, 2, 1, 20.0, 12.5)
-    cqp_bot, cqp_top, _, _ = lay.mim_array(top, 110.0, 1165.0, 2, 1, 20.0, 12.5)
+    cip_bot, cip_top, _, _ = lay.mim_array(top, 300.0, 1250.0, 5, 5, 20.0, 20.0, tab_h=3.6)
+    cin_bot, cin_top, _, _ = lay.mim_array(top, 420.0, 1250.0, 5, 5, 20.0, 20.0, tab_h=3.6)
+    cqn_bot, cqn_top, _, _ = lay.mim_array(top, 60.0, 1145.0, 2, 1, 20.0, 12.5, tab_h=3.6)
+    cqp_bot, cqp_top, _, _ = lay.mim_array(top, 110.0, 1165.0, 2, 1, 20.0, 12.5, tab_h=3.6)
 
     # ---- digital / comparator cluster ----------------------------------------
     P_TG, N_TG = 430.0, 390.0
@@ -749,12 +770,12 @@ def build_sdm(lay):
                     max(yj, yt) + 0.2, top)
         lay.via1(x_to, yt, top)
 
-    # INP taps: RINP.b (288,81.73 — the serpentine's END pad; the returned B
-    # terminal is mid-chain for even last-k!), RDACP.a
-    tap_m2(30.0, 118.3, 288.0, 81.73)
+    # INP taps: RINP.b (x0+4*pitch, 81.73 — the serpentine's END pad; the
+    # returned B terminal is mid-chain for even last-k!), RDACP.a
+    tap_m2(30.0, 118.3, 280.0 + 4 * lay.RES_BANK_PITCH, 81.73)
     tap_m2(30.0, 278.3, rdacp_a[0], rdacp_a[1])
-    # INN taps: RINN.b (288,161.73), RDACN.a
-    tap_m2(27.0, 198.3, 288.0, 161.73)
+    # INN taps: RINN.b (x0+4*pitch, 161.73), RDACN.a
+    tap_m2(27.0, 198.3, 280.0 + 4 * lay.RES_BANK_PITCH, 161.73)
     tap_m2(27.0, 358.3, rdacn_a[0], rdacn_a[1])
 
     # VINP/VINN pin stubs on RINP.a / RINN.a (via1 clear of the INP/INN jogs)
@@ -794,7 +815,13 @@ def build_sdm(lay):
     lay.via2(48.7, 1143.5, top)
     lay.box(L_M2, 48.51, 1143.35, 51.39, 1143.65, top)
     lay.via2(51.2, 1143.5, top)
-    h3(1143.5, 50.9, 123.3)
+    # the lane ducks UNDER the CQN bottom sheet on m2 (MR_capm.SP.2 keeps
+    # m3 1.2 um off the sized (0.14) plate; the sheet bottom is at 1144.8,
+    # an m3 lane at 1143.5 sits only 1.0 um below it).  The riser at x=80
+    # merges the m2 box directly (no via2 mid-run).
+    h3(1143.5, 50.9, 55.2)
+    lay.via2(54.9, 1143.5, top)
+    lay.box(L_M2, 54.6, 1143.35, 80.5, 1143.65, top)
     lay.box(L_M3, 295.5, 1249.7, 300.1, 1253.3, top)   # CIP bottom junction
     via3(38.0, 1251.5)
     h4(1251.5, 37.7, 297.8)
@@ -828,7 +855,7 @@ def build_sdm(lay):
     # crossings: QP/QN verticals and the VSS south leg, all free over/under).
     lay.via2(80.0, rfp_ya, top)
     lay.box(L_M2, 79.81, rfp_ya - 0.15, 80.19, 1143.65, top)
-    lay.via2(80.0, 1143.5, top)
+    # (riser merges the m2 underpass box directly - no via2 at y1143.5)
     h3(rfp_yb, 29.7, 69.5)
     via3(30.0, rfp_yb)
     lay.via2(178.0, rfn_ya, top)
@@ -852,21 +879,23 @@ def build_sdm(lay):
     h3(sa["INP"], SA_XR - 0.3, 206.8)
 
     # ---- CI top plates: INP (CIP, tab xm=355) / INN (CIN, tab xm=475) --------
-    # via3 on the tab (pad4 fully inside), m2 hop north to the clean corridor
+    # via3 on the 3.6-tall tab (pad4 fully inside; the m3 pad/junction box
+    # sits 2.5 um above the raw bottom sheet - MR_capm.SP.2 keeps m3 1.2 um
+    # off the sized (0.14) plate), m2 hop north to the clean corridor
     # (y1368/1368.8: above the strongarm + QP/QN lanes + their via2s, below
     # the core's south bus stack at 1393.6), then m2 west to the verticals.
-    lay.box(L_M3, 354.7, 1360.65, 356.8, 1361.25, top)
-    via3(355.0, 1360.95)
-    lay.via2(356.3, 1360.95, top)
-    lay.box(L_M2, 356.11, 1360.8, 356.49, 1368.35, top)
+    lay.box(L_M3, 354.7, 1362.7, 356.8, 1363.3, top)
+    via3(355.0, 1363.0)
+    lay.via2(356.3, 1363.0, top)
+    lay.box(L_M2, 356.11, 1362.85, 356.49, 1368.35, top)
     lay.box(L_M2, 31.01, 1367.85, 356.49, 1368.15, top)      # INP jog
     via3(30.0, 1368.0)
     lay.box(L_M3, 29.7, 1367.7, 31.5, 1368.3, top)
     lay.via2(31.2, 1368.0, top)
-    lay.box(L_M3, 474.7, 1360.95, 476.8, 1361.55, top)
-    via3(475.0, 1361.25)
-    lay.via2(476.3, 1361.25, top)
-    lay.box(L_M2, 476.11, 1361.0, 476.49, 1369.05, top)
+    lay.box(L_M3, 474.7, 1363.0, 476.8, 1363.6, top)
+    via3(475.0, 1363.3)
+    lay.via2(476.3, 1363.3, top)
+    lay.box(L_M2, 476.11, 1363.15, 476.49, 1369.05, top)
     lay.box(L_M2, 28.01, 1368.65, 476.49, 1368.95, top)      # INN jog
     via3(27.0, 1368.8)
     lay.box(L_M3, 26.7, 1368.5, 28.5, 1369.1, top)
@@ -913,7 +942,7 @@ def build_sdm(lay):
     lay.via3(*cqn_top, top)
     pad4(*cqn_top)
     lay.via2(170.0, cqn_top[1], top)
-    lay.box(L_M2, 169.81, 1158.3, 170.19, 1209.8, top)   # CQN north leg
+    lay.box(L_M2, 169.81, cqn_top[1] - 0.2, 170.19, 1209.8, top)  # CQN north leg
     lay.box(L_M3, cqp_top[0] - 0.3, cqp_top[1] - 0.3, cqp_top[0] + 1.5,
             cqp_top[1] + 0.3, top)
     lay.via3(*cqp_top, top)
@@ -952,17 +981,18 @@ def build_sdm(lay):
     # ---- TG wiring -------------------------------------------------------------
     # TG bus offsets (local): A=3.8 B=2.6 EN=-2.2 ENB=-3.4 VSS=-4.6 VDD=-5.8,
     # buses span x -1..22 rel. placement.
-    # VDACP: RDACP.b is the serpentine's END pad at (288,241.73) -> m2 up ->
-    # east -> up x=336 -> via2 -> lane joining P1.A/P0.A
-    lay.via1(288.0, 241.73, top)
-    lay.box(L_M2, 287.81, 241.53, 288.19, 278.53, top)
-    lay.box(L_M2, 287.81, 278.07, 336.19, 278.53, top)
+    # VDACP: RDACP.b is the serpentine's END pad at (x0+4*pitch,241.73) ->
+    # m2 up -> east -> up x=336 -> via2 -> lane joining P1.A/P0.A
+    xb_dac = 280.0 + 4 * lay.RES_BANK_PITCH
+    lay.via1(xb_dac, 241.73, top)
+    lay.box(L_M2, xb_dac - 0.19, 241.53, xb_dac + 0.19, 278.53, top)
+    lay.box(L_M2, xb_dac - 0.19, 278.07, 336.19, 278.53, top)
     lay.box(L_M2, 335.81, 278.3, 336.19, P_TG + 4.15, top)
     lay.via2(336.0, P_TG + 3.8, top)
     h3(P_TG + 3.8, 269.0, 336.3)
-    # VDACN: RDACN.b at (288,321.73) -> up x=333 -> lane joining N1.A/N0.A
-    lay.via1(288.0, 321.73, top)
-    lay.box(L_M2, 287.81, 321.53, 288.19, 358.53, top)
+    # VDACN: RDACN.b at (x0+4*pitch,321.73) -> up x=333 -> lane joining N1.A/N0.A
+    lay.via1(xb_dac, 321.73, top)
+    lay.box(L_M2, xb_dac - 0.19, 321.53, xb_dac + 0.19, 358.53, top)
     lay.box(L_M2, 287.81, 358.07, 333.19, 358.53, top)
     lay.box(L_M2, 332.81, 358.3, 333.19, N_TG + 4.15, top)
     lay.via2(333.0, N_TG + 3.8, top)

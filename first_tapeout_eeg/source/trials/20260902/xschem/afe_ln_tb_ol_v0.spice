@@ -1,0 +1,32 @@
+* afe_ln open-loop AC (frozen straight choppers, gates driven, no feedback)
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include afe_ln_core_soft.spice
+.include eeg_pseudo_res.spice
+.include eeg_bias_gen.spice
+.include afe_ln_ota_full2.spice
+.param VDD=1.80 VCM=0.9
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SIGN 0 DC {VCM} AC 0.5 180
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 afe_ln_ota_chopped_full2 S1W={240} S1NF={24} S2W={12} S2NF={2} S2LW={48} S2LNF={8} RLOAD={2Meg} S1RLOAD={2Meg} S1RCM={5Meg} S2RCM={5Meg}
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+ac dec 50 0.01 100Meg
+let g = mag(v(OUTP)-v(OUTN))
+let p = 180/pi*ph(v(OUTP)-v(OUTN))
+wrdata ../results/afe_ln_ol_v0.csv g p
+quit
+.endc
+.end

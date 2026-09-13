@@ -1,147 +1,141 @@
-timestamp 1617737150
+timestamp 1617853827
 version 8.3
 tech sky130A
 style ngspice()
 scale 1000 1 500000
 resistclasses 4400000 2200000 950000 3050000 120000 197000 114000 191000 120000 197000 114000 191000 48200 319800 2000000 48200 48200 12800 125 125 47 47 29 5
 use eeg_cmfb_amp_dl2_s2_m10 eeg_cmfb_amp_dl2_s2_m10_0 1 0 460 0 1 -1800
-use eeg_cmfb_amp_dl2_s2_m9 eeg_cmfb_amp_dl2_s2_m9_0 1 0 1200 0 1 1600
+use eeg_cmfb_amp_dl2_s2_m9 eeg_cmfb_amp_dl2_s2_m9_0 1 0 1440 0 1 1600
 use eeg_cmfb_amp_dl2_s2_m8 eeg_cmfb_amp_dl2_s2_m8_0 1 0 0 0 1 1600
 use eeg_cmfb_amp_dl2_s2_m7 eeg_cmfb_amp_dl2_s2_m7_0 1 0 1200 0 1 0
 use eeg_cmfb_amp_dl2_s2_m6 eeg_cmfb_amp_dl2_s2_m6_0 1 0 0 0 1 0
 node "VBN" 6 1604.85 664 -1907 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 115600 3536 82916 2334 312000 5440 0 0 0 0 0 0
-node "VCM_REF" 2 486.99 1570 -107 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11152 464 63156 1814 50400 1080 0 0 0 0 0 0
+node "VCM_REF" 2 490.577 1570 -107 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11152 464 63156 1814 50400 1080 0 0 0 0 0 0
 node "VCM_SENSE" 1 329.946 370 -107 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4624 272 47956 1414 50400 1080 0 0 0 0 0 0
-node "m1_68_166#" 6 1236.88 68 166 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 13872 816 166592 4840 183840 3304 0 0 0 0 0 0
-node "VBP" 10 1787.32 1626 1493 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 99742 1650 422408 11420 61680 1268 0 0 0 0 0 0
-node "m1_370_1493#" 3 981.769 370 1493 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 130794 1694 126768 3488 14400 480 0 0 0 0 0 0
+node "m1_68_166#" 6 1237.07 68 166 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 13872 816 166592 4840 183840 3304 0 0 0 0 0 0
+node "VBP" 10 1996.71 1866 1493 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 99742 1650 422408 11420 65280 1328 0 0 0 0 0 0
+node "m1_370_1493#" 3 991.889 370 1493 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 130794 1694 126768 3488 14400 480 0 0 0 0 0 0
 node "VSS" 152 3835.82 683 -196 v0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3468 408 35888 1708 970748 26306 312000 5440 0 0 0 0 0 0
-node "VDD18" 89 2632.25 483 2094 v0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2312 272 27008 1320 492784 13576 278160 4876 0 0 0 0 0 0
+node "VDD18" 89 2580 483 2094 v0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2312 272 27008 1320 492784 13576 278160 4876 0 0 0 0 0 0
 substrate "SUB" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-cap "VBP" "m1_370_1493#" 32.8692
-cap "VCM_SENSE" "m1_68_166#" 207.265
-cap "VCM_SENSE" "VCM_REF" 1.53297
-cap "VBP" "m1_68_166#" 5.4655
-cap "VDD18" "VBP" 534.301
-cap "VCM_REF" "VBP" 2.70567
-cap "VSS" "VCM_SENSE" 136.759
-cap "VSS" "VBP" 0.0560755
-cap "VBN" "m1_68_166#" 7.43195
-cap "VBN" "VCM_REF" 2.86238
-cap "m1_370_1493#" "m1_68_166#" 16.2873
-cap "VDD18" "m1_370_1493#" 39.9929
-cap "VSS" "VBN" 1361.29
-cap "VDD18" "m1_68_166#" 2.20845
-cap "VSS" "m1_370_1493#" 10.9441
-cap "VCM_REF" "m1_68_166#" 147.903
-cap "VSS" "m1_68_166#" 343.211
-cap "VSS" "VCM_REF" 77.8025
+cap "m1_370_1493#" "VDD18" 35.2914
+cap "m1_370_1493#" "VCM_SENSE" 0.996591
+cap "m1_68_166#" "VBN" 7.43195
+cap "VBN" "VSS" 1361.29
+cap "m1_68_166#" "VBP" 5.4655
+cap "VBP" "VSS" 0.0560755
+cap "m1_68_166#" "VCM_REF" 147.903
 cap "VCM_SENSE" "VBN" 0.111751
-cap "VCM_SENSE" "m1_370_1493#" 0.996591
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 55.7347
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "VCM_SENSE" 0.170566
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "VCM_SENSE" 0.097379
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 0.348415
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 79.4314
+cap "VCM_REF" "VSS" 77.8025
+cap "VBP" "VDD18" 502.791
+cap "VCM_REF" "VCM_SENSE" 1.53297
+cap "VBP" "m1_370_1493#" 31.7806
+cap "m1_68_166#" "VSS" 343.211
+cap "m1_68_166#" "VDD18" 2.13911
+cap "m1_68_166#" "VCM_SENSE" 207.265
+cap "VCM_SENSE" "VSS" 136.759
+cap "m1_68_166#" "m1_370_1493#" 16.2873
+cap "VCM_REF" "VBN" 2.86238
+cap "m1_370_1493#" "VSS" 10.9441
+cap "VBP" "VCM_REF" 1.16897
+cap "VCM_SENSE" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 0.097379
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 55.7347
+cap "VCM_SENSE" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 0.170566
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 79.4314
+cap "VCM_REF" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 1.16541
 cap "VCM_REF" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 0.035391
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#" 24.8546
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "VCM_REF" 1.16541
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 0.669453
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 97.5196
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 0.663617
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 37.2367
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 24.8546
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#" 0.348415
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" 0.669453
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 37.2367
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 1.15336
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 31.5713
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 0.09229
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 0.215189
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 0.09229
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 1.15336
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 485.278
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 31.5713
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 97.5196
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 113.921
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 179.53
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 0.219981
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 35.3016
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 2.58763
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 26.7977
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 232.838
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 2.67025
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 60.3934
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 373.076
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 0.663617
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 485.278
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" -0.0145701
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 60.3934
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 26.7977
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 35.3016
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 179.53
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 2.67025
+cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 373.076
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 2.58763
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 232.838
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 0.219981
 cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 1.44754
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#" 0.171927
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#" 0.123127
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" 0.940875
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 1.57669
-cap "eeg_cmfb_amp_dl2_s2_m9_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 0.0802095
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" 1.74529
-cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 1.20545
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" 4.26777
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 5.03528
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.233477
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 44.2914
-cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 2.35198
-cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.38295
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 53.6273
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 28.7435
-cap "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 0.519066
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 87.987
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 0.219225
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_0_0#" 0.123127
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 0.171927
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 13.7739
-cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 0.0785748
-cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 10.3086
+cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 1.20545
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 31.1729
+cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 2.35198
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 0.154485
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 31.1729
-cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 2.42587
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 1.01457
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 19.8247
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 6.92734
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 32.9182
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 1.57669
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" 0.940875
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" 4.26777
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 5.03528
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.38295
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.233477
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 44.2914
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" 10.3086
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 28.7435
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 53.6273
+cap "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 2.42587
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" 0.519066
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 87.987
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.219225
-cap "eeg_cmfb_amp_dl2_s2_m9_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 0.434369
-cap "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 3.18323
-cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 2.43072
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 2.33859
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 32.9182
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.21301
+cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.993027
+cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 8.93111
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 1.01293
+cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 3.13161
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 0.259886
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 6.92734
+cap "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 3.08453
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 5.91496
 cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 25.4642
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.21301
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 0.259886
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 68.0817
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 23.5056
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 5.54629
-cap "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 1.2149
-cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.991067
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 14.2036
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 0.0675748
-cap "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.66071
-cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.69435
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 2.33859
-cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 8.93596
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 68.0817
+cap "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 2.93332
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 5.54629
+cap "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 1.22393
+cap "eeg_cmfb_amp_dl2_s2_m9_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 0.1781
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 29.8866
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" 1.01293
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 8.31763
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 234.989
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 1.62945
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 8.63425
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 1.97637
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" 14.2036
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.219225
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 201.998
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 7.62006
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 0.59518
 cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" 7.03337
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 0.586096
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 6.58885
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 1.92337
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 0.634402
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 1.2839
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 1.64369
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 0.463888
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 214.691
-cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 0.100273
-cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 7.00623
-cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_204_n106#" 7.79994
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" 0.586096
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" 1.38295
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 5.02974
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 5.7703
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" 0.860287
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 249.57
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 5.98383
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" 1.19382
+cap "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 1.79944
+cap "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 5.91056
+cap "eeg_cmfb_amp_dl2_s2_m8_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" 7.79994
 merge "eeg_cmfb_amp_dl2_s2_m6_0/a_204_n106#" "VCM_SENSE" -155.772 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3128 -228 0 0 0 0 0 0 0 0 0 0
-merge "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "VCM_REF" -316.314 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7544 -420 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m7_0/a_204_n106#" "VCM_REF" -316.346 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7544 -420 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m10_0/a_1104_n106#" "eeg_cmfb_amp_dl2_s2_m10_0/a_204_n106#" -832.549 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -71576 -3296 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m10_0/a_204_n106#" "VBN"
-merge "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" -982.842 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2312 -272 -7988 -504 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m8_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" -887.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2312 -272 -7988 -504 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m8_0/w_n184_n257#" "eeg_cmfb_amp_dl2_s2_m9_0/a_0_0#"
 merge "eeg_cmfb_amp_dl2_s2_m9_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#"
 merge "eeg_cmfb_amp_dl2_s2_m9_0/w_n184_n257#" "VDD18"
-merge "eeg_cmfb_amp_dl2_s2_m8_0/SUB" "eeg_cmfb_amp_dl2_s2_m9_0/SUB" -2052.64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3468 -408 -9248 -544 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m8_0/SUB" "eeg_cmfb_amp_dl2_s2_m9_0/SUB" -2043.21 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3468 -408 -9248 -544 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m9_0/SUB" "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#"
 merge "eeg_cmfb_amp_dl2_s2_m6_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#"
 merge "eeg_cmfb_amp_dl2_s2_m7_0/a_n123_n196#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#"
@@ -149,12 +143,12 @@ merge "eeg_cmfb_amp_dl2_s2_m10_0/a_1904_0#" "SUB"
 merge "SUB" "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#"
 merge "eeg_cmfb_amp_dl2_s2_m10_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_n123_n196#"
 merge "eeg_cmfb_amp_dl2_s2_m10_0/a_n123_n196#" "VSS"
-merge "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_0_0#" -671.329 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -12376 -772 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m6_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_0_0#" -664.61 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -12376 -772 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m7_0/a_0_0#" "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#"
 merge "eeg_cmfb_amp_dl2_s2_m10_0/a_1004_0#" "m1_68_166#"
-merge "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m9_0/a_860_0#" -592.224 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -27446 -1442 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m9_0/a_60_n106#" "eeg_cmfb_amp_dl2_s2_m9_0/a_860_0#" -618.481 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -27446 -1442 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m9_0/a_860_0#" "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#"
 merge "eeg_cmfb_amp_dl2_s2_m7_0/a_604_0#" "VBP"
-merge "eeg_cmfb_amp_dl2_s2_m8_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m8_0/a_604_0#" -717.348 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -40849 -1450 0 0 0 0 0 0 0 0 0 0
+merge "eeg_cmfb_amp_dl2_s2_m8_0/a_204_n106#" "eeg_cmfb_amp_dl2_s2_m8_0/a_604_0#" -691.333 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -40849 -1450 0 0 0 0 0 0 0 0 0 0
 merge "eeg_cmfb_amp_dl2_s2_m8_0/a_604_0#" "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#"
 merge "eeg_cmfb_amp_dl2_s2_m6_0/a_604_0#" "m1_370_1493#"

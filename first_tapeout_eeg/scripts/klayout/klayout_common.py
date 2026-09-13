@@ -303,6 +303,7 @@ class Layouter:
     SEG_PAD_TOP = (17.215, 19.320)
     SEG_PAD_BOT = (-19.320, -17.215)
     SEG_HALF_H = 19.61
+    RES_BANK_PITCH = 2.14
 
     def res_bank(self, into, x0, y0, nseg, seg_cell, ncols=None):
         """Serpentine chain of nseg segments starting at (x0, y0).
@@ -311,7 +312,9 @@ class Layouter:
         alternating direction per row, chained by m1 jumpers.
         Returns ((xa, ya), (xb, yb)) absolute terminal pad centers
         (both on top pads)."""
-        pitch = 2.0
+        # urpm marker is w+2*0.29 = 1.27 wide; MR_urpm.SP.1 needs 0.84
+        # spacing between markers -> pitch >= 2.11 (2.14 with margin)
+        pitch = self.RES_BANK_PITCH
         row_pitch = 2 * self.SEG_HALF_H + 5.0
         ncols = ncols or nseg
         nrows = (nseg + ncols - 1) // ncols
@@ -365,9 +368,13 @@ class Layouter:
     # MIM cap array (capm / m3 bottom sheet / m4 top mesh)
     # ------------------------------------------------------------------
     def mim_array(self, into, x0, y0, ncols, nrows, cw=20.0, ch=20.0,
-                  via_pitch=1.6):
+                  via_pitch=1.6, tab_h=1.6):
         """Parallel array of capm MIM units. Returns (bot_pt, top_pt, area, perim)
-        with bottom/top terminal access points (m3 / m4) and total A/P in um."""
+        with bottom/top terminal access points (m3 / m4) and total A/P in um.
+        tab_h: m4 exit-tab height above the capm field.  Use >= 3.0 when a
+        via3 lands on the tab: MR_capm.SP.2 keeps any m3 (incl. the via3's
+        own m3 pad) 1.2 um off the sized (0.14) bottom plate, i.e. the m3
+        pad bottom must sit >= ~1.48 um above the raw m3 sheet."""
         pitch_x, pitch_y = cw + 2.5, ch + 2.5
         w_tot = ncols * pitch_x - 2.5
         h_tot = nrows * pitch_y - 2.5
@@ -386,16 +393,16 @@ class Layouter:
         # m4 top plate: one solid sheet inset 0.195 from the capm field,
         # with an exit tab at the top center (avoids m4.5ab notch artifacts
         # that a bar/rail mesh creates under the 3um closing).  The tab is
-        # 1.6 tall so a via3 can land on it with its m4 pad fully inside
+        # tab_h tall so a via3 can land on it with its m4 pad fully inside
         # (pad overshoot = notch) while its m3 pad clears the bottom sheet.
         self.box(L_M4, x0 + 0.195, y0 + 0.195,
                  x0 + w_tot - 0.195, y0 + h_tot - 0.195, into)
         xm = x0 + w_tot / 2
         self.box(L_M4, xm - 1.6, y0 + h_tot - 0.195, xm + 1.6,
-                 y0 + h_tot + 1.6, into)
+                 y0 + h_tot + tab_h, into)
         area = ncols * nrows * cw * ch
         perim = ncols * nrows * 2 * (cw + ch)
-        return ((x0 - 2.0, y0 + 1.0), (xm, y0 + h_tot + 1.0),
+        return ((x0 - 2.0, y0 + 1.0), (xm, y0 + h_tot + tab_h - 0.6),
                 area, perim)
 
     def set_top(self, cell):

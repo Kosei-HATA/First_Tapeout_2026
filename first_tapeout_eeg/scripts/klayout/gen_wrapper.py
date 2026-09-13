@@ -257,6 +257,26 @@ def main():
     remove_nets(w, [(2687.15, 2272.5)], "io_out[11] wire")
     remove_nets(w, [(2697.75, 2494.6)], "io_out[12] wire")
 
+    # ---- restore the template's boundary stubs removed with the example ---
+    # The mpw_precheck XOR check compares the BOUNDARY BAND (x<0 / x>2920)
+    # against the golden template: every net the surgery removed must keep
+    # its pad-boundary stub there.  Restored as plain m3 — boundary segments
+    # only (the example's long L-wires crossing the macro would merge with
+    # macro m3), no labels, so the LVS deck never sees them.
+    for x0, y0, x1, y1 in (
+            (2920.0, 957.15, 2924.0, 981.15),      # vssd1 bar boundary segment
+            (2920.0, 2026.48, 2924.0, 2027.04),    # io_out[16] stub (E)
+            (2920.0, 2272.23, 2924.0, 2272.79),    # io_out[12] stub (E)
+            (2920.0, 2278.14, 2924.0, 2278.70),    # io_out[11] stub (E)
+            (2920.0, 2494.34, 2924.0, 2494.90),    # gpio_analog[3] stub (E)
+            (2920.0, 2500.25, 2924.0, 2500.81),    # io_oeb[12] stub (E)
+            (-4.0, 2095.88, 88.47, 2096.44),       # gpio_analog[3] west strip
+            (-4.0, 2101.79, 2.4, 2102.35),         # io_out[16] west stub
+            (-4.0, 2311.99, 88.56, 2312.55),       # gpio_analog west strip
+            (-4.0, 2317.90, 2.4, 2318.46),         # io_out[15] west stub
+            (-4.0, 2557.65, 2.4, 2558.21)):        # gpio_analog[7] west stub
+        w.box(M3, x0, y0, x1, y1)
+
     # ---- place the macro (mirrored about the vertical axis) ---------------
     opt = kdb.LoadLayoutOptions()
     opt.cell_conflict_resolution = kdb.LoadLayoutOptions.SkipNewCell
@@ -370,14 +390,15 @@ def main():
     # above it): in0 extends furthest east (2516.3) and jogs up at x=2516,
     # east of in3's h4 end (2514.59); that column is m4-free (nearest macro
     # m4: x2517.7 at y<=905.3, x2539.7 at y<=916.9).
-    w.box(M4, 2479.0, 907.7, 2497.3, 908.3)    # in1 (NPHII) -> jog
-    w.box(M4, 2479.0, 908.7, 2491.3, 909.3)    # in2 (PHIBI) -> jog
-    w.box(M4, 2479.0, 909.7, 2485.3, 910.3)    # in3 (NPHIBI) -> jog
-    w.box(M4, 2479.0, 906.7, 2516.3, 907.3)    # in0 (PHII) -> jog at x=2516
-    w.v4m(2485.0, 910.0, 919.0)                # in3 jogs first; jogs rise over
-    w.v4m(2491.0, 909.0, 915.0)                # nothing (all lanes stay below)
-    w.v4m(2497.0, 908.0, 911.0)
-    w.v4m(2516.0, 907.0, 923.0)
+    w.box(M4, 2479.0, 908.7, 2497.3, 909.3)    # in1 (NPHII) -> jog
+    w.box(M4, 2479.0, 909.7, 2491.3, 910.3)    # in2 (PHIBI) -> jog
+    w.box(M4, 2479.0, 910.7, 2485.3, 911.3)    # in3 (NPHIBI) -> jog
+    w.box(M4, 2479.0, 907.7, 2516.3, 908.3)    # in0 (PHII) -> jog at x=2516
+    # (macro clock lanes moved +1 um for the chopper PHI/INN coupling fix)
+    w.v4m(2485.0, 911.0, 919.0)                # in3 jogs first; jogs rise over
+    w.v4m(2491.0, 910.0, 915.0)                # nothing (all lanes stay below)
+    w.v4m(2497.0, 909.0, 911.0)
+    w.v4m(2516.0, 908.0, 923.0)
     w.h4(919.0, 2485.0, 2514.59)
     w.h4(915.0, 2491.0, 2508.59)
     w.h4(911.0, 2497.0, 2502.59)

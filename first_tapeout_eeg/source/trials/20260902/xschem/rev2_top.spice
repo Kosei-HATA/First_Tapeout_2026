@@ -1,0 +1,14 @@
+* rev2 EEG AFE SoC analog top: low-noise chopped PGA (rev2_afe_pga,
+* RLOAD 20Meg) + sdm3 SC 2nd-order 1-bit ADC (fs=256 kHz, OSR=1280,
+* alternating-phase; includes the PH2-edge DFF DAC-retiming fix).
+* Pin style mirrors eeg_afe_top; CLK16/NCLK16 are replaced by the sdm3
+* clock set PH1/NPH1/PH2/NPH2/CMPCK (2-phase non-overlap + comparator
+* clock, from a 256 kHz master; clkgen RTL update is a separate task).
+* References VP/VN and VCM_REF stay external pins (same as v1).
+* RST is tied off inside (as in eeg_afe_top) - document for layout.
+.subckt rev2_top ELP ELN VCM_REF VP VN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM PH1 NPH1 PH2 NPH2 CMPCK BIT NBIT S8 S16 S32 S64 VDD18 VSS
+* front-end low-noise chopped PGA
+XAFE ELP ELN VCM_REF PGA_OUTP PGA_OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 VSS VDD18 VSS rev2_afe_pga
+* ADC (sdm3), directly coupled from the PGA output
+XADC PGA_OUTP PGA_OUTN VCM_REF VP VN BIT NBIT ADC_O1P ADC_O1N ADC_O2P ADC_O2N PH1 NPH1 PH2 NPH2 CMPCK VDD18 VSS sdm3_mod
+.ends

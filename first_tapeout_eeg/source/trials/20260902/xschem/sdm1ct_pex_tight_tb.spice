@@ -1,0 +1,26 @@
+* CT 1st-order SDM test: 32 Hz 0.6 FS input, fs=16 kHz
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+* PEX: single flat netlist replaces all includes
+.include eeg_sdm1ct_pex.spice
+.param VDD=1.80 VCM=0.9 TCLK=62.5u
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+VCLK CLK 0 PULSE(0 {VDD} 0 100n 100n 31.15u {TCLK})
+BNCLK NCLK 0 V={VDD}-v(CLK)
+VINP VINP 0 SIN({VCM} 15m 32)
+VINN VINN 0 SIN({VCM} 15m 32 0 0 180)
+XSDM VINP VINN VCM_REF VP VN BIT NBIT OINTP OINTN CLK NCLK VDD18 0 eeg_sdm1ct
+.nodeset v(OINTP)=0.93 v(OINTN)=0.93 v(BIT)=1.8 v(NBIT)=0 v(XSDM.INP)=0.9 v(XSDM.INN)=0.9
+.options method=gear reltol=1e-4 trtol=1 gmin=1e-13
+.control
+set noaskquit
+* limit saved vectors (memory!); inline diffs zero out under save, so
+* write the nodes separately and diff in post-processing
+save time v(BIT) v(OINTP) v(OINTN) v(VINP) v(VINN)
+tran 100n 130m
+wrdata ../results/sdm1ct_pex_tight.csv time v(BIT) v(OINTP) v(OINTN) v(VINP) v(VINN)
+quit
+.endc
+.end

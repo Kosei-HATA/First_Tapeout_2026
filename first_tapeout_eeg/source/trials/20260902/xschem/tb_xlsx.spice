@@ -1,0 +1,42 @@
+* test.xlsx plan bench (chopped AFE, OTA-level, 1 kHz chop, TT)
+* Modes: static DC / sine / square. Params: VOFF (DC), FSIG, CFB (feedback cap), WAVE
+.lib /Users/noah/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.tech/ngspice/sky130.lib.spice tt
+.include eeg_tg_lowq.spice
+.include eeg_pseudo_res.spice
+.include eeg_fd_ota_core_soft.spice
+.include eeg_bias_gen.spice
+.include eeg_fd_ota_chopped_full2.spice
+.param VDD=1.80 VCM=0.9 TCHOP=1m VOFF=0 FSIG=8 CFB=1p AMP=10m
+VDD_SRC VDD18 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+* input: DC offset + optional AC (WAVE=sin -> SIN, else PULSE square)
+VSIGP SIGP 0 SIN({VCM+VOFF} {AMP} {FSIG})
+VSIGN SIGN 0 SIN({VCM-VOFF} {AMP} {FSIG} 0 0 180)
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP {CFB}
+CFN OUTP INN {CFB}
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XPRP INP VCM_REF eeg_pseudo_res
+XPRN INN VCM_REF eeg_pseudo_res
+VRST RST 0 PULSE({VDD} 0 5m 100n 100n 1 1)
+BRSTN NRST 0 V={VDD}-v(RST)
+XRSTP INP VCM_REF RST NRST VDD18 0 eeg_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD18 0 eeg_tg_lowq
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD18 0 eeg_fd_ota_chopped_full2
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.nodeset v(INP)=0.9 v(INN)=0.9 v(XAFE.INP_M)=0.9 v(XAFE.INN_M)=0.9 v(XAFE.N1P)=0.932 v(XAFE.N1N)=0.932 v(XAFE.N2P)=0.932 v(XAFE.N2N)=0.932 v(XAFE.VBP1)=0.6155 v(XAFE.VBP2)=0.3848 v(OUTP)=0.9267 v(OUTN)=0.9267
+.control
+set noaskquit
+save time v(OUTP) v(OUTN) i(VDD_SRC)
+tran 100n 0.65s
+wrdata ../results/xlsx_@TAG@.csv time v(OUTP) v(OUTN)
+quit
+.endc
+.end

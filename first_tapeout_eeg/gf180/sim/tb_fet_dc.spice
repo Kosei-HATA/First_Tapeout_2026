@@ -1,0 +1,23 @@
+* Phase 1 smoke test: single nfet_03v3 (3.3V device), GF180MCU-D, typical corner.
+* Id-Vgs at VDS=1.65 and Id-Vds characterization. VDD=3.3 V.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.param VDD=3.3
+VDS D 0 {VDD/2}
+VGS G 0 0
+XM1 D G 0 0 nfet_03v3 W=10u L=2u nf=1
+.control
+set noaskquit
+dc VGS 0 3.3 0.01
+let gm = deriv(i(vds))
+wrdata ../results/fet_dc_idvg.csv v(g) -i(vds) gm
+* gm/id at a few inversion levels
+let gmid = deriv(i(vds))/(-i(vds))
+wrdata ../results/fet_dc_gmid.csv v(g) gmid
+dc VGS 0.7 0.7
+dc VDS 0 3.3 0.05
+wrdata ../results/fet_dc_idvd.csv v(d) -i(vds)
+quit
+.endc
+.end

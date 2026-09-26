@@ -1,0 +1,15 @@
+* NGSPICE file created from GF180_PEX_TEST.ext - technology: gf180mcuD
+
+.subckt cap_mim CB CT
+X0 CT CB cap_mim_2f0_m4m5_noshield c_width=20u c_length=20u
+.ends
+
+.subckt nfet a_n42_0# a_19_n30# a_219_0# SUB
+X0 a_219_0# a_19_n30# a_n42_0# SUB nfet_03v3 ad=6.1p pd=21.22u as=6.1p ps=21.22u w=10u l=2u
+.ends
+
+.subckt GF180_PEX_TEST D S G
+Xcap_mim_0 cap_mim_0/CB cap_mim_0/CT cap_mim
+Xnfet_0 D G S SUB nfet
+.ends
+

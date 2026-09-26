@@ -1,0 +1,38 @@
+* GF180 PEX capability demo: common-source nfet_03v3 (W=10 L=2, extracted
+* ad/as/pd/ps), drain loaded by extracted 20x20 um MIM cap (M4/M5, 2 fF/um2
+* -> 800 fF) + extracted wiring parasitics (200 um m1 wire, ~18 fF to gnd).
+* Same bench instantiated twice: GF180_PEX_TEST (parasitic-annotated) and
+* GF180_PEX_REF (identical devices, no parasitic caps).
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.temp 27
+.include ../pex/gf180_pex_test_pex_w.spice
+.include ../pex/gf180_pex_test_ref_w.spice
+VDD VDD33 0 3.3
+* --- PEX instance ---
+RD1 VDD33 DP 100k
+VG1 GP 0 DC 1.0 AC 1
+XPEX DP SP GP SUBP CTBP GF180_PEX_TEST
+RSP SP 0 0
+RSUBP SUBP 0 0
+RCTBP CTBP 0 0
+* --- reference instance (no parasitic caps) ---
+RD2 VDD33 DR 100k
+VG2 GR 0 DC 1.0 AC 1
+XREF DR SR GR SUBR CTBR GF180_PEX_REF
+RSR SR 0 0
+RSUBR SUBR 0 0
+RCTBR CTBR 0 0
+.control
+set noaskquit
+op
+print v(DP) v(DR)
+print @m.xpex.x1.m0[id] @m.xref.x1.m0[id]
+ac dec 30 1k 10G
+let gp = mag(v(DP))
+let gr = mag(v(DR))
+wrdata ../results/pex_demo_ac.csv gp gr
+quit
+.endc
+.end

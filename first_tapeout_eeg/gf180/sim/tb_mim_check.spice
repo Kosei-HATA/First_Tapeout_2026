@@ -1,0 +1,13 @@
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+V1 T 0 DC 0 AC 1
+X0 T 0 cap_mim_2f0_m4m5_noshield c_width=20u c_length=20u
+.control
+set noaskquit
+ac dec 5 1k 1Meg
+* C = |I|/(2*pi*f*|V|), |V|=1
+let c = mag(i(v1))/(2*pi*frequency)
+print c
+quit
+.endc
+.end

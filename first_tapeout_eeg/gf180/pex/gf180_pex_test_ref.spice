@@ -1,0 +1,13 @@
+* NGSPICE flat PEX netlist for GF180_PEX_TEST (sky130A)
+* Devices: magic `ext2spice lvs` netlist, hierarchy inlined by ext2pex.py
+* (parallel fingers/unit devices merged: exact BSIM equivalence);
+* Parasitic capacitors: magic .ext database (node->substrate, cap->coupling)
+* sky130A extraction excludes FET gate/diffusion caps (kept in BSIM
+* ad/as/pd/ps terms), so no double counting. Caps in farads.
+* totals: 2 devices (0 parallel merged), 0 caps (27.716 fF substrate + 1.825 fF coupling)
+
+.subckt GF180_PEX_TEST D S G SUB
+X0 cap_mim_0/CT cap_mim_0/CB cap_mim_2f0_m4m5_noshield c_width=20u c_length=20u
+X1 S G D SUB nfet_03v3 ad=6.1p pd=21.22u as=6.1p ps=21.22u w=10u l=2u nf=1
+.ends
+

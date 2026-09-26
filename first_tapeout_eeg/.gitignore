@@ -3,3 +3,6 @@ results
 *.lvsdb
 __pycache__/
 scripts/klayout/.venv/
+gf180/tools/venv*/
+gf180/results/*.csv
+gf180/results/*.csv.gz

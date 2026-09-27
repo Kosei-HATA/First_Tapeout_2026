@@ -1,0 +1,73 @@
+* 2nd-order 1-bit fully-differential SC Sigma-Delta modulator (sdm3),
+* fs=256 kHz, OSR=1280 (0.5-100 Hz EEG band), alternating-phase classic
+* (Boser-Wooley) timing. Behavioral SQNR @0.6 FS: 125.9 dB (fs=256k).
+*
+* Why not the abandoned eeg_sdm2 structure: it ran BOTH integrators on the
+* same phase pair. That cascade carries a full extra cycle of loop delay
+* (int2 sees x1(n-1), DACs see y(n-1)); behavioral sweep shows such a
+* delayed loop tops out at ~59 dB SQNR for any stable coefficient set, and
+* with eeg_sd_int2's inverted DAC polarity (opposite to int1's) the char.
+* polynomial was 1 - z^-1 - 0.25*z^-2 (pole at z=1.207) -> rails, exactly
+* as observed in results/sdm2_cap.csv. The CQP/CQN caps were treating a
+* symptom.
+*
+* sdm3 timing (see tb benches): int1 samples PH1 / integrates PH2;
+* int2 has swapped phases (samples PH2 / integrates PH1) -> non-delaying
+* cascade; comparator fires late PH1 (x2 fresh); the SR latch drives the
+* DIRECT DAC of sdm3_int1 during the immediately following PH2 -> the
+* same-cycle feedback that realizes the textbook loop:
+*   x1 += a1*u + d1*y ;  x2 += a2*x1 + d2*y ;  y = -sgn(x2)
+*   a1=2 (CS1/CI1=8p/4p), d1=2 (CDAC1/CI1=8p/4p),
+*   a2=0.5 (CS2/CI2=2p/4p), d2=1 (CDAC2/CI2=4p/4p)
+*   NTF=(1-z^-1)^2 exactly, STF(DC)=-a1/d1=-1 (duty = 0.5 - u/100mV).
+* BIT=1 <=> O2D<0; both DACs then raise their integrator outputs (negative
+* feedback, same convention as the verified eeg_sdm1ct).
+* Integrator swings (behavioral): |x1|,|x2| < 5*VREFd = +/-250 mV diff.
+* int2's DAC selector is BIT2, registered at the PH2 rising edge (see
+* sdm3_dff header) - without it the selector moved mid-integration and the
+* measured effective d2 collapsed 1.0 -> ~0.15 (~20 dB SNDR loss).
+.subckt sdm3_nand2 A B Y VDD18 VSS
+XMN1 Y A N1 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1
+XMN2 N1 B VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1
+XMP1 Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=1
+XMP2 Y B VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=1
+.ends
+
+.subckt sdm3_inv A Y VDD18 VSS
+XMN Y A VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=1
+XMP Y A VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=1
+.ends
+
+* Rising-edge DFF (TG master-slave): Q updates only at the CLK rising edge
+* and is then constant for a full cycle. int2's DAC selector MUST NOT move
+* during bench-PH1 (int2's integration phase): BIT changes at CMPCK,
+* mid-PH1, and without this register the DAC left plates jump VP<->VN while
+* connected to the summing node - decision-correlated charge injection.
+.subckt sdm3_dff D Q CLK NCLK VDD18 VSS
+XT1 D MT NCLK CLK VDD18 VSS eeg_tg_lowq
+XI1 MT MB VDD18 VSS sdm3_inv
+XI2 MB MT2 VDD18 VSS sdm3_inv
+XT2 MT2 MT CLK NCLK VDD18 VSS eeg_tg_lowq
+XT3 MB ST CLK NCLK VDD18 VSS eeg_tg_lowq
+XI3 ST Q VDD18 VSS sdm3_inv
+XI4 Q SB VDD18 VSS sdm3_inv
+XT4 SB ST NCLK CLK VDD18 VSS eeg_tg_lowq
+.ends
+
+.subckt sdm3_mod VINP VINN VCM_REF VP VN BIT NBIT O1P O1N O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD18 VSS params: CS1=8p CDAC1=8p CI1=4p CS2=2p CDAC2=4p CI2=4p
+* RC-filtered BIT for int1's direct-DAC gate drives (tau=2ns, settles long
+* before PH2; smooths LTE behavior at tight reltol).
+RBF BIT BITF 1k
+CBF BITF VSS 2p
+XINT1 VINN VINP VCM_REF BITF VP VN O1P O1N PH1 NPH1 PH2 NPH2 VDD18 VSS sdm3_int1 CS={CS1} CDAC={CDAC1} CI={CI1}
+* int2: eeg_sd_int with phases swapped (its PH1<-bench PH2, its PH2<-bench
+* PH1); DAC selector = BIT2, registered at the PH2 rising edge.
+XINT2 O1N O1P VCM_REF BIT2 VP VN O2P O2N PH2 NPH2 PH1 NPH1 VDD18 VSS eeg_sd_int CS={CS2} CDAC={CDAC2} CI={CI2}
+XDFF BIT BIT2 PH2 NPH2 VDD18 VSS sdm3_dff
+XCMP O2P O2N QP QN CMPCK VDD18 VSS eeg_strongarm
+CQP QP VSS 1p
+CQN QN VSS 1p
+* NAND SR latch: S_=QP, R_=QN; BIT=Q, NBIT=QB. Holds while QP=QN=1 (precharge).
+XND1 QP NBIT BIT VDD18 VSS sdm3_nand2
+XND2 QN BIT NBIT VDD18 VSS sdm3_nand2
+.ends

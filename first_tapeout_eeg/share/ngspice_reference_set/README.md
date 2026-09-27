@@ -33,3 +33,13 @@ cd <deck のあるディレクトリの元の場所>  # wrdata の相対パス .
 wrdata の CSV 形式: 各ベクタが (scale, value) の列ペア。値は列 3+2i（0 始まり）。
 トランジェントデッキは `.control` 内で `save` により保持ベクタを限定している
 （全ノード保存だと長時間ランでメモリが枯渇するため）。
+
+## heavy/（大規模ストレステスト）
+
+完成版に近い大規模デッキ。GitHub の 100 MB 制約のため結果は gzip 済み。
+
+| デッキ | 結果 | 規模・内容 |
+|---|---|---|
+| tb_afe_f1k8_pex.spice + eeg_afe_top_pex.spice（フラット PEX ネットリスト、デッキとしてインクルード） | tb_afe_f1k8_pex.csv.gz（231 MB 生） | **フラット寄生込みネットリスト: 1706 デバイス + 6020 寄生 CAP、階層無し**。チョップ AFE の 0.875 s tran。大規模フラット回路のソルバ性能テストに |
+| eeg_e2e_tb.spice | e2e_1s.csv.gz（698 MB 生） | フルチェーン E2E: 電極→チョップ PGA→ΣΔ ADC（実回路のみ、1.024 s tran）。PULSE クロック 8 本＋行為ソース＋疑似抵抗の混合 |
+| rev2_tb_e2e.spice + rev2_top.spice 他 | （結果は大きすぎるためローカルのみ: source/trials/20260902/results/rev2_e2e.csv 2.2 GB） | rev2: 低雑音 AFE＋SC 2 次 ΣΔ（256 kHz、2 相非重複クロック）。再現方法は documentation/rev2_integration.md |

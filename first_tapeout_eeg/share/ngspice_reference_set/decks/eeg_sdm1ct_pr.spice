@@ -1,0 +1,32 @@
+* eeg_sdm1ct variant: RF 100Meg replaced by pseudo-resistors (eeg_pseudo_res).
+* Purpose: area reduction study. The lossy-integrator DC pole is set by the
+* pseudo-R's effective resistance (Gohm-range near zero crossing -> pole drops
+* well below 80 Hz, i.e. closer to an ideal integrator; DC offset tolerance
+* decreases). Compare bitstream amplitude / in-band SNDR vs the RF version.
+.subckt eeg_sdm1ct_pr VINP VINN VCM_REF VP VN BIT NBIT OINTP OINTN CLK NCLK VDD18 VSS params: RIN=500k CI=20p RDAC=500k
+* CT integrator
+RINP VINP INP {RIN}
+RINN VINN INN {RIN}
+XOTA INP INN VCM_REF OINTP OINTN VDD18 VSS eeg_fd_ota_full2_nc
+CIP OINTN INP {CI}
+XRFP OINTN INP eeg_pseudo_res
+CIN OINTP INN {CI}
+XRFN OINTP INN eeg_pseudo_res
+* NRZ DAC, fully differential (same as eeg_sdm1ct)
+XREFP1 VDACP VP BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+XREFP0 VDACP VN BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+XREFN1 VDACN VN BIT1 NBIT1 VDD18 VSS eeg_tg_lowq
+XREFN0 VDACN VP BIT0 NBIT0 VDD18 VSS eeg_tg_lowq
+RDACP INP VDACP {RDAC}
+RDACN INN VDACN {RDAC}
+BBIT1 BIT1 0 V=v(BIT)
+BNBIT1 NBIT1 0 V=v(VDD18)-v(BIT)
+BBIT0 BIT0 0 V=v(VDD18)-v(BIT)
+BNBIT0 NBIT0 0 V=v(BIT)
+* quantizer
+XCMP OINTP OINTN QP QN CLK VDD18 VSS eeg_strongarm
+CQP QP VSS 1p
+CQN QN VSS 1p
+XND1 QP NBIT BIT VDD18 VSS eeg_nand2
+XND2 QN BIT NBIT VDD18 VSS eeg_nand2
+.ends

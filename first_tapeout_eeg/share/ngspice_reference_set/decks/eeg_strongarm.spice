@@ -1,0 +1,22 @@
+* Strong-arm regenerative latch comparator for the 1-bit SDM quantizer.
+* CLK low: all internal nodes precharge to VDD (OUTP=OUTN=VDD).
+* CLK high: input pair discharges D1/D2 at rate ~ input difference,
+*   NMOS+PMOS cross-coupled latches regenerate to rails.
+.subckt eeg_strongarm INP INN OUTP OUTN CLK VDD18 VSS
+* clocked tail
+XM0 NTAIL CLK VSS VSS sky130_fd_pr__nfet_01v8 L=0.15 W=8 nf=4
+* input pair (longer L for offset)
+XM1 D1 INP NTAIL VSS sky130_fd_pr__nfet_01v8 L=0.5 W=4 nf=4
+XM2 D2 INN NTAIL VSS sky130_fd_pr__nfet_01v8 L=0.5 W=4 nf=4
+* NMOS latch
+XM3 OUTN OUTP D1 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=2
+XM4 OUTP OUTN D2 VSS sky130_fd_pr__nfet_01v8 L=0.15 W=1 nf=2
+* PMOS latch
+XM5 OUTP OUTN VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=2
+XM6 OUTN OUTP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=2
+* reset (CLK low): precharge OUTP/OUTN/D1/D2 to VDD
+XM7 OUTP CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=2
+XM8 OUTN CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=2 nf=2
+XM9 D1 CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+XM10 D2 CLK VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=0.15 W=1 nf=1
+.ends

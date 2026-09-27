@@ -1,0 +1,14 @@
+* Stage-1 core with common-mode softening loads (RLOAD to VCM_REF).
+* The 500k resistors knife-edge-soften the CM plant (ro ~ 10Meg -> 500k),
+* add passive CM restoration, and draw zero DC current at the VCM target.
+.subckt eeg_fd_ota_core_soft INP INN VBP VBN OUTP OUTN VCM_SENSE VCM_REF VDD18 VSS params: RLOAD=500k RCM=5Meg
+XM1 OUTP INP TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W=240 nf=24
+XM2 OUTN INN TAIL VSS sky130_fd_pr__nfet_01v8 L=4 W=240 nf=24
+XM3 OUTP VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM4 OUTN VBP VDD18 VDD18 sky130_fd_pr__pfet_01v8 L=4 W=48 nf=8
+XM5 TAIL VBN VSS VSS sky130_fd_pr__nfet_01v8 L=4 W=96 nf=16
+RCM1 OUTP VCM_SENSE {RCM}
+RCM2 OUTN VCM_SENSE {RCM}
+RLOADP OUTP VCM_REF {RLOAD}
+RLOADN OUTN VCM_REF {RLOAD}
+.ends

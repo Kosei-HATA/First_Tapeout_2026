@@ -1,0 +1,179 @@
+* GF180MCU-D port of the sdm3 SC 2nd-order 1-bit Sigma-Delta modulator
+* (ENOB18 study), fs=256 kHz. All FETs nfet_03v3/pfet_03v3, VDD=3.3 V.
+* Structure, coefficients and cap values identical to sky130 sdm3:
+*   a1=d1=2 (CS1=CDAC1=8p, CI1=4p), a2=0.5 (CS2=2p, CDAC2=4p, CI2=4p),
+*   NTF=(1-z^-1)^2, STF(DC)=-1, duty=0.5-u/100mV.
+* Reuses gf180_tg_lowq / gf180_bias_gen / gf180_fd_ota_core_soft /
+* gf180_cmfb_amp_dl2 from gf180_afe_cells.spice.
+
+* ---- non-chopped two-stage OTA (integrators) ----
+* Same devices as the AFE port (gf180_fd_ota_chopped_full2) minus choppers.
+.subckt gf180_fd_ota_full2_nc INP INN VCM_REF OUTP OUTN VDD33 VSS params: W91=11u L91=2u W92=6u L92=2u W10=12u RLOAD=20Meg CC=10p RZ=80k RSET=40k RFILT=10Meg CFILT=100p
+XBG VBNRAW VBN VBP_BIAS VDD33 VSS gf180_bias_gen RSET={RSET} RFILT={RFILT} CFILT={CFILT}
+XSTG1 INP INN VBP1 VBN N1P N1N VCM1 VCM_REF VDD33 VSS gf180_fd_ota_core_soft RLOAD={RLOAD}
+XCM1 VCM1 VCM_REF VBN VBP1 VDD33 VSS gf180_cmfb_amp_dl2 W9={W91} L9={L91} W10={W10}
+XM21 OUTP N1P VSS VSS nfet_03v3 L=20u W=4u nf=1
+XM22 OUTN N1N VSS VSS nfet_03v3 L=20u W=4u nf=1
+XM23 OUTP VBP2 VDD33 VDD33 pfet_03v3 L=4u W=12u nf=2
+XM24 OUTN VBP2 VDD33 VDD33 pfet_03v3 L=4u W=12u nf=2
+RCMO1 OUTP VCM2 5Meg
+RCMO2 OUTN VCM2 5Meg
+RLOADO1 OUTP VCM_REF {RLOAD}
+RLOADO2 OUTN VCM_REF {RLOAD}
+XCM2 VCM2 VCM_REF VBN VBP2 VDD33 VSS gf180_cmfb_amp_dl2 W9={W92} L9={L92} W10={W10}
+RZP N1P NZP {RZ}
+CCP NZP OUTP {CC}
+RZN N1N NZN {RZ}
+CCN NZN OUTN {CC}
+.ends gf180_fd_ota_full2_nc
+
+* ---- strong-arm latch comparator (03v3, min L=0.28u; input pair L=0.5u) ----
+.subckt gf180_strongarm INP INN OUTP OUTN CLK VDD33 VSS
+XM0 NTAIL CLK VSS VSS nfet_03v3 L=0.28u W=8u nf=4
+XM1 D1 INP NTAIL VSS nfet_03v3 L=0.5u W=4u nf=4
+XM2 D2 INN NTAIL VSS nfet_03v3 L=0.5u W=4u nf=4
+XM3 OUTN OUTP D1 VSS nfet_03v3 L=0.28u W=1u nf=2
+XM4 OUTP OUTN D2 VSS nfet_03v3 L=0.28u W=1u nf=2
+XM5 OUTP OUTN VDD33 VDD33 pfet_03v3 L=0.28u W=1u nf=2
+XM6 OUTN OUTP VDD33 VDD33 pfet_03v3 L=0.28u W=1u nf=2
+XM7 OUTP CLK VDD33 VDD33 pfet_03v3 L=0.28u W=2u nf=2
+XM8 OUTN CLK VDD33 VDD33 pfet_03v3 L=0.28u W=2u nf=2
+XM9 D1 CLK VDD33 VDD33 pfet_03v3 L=0.28u W=1u nf=1
+XM10 D2 CLK VDD33 VDD33 pfet_03v3 L=0.28u W=1u nf=1
+.ends gf180_strongarm
+
+* ---- digital gates ----
+.subckt gf180_sdm3_nand2 A B Y VDD33 VSS
+XMN1 Y A N1 VSS nfet_03v3 L=0.28u W=1u nf=1
+XMN2 N1 B VSS VSS nfet_03v3 L=0.28u W=1u nf=1
+XMP1 Y A VDD33 VDD33 pfet_03v3 L=0.28u W=2u nf=1
+XMP2 Y B VDD33 VDD33 pfet_03v3 L=0.28u W=2u nf=1
+.ends gf180_sdm3_nand2
+
+.subckt gf180_sdm3_inv A Y VDD33 VSS
+XMN Y A VSS VSS nfet_03v3 L=0.28u W=1u nf=1
+XMP Y A VDD33 VDD33 pfet_03v3 L=0.28u W=2u nf=1
+.ends gf180_sdm3_inv
+
+* Rising-edge DFF (TG master-slave), same structure as sdm3_dff.
+.subckt gf180_sdm3_dff D Q CLK NCLK VDD33 VSS
+XT1 D MT NCLK CLK VDD33 VSS gf180_tg_lowq
+XI1 MT MB VDD33 VSS gf180_sdm3_inv
+XI2 MB MT2 VDD33 VSS gf180_sdm3_inv
+XT2 MT2 MT CLK NCLK VDD33 VSS gf180_tg_lowq
+XT3 MB ST CLK NCLK VDD33 VSS gf180_tg_lowq
+XI3 ST Q VDD33 VSS gf180_sdm3_inv
+XI4 Q SB VDD33 VSS gf180_sdm3_inv
+XT4 SB ST NCLK CLK VDD33 VSS gf180_tg_lowq
+.ends gf180_sdm3_dff
+
+* ---- int1: sampled input + DIRECT DAC (same-cycle feedback) ----
+.subckt gf180_sdm3_int1 INP_S INN_S VCM_REF BIT VP VN OUTP OUTN PH1 NPH1 PH2 NPH2 VDD33 VSS params: CS=8p CDAC=8p CI=4p W91=11u L91=2u W92=6u L92=2u W10=12u RSET=40k CC=10p
+XOTA INP INN VCM_REF OUTP OUTN VDD33 VSS gf180_fd_ota_full2_nc W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+CSP CSLP CSRP {CS}
+CSN CSLN CSRN {CS}
+XS1A CSLP INP_S PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1B CSRP VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1C CSLN INN_S PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1D CSRN VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS2A CSLP VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2B CSRP INP PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2C CSLN VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2D CSRN INN PH2 NPH2 VDD33 VSS gf180_tg_lowq
+CDP CDLP CDRP {CDAC}
+CDN CDLN CDRN {CDAC}
+XDPA CDLP VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDPB CDRP VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDNA CDLN VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDNB CDRN VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDP2 CDRP INP PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XDN2 CDRN INN PH2 NPH2 VDD33 VSS gf180_tg_lowq
+* PH2: left plates step to Vsel (BIT-gated), normalized to actual rail
+* (the sky130 1.62 V SS bug fix: never hardcode the normalization voltage)
+BEP BEP 0 V=v(PH2)*v(BIT)/v(VDD33)
+BEN BEN 0 V=v(PH2)*(v(VDD33)-v(BIT))/v(VDD33)
+BNEP NBEP 0 V=v(VDD33)-v(BEP)
+BNEN NBEN 0 V=v(VDD33)-v(BEN)
+XDPV1 CDLP VP BEP NBEP VDD33 VSS gf180_tg_lowq
+XDPV0 CDLP VN BEN NBEN VDD33 VSS gf180_tg_lowq
+XDNV1 CDLN VN BEP NBEP VDD33 VSS gf180_tg_lowq
+XDNV0 CDLN VP BEN NBEN VDD33 VSS gf180_tg_lowq
+CIP OUTN INP {CI}
+CIN OUTP INN {CI}
+RBIASP INP VCM_REF 10G
+RBIASN INN VCM_REF 10G
+.ends gf180_sdm3_int1
+
+* ---- int2: parasitic-insensitive sampled integrator with 1-bit DAC ----
+.subckt gf180_sd_int INP_S INN_S VCM_REF BIT VP VN OUTP OUTN PH1 NPH1 PH2 NPH2 VDD33 VSS params: CS=2p CDAC=4p CI=4p W91=11u L91=2u W92=6u L92=2u W10=12u RSET=40k CC=10p
+XOTA INP INN VCM_REF OUTP OUTN VDD33 VSS gf180_fd_ota_full2_nc W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+CSP CSLP CSRP {CS}
+CSN CSLN CSRN {CS}
+XS1A CSLP INP_S PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1B CSRP VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1C CSLN INN_S PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS1D CSRN VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XS2A CSLP VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2B CSRP INP PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2C CSLN VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XS2D CSRN INN PH2 NPH2 VDD33 VSS gf180_tg_lowq
+CDP CDLP CDRP {CDAC}
+CDN CDLN CDRN {CDAC}
+XDPA CDLP VN BIT1 NBIT1 VDD33 VSS gf180_tg_lowq
+XDPB CDLP VP BIT0 NBIT0 VDD33 VSS gf180_tg_lowq
+XDNA CDLN VN BIT0 NBIT0 VDD33 VSS gf180_tg_lowq
+XDNB CDLN VP BIT1 NBIT1 VDD33 VSS gf180_tg_lowq
+BBIT1 BIT1 0 V=v(BIT)
+BBIT0 BIT0 0 V=v(VDD33)-v(BIT)
+BNBIT1 NBIT1 0 V=v(VDD33)-v(BIT)
+BNBIT0 NBIT0 0 V=v(BIT)
+XDP1 CDRP VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDP2 CDRP INP PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XDN1 CDRN VCM_REF PH1 NPH1 VDD33 VSS gf180_tg_lowq
+XDN2 CDRN INN PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XDP3 CDLP VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+XDN3 CDLN VCM_REF PH2 NPH2 VDD33 VSS gf180_tg_lowq
+CIP OUTN INP {CI}
+CIN OUTP INN {CI}
+RBIASP INP VCM_REF 10G
+RBIASN INN VCM_REF 10G
+.ends gf180_sd_int
+
+* ---- modulator: alternating-phase classic (Boser-Wooley) timing ----
+* int1 samples PH1 / integrates PH2; int2 swapped; comparator late PH1;
+* SR latch drives int1's direct DAC during the following PH2; int2's DAC
+* selector BIT2 registered at the PH2 rising edge (gf180_sdm3_dff).
+.subckt gf180_sdm3_mod VINP VINN VCM_REF VP VN BIT NBIT O1P O1N O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD33 VSS params: CS1=8p CDAC1=8p CI1=4p CS2=2p CDAC2=4p CI2=4p W91=11u L91=2u W92=6u L92=2u W10=12u RSET=40k CC=10p
+RBF BIT BITF 1k
+CBF BITF VSS 2p
+XINT1 VINN VINP VCM_REF BITF VP VN O1P O1N PH1 NPH1 PH2 NPH2 VDD33 VSS gf180_sdm3_int1 CS={CS1} CDAC={CDAC1} CI={CI1} W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+XINT2 O1N O1P VCM_REF BIT2 VP VN O2P O2N PH2 NPH2 PH1 NPH1 VDD33 VSS gf180_sd_int CS={CS2} CDAC={CDAC2} CI={CI2} W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+XDFF BIT BIT2 PH2 NPH2 VDD33 VSS gf180_sdm3_dff
+XCMP O2P O2N QP QN CMPCK VDD33 VSS gf180_strongarm
+CQP QP VSS 1p
+CQN QN VSS 1p
+XND1 QP NBIT BIT VDD33 VSS gf180_sdm3_nand2
+XND2 QN BIT NBIT VDD33 VSS gf180_sdm3_nand2
+.ends gf180_sdm3_mod
+
+* ---- DIAGNOSTIC variant: transistor integrators/DACs/DFF, but the
+*      strong-arm + SR latch replaced by an ideal behavioral comparator
+*      (sign of x2 sampled during the CMPCK window, held until the next).
+*      Purpose: isolate the comparator's contribution to the in-band floor.
+*      O2P/O2N get 50 fF dummy loads to mimic the removed input pair.
+.subckt gf180_sdm3_mod_icmp VINP VINN VCM_REF VP VN BIT NBIT O1P O1N O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD33 VSS params: CS1=8p CDAC1=8p CI1=4p CS2=2p CDAC2=4p CI2=4p W91=11u L91=2u W92=6u L92=2u W10=12u RSET=40k CC=10p
+RBF BIT BITF 1k
+CBF BITF VSS 2p
+XINT1 VINN VINP VCM_REF BITF VP VN O1P O1N PH1 NPH1 PH2 NPH2 VDD33 VSS gf180_sdm3_int1 CS={CS1} CDAC={CDAC1} CI={CI1} W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+XINT2 O1N O1P VCM_REF BIT2 VP VN O2P O2N PH2 NPH2 PH1 NPH1 VDD33 VSS gf180_sd_int CS={CS2} CDAC={CDAC2} CI={CI2} W91={W91} L91={L91} W92={W92} L92={L92} W10={W10} RSET={RSET} CC={CC}
+XDFF BIT BIT2 PH2 NPH2 VDD33 VSS gf180_sdm3_dff
+CDL1 O2P VSS 50f
+CDL2 O2N VSS 50f
+* BIT=1 <=> O2D<0 (same convention as the strong-arm + SR latch)
+BCMPV CMPV VSS V=(v(O2N) > v(O2P)) ? v(VDD33) : 0
+SCMP CMPV BITS CMPCK VSS idsw
+CHLD BITS VSS 0.5p
+EBIT BIT VSS BITS VSS 1
+BNID NBIT VSS V=v(VDD33)-v(BIT)
+.model idsw SW(RON=1 ROFF=1T VON=2.2 VOFF=1.0)
+.ends gf180_sdm3_mod_icmp

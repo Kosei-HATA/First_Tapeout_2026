@@ -46,10 +46,10 @@ row("PGA poly resistors", "RLOAD 20Meg x4, RCM(O) 5Meg x4, RFILT 10Meg, RZ, RSET
     pga_res)
 
 # ---------------- CT SDM ADC ----------------
-adc_fet = 20000.0  # second full2-class OTA + strongarm + nand2, same class
-row("ADC FETs", "full2-class OTA + strongarm + SR latch + DAC TGs", adc_fet)
+adc_fet = 2 * 20000.0 + 1000.0  # sdm3: TWO full2-class integrator OTAs + strongarm + latch + DAC TGs
+row("ADC FETs (sdm3)", "2x full2-class integrator OTA + strongarm + SR latch + DFF + DAC TGs", adc_fet)
 adc_mim = mim(20, 2) + mim(1, 2) + mim(150)
-row("ADC MIM caps", "CI 20p x2, CQ 1p x2, bias filter/CINT ~150p", adc_mim)
+row("ADC MIM caps", "sdm3: CS1/CDAC1 8p x2, CI1 4p x2, CS2 2p x2, CDAC2/CI2 4p x2, CQ 1p x2, bias filters", adc_mim)
 adc_res = res(500e3, 4) + res(20e6, 2) + res(10e6)
 row("ADC poly resistors", "RIN/RDAC 500k x4, CM loads, RFILT", adc_res)
 

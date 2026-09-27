@@ -1,0 +1,26 @@
+* GF180 strongarm offset + hysteresis check at the sdm3 operating point.
+* Input CM = 2.19 V (int2 output CM), differential ramp +/-20 mV over 8 ms,
+* clocked at 256 kHz with the CMPCK pulse shape. Decision threshold on the
+* up-ramp vs down-ramp -> hysteresis; midpoint -> offset.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include gf180_afe_cells.spice
+.include gf180_sdm3.spice
+.param VDD=3.3 VCM=2.19 TCLK=3.90625u
+VDD_SRC VDD33 0 {VDD}
+VCMPCK CMPCK 0 PULSE(0 {VDD} 1.30u 20n 20n 0.36u {TCLK})
+* slow triangle: PWL 0-4m: -20m..+20m ; 4-8m: back to -20m (differential, on VCM)
+VINP INP 0 PWL(0 {VCM-10m} 4m {VCM+10m} 8m {VCM-10m})
+VINN INN 0 PWL(0 {VCM+10m} 4m {VCM-10m} 8m {VCM+10m})
+XCMP INP INN QP QN CMPCK VDD33 0 gf180_strongarm
+CQP QP VSS 1p
+CQN QN VSS 1p
+.control
+set noaskquit
+save time v(INP) v(INN) v(QP) v(QN)
+tran 1u 8m
+wrdata ../results/strongarm_hyst.csv time v(INP) v(INN) v(QP) v(QN)
+quit
+.endc
+.end

@@ -1,0 +1,43 @@
+* afe_ln variant v0: frozen-chopper noise + gain + idd (mirrors tb_noise.spice)
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include afe_ln_cells.spice
+.param VDD=3.3 VCM=1.65
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SRCN 0 DC {VCM} AC 0.5 180
+CINP SIGP INP 32p
+CINN SRCN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD33 0 gf180_fd_ota_chopped_full2_ln 
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+noise v(OUTP,OUTN) VSIGP dec 25 0.1 1Meg 1
+setplot noise1
+wrdata ../results/afe_ln_noise_v0.csv onoise_spectrum
+* per-device attribution at 1 kHz
+noise v(OUTP,OUTN) VSIGP dec 3 1k 1k 1
+setplot noise3
+print onoise_spectrum
+print onoise.m.xafe.xstg1.xm1.m0 onoise.m.xafe.xstg1.xm3.m0 onoise.m.xafe.xm21.m0 onoise.m.xafe.xm23.m0
+print onoise.m.xafe.xstg1.xm1.m0.1overf onoise.m.xafe.xstg1.xm1.m0.id
+ac dec 10 1 1k
+let g = mag(v(OUTP)-v(OUTN))
+wrdata ../results/afe_ln_gain_v0.csv g
+op
+let idd = -i(VDD_SRC)
+print idd
+quit
+.endc
+.temp 27
+.end

@@ -1,0 +1,15 @@
+* Sanity check: onoise_spectrum units on a known 1 kohm resistor.
+* Expected: sqrt(4kTR) = 4.07 nV/rtHz at 27 C (amplitude, not power).
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+VIN N1 0 DC 0 AC 1
+R1 N1 OUT 1k
+.control
+set noaskquit
+noise v(OUT) VIN dec 3 1k 1k 1
+setplot noise1
+print onoise_spectrum
+quit
+.endc
+.end

@@ -1,0 +1,32 @@
+* GF180 sdm3 full SNDR run, mitigations 1+2 combined: RSET=25k AND
+* CS1=CDAC1=16p, CI1=8p (a1=d1=2 unchanged). CMFB fix kept.
+* 322.5 ms = 10 ms startup skip + 10 coherent 32 Hz cycles.
+* Memory-safe: only time + v(BIT) saved. Mirrors tb_gf180_sdm3_256k.spice.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include gf180_afe_cells.spice
+.include gf180_sdm3.spice
+.param VDD=3.3 VCM=1.65 TCLK=3.90625u
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+VPH1 PH1 0 PULSE(0 {VDD} 0.1u 30n 30n 1.62u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 2.053u 30n 30n 1.62u {TCLK})
+VCMPCK CMPCK 0 PULSE(0 {VDD} 1.30u 20n 20n 0.36u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+VINP VINP 0 SIN({VCM} 15m 32)
+VINN VINN 0 SIN({VCM} 15m 32 0 0 180)
+XSDM VINP VINN VCM_REF VP VN BIT NBIT O1P O1N O2P O2N PH1 NPH1 PH2 NPH2 CMPCK VDD33 0 gf180_sdm3_mod RSET=25k CS1=16p CDAC1=16p CI1=8p
+.nodeset v(BIT)=3.3 v(NBIT)=0 v(O1P)=1.65 v(O1N)=1.65 v(O2P)=1.65 v(O2N)=1.65
+.nodeset v(XSDM.XINT1.INP)=1.65 v(XSDM.XINT1.INN)=1.65 v(XSDM.XINT2.INP)=1.65 v(XSDM.XINT2.INN)=1.65
+.control
+set noaskquit
+save time v(BIT)
+tran 50n 322.5m
+wrdata ../results/sdm3_256k_gf180_rset25k_ci1x2.csv time v(BIT)
+quit
+.endc
+.end

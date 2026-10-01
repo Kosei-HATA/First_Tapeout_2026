@@ -1,0 +1,48 @@
+* Per-device 1/f characterization: nfet_03v3 vs pfet_03v3 at AFE input-pair bias.
+* Common-source, drain biased by ideal (noiseless) DC current source at the
+* actual stage-1 bias current (27.65 uA/side, tail 55 uA). Gate auto-biased
+* via dc sweep + meas so that |VDS| = 1.5 V (matches stage-1 op point).
+* Gate-referred noise = onoise_spectrum / |gain(gate->drain)| (inoise unused).
+* Geometry via .param (sed targets): default = current AFE pair 120/4 nf12.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.param GWN=120u GLN=4u GFN=12 GWP=120u GLP=4u GFP=12 IDB=27.6477u
+VDD VDD33 0 3.3
+* NMOS DUT
+VGN G 0 DC 0.5 AC 1
+IDC1 VDD33 DN {IDB}
+XM1 DN G 0 0 nfet_03v3 L={GLN} W={GWN} nf={GFN}
+* PMOS DUT
+VGP GP 0 DC 2.8 AC 1
+IDC2 DP 0 {IDB}
+XM2 DP GP VDD33 VDD33 pfet_03v3 L={GLP} W={GWP} nf={GFP}
+.control
+set noaskquit
+* auto-bias gates for |VDS|=1.5 V
+dc VGN 0.5 0.9 0.002
+meas dc vg_at when v(DN)=1.5
+alter VGN vg_at
+dc VGP 2.8 2.2 -0.002
+meas dc vp_at when v(DP)=1.8
+alter VGP vp_at
+op
+print v(DN) v(DP)
+print @m.xm1.m0[gm] @m.xm1.m0[id] @m.xm1.m0[gds]
+print @m.xm2.m0[gm] @m.xm2.m0[id] @m.xm2.m0[gds]
+* AC gains (gate -> drain), both DUTs respond independently
+ac dec 10 1 20k
+let gn = mag(v(DN))
+let gp = mag(v(DP))
+wrdata ../results/afe_ln_fet_gain.csv gn gp
+* noise, NMOS DUT
+noise v(DN) VGN dec 25 0.1 20k 1
+setplot noise2
+wrdata ../results/afe_ln_fet_noise_n.csv onoise_spectrum onoise.m.xm1.m0.1overf onoise.m.xm1.m0.id
+* noise, PMOS DUT
+noise v(DP) VGP dec 25 0.1 20k 1
+setplot noise4
+wrdata ../results/afe_ln_fet_noise_p.csv onoise_spectrum onoise.m.xm2.m0.1overf onoise.m.xm2.m0.id
+quit
+.endc
+.end

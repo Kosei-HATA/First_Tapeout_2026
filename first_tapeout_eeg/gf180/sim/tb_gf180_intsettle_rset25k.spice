@@ -1,0 +1,32 @@
+* GF180 sdm3 int1 settling at RSET=25k (mitigation 1 check), CMFB fixed.
+* Same stimulus as tb_gf180_sdm3_intsettle.spice; reports per-cycle increment
+* stability and PH2 plateau creep (settling quality metric).
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include gf180_afe_cells.spice
+.include gf180_sdm3.spice
+.param VDD=3.3 VCM=1.65 TCLK=3.90625u W91P=11u W92P=6u RSETP=25k CCP=10p
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+VPH1 PH1 0 PULSE(0 {VDD} 0.1u 30n 30n 1.62u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 2.053u 30n 30n 1.62u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+VINP VINP 0 {VCM+5m}
+VINN VINN 0 {VCM-5m}
+VBIT BIT 0 0
+XINT1 VINN VINP VCM_REF BIT VP VN O1P O1N PH1 NPH1 PH2 NPH2 VDD33 0 gf180_sdm3_int1 W91={W91P} W92={W92P} RSET={RSETP} CC={CCP}
+.nodeset v(O1P)=1.65 v(O1N)=1.65 v(XINT1.INP)=1.65 v(XINT1.INN)=1.65
+.control
+set noaskquit
+save time v(O1P) v(O1N) i(VDD_SRC)
+tran 5n 31.25u
+wrdata ../results/sdm3_intsettle_rset25k.csv time v(O1P) v(O1N)
+let idd=-i(VDD_SRC)
+meas tran idd_avg avg idd from=25u to=31.25u
+quit
+.endc
+.end

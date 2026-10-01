@@ -47,16 +47,102 @@ sky130 からの変更点（最小限）:
 | 8 Hz 過渡ゲイン (x32, チョップ 1 kHz) | 31.7（実測 6.32 mV/200 µV） | **31.89**（6.377 mV、LS-fit skip 0.5 s） | `tb_f1k8` 1.536 s 実チョップ過渡 |
 | ノイズ @1 kHz（出力） | 417.7 nV/√Hz (rev2 vr) / 2057.5 (rev1 v0) | **1295 nV/√Hz** | |
 | 入力換算 @10 Hz / @1 kHz | 〜 / 13 nV/√Hz | **378 / 40.5 nV/√Hz** | ÷32 |
-| 帯域内ノイズ指標（1 kHz 密度×√100 Hz、0.5–100 Hz） | 0.130 µVrms (rev2) / 0.644 (rev1) | **0.405 µVrms** | 仕様 1.0 µVrms に対し 2.5x マージン |
+| 帯域内ノイズ指標（1 kHz 密度×√100 Hz、0.5–100 Hz） | 0.130 µVrms (rev2) / 0.644 (rev1) | **0.405 µVrms** → **0.254（vb 構成、§2.1）** | 仕様 1.0 µVrms に対し 2.5x マージン（vb で 3.9x） |
 | idd（OP / 過渡平均、OTA のみ） | 69.3 µA @1.8 V | 165.7 / 166.8 µA @3.3 V | 電力 125 µW→550 µW || 出力 CM（閉ループ過渡） | 0.92 V（≒VCM 0.9） | 2.165 V（VCM_REF=1.65 に対し +0.5 V） | CMFB ダイオード負荷比の再調整が必要（リスク 8 参照） |
 
-ノイズ内訳（1 kHz、デバイス別 onoise）: 段1 入力ペア XM1/2 が 64%（837 nV）、
-段1 負荷 XM3/4 が 26%。**GF180 nfet_03v3 の 1/f ノイズが支配的**で、
-sky130 01v8（低 1/f で有名）+ W=240·L=4（960 µm²/ペア）には面積を 480 µm² へ
-増やしても届かない。改善余地: (a) 入力ペア面積のさらなる増加、
-(b) PMOS 入力ペア化（gf180 の pfet は一般に KF が小さい—要検証）、
-(c) fchop 引き上げ（8 kHz: 実測 8 kHz で 603.6 nV/√Hz = 1 kHz の半分）。
-いずれにせよ現状で仕様（1.0 µVrms）は満たす。
+ノイズ内訳（1 kHz、デバイス別 onoise、2026-09-30 再測定で訂正）: 段1 入力ペア
+XM1/2 が片デバイス 831.5 nV・ペア RSS 1176 nV（出力の 91%＝電力で 82%）、
+段1 負荷 XM3/4 がペア RSS 483 nV（37%＝電力で 14%）（旧記載の「64%/26%」は
+片デバイス値をシェアと混同したもの）。**GF180 nfet_03v3 の 1/f ノイズが支配的**。
+改善策の定量的検討は §2.1（afe_ln_gf）を参照: **推奨構成 vb（段1 ペア面積×4 +
+負荷×4）で 0.404 → 0.254 µVrms（−37%）を実測確認済み**。いずれにせよ現状で
+仕様（1.0 µVrms）は満たす。
+
+### 2.1 低ノイズ化検討（afe_ln_gf、2026-09-30）
+
+方法: frozen-chopper AC .noise + onoise/実測ゲイン（帯域内指標 =
+onoise(fchop)/31.96×√99.5 Hz、ハウス規約）。onoise の単位は 1 kΩ 抵抗で
+4.071 nV/√Hz（=√4kTR）を確認済み（振幅密度）。`inoise_spectrum` は本ベンチでは
+onoise/gain と一致したが、従来通り onoise/gain を採用。
+ベースライン再現: 1295.0 nV/√Hz @1 kHz、ゲイン 31.957、帯域内 **0.404 µVrms**、
+PM(β=1/32) 104.6°、idd 165.7 µA — アーカイブ値と一致。
+
+**デバイス 1/f 実測**（CS ベンチ `afe_ln_tb_fet_noise.spice`、Id=27.65 µA、
+|VDS|=1.5 V、電流源負荷＝無ノイズ、ゲート換算 = onoise/実測ゲイン）:
+
+| デバイス @1 kHz, ゲート換算 | 1/f [nV/√Hz] | 熱 [nV/√Hz] | 1/f コーナー |
+|---|---|---|---|
+| nfet_03v3 120/4（現行ペア） | 22.8 | 6.4 | ~12.5 kHz |
+| pfet_03v3 120/4 | 13.6 | 8.8 | ~2.4 kHz |
+| nfet_03v3 240/8（面積×4） | 11.2 | 6.6 | ~2.9 kHz |
+| pfet_03v3 240/8（面積×4） | 6.5 | 8.9 | ~0.5 kHz |
+
+1/f ∝ 1/√(WL) のスケーリングを確認（面積×4 → −6 dB、W のみ×2 → −3.4 dB）。
+pfet の 1/f は同形状・同電流で nfet の 1/1.68。
+
+**候補 (b) PMOS 入力ペア化: データに基づき却下。** pfet の 1/f 優位は 1.68 倍
+のみで、(i) gm が 361→200 µS に落ち熱ノイズ床が悪化、(ii) 段1 負荷が NMOS 化
+し、負荷ノイズの入力換算は ×(gm_load/gm_in) で増えるため、同形状負荷では
+総ノイズがほぼ不変（推定 0.365 µV）、長 L NMOS 負荷でも推定 0.268 µV と
+無リスクの (a) と同等に留まる、(iii) CMFB 極性・再バイアス・全検証のやり直しが
+必要、の 3 点でリスクに見合わない。
+
+**候補 (d) RLOAD 引き上げ: 実測で却下。** GF180 移植は最初から RLOAD=20Meg
+（sky130 の vr 構成を継承）。20→40Meg で 1295.0→1295.1 nV と無変化（vc 行）。
+sky130 で 5 倍効いたのは床が段1 抵抗ノイズ（ループゲインで抑圧可能）だったためで、
+GF180 の床は入力ペア 1/f（信号と同じく閉ループゲインで増幅され、抑圧不可）だから
+効かない。
+
+**バリアント実測**（frozen-chopper .noise、TT 27 °C、閉ループ x32）:
+
+| variant | 変更 | onoise@1k [nV] | 帯域内 @1k | @2k | @4k | ゲイン | PM(β=1/32) | idd [µA] |
+|---|---|---|---|---|---|---|---|---|
+| v0 | ベースライン（再現） | 1295.0 | 0.404 | 0.303 | 0.236 | 31.96 | 104.6° | 165.7 |
+| va | 段1 ペア 240/8 nf24（面積×4） | 923.5 | 0.288 | 0.228 | 0.191 | 31.95 | 102.4° | 165.7 |
+| **vb** | **va + 段1 負荷 96/8 nf8（×4）** | **812.9** | **0.254** | **0.208** | **0.180** | 31.95 | 102.3° | 165.4 |
+| vc | RLOAD 40Meg | 1295.1 | 0.404 | — | — | 31.96 | — | 165.6 |
+| vd | vb + RLOAD 40Meg | 812.9 | 0.254 | — | — | 31.96 | — | 165.4 |
+
+帯域内 @2k/@4k は fchop 引き上げ時の帯域内ノイズ（密度を fchop で読む規約）。
+va→vb で負荷項が 483→318 nV（XM3/4 ペア RSS 実測）に下がり、合計 923.5→812.9 nV
+と追加 −12%。
+
+**候補 (c) fchop 引き上げ: 正直な勘定（過渡実測で確定）。** vb に対し
+fchop=2 kHz で 0.254→0.208 µVrms（−18%）、4 kHz で 0.180（−29%）のノイズ改善
+（frozen ベンチの密度を fchop で読む規約）。コストの HP コーナー fc は
+**実チョップ過渡で実測**（`afe_ln_tb_f2k_vb.spice`、1.25 s、8 Hz 200 µV 差動）:
+8 Hz ゲインは 1 kHz チョップで 31.829、2 kHz で 31.688（AC 31.95）→
+**fc = 0.70 Hz（1k）→ 1.03 Hz（2k）**。fc はほぼ fchop に比例して動くが、
+絶対値は sky130 経験式（fc≈fchop/770 → 2k で 2.6 Hz）より大幅に低く、
+8 Hz ドループの悪化は −0.38%→−0.82% と小さい（pseudo-R 差が要因と思われる）。
+注意点: 0.5 Hz 帯域端の減衰は 1 kHz でも |H|=0.58（−4.7 dB）と既に存在し、
+2 kHz では 0.44（−7.2 dB）に悪化する（既存特性の延長）。
+**結論: fchop=2 kHz は clkgen 分周比変更のみで追加 −18%（合計 0.208 µVrms、
+ENOB 天井 +5.8 dB ≈ +0.96 bit）が得られる有力オプション**で、低域応答コストは
+従来の懸念（sky130 式）より小さい。採否は 0.5 Hz 付近のシステム要求次第;
+デフォルトは fchop=1 kHz の vb（−37%）。
+
+**推奨構成: vb**（段1 ペア 240/8 nf24 + 段1 負荷 96/8 nf8、W/L 比不変のため
+動作点・ゲイン・PM・idd 全て不変）。0.404 → 0.254 µVrms（−37%、ENOB 天井
++4.0 dB ≈ +0.67 bit）。面積増は pcell 実測 footprint で +4.8k µm²
+（ペア 627→2331 µm²/個、負荷 286→999 µm²/個、各 ×2）と無視できる。
+なお §4 の FET footprint 表はペアについて pcell の w_gate に総幅（120 µm）を
+与えて測定しており 12 倍保守的（実デバイスはフィンガ幅 10 µm×nf12 で
+627 µm²/個）。vb 採用による §4 の結論（ハーフスロット適合）への影響なし。
+
+実チョップ過渡確認（tb_f1k8 相当、1.536 s、8 Hz 200 µV 差動、LS-fit skip 0.5 s）:
+**vb @1 kHz チョップ: 振幅 6.366 mV → ゲイン 31.83**（ベースライン過渡 31.89、
+AC 31.95 と −0.2% 以内で一致）、残留 rms 0.127 mV、ラッチアップ/回復異常なし、
+idd_avg 165.4 µA（ベースライン 166.8 と同等）、出力 CM 2.170 V（既知の CMFB
+オフセット、リスク 8 と同値で vb による変化なし）— **PASS**。
+vb @2 kHz チョップ（1.25 s）: ゲイン 31.688（fc 実測は上記 (c)）、残留 rms
+0.039 mV（チョップリプル減）、idd_avg 165.4 µA — PASS。
+
+ファイル: `gf180/sim/afe_ln_cells.spice`（幾何パラメータ化バリアントセル）、
+`afe_ln_tb_fet_noise.spice`（デバイス 1/f）、`afe_ln_tb_noise_{v0..vd}.spice`、
+`afe_ln_tb_ac_ol_{v0,va,vb}.spice`、`afe_ln_tb_f1k8_vb.spice`、
+`afe_ln_tb_f2k_vb.spice`（fchop=2 kHz 過渡）、
+`afe_ln_tb_rescheck.spice`（onoise 単位検証）、結果は `gf180/results/afe_ln_*`。
 
 ## 3. 寄生抽出込みシミュレーション（PEX 能力の実証）— 達成（route a）
 
@@ -226,6 +312,12 @@ RZ=80k、CC=10p）。strong-arm・TG マスタスレーブ DFF・nand2・inv は
 | ショート 3 サイクル | CMFB 修正 + CC=6p（高速化狙い） | 63.30 dB（悪化: リンギング） |
 | ショート 3 サイクル | CMFB 修正 + 理想コンパレータ（動作モデル置換） | 61.23 dB（床は潰れず） |
 | ショート 3 サイクル | CMFB 修正 + CMPCK 1.30→1.55 µs | 79.18 dB（ばらつき内の微増） |
+| ショート 3 サイクル | CMFB 修正 + RSET 40k→25k（緩和策 1） | 64.77 dB（コム実現の再抽選で悪化側） |
+| ショート 3 サイクル | CMFB 修正 + CI1 4p→8p（CS1/CDAC1=16p 等比、a1=d1=2 不変、緩和策 2） | 75.35 dB（ばらつき内） |
+| ショート 3 サイクル | CMFB 修正 + 入力ディザ 8 mV @2.4 kHz（緩和策 3） | 63.34 dB（悪化側） |
+| ショート 3 サイクル | CMFB 修正 + RSET 25k + CI1x2 併用（緩和策 1+2） | 76.12 dB（ばらつき内） |
+| フル 10 サイクル | CMFB 修正 + RSET 25k + CI1x2 併用 | 69.04 dB（−0.6 dB: 実現ばらつき内、idd +17% で見合わず） |
+| **フル 10 サイクル（最終採用）** | **CMFB 修正 + CI1x2 のみ（CS1/CDAC1=16p, CI1=8p）** | **70.98 dB**（+1.3 dB、idd 不変） |
 | （参考）sky130 フル 10 サイクル | final ループタイミング版 | **91.68 dB** |
 
 ※ 等条件（10 サイクル）の確定改善量は **61.75 → 69.65 dB（+7.9 dB）**。
@@ -287,16 +379,96 @@ idd 346.6→304.2 µA、積分器係数 −79.45〜−79.52 mV/cycle で不変�
 強く現れている（等条件で sky130 91.68 dB vs GF180 69.65 dB、残余 22 dB。
 なお残余の見え方はトーン実現で数 dB 動く）。
 
-**残余ギャップの改善候補（優先度順、次イテレーション）:**
+**残余ギャップの改善候補（優先度順）→ 緩和策 1–3 を 2026-09-30 に実施
+（結果は下の「緩和策スクリーニング」節）:**
 1. RSET 40k→25k（バイアス +16%、プラトークリープ −13→−5.3 mV、
-   CC 変更と違い PM を痛めない）— 最有力。
+   CC 変更と違い PM を痛めない）— 最有力 → **実施: クリープ −5.3 mV は
+   実測確認されたが、ショート SNDR は 64.77 dB と悪化側の実現を引いた
+   （コムのトーン実現は摂動に対しカオティック、セトリング物理量と
+   ショート SNDR は連動しない）。**
 2. CI1 増量（ENOB18 スタディの提言と同じ、int1 の per-cycle 擾乱を相対的に
-   縮小）。
-3. ディザ（量子化器/入力）で limit-cycle のロックを崩す。
+   縮小）→ **実施: CS1/CDAC1=16p・CI1=8p の等比スケール（a1=d1=2、NTF 不変）
+   でショート 75.35 dB（ベースライン 77.29 とばらつき内）。**
+3. ディザ（量子化器/入力）で limit-cycle のロックを崩す → **実施:
+   入力ディザ 8 mV @2.4 kHz（帯域外）でショート 63.34 dB と悪化側。
+   この振幅/周波数ではロック解除より攪乱が支配。**
 4. アンチヒステリシス比較器は優先度低（理想比較器実験で効果無しと判明）。
 5. ※ 実シリコンの熱/1/f ノイズ天井は別途存在する（ENOB18 §5–6、
    kT/C ~81 dB）が、本節の過渡解析床とは無関係。積分器 OTA チョッピングは
    実ノイズ対策としては有効だが、決定論的コムの改善策ではない。
+
+### 緩和策スクリーニング（2026-09-30、緩和策 1–3）
+
+全バリアント CMFB 修正済みベース、ショートラン（103.75 ms）、
+読み出し・解析は `analyze_sndr_fast.py`（PH2 プラトー多数決、0.5–100 Hz）。
+ベンチ: `tb_gf180_sdm3_256k_{rset25k,ci1x2,dither,rset25k_ci1x2}_short.spice`、
+CSV は同名 `.csv.gz`（`gf180/results/`）。
+
+| バリアント | ショート SNDR | 最強帯域内コム | 備考 |
+|---|---|---|---|
+| ベースライン（CMFB 修正のみ） | 77.29 dB（フル 69.65 dB） | ~−84 dBc | §6 上表 |
+| 1. RSET=25k | 64.77 dB | −72.6 dBc | クリープ −5.30 mV を確認するも悪化 |
+| 2. CI1x2（CS1/CDAC1=16p, CI1=8p） | 75.35 dB | −83.4 dBc | ばらつき内、idd 増なし |
+| 3. 入力ディザ 8 mV @2.4 kHz | 63.34 dB | −71.4 dBc | 悪化（攪乱が支配） |
+| 1+2 併用 | 76.12 dB | −81.3 dBc | CI1 が RSET の悪化を相殺 |
+
+所見:
+- 緩和策 1 のセトリング改善は物理量で確認: int1 PH2 プラトークリープ
+  **−5.30 mV**（`tb_gf180_intsettle_rset25k.spice` + `analyze_settle.py`
+  同一メトリクス。同デッキの RSET=40k コントロールは −6.88 mV;
+  旧計測 −13 mV は CMFB 修正前デッキ由来）。per-cycle インクリメント
+  −79.8 mV で安定、int1 単体 idd 175.2 µA @3.3 V。
+- しかし SNDR ショート推定とは連動しない: 残余コムのトーン実現は
+  ループ摂動に対してカオティックで、3 サイクル推定（帯域内 ~9 bin）では
+  どのバリアントもベースラインの「ラッキーな」実現（77.29 dB）を
+  再現性よく上回れない。セトリング残留の単調関数ではなく、状態依存
+  ダイナミクスがトーン構造そのものを変える、という残余機序の裏付け。
+- 判断: 物理根拠（クリープ半減 + 電荷パケット倍増 vs 状態依存残留）を
+  持ちショート推定がベースライン水準だった **1+2 併用**を最終候補とし、
+  フルランで確定する。切り分け用に CI1 単独のフルランも並行実行。
+
+**フルラン確定結果（322.5 ms、10 コヒーレントサイクル、2026-10-01 完了）:**
+
+| フルラン構成 | SNDR | Δ vs 69.65 dB | idd @3.3 V | 帯域内コム |
+|---|---|---|---|---|
+| ベースライン（CMFB 修正） | 69.65 dB | — | 304.2 µA | 一様 −83〜−85 dBc（最強 −82.8） |
+| CI1x2 のみ | **70.98 dB** | **+1.33 dB** | 304.2 µA（不変） | 一様 −84〜−86 dBc（最強 −84.0） |
+| RSET 25k + CI1x2 併用 | 69.04 dB | −0.61 dB（ばらつき内） | **355.4 µA（+16.8%）** | 一様 −82〜−84 dBc（最強 −82.1） |
+
+- ベンチ/CSV: `tb_gf180_sdm3_256k_{ci1x2,rset25k_ci1x2}.spice` →
+  `gf180/results/sdm3_256k_gf180_{ci1x2,rset25k_ci1x2}.csv.gz`、
+  解析は `analyze_sndr_fast.py <csv> 10.0`（ベースラインと等条件）。
+- 併用構成の bring-up（`tb_gf180_sdm3_bringup_rset25k_ci1x2.spice`、6 ms）:
+  O1D −0.47..+0.52 V、O2D −0.43..+0.58 V（ベースラインより僅かに縮小、
+  bounded）、O1 CM 1.683 V / O2 CM 1.653 V（CMFB は RSET=25k でも保持）、
+  duty 追従正常、**idd 355.4 µA（+51.2 µA、+16.8% — バイアス +16% 通り）**。
+- **最終採用: CI1x2 のみ**（CS1/CDAC1=16p、CI1=8p、係数不変）。
+  +1.3 dB を idd・レイアウト以外のコスト無しで得られる（MIM は int1 で
+  40p→80p、+40 pF ≈ +0.02 mm² 見込み）。RSET 25k はクリープ半減の
+  物理改善が SNDR に結び付かず idd を +17% 悪化させるだけなので不採用。
+
+**結論（達成天井と機序、2026-10-01 確定）:**
+緩和策 1–3 を総当たりした結果、フルラン天井は **~71 dB（ENOB ~11.5）**
+で頭打ち。残余床は全バリアントで一様な k·3.2 Hz limit-cycle コム
+（−82〜−86 dBc）であり、そのトーン実現はループ摂動に対してカオティック
+（セトリング物理量の改善と SNDR が連動しないことが今回の A/B で確定）。
+すなわち残余 ~21 dB（vs sky130 91.68 dB）は **ループダイナミクス
+（トーン実現）の問題**であり、RSET/CI1/ディザといったパラメトリックな
+緩和では閉じない。
+
+**システム視点での十分性:** ADC の SNDR 71 dB（0.6 FS 入力時）は
+ADC 入力換算 ~6 µVrms/100 Hz の等価ノイズに相当し、AFE ゲイン
+（31.8 V/V）で入力換算すると **~0.19 µVrms** — AFE 自身のノイズ
+（vb 構成 0.254 µVrms、ENOB 天井 ~96 dB）と同程度。合成すると
+**~0.32 µVrms** で、仕様 1.0 µVrms に対し ~3.1x のマージンを保持する。
+したがって **本テープアウトのノイズ仕様に対しては ~71 dB ADC で十分**
+（ADC は系ノイズを ~25% 押し上げるに留まる）。一方で AFE の低ノイズ化
+投資（~96 dB 天井、~15.7 ENOB）は ADC 側 ~11.5 ENOB にマスクされるため、
+将来 12 ENOB 超を狙う rev では **構造的変更が必要**: 係数/ループタイミング
+再設計（sky130 ではタイミング変種だけで実現が 92–101 dB 動いた実績）、
+CT 2 次変調器（SC セトリング自体を排除し残余機序を根絶）、
+ディザ・バイ・デザイン（PN ディザ + デジタル相殺）、または
+高次/マルチビットループ化（ENOB18 §5 の CT 経路検討を参照）。
 
 sky130 参考値（同条件・同解析）: SNDR 91.68 dB（final ループタイミング版）、
 挙動モデル天井 123 dB、帯域内は limit-cycle スカート（k*3.2 Hz、最強
@@ -307,9 +479,12 @@ sky130 参考値（同条件・同解析）: SNDR 91.68 dB（final ループタ�
 
 ## 7. リスクリスト
 
-1. **1/f ノイズ**: GF180 03v3 は sky130 01v8 より KF が大きい。現構成で
-   0.405 µVrms（仕様 1.0、社内目標 0.15 に対し 2.7 倍超過）。チョップ周波数
-   引き上げ or PMOS 入力化で対処可能だが要再検証。
+1. **1/f ノイズ**: GF180 03v3 は sky130 01v8 より KF が大きい。初回ポートで
+   0.405 µVrms（仕様 1.0、社内目標 0.15 に対し 2.7 倍超過）。**§2.1 で改善済み:
+   段1 ペア面積×4 + 負荷×4（vb 構成）で 0.254 µVrms（−37%）を実測、ゲイン/PM/
+   idd 不変・実チョップ過渡 PASS（ゲイン 31.83）、面積増 +4.8k µm²**。
+   PMOS 入力化と RLOAD 増加はデータで却下。さらなる改善が必要なら fchop=2 kHz
+   で 0.208 µVrms（fc は実測 0.70→1.03 Hz と懸念より小さい、§2.1 (c)）。
 2. **電力**: 166 µA @3.3 V（550 µW）は sky130 版（125 µW）の 4.4 倍。
    電流削減余地あり（ゲイン/ノイズとトレードオフ）。
 3. **PEX スループット**: sky130 で必要だった高速化置換（xhigh-po→理想 R 等）
@@ -333,9 +508,15 @@ sky130 参考値（同条件・同解析）: SNDR 91.68 dB（final ループタ�
    AFE チョップ OTA（`gf180_fd_ota_chopped_full2`）側も同じ W91/W92 を
    デフォルトに持つため、次の AFE イテレーションで同様の再調整を適用すること。
 9. **sdm3 ADC の SNDR**: TT 61.75 dB（初回ポート）→ CMFB 修正で 69.65 dB
-   （フル 322.5 ms ランで確定）。残余 22 dB（vs sky130 91.68 dB）
-   は積分器の状態依存セトリングに起因する limit-cycle コム（決定論的、
-   §6）。改善候補: RSET 25k 化、CI1 増量、ディザ。
+   → **緩和策適用後の最終確定 70.98 dB**（CI1x2: CS1/CDAC1=16p・CI1=8p、
+   フル 322.5 ms、2026-10-01）。残余 ~21 dB（vs sky130 91.68 dB）
+   は limit-cycle コムのトーン実現（ループダイナミクス）が支配で、
+   RSET 25k（クリープ半減を確認するもフル 69.04 dB・idd +17% で不採用）、
+   ディザ（ショートで悪化）等のパラメトリック緩和では閉じないことを
+   確定（§6 緩和策表・結論）。ノイズ仕様（AFE 入力換算 1.0 µVrms）
+   に対しては現状で十分（系 ~0.32 µVrms）だが、AFE 天井 ~96 dB を
+   活かす 12 ENOB 超は構造的変更（係数/タイミング再設計、CT 2 次、
+   ディザ・バイ・デザイン、高次/マルチビット化）が必要。
 10. **外部クロック依存**: 256 kHz マスタを外部供給する構成では、ホスト側の
    クロック精度が CIC ノッチ/チョップ周波数精度を決める。オンチップ化は
    将来課題（§5 クロック戦略）。
@@ -351,6 +532,15 @@ cd gf180/sim && /opt/homebrew/bin/ngspice tb_ac_ol.spice
 /opt/homebrew/bin/ngspice tb_noise.spice
 /opt/homebrew/bin/ngspice tb_f1k8.spice   # 過渡（長時間）
 python3 ../../scripts/lsfit_gain.py ../results/tb_afe_f1k8.csv 8 --skip 0.5
+# AFE 低ノイズ化検討 (afe_ln_gf, 2026-09-30, §2.1)
+/opt/homebrew/bin/ngspice -b afe_ln_tb_rescheck.spice                    # onoise 単位検証
+/opt/homebrew/bin/ngspice -b afe_ln_tb_fet_noise.spice                   # デバイス 1/f (nfet vs pfet)
+/opt/homebrew/bin/ngspice -b afe_ln_tb_noise_vb.spice                    # バリアント ノイズ (v0/va/vb/vc/vd)
+/opt/homebrew/bin/ngspice -b afe_ln_tb_ac_ol_vb.spice                    # バリアント PM (v0/va/vb)
+/opt/homebrew/bin/ngspice -b afe_ln_tb_f1k8_vb.spice                     # vb 実チョップ過渡（長時間）
+python3 ../../scripts/lsfit_gain.py ../results/afe_ln_f1k8_vb.csv 8 --skip 0.5
+/opt/homebrew/bin/ngspice -b afe_ln_tb_f2k_vb.spice                      # vb + fchop=2k 過渡（長時間）
+python3 ../../scripts/lsfit_gain.py ../results/afe_ln_f2k_vb.csv 8 --skip 0.5
 # PEX デモ
 gf180/tools/venv310/bin/python gf180/klayout/gen_pex_test.py
 cd gf180/pex && ../../tools/magic/bin/magic -dnull -noconsole extract_pex_test.tcl
@@ -372,4 +562,17 @@ python3 ../../scripts/sdm3_bitstream.py ../results/sdm3_256k_gf180.csv
 /opt/homebrew/bin/ngspice tb_gf180_sdm3_cmpdbg.spice                     # in-loop 判定診断 (~5 min)
 /opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_cmfix_short.spice           # ショート SNDR (~2.5 h)
 python3 ../results/analyze_sndr_fast.py ../results/sdm3_256k_gf180_cmfix_short.csv.gz 10
+# sdm3 緩和策スクリーニング (2026-09-30, §6 緩和策表、ショート各 ~4–6 h)
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_rset25k_short.spice         # 緩和策 1: RSET=25k
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_ci1x2_short.spice           # 緩和策 2: CS1/CDAC1=16p CI1=8p
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_dither_short.spice          # 緩和策 3: 入力ディザ 8mV@2.4k
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_rset25k_ci1x2_short.spice   # 1+2 併用
+/opt/homebrew/bin/ngspice tb_gf180_intsettle_rset25k.spice               # RSET=25k クリープ検証 (~1 min)
+python3 ../results/analyze_sndr_fast.py ../results/<variant>.csv.gz 10   # 各バリアント解析
+# sdm3 緩和策フル確認ラン (各 ~10–14 h、最大 2 並行)
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_rset25k_ci1x2.spice         # 1+2 併用 フル
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_256k_ci1x2.spice                 # CI1x2 のみ フル
+python3 ../results/analyze_sndr_fast.py ../results/sdm3_256k_gf180_rset25k_ci1x2.csv 10.0
+python3 ../results/analyze_sndr_fast.py ../results/sdm3_256k_gf180_ci1x2.csv 10.0
+/opt/homebrew/bin/ngspice tb_gf180_sdm3_bringup_rset25k_ci1x2.spice      # 勝者のスイング/idd (~30 min)
 ```

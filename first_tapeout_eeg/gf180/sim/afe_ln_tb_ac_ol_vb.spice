@@ -1,0 +1,35 @@
+* GF180 open-loop AC of gf180_fd_ota_chopped_full2 (choppers frozen straight,
+* gates DC-biased, no feedback) -- mirrors sky130 tb_ac_ol_ph.spice.
+* Post-processing derives DC gain, UGF, PM (open loop) and PM at beta=1/32.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include afe_ln_cells.spice
+.param VDD=3.3 VCM=1.65
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 {VDD}
+VPHIB PHIB 0 0
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 DC {VCM} AC 0.5 0
+VSIGN SIGN 0 DC {VCM} AC 0.5 180
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+RBIASP INP VCM_REF 1T
+RBIASN INN VCM_REF 1T
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD33 0 gf180_fd_ota_chopped_full2_ln GWS1=240u GLS1=8u GNFS1=24 GWL1=96u GLL1=8u GNFL1=8
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+op
+print v(XAFE.INP_M) v(XAFE.N1P) v(XAFE.N2P) v(OUTP) v(OUTN) v(XAFE.VBP1) v(XAFE.VBP2) v(XAFE.XBG.VBN) v(XAFE.XBG.SNS2)
+print @m.xafe.xstg1.xm1.m0[id] @m.xafe.xstg1.xm5.m0[id] @m.xafe.xm21.m0[id]
+ac dec 40 0.01 1G
+let g = mag(v(OUTP)-v(OUTN))
+let ph_deg = 180/pi*ph(v(OUTP)-v(OUTN))
+wrdata ../results/afe_ln_ac_ol_vb.csv g ph_deg
+quit
+.endc
+.end

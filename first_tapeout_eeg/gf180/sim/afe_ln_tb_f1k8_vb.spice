@@ -1,0 +1,42 @@
+* GF180 standard verification bench: internal-chopper PGA x32, pseudo-R bias,
+* RST pulse, 100 uV 8 Hz differential input -- mirrors sky130 tb_f1k_8.spice.
+* sed tokens: tt 3.30 27 f1k8
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include afe_ln_cells.spice
+.param VDD=3.3 VCM={3.3/2} TCHOP=1m
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+VSIGP SIGP 0 SIN({VCM} 100u 8)
+VSIGN SIGN 0 SIN({VCM} 100u 8 0 0 180)
+CINP SIGP INP 32p
+CINN SIGN INN 32p
+CFP OUTN INP 1p
+CFN OUTP INN 1p
+XPRP INP VCM_REF gf180_pseudo_res
+XPRN INN VCM_REF gf180_pseudo_res
+VRST RST 0 PULSE({VDD} 0 5m 100n 100n 1 1)
+BRSTN NRST 0 V={VDD}-v(RST)
+XRSTP INP VCM_REF RST NRST VDD33 0 gf180_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD33 0 gf180_tg_lowq
+XAFE INP INN VCM_REF OUTP OUTN PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB VDD33 0 gf180_fd_ota_chopped_full2_ln GWS1=240u GLS1=8u GNFS1=24 GWL1=96u GLL1=8u GNFL1=8
+CLOADP OUTP 0 5p
+CLOADN OUTN 0 5p
+.control
+set noaskquit
+* limit saved vectors: full-batch save of all nodes needs >10 GB RAM per run
+save time v(OUTP) v(OUTN) i(VDD_SRC)
+tran 100n 1.536s
+wrdata ../results/afe_ln_f1k8_vb.csv time v(OUTP) v(OUTN)
+let idd=-i(VDD_SRC)
+meas tran idd_avg avg idd from=1.4s to=1.536s
+let vcmout=(v(OUTP)+v(OUTN))/2
+meas tran vcm_avg avg vcmout from=1.4s to=1.536s
+quit
+.endc
+.end

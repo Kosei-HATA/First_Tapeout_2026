@@ -1,0 +1,48 @@
+* GF180 sdm3_mb (4-bit, 15-level flash + DWA) bring-up at fs=512 kHz.
+* short SNDR run (103.75m), all 15 thermometer lines saved.
+* Clocks are the 256 kHz sdm3 timing halved; PUP advances the behavioral
+* DWA pointer at the PH1 rising edge.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include gf180_afe_cells.spice
+.include gf180_sdm3.spice
+.include gf180_sdm3_mb_tl.spice
+.param VDD=3.3 VCM=1.65 TCLK=1.953125u
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+VPH1 PH1 0 PULSE(0 {VDD} 0.661u 15n 15n 0.81u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 1.6375u 15n 15n 0.81u {TCLK})
+VCMPCK CMPCK 0 PULSE(0 {VDD} 1.261u 10n 10n 0.18u {TCLK})
+VPUP PUP 0 PULSE(0 {VDD} 0.671u 5n 5n 0.05u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+VINP VINP 0 SIN({VCM} 15m 32)
+VINN VINN 0 SIN({VCM} 15m 32 0 0 180)
+XSDM VINP VINN VCM_REF VP VN PH1 NPH1 PH2 NPH2 CMPCK PUP VDD33 0
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14
++ gf180_sdm3_mod_mb RSET=25k CC=10p
+.nodeset v(XSDM.O1P)=1.65 v(XSDM.O1N)=1.65 v(XSDM.O2P)=1.65 v(XSDM.O2N)=1.65
+.nodeset v(XSDM.XINT1.INP)=1.65 v(XSDM.XINT1.INN)=1.65 v(XSDM.XINT2.INP)=1.65 v(XSDM.XINT2.INN)=1.65
+* flash latch initial state: mid-code (H0..H6=3.3, H7..H14=0 -> c=7 at t=0)
+.nodeset v(XSDM.XFLASH.BIT0)=0 v(TH0)=3.3 v(XSDM.XFLASH.BIT1)=0 v(TH1)=3.3
++ v(XSDM.XFLASH.BIT2)=0 v(TH2)=3.3 v(XSDM.XFLASH.BIT3)=0 v(TH3)=3.3
++ v(XSDM.XFLASH.BIT4)=0 v(TH4)=3.3 v(XSDM.XFLASH.BIT5)=0 v(TH5)=3.3
++ v(XSDM.XFLASH.BIT6)=0 v(TH6)=3.3 v(XSDM.XFLASH.BIT7)=3.3 v(TH7)=0
++ v(XSDM.XFLASH.BIT8)=3.3 v(TH8)=0 v(XSDM.XFLASH.BIT9)=3.3 v(TH9)=0
++ v(XSDM.XFLASH.BIT10)=3.3 v(TH10)=0 v(XSDM.XFLASH.BIT11)=3.3 v(TH11)=0
++ v(XSDM.XFLASH.BIT12)=3.3 v(TH12)=0 v(XSDM.XFLASH.BIT13)=3.3 v(TH13)=0
++ v(XSDM.XFLASH.BIT14)=3.3 v(TH14)=0
+.nodeset v(XSDM.PTRS)=0 v(XSDM.PTRM)=0 v(XSDM.C2R)=7.5
+.nodeset v(XSDM.H20)=3.3 v(XSDM.H21)=3.3 v(XSDM.H22)=3.3 v(XSDM.H23)=3.3 v(XSDM.H24)=3.3 v(XSDM.H25)=3.3 v(XSDM.H26)=3.3 v(XSDM.H27)=3.3 v(XSDM.H28)=0 v(XSDM.H29)=0 v(XSDM.H210)=0 v(XSDM.H211)=0 v(XSDM.H212)=0 v(XSDM.H213)=0 v(XSDM.H214)=0
+.control
+set noaskquit
+options itl4=1000
+save time v(TH0) v(TH1) v(TH2) v(TH3) v(TH4) v(TH5) v(TH6) v(TH7) v(TH8) v(TH9) v(TH10) v(TH11) v(TH12) v(TH13) v(TH14)
+tran 50n 322.5m
+wrdata ../results/sdm3_mb_tl_512k_full.csv time v(TH0) v(TH1) v(TH2) v(TH3) v(TH4) v(TH5) v(TH6) v(TH7) v(TH8) v(TH9) v(TH10) v(TH11) v(TH12) v(TH13) v(TH14)
+quit
+.endc
+.end

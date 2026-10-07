@@ -1,0 +1,7 @@
+1. ideal L2 1bit (expect ~123.3)       SNDR= 123.45 dB  top=  96.0 Hz / -124.7 dBc
+2. GF180 kappa=1e-3 int1 (expect ~69.7) SNDR=  70.36 dB  top=  64.0 Hz /  -70.8 dBc
+3a. sky130-ish kappa=3e-5 (expect ~92) SNDR=  99.29 dB  top=  64.0 Hz / -101.8 dBc
+3b. sky130-ish kappa=1e-4              SNDR=  77.42 dB  top=  64.0 Hz /  -86.3 dBc
+4. comparator hyst=1e-3 (expect benign) SNDR= 123.60 dB  top=  96.0 Hz / -124.9 dBc
+5. kappa=1e-3 on int2 only (expect benign) SNDR= 122.88 dB  top=  64.0 Hz / -125.5 dBc
+6. gamma=0.086 only (expect benign)    SNDR= 122.35 dB  top=  96.0 Hz / -123.4 dBc

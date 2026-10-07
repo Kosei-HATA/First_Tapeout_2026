@@ -1,0 +1,70 @@
+
+=== L2/sdm3 4b 512k ===
+  kappa=3.0e-04 amp=0.5: SNDR=  98.85 dB
+  kappa=3.0e-04 amp=0.6: SNDR= 100.30 dB
+  kappa=3.0e-04 amp=0.7: SNDR= 107.18 dB
+  kappa=1.0e-03 amp=0.5: SNDR= 106.11 dB
+  kappa=1.0e-03 amp=0.6: SNDR= 109.33 dB
+  kappa=1.0e-03 amp=0.7: SNDR=  97.82 dB
+  kappa=3.0e-03 amp=0.5: SNDR=  96.35 dB
+  kappa=3.0e-03 amp=0.6: SNDR= 102.93 dB
+  kappa=3.0e-03 amp=0.7: SNDR= 103.76 dB
+  -> kappa/amp envelope: 96.35..109.33 dB
+  DAC mismatch 0.1% of step: SNDR=['83.73', '81.79', '75.53']
+  DAC mismatch 1.0% of step: SNDR=['64.76', '61.66', '55.52']
+
+=== L2/sdm3 4b 256k ===
+  kappa=3.0e-04 amp=0.5: SNDR=  98.73 dB
+  kappa=3.0e-04 amp=0.6: SNDR= 100.61 dB
+  kappa=3.0e-04 amp=0.7: SNDR=  95.59 dB
+  kappa=1.0e-03 amp=0.5: SNDR=  98.35 dB
+  kappa=1.0e-03 amp=0.6: SNDR=  99.15 dB
+  kappa=1.0e-03 amp=0.7: SNDR=  96.79 dB
+  kappa=3.0e-03 amp=0.5: SNDR=  91.70 dB
+  kappa=3.0e-03 amp=0.6: SNDR=  94.61 dB
+  kappa=3.0e-03 amp=0.7: SNDR=  97.31 dB
+  -> kappa/amp envelope: 91.70..100.61 dB
+  DAC mismatch 0.1% of step: SNDR=['83.67', '79.14', '75.69']
+  DAC mismatch 1.0% of step: SNDR=['64.74', '61.66', '55.51']
+
+=== L2/lowgain 4b 512k ===
+  kappa=3.0e-04 amp=0.5: SNDR= 105.51 dB
+  kappa=3.0e-04 amp=0.6: SNDR= 106.65 dB
+  kappa=3.0e-04 amp=0.7: SNDR= 101.69 dB
+  kappa=1.0e-03 amp=0.5: SNDR= 104.40 dB
+  kappa=1.0e-03 amp=0.6: SNDR= 101.40 dB
+  kappa=1.0e-03 amp=0.7: SNDR=  94.62 dB
+  kappa=3.0e-03 amp=0.5: SNDR= 117.34 dB
+  kappa=3.0e-03 amp=0.6: SNDR= 112.97 dB
+  kappa=3.0e-03 amp=0.7: SNDR= 111.30 dB
+  -> kappa/amp envelope: 94.62..117.34 dB
+  DAC mismatch 0.1% of step: SNDR=['81.14', '80.01', '75.72']
+  DAC mismatch 1.0% of step: SNDR=['64.78', '61.69', '55.44']
+
+=== L2/lowgain 4b 256k ===
+  kappa=3.0e-04 amp=0.5: SNDR= 105.21 dB
+  kappa=3.0e-04 amp=0.6: SNDR= 107.31 dB
+  kappa=3.0e-04 amp=0.7: SNDR=  93.75 dB
+  kappa=1.0e-03 amp=0.5: SNDR= 103.30 dB
+  kappa=1.0e-03 amp=0.6: SNDR= 105.13 dB
+  kappa=1.0e-03 amp=0.7: SNDR=  87.30 dB
+  kappa=3.0e-03 amp=0.5: SNDR=  95.94 dB
+  kappa=3.0e-03 amp=0.6: SNDR= 101.38 dB
+  kappa=3.0e-03 amp=0.7: SNDR=  89.94 dB
+  -> kappa/amp envelope: 87.30..107.31 dB
+  DAC mismatch 0.1% of step: SNDR=['84.69', '80.58', '75.41']
+  DAC mismatch 1.0% of step: SNDR=['64.78', '59.92', '55.47']
+
+=== L2/sdm3 2b 512k ===
+  kappa=3.0e-04 amp=0.5: SNDR=  90.33 dB
+  kappa=3.0e-04 amp=0.6: SNDR=  90.27 dB
+  kappa=3.0e-04 amp=0.7: SNDR=  88.07 dB
+  kappa=1.0e-03 amp=0.5: SNDR=  82.82 dB
+  kappa=1.0e-03 amp=0.6: SNDR=  82.06 dB
+  kappa=1.0e-03 amp=0.7: SNDR=  80.36 dB
+  kappa=3.0e-03 amp=0.5: SNDR=  74.49 dB
+  kappa=3.0e-03 amp=0.6: SNDR=  72.90 dB
+  kappa=3.0e-03 amp=0.7: SNDR=  71.47 dB
+  -> kappa/amp envelope: 71.47..90.33 dB
+  DAC mismatch 0.1% of step: SNDR=['75.82', '67.47', '71.24']
+  DAC mismatch 1.0% of step: SNDR=['54.37', '46.31', '49.33']

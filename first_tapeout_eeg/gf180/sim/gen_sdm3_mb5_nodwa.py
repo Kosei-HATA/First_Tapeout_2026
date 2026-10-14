@@ -110,7 +110,7 @@ A("RBIASN INN VCM_REF 10G")
 A(".ends gf180_sdm3_int1_mb")
 A("")
 
-# ---- int2 multibit: parasitic-insensitive, CS=2p CI=4p, 15x0.25p DAC ----
+# ---- int2 multibit: parasitic-insensitive, CS=2p CI=4p, 31x0.125p DAC ----
 A("* ---- int2 mb: CS=2p, CI=4p, 31x0.125p/side DAC (S2P/S2N selects, PH1 int)")
 A("* int2 integrates during PH1 with the REGISTERED code (applied via S2*).")
 A(".subckt gf180_sdm3_int2_mb INP_S INN_S VCM_REF VP VN OUTP OUTN PH1 NPH1 PH2 NPH2 VDD33 VSS " +

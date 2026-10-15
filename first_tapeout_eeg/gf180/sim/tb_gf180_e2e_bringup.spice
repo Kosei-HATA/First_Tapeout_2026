@@ -1,0 +1,57 @@
+* tb_gf180_e2e_bringup.spice — E2E macro smoke: electrodes -> PGA x32 -> mb5 ADC.
+* 100 uV 8 Hz differential EEG input, 1 kHz choppers (both stages), fs=256 kHz
+* ADC clocks (see tb_gf180_sdm3_mb5_256k_short.spice for the timing reference).
+* Short smoke only (10 ms): checks startup and that TH codes move near mid.
+.include /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Users/noah/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.temp 27
+.include gf180_afe_cells.spice
+.include afe_ln_cells.spice
+.include gf180_sdm3.spice
+.include gf180_sdm3_mb5_nodwa.spice
+.include gf180_e2e_macro.spice
+.param VDD=3.3 VCM=1.65 TCLK=3.90625u TCHOP=1m
+VDD_SRC VDD33 0 {VDD}
+VREF VCM_REF 0 {VCM}
+VVP VP 0 {VCM+25m}
+VVN VN 0 {VCM-25m}
+* ADC clocks, fs=256 kHz
+VPH1 PH1 0 PULSE(0 {VDD} 1.322u 15n 15n 1.62u {TCLK})
+VPH2 PH2 0 PULSE(0 {VDD} 3.275u 15n 15n 1.62u {TCLK})
+VCMPCK CMPCK 0 PULSE(0 {VDD} 2.522u 10n 10n 0.36u {TCLK})
+VPUP PUP 0 PULSE(0 {VDD} 1.342u 5n 5n 0.1u {TCLK})
+BNPH1 NPH1 0 V={VDD}-v(PH1)
+BNPH2 NPH2 0 V={VDD}-v(PH2)
+* 1 kHz chopper clocks (input and output stages driven together)
+VPHI PHI 0 PULSE(0 {VDD} 50n 20n 20n 499.85u {TCHOP})
+VPHIB PHIB 0 PULSE(0 {VDD} 500.05u 20n 20n 499.85u {TCHOP})
+BNPHI NPHI 0 V={VDD}-v(PHI)
+BNPHIB NPHIB 0 V={VDD}-v(PHIB)
+* reset pulse (summimg nodes to VCM at t=5ms edge... keep simple: pulse once)
+VRST RST 0 PULSE({VDD} 0 5m 100n 100n 1 1)
+* gain select: x32
+VS8 S8 0 0
+VS16 S16 0 0
+VS32 S32 0 {VDD}
+VS64 S64 0 0
+* 100 uV 8 Hz differential at the electrodes
+VSIGP ELP 0 SIN({VCM} 100u 8)
+VSIGN ELN 0 SIN({VCM} 100u 8 0 0 180)
+XTOP ELP ELN VCM_REF VP VN PH1 NPH1 PH2 NPH2 CMPCK PUP PHI NPHI PHIB NPHIB PHI NPHI PHIB NPHIB S8 S16 S32 S64 RST VDD33 0
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
++ gf180_e2e_macro
+* startup nodesets (integrator outputs / summing nodes at VCM, mid-code flash)
+.nodeset v(XTOP.XSDM.O1P)=1.65 v(XTOP.XSDM.O1N)=1.65 v(XTOP.XSDM.O2P)=1.65 v(XTOP.XSDM.O2N)=1.65
+.nodeset v(XTOP.XSDM.XINT1.INP)=1.65 v(XTOP.XSDM.XINT1.INN)=1.65 v(XTOP.XSDM.XINT2.INP)=1.65 v(XTOP.XSDM.XINT2.INN)=1.65
+.nodeset v(XTOP.XSDM.PTRS)=0 v(XTOP.XSDM.PTRM)=0 v(XTOP.XSDM.C2R)=15.5
+.nodeset v(XTOP.APGP)=1.65 v(XTOP.APGN)=1.65
+.control
+set noaskquit
+options itl4=1000
+save time v(XTOP.APGP) v(XTOP.APGN) v(TH0) v(TH15) v(TH30) i(VDD_SRC)
+tran 100n 10m
+wrdata ../results/gf180_e2e_bringup.csv time v(XTOP.APGP) v(XTOP.APGN) v(TH0) v(TH15) v(TH30)
+meas tran idd_avg avg i(VDD_SRC) from=8m to=10m
+quit
+.endc
+.end

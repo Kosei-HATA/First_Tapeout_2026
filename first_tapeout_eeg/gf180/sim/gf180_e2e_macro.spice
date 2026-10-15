@@ -1,0 +1,50 @@
+* gf180_e2e_macro.spice — GF180 EEG macro top (E2E integration)
+* ELP/ELN (electrodes) -> PGA (chopped, vb low-noise, x8/16/32/64) -> mb5 ΣΔ ADC
+* -> TH0..TH30 thermometer outputs.
+* Clocks/chopper phases come from external pins (digital clock gen is a
+* separate block; see documentation/gf180_e2e_integration.md).
+* Gain bank structure mirrors the proven sky130 eeg_afe_pga:
+*   gain = CIN / CF_total: x8 -> 4p, x16 -> 2p, x32 -> 1p, x64 -> 0.5p.
+
+* ---- PGA with gain select (vb low-noise chopped OTA) ----
+.subckt gf180_afe_pga_ln ELP ELN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 RST VDD33 VSS params: CIN=32p
+CINP ELP INP {CIN}
+CINN ELN INN {CIN}
+* feedback bank, cross-coupled (negative feedback)
+CF64P OUTN INP 0.5p
+CF64N OUTP INN 0.5p
+CFB32P OUTN F32P 0.5p
+CFB32N OUTP F32N 0.5p
+CFB16P OUTN F16P 1.5p
+CFB16N OUTP F16N 1.5p
+CFB8P OUTN F8P 3.5p
+CFB8N OUTP F8N 3.5p
+* select switches connect bank caps to the summing nodes
+XS32P F32P INP S32 NS32 VDD33 VSS gf180_tg_lowq
+XS32N F32N INN S32 NS32 VDD33 VSS gf180_tg_lowq
+XS16P F16P INP S16 NS16 VDD33 VSS gf180_tg_lowq
+XS16N F16N INN S16 NS16 VDD33 VSS gf180_tg_lowq
+XS8P F8P INP S8 NS8 VDD33 VSS gf180_tg_lowq
+XS8N F8N INN S8 NS8 VDD33 VSS gf180_tg_lowq
+* select complements
+BS8 NS8 0 V=v(VDD33)-v(S8)
+BS16 NS16 0 V=v(VDD33)-v(S16)
+BS32 NS32 0 V=v(VDD33)-v(S32)
+* pseudo-resistor bias + reset for the summing nodes
+XPRP INP VCM_REF gf180_pseudo_res
+XRSTP INP VCM_REF RST NRST VDD33 VSS gf180_tg_lowq
+XRSTN INN VCM_REF RST NRST VDD33 VSS gf180_tg_lowq
+BRST NRST 0 V=v(VDD33)-v(RST)
+XPRN INN VCM_REF gf180_pseudo_res
+* chopped OTA core (vb: stage-1 pair/load area x4 for 1/f reduction)
+XAFE INP INN VCM_REF OUTP OUTN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM VDD33 VSS gf180_fd_ota_chopped_full2_ln GWS1=240u GLS1=8u GNFS1=24 GWL1=96u GLL1=8u GNFL1=8
+.ends gf180_afe_pga_ln
+
+* ---- macro top ----
+.subckt gf180_e2e_macro ELP ELN VCM_REF VP VN PH1 NPH1 PH2 NPH2 CMPCK PUP PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 RST VDD33 VSS
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
+XPGA ELP ELN VCM_REF APGP APGN PHII NPHII PHIBI NPHIBI PHIM NPHIM PHIBM NPHIBM S8 S16 S32 S64 RST VDD33 VSS gf180_afe_pga_ln
+XSDM APGP APGN VCM_REF VP VN PH1 NPH1 PH2 NPH2 CMPCK PUP VDD33 VSS
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
++ gf180_sdm3_mod_mb RSET=25k CC=10p
+.ends gf180_e2e_macro

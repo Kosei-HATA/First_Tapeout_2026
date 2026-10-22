@@ -167,7 +167,7 @@ CHOP1           toggles only at e16, every 512/256/128/64/32 frames (1/2/4/8/16 
 | 0x06 | ODR_H | RO | 0x03 | ODR = 1000 SPS = 0x03E8 |
 | 0x07 | ODR_L | RO | 0xE8 | |
 | 0x08 | CHOP_DLY | RW | 0x00 | CHOP_OUT delay in MCLK cycles (0..255) |
-| 0x09 | TEST | RW | 0x00 | Drives TEST_CFG[7:0] |
+| 0x09 | TEST | RW | 0x00 | Drives TEST_CFG[7:0]. The analog test multiplexer (`gf180/tapeout/test/eeg_testmux.spice`) uses [4] = ATP enable and [3:0] = node select (0 AVSS, 1 VCM, 2 VREFP, 3 VREFN, 4 VBN, 5 VBCM, 6 VBN1, 7 VNC1, 8 VPC1, 9 VBPC2, 10 VBNC2, 11 reference-current copy, 12/13 AFE OUTP/OUTN, 14/15 ADC O2P/O2N); [7:5] unused |
 | 0x0A | ANA_TRIM | RW | 0x28 | [3:0] CPF_TRIM (reset 8), [5:4] AFE_IBIAS (reset 2), [7:6] read 0; drive the CPF_TRIM / AFE_IBIAS ports |
 | 0x0B | BLANK | RW | 0x07 | [3:0] BLANK_LEN: blanking after each CHOP_OUT edge in MCLK, 0..15, 0 = no blanking (the pulse also covers 1 MCLK before the edge); [7:4] read 0 |
 | 0x0C | BOOST_TRIM | RW | 0x05 | [1:0] BTRIM_P (reset 1), [3:2] BTRIM_N (reset 1): cascode-booster units 00 = 2, 01 = 4, 10 = 6, 11 = 8; [7:4] read 0; drive the BTRIM_P / BTRIM_N ports |

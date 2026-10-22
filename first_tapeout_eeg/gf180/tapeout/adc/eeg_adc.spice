@@ -1,0 +1,62 @@
+* eeg_adc: the CT 2nd-order 5-bit sigma-delta modulator of the EEG chip (GF180, this
+* rev), from the independent-environment gain-10 loop (import_20261021/adc_gain10_loop)
+* with the changes of tracker B2-B8:
+*   stage 1  RIN 9375 ohm = 32 parallel DAC1-unit resistors (300 kohm ppolyf_u_3k,
+*            100 squares, W 2 um), so RIN/RD1 = 31/32 by construction; OTA1
+*            (gf180_inside_cascode_ota, input pair L 1 um m 1024, eeg_adc_otas.spice)
+*            chopped by CHOP1 through eeg_adc_clk; C1 680.5 pF per side; DAC1
+*            eeg_dac1 (steered cells, common-break drive from DAC_CLK)
+*   stage 2  scaled x10: R21 100 kohm = 3 parallel DAC1-unit resistors; OTA2
+*            (gf180_ct_ota_tel16_cmfb); C2 19.53 pF per side; DAC2 eeg_dac2 (current
+*            steering, SEL2 at e3)
+*   quantizer eeg_quantizer on O2P/O2N (31 comparators, ladder from VREFP/VREFN)
+*   reset    TGs across C1 and C2 while RST = 1 (the integrators start from zero)
+* C1 and C2 are ideal here (MIM in the layout; cap_mim_2f0ff voltage coefficient
+* about 9e-6 /V). 2 pF per integrator output stands for the wiring until PEX.
+*
+* Ports: INP INN (from the AFE output), CHOP1, DAC_CLK, CMP_STROBE, RST NRST,
+* SEL1_0..30, SEL2_0..30 (eeg_digital_top SEL1/SEL2), TH0..TH30 (to eeg_digital_top),
+* VREFP VREFN (filtered, eeg_ref), VCM (CM reference), VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2
+* IDP IDN IQ (eeg_bias), AVDD AVSS, DVDD DVSS (quantizer latches).
+* Needs: eeg_adc_otas.spice, eeg_adc_clk.spice, eeg_dac1.spice, eeg_dac2.spice,
+* eeg_quantizer.spice (all in gf180/tapeout/adc/).
+
+.subckt eeg_adc INP INN CHOP1 DAC_CLK CMP_STROBE RST NRST
++ SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30
++ SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
++ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ AVDD AVSS DVDD DVSS
+* ---- stage 1
+XRINP INP I1P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
+XRINN INN I1N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
+XCLK1 CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS eeg_adc_clk
+XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS
++ gf180_inside_cascode_ota
+C1P O1N I1P 680.51376829979684p
+C1N O1P I1N 680.51376829979684p
+XDAC1 I1P I1N VREFP VREFN SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 DAC_CLK AVDD AVSS eeg_dac1
+XR1P O1N I1P RST NRST AVDD AVSS eeg_adc_rst
+XR1N O1P I1N RST NRST AVDD AVSS eeg_adc_rst
+* ---- stage 2
+XR21P O1P I2P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
+XR21N O1N I2N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
+XOTA2 I2P I2N O2P O2N VCM VBN1 VNC1 VPC1 VBCM1 AVDD AVSS gf180_ct_ota_tel16_cmfb CCOMP=10p
+C2P O2N I2P 19.53125p
+C2N O2P I2N 19.53125p
+XDAC2 I2P I2N SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 IDP IDN VBPC2 VBNC2 AVDD AVSS eeg_dac2
+XR2P O2N I2P RST NRST AVDD AVSS eeg_adc_rst
+XR2N O2P I2N RST NRST AVDD AVSS eeg_adc_rst
+* ---- wiring estimates on the integrator outputs (before layout)
+CW1P O1P AVSS 2p
+CW1N O1N AVSS 2p
+CW2P O2P AVSS 2p
+CW2N O2N AVSS 2p
+* ---- quantizer
+XQ O2P O2N VREFP VREFN CMP_STROBE TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD DVSS eeg_quantizer
+.ends eeg_adc
+
+* integrator reset switch (as rst_tg of the imported deck)
+.subckt eeg_adc_rst A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=1u L=0.28u nf=1
+XP A GN B VDD pfet_03v3 W=2u L=0.28u nf=1
+.ends eeg_adc_rst

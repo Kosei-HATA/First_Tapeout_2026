@@ -13,7 +13,8 @@
 //  0x06  ODR_H       RO      0x03   output data rate 1000 SPS = 0x03E8
 //  0x07  ODR_L       RO      0xE8
 //  0x08  CHOP_DLY    RW      0x00   chop_out delay in MCLK cycles
-//  0x09  TEST        RW      0x00   routed to test_cfg[7:0] (analog test muxes)
+//  0x09  TEST        RW      0x00   routed to test_cfg[7:0]: [4] ATP enable, [3:0] node select
+//                                   (gf180/tapeout/test/eeg_testmux.spice), [7:5] unused
 //  0x0A  ANA_TRIM    RW      0x28   [3:0] CPF_TRIM (reset 8), [5:4] AFE_IBIAS (reset 2),
 //                                   7:6 read 0; plain outputs decoded by the analog side
 //  0x0B  BLANK       RW      0x07   [3:0] BLANK_LEN: CHOP_BLANK width in MCLK (0 = off), 7:4 read 0

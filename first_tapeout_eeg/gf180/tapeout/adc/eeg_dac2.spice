@@ -1,0 +1,79 @@
+* eeg_dac2: DAC2 of the ADC (stage 2 scaled x10, tracker A3/B2), GF180, this rev
+*
+* 31 complementary current-steering cells (gf180/sim/dac2_cell/dac2_cell.spice,
+* verified there): a cascoded PMOS source (+Iu) and a cascoded NMOS sink (-Iu) with
+* minimum-size steering pairs, Iu = 23.4 nA (one 10.67 Meg unit of the resistive DAC2
+* at VREF 0.5 V).
+*   SEL = 1: +Iu into OUTP, -Iu out of OUTN (positive output)
+* D/DB come from SEL through two small inverters (DB first, D one inverter later).
+* The cell's even error per toggle is about the unit current times the D/DB skew,
+* 0.002 fC for 50 ps, against 0.11 fC allowed (errors of stage 2 are shaped by
+* stage 1), so no common-break drive is needed here; DAC2 switches at e3 with SEL2.
+* Bias: 10:1 mirrors from the reference currents of eeg_bias (IDP sinks 234 nA from
+* the PMOS diode, IDN sources 234 nA into the NMOS diode; both scale with 1/R of the
+* reference poly, like R21); cascode gates VBPC 1.8 V, VBNC 1.5 V (eeg_bias divider).
+*
+* Ports: OUTP OUTN (stage-2 virtual grounds), SEL0..SEL30 (eeg_digital_top SEL2),
+* IDP IDN VBPC VBNC (eeg_bias), VDD VSS (AVDD/AVSS).
+
+.subckt eeg_dac2 OUTP OUTN SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9 SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23 SEL24 SEL25 SEL26 SEL27 SEL28 SEL29 SEL30
++  IDP IDN VBPC VBNC VDD VSS
+XPBD IDP IDP VDD VDD pfet_03v3 W=1u L=20u nf=1 m=10
+XNBD IDN IDN VSS VSS nfet_03v3 W=1u L=20u nf=1 m=10
+RBP IDP VBP 1
+RBN IDN VBN 1
+CBP VBP VDD 1p
+CBN VBN VSS 1p
+CBPC VBPC VDD 1p
+CBNC VBNC VSS 1p
+XC0 OUTP OUTN SEL0 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC1 OUTP OUTN SEL1 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC2 OUTP OUTN SEL2 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC3 OUTP OUTN SEL3 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC4 OUTP OUTN SEL4 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC5 OUTP OUTN SEL5 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC6 OUTP OUTN SEL6 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC7 OUTP OUTN SEL7 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC8 OUTP OUTN SEL8 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC9 OUTP OUTN SEL9 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC10 OUTP OUTN SEL10 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC11 OUTP OUTN SEL11 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC12 OUTP OUTN SEL12 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC13 OUTP OUTN SEL13 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC14 OUTP OUTN SEL14 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC15 OUTP OUTN SEL15 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC16 OUTP OUTN SEL16 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC17 OUTP OUTN SEL17 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC18 OUTP OUTN SEL18 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC19 OUTP OUTN SEL19 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC20 OUTP OUTN SEL20 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC21 OUTP OUTN SEL21 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC22 OUTP OUTN SEL22 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC23 OUTP OUTN SEL23 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC24 OUTP OUTN SEL24 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC25 OUTP OUTN SEL25 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC26 OUTP OUTN SEL26 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC27 OUTP OUTN SEL27 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC28 OUTP OUTN SEL28 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC29 OUTP OUTN SEL29 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+XC30 OUTP OUTN SEL30 VBP VBPC VBN VBNC VDD VSS eeg_dac2_unit
+.ends eeg_dac2
+
+* one element: driver (DB = not SEL, D = not DB) and the steering cell
+.subckt eeg_dac2_unit OUTP OUTN SEL VBP VBPC VBN VBNC VDD VSS
+XID DB SEL VDD VSS eeg_dac2_inv
+XIE D DB VDD VSS eeg_dac2_inv
+XPS XS VBP VDD VDD pfet_03v3 W=1u L=20u nf=1
+XPC XP VBPC XS VDD pfet_03v3 W=1u L=1u nf=1
+XPSP OUTP DB XP VDD pfet_03v3 W=0.5u L=0.28u nf=1
+XPSN OUTN D XP VDD pfet_03v3 W=0.5u L=0.28u nf=1
+XNS YS VBN VSS VSS nfet_03v3 W=1u L=20u nf=1
+XNC YN VBNC YS VSS nfet_03v3 W=1u L=1u nf=1
+XNSN OUTN D YN VSS nfet_03v3 W=0.5u L=0.28u nf=1
+XNSP OUTP DB YN VSS nfet_03v3 W=0.5u L=0.28u nf=1
+.ends eeg_dac2_unit
+
+.subckt eeg_dac2_inv Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=1u L=0.28u nf=1
+XN Y A VSS VSS nfet_03v3 W=0.5u L=0.28u nf=1
+.ends eeg_dac2_inv

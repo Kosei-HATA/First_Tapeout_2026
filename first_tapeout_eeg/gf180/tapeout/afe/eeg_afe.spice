@@ -266,16 +266,49 @@ XN A G Y VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
 XP A GN Y VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
 .ends eeg_afe_tg
 
+* Cpf trim: 20/40/80/160 fF per side, switched at the amplifier-output plate
+.subckt eeg_afe_cpftrim WP WN OPI ONI VCM B0 B1 B2 B3 VDD VSS
+XIB0 BN0 B0 VDD VSS eeg_afe_inv s=1
+CTP0 WP XP0 20f
+XTPO0 XP0 OPI B0 BN0 VDD VSS eeg_afe_tg
+XTPV0 XP0 VCM BN0 B0 VDD VSS eeg_afe_tg
+CTN0 WN XN0 20f
+XTNO0 XN0 ONI B0 BN0 VDD VSS eeg_afe_tg
+XTNV0 XN0 VCM BN0 B0 VDD VSS eeg_afe_tg
+XIB1 BN1 B1 VDD VSS eeg_afe_inv s=1
+CTP1 WP XP1 40f
+XTPO1 XP1 OPI B1 BN1 VDD VSS eeg_afe_tg
+XTPV1 XP1 VCM BN1 B1 VDD VSS eeg_afe_tg
+CTN1 WN XN1 40f
+XTNO1 XN1 ONI B1 BN1 VDD VSS eeg_afe_tg
+XTNV1 XN1 VCM BN1 B1 VDD VSS eeg_afe_tg
+XIB2 BN2 B2 VDD VSS eeg_afe_inv s=1
+CTP2 WP XP2 80f
+XTPO2 XP2 OPI B2 BN2 VDD VSS eeg_afe_tg
+XTPV2 XP2 VCM BN2 B2 VDD VSS eeg_afe_tg
+CTN2 WN XN2 80f
+XTNO2 XN2 ONI B2 BN2 VDD VSS eeg_afe_tg
+XTNV2 XN2 VCM BN2 B2 VDD VSS eeg_afe_tg
+XIB3 BN3 B3 VDD VSS eeg_afe_inv s=1
+CTP3 WP XP3 160f
+XTPO3 XP3 OPI B3 BN3 VDD VSS eeg_afe_tg
+XTPV3 XP3 VCM BN3 B3 VDD VSS eeg_afe_tg
+CTN3 WN XN3 160f
+XTNO3 XN3 ONI B3 BN3 VDD VSS eeg_afe_tg
+XTNV3 XN3 VCM BN3 B3 VDD VSS eeg_afe_tg
+.ends eeg_afe_cpftrim
+
 * AFE top: input chopper TGs, Cin, Cf, Cpf, reset switches, DC path, offset DAC,
 * amplifier, output chopper TGs
 .subckt eeg_afe ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
-+ OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS
++ OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 VDD VSS
 CINP WP INP 636p
 CINN WN INN 636p
 CFBP ONI INP 2p
 CFBN OPI INN 2p
-CPFP WP OPI 2.15p
-CPFN WN ONI 2.15p
+CPFP WP OPI 1.99p
+CPFN WN ONI 1.99p
+XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 VDD VSS eeg_afe_cpftrim
 XRSTP INP RST ONI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 XRSTN INN RST OPI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 * INP/INN DC path: switched-capacitor resistor to the opposite output (parallel to Cf),

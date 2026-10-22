@@ -49,7 +49,7 @@ def build(code, corner="typical", temp=27, rl=None, start=False):
     ana = ("tran 10n 40u 0 10n\nlet ibln = i(vmbln)\nprint ibln[length(ibln)-1] v(vbn)[length(v(vbn))-1]"
            if start else "op\nprint @m.xb.xmn1.m0[id] v(vbn) v(vbcm) i(vmbln) i(vmblp) v(xb.gp) v(xb.g1) "
            "@m.xb.xmn1.m0[gm] i(vdd) v(xb.sb) @m.xb.xsu3.m0[id]\n"
-           "print v(vbn1) v(vbcm1) v(vnc1) v(vpc1) i(vmidn) i(vmidp) v(vcm) i(vmiq)")
+           "print v(vbn1) v(vbcm1) v(vnc1) v(vpc1) v(vbpc2) v(vbnc2) i(vmidn) i(vmidp) v(vcm) i(vmiq) i(vmitst)")
     text = f"""* eeg_bias check
 .include {PDK}/design.ngspice
 .lib {PDK}/sm141064.ngspice {corner}
@@ -75,8 +75,9 @@ XDLN IDNL IDNL 0 0 nfet_03v3 W=1u L=20u nf=1 m=10
 VMIDP IDPL IDP 0
 XDLP IDPL IDPL VDD VDD pfet_03v3 W=1u L=20u nf=1 m=10
 VMIQ IQ IQL 0
+VMITST ITST 0 1
 XDQ IQL IQL 0 0 nfet_03v3 W=4u L=2u nf=1 m=8
-XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 IDP IDN IQ VCM VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias
+XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias
 .control
 set noaskquit
 {ana}
@@ -111,8 +112,9 @@ def main():
               f"{v['v(vbcm)']:.4f} | {v['i(vmbln)']*1e6:.1f} | {v['i(vmblp)']*1e6:.1f} | {-v['i(vdd)']*1e6:.0f} | "
               f"SB {v['v(xb.sb)']:.3f} V, start-up {v['@m.xb.xsu3.m0[id]']*1e9:.1f} nA | "
               f"ADC: VBN1 {v['v(vbn1)']:.4f}, VBCM1 {v['v(vbcm1)']:.4f}, VNC1 {v['v(vnc1)']:.3f}, VPC1 {v['v(vpc1)']:.3f}, "
+              f"VBPC2 {v['v(vbpc2)']:.3f}, VBNC2 {v['v(vbnc2)']:.3f}, "
               f"DAC2 ref {v['i(vmidn)']*1e9:.0f}/{v['i(vmidp)']*1e9:.0f} nA, VCM {v['v(vcm)']:.4f}, "
-              f"IQ {v['i(vmiq)']*1e6:.2f} uA |",
+              f"IQ {v['i(vmiq)']*1e6:.2f} uA, ITST {v['i(vmitst)']*1e6:.2f} uA (sourced into 1 V) |",
               flush=True)
 
 

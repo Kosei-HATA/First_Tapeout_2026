@@ -22,7 +22,7 @@ every chopper period and HD2..HD5 come from an FFT over 4 signal periods after 0
 (the method of afe_chop_distortion.py).
 
 Usage: python3 afe_offset.py [--cases 0:0 0:4 300:4 m300:4 ...] [--rs 100] [--blank 7]
-       [--sine 0.943]
+       [--sine 0.943] [--clkdrv] [--cpf 8]
        case = offset_mV:range[:magnitude]  (m for minus; range 0 = DAC off, 1..4 =
        +-39/79/159/318 mV)
 """
@@ -52,7 +52,7 @@ def mag_for(vos_mv, rng):
     return min(int(round(abs(vos_mv) / UNIT_MV)), 2 ** nb - 1) if nb else 0
 
 
-def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False):
+def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8):
     a, b = afe_chop_gain.clocks(TCH)
     ao, bo = afe_chop_gain.clocks(TCH, blank)
     tr = afe_chop_gain.TR
@@ -60,6 +60,7 @@ def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False)
     sign = "VDD" if vos_mv < 0 else "0"
     bits = " ".join("VDD" if (mag >> k) & 1 else "0" for k in range(10))
     ens = " ".join("VDD" if g < rng else "0" for g in range(4))
+    cpfb = " ".join("VDD" if (cpf >> k) & 1 else "0" for k in range(4))  # CPF_TRIM code
     if clkdrv:
         mclk = 1 / 32.768e6
         chop = f"PULSE(0 3.3 {TCH / 2:.6e} 0.5n 0.5n {TCH / 2 - 0.5e-9:.6e} {TCH:.6e})"
@@ -99,7 +100,7 @@ CLOADN OUTN 0 4p
 RLOADP OUTP CM 9375
 RLOADN OUTN CM 9375
 XA ELP ELN OUTP OUTN CM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
-+ OFPH {sign} {bits} {ens} VDD 0 eeg_afe
++ OFPH {sign} {bits} {ens} {cpfb} VDD 0 eeg_afe
 {clocks}
 .nodeset v(xa.inp)=1.65 v(xa.inn)=1.65 v(xa.opi)=1.65 v(xa.oni)=1.65 v(outp)=1.65 v(outn)=1.65
 .control
@@ -114,14 +115,15 @@ quit
 """
 
 
-def run(case, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False):
+def run(case, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8):
     vos, rng, mag = case
     tag = "" if afe == AFE else "_" + os.path.splitext(os.path.basename(afe))[0]
     tag += f"_sin{sine_mv:g}" if sine_mv else ""
     tag += "_clkdrv" if clkdrv else ""
+    tag += f"_cpf{cpf}" if cpf != 8 else ""
     d = os.path.join(HERE, "runs", f"offset{tag}_{vos:+g}mV_r{rng}_m{mag}_rs{rs:g}_bl{blank * 32.768e6:.0f}")
     os.makedirs(d, exist_ok=True)
-    open(os.path.join(d, "tb.spice"), "w").write(deck(vos, rng, mag, rs, tstop, blank, afe, sine_mv, clkdrv))
+    open(os.path.join(d, "tb.spice"), "w").write(deck(vos, rng, mag, rs, tstop, blank, afe, sine_mv, clkdrv, cpf))
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
     open(os.path.join(d, "run.log"), "w").write(r.stdout + r.stderr)
     x = np.loadtxt(os.path.join(d, "tr.csv"))
@@ -148,6 +150,7 @@ def main():
     ap.add_argument("--afe", default=AFE, help="AFE netlist (default: the written eeg_afe.spice)")
     ap.add_argument("--sine", type=float, default=0.0, help="sine amplitude (mV) at fch/64 for distortion")
     ap.add_argument("--clkdrv", action="store_true", help="clocks from eeg_afe_clk (B8) instead of ideal PWL")
+    ap.add_argument("--cpf", type=int, default=8, help="CPF_TRIM code 0..15 (Cpf = 1.99 pF + code x 20 fF)")
     a = ap.parse_args()
     cases = []
     for c in a.cases:
@@ -162,7 +165,7 @@ def main():
         print("|---|---|---|---|---|---|---|---|---|")
         with ThreadPoolExecutor(len(cases)) as ex:
             for (vos, rng, mag), _avg, h, vamax in ex.map(
-                    lambda c: run(c, a.rs, 0.5e-3 + 4 * 64 * TCH, blank, a.afe, a.sine, a.clkdrv), cases):
+                    lambda c: run(c, a.rs, 0.5e-3 + 4 * 64 * TCH, blank, a.afe, a.sine, a.clkdrv, a.cpf), cases):
                 print(f"| {vos:+g} | {rng} | {mag} | {h[0] / (a.sine * 1e-3):.1f} | "
                       + " | ".join(f"{20 * np.log10(x / h[0]):.1f}" for x in h[1:]) + f" | {vamax:.2f} |", flush=True)
         return
@@ -171,7 +174,8 @@ def main():
           "| output p-p outside blanking (mV) | max abs(OPI-ONI) (V) |")
     print("|---|---|---|---|---|---|---|---|")
     with ThreadPoolExecutor(len(cases)) as ex:
-        for (vos, rng, mag), avg, pp, vamax in ex.map(lambda c: run(c, a.rs, a.tstop, blank, a.afe, 0.0, a.clkdrv), cases):
+        for (vos, rng, mag), avg, pp, vamax in ex.map(lambda c: run(c, a.rs, a.tstop, blank, a.afe, 0.0, a.clkdrv,
+                                                                     a.cpf), cases):
             canc = (1 if vos >= 0 else -1) * mag * UNIT_MV
             print(f"| {vos:+g} | {rng} | {mag} | {canc:+.2f} | {avg * 1e3:+.1f} | "
                   f"{avg / GAIN * 1e3:+.3f} | {pp * 1e3:.1f} | {vamax:.2f} |", flush=True)

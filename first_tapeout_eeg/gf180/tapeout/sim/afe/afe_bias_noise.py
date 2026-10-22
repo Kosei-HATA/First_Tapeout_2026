@@ -47,7 +47,7 @@ def deck(corner, temp, code, rs, afe=AFE, nbln=4, nblp=4, cdsl=0.0, rtau=0.0, ca
     t = re.sub(r"^XDUT .*gf180_ccia_local_feedback$",
                "XDUT VINP VINN WP WN INP INN OPI ONI OUTP OUTN CM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB "
                "CDA NCDA CDB NCDB VDD 0 eeg_afe_amp\n"
-               "VRP VREFP 0 1.9\nVRN VREFN 0 1.4\nXB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 IDP IDN IQ VCMX VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias\nXDQ IQ IQ 0 0 nfet_03v3 W=4u L=2u nf=1 m=8\n"
+               "VRP VREFP 0 1.9\nVRN VREFN 0 1.4\nVITST ITST 0 1\nXB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCMX VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias\nXDQ IQ IQ 0 0 nfet_03v3 W=4u L=2u nf=1 m=8\n"
                f"VIB1 IB1 0 {3.3 * ((code >> 1) & 1)}\nVIB0 IB0 0 {3.3 * (code & 1)}\n"
                f"VBP1 BP1 0 {3.3 * ((bcode(nbln) >> 1) & 1)}\nVBP0 BP0 0 {3.3 * (bcode(nbln) & 1)}\n"
                f"VBN1 BN1 0 {3.3 * ((bcode(nblp) >> 1) & 1)}\nVBN0 BN0 0 {3.3 * (bcode(nblp) & 1)}", t, flags=re.M)

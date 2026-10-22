@@ -18,8 +18,12 @@
 *   VBN1  ADC OTA tail gate (5 units into W10/L1 x6: 26 uA per W10/L1 finger)
 *   VBCM1 ADC CMFB tail gate (1 unit into W10/L2 x3)
 *   VNC1, VPC1  ADC cascode gates, 2.0 V and 1.7 V from a poly divider (about 10 uA)
+*   VBPC2, VBNC2  DAC2 cascode gates (gf180/sim/dac2_cell), 1.8 V and 1.5 V from the
+*         same divider (10/22)
 *   IQ    sources one unit (31.25 uA) into the quantizer's preamp-tail NMOS diode
 *         (gf180/tapeout/adc/eeg_quantizer.spice)
+*   ITST  sources one unit for the test pad (eeg_testmux.spice steers it to ATP or to
+*         AVSS), so the reference current can be measured on silicon (10/22)
 *   IDN   sources 234 nA into the DAC2 bias NMOS diode; IDP sinks 234 nA from the DAC2
 *         bias PMOS diode. Both scale with I0, i.e. with 1/R of the reference poly, so
 *         the DAC2 coefficient (current x R21) tracks if R21 uses the same poly.
@@ -48,7 +52,8 @@ XNA Y A M VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
 XNB M B VSS VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
 .ends eeg_bias_nand2
 
-.subckt eeg_bias VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 IDP IDN IQ VCM VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD VSS
+.subckt eeg_bias VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP VREFN IB1 IB0 BP1 BP0
++ BN1 BN0 VDD VSS
 * beta multiplier
 XMN1 G1 G1 VSS VSS nfet_03v3 W=10u L=4u nf=1 m=32
 XMN2 GP G1 S2 VSS nfet_03v3 W=10u L=4u nf=1 m=128
@@ -116,14 +121,21 @@ XMA2 NA2 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 XDA2 NA2 NA2 VSS VSS nfet_03v3 W=10u L=2u nf=1 m=3
 RVBCM1 NA2 VBCM1 1k
 CVBCM1 VBCM1 VSS 10p
-* ADC cascode gates: poly divider 3.3 -> 2.0 (VNC1) -> 1.7 (VPC1) -> 0 V, about 10 uA
+* cascode gates: poly divider 3.3 -> 2.0 (VNC1) -> 1.8 (VBPC2) -> 1.7 (VPC1) -> 1.5 (VBNC2)
+* -> 0 V, about 10 uA
 XRC1 VDD VNC1 VSS ppolyf_u_3k r_length=86.7u r_width=2u
-XRC2 VNC1 VPC1 VSS ppolyf_u_3k r_length=20u r_width=2u
-XRC3 VPC1 VSS VSS ppolyf_u_3k r_length=113.3u r_width=2u
+XRC2 VNC1 VBPC2 VSS ppolyf_u_3k r_length=13.33u r_width=2u
+XRC2B VBPC2 VPC1 VSS ppolyf_u_3k r_length=6.67u r_width=2u
+XRC3 VPC1 VBNC2 VSS ppolyf_u_3k r_length=13.33u r_width=2u
+XRC3B VBNC2 VSS VSS ppolyf_u_3k r_length=100u r_width=2u
 CVNC1 VNC1 VSS 10p
 CVPC1 VPC1 VSS 10p
+CVBPC2 VBPC2 VSS 10p
+CVBNC2 VBNC2 VSS 10p
 * quantizer preamp tails: one unit into the quantizer's NMOS diode
 XMQ IQ GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+* test-pad copy of the unit current
+XMT ITST GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 * DAC2 reference currents (234 nA each, tracking 1/R like the poly R21): a PMOS at the
 * unit current density (W1/L6.2) sources IDN into the DAC2 NMOS diode; a second copy
 * feeds a local NMOS diode whose mirror sinks IDP from the DAC2 PMOS diode

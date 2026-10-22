@@ -156,8 +156,8 @@ def brk(o):
     bits = [0, 0, 1, 0, 1, 0]
     sels = [bits] + [[1] * nf if i < 15 else [0] * nf for i in range(1, 31)]
     x = run(o, f"brk_{o.corner}{o.temp:g}", sels, nf,
-            save="v(xd.brk) v(xd.xc0.d) v(xd.xc0.db)")
-    t, b, dd, ddb = x[:, 0], x[:, 1], x[:, 3], x[:, 5]
+            save="v(xd.brk) v(xd.xc0.d) v(xd.xc0.db) v(xd.brkl) v(xd.xc0.q) v(xd.xc0.qb)")
+    t, b, dd, ddb, bl, q, qb = x[:, 0], x[:, 1], x[:, 3], x[:, 5], x[:, 7], x[:, 9], x[:, 11]
 
     def cross(v, lvl, rising, after):
         m = t > after
@@ -179,6 +179,11 @@ def brk(o):
     out["BRK to D fall, 1 -> 0 (ns)"] = (cross(dd, VDD / 2, False, e3 - 1e-9) - b3) * 1e9
     out["D rise after BRK fall, 0 -> 1 (ns)"] = (cross(dd, VDD / 2, True, e2 - 1e-9)
                                                  - cross(b, VDD / 2, False, b2)) * 1e9
+    # the latch may only move after every switch is off, and must be settled at the end
+    out["BRK rise to BRKL rise (ns)"] = (cross(bl, VDD / 2, True, e2 - 1e-9) - b2) * 1e9
+    out["BRK rise to Q rise, 0 -> 1 (ns)"] = (cross(q, VDD / 2, True, e2 - 1e-9) - b2) * 1e9
+    out["BRK rise to QB rise, 1 -> 0 (ns)"] = (cross(qb, VDD / 2, True, e3 - 1e-9) - b3) * 1e9
+    out["BRKL fall to BRK fall (ns)"] = (cross(b, VDD / 2, False, b2) - cross(bl, VDD / 2, False, b2)) * 1e9
     return out
 
 

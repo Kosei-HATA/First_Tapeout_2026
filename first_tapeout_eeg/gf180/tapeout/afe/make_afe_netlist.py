@@ -7,8 +7,9 @@ Configuration (documentation/gf180_afe_noise_20261022.md):
   NMOS input pair L 1.5 um, PMOS input pair L 0.28 um, bias current x3 (NMOS
   tail m 768), input TG m 256, output TG m 8, regulated cascodes (one
   common-source booster per cascode, mirror loads L 8 um), Cin 636p, Cf 2p,
-  Cpf 2.15p (trim array to be added), 128 kHz chopping, output hold capacitors
-  30 pF per side for output-chopper blanking.
+  Cpf 2.15p at CPF_TRIM = 8 (1.99 pF fixed plus a 4-bit array of 20/40/80/160 fF, 1.99 to
+  2.29 pF), 128 kHz chopping, output hold capacitors 30 pF per side for output-chopper
+  blanking.
 
 Ports of eeg_afe:
   ELP ELN        electrodes (chip pins)
@@ -27,6 +28,10 @@ Ports of eeg_afe:
   OFS            offset-DAC sign (static, from the registers)
   OFM0..OFM9     offset-DAC magnitude (static)
   OFEN0..OFEN3   offset-DAC range groups (static): EN0 bits 0-6, EN1 bit 7, EN2 bit 8, EN3 bit 9
+  CPF0..CPF3     CPF_TRIM (static): Cpf = 1.99 pF + code x 20 fF (reset 8 = 2.15 pF). Each
+                 trim capacitor hangs from WP/WN and is switched at its other plate to the
+                 amplifier output (bit 1) or to VCM (bit 0), so no switch touches the
+                 high-impedance input side; an off capacitor only adds at most 0.3 pF to WP/WN
   VDD VSS
 Electrode-offset cancellation (tracker B7, documentation/gf180_electrode_dc_20261022.md):
 eeg_afe_offdac cancels (1 - 2 S) x magnitude x 0.311 mV (differential, at the
@@ -53,6 +58,8 @@ import afe_noise  # noqa: E402
 OUT = os.path.join(HERE, "eeg_afe.spice")
 PARAMS = dict(core=1, tg=256, ln=1.5, lp=0.28, mp=1.0, itail=3, scasc=1, tgo=8)
 CPF = 2.15e-12
+CPF_BASE = 1.99e-12  # fixed part of Cpf; CPF_TRIM adds code x 20 fF (code 8 = 2.15 pF)
+CPF_STEP = 20e-15
 OFF_CU = 60e-15  # offset-DAC unit capacitor (MIM 5.5 x 5.5 um)
 OFF_BITS = 10
 OFF_GROUP = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3]  # range group of each magnitude bit
@@ -164,19 +171,38 @@ def offdac():
     return "\n".join(L)
 
 
+def cpftrim():
+    """Cpf trim array: per side and bit, a capacitor from WP (WN) to a switched plate
+    that a TG connects to OPI (ONI) when the bit is 1 and to VCM when it is 0."""
+    L = ["", "* Cpf trim: 20/40/80/160 fF per side, switched at the amplifier-output plate",
+         ".subckt eeg_afe_cpftrim WP WN OPI ONI VCM B0 B1 B2 B3 VDD VSS"]
+    for k in range(4):
+        c = CPF_STEP * 2 ** k
+        L += [f"XIB{k} BN{k} B{k} VDD VSS eeg_afe_inv s=1",
+              f"CTP{k} WP XP{k} {c * 1e15:g}f",
+              f"XTPO{k} XP{k} OPI B{k} BN{k} VDD VSS eeg_afe_tg",
+              f"XTPV{k} XP{k} VCM BN{k} B{k} VDD VSS eeg_afe_tg",
+              f"CTN{k} WN XN{k} {c * 1e15:g}f",
+              f"XTNO{k} XN{k} ONI B{k} BN{k} VDD VSS eeg_afe_tg",
+              f"XTNV{k} XN{k} VCM BN{k} B{k} VDD VSS eeg_afe_tg"]
+    L += [".ends eeg_afe_cpftrim", ""]
+    return "\n".join(L)
+
+
 def top():
     bits = " ".join(f"OFM{k}" for k in range(OFF_BITS))
     return f"""
 * AFE top: input chopper TGs, Cin, Cf, Cpf, reset switches, DC path, offset DAC,
 * amplifier, output chopper TGs
 .subckt eeg_afe ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
-+ OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS
++ OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 VDD VSS
 CINP WP INP 636p
 CINN WN INN 636p
 CFBP ONI INP 2p
 CFBN OPI INN 2p
-CPFP WP OPI {CPF * 1e12:g}p
-CPFN WN ONI {CPF * 1e12:g}p
+CPFP WP OPI {CPF_BASE * 1e12:g}p
+CPFN WN ONI {CPF_BASE * 1e12:g}p
+XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 VDD VSS eeg_afe_cpftrim
 XRSTP INP RST ONI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 XRSTN INN RST OPI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 * INP/INN DC path: switched-capacitor resistor to the opposite output (parallel to Cf),
@@ -203,7 +229,7 @@ def write(out=None):
 * booster load L {afe_noise.LOAD_L:g} um). Do not edit by hand; change the generator and rerun.
 """
     out = out or OUT
-    open(out, "w").write(head + body() + offdac() + top())
+    open(out, "w").write(head + body() + offdac() + cpftrim() + top())
     return out
 
 
@@ -234,7 +260,7 @@ CLOADN OUTN 0 4p
 RLOADP OUTP CM 9375
 RLOADN OUTN CM 9375
 XA ELP ELN OUTP OUTN CM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
-+ VDD 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VDD 0 eeg_afe
++ VDD 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VDD VDD 0 eeg_afe
 VCIA CIA 0 3.3
 VNCIA NCIA 0 0
 VCIB CIB 0 0

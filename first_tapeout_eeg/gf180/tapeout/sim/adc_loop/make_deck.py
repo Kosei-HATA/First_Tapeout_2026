@@ -34,6 +34,9 @@ Changes against the import (all needed for long, robust runs):
     ovl 25 ns). The first edge is --chop1-phase frames after a DAC load.
     --chop1-drv drives OTA1 through the transistor driver eeg_adc_clk
     (gf180/tapeout/adc/eeg_adc_clk.spice) from a CHOP1 square wave instead.
+  * out.csv holds the waveforms interpolated to --wstep (default 20 ns, linearize):
+    writing every solver point made 3 GB per 8 ms (11.6 GB per 32 ms) and filled
+    the disk on 10/22. The analyses sample once per frame.
   * --ota1 rev (default) takes the OTAs from gf180/tapeout/adc/eeg_adc_otas.spice
     (OTA1 input pair L 1 um, m 1024, since 10/22); --ota1 import keeps the import's
     otas.spice (L 2 um, m 2048), which all loop runs before that used.
@@ -41,7 +44,7 @@ Changes against the import (all needed for long, robust runs):
 Usage: python3 make_deck.py <out_dir> [--tstop 1.25e-3] [--fsig 1e3] [--amp 0.3]
        [--dac2 cells|ideal] [--quant model|tr|ideal]
        [--chop1 0|<fch>] [--chop1-phase 0.5] [--dead 15e-9] [--ovl 25e-9] [--chop1-drv]
-       [--ota1 rev|import]
+       [--ota1 rev|import] [--wstep 20e-9]
 Then: (cd <out_dir> && ngspice -b circuit.spice) -> out.csv
 """
 import argparse
@@ -89,7 +92,10 @@ def chop1_sources(fch, phase, dead, ovl, drv=False):
             p = 1 / fch
             te = T0_LOAD + (1 + phase) * T
             ch = pulse(3.3, 0, te, p / 2, p, 0.5e-9)
-        return (f".include {ACLK}\nVCHOP1 CHOP1 0 {ch}\nVACLK VACLK 0 3.3\n"
+        # the driver's supply through 1 ohm and 200 pF like a real decoupled rail; an
+        # ideal source stopped a 4 kHz run at a chopper edge (timestep too small)
+        return (f".include {ACLK}\nVCHOP1 CHOP1 0 {ch}\nVACLKS VACLKS 0 3.3\nRACLK VACLKS VACLK 1\n"
+                "CACLK VACLK 0 200p\n"
                 "XACLK CHOP1 CIA_DRV NCIA_DRV CIB_DRV NCIB_DRV CDA_DRV NCDA_DRV CDB_DRV NCDB_DRV VACLK 0 eeg_adc_clk")
     if fch == 0:
         return "VIA_DRV CIA_DRV 0 3.3\nVIB_DRV CIB_DRV 0 0\nVDA_DRV CDA_DRV 0 3.3\nVDB_DRV CDB_DRV 0 0"
@@ -125,6 +131,8 @@ def main():
     ap.add_argument("--ovl", type=float, default=25e-9, help="drain-commutator overlap (s)")
     ap.add_argument("--chop1-drv", action="store_true", help="OTA1 chopper through eeg_adc_clk")
     ap.add_argument("--ota1", choices=["rev", "import"], default="rev")
+    ap.add_argument("--wstep", type=float, default=20e-9,
+                    help="out.csv interval (s); the solver's step is still capped at 1 ns")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     shutil.copy(OTAS_REV if a.ota1 == "rev" else os.path.join(IMPORT, "otas.spice"),
@@ -185,7 +193,8 @@ def main():
 .control
 set noaskquit
 save time v(sig) v(o1p) v(o1n) v(i1p) v(i1n) v(o2p) v(o2n) v(i2p) v(i2n) v(norm1) i(vdd_src)
-tran 5n {a.tstop} 0 1e-09
+tran {a.wstep:g} {a.tstop} 0 1e-09
+linearize
 wrdata out.csv v(sig) v(o1p) v(o1n) v(i1p) v(i1n) v(o2p) v(o2n) v(i2p) v(i2n) v(norm1) i(vdd_src)
 quit
 .endc

@@ -24,9 +24,24 @@ Changes against the import (all needed for long, robust runs):
     The ladder runs from VREFP/VREFN = 1.65 V +- VREF/2, IQ is 31.25 uA.
   * --quant ideal: the same, with ideal comparators sampled at the strobe
     (quantizer_ideal.spice), the reference for --quant tr.
+  * OTA1 chopper: the import drove it with tanh sources that toggle only four
+    times (until 33 us), so OTA1 was in effect unchopped. Here --chop1 0 (default)
+    holds phase A for the whole run; --chop1 <fch> chops for the whole run with
+    the import's edge order around each nominal edge t_e: drain commutator of the
+    new phase on at t_e - ovl/2, input TG of the old phase off at t_e - dead/2,
+    input TG of the new phase on at t_e + dead/2, drain commutator of the old
+    phase off at t_e + ovl/2 (50 % points, 2 ns edges; import: dead 15 ns,
+    ovl 25 ns). The first edge is --chop1-phase frames after a DAC load.
+    --chop1-drv drives OTA1 through the transistor driver eeg_adc_clk
+    (gf180/tapeout/adc/eeg_adc_clk.spice) from a CHOP1 square wave instead.
+  * --ota1 rev (default) takes the OTAs from gf180/tapeout/adc/eeg_adc_otas.spice
+    (OTA1 input pair L 1 um, m 1024, since 10/22); --ota1 import keeps the import's
+    otas.spice (L 2 um, m 2048), which all loop runs before that used.
 
 Usage: python3 make_deck.py <out_dir> [--tstop 1.25e-3] [--fsig 1e3] [--amp 0.3]
        [--dac2 cells|ideal] [--quant model|tr|ideal]
+       [--chop1 0|<fch>] [--chop1-phase 0.5] [--dead 15e-9] [--ovl 25e-9] [--chop1-drv]
+       [--ota1 rev|import]
 Then: (cd <out_dir> && ngspice -b circuit.spice) -> out.csv
 """
 import argparse
@@ -38,6 +53,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
 IMPORT = os.path.join(REPO, "gf180", "tapeout", "import_20261021", "adc_gain10_loop")
 CELL = os.path.join(REPO, "gf180", "sim", "dac2_cell", "dac2_cell.spice")
+OTAS_REV = os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_adc_otas.spice")
+ACLK = os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_adc_clk.spice")
 QUANT = {"tr": (os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_quantizer.spice"), "eeg_quantizer"),
          "ideal": (os.path.join(HERE, "quantizer_ideal.spice"), "eeg_quantizer_ideal")}
 PDK = os.path.expanduser("~/.ciel/ciel/gf180mcu/versions/"
@@ -58,6 +75,35 @@ def events(tstop):
     return "\n".join(lines) + "\n"
 
 
+def pulse(v1, v2, t50, w50, per, tr=2e-9):
+    """PULSE from v1 to v2 whose first 50 % crossing is at t50, 50 % width w50."""
+    return f"PULSE({v1} {v2} {t50 - tr / 2:.10e} {tr:g} {tr:g} {w50 - tr:.10e} {per:.10e})"
+
+
+def chop1_sources(fch, phase, dead, ovl, drv=False):
+    """OTA1 chopper drives (CIA_DRV ... CDB_DRV); phase A = CIA/CDA high."""
+    if drv:  # transistor driver from CHOP1; it drives the complements as well
+        if fch == 0:
+            ch = "3.3"
+        else:
+            p = 1 / fch
+            te = T0_LOAD + (1 + phase) * T
+            ch = pulse(3.3, 0, te, p / 2, p, 0.5e-9)
+        return (f".include {ACLK}\nVCHOP1 CHOP1 0 {ch}\nVACLK VACLK 0 3.3\n"
+                "XACLK CHOP1 CIA_DRV NCIA_DRV CIB_DRV NCIB_DRV CDA_DRV NCDA_DRV CDB_DRV NCDB_DRV VACLK 0 eeg_adc_clk")
+    if fch == 0:
+        return "VIA_DRV CIA_DRV 0 3.3\nVIB_DRV CIB_DRV 0 0\nVDA_DRV CDA_DRV 0 3.3\nVDB_DRV CDB_DRV 0 0"
+    p = 1 / fch
+    if abs(p / 2 / T - round(p / 2 / T)) > 1e-9:
+        raise SystemExit("--chop1: the half period must be a whole number of frames")
+    te = T0_LOAD + (1 + phase) * T  # first A->B edge
+    return "\n".join([
+        f"VIA_DRV CIA_DRV 0 {pulse(3.3, 0, te - dead / 2, p / 2 + dead, p)}",
+        f"VIB_DRV CIB_DRV 0 {pulse(0, 3.3, te + dead / 2, p / 2 - dead, p)}",
+        f"VDA_DRV CDA_DRV 0 {pulse(3.3, 0, te + ovl / 2, p / 2 - ovl, p)}",
+        f"VDB_DRV CDB_DRV 0 {pulse(0, 3.3, te - ovl / 2, p / 2 + ovl, p)}"])
+
+
 def sub(pattern, repl, text, count=1):
     new, n = re.subn(pattern, repl, text, flags=re.M)
     if n < count:
@@ -73,9 +119,16 @@ def main():
     ap.add_argument("--amp", type=float, default=0.3)
     ap.add_argument("--dac2", choices=["cells", "ideal"], default="cells")
     ap.add_argument("--quant", choices=["model", "tr", "ideal"], default="model")
+    ap.add_argument("--chop1", type=float, default=0.0, help="OTA1 chopper frequency (Hz), 0 = phase A")
+    ap.add_argument("--chop1-phase", type=float, default=0.5, help="first edge, frames after a DAC load")
+    ap.add_argument("--dead", type=float, default=15e-9, help="input-TG dead time (s)")
+    ap.add_argument("--ovl", type=float, default=25e-9, help="drain-commutator overlap (s)")
+    ap.add_argument("--chop1-drv", action="store_true", help="OTA1 chopper through eeg_adc_clk")
+    ap.add_argument("--ota1", choices=["rev", "import"], default="rev")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    shutil.copy(os.path.join(IMPORT, "otas.spice"), a.out)
+    shutil.copy(OTAS_REV if a.ota1 == "rev" else os.path.join(IMPORT, "otas.spice"),
+                os.path.join(a.out, "otas.spice"))
     q = open(os.path.join(IMPORT, "quantizer.spice")).read()
     q = sub(r"^\.model ADC33 adc_bridge \(in_low=0\.99 in_high=2\.31 ",
             ".model ADC33 adc_bridge (in_low=1.65 in_high=1.65 ", q)
@@ -88,6 +141,9 @@ def main():
     txt = sub(r"^\.options .*$", ".options sparse method=trap maxord=2 reltol=1e-5 "
               "vntol=1e-7 abstol=1e-12 chgtol=1e-16 bypass=0", txt)
     txt = sub(r"^VSIG .*$", f"VSIG SIG 0 SIN(0 {a.amp} {a.fsig} 1.1u)", txt)
+    txt = sub(r"^BIA_DRV .*\n(ENCIA .*\n)BIB_DRV .*\n(ENCIB .*\n)BDA_DRV .*\n(ENCDA .*\n)BDB_DRV .*\n(ENCDB .*)$",
+              lambda m: chop1_sources(a.chop1, a.chop1_phase, a.dead, a.ovl, a.chop1_drv) + "\n"
+              + ("" if a.chop1_drv else "".join(m.groups())), txt)
     for b, v in (("VBN1", ".85"), ("VNC1", "2"), ("VPC1", "1.7"), ("VBCM1", ".82")):
         txt = sub(rf"^{b} {b} 0 {re.escape(v)}$", f"{b} {b}S 0 {v}\nR{b} {b}S {b} 1k\nC{b} {b} 0 10p", txt)
     # the ideal CM source carries the DAC return currents and stalled the step control
@@ -136,7 +192,8 @@ quit
 .end
 """
     open(os.path.join(a.out, "circuit.spice"), "w").write(txt)
-    print(f"wrote {a.out}/circuit.spice (dac2={a.dac2}, quant={a.quant}, tstop={a.tstop})")
+    print(f"wrote {a.out}/circuit.spice (dac2={a.dac2}, quant={a.quant}, tstop={a.tstop}, "
+          f"chop1={a.chop1:g}{' driver' if a.chop1_drv else ''}, ota1={a.ota1})")
 
 
 if __name__ == "__main__":

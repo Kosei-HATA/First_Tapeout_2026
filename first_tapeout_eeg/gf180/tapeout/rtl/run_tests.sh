@@ -32,7 +32,7 @@ BUILD=build
 LOGS=$BUILD/logs
 mkdir -p "$LOGS"
 
-RTL="eeg_clkgen.sv eeg_therm2bin.sv eeg_dwa.sv eeg_rnd_sat.sv eeg_cic3.sv
+RTL="eeg_clkgen.sv eeg_chop1.sv eeg_therm2bin.sv eeg_dwa.sv eeg_rnd_sat.sv eeg_cic3.sv
      eeg_fifo.sv eeg_regs.sv eeg_spi_slave.sv eeg_raw.sv eeg_digital_top.sv"
 IVFLAGS="-g2012 -Wall -I tb"
 
@@ -90,6 +90,7 @@ fi
 run_sim therm2bin   tb_therm2bin "" ""
 run_sim dwa         tb_dwa       "" ""
 run_sim clkgen      tb_clkgen    "" ""
+run_sim chop1       tb_chop1     "" ""
 run_sim rnd_sat     tb_rnd_sat   "" "+vec=$BUILD/rnd_sat.vec"
 run_sim cic_impulse tb_cic       "" "+ops=$BUILD/cic_impulse.ops +gold=$BUILD/cic_impulse.gold +name=impulse +gaps"
 run_sim cic_step    tb_cic       "" "+ops=$BUILD/cic_step.ops +gold=$BUILD/cic_step.gold +name=step +gaps"

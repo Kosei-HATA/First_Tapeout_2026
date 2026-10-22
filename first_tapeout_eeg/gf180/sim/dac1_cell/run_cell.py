@@ -8,7 +8,8 @@ differential charge 2*Iu*T = 1.627 pC, i.e. 0.016 fC (behavioral model:
 1e-5 -> 107.5 dB with all elements erring in the same direction).
 
 Usage: python3 run_cell.py [--skew ps] [--voff mV] [--corner c] [--temp C]
-       [--mc seeds] [--rmis frac] [--tol A|B|C] [--tr ns]
+       [--mc seeds] [--rmis frac] [--tol A|B|C] [--tr ns] [--arch switched|steered]
+       [--gap ps] [--brk ps]
 --rmis applies a static P/N resistor mismatch (the PDK has no local resistor
 mismatch model). Outputs go to ./runs/ (ignored by git).
 """
@@ -72,6 +73,35 @@ XSNN XN D  OUTN 0 nfet_03v3 W={w}u L=0.28u nf=1
 XSNP XN DB OUTP 0 nfet_03v3 W={w}u L=0.28u nf=1"""
 
 
+def pattern_pwl(bits, t0, tr, skew=0.0, invert=False, gap=0.0):
+    """D (or DB with invert) as a PWL; gap delays every rising edge, so D and DB
+    do not overlap (both low for gap at each toggle, break-before-make)."""
+    pts = [(0.0, VDD * ((1 - bits[0]) if invert else bits[0]))]
+    for k in range(1, len(bits)):
+        if bits[k] != bits[k - 1]:
+            a = (1 - bits[k - 1]) if invert else bits[k - 1]
+            b = (1 - bits[k]) if invert else bits[k]
+            t = t0 + k * T + skew + (gap if b > a else 0.0)
+            pts += [(t, VDD * a), (t + tr, VDD * b)]
+    return " ".join(f"{t:.12e} {v:.6g}" for t, v in pts)
+
+
+def pattern_pwl_break(bits, t0, tr, gap, skew=0.0, invert=False):
+    """Common-break drive: at every frame boundary (toggle or not) the high one of
+    D/DB falls at the same instant, and the selected one rises gap later (DB's rise
+    shifted by skew). The current is switched by the common falling edge."""
+    lvl = lambda bit: (1 - bit) if invert else bit
+    pts = [(0.0, VDD * lvl(bits[0]))]
+    for k in range(1, len(bits)):
+        t = t0 + k * T
+        if lvl(bits[k - 1]):
+            pts += [(t, VDD), (t + tr, 0.0)]
+        if lvl(bits[k]):
+            tu = t + gap + (skew if invert else 0.0)
+            pts += [(tu, 0.0), (tu + tr, VDD)]
+    return " ".join(f"{t:.12e} {v:.6g}" for t, v in pts)
+
+
 def charge(args, seed=1, mismatch=False, tag=""):
     reps = 16
     pats = {"tog1": [0, 1] * reps * 2, "tog2": [0, 0, 1, 1] * reps}
@@ -85,8 +115,10 @@ def charge(args, seed=1, mismatch=False, tag=""):
         deck = header(args, mismatch, seed) + f"""
 VOP OUTP 0 {VCM + args.voff * 1e-3 / 2}
 VON OUTN 0 {VCM - args.voff * 1e-3 / 2}
-VD DS 0 PWL({dac2.pattern_pwl(bits, t0, tr)})
-VDB DBS 0 PWL({dac2.pattern_pwl(bits, t0, tr, skew=args.skew * 1e-12, invert=True)})
+VD DS 0 PWL({pattern_pwl_break(bits, t0, tr, args.brk * 1e-12) if args.brk else
+             pattern_pwl(bits, t0, tr, gap=args.gap * 1e-12)})
+VDB DBS 0 PWL({pattern_pwl_break(bits, t0, tr, args.brk * 1e-12, args.skew * 1e-12, True) if args.brk else
+              pattern_pwl(bits, t0, tr, skew=args.skew * 1e-12, invert=True, gap=args.gap * 1e-12)})
 RD DS D 1k
 RDB DBS DB 1k
 {cell_lines(args, rl_p, rl_n)}
@@ -141,6 +173,11 @@ def main():
     ap.add_argument("--arch", choices=["switched", "steered"], default="switched",
                     help="switched: TGs select VRP/VRN; steered: resistors fixed, NMOS steer")
     ap.add_argument("--ws", type=float, default=1.0, help="steering NMOS width (um)")
+    ap.add_argument("--gap", type=float, default=0.0,
+                    help="break-before-make gap (ps): every rising D/DB edge delayed by it")
+    ap.add_argument("--brk", type=float, default=0.0,
+                    help="common-break drive (ps): both off at every frame edge, the selected "
+                         "one back on after this; --skew then shifts only DB's rise")
     args = ap.parse_args()
     if args.mc:
         qs = []

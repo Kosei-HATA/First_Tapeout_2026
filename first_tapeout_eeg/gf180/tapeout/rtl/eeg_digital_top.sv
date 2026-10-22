@@ -43,6 +43,7 @@ module eeg_digital_top #(
     output logic [30:0] SEL1,                 // DAC1 element selection, 1 = positive reference
     output logic [30:0] SEL2,                 // DAC2 element selection, 1 = positive reference
     output logic        CMP_STROBE,           // comparator clock (one MCLK cycle per frame)
+    output logic        DAC_CLK,              // DAC1 update: high one MCLK, from one MCLK after SEL1/SEL2 change
     output logic        CHOP,                 // chopper clock, 128 kHz (CHOP_FAST = 1) or 64 kHz
     output logic        CHOP_OUT,             // CHOP delayed by CHOP_DLY MCLK cycles
     output logic        CHOP_BLANK,           // output-chopper blanking: 1 MCLK before to BLANK_LEN MCLK after each CHOP_OUT edge
@@ -55,7 +56,8 @@ module eeg_digital_top #(
     output logic [1:0]  BTRIM_N,              // BOOST_TRIM[3:2]: NMOS-cascode booster units
     output logic [9:0]  OFM,                  // electrode-offset DAC magnitude (OFF_CTRL[1:0], OFF_CODE_L)
     output logic        OFS,                  // offset-DAC sign (OFF_CTRL[3])
-    output logic [3:0]  OFEN                  // offset-DAC range groups, thermometer of OFF_RANGE
+    output logic [3:0]  OFEN,                 // offset-DAC range groups, thermometer of OFF_RANGE
+    output logic        CHOP1                 // OTA1 chopper, 1 = phase A (CHOP1 register, eeg_chop1.sv)
 );
 
     // ------------------------------------------------------------------
@@ -232,6 +234,7 @@ module eeg_digital_top #(
 
     // offset-DAC range groups: range 0 = off, 1..4 enable 1..4 groups, 5..7 = 4
     logic [2:0] off_range;
+    logic [2:0] chop1_rate;
     assign OFEN = {off_range >= 3'd4, off_range >= 3'd3, off_range >= 3'd2, off_range >= 3'd1};
 
     eeg_regs u_regs (
@@ -263,8 +266,37 @@ module eeg_digital_top #(
         .off_mag       (OFM),
         .off_sign      (OFS),
         .off_range     (off_range),
+        .chop1_rate    (chop1_rate),
         .ovr_flag      (ovr_flag),
         .cmd_err_flag  (cmd_err_flag)
+    );
+
+    // ------------------------------------------------------------------
+    // DAC1 update clock: SEL1 changes at e(DAC_LOAD_CYCLE + 1); DAC_CLK rises one
+    // MCLK later and stays high for one MCLK. The DAC1 array (common-break drive,
+    // gf180/tapeout/adc/eeg_dac1.spice) opens all its switches at the DAC_CLK
+    // rising edge, latches SEL1 during a ~2 ns pulse and then closes the selected
+    // switches, so SEL1 only has to settle within one MCLK.
+    // ------------------------------------------------------------------
+    localparam logic [4:0] DAC_CLK_CYCLE = DAC_LOAD_CYCLE + 1;   // high in cycle DAC_LOAD_CYCLE + 2
+
+    always_ff @(posedge MCLK or negedge rst_n) begin
+        if (!rst_n) begin
+            DAC_CLK <= 1'b0;
+        end else begin
+            DAC_CLK <= (cycle == DAC_CLK_CYCLE);
+        end
+    end
+
+    // ------------------------------------------------------------------
+    // OTA1 chopper (a few kHz, edges at e16)
+    // ------------------------------------------------------------------
+    eeg_chop1 u_chop1 (
+        .clk        (MCLK),
+        .rst_n      (rst_n),
+        .cycle      (cycle),
+        .chop1_rate (chop1_rate),
+        .chop1      (CHOP1)
     );
 
     // ------------------------------------------------------------------

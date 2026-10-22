@@ -5,8 +5,9 @@
 // own time base, asynchronous to MCLK, at 2 MHz and 1 MHz.
 //
 // Covered: ID/VERSION/FORMAT/ODR/defaults, undefined addresses, CONTROL /
-// CHOP_DLY / TEST / ANA_TRIM / BLANK / BOOST_TRIM / OFF_CODE_L / OFF_CTRL write and read back
-// (and their pins, including the OFEN range decode),
+// CHOP_DLY / TEST / ANA_TRIM / BLANK / BOOST_TRIM / OFF_CODE_L / OFF_CTRL / CHOP1 write and
+// read back (and their pins, including the OFEN range decode; the CHOP1 waveform itself
+// is checked in tb_chop1),
 // CONTROL bit 7 reads 0, FILTER_CLEAR self clearing, CHOP_FAST (128/64 kHz
 // chop measured on the pins, CHOP_OUT delays at both rates), CHOP_BLANK on the
 // pins (rise 1 MCLK before each CHOP_OUT edge, fall BLANK_LEN after it, for
@@ -41,16 +42,19 @@ module tb_spi;
     wire  [9:0]  OFM;
     wire         OFS;
     wire  [3:0]  OFEN;
+    wire         CHOP1;
+    wire         DAC_CLK;
 
     eeg_digital_top dut (
         .MCLK (MCLK), .RESET_N (RESET_N),
         .SCLK (SCLK), .CS_N (CS_N), .MOSI (MOSI), .MISO (MISO), .MISO_OE (MISO_OE),
         .DRDY_N (DRDY_N), .RAW_DATA (RAW_DATA), .RAW_CLK (RAW_CLK),
-        .TH (TH), .SEL1 (SEL1), .SEL2 (SEL2), .CMP_STROBE (CMP_STROBE),
+        .TH (TH), .SEL1 (SEL1), .SEL2 (SEL2), .CMP_STROBE (CMP_STROBE), .DAC_CLK (DAC_CLK),
         .CHOP (CHOP), .CHOP_OUT (CHOP_OUT), .CHOP_BLANK (CHOP_BLANK),
         .AFE_RST (AFE_RST), .CHOP_EN (CHOP_EN),
         .TEST_CFG (TEST_CFG), .CPF_TRIM (CPF_TRIM), .AFE_IBIAS (AFE_IBIAS),
-        .BTRIM_P (BTRIM_P), .BTRIM_N (BTRIM_N), .OFM (OFM), .OFS (OFS), .OFEN (OFEN)
+        .BTRIM_P (BTRIM_P), .BTRIM_N (BTRIM_N), .OFM (OFM), .OFS (OFS), .OFEN (OFEN),
+        .CHOP1 (CHOP1)
     );
 
     always #(TMCLK / 2.0) MCLK = ~MCLK;
@@ -193,6 +197,7 @@ module tb_spi;
         TH = therm(22);
         #100.0;
         if (CHOP !== 1'b0 || CHOP_OUT !== 1'b0 || CHOP_BLANK !== 1'b0) err("chopper outputs not 0 during reset");
+        if (CHOP1 !== 1'b1) err("CHOP1 not in phase A (1) during reset");
         #100.0;
         RESET_N = 1'b1;
         #2000.0;
@@ -209,7 +214,7 @@ module tb_spi;
 
         spi_half = 250.0;
         check_reg(8'h00, 8'hE6);
-        check_reg(8'h01, 8'h05);
+        check_reg(8'h01, 8'h06);
         check_reg(8'h02, 8'h74);
         check_reg(8'h03, 8'h02);          // SETTLING after reset
         check_reg(8'h04, 8'h05);
@@ -223,7 +228,8 @@ module tb_spi;
         check_reg(8'h0C, 8'h05);
         check_reg(8'h0D, 8'h00);
         check_reg(8'h0E, 8'h00);
-        check_reg(8'h0F, 8'h00);
+        check_reg(8'h0F, 8'h03);
+        check_reg(8'h10, 8'h00);
         check_reg(8'h7F, 8'h00);
         check_reg(8'hFF, 8'h00);
 
@@ -305,6 +311,14 @@ module tb_spi;
         check_reg(8'h0D, 8'h00);
         if (OFM !== 10'h000 || OFS !== 1'b0 || OFEN !== 4'b0000) err("OFM/OFS/OFEN pins after restoring the reset values");
 
+        // CHOP1: [2:0] CHOP1_RATE, 7:3 read 0
+        spi_write_reg(8'h0F, 8'hFF);
+        check_reg(8'h0F, 8'h07);
+        spi_write_reg(8'h0F, 8'h00);
+        check_reg(8'h0F, 8'h00);
+        spi_write_reg(8'h0F, 8'h03);
+        check_reg(8'h0F, 8'h03);
+
         spi_write_reg(8'h09, 8'hA5);
         check_reg(8'h09, 8'hA5);
         if (TEST_CFG !== 8'hA5) err("TEST_CFG pins");
@@ -353,7 +367,7 @@ module tb_spi;
         spi_write_reg(8'h05, 8'h07);
         spi_write_reg(8'h07, 8'h00);
         check_reg(8'h00, 8'hE6);
-        check_reg(8'h01, 8'h05);
+        check_reg(8'h01, 8'h06);
         check_reg(8'h05, 8'h00);
         check_reg(8'h07, 8'hE8);
 

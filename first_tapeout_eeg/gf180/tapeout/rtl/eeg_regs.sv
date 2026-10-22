@@ -2,7 +2,7 @@
 //
 //  addr  name        access  reset  bits
 //  0x00  ID          RO      0xE6
-//  0x01  VERSION     RO      0x05
+//  0x01  VERSION     RO      0x06
 //  0x02  CONTROL     RW      0x74   0 RUN, 1 FILTER_CLEAR (self clearing, reads 0),
 //                                   2 DWA_EN, 3 RAW_EN, 4 AFE_RST, 5 CHOP_EN,
 //                                   6 CHOP_FAST (1 = 128 kHz, 0 = 64 kHz chop), 7 reads 0
@@ -26,6 +26,9 @@
 //                                   the analog DAC cancels (1 - 2 SIGN) x M x 0.311 mV of
 //                                   ELP-ELN offset, M limited by the range
 //                                   (documentation/gf180_electrode_dc_20261022.md)
+//  0x0F  CHOP1       RW      0x03   [2:0] CHOP1_RATE: OTA1 chopper 0 = off (phase A),
+//                                   1..5 = 1/2/4/8/16 kHz, 6..7 = 16 kHz; 7:3 read 0;
+//                                   applied at the next 1 ms boundary (eeg_chop1.sv)
 //  other addresses read 0x00; writes to them and to RO registers are ignored.
 //
 // Sticky flags: a set event in the same cycle as a W1C clear wins, so no event
@@ -65,6 +68,7 @@ module eeg_regs (
     output logic [9:0] off_mag,        // OFF_CTRL[1:0], OFF_CODE_L: offset-DAC magnitude
     output logic       off_sign,       // OFF_CTRL[3]: offset-DAC sign
     output logic [2:0] off_range,      // OFF_CTRL[6:4]: offset-DAC range (0 = off)
+    output logic [2:0] chop1_rate,     // CHOP1[2:0]: OTA1 chopper rate
     output logic       ovr_flag,       // sticky OVERRUN
     output logic       cmd_err_flag    // sticky CMD_ERR
 );
@@ -84,9 +88,10 @@ module eeg_regs (
     localparam logic [7:0] A_BOOST_TRIM = 8'h0C;
     localparam logic [7:0] A_OFF_CODE_L = 8'h0D;
     localparam logic [7:0] A_OFF_CTRL   = 8'h0E;
+    localparam logic [7:0] A_CHOP1      = 8'h0F;
 
     localparam logic [7:0] ID_VALUE      = 8'hE6;
-    localparam logic [7:0] VERSION_VALUE = 8'h05;
+    localparam logic [7:0] VERSION_VALUE = 8'h06;
     localparam logic [7:0] FORMAT_VALUE  = 8'h05;   // 5-bit quantizer
     localparam logic [15:0] ODR_VALUE    = 16'd1000;
 
@@ -113,6 +118,7 @@ module eeg_regs (
             off_mag      <= 10'h000;
             off_sign     <= 1'b0;
             off_range    <= 3'd0;
+            chop1_rate   <= 3'd3;
             ovr_flag     <= 1'b0;
             cmd_err_flag <= 1'b0;
         end else begin
@@ -145,6 +151,7 @@ module eeg_regs (
                         off_sign     <= wdata[3];
                         off_range    <= wdata[6:4];
                     end
+                    A_CHOP1:    chop1_rate <= wdata[2:0];
                     default:    ;
                 endcase
             end
@@ -180,6 +187,7 @@ module eeg_regs (
             A_BOOST_TRIM: rdata = {4'b0000, btrim_n, btrim_p};
             A_OFF_CODE_L: rdata = off_mag[7:0];
             A_OFF_CTRL:   rdata = {1'b0, off_range, off_sign, 1'b0, off_mag[9:8]};
+            A_CHOP1:      rdata = {5'b00000, chop1_rate};
             default:      rdata = 8'h00;
         endcase
     end

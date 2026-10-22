@@ -1,0 +1,127 @@
+* eeg_dac1: DAC1 of the ADC (tracker B3, B6), GF180, this rev
+*
+* 31 steered unit cells. Each cell has a 300 kohm resistor from VRP and one from VRN
+* (ppolyf_u_3k, 100 squares, W 2 um, as in gf180/sim/dac1_cell/dac1_cell.spice,
+* dac1s_cell); NMOS switches (W 1 um) steer each resistor's current to OUTP or OUTN:
+*   SEL = 1: VRP resistor -> OUTP, VRN resistor -> OUTN (positive output)
+*   SEL = 0: VRP resistor -> OUTN, VRN resistor -> OUTP
+* The resistors never leave their references, so VRP sources the same 31 x 0.25 V /
+* 300 kohm = 25.6 uA for every code (per toggle only about 0.2 fC moves, against
+* 11.9 fC for the TG-switched cell), and the reference path may carry a filter
+* resistor (eeg_ref.spice, documentation/gf180_dac1_ref_20261022.md).
+*
+* Common-break drive. DAC_CLK (eeg_digital_top) rises at e4, one MCLK after SEL1
+* changes at e3. eeg_dac1_brk makes a pulse BRK of about 2 ns from its rising edge.
+* While BRK is high every switch is off and each cell's latch follows its SEL; when
+* BRK falls the latch holds and the selected switches close. A resistor's current
+* stops flowing to its old output when BRK rises, through the same NOR gate in
+* every cell and for both directions, so a D/DB timing difference no longer makes
+* an even (code-transition) error; the current of the break is stored on the switch
+* node and delivered when the new switch closes. The DAC update instant is the BRK
+* rising edge (ELD 4 MCLK = 122 ns, 12.5 %).
+*
+* Ports: OUTP OUTN (to the stage-1 virtual grounds), VRP VRN (filtered references),
+* SEL0..SEL30 (eeg_digital_top SEL1), DAC_CLK, VDD VSS (AVDD/AVSS).
+
+.subckt eeg_dac1 OUTP OUTN VRP VRN SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9
++ SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23
++ SEL24 SEL25 SEL26 SEL27 SEL28 SEL29 SEL30 DAC_CLK VDD VSS
+XBRK DAC_CLK BRK BRKB VDD VSS eeg_dac1_brk
+XC0 OUTP OUTN SEL0 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC1 OUTP OUTN SEL1 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC2 OUTP OUTN SEL2 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC3 OUTP OUTN SEL3 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC4 OUTP OUTN SEL4 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC5 OUTP OUTN SEL5 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC6 OUTP OUTN SEL6 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC7 OUTP OUTN SEL7 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC8 OUTP OUTN SEL8 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC9 OUTP OUTN SEL9 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC10 OUTP OUTN SEL10 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC11 OUTP OUTN SEL11 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC12 OUTP OUTN SEL12 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC13 OUTP OUTN SEL13 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC14 OUTP OUTN SEL14 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC15 OUTP OUTN SEL15 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC16 OUTP OUTN SEL16 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC17 OUTP OUTN SEL17 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC18 OUTP OUTN SEL18 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC19 OUTP OUTN SEL19 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC20 OUTP OUTN SEL20 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC21 OUTP OUTN SEL21 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC22 OUTP OUTN SEL22 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC23 OUTP OUTN SEL23 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC24 OUTP OUTN SEL24 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC25 OUTP OUTN SEL25 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC26 OUTP OUTN SEL26 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC27 OUTP OUTN SEL27 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC28 OUTP OUTN SEL28 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC29 OUTP OUTN SEL29 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+XC30 OUTP OUTN SEL30 BRK BRKB VRP VRN VDD VSS eeg_dac1_cell
+.ends eeg_dac1
+
+* one element: latch (transparent while BRK = 1), D = Q and not BRK, DB = not Q and
+* not BRK, two resistors and four steering switches
+.subckt eeg_dac1_cell OUTP OUTN SEL BRK BRKB VRP VRN VDD VSS
+XLI SEL N1 BRK BRKB VDD VSS eeg_dac1_tg
+XLF Q N1 BRKB BRK VDD VSS eeg_dac1_tg
+XI1 QB N1 VDD VSS eeg_dac1_inv s=1
+XI2 Q QB VDD VSS eeg_dac1_inv s=1
+XND D QB BRK VDD VSS eeg_dac1_nor2
+XNDB DB Q BRK VDD VSS eeg_dac1_nor2
+XRP VRP XP VSS ppolyf_u_3k r_length=195.5u r_width=2u
+XRN VRN XN VSS ppolyf_u_3k r_length=195.5u r_width=2u
+XSPP XP D OUTP VSS nfet_03v3 W=1u L=0.28u nf=1
+XSPN XP DB OUTN VSS nfet_03v3 W=1u L=0.28u nf=1
+XSNN XN D OUTN VSS nfet_03v3 W=1u L=0.28u nf=1
+XSNP XN DB OUTP VSS nfet_03v3 W=1u L=0.28u nf=1
+.ends eeg_dac1_cell
+
+* BRK = DAC_CLK and not (DAC_CLK delayed by two slow stages), buffered for 31 cells
+.subckt eeg_dac1_brk DAC_CLK BRK BRKB VDD VSS
+XI0 CB DAC_CLK VDD VSS eeg_dac1_inv s=1
+XI1 C CB VDD VSS eeg_dac1_inv s=2
+XD1 CD1 C VDD VSS eeg_dac1_slow
+XD2 CD2 CD1 VDD VSS eeg_dac1_slow
+XD3 CDB CD2 VDD VSS eeg_dac1_inv s=1
+XNA PB C CDB VDD VSS eeg_dac1_nand2
+* BRK through three stages, BRKB through two (the latch TGs tolerate the skew)
+XB1 B1 PB VDD VSS eeg_dac1_inv s=2
+XB2 B2 B1 VDD VSS eeg_dac1_inv s=6
+XB3 BRK B2 VDD VSS eeg_dac1_inv s=16
+XBB1 BB1 PB VDD VSS eeg_dac1_inv s=2
+XBB2 BRKB BB1 VDD VSS eeg_dac1_inv s=8
+.ends eeg_dac1_brk
+
+* TG: A-B conducts while G = 1 (GN = 0)
+.subckt eeg_dac1_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=1u L=0.28u nf=1
+XP A GN B VDD pfet_03v3 W=2u L=0.28u nf=1
+.ends eeg_dac1_tg
+
+* s: strength (W and finger count scale with s)
+.subckt eeg_dac1_inv Y A VDD VSS s=1
+XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_dac1_inv
+
+* the two NORs of a cell are identical; BRK is the second input in both
+.subckt eeg_dac1_nor2 Y A B VDD VSS
+XPA M1 A VDD VDD pfet_03v3 W=5u L=0.28u nf=1 m=1
+XPB Y B M1 VDD pfet_03v3 W=5u L=0.28u nf=1 m=1
+XNA Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XNB Y B VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+.ends eeg_dac1_nor2
+
+.subckt eeg_dac1_nand2 Y A B VDD VSS
+XPA Y A VDD VDD pfet_03v3 W=2.5u L=0.28u nf=1 m=1
+XPB Y B VDD VDD pfet_03v3 W=2.5u L=0.28u nf=1 m=1
+XNA Y A M1 VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
+XNB M1 B VSS VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
+.ends eeg_dac1_nand2
+
+* slow inverter for the pulse width (as eeg_clk_slow of the AFE driver)
+.subckt eeg_dac1_slow Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=1u L=2u nf=1 m=1
+XN Y A VSS VSS nfet_03v3 W=1u L=4u nf=1 m=1
+.ends eeg_dac1_slow

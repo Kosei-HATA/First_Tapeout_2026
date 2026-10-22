@@ -1,0 +1,25 @@
+* eeg_ref: reference filter between the VREFP/VREFN pads and the ADC (tracker B6),
+* GF180, this rev
+*
+* The references come from an external low-noise source through the VREFP/VREFN pads
+* (north edge). Their loads draw a constant current: DAC1 25.6 uA (steered cells,
+* the same for every code, eeg_dac1.spice), the quantizer ladder 1.6 uA, the VCM
+* divider of eeg_bias 2.5 uA, about 30 uA from VREFP into VREFN in all.
+*   R_f   100 ohm per side, ppolyf_u (350 ohm/sq typical, 280..420 over corners,
+*         -90 ppm/K), W 7 um, L 2 um. Damps the bond-wire inductance against the
+*         on-chip capacitors and keeps fast interference out. Costs 3 mV of each
+*         reference (VREFP - VREFN 0.494 V instead of 0.5 V: a fixed 1.2 % gain).
+*   C_d   50 pF VREFP-VREFN (cap_mim_2f0ff, 158 x 158 um; can sit over other blocks)
+*   C_g   20 pF from each reference to AVSS (cap_nmos_03v3, 71 x 71 um, in inversion)
+* Requirement on the external reference (documentation/gf180_dac1_ref_20261022.md):
+* differential noise 375 nVrms or less over the band around the signal (the DAC1
+* level scales with VREFP - VREFN), low output impedance not critical (the DAC1
+* current does not depend on the code).
+
+.subckt eeg_ref VREFP_PAD VREFN_PAD VREFP VREFN VSS
+XRFP VREFP_PAD VREFP VSS ppolyf_u r_length=2u r_width=7u
+XRFN VREFN_PAD VREFN VSS ppolyf_u r_length=2u r_width=7u
+XCD VREFP VREFN cap_mim_2f0ff c_length=158u c_width=158u
+XCGP VREFP VSS cap_nmos_03v3 c_length=71u c_width=71u
+XCGN VREFN VSS cap_nmos_03v3 c_length=71u c_width=71u
+.ends eeg_ref

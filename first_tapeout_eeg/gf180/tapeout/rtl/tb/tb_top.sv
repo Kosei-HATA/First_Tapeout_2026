@@ -18,6 +18,7 @@
 //   (DAC_LOAD_CYCLE + 1) MCLK after the CMP_STROBE rising edge.
 // * RAW_DATA/RAW_CLK: each frame carries {101, c of the previous frame},
 //   8 RAW_CLK rising edges per frame; quiet when RAW_EN = 0.
+// * DAC_CLK rises exactly one MCLK after each SEL update and is one MCLK wide.
 // * CHOP edges coincide with CMP_STROBE rising edges, and every CHOP phase is
 //   128 MCLK (128 kHz).
 // * CHOP_BLANK (default BLANK_LEN = 7): high from 1 MCLK before to 7 MCLK
@@ -51,16 +52,19 @@ module tb_top;
     wire  [9:0]  OFM;
     wire         OFS;
     wire  [3:0]  OFEN;
+    wire         CHOP1;
+    wire         DAC_CLK;
 
     eeg_digital_top #(.DAC_LOAD_CYCLE(DLC)) dut (
         .MCLK (MCLK), .RESET_N (RESET_N),
         .SCLK (SCLK), .CS_N (CS_N), .MOSI (MOSI), .MISO (MISO), .MISO_OE (MISO_OE),
         .DRDY_N (DRDY_N), .RAW_DATA (RAW_DATA), .RAW_CLK (RAW_CLK),
-        .TH (TH), .SEL1 (SEL1), .SEL2 (SEL2), .CMP_STROBE (CMP_STROBE),
+        .TH (TH), .SEL1 (SEL1), .SEL2 (SEL2), .CMP_STROBE (CMP_STROBE), .DAC_CLK (DAC_CLK),
         .CHOP (CHOP), .CHOP_OUT (CHOP_OUT), .CHOP_BLANK (CHOP_BLANK),
         .AFE_RST (AFE_RST), .CHOP_EN (CHOP_EN),
         .TEST_CFG (TEST_CFG), .CPF_TRIM (CPF_TRIM), .AFE_IBIAS (AFE_IBIAS),
-        .BTRIM_P (BTRIM_P), .BTRIM_N (BTRIM_N), .OFM (OFM), .OFS (OFS), .OFEN (OFEN)
+        .BTRIM_P (BTRIM_P), .BTRIM_N (BTRIM_N), .OFM (OFM), .OFS (OFS), .OFEN (OFEN),
+        .CHOP1 (CHOP1)
     );
 
     always #(TMCLK / 2.0) MCLK = ~MCLK;
@@ -186,6 +190,25 @@ module tb_top;
             if ($realtime != t_load) err("SEL changed outside a dac_load edge");
             if ($realtime - t_cmp < eld_min) eld_min = $realtime - t_cmp;
             if ($realtime - t_cmp > eld_max) eld_max = $realtime - t_cmp;
+        end
+    end
+
+    // DAC_CLK: rises one MCLK after the SEL update edge, one MCLK wide, once per frame
+    integer dacclk_pulses = 0;
+    real    t_dacclk_rise = -1.0;
+    always @(DAC_CLK) begin
+        if (dut.rst_n) begin
+            if (DAC_CLK === 1'b1) begin
+                dacclk_pulses = dacclk_pulses + 1;
+                if ($realtime - t_load < TMCLK - 0.002 || $realtime - t_load > TMCLK + 0.002)
+                    err($sformatf("DAC_CLK rose %0.3f ns after the SEL update, expected one MCLK", $realtime - t_load));
+                t_dacclk_rise = $realtime;
+            end else if (t_dacclk_rise > 0.0) begin
+                if ($realtime - t_dacclk_rise < TMCLK - 0.002 || $realtime - t_dacclk_rise > TMCLK + 0.002)
+                    err("DAC_CLK pulse not one MCLK wide");
+            end
+        end else if (DAC_CLK !== 1'b0) begin
+            err("DAC_CLK not 0 during reset");
         end
     end
 
@@ -342,9 +365,10 @@ module tb_top;
         if (dut.chop_fast !== 1'b1) err("CHOP_FAST changed");
         if (blank_pulses < out_edges - 2 || blank_pulses > out_edges - 1) err($sformatf("%0d CHOP_BLANK pulses for %0d CHOP_OUT edges", blank_pulses, out_edges));
         if (raw_words < 1000) err("too few RAW words");
+        if (dacclk_pulses < sel_checks - 1 || dacclk_pulses > sel_checks) err($sformatf("%0d DAC_CLK pulses for %0d SEL updates", dacclk_pulses, sel_checks));
         if (errors == 0 && spi_errors == 0)
-            $display("PASS: tb_top DAC_LOAD_CYCLE=%0d (%0d samples bit-exact vs golden, %0d SEL checks [%0d DWA, %0d thermometer], %0d SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL %0.2f..%0.2f ns, %0d RAW words, %0d CHOP edges at 128 kHz, %0d CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency %0.1f ns)",
-                     DLC, ncompared, sel_checks, sel_dwa, sel_therm, pipe_checks, eld_min, eld_max, raw_words, chop_edges, blank_pulses, spi_miso_lat_max);
+            $display("PASS: tb_top DAC_LOAD_CYCLE=%0d (%0d samples bit-exact vs golden, %0d SEL checks [%0d DWA, %0d thermometer], %0d SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL %0.2f..%0.2f ns, %0d DAC_CLK pulses 1 MCLK after SEL, %0d RAW words, %0d CHOP edges at 128 kHz, %0d CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency %0.1f ns)",
+                     DLC, ncompared, sel_checks, sel_dwa, sel_therm, pipe_checks, eld_min, eld_max, dacclk_pulses, raw_words, chop_edges, blank_pulses, spi_miso_lat_max);
         else
             $display("FAIL: tb_top DAC_LOAD_CYCLE=%0d (%0d errors, %0d SPI monitor errors)", DLC, errors, spi_errors);
         $finish;

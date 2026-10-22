@@ -11,3 +11,6 @@ gf180/sim/dac1_cell/runs/
 gf180/tapeout/sim/afe/runs/
 gf180/tapeout/sim/bias/runs/
 gf180/tapeout/sim/quantizer/runs/
+gf180/tapeout/sim/adc_loop/runs/
+gf180/tapeout/sim/dac1/runs/
+gf180/tapeout/sim/ref/runs/

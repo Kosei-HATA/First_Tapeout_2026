@@ -12,6 +12,7 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 |---|---|
 | `eeg_digital_top.sv` | Top level, reset synchronizer, TH capture register, wiring |
 | `eeg_clkgen.sv` | Frame counter and strobes, 128/64 kHz chop, chop_out delay, output-chopper blanking, MCLK/4 |
+| `eeg_chop1.sv` | OTA1 chopper clock: 1..16 kHz or off, edges at e16 |
 | `eeg_therm2bin.sv` | popcount(TH): bubble-tolerant thermometer-to-binary converter (adder tree) |
 | `eeg_dwa.sv` | DWA element selection (N = 31), thermometer mode when disabled |
 | `eeg_cic3.sv` | sinc^3 decimator, R = 1024, W = 37 |
@@ -40,6 +41,7 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 | `TH[30:0]` | in | Quantizer thermometer outputs. TH[i] = 1 when the input is above threshold i; thresholds ascend. |
 | `SEL1[30:0]`, `SEL2[30:0]` | out | DAC1/DAC2 element selection; 1 = element to the positive reference |
 | `CMP_STROBE` | out | Comparator clock: high for frame cycle 0, one MCLK cycle (30.5 ns) per frame |
+| `DAC_CLK` | out | DAC1 update clock: high for one MCLK from one MCLK after SEL1/SEL2 change (frame cycle DAC_LOAD_CYCLE + 2 = 4). The DAC1 array opens all switches at its rising edge, latches SEL1 during a ~2 ns pulse and then closes the selected ones (`gf180/tapeout/adc/eeg_dac1.spice`) |
 | `CHOP` | out | Chopper clock: 128 kHz (CONTROL.CHOP_FAST = 1, default) or 64 kHz |
 | `CHOP_OUT` | out | CHOP delayed by `CHOP_DLY` MCLK cycles |
 | `CHOP_BLANK` | out | Output-chopper blanking: high from 1 MCLK before to BLANK_LEN MCLK after every CHOP_OUT edge. The analog clock driver gates the output-chopper phases with ~CHOP_BLANK. |
@@ -52,6 +54,7 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 | `OFM[9:0]` | out | Electrode-offset DAC magnitude (OFF_CTRL[1:0], OFF_CODE_L) |
 | `OFS` | out | Electrode-offset DAC sign (OFF_CTRL[3]) |
 | `OFEN[3:0]` | out | Electrode-offset DAC range groups: thermometer of OFF_RANGE (1 → 0001 … 4 → 1111; 5..7 act as 4) |
+| `CHOP1` | out | Chopper clock of the ADC's first integrator OTA (OTA1): 1 = phase A. 1, 2, 4 (default), 8 or 16 kHz, or held at 1 (CHOP1 register); edges only at e16 |
 
 Parameter: `DAC_LOAD_CYCLE` (default 2, legal 2..31) sets the excess loop delay.
 
@@ -60,12 +63,13 @@ Size: about 1,005 flip-flops, counted from the RTL rather than from synthesis. T
 Values during reset and right after it:
 - SEL1/SEL2 = elements 0..15 (k = 16, code 15), the same reset state as the XSPICE controller model.
 - The DWA pointers are 0.
-- CMP_STROBE, CHOP and CHOP_OUT are 0.
+- CMP_STROBE, DAC_CLK, CHOP and CHOP_OUT are 0.
 - AFE_RST = 1, CHOP_EN = 1, DRDY_N = 1, MISO_OE = 0, TEST_CFG = 0.
 - CPF_TRIM = 8, AFE_IBIAS = 2 (ANA_TRIM = 0x28).
 - BTRIM_P = 1, BTRIM_N = 1 (BOOST_TRIM = 0x05, 4 booster units each).
 - The chop rate is 128 kHz.
 - CHOP_BLANK is 0 during reset; BLANK_LEN = 7 after reset.
+- CHOP1 = 1 (phase A) during reset and until e16 of frame 0; then 4 kHz.
 
 ## Frame timing
 
@@ -77,6 +81,7 @@ frame cycle     | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |  ...     | 31| 0 |
 CMP_STROBE      /‾‾‾\_____________________________________________/‾‾‾\
 th_capture      ____/‾‾‾\__________________________________________________  TH -> th_q at e2
 dac_load (=2)   ________/‾‾‾\______________________________________________  SEL1/SEL2 change at e3
+DAC_CLK         ________________/‾‾‾\______________________________________  DAC1 switches at e4
 cic_en          ____________/‾‾‾\__________________________________________  CIC integrators at e4
 CIC comb steps                  | s1| s2| s3| s4|                            only in decimation frames
 CIC dout_stb    ________________________________/‾‾‾\______________________  FIFO write at e9
@@ -88,9 +93,11 @@ CHOP            128 kHz (CHOP_FAST = 1): toggles every 128 MCLK, edges at e0 of 
                 rate changes take effect at e0 of every 16th frame (see below)
 CHOP_OUT        ____X‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾  (an edge, rising or falling, at edge eE)
 CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises at eE-1, falls at eE+BLANK_LEN (BLANK_LEN + 1 cycles)
+CHOP1           toggles only at e16, every 512/256/128/64/32 frames (1/2/4/8/16 kHz)
 ```
 
 - **Excess loop delay.** The time from the CMP_STROBE rising edge to the SEL change is (DAC_LOAD_CYCLE + 1) x T_MCLK = 91.55 ns (9.4 % of Ts) for the default, plus the DAC driver delay. Simulation measured 91.55 ns (DAC_LOAD_CYCLE = 2) and 183.11 ns (5).
+  - DAC2 switches with SEL2 (e3). DAC1 switches at the DAC_CLK rising edge one MCLK later (e4, 122.1 ns = 12.5 % of Ts, plus about 0.7 ns in the analog pulse generator), because its common-break drive latches SEL1 during a short pulse from that edge. The behavioral loop gives 196.7 dB with DAC2 at e3 and DAC1 at e4 (`gf180/tapeout/sim/dac1/eld_mixed.py`; 195.7 dB with both at e3).
 - **Loop delay.** The code decided at the strobe of frame n drives the DACs from e3 of frame n to e3 of frame n+1. At the comparator strobe of frame n+1, popcount(SEL) = 31 − c[n]. This is the one-frame feedback delay.
 - **CIC.** Output strobes come every 1024 frames (1 kSPS), in frame cycle 8.
 - **Startup.** After reset release, the first MCLK edge starts frame 0 at cycle 0, and CHOP rises at that edge.
@@ -114,6 +121,11 @@ CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises a
   - With BLANK_LEN = 0 no pulse starts; a pulse already running when BLANK_LEN is set to 0 finishes.
   - A CHOP_OUT edge within a pulse can only happen right after a CHOP_DLY change. It restarts the pulse (again from one cycle before the edge) with the current BLANK_LEN, or lets the running pulse finish if BLANK_LEN = 0.
   - CHOP_BLANK never changes at a CHOP_OUT edge: it rises one cycle before and falls BLANK_LEN cycles after. The flip-flop skew between the two signals therefore cannot make a gated output-chopper phase pulse at the edge.
+
+- **CHOP1 (OTA1 chopper).**
+  - It changes only at e16, half a frame from the comparator strobe (e0) and 13 MCLK after the DAC update (e3).
+  - It is slow on purpose. Each OTA1 chopper edge disturbs the first integrator by a charge proportional to the OTA1 current, which follows the quantization error. Sampled once per edge, that folds the shaped quantization noise into the band, and the in-band level grows with the square root of the edge rate (`documentation/gf180_ota1_chopper_20261022.md`).
+  - Every rate's period divides the CIC decimation (1024 frames), so the chopped OTA1 offset sums to zero in each output sample.
 
 ### Timing assumptions
 
@@ -147,7 +159,7 @@ CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises a
 | Addr | Name | Access | Reset | Bits |
 |---|---|---|---|---|
 | 0x00 | ID | RO | 0xE6 | |
-| 0x01 | VERSION | RO | 0x05 | |
+| 0x01 | VERSION | RO | 0x06 | |
 | 0x02 | CONTROL | RW | 0x74 | 0 RUN, 1 FILTER_CLEAR (self-clearing, reads 0), 2 DWA_EN, 3 RAW_EN, 4 AFE_RST, 5 CHOP_EN, 6 CHOP_FAST (1 = 128 kHz, 0 = 64 kHz chop), 7 reads 0 |
 | 0x03 | STATUS | RO / W1C | 0x02 | 0 FIFO_NONEMPTY (RO), 1 SETTLING (RO, CIC not yet valid), 2 OVERRUN (W1C), 3 CMD_ERR (W1C) |
 | 0x04 | FORMAT | RO | 0x05 | [3:0] quantizer bits = 5 |
@@ -161,6 +173,7 @@ CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises a
 | 0x0C | BOOST_TRIM | RW | 0x05 | [1:0] BTRIM_P (reset 1), [3:2] BTRIM_N (reset 1): cascode-booster units 00 = 2, 01 = 4, 10 = 6, 11 = 8; [7:4] read 0; drive the BTRIM_P / BTRIM_N ports |
 | 0x0D | OFF_CODE_L | RW | 0x00 | Electrode-offset DAC magnitude M[7:0] |
 | 0x0E | OFF_CTRL | RW | 0x00 | [1:0] M[9:8], [3] SIGN, [6:4] OFF_RANGE (0 = off, 1..4 = ±39 / 79 / 159 / 318 mV, 5..7 = 4); 2 and 7 read 0. The analog DAC cancels (1 − 2 SIGN) × M × 0.311 mV of ELP − ELN offset; M is limited to the bits of the range (`documentation/gf180_electrode_dc_20261022.md`) |
+| 0x0F | CHOP1 | RW | 0x03 | [2:0] CHOP1_RATE: OTA1 chopper 0 = off (CHOP1 = 1), 1..5 = 1 / 2 / 4 / 8 / 16 kHz, 6..7 = 16 kHz; [7:3] read 0. Sampled every 1024 frames (1 ms), at e0 of the frame where all rates rise at e16, so a change never makes a short phase (`eeg_chop1.sv`) |
 
 - Other addresses read 0x00.
 - Writes to RO and undefined addresses are ignored.

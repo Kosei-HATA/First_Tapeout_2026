@@ -1,0 +1,112 @@
+* eeg_adc_clk: OTA1 chopper drivers (ADC side of tracker B8, GF180, this rev)
+*
+* Input (from eeg_digital_top, 3.3 V): CHOP1, 1 = phase A; it changes at e16 of a
+* frame, 1..16 kHz (gf180/tapeout/rtl/eeg_chop1.sv).
+* Outputs to OTA1 (gf180_inside_cascode_ota in gf180/tapeout/adc/eeg_adc_otas.spice):
+*   CIA NCIA CIB NCIB   input-TG phases and complements, non-overlapping
+*   CDA NCDA CDB NCDB   drain/load-commutator phases and complements, overlapping
+* Order at each edge (A->B shown; B->A mirrored):
+*   CDB on  ->  CIA off  ->  CIB on  ->  CDA off
+* The commutators of both phases conduct while the input TGs swap, so the OTA1
+* output current is never reversed. They short the OTA1 differential output current
+* while both conduct, and that charge follows the quantization error, so the overlap
+* is kept short (documentation/gf180_ota1_chopper_20261022.md):
+*   commutator on -> input TG off    about 1 ns    delay XM (1 slow stage)
+*   input TG off  -> input TG on     about 2 ns    delay XMD (2 slow stages)
+*   commutator overlap               about 5 ns    delay XD (4 slow stages)
+* All three come from the same slow-inverter type, so the order holds over corners.
+* Loads: CIA/CIB the NMOS gates of two chop_tg (2 x 160 um), NCIA/NCIB the PMOS gates
+* (2 x 320 um); CDA/CDB the NMOS gates of four drain_tg (4 x 160 um), NCDA/NCDB the
+* PMOS gates (4 x 320 um).
+* Supplies: AVDD/AVSS (the switches are in the integrator's signal path).
+
+.subckt eeg_adc_clk CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+XI0 XB CHOP1 VDD VSS eeg_aclk_inv s=1
+XI1 X XB VDD VSS eeg_aclk_inv s=2
+* ---- commutators: DA = X or XD, DB = not (X and XD), XD = X delayed
+XD1 XD1 X VDD VSS eeg_aclk_slow
+XD2 XD2 XD1 VDD VSS eeg_aclk_slow
+XD3 XD3 XD2 VDD VSS eeg_aclk_slow
+XD4 XD XD3 VDD VSS eeg_aclk_slow
+XGDA DAN X XD VDD VSS eeg_aclk_nor2 s=1
+XGDB DBN X XD VDD VSS eeg_aclk_and2n s=1
+* ---- input TGs: IA = XM and XMD, IB = not XM and not XMD, XM = X delayed (1 slow
+* stage and an inverter), XMD = XM delayed (2 slow stages, the dead time)
+XM1 XMB X VDD VSS eeg_aclk_slow
+XM2 XM XMB VDD VSS eeg_aclk_inv s=1
+XMD1 XMD1 XM VDD VSS eeg_aclk_slow
+XMD2 XMD XMD1 VDD VSS eeg_aclk_slow
+XGIA IAN XM XMD VDD VSS eeg_aclk_nand2 s=1
+XGIB IBN XM XMD VDD VSS eeg_aclk_or2n s=1
+* ---- drivers: from each active-low phase signal, the gate through three inverters and
+* its complement through one small inverter plus three (the complement lags by one
+* small inverter)
+XA1 A1 IAN VDD VSS eeg_aclk_inv s=2
+XA2 A2 A1 VDD VSS eeg_aclk_inv s=6
+XA3 CIA A2 VDD VSS eeg_aclk_inv s=12
+XAI IA IAN VDD VSS eeg_aclk_inv s=1
+XAN1 AN1 IA VDD VSS eeg_aclk_inv s=2
+XAN2 AN2 AN1 VDD VSS eeg_aclk_inv s=8
+XAN3 NCIA AN2 VDD VSS eeg_aclk_inv s=24
+XB1 B1 IBN VDD VSS eeg_aclk_inv s=2
+XB2 B2 B1 VDD VSS eeg_aclk_inv s=6
+XB3 CIB B2 VDD VSS eeg_aclk_inv s=12
+XBI IB IBN VDD VSS eeg_aclk_inv s=1
+XBN1 BN1 IB VDD VSS eeg_aclk_inv s=2
+XBN2 BN2 BN1 VDD VSS eeg_aclk_inv s=8
+XBN3 NCIB BN2 VDD VSS eeg_aclk_inv s=24
+XDA1 DA1 DAN VDD VSS eeg_aclk_inv s=2
+XDA2 DA2 DA1 VDD VSS eeg_aclk_inv s=8
+XDA3 CDA DA2 VDD VSS eeg_aclk_inv s=24
+XDAI DA DAN VDD VSS eeg_aclk_inv s=1
+XDAN1 DAN1 DA VDD VSS eeg_aclk_inv s=2
+XDAN2 DAN2 DAN1 VDD VSS eeg_aclk_inv s=10
+XDAN3 NCDA DAN2 VDD VSS eeg_aclk_inv s=48
+XDB1 DB1 DBN VDD VSS eeg_aclk_inv s=2
+XDB2 DB2 DB1 VDD VSS eeg_aclk_inv s=8
+XDB3 CDB DB2 VDD VSS eeg_aclk_inv s=24
+XDBI DB DBN VDD VSS eeg_aclk_inv s=1
+XDBN1 DBN1 DB VDD VSS eeg_aclk_inv s=2
+XDBN2 DBN2 DBN1 VDD VSS eeg_aclk_inv s=10
+XDBN3 NCDB DBN2 VDD VSS eeg_aclk_inv s=48
+.ends eeg_adc_clk
+
+* s: strength (W and finger count scale with s)
+.subckt eeg_aclk_inv Y A VDD VSS s=1
+XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_aclk_inv
+
+* Y = not (A and B)
+.subckt eeg_aclk_nand2 Y A B VDD VSS s=1
+XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XNA Y A M1 VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+XNB M1 B VSS VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+.ends eeg_aclk_nand2
+
+* Y = not (A or B)
+.subckt eeg_aclk_nor2 Y A B VDD VSS s=1
+XPA M1 A VDD VDD pfet_03v3 W={5u*s} L=0.28u nf={s} m=1
+XPB Y B M1 VDD pfet_03v3 W={5u*s} L=0.28u nf={s} m=1
+XNA Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+XNB Y B VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_aclk_nor2
+
+* active-low AND: Y = not (A and B) ... used as DBN = A and B (low when DB is on)
+.subckt eeg_aclk_and2n Y A B VDD VSS s=1
+XG YB A B VDD VSS eeg_aclk_nand2 s={s}
+XI Y YB VDD VSS eeg_aclk_inv s={s}
+.ends eeg_aclk_and2n
+
+* active-low OR: Y = A or B (low only when both are low)
+.subckt eeg_aclk_or2n Y A B VDD VSS s=1
+XG YB A B VDD VSS eeg_aclk_nor2 s={s}
+XI Y YB VDD VSS eeg_aclk_inv s={s}
+.ends eeg_aclk_or2n
+
+* slow inverter for the delay chains (as eeg_clk_slow of the AFE driver)
+.subckt eeg_aclk_slow Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=1u L=2u nf=1 m=1
+XN Y A VSS VSS nfet_03v3 W=1u L=4u nf=1 m=1
+.ends eeg_aclk_slow

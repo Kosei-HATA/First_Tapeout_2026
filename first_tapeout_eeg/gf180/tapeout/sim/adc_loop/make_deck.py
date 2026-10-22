@@ -39,12 +39,14 @@ Changes against the import (all needed for long, robust runs):
     the disk on 10/22. The analyses sample once per frame.
   * --ota1 rev (default) takes the OTAs from gf180/tapeout/adc/eeg_adc_otas.spice
     (OTA1 input pair L 1 um, m 1024, since 10/22); --ota1 import keeps the import's
-    otas.spice (L 2 um, m 2048), which all loop runs before that used.
+    otas.spice (L 2 um, m 2048), which all loop runs before that used; --ota1 ideal
+    replaces both OTAs with linear behavioral amplifiers (otas_ideal.spice: gain 1e4,
+    50 MHz) to separate the OTAs' distortion from the rest of the deck.
 
 Usage: python3 make_deck.py <out_dir> [--tstop 1.25e-3] [--fsig 1e3] [--amp 0.3]
        [--dac2 cells|ideal] [--quant model|tr|ideal]
        [--chop1 0|<fch>] [--chop1-phase 0.5] [--dead 15e-9] [--ovl 25e-9] [--chop1-drv]
-       [--ota1 rev|import] [--wstep 20e-9]
+       [--ota1 rev|import|ideal] [--wstep 20e-9]
 Then: (cd <out_dir> && ngspice -b circuit.spice) -> out.csv
 """
 import argparse
@@ -130,13 +132,14 @@ def main():
     ap.add_argument("--dead", type=float, default=15e-9, help="input-TG dead time (s)")
     ap.add_argument("--ovl", type=float, default=25e-9, help="drain-commutator overlap (s)")
     ap.add_argument("--chop1-drv", action="store_true", help="OTA1 chopper through eeg_adc_clk")
-    ap.add_argument("--ota1", choices=["rev", "import"], default="rev")
+    ap.add_argument("--ota1", choices=["rev", "import", "ideal"], default="rev")
     ap.add_argument("--wstep", type=float, default=20e-9,
                     help="out.csv interval (s); the solver's step is still capped at 1 ns")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    shutil.copy(OTAS_REV if a.ota1 == "rev" else os.path.join(IMPORT, "otas.spice"),
-                os.path.join(a.out, "otas.spice"))
+    otas = {"rev": OTAS_REV, "import": os.path.join(IMPORT, "otas.spice"),
+            "ideal": os.path.join(HERE, "otas_ideal.spice")}[a.ota1]
+    shutil.copy(otas, os.path.join(a.out, "otas.spice"))
     q = open(os.path.join(IMPORT, "quantizer.spice")).read()
     q = sub(r"^\.model ADC33 adc_bridge \(in_low=0\.99 in_high=2\.31 ",
             ".model ADC33 adc_bridge (in_low=1.65 in_high=1.65 ", q)

@@ -13,7 +13,11 @@
 *                       (an SR latch on the TG gate drives), so it changes when the
 *                       input TG of the new phase closes; high in phase A.
 *   RST                 INP/INN reset switches (AFE_RST buffered).
-* Supplies: AVDD/AVSS (the AFE domain); the inputs are 3.3 V CMOS levels.
+* Supplies: VDD/VSS = AVDD_CLK/AVSS_CLK, a pair of its own taken from the AVDD/AVSS pads
+* through 100 ohm per side, with 150 pF between them next to the driver; the switching
+* charge (80-90 pC per edge) comes from that capacitor, and the substrate taps of the
+* driver go to AVSS_CLK (documentation/gf180_test_decap_20261022.md,
+* gf180/tapeout/sim/afe/supply_check.py). The inputs are 3.3 V CMOS levels.
 
 .subckt eeg_afe_clk CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
 + OFPH RST VDD VSS

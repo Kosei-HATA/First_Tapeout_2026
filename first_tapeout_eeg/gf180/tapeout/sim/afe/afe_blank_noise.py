@@ -15,7 +15,9 @@ input of the amplifier core, i.e. an input-referred amplifier noise. Two runs wi
 realization: blanking --blank MCLK and none (the output phases then follow the input
 phases with their 5 ns dead time). The output averaged over every chopper period gives
 a 128 kHz sequence; its density at low frequencies (--fmax) is the in-band level. The
-ratio of the two runs is the folding penalty for the amplifier's white noise.
+ratio of the two runs is the folding penalty for the amplifier's white noise. The period
+averages of every run are kept (seq.npy in its folder) and reused when the same deck
+(same seed and noise) runs again, so the run without blanking is simulated once per seed.
 
 Usage: python3 afe_blank_noise.py [--en 30e-9] [--nt 5e-9] [--tstop 2.1e-3] [--blank 7]
        [--fmax 20e3] [--seed 1]
@@ -61,7 +63,10 @@ def run(blank_mclk, o):
     # same noise realization in both runs; output every 4 ns is enough for period averages
     deck = deck.replace(".control\nset noaskquit\n", f".control\nset noaskquit\nset rndseed={o.seed}\n", 1)
     deck = re.sub(r"wrdata tr\.csv vo va v\(cda\) v\(cdb\)", "wrdata tr.csv vo", deck)
-    open(os.path.join(d, "tb.spice"), "w").write(deck)
+    tb, cache = os.path.join(d, "tb.spice"), os.path.join(d, "seq.npy")
+    if os.path.exists(cache) and os.path.exists(tb) and open(tb).read() == deck:
+        return np.load(cache)  # the same deck ran before (e.g. the run without blanking)
+    open(tb, "w").write(deck)
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
     open(os.path.join(d, "run.log"), "w").write(r.stdout + r.stderr)
     x = np.loadtxt(os.path.join(d, "tr.csv"))
@@ -70,7 +75,9 @@ def run(blank_mclk, o):
     q = np.concatenate([[0.0], np.cumsum(0.5 * (vo[1:] + vo[:-1]) * np.diff(t))])
     n = int((t[-1] - T_START) / TCH)
     edges = T_START + TCH * np.arange(n + 1)
-    return np.diff(np.interp(edges, t, q)) / TCH  # output averaged over each chopper period
+    seq = np.diff(np.interp(edges, t, q)) / TCH  # output averaged over each chopper period
+    np.save(cache, seq)
+    return seq
 
 
 def density(seq, fmax):

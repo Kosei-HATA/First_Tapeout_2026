@@ -1,0 +1,22 @@
+* Ideal (linear) stand-ins for the two loop OTAs, with the port lists of
+* gf180/tapeout/adc/eeg_adc_otas.spice (make_deck.py --ota1 ideal). Each is a fully
+* differential amplifier: DC gain 1e4, one pole, unity gain at 50 MHz, output CM held
+* at VCMREF, no input current. The chopper and bias inputs are ignored (OTA1 then acts
+* as if held in phase A). Used to tell the OTAs' part of the loop's distortion from
+* the rest of the deck (DACs, quantizer model, controller, solver).
+
+.subckt gf180_inside_cascode_ota INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+G1 0 X INP INN 1m
+R1 X 0 10Meg
+C1 X 0 3.1831p
+EOP OUTP VCMREF X 0 0.5
+EON OUTN VCMREF X 0 -0.5
+.ends gf180_inside_cascode_ota
+
+.subckt gf180_ct_ota_tel16_cmfb INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM VDD VSS params: CCOMP=1p
+G1 0 X INP INN 1m
+R1 X 0 10Meg
+C1 X 0 3.1831p
+EOP OUTP VCMREF X 0 0.5
+EON OUTN VCMREF X 0 -0.5
+.ends gf180_ct_ota_tel16_cmfb

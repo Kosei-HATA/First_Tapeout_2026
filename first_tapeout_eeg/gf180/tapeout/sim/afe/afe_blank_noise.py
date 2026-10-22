@@ -29,10 +29,17 @@ that compared separate runs, i.e. independent realizations, so their ratios carr
 the full scatter of the density estimates (about 16 % in power each). --seed only
 names the replicate.
 
+With --pool nothing is simulated: the replicates already run with the same settings
+(every --seed) are pooled. Printed: the ratio of the summed variances of the period
+averages (all 0..64 kHz, where the folded noise is white), the same for the in-band
+densities, the variance of the difference, and the spread of the per-replicate
+ratios.
+
 Usage: python3 afe_blank_noise.py [--en 30e-9] [--nt 3.14159265e-9] [--tstop 2.1e-3]
-       [--blank 7] [--fmax 20e3] [--seed 1] [--afe <netlist>] [--rload 9375]
+       [--blank 7] [--fmax 20e3] [--seed 1] [--afe <netlist>] [--rload 9375] [--pool]
 """
 import argparse
+import glob
 import os
 import subprocess
 import numpy as np
@@ -91,10 +98,34 @@ def deck(o, afe):
     return d
 
 
-def run(o):
+def folder(o, seed):
     tag = "" if o.afe == afe_offset.AFE else "_" + os.path.splitext(os.path.basename(o.afe))[0]
     tag += f"_rl{o.rload:g}" if o.rload != 9375.0 else ""
-    d = os.path.join(HERE, "runs", f"blank_pair{tag}_bl{o.blank}_en{o.en * 1e9:g}n_t{o.tstop * 1e3:g}m_s{o.seed}")
+    return os.path.join(HERE, "runs", f"blank_pair{tag}_bl{o.blank}_en{o.en * 1e9:g}n_t{o.tstop * 1e3:g}m_s{seed}")
+
+
+def pool(o):
+    files = sorted(glob.glob(os.path.join(folder(o, "*"), "seq.npz")))
+    if not files:
+        raise SystemExit("no replicates found for these settings")
+    v0 = v1 = vd = b0 = b1 = 0.0
+    ratios = []
+    for f in files:
+        z = np.load(f)
+        s0, s1 = z["seq0"] - z["seq0"].mean(), z["seq1"] - z["seq1"].mean()
+        v0, v1, vd = v0 + s0.var(), v1 + s1.var(), vd + (s1 - s0).var()
+        b0, b1 = b0 + density(s0, o.fmax)[0], b1 + density(s1, o.fmax)[0]
+        ratios.append(s1.var() / s0.var())
+    n = len(files)
+    err = np.std(ratios, ddof=1) / np.sqrt(n) if n > 1 else float("nan")
+    print(f"blanking {o.blank} MCLK, {n} replicates of {o.tstop * 1e3:g} ms: variance ratio {v1 / v0:.4f} "
+          f"(+-{err:.4f}, amplitude {np.sqrt(v1 / v0):.4f}); in-band density ratio {b1 / b0:.4f}; "
+          f"difference {vd / v0:.4f} of the variance without blanking; per replicate "
+          + " ".join(f"{r:.3f}" for r in ratios))
+
+
+def run(o):
+    d = folder(o, o.seed)
     os.makedirs(d, exist_ok=True)
     afe = os.path.join(d, "afe_noisy.spice")
     open(afe, "w").write(noisy_afe(o.afe))
@@ -141,7 +172,11 @@ def main():
     ap.add_argument("--seed", type=int, default=1, help="replicate label (ngspice draws new noise every run)")
     ap.add_argument("--afe", default=afe_offset.AFE, help="AFE netlist (study variants, e.g. with an output low-pass)")
     ap.add_argument("--rload", type=float, default=9375.0, help="ADC input resistor per side")
+    ap.add_argument("--pool", action="store_true", help="pool the replicates already run, simulate nothing")
     o = ap.parse_args()
+    if o.pool:
+        pool(o)
+        return
     seq0, seq1 = run(o)
     s0, nb = density(seq0, o.fmax)
     s1, _ = density(seq1, o.fmax)

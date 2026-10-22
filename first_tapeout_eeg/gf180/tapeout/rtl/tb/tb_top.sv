@@ -1,4 +1,5 @@
-// tb_top - integrated test of eeg_digital_top with a sigma-delta code stream.
+// tb_top - integrated test of eeg_digital_sys (eeg_digital_top with the ADC-side block
+// eeg_adc_dig, connected as on the chip) with a sigma-delta code stream.
 //
 // * TH[30:0] emulates the quantizer: for frame f the thermometer of code c[f]
 //   is driven only from the middle of frame cycle 1 to the middle of cycle 2
@@ -55,7 +56,7 @@ module tb_top;
     wire         CHOP1;
     wire         DAC_CLK;
 
-    eeg_digital_top #(.DAC_LOAD_CYCLE(DLC)) dut (
+    eeg_digital_sys #(.DAC_LOAD_CYCLE(DLC)) dut (
         .MCLK (MCLK), .RESET_N (RESET_N),
         .SCLK (SCLK), .CS_N (CS_N), .MOSI (MOSI), .MISO (MISO), .MISO_OE (MISO_OE),
         .DRDY_N (DRDY_N), .RAW_DATA (RAW_DATA), .RAW_CLK (RAW_CLK),
@@ -145,8 +146,8 @@ module tb_top;
 
     // the first input accepted after FILTER_CLEAR is the next frame's
     always @(posedge MCLK) begin
-        if (dut.filter_clear) begin
-            if (dut.u_clkgen.cycle < 3) err("FILTER_CLEAR before cic_en: stream alignment would be lost");
+        if (dut.u_top.filter_clear) begin
+            if (dut.u_top.u_clkgen.cycle < 3) err("FILTER_CLEAR before cic_en: stream alignment would be lost");
             f_align = f_cur + 1;
         end
     end
@@ -163,12 +164,12 @@ module tb_top;
     real    eld_max = 0.0;
 
     always @(posedge MCLK) begin
-        if (dut.rst_n && dut.u_clkgen.dac_load) begin
+        if (dut.u_top.rst_n && dut.u_top.u_clkgen.dac_load) begin
             integer      k;
             logic        en;
             logic [30:0] exp;
             k  = 31 - code_hist[f_cur % 1024];
-            en = dut.dwa_en;                   // value used by the DUT at this edge
+            en = dut.u_top.dwa_en;                   // value used by the DUT at this edge
             t_load = $realtime;
             if (en) begin
                 exp   = run_mask(p_ref, k);
@@ -186,7 +187,7 @@ module tb_top;
     end
 
     always @(SEL1 or SEL2) begin
-        if (dut.rst_n) begin
+        if (dut.u_top.rst_n) begin
             if ($realtime != t_load) err("SEL changed outside a dac_load edge");
             if ($realtime - t_cmp < eld_min) eld_min = $realtime - t_cmp;
             if ($realtime - t_cmp > eld_max) eld_max = $realtime - t_cmp;
@@ -197,7 +198,7 @@ module tb_top;
     integer dacclk_pulses = 0;
     real    t_dacclk_rise = -1.0;
     always @(DAC_CLK) begin
-        if (dut.rst_n) begin
+        if (dut.u_top.rst_n) begin
             if (DAC_CLK === 1'b1) begin
                 dacclk_pulses = dacclk_pulses + 1;
                 if ($realtime - t_load < TMCLK - 0.002 || $realtime - t_load > TMCLK + 0.002)
@@ -216,7 +217,7 @@ module tb_top;
     integer chop_edges = 0;
     real    t_chop_edge = -1.0;
     always @(CHOP) begin
-        if (dut.rst_n) begin
+        if (dut.u_top.rst_n) begin
             #0.001;
             chop_edges = chop_edges + 1;
             if (CMP_STROBE !== 1'b1 || $realtime - t_cmp > 0.002) err("CHOP edge not at a CMP_STROBE edge");
@@ -235,7 +236,7 @@ module tb_top;
     real    t_out_edge = -1.0;
     real    t_blank_rise = -1.0;
     always @(CHOP_OUT) begin
-        if (dut.rst_n === 1'b1) begin
+        if (dut.u_top.rst_n === 1'b1) begin
             out_edges = out_edges + 1;
             t_out_edge = $realtime;
             if (out_edges > 1) begin
@@ -244,9 +245,9 @@ module tb_top;
             end
         end
     end
-    always @(posedge CHOP_BLANK) if (dut.rst_n === 1'b1) t_blank_rise = $realtime;
+    always @(posedge CHOP_BLANK) if (dut.u_top.rst_n === 1'b1) t_blank_rise = $realtime;
     always @(negedge CHOP_BLANK) begin
-        if (dut.rst_n === 1'b1) begin
+        if (dut.u_top.rst_n === 1'b1) begin
             if ($realtime - t_blank_rise < 7.5 * TMCLK || $realtime - t_blank_rise > 8.5 * TMCLK)
                 err($sformatf("CHOP_BLANK pulse of %0.1f ns, expected 8 MCLK", $realtime - t_blank_rise));
             if ($realtime - t_out_edge < 6.5 * TMCLK || $realtime - t_out_edge > 7.5 * TMCLK)
@@ -334,7 +335,7 @@ module tb_top;
             spi_xfer(3, 0);
             begin
                 wait (spi_cs_waiting);
-                do @(negedge MCLK); while (dut.u_clkgen.cycle != 5'd8);
+                do @(negedge MCLK); while (dut.u_top.u_clkgen.cycle != 5'd8);
                 spi_cs_hold = 1'b0;
             end
         join
@@ -362,7 +363,7 @@ module tb_top;
         if (raw_quiet_errs != 0) err("RAW_CLK/RAW_DATA active with RAW_EN = 0");
 
         if (sel_dwa < 1000 || sel_therm < 1000) err("too few SEL checks in one of the DWA modes");
-        if (dut.chop_fast !== 1'b1) err("CHOP_FAST changed");
+        if (dut.u_top.chop_fast !== 1'b1) err("CHOP_FAST changed");
         if (blank_pulses < out_edges - 2 || blank_pulses > out_edges - 1) err($sformatf("%0d CHOP_BLANK pulses for %0d CHOP_OUT edges", blank_pulses, out_edges));
         if (raw_words < 1000) err("too few RAW words");
         if (dacclk_pulses < sel_checks - 1 || dacclk_pulses > sel_checks) err($sformatf("%0d DAC_CLK pulses for %0d SEL updates", dacclk_pulses, sel_checks));

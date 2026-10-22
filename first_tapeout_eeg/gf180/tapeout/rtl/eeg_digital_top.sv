@@ -4,22 +4,22 @@
 // One modulator frame = 32 MCLK cycles (fs = 1.024 MHz). See README.md for the
 // frame timing diagram, register map and SPI frame format.
 //
+// The quantizer capture, the thermometer-to-binary converter and the two DWA
+// selectors are in the separate ADC-side block eeg_adc_dig (placed in the ADC,
+// gate 1, 10/23); this block sends it the frame strobes and receives the code.
+// eeg_digital_sys.sv connects the two as on the chip.
+//
 // Data path per frame (e_n = rising MCLK edge that starts frame cycle n):
 //   e0  CMP_STROBE rises; the quantizer compares and latches its decision.
-//   e2  TH[30:0] is captured into th_q (th_capture = cycle 1).
-//       code = popcount(th_q), k = 31 - code
-//   e3  SEL1/SEL2 update from k (dac_load = cycle DAC_LOAD_CYCLE = 2).
+//   e2  eeg_adc_dig captures TH[30:0] (TH_CAPTURE = cycle 1);
+//       CODE = popcount(TH), k = 31 - CODE
+//   e3  eeg_adc_dig updates SEL1/SEL2 from k (DAC_LOAD = cycle DAC_LOAD_CYCLE = 2).
 //       Excess loop delay CMP_STROBE -> SEL = (DAC_LOAD_CYCLE + 1) MCLK = 91.6 ns.
-//   e4  CIC integrators take x = 2*code - 31 (cic_en = cycle 3).
+//   e4  CIC integrators take x = 2*CODE - 31 (cic_en = cycle 3).
 //
-// TH timing assumption (no synchronizer on TH): TH is driven by the analog
-// quantizer in response to CMP_STROBE, i.e. it is launched by the e0 edge of
-// this same clock. It must be settled at e2 (two MCLK periods after the strobe
-// edge, minus clock-to-out, comparator regeneration, routing and setup) and
-// held until after e2 (the quantizer keeps its decision latched until the next
-// strobe). For STA, TH is a 2-cycle path from the CMP_STROBE launch flop.
-// Each TH bit is registered before the popcount, so an unresolved comparator
-// can only change the code by one LSB.
+// TEST_CFG[5] (ADC_ZERO) holds CHOP_BLANK high (the AFE output chopper stays
+// open while the analog side shorts the ADC input); TEST_CFG[7:6] (DBG_SEL)
+// put timing signals on the RAW pads while the raw stream is off (eeg_raw.sv).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -38,18 +38,21 @@ module eeg_digital_top #(
     // raw code debug stream
     output logic        RAW_DATA,
     output logic        RAW_CLK,
+    // ADC-side digital block (eeg_adc_dig): TH capture, code, DWA
+    output logic        ADC_RST_N,            // synchronized reset for eeg_adc_dig
+    output logic        TH_CAPTURE,           // frame cycle 1: eeg_adc_dig captures TH at its end (e2)
+    output logic        DAC_LOAD,             // frame cycle DAC_LOAD_CYCLE: SEL1/SEL2 update at its end
+    output logic        DWA_EN,               // CONTROL.DWA_EN
+    input  logic [4:0]  CODE,                 // quantizer code from eeg_adc_dig (popcount of the captured TH)
     // analog interface
-    input  logic [30:0] TH,                   // quantizer thermometer outputs
-    output logic [30:0] SEL1,                 // DAC1 element selection, 1 = positive reference
-    output logic [30:0] SEL2,                 // DAC2 element selection, 1 = positive reference
     output logic        CMP_STROBE,           // comparator clock (one MCLK cycle per frame)
     output logic        DAC_CLK,              // DAC1 update: high one MCLK, from one MCLK after SEL1/SEL2 change
     output logic        CHOP,                 // chopper clock, 128 kHz (CHOP_FAST = 1) or 64 kHz
     output logic        CHOP_OUT,             // CHOP delayed by CHOP_DLY MCLK cycles
-    output logic        CHOP_BLANK,           // output-chopper blanking: 1 MCLK before to BLANK_LEN MCLK after each CHOP_OUT edge
+    output logic        CHOP_BLANK,           // output-chopper blanking: 1 MCLK before to BLANK_LEN MCLK after each CHOP_OUT edge; held high by TEST_CFG[5]
     output logic        AFE_RST,              // CONTROL.AFE_RST
     output logic        CHOP_EN,              // CONTROL.CHOP_EN
-    output logic [7:0]  TEST_CFG,             // TEST register (analog test muxes)
+    output logic [7:0]  TEST_CFG,             // TEST register: [4:0] analog test mux, [5] ADC_ZERO, [7:6] DBG_SEL
     output logic [3:0]  CPF_TRIM,             // ANA_TRIM[3:0]: impedance-boost capacitor trim
     output logic [1:0]  AFE_IBIAS,            // ANA_TRIM[5:4]: AFE bias-current select
     output logic [1:0]  BTRIM_P,              // BOOST_TRIM[1:0]: PMOS-cascode booster units
@@ -87,6 +90,7 @@ module eeg_digital_top #(
     logic       chop_fast;
     logic [7:0] chop_dly;
     logic [3:0] blank_len;
+    logic       chop_blank;
 
     eeg_clkgen #(
         .DAC_LOAD_CYCLE (DAC_LOAD_CYCLE)
@@ -103,56 +107,25 @@ module eeg_digital_top #(
         .cic_en     (cic_en),
         .chop       (CHOP),
         .chop_out   (CHOP_OUT),
-        .chop_blank (CHOP_BLANK),
+        .chop_blank (chop_blank),
         .raw_clk    (raw_clk)
     );
 
     // ------------------------------------------------------------------
-    // Quantizer capture and code
+    // ADC-side digital block (eeg_adc_dig): strobes out, code in
     // ------------------------------------------------------------------
-    logic [30:0] th_q;
-    logic [4:0]  code;
-    logic [4:0]  k;
+    logic [4:0] code;
+    logic       dwa_en;
 
-    always_ff @(posedge MCLK or negedge rst_n) begin
-        if (!rst_n) begin
-            th_q <= 31'h0000_7FFF;            // code 15, consistent with the DWA reset (k = 16)
-        end else if (th_capture) begin
-            th_q <= TH;
-        end
-    end
+    assign ADC_RST_N  = rst_n;
+    assign TH_CAPTURE = th_capture;
+    assign DAC_LOAD   = dac_load;
+    assign DWA_EN     = dwa_en;
+    assign code       = CODE;
 
-    eeg_therm2bin u_therm2bin (
-        .th   (th_q),
-        .code (code)
-    );
-
-    assign k = 5'd31 - code;                  // elements to the positive reference
-
-    // ------------------------------------------------------------------
-    // DAC element selection (independent pointers for DAC1 and DAC2)
-    // ------------------------------------------------------------------
-    logic dwa_en;
-
-    eeg_dwa #(.N(31)) u_dwa1 (
-        .clk    (MCLK),
-        .rst_n  (rst_n),
-        .load   (dac_load),
-        .dwa_en (dwa_en),
-        .k      (k),
-        .sel    (SEL1),
-        .ptr    ()
-    );
-
-    eeg_dwa #(.N(31)) u_dwa2 (
-        .clk    (MCLK),
-        .rst_n  (rst_n),
-        .load   (dac_load),
-        .dwa_en (dwa_en),
-        .k      (k),
-        .sel    (SEL2),
-        .ptr    ()
-    );
+    // ADC_ZERO (TEST_CFG[5]) keeps the output chopper blanked. Both inputs are
+    // registers; TEST_CFG only changes on a register write.
+    assign CHOP_BLANK = chop_blank | TEST_CFG[5];
 
     // ------------------------------------------------------------------
     // Decimation filter
@@ -300,7 +273,7 @@ module eeg_digital_top #(
     );
 
     // ------------------------------------------------------------------
-    // Raw code serializer (debug)
+    // Raw code serializer and timing debug outputs (RAW pads)
     // ------------------------------------------------------------------
     eeg_raw u_raw (
         .clk        (MCLK),
@@ -309,6 +282,9 @@ module eeg_digital_top #(
         .cycle      (cycle),
         .raw_clk    (raw_clk),
         .code       (code),
+        .dbg_sel    (TEST_CFG[7:6]),
+        .dbg_clk    ({CHOP_BLANK, CHOP, CMP_STROBE}),
+        .dbg_data   ({CHOP1, CHOP_OUT, DAC_CLK}),
         .raw_data_o (RAW_DATA),
         .raw_clk_o  (RAW_CLK)
     );

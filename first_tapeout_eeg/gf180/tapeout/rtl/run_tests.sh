@@ -33,7 +33,8 @@ LOGS=$BUILD/logs
 mkdir -p "$LOGS"
 
 RTL="eeg_clkgen.sv eeg_chop1.sv eeg_therm2bin.sv eeg_dwa.sv eeg_rnd_sat.sv eeg_cic3.sv
-     eeg_fifo.sv eeg_regs.sv eeg_spi_slave.sv eeg_raw.sv eeg_digital_top.sv"
+     eeg_fifo.sv eeg_regs.sv eeg_spi_slave.sv eeg_raw.sv eeg_digital_top.sv eeg_adc_dig.sv
+     eeg_digital_sys.sv"
 IVFLAGS="-g2012 -Wall -I tb"
 
 npass=0

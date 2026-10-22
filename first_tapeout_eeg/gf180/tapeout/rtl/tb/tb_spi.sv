@@ -1,4 +1,5 @@
-// tb_spi - SPI slave + registers + FIFO, at the eeg_digital_top level.
+// tb_spi - SPI slave + registers + FIFO, at the eeg_digital_sys level (eeg_digital_top
+// with the ADC-side block eeg_adc_dig, connected as on the chip).
 //
 // TH is held at a constant code, so every valid sample after a FILTER_CLEAR
 // is exactly (2c - 31) * 2^18. The SPI master (tb/spi_bfm.svh) runs on its
@@ -18,7 +19,9 @@
 // partial and over-long READ_SAMPLE frames do not consume, sequence numbers,
 // FIFO overrun keeps the 8 oldest samples and stamps OVERRUN, RUN = 0 stops
 // storing while SEQ keeps counting, DRDY_N == (FIFO empty) at every MCLK,
-// MISO/MISO_OE timing monitors.
+// MISO/MISO_OE timing monitors, TEST_CFG[5] (ADC_ZERO) holding CHOP_BLANK high,
+// TEST_CFG[7:6] (DBG_SEL) timing pairs on the RAW pins (one MCLK late) and the
+// raw stream taking priority over them.
 `timescale 1ns / 1ps
 
 module tb_spi;
@@ -45,7 +48,7 @@ module tb_spi;
     wire         CHOP1;
     wire         DAC_CLK;
 
-    eeg_digital_top dut (
+    eeg_digital_sys dut (
         .MCLK (MCLK), .RESET_N (RESET_N),
         .SCLK (SCLK), .CS_N (CS_N), .MOSI (MOSI), .MISO (MISO), .MISO_OE (MISO_OE),
         .DRDY_N (DRDY_N), .RAW_DATA (RAW_DATA), .RAW_CLK (RAW_CLK),
@@ -64,6 +67,8 @@ module tb_spi;
     integer errors = 0;
     integer chop_checks = 0;
     integer blank_checks = 0;
+    integer dbg_checks = 0;
+    logic   raw_clk_prev = 1'b0;
     integer fc_pulses = 0;
     integer drdy_checks = 0;
 
@@ -88,13 +93,13 @@ module tb_spi;
 
     // DRDY_N must be low exactly while the FIFO holds data
     always @(negedge MCLK) begin
-        if (dut.rst_n) begin
+        if (dut.u_top.rst_n) begin
             drdy_checks = drdy_checks + 1;
-            if (DRDY_N !== (dut.u_fifo.level == 4'd0)) err("DRDY_N does not match the FIFO level");
+            if (DRDY_N !== (dut.u_top.u_fifo.level == 4'd0)) err("DRDY_N does not match the FIFO level");
         end
     end
 
-    always @(posedge MCLK) if (dut.filter_clear) fc_pulses = fc_pulses + 1;
+    always @(posedge MCLK) if (dut.u_top.filter_clear) fc_pulses = fc_pulses + 1;
 
     // last edge times of CHOP and CHOP_OUT
     real t_chop = 0.0;
@@ -158,6 +163,24 @@ module tb_spi;
         end
     endtask
 
+    // TEST_CFG[7:6] = sel with the raw stream off: RAW_CLK/RAW_DATA are the
+    // selected pair of timing signals, registered once (one MCLK late).
+    task automatic check_dbg(input logic [1:0] sel, input integer ncyc);
+        logic pc, pd;
+        @(negedge MCLK);
+        for (int n = 0; n < ncyc; n++) begin
+            case (sel)
+                2'b01:   begin pc = CMP_STROBE; pd = DAC_CLK;  end
+                2'b10:   begin pc = CHOP;       pd = CHOP_OUT; end
+                default: begin pc = CHOP_BLANK; pd = CHOP1;    end
+            endcase
+            @(negedge MCLK);
+            if (RAW_CLK !== pc || RAW_DATA !== pd)
+                err($sformatf("DBG_SEL %0d: RAW_CLK/RAW_DATA %b%b, expected %b%b", sel, RAW_CLK, RAW_DATA, pc, pd));
+            dbg_checks = dbg_checks + 1;
+        end
+    endtask
+
     task automatic check_reg(input logic [7:0] addr, input logic [7:0] exp);
         logic [7:0] v;
         spi_read_reg(addr, v);
@@ -214,7 +237,7 @@ module tb_spi;
 
         spi_half = 250.0;
         check_reg(8'h00, 8'hE6);
-        check_reg(8'h01, 8'h06);
+        check_reg(8'h01, 8'h07);
         check_reg(8'h02, 8'h74);
         check_reg(8'h03, 8'h02);          // SETTLING after reset
         check_reg(8'h04, 8'h05);
@@ -326,6 +349,45 @@ module tb_spi;
         check_reg(8'h09, 8'h3C);
         if (TEST_CFG !== 8'h3C) err("TEST_CFG pins");
 
+        // TEST_CFG[5] ADC_ZERO: CHOP_BLANK stays high over several CHOP edges
+        spi_write_reg(8'h09, 8'h20);
+        @(negedge MCLK);
+        for (int n = 0; n < 1100; n++) begin
+            @(negedge MCLK);
+            if (CHOP_BLANK !== 1'b1) err("CHOP_BLANK not held high with ADC_ZERO");
+        end
+        // TEST_CFG[7:6] DBG_SEL with the raw stream off (CONTROL = 0x74)
+        spi_write_reg(8'h09, 8'h40);
+        check_dbg(2'b01, 1100);
+        spi_write_reg(8'h09, 8'h80);
+        check_dbg(2'b10, 1100);
+        spi_write_reg(8'h09, 8'hC0);
+        check_dbg(2'b11, 9000);           // one CHOP1 edge (4 kHz) and several CHOP_BLANK pulses
+        // the raw stream takes priority from the next frame boundary: 8 RAW_CLK
+        // rising edges per frame, and the debug pair again once it is off
+        spi_write_reg(8'h02, 8'h7C);      // RAW_EN on
+        #(70.0 * TMCLK);
+        @(posedge CMP_STROBE);
+        begin
+            int nr;
+            nr = 0;
+            for (int n = 0; n < 4 * 32; n++) begin
+                @(posedge MCLK);
+                #1.0;
+                if (RAW_CLK === 1'b1 && raw_clk_prev === 1'b0) nr = nr + 1;
+                raw_clk_prev = RAW_CLK;
+            end
+            if (nr != 32) err($sformatf("%0d RAW_CLK edges in 4 frames with RAW_EN and DBG_SEL 3, expected 32", nr));
+        end
+        spi_write_reg(8'h02, 8'h74);      // RAW_EN off
+        #(70.0 * TMCLK);
+        check_dbg(2'b11, 200);
+        spi_write_reg(8'h09, 8'h1C);
+        check_reg(8'h09, 8'h1C);
+        if (TEST_CFG !== 8'h1C) err("TEST_CFG pins");
+        #(4.0 * TMCLK);
+        if (RAW_CLK !== 1'b0 || RAW_DATA !== 1'b0) err("RAW pins not quiet with DBG_SEL 0 and RAW_EN 0");
+
         // CHOP / CHOP_OUT on the pins: 128 kHz after reset, 64 kHz with
         // CHOP_FAST = 0 (a rate change takes effect within one 512-MCLK superperiod)
         // CHOP_BLANK follows CHOP_OUT (BLANK_LEN 7 after reset, 15, 1, 0)
@@ -367,7 +429,7 @@ module tb_spi;
         spi_write_reg(8'h05, 8'h07);
         spi_write_reg(8'h07, 8'h00);
         check_reg(8'h00, 8'hE6);
-        check_reg(8'h01, 8'h06);
+        check_reg(8'h01, 8'h07);
         check_reg(8'h05, 8'h00);
         check_reg(8'h07, 8'hE8);
 
@@ -377,7 +439,7 @@ module tb_spi;
         spi_xfer(2, 7);
         spi_xfer(3, 1);
         spi_xfer(4, 0);
-        check_reg(8'h09, 8'h3C);
+        check_reg(8'h09, 8'h1C);
 
         // unknown commands set CMD_ERR (W1C); a partial command byte does not
         spi_tx[0] = 8'h55; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
@@ -485,8 +547,8 @@ module tb_spi;
 
         #5000.0;
         if (errors == 0 && spi_errors == 0)
-            $display("PASS: tb_spi (%0d SPI transfers at 2 and 1 MHz, %0d READ_SAMPLE frames, %0d DRDY_N checks, %0d CHOP/CHOP_OUT and %0d CHOP_BLANK pin checks at 128 and 64 kHz, max MISO latency %0.1f ns, max MISO_OE latency %0.1f ns)",
-                     spi_xfers, spi_sample_frames, drdy_checks, chop_checks, blank_checks, spi_miso_lat_max, spi_oe_lat_max);
+            $display("PASS: tb_spi (%0d SPI transfers at 2 and 1 MHz, %0d READ_SAMPLE frames, %0d DRDY_N checks, %0d CHOP/CHOP_OUT and %0d CHOP_BLANK pin checks at 128 and 64 kHz, %0d DBG_SEL pin checks, max MISO latency %0.1f ns, max MISO_OE latency %0.1f ns)",
+                     spi_xfers, spi_sample_frames, drdy_checks, chop_checks, blank_checks, dbg_checks, spi_miso_lat_max, spi_oe_lat_max);
         else
             $display("FAIL: tb_spi (%0d errors, %0d SPI monitor errors)", errors, spi_errors);
         $finish;

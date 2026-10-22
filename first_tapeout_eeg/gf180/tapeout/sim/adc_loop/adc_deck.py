@@ -11,14 +11,16 @@ Frame timing (e_n = MCLK edge n of a frame, as eeg_digital_top):
   e16 CHOP1 edges (--chop1, 0 = phase A all the time)
 Supplies AVDD/DVDD ideal 3.3 V. References: ideal 1.9/1.4 V through 0.2 ohm into
 eeg_ref. Bias codes at their reset values (AFE_IBIAS 2, BOOST_TRIM 4 units).
-Input: ideal differential sine on VCM (from eeg_bias, 100 nF at the VCM pad).
+Input: ideal differential sine on VCM (from eeg_bias, 100 nF at the VCM pad). With --zero,
+the ADC_ZERO test of TEST_CFG[5] instead: the inputs carry only the AFE hold capacitors
+(the output chopper is open) and the INP-INN switch of eeg_adc is closed.
 The integrators are reset (RST = 1) until 1 us.
 
 out.csv has the columns of make_deck.py (sig, o1p, o1n, i1p, i1n, o2p, o2n, i2p, i2n,
 norm1, i(avdd)) on a --wstep grid, so analyze_tone.py and chop1_fold.py apply.
 
 Usage: python3 adc_deck.py <out_dir> [--tstop 1.25e-3] [--fsig 1e3] [--amp 0.3]
-       [--chop1 4e3] [--corner typical] [--temp 27] [--wstep 20e-9] [--tol fast|fine]
+       [--chop1 4e3] [--corner typical] [--temp 27] [--wstep 20e-9] [--tol fast|fine] [--zero]
 Then: (cd <out_dir> && ngspice -b circuit.spice) -> out.csv
 """
 import argparse
@@ -55,6 +57,14 @@ def deck(a):
     incs = "\n".join(f".include {os.path.join(ADC, n)}" for n in NETS)
     vec = ("v(sig) v(xadc.o1p) v(xadc.o1n) v(xadc.i1p) v(xadc.i1n) v(xadc.o2p) v(xadc.o2n) "
            "v(xadc.i2p) v(xadc.i2n) v(norm1) i(vavdd)")
+    if a.zero:  # ADC_ZERO: AFE output chopper open, only the 30 pF hold capacitors on the
+        # inputs (started 20 mV apart), the INP-INN switch closed; v(sig) is then INP - INN
+        inp = ("* input: ADC_ZERO test (AFE output chopper open, hold capacitors only)\n"
+               "VAZ AZERO 0 3.3\nCHP INP 0 30p\nCHN INN 0 30p\nESIG SIG 0 INP INN 1\n"
+               ".ic v(inp)=1.66 v(inn)=1.64\n")
+    else:
+        inp = (f"* input\nVSIG SIG 0 SIN(0 {a.amp} {a.fsig} 1.1u)\nEINP INP VCM SIG 0 .5\n"
+               "EINN INN VCM SIG 0 -.5\nVAZ AZERO 0 0\n")
     return f"""* eeg_adc loop: {a.corner} {a.temp} C, {a.fsig:g} Hz {a.amp:g} V pk, CHOP1 {a.chop1:g} Hz
 .include {md.PDK}/design.ngspice
 .lib {md.PDK}/sm141064.ngspice {a.corner}
@@ -90,17 +100,13 @@ XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP V
 + AVDD 0 eeg_bias
 CVCMPAD VCM 0 100n
 VITST ITST 0 1
-* input
-VSIG SIG 0 SIN(0 {a.amp} {a.fsig} 1.1u)
-EINP INP VCM SIG 0 .5
-EINN INN VCM SIG 0 -.5
-* frame timing
+{inp}* frame timing
 VSTB CMP_STROBE 0 {strobe}
 VDCLK DAC_CLK 0 {dclk}
 VCH1 CHOP1 0 {chop}
 VRST RST 0 PWL(0 3.3 1u 3.3 1.005u 0)
 ENRST NRST 0 AVDD RST 1
-XADC INP INN CHOP1 DAC_CLK CMP_STROBE RST NRST {sel}
+XADC INP INN CHOP1 DAC_CLK CMP_STROBE RST NRST AZERO {sel}
 + {s2l}
 + {th}
 + VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ AVDD 0 DVDD 0 eeg_adc
@@ -135,6 +141,8 @@ def main():
     ap.add_argument("--temp", type=float, default=27)
     ap.add_argument("--wstep", type=float, default=20e-9)
     ap.add_argument("--tol", choices=sorted(TOLS), default="fast")
+    ap.add_argument("--zero", action="store_true",
+                    help="ADC_ZERO test: inputs on the 30 pF hold capacitors only, INP-INN switch closed")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     q = open(os.path.join(md.IMPORT, "quantizer.spice")).read()

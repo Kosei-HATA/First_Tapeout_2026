@@ -21,7 +21,7 @@
 * rising edge (ELD 4 MCLK = 122 ns, 12.5 %).
 *
 * Ports: OUTP OUTN (to the stage-1 virtual grounds), VRP VRN (filtered references),
-* SEL0..SEL30 (eeg_digital_top SEL1), DAC_CLK, VDD VSS (AVDD/AVSS).
+* SEL0..SEL30 (eeg_adc_dig SEL1), DAC_CLK, VDD VSS (AVDD/AVSS).
 
 .subckt eeg_dac1 OUTP OUTN VRP VRN SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9
 + SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23

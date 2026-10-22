@@ -14,6 +14,15 @@
 //   -> 2 MCLK (61 ns) setup and 2 MCLK hold at the receiver.
 // RAW_EN is sampled at frame boundaries only, so words are never cut. When
 // disabled raw_data = 0 and raw_clk_o = 0 (the 8 MHz pad output is quiet).
+//
+// Timing debug (TEST_CFG[7:6] = DBG_SEL, gate 1 10/23): while the stream is off,
+// DBG_SEL 1..3 puts a pair of frame-timing signals on the pads instead of the
+// quiet level, each registered once (one MCLK later than at the analog blocks):
+//   01  RAW_CLK = CMP_STROBE, RAW_DATA = DAC_CLK
+//   10  RAW_CLK = CHOP,       RAW_DATA = CHOP_OUT
+//   11  RAW_CLK = CHOP_BLANK, RAW_DATA = CHOP1
+// The stream has priority from the frame boundary where RAW_EN is taken, so
+// neither words nor debug pairs are cut at a stream boundary.
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -24,6 +33,9 @@ module eeg_raw (
     input  logic [4:0] cycle,        // frame cycle from eeg_clkgen
     input  logic       raw_clk,      // free-running MCLK/4 from eeg_clkgen
     input  logic [4:0] code,         // quantizer code c (stable from cycle 2 to cycle 1 of the next frame)
+    input  logic [1:0] dbg_sel,      // TEST_CFG[7:6]: timing pair on the pads while the stream is off
+    input  logic [2:0] dbg_clk,      // to raw_clk_o for DBG_SEL 1..3
+    input  logic [2:0] dbg_data,     // to raw_data_o for DBG_SEL 1..3
     output logic       raw_data_o,   // pad RAW_DATA
     output logic       raw_clk_o     // pad RAW_CLK
 );
@@ -46,8 +58,13 @@ module eeg_raw (
                 // next bit every 4 MCLK cycles (at e4, e8, ..., e28)
                 sh <= {sh[6:0], 1'b0};
             end
-            raw_data_o <= sh[7];
-            raw_clk_o  <= on & raw_clk;
+            if (on || dbg_sel == 2'b00) begin
+                raw_data_o <= sh[7];
+                raw_clk_o  <= on & raw_clk;
+            end else begin
+                raw_data_o <= dbg_data[dbg_sel - 2'd1];
+                raw_clk_o  <= dbg_clk[dbg_sel - 2'd1];
+            end
         end
     end
 

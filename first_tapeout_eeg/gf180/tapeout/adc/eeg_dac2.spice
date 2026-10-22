@@ -13,7 +13,7 @@
 * the PMOS diode, IDN sources 234 nA into the NMOS diode; both scale with 1/R of the
 * reference poly, like R21); cascode gates VBPC 1.8 V, VBNC 1.5 V (eeg_bias divider).
 *
-* Ports: OUTP OUTN (stage-2 virtual grounds), SEL0..SEL30 (eeg_digital_top SEL2),
+* Ports: OUTP OUTN (stage-2 virtual grounds), SEL0..SEL30 (eeg_adc_dig SEL2),
 * IDP IDN VBPC VBNC (eeg_bias), VDD VSS (AVDD/AVSS).
 
 .subckt eeg_dac2 OUTP OUTN SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9 SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23 SEL24 SEL25 SEL26 SEL27 SEL28 SEL29 SEL30

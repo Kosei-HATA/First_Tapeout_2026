@@ -11,21 +11,26 @@
 *            steering, SEL2 at e3)
 *   quantizer eeg_quantizer on O2P/O2N (31 comparators, ladder from VREFP/VREFN)
 *   reset    TGs across C1 and C2 while RST = 1 (the integrators start from zero)
+*   ADC_ZERO a TG from INP to INN (TEST_CFG[5], gate 1 10/23): with the AFE output
+*            chopper held open (CHOP_BLANK forced high by the RTL) the ADC converts
+*            zero through its own RIN, for an ADC-only noise and idle-tone test
 * C1 and C2 are ideal here (MIM in the layout; cap_mim_2f0ff voltage coefficient
 * about 9e-6 /V). 2 pF per integrator output stands for the wiring until PEX.
 *
-* Ports: INP INN (from the AFE output), CHOP1, DAC_CLK, CMP_STROBE, RST NRST,
-* SEL1_0..30, SEL2_0..30 (eeg_digital_top SEL1/SEL2), TH0..TH30 (to eeg_digital_top),
+* Ports: INP INN (from the AFE output), CHOP1, DAC_CLK, CMP_STROBE, RST NRST, ADC_ZERO
+* (TEST_CFG[5]), SEL1_0..30, SEL2_0..30 (eeg_adc_dig SEL1/SEL2), TH0..TH30 (to eeg_adc_dig),
 * VREFP VREFN (filtered, eeg_ref), VCM (CM reference), VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2
 * IDP IDN IQ (eeg_bias), AVDD AVSS, DVDD DVSS (quantizer latches).
 * Needs: eeg_adc_otas.spice, eeg_adc_clk.spice, eeg_dac1.spice, eeg_dac2.spice,
 * eeg_quantizer.spice (all in gf180/tapeout/adc/).
 
-.subckt eeg_adc INP INN CHOP1 DAC_CLK CMP_STROBE RST NRST
+.subckt eeg_adc INP INN CHOP1 DAC_CLK CMP_STROBE RST NRST ADC_ZERO
 + SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30
 + SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30
 + TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
 + VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ AVDD AVSS DVDD DVSS
+* ---- ADC-only test: INP-INN short (open in normal operation)
+XZERO INP INN ADC_ZERO AVDD AVSS eeg_adc_zero
 * ---- stage 1
 XRINP INP I1P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
 XRINN INN I1N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
@@ -54,6 +59,16 @@ CW2N O2N AVSS 2p
 * ---- quantizer
 XQ O2P O2N VREFP VREFN CMP_STROBE TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD DVSS eeg_quantizer
 .ends eeg_adc
+
+* ADC_ZERO switch: TG of about 100 ohm (NMOS 10 um, PMOS 20 um; RIN is 9375 ohm per
+* side), with its own inverter for the PMOS gate. Off, it adds about 20 fF per input
+* node (the AFE hold capacitors are 30 pF).
+.subckt eeg_adc_zero A B Z VDD VSS
+XIP ZB Z VDD VDD pfet_03v3 W=2u L=0.28u nf=1
+XIN ZB Z VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+XN A Z B VSS nfet_03v3 W=10u L=0.28u nf=2
+XP A ZB B VDD pfet_03v3 W=20u L=0.28u nf=4
+.ends eeg_adc_zero
 
 * integrator reset switch (as rst_tg of the imported deck)
 .subckt eeg_adc_rst A B G GN VDD VSS

@@ -45,6 +45,7 @@ def build(code, corner="typical", temp=27, rl=None, start=False):
     if rl:
         bias = re.sub(r"(XR0 S2 VSS VSS ppolyf_u_1k r_length=)\S+", rf"\g<1>{rl}", bias)
     rcorner = {"typical": "res_typical", "ss": "res_ss", "ff": "res_ff"}.get(corner, "res_typical")
+    ccorner = {"ss": "ss", "ff": "ff"}.get(corner, "typical")
     vdd = "VDD VDD 0 PWL(0 0 10u 3.3)" if start else "VDD VDD 0 3.3"
     ana = ("tran 10n 40u 0 10n\nlet ibln = i(vmbln)\nprint ibln[length(ibln)-1] v(vbn)[length(v(vbn))-1]"
            if start else "op\nprint @m.xb.xmn1.m0[id] v(vbn) v(vbcm) i(vmbln) i(vmblp) v(xb.gp) v(xb.g1) "
@@ -54,6 +55,8 @@ def build(code, corner="typical", temp=27, rl=None, start=False):
 .include {PDK}/design.ngspice
 .lib {PDK}/sm141064.ngspice {corner}
 .lib {PDK}/sm141064.ngspice {rcorner}
+.lib {PDK}/sm141064.ngspice mimcap_{ccorner}
+.lib {PDK}/sm141064.ngspice cap_mim
 .include bias.spice
 .temp {temp}
 .options sparse reltol=1e-5

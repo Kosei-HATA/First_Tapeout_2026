@@ -60,7 +60,7 @@ XMN2 GP G1 S2 VSS nfet_03v3 W=10u L=4u nf=1 m=128
 XR0 S2 VSS VSS ppolyf_u_1k r_length=3.3u r_width=2u
 XMP4 GP GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 XMP3 G1 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
-CGP GP VDD 5p
+XCGP GP VDD cap_mim_2f0ff c_length=49.89u c_width=49.89u
 * start-up: SB stays high (weak pull-up) until G1 rises; SB high pulls GP low
 XSU1A SBM VSS VDD VDD pfet_03v3 W=1u L=50u nf=1 m=1
 XSU1B SB VSS SBM VDD pfet_03v3 W=1u L=50u nf=1 m=1
@@ -79,13 +79,14 @@ XLA IB1 IB0 GA VDD VSS eeg_bias_nor2
 XLB IB1 GB VDD VSS eeg_bias_inv
 XLC IB1 IB0 GC VDD VSS eeg_bias_nand2
 XDT NT NT VSS VSS nfet_03v3 W=10u L=1u nf=1 m=10
-RVBN NT VBN 1k
-CVBN VBN VSS 20p
+XRVBN NT VBN VSS ppolyf_u_1k r_length=1.8u r_width=2u
+XCVBN_0 VBN VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCVBN_1 VBN VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
 * AFE CMFB tail reference: 1 unit into W10/L2 x3
 XMCM NC GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 XDCM NC NC VSS VSS nfet_03v3 W=10u L=2u nf=1 m=3
-RVBCM NC VBCM 1k
-CVBCM VBCM VSS 10p
+XRVBCM NC VBCM VSS ppolyf_u_1k r_length=1.8u r_width=2u
+XCVBCM VBCM VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
 * booster references: 2 fixed units plus three switchable 2-unit segments each,
 * code BP1:BP0 (BLN, PMOS-cascode boosters) and BN1:BN0 (BLP, NMOS-cascode boosters):
 * 00 2, 01 4 (reset), 10 6, 11 8 units
@@ -114,24 +115,25 @@ XMBO BLP ND VSS VSS nfet_03v3 W=10u L=2u nf=1 m=8
 * ADC OTA tails (OTA1 W10/L1 x128 3.3 mA, OTA2 x2): 5 units into W10/L1 x6
 XMA1 NA1 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=40
 XDA1 NA1 NA1 VSS VSS nfet_03v3 W=10u L=1u nf=1 m=6
-RVBN1 NA1 VBN1 1k
-CVBN1 VBN1 VSS 20p
+XRVBN1 NA1 VBN1 VSS ppolyf_u_1k r_length=1.8u r_width=2u
+XCVBN1_0 VBN1 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCVBN1_1 VBN1 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
 * ADC CMFB tails (W10/L2 x1, about 10.5 uA each): 1 unit into W10/L2 x3
 XMA2 NA2 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 XDA2 NA2 NA2 VSS VSS nfet_03v3 W=10u L=2u nf=1 m=3
-RVBCM1 NA2 VBCM1 1k
-CVBCM1 VBCM1 VSS 10p
+XRVBCM1 NA2 VBCM1 VSS ppolyf_u_1k r_length=1.8u r_width=2u
+XCVBCM1 VBCM1 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
 * cascode gates: poly divider 3.3 -> 2.0 (VNC1) -> 1.8 (VBPC2) -> 1.7 (VPC1) -> 1.5 (VBNC2)
 * -> 0 V, about 10 uA
-XRC1 VDD VNC1 VSS ppolyf_u_3k r_length=86.7u r_width=2u
-XRC2 VNC1 VBPC2 VSS ppolyf_u_3k r_length=13.33u r_width=2u
-XRC2B VBPC2 VPC1 VSS ppolyf_u_3k r_length=6.67u r_width=2u
-XRC3 VPC1 VBNC2 VSS ppolyf_u_3k r_length=13.33u r_width=2u
-XRC3B VBNC2 VSS VSS ppolyf_u_3k r_length=100u r_width=2u
-CVNC1 VNC1 VSS 10p
-CVPC1 VPC1 VSS 10p
-CVBPC2 VBPC2 VSS 10p
-CVBNC2 VBNC2 VSS 10p
+XRC1 VDD VNC1 VSS ppolyf_u_1k r_length=129.25u r_width=1u
+XRC2 VNC1 VBPC2 VSS ppolyf_u_1k r_length=19.99u r_width=1u
+XRC2B VBPC2 VPC1 VSS ppolyf_u_1k r_length=10.07u r_width=1u
+XRC3 VPC1 VBNC2 VSS ppolyf_u_1k r_length=19.99u r_width=1u
+XRC3B VBNC2 VSS VSS ppolyf_u_1k r_length=149.06u r_width=1u
+XCVNC1 VNC1 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCVPC1 VPC1 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCVBPC2 VBPC2 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCVBNC2 VBNC2 VSS cap_mim_2f0ff c_length=70.65u c_width=70.65u
 * quantizer preamp tails: one unit into the quantizer's NMOS diode
 XMQ IQ GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
 * test-pad copy of the unit current
@@ -144,6 +146,6 @@ XMD2 ND2 GP VDD VDD pfet_03v3 W=1u L=6.2u nf=1 m=1
 XDD2 ND2 ND2 VSS VSS nfet_03v3 W=1u L=20u nf=1 m=1
 XMD3 IDP ND2 VSS VSS nfet_03v3 W=1u L=20u nf=1 m=1
 * VCM = (VREFP + VREFN) / 2 for the CMFB references; decoupled off chip at the VCM pad
-XRV1 VREFP VCM VSS ppolyf_u_3k r_length=66.7u r_width=2u
-XRV2 VCM VREFN VSS ppolyf_u_3k r_length=66.7u r_width=2u
+XRV1 VREFP VCM VSS ppolyf_u_1k r_length=99.47u r_width=1u
+XRV2 VCM VREFN VSS ppolyf_u_1k r_length=99.47u r_width=1u
 .ends eeg_bias

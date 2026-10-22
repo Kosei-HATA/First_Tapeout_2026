@@ -175,7 +175,7 @@ vb @2 kHz チョップ（1.25 s）: ゲイン 31.688（fc 実測は上記 (c)）
 
 PDK 実測/公称値:
 - MIM 密度: **2.04 fF/µm²**（抽出実測、M4/M5 間 MIM-B。gf180mcuD では M5=9kA 厚金属）
-- ppolyf_u_high_Rs: **3 kΩ/sq**（1k/2k/3k 選択可; sky130 xhigh-po は 2 kΩ/sq）
+- ppolyf_u_high_Rs: **3 kΩ/sq**（1k/2k/3k 選択可; sky130 xhigh-po は 2 kΩ/sq）→ 10/23：このプロセスで作れるのは 1 kΩ/sq（ppolyf_u_1k）だけ。ネットリストは 1k に直した
 - ppolyf_u: 350 Ω/sq、nwell 抵抗も利用可
 - FET フィンガピッチ: 実測 ~2.5 µm（L=2、コンタクト間）; pcell 実測フットプリント
   は `gf180/klayout/measure_footprints.py`（例: 入力ペア 120/4 nf12 = 55.3×121.3 µm）

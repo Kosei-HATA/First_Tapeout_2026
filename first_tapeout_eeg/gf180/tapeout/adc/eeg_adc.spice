@@ -1,8 +1,8 @@
 * eeg_adc: the CT 2nd-order 5-bit sigma-delta modulator of the EEG chip (GF180, this
 * rev), from the independent-environment gain-10 loop (import_20261021/adc_gain10_loop)
 * with the changes of tracker B2-B8:
-*   stage 1  RIN 9375 ohm = 32 parallel DAC1-unit resistors (300 kohm ppolyf_u_3k,
-*            100 squares, W 2 um), so RIN/RD1 = 31/32 by construction; OTA1
+*   stage 1  RIN 9375 ohm = 32 parallel DAC1-unit resistors (300 kohm ppolyf_u_1k,
+*            291.28 x 1 um), so RIN/RD1 = 31/32 by construction; OTA1
 *            (gf180_inside_cascode_ota, input pair L 1 um m 1024, eeg_adc_otas.spice)
 *            chopped by CHOP1 through eeg_adc_clk; C1 680.5 pF per side; DAC1
 *            eeg_dac1 (steered cells, common-break drive from DAC_CLK)
@@ -34,8 +34,8 @@
 * ---- ADC-only test: INP-INN short (open in normal operation)
 XZERO INP INN ADC_ZERO AVDD AVSS eeg_adc_zero
 * ---- stage 1
-XRINP INP I1P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
-XRINN INN I1N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
+XRINP INP I1P AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=32
+XRINN INN I1N AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=32
 XCLK1 CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS eeg_adc_clk
 XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS
 + gf180_inside_cascode_ota
@@ -45,15 +45,16 @@ XDAC1 I1P I1N VREFP VREFN SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_
 XR1P O1N I1P RST NRST AVDD AVSS eeg_adc_rst
 XR1N O1P I1N RST NRST AVDD AVSS eeg_adc_rst
 * ---- stage 2
-XR21P O1P I2P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
-XR21N O1N I2N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
-XOTA2 I2P I2N O2P O2N VCM VBN1 VNC1 VPC1 VBCM1 AVDD AVSS gf180_ct_ota_tel16_cmfb CCOMP=10p
+XR21P O1P I2P AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=3
+XR21N O1N I2N AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=3
+XOTA2 I2P I2N O2P O2N VCM VBN1 VNC1 VPC1 VBCM1 AVDD AVSS gf180_ct_ota_tel16_cmfb
 XC2P I2P O2N eeg_c2
 XC2N I2N O2P eeg_c2
 XDAC2 I2P I2N SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 IDP IDN VBPC2 VBNC2 AVDD AVSS eeg_dac2
 XR2P O2N I2P RST NRST AVDD AVSS eeg_adc_rst
 XR2N O2P I2N RST NRST AVDD AVSS eeg_adc_rst
-* ---- wiring estimates on the integrator outputs (before layout)
+* ---- wiring estimates on the integrator outputs (before layout; for simulation only,
+* gf180lay.to_cdl leaves CW* out of the LVS netlist)
 CW1P O1P AVSS 2p
 CW1N O1N AVSS 2p
 CW2P O2P AVSS 2p

@@ -13,7 +13,7 @@
 * Comparator (eeg_qcmp):
 *   preamp   differential-difference: PMOS pair A on INP/INN, pair B on RP/RN
 *            (bulk to source), each with its own tail (3.9 uA), shared
-*            ppolyf_u_3k loads of 300 kohm to AVSS: outputs at about 1.2 V
+*            ppolyf_u_1k loads of 300 kohm to AVSS (297.98 x 1 um): outputs at about 1.2 V
 *            (1.03-1.32 V over corners), gain 8-10, 12-18 MHz. Always on: it
 *            isolates the loop filter and the ladder from the latch and keeps
 *            the input continuous (no sampling switch on O2P/O2N).
@@ -43,8 +43,8 @@ XB1 VOP RP SB SB pfet_03v3 W=20u L=1.25u nf=2 m=1
 XB2 VON RN SB SB pfet_03v3 W=20u L=1.25u nf=2 m=1
 XTA SA VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=1
 XTB SB VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=1
-XRLP VOP AVSS AVSS ppolyf_u_3k r_length=200u r_width=2u
-XRLN VON AVSS AVSS ppolyf_u_3k r_length=200u r_width=2u
+XRLP VOP AVSS AVSS ppolyf_u_1k r_length=297.98u r_width=1u
+XRLN VON AVSS AVSS ppolyf_u_1k r_length=297.98u r_width=1u
 * StrongARM latch; OA falls when VOP > VON (input above threshold)
 XM0 TL CLK DVSS DVSS nfet_03v3 W=8u L=0.28u nf=2 m=1
 XM1 X VOP TL DVSS nfet_03v3 W=4u L=0.5u nf=1 m=1
@@ -418,11 +418,11 @@ XR319 NT144 VREFP AVSS ppolyf_u_1k r_length=2u r_width=2u
 + TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD DVSS
 XLAD VREFP VREFN T0 T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11 T12 T13 T14 T15 T16 T17 T18 T19 T20 T21 T22 T23 T24 T25 T26 T27 T28 T29 T30 AVSS eeg_qladder
 * preamp tail bias: IQ (31.25 uA) into an NMOS diode, mirrored into the PMOS
-* diode VBQ; ideal cap here (MIM in layout)
+* diode VBQ, decoupled with a 2 pF MIM cap to AVDD
 XQD IQ IQ AVSS AVSS nfet_03v3 W=4u L=2u nf=1 m=8
 XQM VBQ IQ AVSS AVSS nfet_03v3 W=4u L=2u nf=1 m=8
 XQP VBQ VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=8
-CVBQ VBQ AVDD 2p
+XCVBQ VBQ AVDD cap_mim_2f0ff c_length=31.46u c_width=31.46u
 * strobe buffer (DVDD): CMP_STROBE -> CLKQ, about 0.8 pF of latch clock load
 XCB1 CLKB CMP_STROBE DVDD DVSS eeg_qinv
 XCB2P CLKQ CLKB DVDD DVDD pfet_03v3 W=32u L=0.28u nf=8 m=1

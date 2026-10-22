@@ -42,6 +42,7 @@ L = {  # (layer, datatype)
     "contact": (33, 0), "metal1": (34, 0), "via1": (35, 0), "metal2": (36, 0), "via2": (38, 0),
     "metal3": (42, 0), "via3": (40, 0), "metal4": (46, 0), "via4": (41, 0), "metal5": (81, 0),
     "fusetop": (75, 0), "dualgate": (55, 0), "pr_bndry": (0, 0),
+    "sab": (49, 0), "resistor": (62, 0), "res_mk": (110, 5),
     "metal1_label": (34, 10), "metal2_label": (36, 10), "metal3_label": (42, 10),
     "metal4_label": (46, 10), "metal5_label": (81, 10), "poly2_label": (30, 10),
 }
@@ -61,15 +62,15 @@ def library():
     return _LIB
 
 
-class Block:
-    """A layout with one top cell and helpers in um."""
+class Cell:
+    """Drawing helpers (um) on one cell of a layout. Block is the top cell of its own
+    layout; Block.new_cell() makes further cells in the same layout, placed with place()."""
 
-    def __init__(self, name):
-        library()
-        self.ly = pya.Layout()
-        self.ly.dbu = 0.001
-        self.top = self.ly.create_cell(name)
-        self.name = name
+    def __init__(self, ly, cell):
+        self.ly = ly
+        self.cell = cell
+        self.top = cell  # the pya cell (name kept from the first version)
+        self.name = cell.name
 
     def li(self, key):
         return self.ly.layer(*L[key])
@@ -80,26 +81,36 @@ class Block:
 
     def box(self, key, x1, y1, x2, y2):
         b = pya.Box(self.um(min(x1, x2)), self.um(min(y1, y2)), self.um(max(x1, x2)), self.um(max(y1, y2)))
-        self.top.shapes(self.li(key)).insert(b)
+        self.cell.shapes(self.li(key)).insert(b)
         return b
 
     def label(self, metal, text, x, y):
-        self.top.shapes(self.li(metal + "_label")).insert(pya.Text(text, pya.Trans(self.um(x), self.um(y))))
+        self.cell.shapes(self.li(metal + "_label")).insert(pya.Text(text, pya.Trans(self.um(x), self.um(y))))
 
     def pcell(self, name, params, x=0.0, y=0.0, rot=0, mirror=False):
         """Place a PDK pcell; returns (instance, terminals) where terminals maps each label
-        text inside the pcell to its (layer key, x, y) in top coordinates."""
+        text inside the pcell to its (layer key, x, y) in this cell's coordinates."""
         lib = library()
-        decl = lib.layout().pcell_declaration(name)
         pc = self.ly.create_cell(name, lib.name(), params)
         if pc is None:
             raise ValueError(f"pcell {name} not created ({params})")
         t = pya.Trans(rot, mirror, pya.Vector(self.um(x), self.um(y)))
-        inst = self.top.insert(pya.CellInstArray(pc.cell_index(), t))
+        inst = self.cell.insert(pya.CellInstArray(pc.cell_index(), t))
         return inst, self.terminals(pc, t)
 
+    def place(self, child, x=0.0, y=0.0, rot=0, mirror=False):
+        """Place another Cell of the same layout at (x, y) um; rot in units of 90 degrees,
+        mirror about the x axis before the rotation."""
+        t = pya.Trans(rot, mirror, pya.Vector(self.um(x), self.um(y)))
+        return self.cell.insert(pya.CellInstArray(child.cell.cell_index(), t))
+
+    def bbox(self):
+        """(x1, y1, x2, y2) um of everything in the cell"""
+        b = self.cell.bbox()
+        return b.left / 1000, b.bottom / 1000, b.right / 1000, b.top / 1000
+
     def shapes(self, inst, key):
-        """Boxes (um, top coordinates) of layer `key` inside a placed instance."""
+        """Boxes (um, this cell's coordinates) of layer `key` inside a placed instance."""
         li = self.ly.find_layer(*L[key])
         out = []
         if li is None:
@@ -148,8 +159,27 @@ class Block:
         for k in range(METALS.index(lo), METALS.index(hi)):
             self.vias(VIAS[k], x1, y1, x2, y2)
 
+
+class Block(Cell):
+    """A layout with one top cell and helpers in um."""
+
+    def __init__(self, name):
+        library()
+        ly = pya.Layout()
+        ly.dbu = 0.001
+        super().__init__(ly, ly.create_cell(name))
+
+    def new_cell(self, name):
+        """A further (empty) cell in this layout, to fill and place()."""
+        if self.ly.has_cell(name):
+            raise ValueError(f"cell {name} exists")
+        return Cell(self.ly, self.ly.create_cell(name))
+
+    def find_cell(self, name):
+        return Cell(self.ly, self.ly.cell(name)) if self.ly.has_cell(name) else None
+
     def write(self, path):
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
         self.ly.write(path)  # hierarchical: the pcells stay cells (the decks run in deep mode)
         return path
 
@@ -229,28 +259,88 @@ def _subckt_blocks(text):
     return blocks
 
 
+_SI = {"f": 1e-15, "p": 1e-12, "n": 1e-9, "u": 1e-6, "m": 1e-3, "k": 1e3, "meg": 1e6}
+
+
+def spice_num(v, env=None):
+    """Value of a SPICE number (2.5u, 10p, 1meg) or a brace expression ({2.5u*s}) with the
+    parameters in env."""
+    v = v.strip()
+    if v.startswith("{") and v.endswith("}"):
+        e = re.sub(r"(\d+\.?\d*(?:e[-+]?\d+)?)(meg|[fpnumk])\b",
+                   lambda m: f"({m.group(1)}*{_SI[m.group(2).lower()]})", v[1:-1], flags=re.I)
+        return float(eval(e, {"__builtins__": {}}, dict(env or {})))
+    m = re.fullmatch(r"([-+]?\d*\.?\d+(?:e[-+]?\d+)?)(meg|[fpnumk])?", v, flags=re.I)
+    if not m:
+        raise ValueError(f"not a number: {v}")
+    return float(m.group(1)) * (_SI[m.group(2).lower()] if m.group(2) else 1.0)
+
+
+def variant_name(name, params):
+    """Name of a parameterized subcircuit for given parameter values (also the layout
+    cell name): eeg_afe_inv with s=8 -> eeg_afe_inv_s8."""
+    return name + "".join(f"_{k}{v:g}" for k, v in sorted(params.items()))
+
+
+def _subckt_params(header):
+    return {t.split("=", 1)[0].lower(): t.split("=", 1)[1] for t in header.split()[2:] if "=" in t}
+
+
 def to_cdl(netlist_files, top):
     """The subcircuit `top` (and the subcircuits it calls) from the simulation netlists,
-    with X devices rewritten for the KLayout LVS deck."""
+    with X devices rewritten for the KLayout LVS deck. Parameterized subcircuits (e.g.
+    eeg_afe_inv s=1) become one plain subcircuit per parameter set, named by
+    variant_name(). Ideal capacitors named CW* are pre-layout wiring estimates (eeg_adc)
+    and are left out."""
     text = "\n".join(open(f).read() for f in netlist_files)
     text = re.sub(r"\n\+", " ", text)  # join continuation lines
     blocks = _subckt_blocks(text)
-    order, todo = [], [top]
-    while todo:
-        name = todo.pop()
-        if name in order:
-            continue
-        order.append(name)
-        for line in blocks[name][1:]:
+    out, done = [], set()
+
+    def emit(name, env, vname):
+        if vname in done:
+            return
+        done.add(vname)
+        lines = blocks[name]
+        ports = [t for t in lines[0].split()[2:] if "=" not in t and t.lower() != "params:"]
+        body = []
+        for line in lines[1:]:
             w = line.split()
-            if w and w[0][0] in "Xx":
-                cell = [t for t in w[1:] if "=" not in t][-1]
-                if cell in blocks:
-                    todo.append(cell)
-    out = []
-    for name in reversed(order):
-        for line in blocks[name]:
-            out.append(_device_line(line))
+            if not w or w[0].startswith("*") or w[0].lower().startswith(".ends"):
+                continue
+            if w[0][0] in "Xx":
+                pos = [t for t in w[1:] if "=" not in t]
+                model = pos[-1]
+                kv = [t.split("=", 1) for t in w[1:] if "=" in t]
+                if model in blocks:
+                    defaults = _subckt_params(blocks[model][0])
+                    if defaults:
+                        cenv = {k: spice_num(v) for k, v in defaults.items()}
+                        for k, v in kv:
+                            cenv[k.lower()] = spice_num(v, env)
+                        cname = variant_name(model, cenv)
+                        emit(model, cenv, cname)
+                    else:
+                        if kv:
+                            raise ValueError(f"parameters on {w[0]} of plain subcircuit {model}")
+                        cname = model
+                        emit(model, {}, model)
+                    body.append(" ".join([w[0]] + pos[:-1] + [cname]))
+                    continue
+                vals = []
+                for k, v in kv:
+                    if "{" in v:
+                        x = spice_num(v, env)
+                        v = f"{x * 1e6:.6g}u" if k.lower() in ("w", "l", "r_width", "r_length", "c_width",
+                                                              "c_length") else f"{x:.6g}"
+                    vals.append(f"{k}={v}")
+                line = " ".join([w[0]] + pos + vals)
+            body.append(_device_line(line))
+        out.append(f".subckt {vname} " + " ".join(ports))
+        out.extend(body)
+        out.append(f".ends {vname}")
+
+    emit(top, {}, top)
     return "\n".join(out) + "\n"
 
 
@@ -261,6 +351,8 @@ _MODEL = {"cap_mim_2f0ff": "cap_mim_2f0fF"}
 
 def _device_line(line):
     w = line.split()
+    if w and w[0][:2].upper() == "CW":
+        return "* wiring estimate, not a device: " + line
     if not w or w[0][0] not in "Xx":
         return line
     pos = [t for t in w[1:] if "=" not in t]
@@ -286,6 +378,7 @@ def _nix(cmd, log):
 
 def drc(gds, top, outdir, decks="all,-antenna,-density,-cup"):
     """Run the PDK DRC (variant gf180mcuD); returns {rule: count} of violations."""
+    gds, outdir = os.path.abspath(gds), os.path.abspath(outdir)
     os.makedirs(outdir, exist_ok=True)
     rep = os.path.join(outdir, f"{top}.lyrdb")
     if os.path.exists(rep):
@@ -307,11 +400,12 @@ def lvs(gds, cdl, top, outdir, sub="VSS"):
     """Run the PDK LVS deck (variant D: 5LM, 11K top, MIM-B; substrate net `sub`) with the
     switches its run_lvs.py would pass (that wrapper needs docopt, which the nix shell's
     Python lacks). Returns (match, summary lines)."""
+    gds, cdl, outdir = os.path.abspath(gds), os.path.abspath(cdl), os.path.abspath(outdir)
     os.makedirs(outdir, exist_ok=True)
     sw = {"thr": "8", "run_mode": "deep", "metal_top": "11K", "mim_option": "B", "metal_level": "5LM",
           "poly_res": "1k", "mim_cap": "2", "lvs_sub": sub, "verbose": "false", "spice_net_names": "true",
           "spice_comments": "false", "scale": "false", "schematic_simplify": "false", "net_only": "false",
-          "top_lvl_pins": "false", "combine": "false", "purge": "false", "purge_nets": "false",
+          "top_lvl_pins": "false", "combine": "true", "purge": "false", "purge_nets": "false",
           "topcell": top, "input": gds, "schematic": cdl,
           "report": os.path.join(outdir, f"{top}.lvsdb"), "target_netlist": os.path.join(outdir, f"{top}_ext.cir")}
     shims = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shims")  # pmap stand-in

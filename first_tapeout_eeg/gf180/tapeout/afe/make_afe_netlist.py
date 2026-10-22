@@ -7,9 +7,21 @@ Configuration (documentation/gf180_afe_noise_20261022.md):
   NMOS input pair L 1.5 um, PMOS input pair L 0.28 um, bias current x3 (NMOS
   tail m 768), input TG m 256, output TG m 8, regulated cascodes (one
   common-source booster per cascode, mirror loads L 8 um), Cin 636p, Cf 2p,
-  Cpf 2.15p at CPF_TRIM = 8 (1.99 pF fixed plus a 4-bit array of 20/40/80/160 fF, 1.99 to
-  2.29 pF), 128 kHz chopping, output hold capacitors 30 pF per side for output-chopper
-  blanking.
+  Cpf 2.15p at CPF_TRIM = 8 (1.932 pF fixed plus a 4-bit array of 27.3/54.5/109/218 fF,
+  1.932 to 2.341 pF), 128 kHz chopping, output hold capacitors 30 pF per side for
+  output-chopper blanking.
+
+Every capacitor is a cap_mim_2f0ff and every resistor a ppolyf_u_1k, as in the layout
+(10/23; until then the netlist had ideal R and C):
+  - MIM: 1.99 fF/um2 of area plus 0.238 fF/um of perimeter (the ngspice model); squares
+    sized for the value, from 25 um2 (MIMTM.8a; 54.52 fF for a 5 um square) to 10,000 um2
+    (MIMTM.8b; larger values are split into equal squares in parallel). The high-
+    impedance node is on the top plate (the first node).
+  - Values under the smallest MIM: the Cpf trim LSB is two smallest MIM caps in series
+    (27.26 fF; it was 20 fF) and the switched-capacitor DC path uses one smallest MIM cap
+    (54.52 fF; it was 10 fF, i.e. about 143 instead of 780 Mohm at 128 kHz).
+  - ppolyf_u_1k, W 1 um: the high-resistance poly of this process is the 1 kohm/sq
+    option (the PDK's magic and LVS set-up).
 
 Ports of eeg_afe:
   ELP ELN        electrodes (chip pins)
@@ -28,7 +40,7 @@ Ports of eeg_afe:
   OFS            offset-DAC sign (static, from the registers)
   OFM0..OFM9     offset-DAC magnitude (static)
   OFEN0..OFEN3   offset-DAC range groups (static): EN0 bits 0-6, EN1 bit 7, EN2 bit 8, EN3 bit 9
-  CPF0..CPF3     CPF_TRIM (static): Cpf = 1.99 pF + code x 20 fF (reset 8 = 2.15 pF). Each
+  CPF0..CPF3     CPF_TRIM (static): Cpf = 1.932 pF + code x 27.26 fF (reset 8 = 2.150 pF). Each
                  trim capacitor hangs from WP/WN and is switched at its other plate to the
                  amplifier output (bit 1) or to VCM (bit 0), so no switch touches the
                  high-impedance input side; an off capacitor only adds at most 0.3 pF to WP/WN
@@ -38,15 +50,16 @@ eeg_afe_offdac cancels (1 - 2 S) x magnitude x 0.311 mV (differential, at the
 electrodes), range +-39/79/159/318 mV with 1/2/3/4 groups enabled. Only the caps of
 the set magnitude bits switch, each through a series resistor that gives all bits the
 same charge time constant (65 ns, about RS x Cin at RS = 100 ohm). INP/INN DC path: a switched-capacitor resistor per side
-(10 fF, clocked by the input-chopper phases, about 780 Mohm at 128 kHz) from the
-amplifier input to the opposite output, in parallel with Cf; the reset switch stays.
-Capacitors are ideal here; layout uses MIM arrays (tracker E2).
+(54.52 fF, the smallest MIM cap, clocked by the input-chopper phases, about 143 Mohm at
+128 kHz) from the amplifier input to the opposite output, in parallel with Cf; the reset
+switch stays.
 
 Usage: python3 make_afe_netlist.py [--check] [--tau 65e-9] [--rout 0] [--chold 30e-12] [--out <path>]
        (--tau, --rout, --chold with --out: study variants of the DAC time constant and of an
        output low-pass, a series resistor from the output TGs into the hold capacitors)
 """
 import argparse
+import math
 import os
 import re
 import subprocess
@@ -60,18 +73,58 @@ import afe_noise  # noqa: E402
 OUT = os.path.join(HERE, "eeg_afe.spice")
 PARAMS = dict(core=1, tg=256, ln=1.5, lp=0.28, mp=1.0, itail=3, scasc=1, tgo=8)
 CPF = 2.15e-12
-CPF_BASE = 1.99e-12  # fixed part of Cpf; CPF_TRIM adds code x 20 fF (code 8 = 2.15 pF)
-CPF_STEP = 20e-15
+# MIM (cap_mim_2f0ff): 1.99 fF/um2 x area + 0.2383 fF/um x perimeter (ngspice model); one
+# cap from 25 um2 (MIMTM.8a) to 10,000 um2 (MIMTM.8b)
+MIM_CA, MIM_CP = 1.99e-3, 2.383e-10
+MIM_MIN, MIM_MAX_AREA = 5.0, 10000.0
+
+
+def mim_c(a):
+    """capacitance (F) of a square cap_mim_2f0ff of side a (um)"""
+    return MIM_CA * a * a * 1e-12 + MIM_CP * 4 * a * 1e-6
+
+
+CPF_STEP = mim_c(MIM_MIN) / 2  # trim LSB: two smallest MIM caps in series, 27.26 fF
+CPF_BASE = CPF - 8 * CPF_STEP  # fixed part of Cpf, 1.932 pF; CPF_TRIM code 8 = 2.150 pF
 OFF_CU = 60e-15  # offset-DAC unit capacitor (MIM 5.5 x 5.5 um)
 OFF_BITS = 10
 OFF_GROUP = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3]  # range group of each magnitude bit
 OFF_TAU = 65e-9  # offset-DAC charge time constant: RS 100 ohm x (Cin + electrode-node C)
-C_SC = 10e-15    # switched-capacitor DC path
+C_SC = mim_c(MIM_MIN)  # switched-capacitor DC path: the smallest MIM cap, 54.52 fF
 CHOLD = 30e-12  # per side, output-chopper blanking (documentation/gf180_afe_noise_20261022.md)
 ROUT = 0.0  # series resistor from the output TGs to OUTP/OUTN (0 = none; study variants)
 CIN_N, CIN_SIDE = 32, 99.70  # Cin per side: 32 cap_mim_2f0ff of 99.70 um square = 636.03 pF
 # (area and perimeter terms of the model; one MIM cap may not exceed 10,000 um2), as
 # gf180/tapeout/layout/mim_arrays_lay.py draws it
+
+
+def mim_side(c):
+    """side (um, 10 nm grid) of a square cap_mim_2f0ff of capacitance c (F)"""
+    a = (-4 * MIM_CP + math.sqrt(16 * MIM_CP ** 2 + 4 * MIM_CA * c)) / (2 * MIM_CA) * 1e6
+    return round(a, 2)
+
+
+def mim(name, top, bot, c):
+    """cap_mim_2f0ff lines for c (F) from top (top plate, the high-impedance side) to bot:
+    one square, or equal squares in parallel when one would exceed 10,000 um2"""
+    n = 1
+    while mim_side(c / n) ** 2 > MIM_MAX_AREA:
+        n += 1
+    a = mim_side(c / n)
+    if a < MIM_MIN:
+        raise ValueError(f"{name}: {c * 1e15:g} fF is under the smallest MIM cap")
+    return [f"X{name}{'' if n == 1 else f'_{i}'} {top} {bot} cap_mim_2f0ff c_length={a:g}u c_width={a:g}u"
+            for i in range(n)]
+
+
+def poly1k(name, a, b, sub, r, w=1.0):
+    """ppolyf_u_1k (width w um) line for the resistance r (ohm), with the model's head
+    resistance (85.45 ohm um per end) and width loss (2 x 14.8 nm)"""
+    rw = w - 2 * 0.0148
+    length = round((r - 2 * 85.45 / rw) * rw / 1000 + 2 * 3.85e-5, 2)
+    return f"X{name} {a} {b} {sub} ppolyf_u_1k r_length={length:g}u r_width={w:g}u"
+
+
 RENAME = [("reuse_input_tg_m64", "eeg_afe_input_tg"), ("reuse_tg", "eeg_afe_output_tg"),
           ("gf180_reuse_cascoded_core", "eeg_afe_core"), ("gf180_ct_cmfb8", "eeg_afe_cmfb"),
           ("gf180_ccia_local_feedback", "eeg_afe_amp")]
@@ -92,6 +145,11 @@ def body():
     txt = txt.replace(".subckt eeg_afe_amp EP EN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM VNC VPC VBP",
                       ".subckt eeg_afe_amp EP EN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM BLP BLN VBP")
     assert "VNC" not in txt.split(".subckt eeg_afe_core", 1)[1].split(".ends eeg_afe_core")[0].split("\n", 1)[0]
+    # CMFB compensation as MIM (VBP on the top plate)
+    for side, out in (("P", "OPI"), ("N", "ONI")):
+        old = f"CC{side} VBP {out} 10p\n"
+        assert txt.count(old) == 1, old
+        txt = txt.replace(old, "\n".join(mim(f"CC{side}", "VBP", out, 10e-12)) + "\n")
     return txt
 
 
@@ -143,13 +201,13 @@ def offdac():
               f"XNN{k} NN{k} EN{g} M{k} X VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
               f"XDP{k} DP{k} NP{k} VDD VSS eeg_afe_inv s={m}",
               f"XDN{k} DN{k} NN{k} VDD VSS eeg_afe_inv s={m}",
-              f"RDP{k} DP{k} BP{k} {r:.6g}",
-              f"RDN{k} DN{k} BN{k} {r:.6g}",
+              poly1k(f"RDP{k}", f"DP{k}", f"BP{k}", "VSS", r),
+              poly1k(f"RDN{k}", f"DN{k}", f"BN{k}", "VSS", r),
               f"XNA{k} NA{k} EN{g} M{k} VDD VSS eeg_afe_nand2 s=1",
               f"XCLP{k} BP{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
               f"XCLN{k} BN{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
-              f"COFP{k} TP{g} BP{k} {c * 1e15:.6g}f",
-              f"COFN{k} TN{g} BN{k} {c * 1e15:.6g}f"]
+              *mim(f"COFP{k}", f"TP{g}", f"BP{k}", c),
+              *mim(f"COFN{k}", f"TN{g}", f"BN{k}", c)]
     L += [".ends eeg_afe_offdac",
           "* s: strength (W and finger count scale with s)",
           ".subckt eeg_afe_inv Y A VDD VSS s=1",
@@ -180,17 +238,20 @@ def offdac():
 def cpftrim():
     """Cpf trim array: per side and bit, a capacitor from WP (WN) to a switched plate
     that a TG connects to OPI (ONI) when the bit is 1 and to VCM when it is 0."""
-    L = ["", "* Cpf trim: 20/40/80/160 fF per side, switched at the amplifier-output plate",
+    steps = "/".join(f"{CPF_STEP * 2 ** k * 1e15:.3g}" for k in range(4))
+    L = ["", f"* Cpf trim: {steps} fF per side (MIM; bit 0 is two smallest MIM caps in series),",
+         "* switched at the amplifier-output plate",
          ".subckt eeg_afe_cpftrim WP WN OPI ONI VCM B0 B1 B2 B3 VDD VSS"]
     for k in range(4):
         c = CPF_STEP * 2 ** k
-        L += [f"XIB{k} BN{k} B{k} VDD VSS eeg_afe_inv s=1",
-              f"CTP{k} WP XP{k} {c * 1e15:g}f",
-              f"XTPO{k} XP{k} OPI B{k} BN{k} VDD VSS eeg_afe_tg",
-              f"XTPV{k} XP{k} VCM BN{k} B{k} VDD VSS eeg_afe_tg",
-              f"CTN{k} WN XN{k} {c * 1e15:g}f",
-              f"XTNO{k} XN{k} ONI B{k} BN{k} VDD VSS eeg_afe_tg",
-              f"XTNV{k} XN{k} VCM BN{k} B{k} VDD VSS eeg_afe_tg"]
+        L.append(f"XIB{k} BN{k} B{k} VDD VSS eeg_afe_inv s=1")
+        for s, w, x, o in (("P", "WP", f"XP{k}", "OPI"), ("N", "WN", f"XN{k}", "ONI")):
+            if k == 0:
+                L += mim(f"CT{s}0A", w, f"M{s}0", 2 * c) + mim(f"CT{s}0B", f"M{s}0", x, 2 * c)
+            else:
+                L += mim(f"CT{s}{k}", w, x, c)
+            L += [f"XT{s}O{k} {x} {o} B{k} BN{k} VDD VSS eeg_afe_tg",
+                  f"XT{s}V{k} {x} VCM BN{k} B{k} VDD VSS eeg_afe_tg"]
     L += [".ends eeg_afe_cpftrim", ""]
     return "\n".join(L)
 
@@ -204,26 +265,24 @@ def top():
 + OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 VDD VSS
 XCINP INP WP eeg_cin
 XCINN INN WN eeg_cin
-CFBP ONI INP 2p
-CFBN OPI INN 2p
-CPFP WP OPI {CPF_BASE * 1e12:g}p
-CPFN WN ONI {CPF_BASE * 1e12:g}p
+{chr(10).join(mim("CFBP", "INP", "ONI", 2e-12) + mim("CFBN", "INN", "OPI", 2e-12))}
+{chr(10).join(mim("CPFP", "WP", "OPI", CPF_BASE) + mim("CPFN", "WN", "ONI", CPF_BASE))}
 XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 VDD VSS eeg_afe_cpftrim
 XRSTP INP RST ONI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 XRSTN INN RST OPI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 * INP/INN DC path: switched-capacitor resistor to the opposite output (parallel to Cf),
-* {C_SC * 1e15:g} fF per side, one transfer per chopper period (about 780 Mohm at 128 kHz)
+* {C_SC * 1e15:.4g} fF per side (the smallest MIM cap), one transfer per chopper period
+* (about {1 / (128e3 * C_SC) / 1e6:.0f} Mohm at 128 kHz)
 XSCP1 INP CIA SCP VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 XSCP2 SCP CIB ONI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-CSCP SCP VSS {C_SC * 1e15:g}f
+{chr(10).join(mim("CSCP", "SCP", "VSS", C_SC))}
 XSCN1 INN CIA SCN VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 XSCN2 SCN CIB OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-CSCN SCN VSS {C_SC * 1e15:g}f
+{chr(10).join(mim("CSCN", "SCN", "VSS", C_SC))}
 XOFF INP INN VCM OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS eeg_afe_offdac
 XAMP ELP ELN WP WN INP INN OPI ONI {'OUTPX OUTNX' if ROUT else 'OUTP OUTN'} VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS eeg_afe_amp
 {f'* output low-pass: {ROUT:g} ohm from the output TGs into the hold capacitors{chr(10)}ROUTP OUTPX OUTP {ROUT:g}{chr(10)}ROUTN OUTNX OUTN {ROUT:g}{chr(10)}' if ROUT else ''}* hold capacitors for output-chopper blanking (CDA/CDB low for 7 MCLK after each edge)
-CHOLDP OUTP VSS {CHOLD * 1e12:g}p
-CHOLDN OUTN VSS {CHOLD * 1e12:g}p
+{chr(10).join(mim("CHOLDP", "OUTP", "VSS", CHOLD) + mim("CHOLDN", "OUTN", "VSS", CHOLD))}
 .ends eeg_afe
 """
 
@@ -257,6 +316,7 @@ def check():
     tb = f"""* eeg_afe netlist check (phase A, reset on)
 .include {afe_noise.PDK}/design.ngspice
 .lib {afe_noise.PDK}/sm141064.ngspice typical
+.lib {afe_noise.PDK}/sm141064.ngspice res_typical
 .lib {afe_noise.PDK}/sm141064.ngspice mimcap_typical
 .lib {afe_noise.PDK}/sm141064.ngspice cap_mim
 .include {OUT}

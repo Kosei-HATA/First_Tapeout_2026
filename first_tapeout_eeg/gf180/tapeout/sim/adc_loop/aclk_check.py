@@ -33,6 +33,7 @@ PDK = os.path.expanduser("~/.ciel/ciel/gf180mcu/versions/"
                          "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice")
 VDD = 3.3
 E1, E2 = 100e-9, 300e-9
+CAPC = {"ss": "ss", "ff": "ff"}  # MIM corner (the OTA compensation caps)
 NAMES = ["chop1", "cia", "ncia", "cib", "ncib", "cda", "ncda", "cdb", "ncdb", "idd"]
 
 
@@ -40,6 +41,8 @@ def deck(corner, temp):
     return f"""* eeg_adc_clk timing with OTA1 as load
 .include {PDK}/design.ngspice
 .lib {PDK}/sm141064.ngspice {corner}
+.lib {PDK}/sm141064.ngspice mimcap_{CAPC.get(corner, 'typical')}
+.lib {PDK}/sm141064.ngspice cap_mim
 .include {OTAS}
 .include {CLK}
 .temp {temp}

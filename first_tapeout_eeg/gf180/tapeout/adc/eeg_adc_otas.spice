@@ -10,6 +10,9 @@
 *   smaller pair cuts that error to about a third. Its 1/f noise is 4x higher but
 *   chopped (gf180/tapeout/sim/adc_loop/ota1_noise.py --lin 1 --mscale 0.5).
 * Subcircuit names are unchanged, so a deck can include this file instead of the import.
+* 10/23: the compensation capacitors (CCOMP, 10 pF per side in both OTAs) are
+* cap_mim_2f0ff (70.65 um square, VBP on the top plate) instead of an ideal C with the
+* CCOMP parameter; the OTA2 default was 1p and the ADC passed 10p.
 *
 * Candidate C: dual NMOS/PMOS internal current commutation, original B retained.
 * Real GF180 MOS input and inside-cascode current commutator. External clocks/biases ideal in prototype.
@@ -64,11 +67,11 @@ XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u n
 .ends gf180_ct_cmfb8
 
 * Original17 signal/CMFB MOS plus drain commutator; temporary external DC bias generation.
-.subckt gf180_ct_ota_m4_currentchop INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS params: CCOMP=10p
+.subckt gf180_ct_ota_m4_currentchop INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS
 XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop
 XCMFB OUTP OUTN VCMREF VBCM VBP VDD VSS gf180_ct_cmfb8
-CCOMP_P VBP OUTP {CCOMP}
-CCOMP_N VBP OUTN {CCOMP}
+XCCOMP_P VBP OUTP cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCCOMP_N VBP OUTN cap_mim_2f0ff c_length=70.65u c_width=70.65u
 .ends gf180_ct_ota_m4_currentchop
 
 * Input voltage chopping plus drain current commutation inside NMOS cascodes.
@@ -78,7 +81,7 @@ XIP_A INP CIP CIA NCIA VDD VSS chop_tg
 XIN_A INN CIN CIA NCIA VDD VSS chop_tg
 XIP_B INP CIN CIB NCIB VDD VSS chop_tg
 XIN_B INN CIP CIB NCIB VDD VSS chop_tg
-XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop CCOMP=10p
+XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop
 .ends gf180_inside_cascode_ota
 
 * Second-stage nine signal MOS: wide multipliers/16, matching ota_tel16.spice; gate8 CMFB added unchanged.
@@ -108,9 +111,9 @@ XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u n
 .ends gf180_ct_cmfb8_s2
 
 * Loop-ready 17-MOS OTA+CMFB, with temporary external DC bias generation.
-.subckt gf180_ct_ota_tel16_cmfb INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM VDD VSS params: CCOMP=1p
+.subckt gf180_ct_ota_tel16_cmfb INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM VDD VSS
 XCORE INP INN OUTP OUTN VBN VNC VPC VBP VDD VSS gf180_ct_telescopic_tel16_core
 XCMFB OUTP OUTN VCMREF VBCM VBP VDD VSS gf180_ct_cmfb8_s2
-CCOMP_P VBP OUTP {CCOMP}
-CCOMP_N VBP OUTN {CCOMP}
+XCCOMP_P VBP OUTP cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCCOMP_N VBP OUTN cap_mim_2f0ff c_length=70.65u c_width=70.65u
 .ends gf180_ct_ota_tel16_cmfb

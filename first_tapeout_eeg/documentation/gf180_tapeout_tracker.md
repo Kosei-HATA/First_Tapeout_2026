@@ -91,7 +91,7 @@
 
 | # | 項目 | 期限 | 状況 |
 |---|---|---|---|
-| E1 | GF180 用 KLayout 生成スクリプト（MIM アレイ、FET アレイ、ポリ抵抗）。10/23：流れを決めた（`documentation/gf180_layout_flow_20261023.md`）。生成は KLayout の Python と PDK の pcell（`gf180/tapeout/layout/gf180lay.py`）、DRC／LVS はテンプレートの nix 環境の KLayout と、テンプレートの PDK（open_pdks 792ef670）のデッキ。回路図側はシミュレーション用ネットリストから変換する。MIM 1 個 10,000 µm² まで、MIM の下の板は Via4 からだけ、30 µm を超えるメタルはスリットが要る、N 拡散から基板タップまで 20 µm 以内、などの規則を確かめた。残り：MIM、FET、ポリ抵抗の配列の生成 | 11/14 | ▶（流れ ✅） |
+| E1 | GF180 用 KLayout 生成スクリプト（MIM アレイ、FET アレイ、ポリ抵抗）。10/23：流れを決めた（`documentation/gf180_layout_flow_20261023.md`）。生成は KLayout の Python と PDK の pcell（`gf180/tapeout/layout/gf180lay.py`）、DRC／LVS はテンプレートの nix 環境の KLayout と、テンプレートの PDK（open_pdks 792ef670）のデッキ。回路図側はシミュレーション用ネットリストから変換する。MIM 1 個 10,000 µm² まで、MIM の下の板は Via4 からだけ、30 µm を超えるメタルはスリットが要る、N 拡散から基板タップまで 20 µm 以内、などの規則を確かめた。10/23：理想の容量と抵抗をすべて PDK の素子（MIM、ppolyf_u_1k）に置き換え、AFE・ADC・バイアスの特性が変わらないことを確かめた。トランジスタ列・タップ・ポリ抵抗列・論理セルの生成器（`fets.py`、`logic.py`）を作り、論理セル 10 種で DRC 違反なし、LVS 一致。残り：大きな FET 配列（AFE の入力対など）と、ブロック内の配線 | 11/14 | ▶（流れ ✅、素子 ✅） |
 | E2 | 構成が固まったブロックから先行（Cin・C1・C2 の MIM、DAC2 セル、DAC1 抵抗）。10/23：Cin（32 個、636 pF、0.362 mm²）、C1（35 個、680.6 pF、0.386 mm²）、C2（1 個、19.53 pF）の MIM 配列を作り、どれも DRC で違反なし、LVS で一致（`gf180/tapeout/layout/mim_arrays_lay.py`）。ネットリストの Cin・C1・C2 を同じ配列の部分回路にした（AFE の利得と HD3 は変わらない）。残り：DAC2 セル、DAC1 | 11/18 | ▶（MIM ✅） |
 | E3 | AFE のレイアウト | 11/28 | ⏳ |
 | E4 | ADC のレイアウト。DWA の置き場所は 10/23（ゲート 1）に決めた：TH の取り込み、サーモ→2 進、DWA ×2 を別のデジタルブロック `eeg_adc_dig` にして、ADC の中央帯の東端（量子化器と DAC のドライバの隣）に置く。TH 31 本と SEL 62 本は ADC の中で完結し、デジタルブロックとの間は CODE[4:0] とフレームのストローブなど約 10 本 | 12/1 | ⏳ |

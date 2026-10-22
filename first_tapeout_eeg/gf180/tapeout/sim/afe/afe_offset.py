@@ -79,6 +79,7 @@ def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False,
     return f"""* eeg_afe electrode-offset check: {vos_mv:+g} mV, range {rng}, magnitude {mag}, RS {rs:g}
 .include {afe_noise.PDK}/design.ngspice
 .lib {afe_noise.PDK}/sm141064.ngspice typical
+.lib {afe_noise.PDK}/sm141064.ngspice res_typical
 .lib {afe_noise.PDK}/sm141064.ngspice mimcap_typical
 .lib {afe_noise.PDK}/sm141064.ngspice cap_mim
 .include {afe}
@@ -154,7 +155,7 @@ def main():
     ap.add_argument("--afe", default=AFE, help="AFE netlist (default: the written eeg_afe.spice)")
     ap.add_argument("--sine", type=float, default=0.0, help="sine amplitude (mV) at fch/64 for distortion")
     ap.add_argument("--clkdrv", action="store_true", help="clocks from eeg_afe_clk (B8) instead of ideal PWL")
-    ap.add_argument("--cpf", type=int, default=8, help="CPF_TRIM code 0..15 (Cpf = 1.99 pF + code x 20 fF)")
+    ap.add_argument("--cpf", type=int, default=8, help="CPF_TRIM code 0..15 (Cpf = 1.932 pF + code x 27.26 fF)")
     ap.add_argument("--rload", type=float, default=9375.0,
                     help="ADC input resistor per side (lower it by the series resistor of an --afe variant with --rout)")
     a = ap.parse_args()

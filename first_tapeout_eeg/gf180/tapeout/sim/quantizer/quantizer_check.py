@@ -34,6 +34,7 @@ QNET = os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_quantizer.spice")
 PDK = os.path.expanduser("~/.ciel/ciel/gf180mcu/versions/"
                          "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice")
 RES = {"typical": "res_typical", "ss": "res_ss", "ff": "res_ff", "sf": "res_typical", "fs": "res_typical"}
+CAPC = {"ss": "ss", "ff": "ff"}  # MIM corner (the VBQ decoupling cap)
 T = 1 / 1.024e6
 TM = T / 32          # MCLK period; the strobe and e2 fall on this grid
 T0 = 4 * TM          # first strobe
@@ -48,6 +49,8 @@ def deck(corner, temp, seed, v0, v1, n):
 .include {PDK}/design.ngspice
 .lib {PDK}/sm141064.ngspice {corner}
 .lib {PDK}/sm141064.ngspice {RES[corner]}
+.lib {PDK}/sm141064.ngspice mimcap_{CAPC.get(corner, 'typical')}
+.lib {PDK}/sm141064.ngspice cap_mim
 {mm}.include {QNET}
 .temp {temp}
 .options sparse reltol=1e-4 abstol=1e-12 vntol=1e-7
@@ -148,6 +151,8 @@ def timing(a):
 .include {PDK}/design.ngspice
 .lib {PDK}/sm141064.ngspice {a.corner}
 .lib {PDK}/sm141064.ngspice {RES[a.corner]}
+.lib {PDK}/sm141064.ngspice mimcap_{CAPC.get(a.corner, 'typical')}
+.lib {PDK}/sm141064.ngspice cap_mim
 .include {QNET}
 .temp {a.temp}
 .options sparse reltol=1e-4 abstol=1e-12 vntol=1e-7

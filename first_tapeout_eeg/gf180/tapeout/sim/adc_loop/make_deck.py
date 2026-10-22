@@ -52,7 +52,6 @@ Then: (cd <out_dir> && ngspice -b circuit.spice) -> out.csv
 import argparse
 import os
 import re
-import shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
@@ -139,7 +138,10 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     otas = {"rev": OTAS_REV, "import": os.path.join(IMPORT, "otas.spice"),
             "ideal": os.path.join(HERE, "otas_ideal.spice")}[a.ota1]
-    shutil.copy(otas, os.path.join(a.out, "otas.spice"))
+    t = open(otas).read()
+    if a.ota1 == "import":  # the ADC netlist no longer passes CCOMP=10p to OTA2 (MIM since 10/23)
+        t = t.replace("VCMREF VBN VNC VPC VBCM VDD VSS params: CCOMP=1p", "VCMREF VBN VNC VPC VBCM VDD VSS params: CCOMP=10p")
+    open(os.path.join(a.out, "otas.spice"), "w").write(t)
     q = open(os.path.join(IMPORT, "quantizer.spice")).read()
     q = sub(r"^\.model ADC33 adc_bridge \(in_low=0\.99 in_high=2\.31 ",
             ".model ADC33 adc_bridge (in_low=1.65 in_high=1.65 ", q)

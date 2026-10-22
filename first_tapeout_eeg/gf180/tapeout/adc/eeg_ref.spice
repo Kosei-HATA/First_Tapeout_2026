@@ -9,8 +9,9 @@
 *         -90 ppm/K), W 7 um, L 2 um. Damps the bond-wire inductance against the
 *         on-chip capacitors and keeps fast interference out. Costs 3 mV of each
 *         reference (VREFP - VREFN 0.494 V instead of 0.5 V: a fixed 1.2 % gain).
-*   C_d   50 pF VREFP-VREFN (cap_mim_2f0ff, 158 x 158 um; can sit over other blocks)
-*   C_g   20 pF from each reference to AVSS (cap_nmos_03v3, 71 x 71 um, in inversion)
+*   C_d   50 pF VREFP-VREFN: three cap_mim_2f0ff of 190 x 44 um (16.7 pF each; one MIM cap
+*         may not exceed 10,000 um2), as in the layout (gf180/tapeout/layout/eeg_ref_lay.py)
+*   C_g   20 pF from each reference to AVSS: four cap_nmos_03v3 of 28.6 x 44 um each (in inversion)
 * Requirement on the external reference (documentation/gf180_dac1_ref_20261022.md):
 * differential noise 375 nVrms or less over the band around the signal (the DAC1
 * level scales with VREFP - VREFN), low output impedance not critical (the DAC1
@@ -19,7 +20,15 @@
 .subckt eeg_ref VREFP_PAD VREFN_PAD VREFP VREFN VSS
 XRFP VREFP_PAD VREFP VSS ppolyf_u r_length=2u r_width=7u
 XRFN VREFN_PAD VREFN VSS ppolyf_u r_length=2u r_width=7u
-XCD VREFP VREFN cap_mim_2f0ff c_length=158u c_width=158u
-XCGP VREFP VSS cap_nmos_03v3 c_length=71u c_width=71u
-XCGN VREFN VSS cap_nmos_03v3 c_length=71u c_width=71u
+XCD1 VREFP VREFN cap_mim_2f0ff c_length=44u c_width=190u
+XCD2 VREFP VREFN cap_mim_2f0ff c_length=44u c_width=190u
+XCD3 VREFP VREFN cap_mim_2f0ff c_length=44u c_width=190u
+XCGP1 VREFP VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGP2 VREFP VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGP3 VREFP VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGP4 VREFP VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGN1 VREFN VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGN2 VREFN VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGN3 VREFN VSS cap_nmos_03v3 c_length=28.6u c_width=44u
+XCGN4 VREFN VSS cap_nmos_03v3 c_length=28.6u c_width=44u
 .ends eeg_ref

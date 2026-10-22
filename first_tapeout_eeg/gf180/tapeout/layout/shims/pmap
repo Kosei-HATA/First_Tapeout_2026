@@ -1,0 +1,4 @@
+#!/bin/sh
+# Stand-in for Linux pmap on macOS: the PDK LVS deck logs memory with `pmap PID | tail -1`
+# and fails when pmap is missing. Prints a total line of the expected shape.
+echo " total            0K"

@@ -33,6 +33,14 @@ NW_Y0, NW_Y1 = YP0 - f.NW_ENC, VDD_RAIL[1] + 0.2
 MX = 0.45                            # cell edge to COMP
 L_LOGIC = 0.28
 PIN_H = 0.38                         # Metal2 pin height over a gate bar
+PITCH = 0.80                         # finger pitch at L 0.28; cell widths are multiples of it,
+GATE0 = MX + 0.45 + L_LOGIC / 2      # so with cells at multiples of PITCH every gate centre
+                                     # sits at GATE0 + k * PITCH (the router's Metal3 grid)
+
+
+def _width(strip_len):
+    import math
+    return math.ceil((strip_len + 2 * MX) / PITCH - 1e-9) * PITCH
 
 
 class LogicCell:
@@ -44,15 +52,27 @@ class LogicCell:
 
 
 def _rails(c, width):
-    for (y1, y2), kind in ((VSS_RAIL, "p"), (VDD_RAIL, "n")):
+    """Rails, taps and the Nwell band of a cell. The tap COMP touches the cell's top /
+    bottom edge, so the taps of a mirrored neighbour row merge with it; contacts stay
+    0.14 um inside the side edges (CO.2a across abutting cells)."""
+    for (y1, y2), kind, (t1, t2), (c1, c2) in ((VSS_RAIL, "p", (0.0, 0.44), (0.06, 0.44)),
+                                                (VDD_RAIL, "n", (H - 0.44, H), (H - 0.44, H - 0.06))):
         c.box("metal1", 0, y1, width, y2)
         c.box("metal2", 0, y1, width, y2)
-        f.tap(c, kind, 0, y1 + 0.09, width, y2 - 0.09, well=False)
+        # contact row 0.14 from the edge: 0.28 to the contacts of a mirrored neighbour (CO.2a)
+        f._tap(c, kind, 0, t1, width, t2, (0.06, c1, width - 0.06, c2), well=False)
         n = int((width - 0.3) // 0.62)
         for k in range(max(n, 1)):
             x = 0.15 + 0.13 + k * 0.62
             c.box("via1", x - 0.13, (y1 + y2) / 2 - 0.13, x + 0.13, (y1 + y2) / 2 + 0.13)
     c.box("nwell", -0.2, NW_Y0, width + 0.2, NW_Y1)   # 0.2 past the edges covers the tap ends (DF.4d)
+
+
+def filler_cell(b, name, width):
+    """Rails, taps and Nwell only (width a multiple of PITCH): fills gaps in a row."""
+    c = b.new_cell(name)
+    _rails(c, width)
+    return LogicCell(c, width, {})
 
 
 def _levels(spans):
@@ -79,7 +99,7 @@ def cmos_cell(b, name, pseq, nseq, wp, wn, ports, rails=("VDD", "VSS")):
         raise ValueError(f"{name}: finger width over the template ({wp}, {wn})")
     vdd, vss = rails
     ps, ns = f.Strip("p", wp, L_LOGIC, pseq), f.Strip("n", wn, L_LOGIC, nseq)
-    width = ps.length + 2 * MX
+    width = _width(ps.length)
     c = b.new_cell(name)
     _rails(c, width)
     # S/D nets other than the rails that occur more than once get a Metal2 track:
@@ -132,9 +152,9 @@ def cmos_cell(b, name, pseq, nseq, wp, wn, ports, rails=("VDD", "VSS")):
     ys = YP0 + wp / 2
     f.strap(c, pgeo, vdd, ys, x1=0.0)
     c.box("metal2", 0.0, ys - 0.25, 0.40, VDD_RAIL[0])
-    for n in tracked:
+    for n in tracked:   # tracks run the full cell width (only their own net is at that y)
         cols = [cl for cl in pgeo.cols + ngeo.cols if cl[0] == n]
-        x1, x2 = min(cl[1] for cl in cols) - 0.19, max(cl[1] for cl in cols) + 0.19
+        x1, x2 = 0.5, width - 0.5
         f.hw(c, "metal2", ty[n], x1, x2, 0.40)
         for _, x, _, _ in cols:
             c.box("via1", x - 0.13, ty[n] - 0.13, x + 0.13, ty[n] + 0.13)
@@ -161,7 +181,7 @@ def tg_cell(b, name, nf_n, nf_p, wn, wp, a="A", y="Y", gn="G", gp="GN", rails=("
     ps, ns = f.Strip("p", wp, L_LOGIC, seq(gp, nf_p)), f.Strip("n", wn, L_LOGIC, seq(gn, nf_n))
     if wp > WP_MAX or wn > WN_MAX:
         raise ValueError(f"{name}: finger width over the template ({wp}, {wn})")
-    width = max(ps.length, ns.length) + 2 * MX
+    width = _width(max(ps.length, ns.length))
     c = b.new_cell(name)
     _rails(c, width)
     ty = {y: TRACKS[0], a: TRACKS[2]}
@@ -177,7 +197,7 @@ def tg_cell(b, name, nf_n, nf_p, wn, wp, a="A", y="Y", gn="G", gp="GN", rails=("
             rails[1]: [("metal2", 0, VSS_RAIL[0], width, VSS_RAIL[1])]}
     for n in (a, y):
         cols = [cl for cl in pgeo.cols + ngeo.cols if cl[0] == n]
-        x1, x2 = min(cl[1] for cl in cols) - 0.19, max(cl[1] for cl in cols) + 0.19
+        x1, x2 = 0.5, width - 0.5
         f.hw(c, "metal2", ty[n], x1, x2, 0.40)
         for _, x, _, _ in cols:
             c.box("via1", x - 0.13, ty[n] - 0.13, x + 0.13, ty[n] + 0.13)
@@ -251,7 +271,7 @@ def slow_inv_cell(b, name, wp, lp, wn, ln, a="A", y="Y", rails=("VDD", "VSS")):
     vdd, vss = rails
     ps, ns = f.Strip("p", wp, lp, [vdd, a, y]), f.Strip("n", wn, ln, [vss, a, y])
     xr = MX + max(ps.length, ns.length) + 0.6      # riser centre
-    width = xr + 0.6
+    width = _width(xr + 0.6 - 2 * MX)
     c = b.new_cell(name)
     _rails(c, width)
     ty = TRACKS[1]
@@ -269,7 +289,7 @@ def slow_inv_cell(b, name, wp, lp, wn, ln, a="A", y="Y", rails=("VDD", "VSS")):
     f.strap(c, pgeo, vdd, ys, x1=0.0)
     c.box("metal2", 0.0, ys - 0.25, 0.40, VDD_RAIL[0])
     cols = [cl for cl in pgeo.cols + ngeo.cols if cl[0] == y]
-    x1, x2 = min(cl[1] for cl in cols) - 0.19, max(cl[1] for cl in cols) + 0.19
+    x1, x2 = 0.5, xr - 0.6
     f.hw(c, "metal2", ty, x1, x2, 0.40)
     for _, x, _, _ in cols:
         c.box("via1", x - 0.13, ty - 0.13, x + 0.13, ty + 0.13)
@@ -284,8 +304,48 @@ def slow_inv_cell(b, name, wp, lp, wn, ln, a="A", y="Y", rails=("VDD", "VSS")):
         c.box("via1", xv - 0.13, (by1 + by2) / 2 - 0.13, xv + 0.13, (by1 + by2) / 2 + 0.13)
         ybar.append((by1, by2))
     c.box("metal2", xr - 0.2, ybar[1][0], xr + 0.2, ybar[0][1])
-    pins[a] = [("metal2", xr - 0.2, ybar[1][0], xr + 0.2, ybar[0][1])]
+    bx1, by1, bx2, by2 = pgeo.bars[a]
+    pins[a] = [("metal2", bx1, by1, xr + 0.2, by2)]
     for n in (a, y, vdd, vss):
+        lay, x1, y1, x2, y2 = pins[n][0]
+        c.label(lay, n, (x1 + x2) / 2, (y1 + y2) / 2)
+    return LogicCell(c, width, pins)
+
+
+def nmos_cell(b, name, w, l, nf, d, gate, s, rails=("VDD", "VSS")):
+    """One NMOS (nf fingers of w x l um) in the template: gate bar above the strip (in the
+    middle band), the source to the VSS rail when it is the rail, the other S/D nets on
+    Metal2 straps across the strip (one strap fits for w >= 0.5, two for w >= 1.4)."""
+    vdd, vss = rails
+    seq = [s] + sum(([gate, d if k % 2 == 0 else s] for k in range(nf)), [])
+    ns = f.Strip("n", w, l, seq)
+    width = _width(ns.length)
+    c = b.new_cell(name)
+    _rails(c, width)
+    yc = f._contacts(YN0 + f.CO_ENC, YN0 + w - f.CO_ENC)
+    nbot = yc[0] - f.CO / 2 - f.M1_ENC
+    ext = {vss: (nbot - 0.3, 0.0)} if s == vss else {}
+    geo = f.draw_strip(c, ns, MX, YN0, gates={gate: ("t", 0)}, ext=ext)
+    pins = {vdd: [("metal2", 0, VDD_RAIL[0], width, VDD_RAIL[1])],
+            vss: [("metal2", 0, VSS_RAIL[0], width, VSS_RAIL[1])]}
+    sd = [n for n in dict.fromkeys(seq[0::2]) if n != vss]
+    if len(sd) == 1:
+        ys = [YN0 + w / 2]
+    elif w >= 1.4:
+        ys = [YN0 + w / 2 - 0.33, YN0 + w / 2 + 0.33]
+    else:
+        raise ValueError(f"{name}: two S/D straps need w >= 1.4")
+    for n, y in zip(sd, ys):
+        x1, x2 = f.strap(c, geo, n, y, w=0.38, x1=0.5, x2=width - 0.5) if len(sd) == 1 else \
+            f.strap(c, geo, n, y, w=0.38)
+        pins[n] = [("metal2", x1, y - 0.19, x2, y + 0.19)]
+    x1, y1, x2, y2 = geo.bars[gate]
+    c.box("metal2", x1, y1, x2, y2)
+    for k in range(ns.n):
+        x = MX + ns.gx[k] + l / 2
+        c.box("via1", x - 0.13, (y1 + y2) / 2 - 0.13, x + 0.13, (y1 + y2) / 2 + 0.13)
+    pins[gate] = [("metal2", x1, y1, x2, y2)]
+    for n in pins:
         lay, x1, y1, x2, y2 = pins[n][0]
         c.label(lay, n, (x1 + x2) / 2, (y1 + y2) / 2)
     return LogicCell(c, width, pins)

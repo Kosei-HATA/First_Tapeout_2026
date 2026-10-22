@@ -178,9 +178,22 @@ class Block(Cell):
     def find_cell(self, name):
         return Cell(self.ly, self.ly.cell(name)) if self.ly.has_cell(name) else None
 
+    def strip_sublabels(self):
+        """Delete the pin labels of every cell but the top: the LVS runs flat, where a
+        label in a subcell would name (and make a pin of) the net at the top."""
+        keys = [self.ly.find_layer(*L[k]) for k in L if k.endswith("_label")]
+        for cell in self.ly.each_cell():
+            if cell.cell_index() == self.cell.cell_index():
+                continue
+            for li in keys:
+                if li is not None:
+                    cell.shapes(li).clear()
+
     def write(self, path):
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        self.ly.write(path)  # hierarchical: the pcells stay cells (the decks run in deep mode)
+        opts = pya.SaveLayoutOptions()
+        opts.gds2_write_timestamps = False   # same content, same file
+        self.ly.write(path, opts)  # hierarchical: the pcells stay cells (the decks run in deep mode)
         return path
 
 
@@ -396,13 +409,15 @@ def drc(gds, top, outdir, decks="all,-antenna,-density,-cup"):
     return counts
 
 
-def lvs(gds, cdl, top, outdir, sub="VSS"):
+def lvs(gds, cdl, top, outdir, sub="VSS", mode="flat"):
     """Run the PDK LVS deck (variant D: 5LM, 11K top, MIM-B; substrate net `sub`) with the
     switches its run_lvs.py would pass (that wrapper needs docopt, which the nix shell's
-    Python lacks). Returns (match, summary lines)."""
+    Python lacks). Flat extraction by default: in deep mode the substrate only joins the
+    taps in the top cell, so every subcell gets an extra SUB pin and no subcircuit
+    matches. Returns (match, summary lines)."""
     gds, cdl, outdir = os.path.abspath(gds), os.path.abspath(cdl), os.path.abspath(outdir)
     os.makedirs(outdir, exist_ok=True)
-    sw = {"thr": "8", "run_mode": "deep", "metal_top": "11K", "mim_option": "B", "metal_level": "5LM",
+    sw = {"thr": "8", "run_mode": mode, "metal_top": "11K", "mim_option": "B", "metal_level": "5LM",
           "poly_res": "1k", "mim_cap": "2", "lvs_sub": sub, "verbose": "false", "spice_net_names": "true",
           "spice_comments": "false", "scale": "false", "schematic_simplify": "false", "net_only": "false",
           "top_lvl_pins": "false", "combine": "true", "purge": "false", "purge_nets": "false",

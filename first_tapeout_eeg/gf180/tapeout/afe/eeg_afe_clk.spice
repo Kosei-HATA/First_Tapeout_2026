@@ -1,0 +1,102 @@
+* eeg_afe_clk: AFE clock drivers (tracker B8, GF180, this rev)
+*
+* Inputs (from eeg_digital_top, 3.3 V): CHOP, CHOP_OUT, CHOP_BLANK, CHOP_EN, AFE_RST.
+* Outputs to eeg_afe (gf180/tapeout/afe/eeg_afe.spice):
+*   CIA NCIA CIB NCIB   input-chopper phases A/B and complements, non-overlapping
+*                       (both phases low for a dead time after each CHOP edge).
+*                       Phase A = CHOP high; with CHOP_EN low the chopper stays in
+*                       phase A. Load per phase: two TGs of m = 256 (NMOS gates about
+*                       16 pF on CIA/CIB, PMOS gates about 32 pF on NCIA/NCIB).
+*   CDA NCDA CDB NCDB   output-chopper phases: CDA = CHOP_OUT and not CHOP_BLANK,
+*                       CDB = not CHOP_OUT and not CHOP_BLANK (both low while blanked).
+*   OFPH                offset-DAC phase: set when CIA rises, cleared when CIB rises
+*                       (an SR latch on the TG gate drives), so it changes when the
+*                       input TG of the new phase closes; high in phase A.
+*   RST                 INP/INN reset switches (AFE_RST buffered).
+* Supplies: AVDD/AVSS (the AFE domain); the inputs are 3.3 V CMOS levels.
+
+.subckt eeg_afe_clk CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
++ OFPH RST VDD VSS
+* ---- input chopper: phase reference PH0 = CHOP or not CHOP_EN
+XI0 CHOPB CHOP VDD VSS eeg_clk_inv s=1
+XN0 PH0 CHOPB CHOP_EN VDD VSS eeg_clk_nand2 s=1
+XI1 PH0B PH0 VDD VSS eeg_clk_inv s=1
+* non-overlap: A = PH0 and not B(delayed), B = not PH0 and not A(delayed)
+XNA AN PH0B BD VDD VSS eeg_clk_nor2 s=1
+XNB BN PH0 AD VDD VSS eeg_clk_nor2 s=1
+* dead-time delay chains (four long-channel inverters each)
+XDA1 AD1 AN VDD VSS eeg_clk_slow
+XDA2 AD2 AD1 VDD VSS eeg_clk_slow
+XDA3 AD3 AD2 VDD VSS eeg_clk_slow
+XDA4 AD AD3 VDD VSS eeg_clk_slow
+XDB1 BD1 BN VDD VSS eeg_clk_slow
+XDB2 BD2 BD1 VDD VSS eeg_clk_slow
+XDB3 BD3 BD2 VDD VSS eeg_clk_slow
+XDB4 BD BD3 VDD VSS eeg_clk_slow
+* drivers: CIA from A and NCIA from not A through matching 4-stage chains (the
+* complement lags by one small inverter); the same for B
+XAI ANB AN VDD VSS eeg_clk_inv s=1
+XA1 A1 AN VDD VSS eeg_clk_inv s=2
+XA2 A2 A1 VDD VSS eeg_clk_inv s=8
+XA3 A3 A2 VDD VSS eeg_clk_inv s=32
+XA4 CIA A3 VDD VSS eeg_clk_inv s=96
+XAN1 AN1 ANB VDD VSS eeg_clk_inv s=2
+XAN2 AN2 AN1 VDD VSS eeg_clk_inv s=10
+XAN3 AN3 AN2 VDD VSS eeg_clk_inv s=48
+XAN4 NCIA AN3 VDD VSS eeg_clk_inv s=160
+XBI BNB BN VDD VSS eeg_clk_inv s=1
+XB1 B1 BN VDD VSS eeg_clk_inv s=2
+XB2 B2 B1 VDD VSS eeg_clk_inv s=8
+XB3 B3 B2 VDD VSS eeg_clk_inv s=32
+XB4 CIB B3 VDD VSS eeg_clk_inv s=96
+XBN1 BN1 BNB VDD VSS eeg_clk_inv s=2
+XBN2 BN2 BN1 VDD VSS eeg_clk_inv s=10
+XBN3 BN3 BN2 VDD VSS eeg_clk_inv s=48
+XBN4 NCIB BN3 VDD VSS eeg_clk_inv s=160
+* ---- offset-DAC phase: SR latch, set by CIA, reset by CIB
+XOL1 OFPHB CIA OFPHI VDD VSS eeg_clk_nor2 s=1
+XOL2 OFPHI CIB OFPHB VDD VSS eeg_clk_nor2 s=1
+XOB1 OFPH1 OFPHI VDD VSS eeg_clk_inv s=1
+XOB2 OFPH OFPH1 VDD VSS eeg_clk_inv s=4
+* ---- output chopper with blanking; with CHOP_EN low it stays in phase A
+XC0 COUTB CHOP_OUT VDD VSS eeg_clk_inv s=1
+XCN COE COUTB CHOP_EN VDD VSS eeg_clk_nand2 s=1
+XCOB COEB COE VDD VSS eeg_clk_inv s=1
+XCDA0 CDAI COEB CHOP_BLANK VDD VSS eeg_clk_nor2 s=1
+XCDB0 CDBI COE CHOP_BLANK VDD VSS eeg_clk_nor2 s=1
+XCDA1 CDA1 CDAI VDD VSS eeg_clk_inv s=2
+XCDA2 CDA CDA1 VDD VSS eeg_clk_inv s=8
+XCDA3 NCDA CDAI VDD VSS eeg_clk_inv s=8
+XCDB1 CDB1 CDBI VDD VSS eeg_clk_inv s=2
+XCDB2 CDB CDB1 VDD VSS eeg_clk_inv s=8
+XCDB3 NCDB CDBI VDD VSS eeg_clk_inv s=8
+* ---- reset
+XR1 RSTB AFE_RST VDD VSS eeg_clk_inv s=1
+XR2 RST RSTB VDD VSS eeg_clk_inv s=2
+.ends eeg_afe_clk
+
+* s: strength (W and finger count scale with s)
+.subckt eeg_clk_inv Y A VDD VSS s=1
+XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_clk_inv
+
+.subckt eeg_clk_nand2 Y A B VDD VSS s=1
+XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XNA Y A M1 VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+XNB M1 B VSS VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+.ends eeg_clk_nand2
+
+.subckt eeg_clk_nor2 Y A B VDD VSS s=1
+XPA M1 A VDD VDD pfet_03v3 W={5u*s} L=0.28u nf={s} m=1
+XPB Y B M1 VDD pfet_03v3 W={5u*s} L=0.28u nf={s} m=1
+XNA Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+XNB Y B VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_clk_nor2
+
+* slow inverter for the dead-time chains
+.subckt eeg_clk_slow Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=1u L=2u nf=1 m=1
+XN Y A VSS VSS nfet_03v3 W=1u L=4u nf=1 m=1
+.ends eeg_clk_slow

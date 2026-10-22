@@ -22,7 +22,7 @@ every chopper period and HD2..HD5 come from an FFT over 4 signal periods after 0
 (the method of afe_chop_distortion.py).
 
 Usage: python3 afe_offset.py [--cases 0:0 0:4 300:4 m300:4 ...] [--rs 100] [--blank 7]
-       [--sine 0.943] [--clkdrv] [--cpf 8]
+       [--sine 0.943] [--clkdrv] [--cpf 8] [--afe <netlist>] [--rload 9375]
        case = offset_mV:range[:magnitude]  (m for minus; range 0 = DAC off, 1..4 =
        +-39/79/159/318 mV)
 """
@@ -52,7 +52,7 @@ def mag_for(vos_mv, rng):
     return min(int(round(abs(vos_mv) / UNIT_MV)), 2 ** nb - 1) if nb else 0
 
 
-def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8):
+def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8, rload=9375.0):
     a, b = afe_chop_gain.clocks(TCH)
     ao, bo = afe_chop_gain.clocks(TCH, blank)
     tr = afe_chop_gain.TR
@@ -97,8 +97,8 @@ RSP SRC_P ELP {rs:g}
 RSN SRC_N ELN {rs:g}
 CLOADP OUTP 0 4p
 CLOADN OUTN 0 4p
-RLOADP OUTP CM 9375
-RLOADN OUTN CM 9375
+RLOADP OUTP CM {rload:g}
+RLOADN OUTN CM {rload:g}
 XA ELP ELN OUTP OUTN CM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
 + OFPH {sign} {bits} {ens} {cpfb} VDD 0 eeg_afe
 {clocks}
@@ -115,15 +115,17 @@ quit
 """
 
 
-def run(case, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8):
+def run(case, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False, cpf=8, rload=9375.0):
     vos, rng, mag = case
     tag = "" if afe == AFE else "_" + os.path.splitext(os.path.basename(afe))[0]
     tag += f"_sin{sine_mv:g}" if sine_mv else ""
     tag += "_clkdrv" if clkdrv else ""
     tag += f"_cpf{cpf}" if cpf != 8 else ""
+    tag += f"_rl{rload:g}" if rload != 9375.0 else ""
     d = os.path.join(HERE, "runs", f"offset{tag}_{vos:+g}mV_r{rng}_m{mag}_rs{rs:g}_bl{blank * 32.768e6:.0f}")
     os.makedirs(d, exist_ok=True)
-    open(os.path.join(d, "tb.spice"), "w").write(deck(vos, rng, mag, rs, tstop, blank, afe, sine_mv, clkdrv, cpf))
+    open(os.path.join(d, "tb.spice"), "w").write(deck(vos, rng, mag, rs, tstop, blank, afe, sine_mv, clkdrv, cpf,
+                                                      rload))
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
     open(os.path.join(d, "run.log"), "w").write(r.stdout + r.stderr)
     x = np.loadtxt(os.path.join(d, "tr.csv"))
@@ -151,6 +153,8 @@ def main():
     ap.add_argument("--sine", type=float, default=0.0, help="sine amplitude (mV) at fch/64 for distortion")
     ap.add_argument("--clkdrv", action="store_true", help="clocks from eeg_afe_clk (B8) instead of ideal PWL")
     ap.add_argument("--cpf", type=int, default=8, help="CPF_TRIM code 0..15 (Cpf = 1.99 pF + code x 20 fF)")
+    ap.add_argument("--rload", type=float, default=9375.0,
+                    help="ADC input resistor per side (lower it by the series resistor of an --afe variant with --rout)")
     a = ap.parse_args()
     cases = []
     for c in a.cases:
@@ -165,7 +169,8 @@ def main():
         print("|---|---|---|---|---|---|---|---|---|")
         with ThreadPoolExecutor(len(cases)) as ex:
             for (vos, rng, mag), _avg, h, vamax in ex.map(
-                    lambda c: run(c, a.rs, 0.5e-3 + 4 * 64 * TCH, blank, a.afe, a.sine, a.clkdrv, a.cpf), cases):
+                    lambda c: run(c, a.rs, 0.5e-3 + 4 * 64 * TCH, blank, a.afe, a.sine, a.clkdrv, a.cpf, a.rload),
+                    cases):
                 print(f"| {vos:+g} | {rng} | {mag} | {h[0] / (a.sine * 1e-3):.1f} | "
                       + " | ".join(f"{20 * np.log10(x / h[0]):.1f}" for x in h[1:]) + f" | {vamax:.2f} |", flush=True)
         return
@@ -175,7 +180,7 @@ def main():
     print("|---|---|---|---|---|---|---|---|")
     with ThreadPoolExecutor(len(cases)) as ex:
         for (vos, rng, mag), avg, pp, vamax in ex.map(lambda c: run(c, a.rs, a.tstop, blank, a.afe, 0.0, a.clkdrv,
-                                                                     a.cpf), cases):
+                                                                     a.cpf, a.rload), cases):
             canc = (1 if vos >= 0 else -1) * mag * UNIT_MV
             print(f"| {vos:+g} | {rng} | {mag} | {canc:+.2f} | {avg * 1e3:+.1f} | "
                   f"{avg / GAIN * 1e3:+.3f} | {pp * 1e3:.1f} | {vamax:.2f} |", flush=True)

@@ -42,7 +42,9 @@ same charge time constant (65 ns, about RS x Cin at RS = 100 ohm). INP/INN DC pa
 amplifier input to the opposite output, in parallel with Cf; the reset switch stays.
 Capacitors are ideal here; layout uses MIM arrays (tracker E2).
 
-Usage: python3 make_afe_netlist.py [--check] [--tau 65e-9 --out <path>]  (--tau/--out: DAC time-constant studies)
+Usage: python3 make_afe_netlist.py [--check] [--tau 65e-9] [--rout 0] [--chold 30e-12] [--out <path>]
+       (--tau, --rout, --chold with --out: study variants of the DAC time constant and of an
+       output low-pass, a series resistor from the output TGs into the hold capacitors)
 """
 import argparse
 import os
@@ -66,6 +68,7 @@ OFF_GROUP = [0, 0, 0, 0, 0, 0, 0, 1, 2, 3]  # range group of each magnitude bit
 OFF_TAU = 65e-9  # offset-DAC charge time constant: RS 100 ohm x (Cin + electrode-node C)
 C_SC = 10e-15    # switched-capacitor DC path
 CHOLD = 30e-12  # per side, output-chopper blanking (documentation/gf180_afe_noise_20261022.md)
+ROUT = 0.0  # series resistor from the output TGs to OUTP/OUTN (0 = none; study variants)
 RENAME = [("reuse_input_tg_m64", "eeg_afe_input_tg"), ("reuse_tg", "eeg_afe_output_tg"),
           ("gf180_reuse_cascoded_core", "eeg_afe_core"), ("gf180_ct_cmfb8", "eeg_afe_cmfb"),
           ("gf180_ccia_local_feedback", "eeg_afe_amp")]
@@ -214,8 +217,8 @@ XSCN1 INN CIA SCN VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 XSCN2 SCN CIB OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 CSCN SCN VSS {C_SC * 1e15:g}f
 XOFF INP INN VCM OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS eeg_afe_offdac
-XAMP ELP ELN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS eeg_afe_amp
-* hold capacitors for output-chopper blanking (CDA/CDB low for 7 MCLK after each edge)
+XAMP ELP ELN WP WN INP INN OPI ONI {'OUTPX OUTNX' if ROUT else 'OUTP OUTN'} VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS eeg_afe_amp
+{f'* output low-pass: {ROUT:g} ohm from the output TGs into the hold capacitors{chr(10)}ROUTP OUTPX OUTP {ROUT:g}{chr(10)}ROUTN OUTNX OUTN {ROUT:g}{chr(10)}' if ROUT else ''}* hold capacitors for output-chopper blanking (CDA/CDB low for 7 MCLK after each edge)
 CHOLDP OUTP VSS {CHOLD * 1e12:g}p
 CHOLDN OUTN VSS {CHOLD * 1e12:g}p
 .ends eeg_afe
@@ -293,11 +296,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true", help="simulate the operating point of the written netlist")
     ap.add_argument("--tau", type=float, default=None, help="offset-DAC time constant (study variants)")
+    ap.add_argument("--rout", type=float, default=None, help="output series resistor, ohm (study variants)")
+    ap.add_argument("--chold", type=float, default=None, help="output hold capacitor per side, F (study variants)")
     ap.add_argument("--out", default=None, help="write the netlist here instead (study variants)")
     a = ap.parse_args()
-    global OFF_TAU
+    global OFF_TAU, ROUT, CHOLD
     if a.tau is not None:
         OFF_TAU = a.tau
+    if a.rout is not None:
+        ROUT = a.rout
+    if a.chold is not None:
+        CHOLD = a.chold
     print("wrote", write(a.out))
     if a.check:
         v = check()

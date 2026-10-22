@@ -1,0 +1,461 @@
+* eeg_quantizer: 5-bit flash quantizer of the CT sigma-delta ADC (GF180, this rev)
+*
+* Input: the stage-2 integrator output O2P/O2N (CM = VCM, 1.65 V), full scale
+* +-50 mV differential. 31 comparators, threshold k = (k - 15) x 3.125 mV,
+* k = 0..30; TH[k] = 1 when INP - INN is above threshold k (RTL TH[30:0]).
+*
+* Thresholds: a ppolyf_u_1k divider from VREFP to VREFN, 320 equal units of
+* about 1 kohm (145 + 30 + 145). Taps T0..T30 sit 1.5625 mV apart around the midpoint;
+* comparator k takes RP = T(k), RN = T(30-k), so RP - RN = (k - 15) x 3.125 mV.
+* The thresholds scale with VREFP - VREFN like the DAC levels, i.e. the
+* quantizer gain does not depend on the reference voltage. Draws 1.56 uA.
+*
+* Comparator (eeg_qcmp):
+*   preamp   differential-difference: PMOS pair A on INP/INN, pair B on RP/RN
+*            (bulk to source), each with its own tail (3.9 uA), shared
+*            ppolyf_u_3k loads of 300 kohm to AVSS: outputs at about 1.2 V
+*            (1.03-1.32 V over corners), gain 8-10, 12-18 MHz. Always on: it
+*            isolates the loop filter and the ladder from the latch and keeps
+*            the input continuous (no sampling switch on O2P/O2N).
+*   latch    StrongARM, evaluates while CLK is high (CMP_STROBE, one MCLK
+*            cycle, 30.5 ns), precharged high while CLK is low. Its inputs sit
+*            a few hundred mV above the NMOS threshold, which keeps the offset
+*            from unequal output capacitance small (0.9 mV per fF; an NMOS
+*            preamp with the outputs at 2.5 V gave 7.4 mV per fF).
+*   output   equal inverters on both latch outputs, then a NOR SR latch: holds
+*            the decision until the next strobe, so TH is stable for the RTL
+*            capture at e2 (61 ns after the strobe edge). A NAND SR latch
+*            straight on the latch outputs loads them by its state and froze
+*            the decision (always the previous value).
+*   Preamp on AVDD/AVSS (static current only); latch, SR latch and output
+*   inverter on DVDD/DVSS, so the strobe switching currents stay off AVDD.
+* Bias: IQ (one 31.25 uA unit from eeg_bias, sourced into the quantizer) into
+* a local NMOS diode W4/L2 x8, mirrored once into a PMOS diode W8/L2 x8 (VBQ);
+* each tail W8/L2 x1 carries 3.9 uA (62 tails, 0.24 mA). VBQ is local to the
+* quantizer, so kickback on it does not reach the OTA biases.
+* Requirements and checks: documentation/gf180_quantizer_20261022.md.
+
+.subckt eeg_qcmp INP INN RP RN CLK TH VBQ AVDD AVSS DVDD DVSS
+* preamp: VOP - VON = A ((INP - INN) - (RP - RN))
+XA1 VON INP SA SA pfet_03v3 W=20u L=1.25u nf=2 m=1
+XA2 VOP INN SA SA pfet_03v3 W=20u L=1.25u nf=2 m=1
+XB1 VOP RP SB SB pfet_03v3 W=20u L=1.25u nf=2 m=1
+XB2 VON RN SB SB pfet_03v3 W=20u L=1.25u nf=2 m=1
+XTA SA VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=1
+XTB SB VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=1
+XRLP VOP AVSS AVSS ppolyf_u_3k r_length=200u r_width=2u
+XRLN VON AVSS AVSS ppolyf_u_3k r_length=200u r_width=2u
+* StrongARM latch; OA falls when VOP > VON (input above threshold)
+XM0 TL CLK DVSS DVSS nfet_03v3 W=8u L=0.28u nf=2 m=1
+XM1 X VOP TL DVSS nfet_03v3 W=4u L=0.5u nf=1 m=1
+XM2 Y VON TL DVSS nfet_03v3 W=4u L=0.5u nf=1 m=1
+XM3 OA OB X DVSS nfet_03v3 W=4u L=0.28u nf=1 m=1
+XM4 OB OA Y DVSS nfet_03v3 W=4u L=0.28u nf=1 m=1
+XM5 OA OB DVDD DVDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XM6 OB OA DVDD DVDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XS1 OA CLK DVDD DVDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XS2 OB CLK DVDD DVDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XS3 X CLK DVDD DVDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XS4 Y CLK DVDD DVDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+* equal inverters on OA/OB: the latch outputs see the same load whatever the
+* SR latch holds
+XIA SETQ OA DVDD DVSS eeg_qinv
+XIB RSTQ OB DVDD DVSS eeg_qinv
+* NOR SR latch: SETQ high (OA low) sets Q, RSTQ high (OB low) clears it; both low
+* (precharge) holds
+XQ1 Q RSTQ QB DVDD DVSS eeg_qnor2
+XQ2 QB SETQ Q DVDD DVSS eeg_qnor2
+* output: TH = Q through one inverter from QB; a dummy inverter on Q keeps the
+* latch loads equal
+XOB TH QB DVDD DVSS eeg_qinv
+XOD QD Q DVDD DVSS eeg_qinv
+.ends eeg_qcmp
+
+.subckt eeg_qnor2 Y A B VDD VSS
+XPA M A VDD VDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XPB Y B M VDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XNA Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XNB Y B VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+.ends eeg_qnor2
+
+.subckt eeg_qinv Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XN Y A VSS VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
+.ends eeg_qinv
+
+* threshold ladder: VREFN - 145 units - T0 - 30 units - T30 - 145 units - VREFP.
+* All 320 units are the same 2 x 2 um ppolyf_u_1k resistor, so the tap ratios do
+* not depend on the end (terminal) resistance of the resistor, which is about 7 %
+* of a 1-square unit: one long resistor for the 145-unit ends made the threshold
+* spacing 7.3 % too large.
+.subckt eeg_qladder VREFP VREFN T0 T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11 T12 T13 T14 T15 T16 T17 T18 T19 T20 T21 T22 T23 T24 
++ T25 T26 T27 T28 T29 T30 AVSS
+XR0 VREFN NB1 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR1 NB1 NB2 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR2 NB2 NB3 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR3 NB3 NB4 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR4 NB4 NB5 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR5 NB5 NB6 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR6 NB6 NB7 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR7 NB7 NB8 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR8 NB8 NB9 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR9 NB9 NB10 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR10 NB10 NB11 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR11 NB11 NB12 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR12 NB12 NB13 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR13 NB13 NB14 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR14 NB14 NB15 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR15 NB15 NB16 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR16 NB16 NB17 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR17 NB17 NB18 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR18 NB18 NB19 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR19 NB19 NB20 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR20 NB20 NB21 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR21 NB21 NB22 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR22 NB22 NB23 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR23 NB23 NB24 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR24 NB24 NB25 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR25 NB25 NB26 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR26 NB26 NB27 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR27 NB27 NB28 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR28 NB28 NB29 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR29 NB29 NB30 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR30 NB30 NB31 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR31 NB31 NB32 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR32 NB32 NB33 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR33 NB33 NB34 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR34 NB34 NB35 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR35 NB35 NB36 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR36 NB36 NB37 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR37 NB37 NB38 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR38 NB38 NB39 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR39 NB39 NB40 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR40 NB40 NB41 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR41 NB41 NB42 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR42 NB42 NB43 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR43 NB43 NB44 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR44 NB44 NB45 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR45 NB45 NB46 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR46 NB46 NB47 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR47 NB47 NB48 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR48 NB48 NB49 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR49 NB49 NB50 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR50 NB50 NB51 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR51 NB51 NB52 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR52 NB52 NB53 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR53 NB53 NB54 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR54 NB54 NB55 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR55 NB55 NB56 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR56 NB56 NB57 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR57 NB57 NB58 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR58 NB58 NB59 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR59 NB59 NB60 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR60 NB60 NB61 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR61 NB61 NB62 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR62 NB62 NB63 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR63 NB63 NB64 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR64 NB64 NB65 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR65 NB65 NB66 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR66 NB66 NB67 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR67 NB67 NB68 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR68 NB68 NB69 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR69 NB69 NB70 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR70 NB70 NB71 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR71 NB71 NB72 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR72 NB72 NB73 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR73 NB73 NB74 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR74 NB74 NB75 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR75 NB75 NB76 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR76 NB76 NB77 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR77 NB77 NB78 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR78 NB78 NB79 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR79 NB79 NB80 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR80 NB80 NB81 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR81 NB81 NB82 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR82 NB82 NB83 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR83 NB83 NB84 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR84 NB84 NB85 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR85 NB85 NB86 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR86 NB86 NB87 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR87 NB87 NB88 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR88 NB88 NB89 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR89 NB89 NB90 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR90 NB90 NB91 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR91 NB91 NB92 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR92 NB92 NB93 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR93 NB93 NB94 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR94 NB94 NB95 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR95 NB95 NB96 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR96 NB96 NB97 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR97 NB97 NB98 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR98 NB98 NB99 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR99 NB99 NB100 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR100 NB100 NB101 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR101 NB101 NB102 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR102 NB102 NB103 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR103 NB103 NB104 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR104 NB104 NB105 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR105 NB105 NB106 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR106 NB106 NB107 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR107 NB107 NB108 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR108 NB108 NB109 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR109 NB109 NB110 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR110 NB110 NB111 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR111 NB111 NB112 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR112 NB112 NB113 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR113 NB113 NB114 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR114 NB114 NB115 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR115 NB115 NB116 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR116 NB116 NB117 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR117 NB117 NB118 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR118 NB118 NB119 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR119 NB119 NB120 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR120 NB120 NB121 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR121 NB121 NB122 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR122 NB122 NB123 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR123 NB123 NB124 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR124 NB124 NB125 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR125 NB125 NB126 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR126 NB126 NB127 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR127 NB127 NB128 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR128 NB128 NB129 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR129 NB129 NB130 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR130 NB130 NB131 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR131 NB131 NB132 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR132 NB132 NB133 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR133 NB133 NB134 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR134 NB134 NB135 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR135 NB135 NB136 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR136 NB136 NB137 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR137 NB137 NB138 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR138 NB138 NB139 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR139 NB139 NB140 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR140 NB140 NB141 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR141 NB141 NB142 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR142 NB142 NB143 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR143 NB143 NB144 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR144 NB144 T0 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR145 T0 T1 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR146 T1 T2 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR147 T2 T3 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR148 T3 T4 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR149 T4 T5 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR150 T5 T6 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR151 T6 T7 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR152 T7 T8 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR153 T8 T9 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR154 T9 T10 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR155 T10 T11 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR156 T11 T12 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR157 T12 T13 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR158 T13 T14 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR159 T14 T15 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR160 T15 T16 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR161 T16 T17 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR162 T17 T18 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR163 T18 T19 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR164 T19 T20 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR165 T20 T21 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR166 T21 T22 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR167 T22 T23 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR168 T23 T24 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR169 T24 T25 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR170 T25 T26 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR171 T26 T27 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR172 T27 T28 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR173 T28 T29 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR174 T29 T30 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR175 T30 NT1 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR176 NT1 NT2 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR177 NT2 NT3 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR178 NT3 NT4 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR179 NT4 NT5 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR180 NT5 NT6 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR181 NT6 NT7 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR182 NT7 NT8 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR183 NT8 NT9 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR184 NT9 NT10 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR185 NT10 NT11 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR186 NT11 NT12 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR187 NT12 NT13 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR188 NT13 NT14 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR189 NT14 NT15 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR190 NT15 NT16 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR191 NT16 NT17 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR192 NT17 NT18 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR193 NT18 NT19 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR194 NT19 NT20 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR195 NT20 NT21 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR196 NT21 NT22 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR197 NT22 NT23 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR198 NT23 NT24 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR199 NT24 NT25 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR200 NT25 NT26 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR201 NT26 NT27 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR202 NT27 NT28 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR203 NT28 NT29 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR204 NT29 NT30 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR205 NT30 NT31 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR206 NT31 NT32 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR207 NT32 NT33 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR208 NT33 NT34 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR209 NT34 NT35 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR210 NT35 NT36 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR211 NT36 NT37 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR212 NT37 NT38 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR213 NT38 NT39 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR214 NT39 NT40 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR215 NT40 NT41 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR216 NT41 NT42 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR217 NT42 NT43 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR218 NT43 NT44 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR219 NT44 NT45 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR220 NT45 NT46 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR221 NT46 NT47 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR222 NT47 NT48 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR223 NT48 NT49 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR224 NT49 NT50 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR225 NT50 NT51 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR226 NT51 NT52 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR227 NT52 NT53 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR228 NT53 NT54 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR229 NT54 NT55 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR230 NT55 NT56 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR231 NT56 NT57 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR232 NT57 NT58 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR233 NT58 NT59 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR234 NT59 NT60 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR235 NT60 NT61 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR236 NT61 NT62 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR237 NT62 NT63 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR238 NT63 NT64 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR239 NT64 NT65 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR240 NT65 NT66 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR241 NT66 NT67 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR242 NT67 NT68 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR243 NT68 NT69 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR244 NT69 NT70 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR245 NT70 NT71 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR246 NT71 NT72 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR247 NT72 NT73 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR248 NT73 NT74 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR249 NT74 NT75 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR250 NT75 NT76 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR251 NT76 NT77 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR252 NT77 NT78 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR253 NT78 NT79 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR254 NT79 NT80 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR255 NT80 NT81 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR256 NT81 NT82 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR257 NT82 NT83 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR258 NT83 NT84 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR259 NT84 NT85 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR260 NT85 NT86 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR261 NT86 NT87 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR262 NT87 NT88 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR263 NT88 NT89 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR264 NT89 NT90 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR265 NT90 NT91 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR266 NT91 NT92 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR267 NT92 NT93 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR268 NT93 NT94 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR269 NT94 NT95 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR270 NT95 NT96 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR271 NT96 NT97 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR272 NT97 NT98 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR273 NT98 NT99 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR274 NT99 NT100 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR275 NT100 NT101 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR276 NT101 NT102 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR277 NT102 NT103 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR278 NT103 NT104 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR279 NT104 NT105 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR280 NT105 NT106 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR281 NT106 NT107 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR282 NT107 NT108 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR283 NT108 NT109 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR284 NT109 NT110 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR285 NT110 NT111 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR286 NT111 NT112 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR287 NT112 NT113 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR288 NT113 NT114 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR289 NT114 NT115 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR290 NT115 NT116 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR291 NT116 NT117 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR292 NT117 NT118 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR293 NT118 NT119 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR294 NT119 NT120 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR295 NT120 NT121 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR296 NT121 NT122 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR297 NT122 NT123 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR298 NT123 NT124 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR299 NT124 NT125 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR300 NT125 NT126 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR301 NT126 NT127 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR302 NT127 NT128 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR303 NT128 NT129 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR304 NT129 NT130 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR305 NT130 NT131 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR306 NT131 NT132 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR307 NT132 NT133 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR308 NT133 NT134 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR309 NT134 NT135 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR310 NT135 NT136 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR311 NT136 NT137 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR312 NT137 NT138 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR313 NT138 NT139 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR314 NT139 NT140 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR315 NT140 NT141 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR316 NT141 NT142 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR317 NT142 NT143 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR318 NT143 NT144 AVSS ppolyf_u_1k r_length=2u r_width=2u
+XR319 NT144 VREFP AVSS ppolyf_u_1k r_length=2u r_width=2u
+.ends eeg_qladder
+
+* quantizer top: ladder, bias, strobe buffer and 31 comparators
+* comparator k: RP = T(k), RN = T(30-k)
+.subckt eeg_quantizer INP INN VREFP VREFN CMP_STROBE TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 
++ TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD DVSS
+XLAD VREFP VREFN T0 T1 T2 T3 T4 T5 T6 T7 T8 T9 T10 T11 T12 T13 T14 T15 T16 T17 T18 T19 T20 T21 T22 T23 T24 T25 T26 T27 T28 T29 T30 AVSS eeg_qladder
+* preamp tail bias: IQ (31.25 uA) into an NMOS diode, mirrored into the PMOS
+* diode VBQ; ideal cap here (MIM in layout)
+XQD IQ IQ AVSS AVSS nfet_03v3 W=4u L=2u nf=1 m=8
+XQM VBQ IQ AVSS AVSS nfet_03v3 W=4u L=2u nf=1 m=8
+XQP VBQ VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=8
+CVBQ VBQ AVDD 2p
+* strobe buffer (DVDD): CMP_STROBE -> CLKQ, about 0.8 pF of latch clock load
+XCB1 CLKB CMP_STROBE DVDD DVSS eeg_qinv
+XCB2P CLKQ CLKB DVDD DVDD pfet_03v3 W=32u L=0.28u nf=8 m=1
+XCB2N CLKQ CLKB DVSS DVSS nfet_03v3 W=16u L=0.28u nf=4 m=1
+XC0 INP INN T0 T30 CLKQ TH0 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC1 INP INN T1 T29 CLKQ TH1 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC2 INP INN T2 T28 CLKQ TH2 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC3 INP INN T3 T27 CLKQ TH3 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC4 INP INN T4 T26 CLKQ TH4 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC5 INP INN T5 T25 CLKQ TH5 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC6 INP INN T6 T24 CLKQ TH6 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC7 INP INN T7 T23 CLKQ TH7 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC8 INP INN T8 T22 CLKQ TH8 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC9 INP INN T9 T21 CLKQ TH9 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC10 INP INN T10 T20 CLKQ TH10 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC11 INP INN T11 T19 CLKQ TH11 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC12 INP INN T12 T18 CLKQ TH12 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC13 INP INN T13 T17 CLKQ TH13 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC14 INP INN T14 T16 CLKQ TH14 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC15 INP INN T15 T15 CLKQ TH15 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC16 INP INN T16 T14 CLKQ TH16 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC17 INP INN T17 T13 CLKQ TH17 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC18 INP INN T18 T12 CLKQ TH18 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC19 INP INN T19 T11 CLKQ TH19 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC20 INP INN T20 T10 CLKQ TH20 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC21 INP INN T21 T9 CLKQ TH21 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC22 INP INN T22 T8 CLKQ TH22 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC23 INP INN T23 T7 CLKQ TH23 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC24 INP INN T24 T6 CLKQ TH24 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC25 INP INN T25 T5 CLKQ TH25 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC26 INP INN T26 T4 CLKQ TH26 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC27 INP INN T27 T3 CLKQ TH27 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC28 INP INN T28 T2 CLKQ TH28 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC29 INP INN T29 T1 CLKQ TH29 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+XC30 INP INN T30 T0 CLKQ TH30 VBQ AVDD AVSS DVDD DVSS eeg_qcmp
+.ends eeg_quantizer

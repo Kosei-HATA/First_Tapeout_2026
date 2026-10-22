@@ -1,0 +1,81 @@
+* Hybrid CT feedback smoke test. No ADC SNDR/ENOB claim.
+.include /Volumes/mukiebi/Codex/gf180_ishi_env_20261015/native_runtime/pdk/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /Volumes/mukiebi/Codex/gf180_ishi_env_20261015/native_runtime/pdk/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include quantizer.spice
+.include otas.spice
+.temp 27
+.options sparse method=trap maxord=2 reltol=1e-6 vntol=1e-10 abstol=1e-13 bypass=0
+VDD_SRC VDD 0 3.3
+VCM CM 0 1.65
+VBN1 VBN1 0 .85
+VNC1 VNC1 0 2
+VPC1 VPC1 0 1.7
+VBCM1 VBCM1 0 .82
+VSIG SIG 0 PWL(0 0 1.1e-06 0 1.105e-06 0.3)
+EP VINP CM SIG 0 .5
+EN VINN CM SIG 0 -.5
+VREF VREF 0 PWL(0 0 1.1e-06 0 1.105e-06 .5)
+VRESET RESET_TARGET 0 PWL(0 3.3 1u 3.3 1.005u 0)
+ENRESET NRESET_TARGET 0 VDD RESET_TARGET 1
+RRESET RESET_TARGET RESET 1000
+RNRESET NRESET_TARGET NRESET 1000
+VDRESET DRESET 0 PWL(0 3.3 1.05u 3.3 1.055u 0)
+VLOAD LOAD 0 PULSE(0 3.3 2.0765625e-06 2n 2n 30n 9.765625e-07)
+BIA_DRV CIA_DRV 0 V=3.2999999999999998+(-3.2999999999999998)*.5*(1+tanh((time-(9.3982812499999998e-06))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(1.7225781250000001e-05))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(2.5023281250000002e-05))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(3.2850781250000001e-05))/(1.8204784532536748e-09)))
+ENCIA NCIA_DRV 0 VDD CIA_DRV 1
+BIB_DRV CIB_DRV 0 V=0+(3.2999999999999998)*.5*(1+tanh((time-(9.4132812500000005e-06))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(1.7210781250000002e-05))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(2.5038281250000001e-05))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(3.2835781250000002e-05))/(1.8204784532536748e-09)))
+ENCIB NCIB_DRV 0 VDD CIB_DRV 1
+BDA_DRV CDA_DRV 0 V=3.2999999999999998+(-3.2999999999999998)*.5*(1+tanh((time-(9.4182812500000013e-06))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(1.7205781249999997e-05))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(2.5043281249999998e-05))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(3.2830781250000005e-05))/(1.8204784532536748e-09)))
+ENCDA NCDA_DRV 0 VDD CDA_DRV 1
+BDB_DRV CDB_DRV 0 V=0+(3.2999999999999998)*.5*(1+tanh((time-(9.3932812500000007e-06))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(1.7230781249999998e-05))/(1.8204784532536748e-09)))+(3.2999999999999998)*.5*(1+tanh((time-(2.5018281249999998e-05))/(1.8204784532536748e-09)))+(-3.2999999999999998)*.5*(1+tanh((time-(3.2855781250000005e-05))/(1.8204784532536748e-09)))
+ENCDB NCDB_DRV 0 VDD CDB_DRV 1
+RDRV_CIA CIA_DRV CIA 10
+RDRV_NCIA NCIA_DRV NCIA 10
+RDRV_CIB CIB_DRV CIB 10
+RDRV_NCIB NCIB_DRV NCIB 10
+RDRV_CDA CDA_DRV CDA 10
+RDRV_NCDA NCDA_DRV NCDA 10
+RDRV_CDB CDB_DRV CDB 10
+RDRV_NCDB NCDB_DRV NCDB 10
+XOTA1 I1P I1N O1P O1N CM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD 0 gf180_inside_cascode_ota
+XOTA2 I2P I2N O2P O2N CM VBN1 VNC1 VPC1 VBCM1 VDD 0 gf180_ct_ota_tel16_cmfb CCOMP=10p
+RINP VINP I1P 9375
+RINN VINN I1N 9375
+RD1P DAC1P I1P {300000/31}
+RD1N DAC1N I1N {300000/31}
+C1P O1N I1P 6.8051376829979684e-10
+C1N O1P I1N 6.8051376829979684e-10
+RF1P O1N I1P 1T
+RF1N O1P I1N 1T
+R21P O1P I2P 1Meg
+R21N O1N I2N 1Meg
+RD2P DAC2P I2P {320000000/3/31}
+RD2N DAC2N I2N {320000000/3/31}
+C2P O2N I2P 1.953125p
+C2N O2P I2N 1.953125p
+RF2P O2N I2P 1T
+RF2N O2P I2N 1T
+CL1P O1P 0 4p
+CL1N O1N 0 4p
+CL2P O2P 0 4p
+CL2N O2N 0 4p
+.subckt rst_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=1u L=.28u nf=1
+XP A GN B VDD pfet_03v3 W=2u L=.28u nf=1
+.ends rst_tg
+XR1P O1N I1P RESET NRESET VDD 0 rst_tg
+XR1N O1P I1N RESET NRESET VDD 0 rst_tg
+XR2P O2N I2P RESET NRESET VDD 0 rst_tg
+XR2N O2P I2N RESET NRESET VDD 0 rst_tg
+XQ O2P O2N DLOAD DRESET_EVENT VDD 0 SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9 SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23 SEL24 SEL25 SEL26 SEL27 SEL28 SEL29 SEL30 SELN0 SELN1 SELN2 SELN3 SELN4 SELN5 SELN6 SELN7 SELN8 SELN9 SELN10 SELN11 SELN12 SELN13 SELN14 SELN15 SELN16 SELN17 SELN18 SELN19 SELN20 SELN21 SELN22 SELN23 SELN24 SELN25 SELN26 SELN27 SELN28 SELN29 SELN30 S2L0 S2L1 S2L2 S2L3 S2L4 S2L5 S2L6 S2L7 S2L8 S2L9 S2L10 S2L11 S2L12 S2L13 S2L14 S2L15 S2L16 S2L17 S2L18 S2L19 S2L20 S2L21 S2L22 S2L23 S2L24 S2L25 S2L26 S2L27 S2L28 S2L29 S2L30 S2LN0 S2LN1 S2LN2 S2LN3 S2LN4 S2LN5 S2LN6 S2LN7 S2LN8 S2LN9 S2LN10 S2LN11 S2LN12 S2LN13 S2LN14 S2LN15 S2LN16 S2LN17 S2LN18 S2LN19 S2LN20 S2LN21 S2LN22 S2LN23 S2LN24 S2LN25 S2LN26 S2LN27 S2LN28 S2LN29 S2LN30 ct_quantizer5_event
+AEVENT [DLOAD DRESET_EVENT] CLOCK_EVENTS
+.model CLOCK_EVENTS d_source(input_file="events.txt")
+ESUM1 NORM1 0 POLY(31) SEL0 0 SEL1 0 SEL2 0 SEL3 0 SEL4 0 SEL5 0 SEL6 0 SEL7 0 SEL8 0 SEL9 0 SEL10 0 SEL11 0 SEL12 0 SEL13 0 SEL14 0 SEL15 0 SEL16 0 SEL17 0 SEL18 0 SEL19 0 SEL20 0 SEL21 0 SEL22 0 SEL23 0 SEL24 0 SEL25 0 SEL26 0 SEL27 0 SEL28 0 SEL29 0 SEL30 0 -.5 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461
+EDAC1P DAC1P CM POLY(2) NORM1 0 VREF 0 0 0 0 0 1
+EDAC1N DAC1N CM DAC1P CM -1
+ESUM2 NORM2 0 POLY(31) S2L0 0 S2L1 0 S2L2 0 S2L3 0 S2L4 0 S2L5 0 S2L6 0 S2L7 0 S2L8 0 S2L9 0 S2L10 0 S2L11 0 S2L12 0 S2L13 0 S2L14 0 S2L15 0 S2L16 0 S2L17 0 S2L18 0 S2L19 0 S2L20 0 S2L21 0 S2L22 0 S2L23 0 S2L24 0 S2L25 0 S2L26 0 S2L27 0 S2L28 0 S2L29 0 S2L30 0 -.5 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461 0.0097751710654936461
+EDAC2P DAC2P CM POLY(2) NORM2 0 VREF 0 0 0 0 0 1
+EDAC2N DAC2N CM DAC2P CM -1
+.save time v(sig) v(o1p) v(o1n) v(i1p) v(i1n) v(o2p) v(o2n) v(i2p) v(i2n) v(dac1p) v(dac1n) v(dac2p) v(dac2n) v(load) v(reset) v(vref) i(vdd_src) v(xq.xctrl.pa0) v(xq.xctrl.pa1) v(xq.xctrl.pa2) v(xq.xctrl.pa3) v(xq.xctrl.pa4) v(xq.xctrl.ca0) v(xq.xctrl.ca1) v(xq.xctrl.ca2) v(xq.xctrl.ca3) v(xq.xctrl.ca4) v(xq.xctrl.rawa0) v(xq.xctrl.rawa1) v(xq.xctrl.rawa2) v(xq.xctrl.rawa3) v(xq.xctrl.rawa4) @m.xota1.xota.xcore.xin_p.m0[vds] @m.xota1.xota.xcore.xin_p.m0[vdsat] @m.xota1.xota.xcore.xin_n.m0[vds] @m.xota1.xota.xcore.xin_n.m0[vdsat] @m.xota1.xota.xcore.xnc_p.m0[vds] @m.xota1.xota.xcore.xnc_p.m0[vdsat] @m.xota1.xota.xcore.xnc_n.m0[vds] @m.xota1.xota.xcore.xnc_n.m0[vdsat] @m.xota1.xota.xcore.xload_p.m0[vds] @m.xota1.xota.xcore.xload_p.m0[vdsat] @m.xota1.xota.xcore.xload_n.m0[vds] @m.xota1.xota.xcore.xload_n.m0[vdsat] @m.xota1.xota.xcore.xpc_p.m0[vds] @m.xota1.xota.xcore.xpc_p.m0[vdsat] @m.xota1.xota.xcore.xpc_n.m0[vds] @m.xota1.xota.xcore.xpc_n.m0[vdsat] @m.xota1.xota.xcore.xtail.m0[vds] @m.xota1.xota.xcore.xtail.m0[vdsat] @m.xota2.xcore.xin_p.m0[vds] @m.xota2.xcore.xin_p.m0[vdsat] @m.xota2.xcore.xin_n.m0[vds] @m.xota2.xcore.xin_n.m0[vdsat] @m.xota2.xcore.xnc_p.m0[vds] @m.xota2.xcore.xnc_p.m0[vdsat] @m.xota2.xcore.xnc_n.m0[vds] @m.xota2.xcore.xnc_n.m0[vdsat] @m.xota2.xcore.xload_p.m0[vds] @m.xota2.xcore.xload_p.m0[vdsat] @m.xota2.xcore.xload_n.m0[vds] @m.xota2.xcore.xload_n.m0[vdsat] @m.xota2.xcore.xpc_p.m0[vds] @m.xota2.xcore.xpc_p.m0[vdsat] @m.xota2.xcore.xpc_n.m0[vds] @m.xota2.xcore.xpc_n.m0[vdsat] @m.xota2.xcore.xtail.m0[vds] @m.xota2.xcore.xtail.m0[vdsat] @m.xota1.xota.xcore.xload_p.m0[id] @m.xota1.xota.xcore.xload_n.m0[id] @m.xota2.xcore.xload_p.m0[id] @m.xota2.xcore.xload_n.m0[id] @m.xota1.xota.xcmfb.xcmp1.m0[id] @m.xota1.xota.xcmfb.xcmp2.m0[id] @m.xota2.xcmfb.xcmp1.m0[id] @m.xota2.xcmfb.xcmp2.m0[id] v(cia) v(cib) v(cda) v(cdb) v(xota1.cip) v(xota1.cin) v(xota1.xota.vbp) v(xota1.xota.xcore.d1p) v(xota1.xota.xcore.d1n) v(xota1.xota.xcore.n1p) v(xota1.xota.xcore.n1n) v(xota1.xota.xcore.p1p) v(xota1.xota.xcore.p1n) v(xota1.xota.xcore.p2p) v(xota1.xota.xcore.p2n) v(ncia) v(ncib) v(ncda) v(ncdb) v(cia_drv) v(ncia_drv) v(cib_drv) v(ncib_drv) v(cda_drv) v(ncda_drv) v(cdb_drv) v(ncdb_drv) @m.xota1.xota.xcmfb.xcm1.m0[vds] @m.xota1.xota.xcmfb.xcm1.m0[vdsat] @m.xota1.xota.xcmfb.xcm2.m0[vds] @m.xota1.xota.xcmfb.xcm2.m0[vdsat] @m.xota1.xota.xcmfb.xcm3.m0[vds] @m.xota1.xota.xcmfb.xcm3.m0[vdsat] @m.xota1.xota.xcmfb.xcm4.m0[vds] @m.xota1.xota.xcmfb.xcm4.m0[vdsat] @m.xota1.xota.xcmfb.xcmp1.m0[vds] @m.xota1.xota.xcmfb.xcmp1.m0[vdsat] @m.xota1.xota.xcmfb.xcmp2.m0[vds] @m.xota1.xota.xcmfb.xcmp2.m0[vdsat] @m.xota1.xota.xcmfb.xcmt1.m0[vds] @m.xota1.xota.xcmfb.xcmt1.m0[vdsat] @m.xota1.xota.xcmfb.xcmt2.m0[vds] @m.xota1.xota.xcmfb.xcmt2.m0[vdsat] @m.xota2.xcmfb.xcm1.m0[vds] @m.xota2.xcmfb.xcm1.m0[vdsat] @m.xota2.xcmfb.xcm2.m0[vds] @m.xota2.xcmfb.xcm2.m0[vdsat] @m.xota2.xcmfb.xcm3.m0[vds] @m.xota2.xcmfb.xcm3.m0[vdsat] @m.xota2.xcmfb.xcm4.m0[vds] @m.xota2.xcmfb.xcm4.m0[vdsat] @m.xota2.xcmfb.xcmp1.m0[vds] @m.xota2.xcmfb.xcmp1.m0[vdsat] @m.xota2.xcmfb.xcmp2.m0[vds] @m.xota2.xcmfb.xcmp2.m0[vdsat] @m.xota2.xcmfb.xcmt1.m0[vds] @m.xota2.xcmfb.xcmt1.m0[vdsat] @m.xota2.xcmfb.xcmt2.m0[vds] @m.xota2.xcmfb.xcmt2.m0[vdsat] v(nreset) v(reset_target) v(nreset_target) @m.xr1p.xn.m0[vgs] @m.xr1p.xn.m0[vds] @m.xr1p.xn.m0[id] @m.xr1p.xn.m0[cgg] @m.xr1p.xp.m0[vgs] @m.xr1p.xp.m0[vds] @m.xr1p.xp.m0[id] @m.xr1p.xp.m0[cgg] @m.xr1n.xn.m0[vgs] @m.xr1n.xn.m0[vds] @m.xr1n.xn.m0[id] @m.xr1n.xn.m0[cgg] @m.xr1n.xp.m0[vgs] @m.xr1n.xp.m0[vds] @m.xr1n.xp.m0[id] @m.xr1n.xp.m0[cgg] @m.xr2p.xn.m0[vgs] @m.xr2p.xn.m0[vds] @m.xr2p.xn.m0[id] @m.xr2p.xn.m0[cgg] @m.xr2p.xp.m0[vgs] @m.xr2p.xp.m0[vds] @m.xr2p.xp.m0[id] @m.xr2p.xp.m0[cgg] @m.xr2n.xn.m0[vgs] @m.xr2n.xn.m0[vds] @m.xr2n.xn.m0[id] @m.xr2n.xn.m0[cgg] @m.xr2n.xp.m0[vgs] @m.xr2n.xp.m0[vds] @m.xr2n.xp.m0[id] @m.xr2n.xp.m0[cgg] v(vinp) v(vinn) v(xota2.vbp) @m.xota1.xota.xcore.xin_p.m0[id] @m.xota1.xota.xcore.xin_p.m0[gm] @m.xota1.xota.xcore.xin_n.m0[id] @m.xota1.xota.xcore.xin_n.m0[gm] @m.xota1.xota.xcore.xnc_p.m0[id] @m.xota1.xota.xcore.xnc_p.m0[gm] @m.xota1.xota.xcore.xnc_n.m0[id] @m.xota1.xota.xcore.xnc_n.m0[gm] @m.xota1.xota.xcore.xload_p.m0[gm] @m.xota1.xota.xcore.xload_n.m0[gm] @m.xota1.xota.xcore.xpc_p.m0[id] @m.xota1.xota.xcore.xpc_p.m0[gm] @m.xota1.xota.xcore.xpc_n.m0[id] @m.xota1.xota.xcore.xpc_n.m0[gm] @m.xota1.xota.xcore.xtail.m0[id] @m.xota1.xota.xcore.xtail.m0[gm] @m.xota1.xota.xcmfb.xcm1.m0[id] @m.xota1.xota.xcmfb.xcm1.m0[gm] @m.xota1.xota.xcmfb.xcm2.m0[id] @m.xota1.xota.xcmfb.xcm2.m0[gm] @m.xota1.xota.xcmfb.xcm3.m0[id] @m.xota1.xota.xcmfb.xcm3.m0[gm] @m.xota1.xota.xcmfb.xcm4.m0[id] @m.xota1.xota.xcmfb.xcm4.m0[gm] @m.xota1.xota.xcmfb.xcmp1.m0[gm] @m.xota1.xota.xcmfb.xcmp2.m0[gm] @m.xota1.xota.xcmfb.xcmt1.m0[id] @m.xota1.xota.xcmfb.xcmt1.m0[gm] @m.xota1.xota.xcmfb.xcmt2.m0[id] @m.xota1.xota.xcmfb.xcmt2.m0[gm] @m.xota2.xcore.xin_p.m0[id] @m.xota2.xcore.xin_p.m0[gm] @m.xota2.xcore.xin_n.m0[id] @m.xota2.xcore.xin_n.m0[gm] @m.xota2.xcore.xnc_p.m0[id] @m.xota2.xcore.xnc_p.m0[gm] @m.xota2.xcore.xnc_n.m0[id] @m.xota2.xcore.xnc_n.m0[gm] @m.xota2.xcore.xload_p.m0[gm] @m.xota2.xcore.xload_n.m0[gm] @m.xota2.xcore.xpc_p.m0[id] @m.xota2.xcore.xpc_p.m0[gm] @m.xota2.xcore.xpc_n.m0[id] @m.xota2.xcore.xpc_n.m0[gm] @m.xota2.xcore.xtail.m0[id] @m.xota2.xcore.xtail.m0[gm] @m.xota2.xcmfb.xcm1.m0[id] @m.xota2.xcmfb.xcm1.m0[gm] @m.xota2.xcmfb.xcm2.m0[id] @m.xota2.xcmfb.xcm2.m0[gm] @m.xota2.xcmfb.xcm3.m0[id] @m.xota2.xcmfb.xcm3.m0[gm] @m.xota2.xcmfb.xcm4.m0[id] @m.xota2.xcmfb.xcm4.m0[gm] @m.xota2.xcmfb.xcmp1.m0[gm] @m.xota2.xcmfb.xcmp2.m0[gm] @m.xota2.xcmfb.xcmt1.m0[id] @m.xota2.xcmfb.xcmt1.m0[gm] @m.xota2.xcmfb.xcmt2.m0[id] @m.xota2.xcmfb.xcmt2.m0[gm] @c1p[i] @c1n[i] @c2p[i] @c2n[i]
+.tran 5n 3.2594140625e-05 0 1e-09
+.end

@@ -1,0 +1,55 @@
+* CCIA diagnostic: original MOS dimensions, physical input/output TG.
+* Input TG precede Cin; fixed internal Cf/reset/CMFB/compensation.
+* 18 core/CMFB MOS + 16 switch MOS; no periodic-noise claim.
+.subckt reuse_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends reuse_tg
+
+.subckt reuse_input_tg_m64 A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=64 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=64 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends reuse_input_tg_m64
+* Newcascoded current-reuse candidate cas_L1; inputW/L unchanged, area reduced.
+* Complementary current-reuse differential input stage. No ideal gm source.
+* N/P input transconductances add; source tails share the branch current.
+* Real8MOS gate-only CMFB controls the PMOS upper tail.
+.subckt gf180_reuse_cascoded_core INP INN OUTP OUTN VBN VBP VNC VPC VDD VSS
+XN_P DNP INP SN VSS nfet_03v3 W=10u L=0.28u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XN_N DNN INN SN VSS nfet_03v3 W=10u L=0.28u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XP_P DPP INP SP VDD pfet_03v3 W=10u L=0.28u nf=1 m=4096 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XP_N DPN INN SP VDD pfet_03v3 W=10u L=0.28u nf=1 m=4096 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XNT SN VBN VSS VSS nfet_03v3 W=10u L=1u nf=1 m=256 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPT SP VBP VDD VDD pfet_03v3 W=10u L=2u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XNC_P OUTN VNC DNP VSS nfet_03v3 W=10u L=1u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XNC_N OUTP VNC DNN VSS nfet_03v3 W=10u L=1u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPC_P OUTN VPC DPP VDD pfet_03v3 W=10u L=1u nf=1 m=1024 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPC_N OUTP VPC DPN VDD pfet_03v3 W=10u L=1u nf=1 m=1024 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends gf180_reuse_cascoded_core
+.subckt gf180_ct_cmfb8 OUTP OUTN VCMREF VBCM VBP VDD VSS
+XCM1 ND OUTP NTA VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM2 VBP VCMREF NTA VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM3 ND OUTN NTB VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM4 VBP VCMREF NTB VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP1 ND ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP2 VBP ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT1 NTA VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends gf180_ct_cmfb8
+
+
+* CCIA: explicit electrodes, switched capacitor plates, fixed core input/output ports.
+.subckt gf180_ccia_local_feedback EP EN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM VNC VPC VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+XIP_A EP WP CIA NCIA VDD VSS reuse_input_tg_m64
+XIN_A EN WN CIA NCIA VDD VSS reuse_input_tg_m64
+XIP_B EP WN CIB NCIB VDD VSS reuse_input_tg_m64
+XIN_B EN WP CIB NCIB VDD VSS reuse_input_tg_m64
+XCORE INP INN OPI ONI VBN VBP VNC VPC VDD VSS gf180_reuse_cascoded_core
+XOP_A OPI OUTP CDA NCDA VDD VSS reuse_tg
+XON_A ONI OUTN CDA NCDA VDD VSS reuse_tg
+XOP_B OPI OUTN CDB NCDB VDD VSS reuse_tg
+XON_B ONI OUTP CDB NCDB VDD VSS reuse_tg
+XCMFB OPI ONI VCM VBCM VBP VDD VSS gf180_ct_cmfb8
+CCP VBP OPI 10p
+CCN VBP ONI 10p
+.ends gf180_ccia_local_feedback

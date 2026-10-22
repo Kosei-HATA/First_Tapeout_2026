@@ -1,0 +1,31 @@
+* GF180 DAC2 unit cell for the CT 2nd-order ADC (stage 2 scaled x10), 2026-10-22.
+* Complementary current steering: a cascoded PMOS source (+Iu) and a cascoded
+* NMOS sink (-Iu), each with a minimum-size differential steering pair.
+*   D=1: +Iu into OUTP, -Iu out of OUTN   (diff +2*Iu, CM 0)
+*   D=0: +Iu into OUTN, -Iu out of OUTP   (diff -2*Iu, CM 0)
+* Equivalent to one 10.67 Meg unit of the resistive DAC2 at VREF 0.5 V:
+* Iu = 0.25 V / 10.67 Meg = 23.44 nA. OUTP/OUTN are the stage-2 virtual grounds.
+.subckt dac2_cell OUTP OUTN D DB VBP VBPC VBN VBNC VDD VSS
+XPS  XS   VBP  VDD VDD pfet_03v3 W=1u L=20u nf=1
+XPC  XP   VBPC XS  VDD pfet_03v3 W=1u L=1u nf=1
+XPSP OUTP DB   XP  VDD pfet_03v3 W=0.5u L=0.28u nf=1
+XPSN OUTN D    XP  VDD pfet_03v3 W=0.5u L=0.28u nf=1
+XNS  YS   VBN  VSS VSS nfet_03v3 W=1u L=20u nf=1
+XNC  YN   VBNC YS  VSS nfet_03v3 W=1u L=1u nf=1
+XNSN OUTN D    YN  VSS nfet_03v3 W=0.5u L=0.28u nf=1
+XNSP OUTP DB   YN  VSS nfet_03v3 W=0.5u L=0.28u nf=1
+.ends dac2_cell
+
+* Shared bias for the 31-cell array: 10:1 mirrors from a reference current
+* (on chip: Iref = 0.25 V / 1.067 Meg poly, same type as R21, so k2 tracks R21).
+* Cascode gates from fixed levels (on chip: diode-stack bias); 1 pF decoupling.
+.subckt dac2_bias IREFP IREFN VBP VBPC VBN VBNC VDD VSS
+XPBD VBP  VBP VDD VDD pfet_03v3 W=1u L=20u nf=1 m=10
+XNBD VBN  VBN VSS VSS nfet_03v3 W=1u L=20u nf=1 m=10
+RIP  IREFP VBP 1
+RIN  IREFN VBN 1
+CBP  VBP  VDD 1p
+CBN  VBN  VSS 1p
+CBPC VBPC VDD 1p
+CBNC VBNC VSS 1p
+.ends dac2_bias

@@ -6,3 +6,8 @@ scripts/klayout/.venv/
 gf180/tools/venv*/
 gf180/results/*.csv
 gf180/results/*.csv.gz
+gf180/sim/dac2_cell/runs/
+gf180/sim/dac1_cell/runs/
+gf180/tapeout/sim/afe/runs/
+gf180/tapeout/sim/bias/runs/
+gf180/tapeout/sim/quantizer/runs/

@@ -1,0 +1,36 @@
+* GF180 DAC1 unit cell for the CT 2nd-order ADC (gain10 loop), 2026-10-22.
+* Differential, complementary resistive unit: each side selects VRP (VCM+0.25)
+* or VRN (VCM-0.25) with transmission gates and drives its virtual ground
+* through a 300 k high-R poly resistor (ppolyf_u_3k, 100 squares, W 2 um).
+*   D=1: P side -> VRP, N side -> VRN   (diff +2*Iu, Iu = 0.25 V / 300 k = 0.83 uA)
+*   D=0: P side -> VRN, N side -> VRP   (diff -2*Iu)
+* Each side always sees one rising and one falling switch per toggle, so the
+* toggle-count (even) part of the switching charge cancels in the
+* differential output up to P/N mismatch.
+.subckt dac1_tg A B EN ENB VDD VSS
+XN A EN  B VSS nfet_03v3 W=2u L=0.28u nf=1
+XP A ENB B VDD pfet_03v3 W=4u L=0.28u nf=1
+.ends dac1_tg
+
+* Steered variant (dac1s_cell): each 300 k resistor stays tied to its reference
+* (R_P to VRP sources +Iu, R_N to VRN sinks -Iu) and the switches only steer
+* the resistor current between the two virtual grounds, like the DAC2 cell.
+* Reference current is code independent; switching happens between nodes at
+* the same potential, so D/DB skew becomes a delay (odd) instead of ISI.
+.subckt dac1s_cell OUTP OUTN D DB VRP VRN VDD VSS params: RL=195.5u WS=1u
+XRP  VRP XP VSS ppolyf_u_3k r_length={RL} r_width=2u
+XSPP XP D  OUTP VSS nfet_03v3 W={WS} L=0.28u nf=1
+XSPN XP DB OUTN VSS nfet_03v3 W={WS} L=0.28u nf=1
+XRN  VRN XN VSS ppolyf_u_3k r_length={RL} r_width=2u
+XSNN XN D  OUTN VSS nfet_03v3 W={WS} L=0.28u nf=1
+XSNP XN DB OUTP VSS nfet_03v3 W={WS} L=0.28u nf=1
+.ends dac1s_cell
+
+.subckt dac1_cell OUTP OUTN D DB VRP VRN VDD VSS params: RL=195.5u
+XTPP XP VRP D  DB VDD VSS dac1_tg
+XTPN XP VRN DB D  VDD VSS dac1_tg
+XRP  XP OUTP VSS ppolyf_u_3k r_length={RL} r_width=2u
+XTNP XN VRP DB D  VDD VSS dac1_tg
+XTNN XN VRN D  DB VDD VSS dac1_tg
+XRN  XN OUTN VSS ppolyf_u_3k r_length={RL} r_width=2u
+.ends dac1_cell

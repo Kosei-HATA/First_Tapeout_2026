@@ -1,0 +1,256 @@
+* eeg_afe: chopper-stabilised capacitively coupled instrumentation amplifier (GF180, this rev)
+* Written by gf180/tapeout/afe/make_afe_netlist.py from gf180/tapeout/sim/afe/afe_noise.py
+* (core 1, tg 256, ln 1.5, lp 0.28, mp 1, itail 3, scasc 1, tgo 8, boosters N [20.0, 4.0, 16, 0.001], P [20.0, 2.0, 64, 0.0006],
+* booster load L 8 um). Do not edit by hand; change the generator and rerun.
+* CCIA diagnostic: original MOS dimensions, physical input/output TG.
+* Input TG precede Cin; fixed internal Cf/reset/CMFB/compensation.
+* 18 core/CMFB MOS + 16 switch MOS; no periodic-noise claim.
+.subckt eeg_afe_output_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends eeg_afe_output_tg
+
+.subckt eeg_afe_input_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=256 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=256 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends eeg_afe_input_tg
+* Newcascoded current-reuse candidate cas_L1; inputW/L unchanged, area reduced.
+* Complementary current-reuse differential input stage. No ideal gm source.
+* N/P input transconductances add; source tails share the branch current.
+* Real8MOS gate-only CMFB controls the PMOS upper tail.
+.subckt eeg_afe_core INP INN OUTP OUTN VBN VBP BLP BLN VDD VSS
+XN_P DNP INP SN VSS nfet_03v3 W=10u L=1.5u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XN_N DNN INN SN VSS nfet_03v3 W=10u L=1.5u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XP_P DPP INP SP VDD pfet_03v3 W=10u L=0.28u nf=1 m=4096 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XP_N DPN INN SP VDD pfet_03v3 W=10u L=0.28u nf=1 m=4096 ad=5p as=5p pd=21u ps=21u nrd=0.05 nrs=0.05
+XNT SN VBN VSS VSS nfet_03v3 W=10u L=1u nf=1 m=768 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPT SP VBP VDD VDD pfet_03v3 W=10u L=2u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XNC_P OUTN GNCP DNP VSS nfet_03v3 W=10u L=1u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XNC_N OUTP GNCN DNN VSS nfet_03v3 W=10u L=1u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPC_P OUTN GPCP DPP VDD pfet_03v3 W=10u L=1u nf=1 m=1024 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XPC_N OUTP GPCN DPN VDD pfet_03v3 W=10u L=1u nf=1 m=1024 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XGNCPB GNCP DNP VSS VSS nfet_03v3 W=20u L=4u nf=1 m=16
+XGNCPL GNCP BLP VDD VDD pfet_03v3 W=20u L=8u nf=1 m=32
+XGNCNB GNCN DNN VSS VSS nfet_03v3 W=20u L=4u nf=1 m=16
+XGNCNL GNCN BLP VDD VDD pfet_03v3 W=20u L=8u nf=1 m=32
+XGPCPB GPCP DPP VDD VDD pfet_03v3 W=20u L=2u nf=1 m=64
+XGPCPL GPCP BLN VSS VSS nfet_03v3 W=20u L=8u nf=1 m=20
+XGPCNB GPCN DPN VDD VDD pfet_03v3 W=20u L=2u nf=1 m=64
+XGPCNL GPCN BLN VSS VSS nfet_03v3 W=20u L=8u nf=1 m=20
+XBLPD BLP BLP VDD VDD pfet_03v3 W=20u L=8u nf=1 m=4
+XBLND BLN BLN VSS VSS nfet_03v3 W=20u L=8u nf=1 m=4
+.ends eeg_afe_core
+.subckt eeg_afe_cmfb OUTP OUTN VCMREF VBCM VBP VDD VSS
+XCM1 ND OUTP NTA VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM2 VBP VCMREF NTA VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM3 ND OUTN NTB VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM4 VBP VCMREF NTB VSS nfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP1 ND ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP2 VBP ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT1 NTA VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends eeg_afe_cmfb
+
+
+* CCIA: explicit electrodes, switched capacitor plates, fixed core input/output ports.
+.subckt eeg_afe_amp EP EN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+XIP_A EP WP CIA NCIA VDD VSS eeg_afe_input_tg
+XIN_A EN WN CIA NCIA VDD VSS eeg_afe_input_tg
+XIP_B EP WN CIB NCIB VDD VSS eeg_afe_input_tg
+XIN_B EN WP CIB NCIB VDD VSS eeg_afe_input_tg
+XCORE INP INN OPI ONI VBN VBP BLP BLN VDD VSS eeg_afe_core
+XOP_A OPI OUTP CDA NCDA VDD VSS eeg_afe_output_tg
+XON_A ONI OUTN CDA NCDA VDD VSS eeg_afe_output_tg
+XOP_B OPI OUTN CDB NCDB VDD VSS eeg_afe_output_tg
+XON_B ONI OUTP CDB NCDB VDD VSS eeg_afe_output_tg
+XCMFB OPI ONI VCM VBCM VBP VDD VSS eeg_afe_cmfb
+CCP VBP OPI 10p
+CCN VBP ONI 10p
+.ends eeg_afe_amp
+
+* electrode-offset cancellation DAC (tracker B7), sign-magnitude
+* PH: DAC phase, toggles when the input-chopper TG of the new phase closes (high in
+* phase A). X = S XOR PH. Active bit k (Mk and its group enabled): P plate = VDD when
+* not X, N plate = VDD when X; inactive plates stay at VSS. For S = 0 the P plates rise
+* at the A->B edge: +sum(active Ck) x VDD into INP cancels the Cin step of a positive
+* ELP-ELN offset, magnitude x 0.311 mV per unit (60 fF). Each plate is driven through
+* R_k = 65 ns / C_k. Disabled groups: plates low, top plate at VCM.
+.subckt eeg_afe_offdac INP INN VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 VDD VSS
+XSB SB S VDD VSS eeg_afe_inv s=1
+XNPH NPH PH VDD VSS eeg_afe_inv s=2
+XMXA S XR NPH PH VDD VSS eeg_afe_tg
+XMXB SB XR PH NPH VDD VSS eeg_afe_tg
+XXR1 XRB XR VDD VSS eeg_afe_inv s=2
+XXR2 X XRB VDD VSS eeg_afe_inv s=8
+XXR3 XB X VDD VSS eeg_afe_inv s=8
+XENB0 ENB0 EN0 VDD VSS eeg_afe_inv s=1
+XENB1 ENB1 EN1 VDD VSS eeg_afe_inv s=1
+XENB2 ENB2 EN2 VDD VSS eeg_afe_inv s=1
+XENB3 ENB3 EN3 VDD VSS eeg_afe_inv s=1
+XRGP0N TP0 EN0 INP VSS nfet_03v3 W=10u L=0.28u nf=1 m=1
+XRGP0P TP0 ENB0 INP VDD pfet_03v3 W=20u L=0.28u nf=2 m=1
+XPKP0N TP0 ENB0 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKP0P TP0 EN0 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGN0N TN0 EN0 INN VSS nfet_03v3 W=10u L=0.28u nf=1 m=1
+XRGN0P TN0 ENB0 INN VDD pfet_03v3 W=20u L=0.28u nf=2 m=1
+XPKN0N TN0 ENB0 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKN0P TN0 EN0 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGP1N TP1 EN1 INP VSS nfet_03v3 W=10u L=0.28u nf=1 m=1
+XRGP1P TP1 ENB1 INP VDD pfet_03v3 W=20u L=0.28u nf=2 m=1
+XPKP1N TP1 ENB1 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKP1P TP1 EN1 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGN1N TN1 EN1 INN VSS nfet_03v3 W=10u L=0.28u nf=1 m=1
+XRGN1P TN1 ENB1 INN VDD pfet_03v3 W=20u L=0.28u nf=2 m=1
+XPKN1N TN1 ENB1 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKN1P TN1 EN1 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGP2N TP2 EN2 INP VSS nfet_03v3 W=20u L=0.28u nf=2 m=1
+XRGP2P TP2 ENB2 INP VDD pfet_03v3 W=40u L=0.28u nf=4 m=1
+XPKP2N TP2 ENB2 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKP2P TP2 EN2 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGN2N TN2 EN2 INN VSS nfet_03v3 W=20u L=0.28u nf=2 m=1
+XRGN2P TN2 ENB2 INN VDD pfet_03v3 W=40u L=0.28u nf=4 m=1
+XPKN2N TN2 ENB2 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKN2P TN2 EN2 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGP3N TP3 EN3 INP VSS nfet_03v3 W=40u L=0.28u nf=4 m=1
+XRGP3P TP3 ENB3 INP VDD pfet_03v3 W=80u L=0.28u nf=8 m=1
+XPKP3N TP3 ENB3 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKP3P TP3 EN3 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XRGN3N TN3 EN3 INN VSS nfet_03v3 W=40u L=0.28u nf=4 m=1
+XRGN3P TN3 ENB3 INN VDD pfet_03v3 W=80u L=0.28u nf=8 m=1
+XPKN3N TN3 ENB3 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XPKN3P TN3 EN3 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+* bit 0: 0.06 pF per side, group 0, R 1083 kohm, driver x1
+XNP0 NP0 EN0 M0 XB VDD VSS eeg_afe_nand3 s=1
+XNN0 NN0 EN0 M0 X VDD VSS eeg_afe_nand3 s=1
+XDP0 DP0 NP0 VDD VSS eeg_afe_inv s=1
+XDN0 DN0 NN0 VDD VSS eeg_afe_inv s=1
+RDP0 DP0 BP0 1.08333e+06
+RDN0 DN0 BN0 1.08333e+06
+COFP0 TP0 BP0 60f
+COFN0 TN0 BN0 60f
+* bit 1: 0.12 pF per side, group 0, R 541.7 kohm, driver x1
+XNP1 NP1 EN0 M1 XB VDD VSS eeg_afe_nand3 s=1
+XNN1 NN1 EN0 M1 X VDD VSS eeg_afe_nand3 s=1
+XDP1 DP1 NP1 VDD VSS eeg_afe_inv s=1
+XDN1 DN1 NN1 VDD VSS eeg_afe_inv s=1
+RDP1 DP1 BP1 541667
+RDN1 DN1 BN1 541667
+COFP1 TP0 BP1 120f
+COFN1 TN0 BN1 120f
+* bit 2: 0.24 pF per side, group 0, R 270.8 kohm, driver x1
+XNP2 NP2 EN0 M2 XB VDD VSS eeg_afe_nand3 s=1
+XNN2 NN2 EN0 M2 X VDD VSS eeg_afe_nand3 s=1
+XDP2 DP2 NP2 VDD VSS eeg_afe_inv s=1
+XDN2 DN2 NN2 VDD VSS eeg_afe_inv s=1
+RDP2 DP2 BP2 270833
+RDN2 DN2 BN2 270833
+COFP2 TP0 BP2 240f
+COFN2 TN0 BN2 240f
+* bit 3: 0.48 pF per side, group 0, R 135.4 kohm, driver x1
+XNP3 NP3 EN0 M3 XB VDD VSS eeg_afe_nand3 s=1
+XNN3 NN3 EN0 M3 X VDD VSS eeg_afe_nand3 s=1
+XDP3 DP3 NP3 VDD VSS eeg_afe_inv s=1
+XDN3 DN3 NN3 VDD VSS eeg_afe_inv s=1
+RDP3 DP3 BP3 135417
+RDN3 DN3 BN3 135417
+COFP3 TP0 BP3 480f
+COFN3 TN0 BN3 480f
+* bit 4: 0.96 pF per side, group 0, R 67.71 kohm, driver x1
+XNP4 NP4 EN0 M4 XB VDD VSS eeg_afe_nand3 s=1
+XNN4 NN4 EN0 M4 X VDD VSS eeg_afe_nand3 s=1
+XDP4 DP4 NP4 VDD VSS eeg_afe_inv s=1
+XDN4 DN4 NN4 VDD VSS eeg_afe_inv s=1
+RDP4 DP4 BP4 67708.3
+RDN4 DN4 BN4 67708.3
+COFP4 TP0 BP4 960f
+COFN4 TN0 BN4 960f
+* bit 5: 1.92 pF per side, group 0, R 33.85 kohm, driver x1
+XNP5 NP5 EN0 M5 XB VDD VSS eeg_afe_nand3 s=1
+XNN5 NN5 EN0 M5 X VDD VSS eeg_afe_nand3 s=1
+XDP5 DP5 NP5 VDD VSS eeg_afe_inv s=1
+XDN5 DN5 NN5 VDD VSS eeg_afe_inv s=1
+RDP5 DP5 BP5 33854.2
+RDN5 DN5 BN5 33854.2
+COFP5 TP0 BP5 1920f
+COFN5 TN0 BN5 1920f
+* bit 6: 3.84 pF per side, group 0, R 16.93 kohm, driver x2
+XNP6 NP6 EN0 M6 XB VDD VSS eeg_afe_nand3 s=1
+XNN6 NN6 EN0 M6 X VDD VSS eeg_afe_nand3 s=1
+XDP6 DP6 NP6 VDD VSS eeg_afe_inv s=2
+XDN6 DN6 NN6 VDD VSS eeg_afe_inv s=2
+RDP6 DP6 BP6 16927.1
+RDN6 DN6 BN6 16927.1
+COFP6 TP0 BP6 3840f
+COFN6 TN0 BN6 3840f
+* bit 7: 7.68 pF per side, group 1, R 8.464 kohm, driver x4
+XNP7 NP7 EN1 M7 XB VDD VSS eeg_afe_nand3 s=1
+XNN7 NN7 EN1 M7 X VDD VSS eeg_afe_nand3 s=1
+XDP7 DP7 NP7 VDD VSS eeg_afe_inv s=4
+XDN7 DN7 NN7 VDD VSS eeg_afe_inv s=4
+RDP7 DP7 BP7 8463.54
+RDN7 DN7 BN7 8463.54
+COFP7 TP1 BP7 7680f
+COFN7 TN1 BN7 7680f
+* bit 8: 15.36 pF per side, group 2, R 4.232 kohm, driver x8
+XNP8 NP8 EN2 M8 XB VDD VSS eeg_afe_nand3 s=2
+XNN8 NN8 EN2 M8 X VDD VSS eeg_afe_nand3 s=2
+XDP8 DP8 NP8 VDD VSS eeg_afe_inv s=8
+XDN8 DN8 NN8 VDD VSS eeg_afe_inv s=8
+RDP8 DP8 BP8 4231.77
+RDN8 DN8 BN8 4231.77
+COFP8 TP2 BP8 15360f
+COFN8 TN2 BN8 15360f
+* bit 9: 30.72 pF per side, group 3, R 2.116 kohm, driver x16
+XNP9 NP9 EN3 M9 XB VDD VSS eeg_afe_nand3 s=4
+XNN9 NN9 EN3 M9 X VDD VSS eeg_afe_nand3 s=4
+XDP9 DP9 NP9 VDD VSS eeg_afe_inv s=16
+XDN9 DN9 NN9 VDD VSS eeg_afe_inv s=16
+RDP9 DP9 BP9 2115.89
+RDN9 DN9 BN9 2115.89
+COFP9 TP3 BP9 30720f
+COFN9 TN3 BN9 30720f
+.ends eeg_afe_offdac
+* s: strength (W and finger count scale with s)
+.subckt eeg_afe_inv Y A VDD VSS s=1
+XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
+.ends eeg_afe_inv
+.subckt eeg_afe_nand3 Y A B C VDD VSS s=1
+XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XPC Y C VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XNA Y A M1 VSS nfet_03v3 W={3u*s} L=0.28u nf={s} m=1
+XNB M1 B M2 VSS nfet_03v3 W={3u*s} L=0.28u nf={s} m=1
+XNC M2 C VSS VSS nfet_03v3 W={3u*s} L=0.28u nf={s} m=1
+.ends eeg_afe_nand3
+.subckt eeg_afe_tg A Y G GN VDD VSS
+XN A G Y VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XP A GN Y VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+.ends eeg_afe_tg
+
+* AFE top: input chopper TGs, Cin, Cf, Cpf, reset switches, DC path, offset DAC,
+* amplifier, output chopper TGs
+.subckt eeg_afe ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
++ OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS
+CINP WP INP 636p
+CINN WN INN 636p
+CFBP ONI INP 2p
+CFBN OPI INN 2p
+CPFP WP OPI 2.15p
+CPFN WN ONI 2.15p
+XRSTP INP RST ONI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
+XRSTN INN RST OPI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
+* INP/INN DC path: switched-capacitor resistor to the opposite output (parallel to Cf),
+* 10 fF per side, one transfer per chopper period (about 780 Mohm at 128 kHz)
+XSCP1 INP CIA SCP VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP2 SCP CIB ONI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+CSCP SCP VSS 10f
+XSCN1 INN CIA SCN VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN2 SCN CIB OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+CSCN SCN VSS 10f
+XOFF INP INN VCM OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS eeg_afe_offdac
+XAMP ELP ELN WP WN INP INN OPI ONI OUTP OUTN VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS eeg_afe_amp
+* hold capacitors for output-chopper blanking (CDA/CDB low for 7 MCLK after each edge)
+CHOLDP OUTP VSS 30p
+CHOLDN OUTN VSS 30p
+.ends eeg_afe

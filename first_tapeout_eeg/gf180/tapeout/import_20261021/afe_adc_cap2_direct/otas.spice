@@ -1,0 +1,103 @@
+* Candidate C: dual NMOS/PMOS internal current commutation, original B retained.
+* Real GF180 MOS input and inside-cascode current commutator. External clocks/biases ideal in prototype.
+* Four transmission gates per commutator, eight TGs total, sixteen switch MOS.
+* Diffusion geometry assumes 0.5um extension, not extracted layout.
+* InputTG Wn20um/Wp40um; drainTG uses eight parallel copies, Wn160um/Wp320um total.
+* Phase A straight, phase B crossed. Input has10ns deadtime; drain uses20ns overlap.
+.subckt chop_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends chop_tg
+* Drain current commutator: eight parallel copies for1.66mA/branch headroom.
+.subckt drain_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=20u L=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025
+XP A GN B VDD pfet_03v3 W=40u L=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125
+.ends drain_tg
+
+* Existing nine signal MOS sizes/biases retained; input pair drains separated for current commutation.
+.subckt gf180_ct_core_currentchop INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS
+Xin_p d1p inp tail VSS nfet_03v3 W=10u L=2u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xin_n d1n inn tail VSS nfet_03v3 W=10u L=2u nf=1 m=2048 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xnc_p outn vnc n1p VSS nfet_03v3 W=10u L=1.0u nf=1 m=256 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xnc_n outp vnc n1n VSS nfet_03v3 W=10u L=1.0u nf=1 m=256 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xload_p p1p vbp vdd vdd pfet_03v3 W=10u L=4.0u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xload_n p1n vbp vdd vdd pfet_03v3 W=10u L=4.0u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xpc_p outp vpc p2p vdd pfet_03v3 W=10u L=1.0u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xpc_n outn vpc p2n vdd pfet_03v3 W=10u L=1.0u nf=1 m=512 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xtail tail vbn VSS VSS nfet_03v3 W=10u L=1.0u nf=1 m=128 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XDP_A d1p n1p CDA NCDA VDD VSS drain_tg
+XDN_A d1n n1n CDA NCDA VDD VSS drain_tg
+XDP_B d1p n1n CDB NCDB VDD VSS drain_tg
+XDN_B d1n n1p CDB NCDB VDD VSS drain_tg
+* PMOS load noise current is now before a current commutator.
+* The equal DC branch currents retain signal polarity; noise translation remains to verify.
+XPP_A p1p p2p CDA NCDA VDD VSS drain_tg
+XPN_A p1n p2n CDA NCDA VDD VSS drain_tg
+XPP_B p1p p2n CDB NCDB VDD VSS drain_tg
+XPN_B p1n p2p CDB NCDB VDD VSS drain_tg
+.ends gf180_ct_core_currentchop
+* Gate-only common-mode detector: two NMOS differential pairs, two tails, one PMOS mirror.
+* OUTP/OUTN rising together increase mirror current and reduce VBP sink current.
+* Main output loading is MOS gate capacitance/leakage plus explicit compensation, no sensing resistors.
+.subckt gf180_ct_cmfb8 OUTP OUTN VCMREF VBCM VBP VDD VSS
+XCM1 ND OUTP NTA VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM2 VBP VCMREF NTA VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM3 ND OUTN NTB VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM4 VBP VCMREF NTB VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP1 ND ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP2 VBP ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT1 NTA VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends gf180_ct_cmfb8
+
+* Original17 signal/CMFB MOS plus drain commutator; temporary external DC bias generation.
+.subckt gf180_ct_ota_m4_currentchop INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS params: CCOMP=10p
+XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop
+XCMFB OUTP OUTN VCMREF VBCM VBP VDD VSS gf180_ct_cmfb8
+CCOMP_P VBP OUTP {CCOMP}
+CCOMP_N VBP OUTN {CCOMP}
+.ends gf180_ct_ota_m4_currentchop
+
+* Input voltage chopping plus drain current commutation inside NMOS cascodes.
+* External outputs, CI connections, CMFB sensing and compensation are never swapped.
+.subckt gf180_inside_cascode_ota INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+XIP_A INP CIP CIA NCIA VDD VSS chop_tg
+XIN_A INN CIN CIA NCIA VDD VSS chop_tg
+XIP_B INP CIN CIB NCIB VDD VSS chop_tg
+XIN_B INN CIP CIB NCIB VDD VSS chop_tg
+XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop CCOMP=10p
+.ends gf180_inside_cascode_ota
+
+* Second-stage nine signal MOS: wide multipliers/16, matching ota_tel16.spice; gate8 CMFB added unchanged.
+.subckt gf180_ct_telescopic_tel16_core INP INN OUTP OUTN VBN VNC VPC VBP VDD VSS
+Xin_p n1p inp tail VSS nfet_03v3 W=10u L=4u nf=1 m=32 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xin_n n1n inn tail VSS nfet_03v3 W=10u L=4u nf=1 m=32 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xnc_p outn vnc n1p VSS nfet_03v3 W=10u L=1.0u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xnc_n outp vnc n1n VSS nfet_03v3 W=10u L=1.0u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xload_p p1p vbp vdd vdd pfet_03v3 W=10u L=2.0u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xload_n p1n vbp vdd vdd pfet_03v3 W=10u L=2.0u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xpc_p outp vpc p1p vdd pfet_03v3 W=10u L=1.0u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xpc_n outn vpc p1n vdd pfet_03v3 W=10u L=1.0u nf=1 m=8 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+Xtail tail vbn VSS VSS nfet_03v3 W=10u L=1.0u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends gf180_ct_telescopic_tel16_core
+* Gate-only common-mode detector: two NMOS differential pairs, two tails, one PMOS mirror.
+* OUTP/OUTN rising together increase mirror current and reduce VBP sink current.
+* Main output loading is MOS gate capacitance/leakage plus explicit compensation, no sensing resistors.
+.subckt gf180_ct_cmfb8_s2 OUTP OUTN VCMREF VBCM VBP VDD VSS
+XCM1 ND OUTP NTA VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM2 VBP VCMREF NTA VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM3 ND OUTN NTB VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCM4 VBP VCMREF NTB VSS nfet_03v3 W=10u L=2u nf=1 m=2 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP1 ND ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMP2 VBP ND VDD VDD pfet_03v3 W=10u L=2u nf=1 m=4 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT1 NTA VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+XCMT2 NTB VBCM VSS VSS nfet_03v3 W=10u L=2u nf=1 m=1 ad=5p as=5p pd=21u ps=21u nrd=.05 nrs=.05
+.ends gf180_ct_cmfb8_s2
+
+* Loop-ready 17-MOS OTA+CMFB, with temporary external DC bias generation.
+.subckt gf180_ct_ota_tel16_cmfb INP INN OUTP OUTN VCMREF VBN VNC VPC VBCM VDD VSS params: CCOMP=1p
+XCORE INP INN OUTP OUTN VBN VNC VPC VBP VDD VSS gf180_ct_telescopic_tel16_core
+XCMFB OUTP OUTN VCMREF VBCM VBP VDD VSS gf180_ct_cmfb8_s2
+CCOMP_P VBP OUTP {CCOMP}
+CCOMP_N VBP OUTN {CCOMP}
+.ends gf180_ct_ota_tel16_cmfb

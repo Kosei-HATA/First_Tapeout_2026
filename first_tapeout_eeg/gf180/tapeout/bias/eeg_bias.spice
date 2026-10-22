@@ -1,0 +1,137 @@
+* eeg_bias: master current reference and the AFE bias (GF180, this rev)
+*
+* Master: beta multiplier (constant gm, close to weak inversion), poly resistor
+* ppolyf_u_1k, I0 = 31.25 uA nominal per unit (one unit = PMOS W10/L4 x8 on GP).
+* A start-up branch pulls GP low while G1 is low and turns off once the
+* reference runs.
+*
+* Outputs:
+*   VBN   AFE NMOS tail gate: NMOS diode W10/L1 x10 fed with 6/7/8/10 units,
+*         selected by AFE_IBIAS[1:0] = IB1 IB0 (00 6, 01 7, 10 8 (reset), 11 10).
+*         The AFE tail (W10/L1 x768) mirrors it: 8 units -> 19.2 mA.
+*   VBCM  AFE CMFB tail gate: NMOS diode W10/L2 x3 fed with 1 unit
+*         (each CMFB tail W10/L2 x2 carries about 21 uA).
+*   BLN   sources 2/4/6/8 units (BP1:BP0, reset 4 = 125 uA) into the AFE booster NMOS
+*         mirror diode; this sets the PMOS-cascode booster currents.
+*   BLP   sinks 2/4/6/8 units (BN1:BN0, reset 4) from the AFE booster PMOS mirror
+*         diode; this sets the NMOS-cascode booster currents.
+*   VBN1  ADC OTA tail gate (5 units into W10/L1 x6: 26 uA per W10/L1 finger)
+*   VBCM1 ADC CMFB tail gate (1 unit into W10/L2 x3)
+*   VNC1, VPC1  ADC cascode gates, 2.0 V and 1.7 V from a poly divider (about 10 uA)
+*   IQ    sources one unit (31.25 uA) into the quantizer's preamp-tail NMOS diode
+*         (gf180/tapeout/adc/eeg_quantizer.spice)
+*   IDN   sources 234 nA into the DAC2 bias NMOS diode; IDP sinks 234 nA from the DAC2
+*         bias PMOS diode. Both scale with I0, i.e. with 1/R of the reference poly, so
+*         the DAC2 coefficient (current x R21) tracks if R21 uses the same poly.
+*   VCM   midpoint of VREFP/VREFN (2 x 100 kohm poly), decoupled at the VCM pad
+* The booster trims move the split of headroom between the input pairs and the
+* cascodes; one setting per process corner keeps both in saturation
+* (documentation/gf180_afe_noise_20261022.md).
+* Capacitors are ideal here (MIM in layout).
+
+.subckt eeg_bias_inv A Y VDD VSS
+XP Y A VDD VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XN Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+.ends eeg_bias_inv
+
+.subckt eeg_bias_nor2 A B Y VDD VSS
+XPA M A VDD VDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XPB Y B M VDD pfet_03v3 W=4u L=0.28u nf=1 m=1
+XNA Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XNB Y B VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+.ends eeg_bias_nor2
+
+.subckt eeg_bias_nand2 A B Y VDD VSS
+XPA Y A VDD VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XPB Y B VDD VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
+XNA Y A M VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
+XNB M B VSS VSS nfet_03v3 W=2u L=0.28u nf=1 m=1
+.ends eeg_bias_nand2
+
+.subckt eeg_bias VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 IDP IDN IQ VCM VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD VSS
+* beta multiplier
+XMN1 G1 G1 VSS VSS nfet_03v3 W=10u L=4u nf=1 m=32
+XMN2 GP G1 S2 VSS nfet_03v3 W=10u L=4u nf=1 m=128
+XR0 S2 VSS VSS ppolyf_u_1k r_length=3.3u r_width=2u
+XMP4 GP GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+XMP3 G1 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+CGP GP VDD 5p
+* start-up: SB stays high (weak pull-up) until G1 rises; SB high pulls GP low
+XSU1A SBM VSS VDD VDD pfet_03v3 W=1u L=50u nf=1 m=1
+XSU1B SB VSS SBM VDD pfet_03v3 W=1u L=50u nf=1 m=1
+XSU2 SB G1 VSS VSS nfet_03v3 W=10u L=1u nf=1 m=1
+XSU3 GP SB VSS VSS nfet_03v3 W=2u L=1u nf=1 m=1
+* AFE tail reference: 6 fixed units, switchable 1 (A), 1 (B), 2 (C)
+XMT0 NT GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=48
+XMTA TA GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+XMTB TB GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+XMTC TC GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XSWA NT GA TA VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSWB NT GB TB VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSWC NT GC TC VDD pfet_03v3 W=10u L=0.5u nf=2 m=1
+* decode (switch gate low = unit on): A on for code >= 1, B for code >= 2, C for code 3
+XLA IB1 IB0 GA VDD VSS eeg_bias_nor2
+XLB IB1 GB VDD VSS eeg_bias_inv
+XLC IB1 IB0 GC VDD VSS eeg_bias_nand2
+XDT NT NT VSS VSS nfet_03v3 W=10u L=1u nf=1 m=10
+RVBN NT VBN 1k
+CVBN VBN VSS 20p
+* AFE CMFB tail reference: 1 unit into W10/L2 x3
+XMCM NC GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+XDCM NC NC VSS VSS nfet_03v3 W=10u L=2u nf=1 m=3
+RVBCM NC VBCM 1k
+CVBCM VBCM VSS 10p
+* booster references: 2 fixed units plus three switchable 2-unit segments each,
+* code BP1:BP0 (BLN, PMOS-cascode boosters) and BN1:BN0 (BLP, NMOS-cascode boosters):
+* 00 2, 01 4 (reset), 10 6, 11 8 units
+XMBN0 BLN GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBNA BNA GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBNB BNB GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBNC BNC GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XSBNA BLN GPA BNA VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSBNB BLN GPB BNB VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSBNC BLN GPC BNC VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XLPA BP1 BP0 GPA VDD VSS eeg_bias_nor2
+XLPB BP1 GPB VDD VSS eeg_bias_inv
+XLPC BP1 BP0 GPC VDD VSS eeg_bias_nand2
+XMBP0 ND GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBPA NDA GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBPB NDB GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XMBPC NDC GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=16
+XSBPA ND GNA NDA VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSBPB ND GNB NDB VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XSBPC ND GNC NDC VDD pfet_03v3 W=10u L=0.5u nf=1 m=1
+XLNA BN1 BN0 GNA VDD VSS eeg_bias_nor2
+XLNB BN1 GNB VDD VSS eeg_bias_inv
+XLNC BN1 BN0 GNC VDD VSS eeg_bias_nand2
+XDBP ND ND VSS VSS nfet_03v3 W=10u L=2u nf=1 m=8
+XMBO BLP ND VSS VSS nfet_03v3 W=10u L=2u nf=1 m=8
+* ADC OTA tails (OTA1 W10/L1 x128 3.3 mA, OTA2 x2): 5 units into W10/L1 x6
+XMA1 NA1 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=40
+XDA1 NA1 NA1 VSS VSS nfet_03v3 W=10u L=1u nf=1 m=6
+RVBN1 NA1 VBN1 1k
+CVBN1 VBN1 VSS 20p
+* ADC CMFB tails (W10/L2 x1, about 10.5 uA each): 1 unit into W10/L2 x3
+XMA2 NA2 GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+XDA2 NA2 NA2 VSS VSS nfet_03v3 W=10u L=2u nf=1 m=3
+RVBCM1 NA2 VBCM1 1k
+CVBCM1 VBCM1 VSS 10p
+* ADC cascode gates: poly divider 3.3 -> 2.0 (VNC1) -> 1.7 (VPC1) -> 0 V, about 10 uA
+XRC1 VDD VNC1 VSS ppolyf_u_3k r_length=86.7u r_width=2u
+XRC2 VNC1 VPC1 VSS ppolyf_u_3k r_length=20u r_width=2u
+XRC3 VPC1 VSS VSS ppolyf_u_3k r_length=113.3u r_width=2u
+CVNC1 VNC1 VSS 10p
+CVPC1 VPC1 VSS 10p
+* quantizer preamp tails: one unit into the quantizer's NMOS diode
+XMQ IQ GP VDD VDD pfet_03v3 W=10u L=4u nf=1 m=8
+* DAC2 reference currents (234 nA each, tracking 1/R like the poly R21): a PMOS at the
+* unit current density (W1/L6.2) sources IDN into the DAC2 NMOS diode; a second copy
+* feeds a local NMOS diode whose mirror sinks IDP from the DAC2 PMOS diode
+XMD1 IDN GP VDD VDD pfet_03v3 W=1u L=6.2u nf=1 m=1
+XMD2 ND2 GP VDD VDD pfet_03v3 W=1u L=6.2u nf=1 m=1
+XDD2 ND2 ND2 VSS VSS nfet_03v3 W=1u L=20u nf=1 m=1
+XMD3 IDP ND2 VSS VSS nfet_03v3 W=1u L=20u nf=1 m=1
+* VCM = (VREFP + VREFN) / 2 for the CMFB references; decoupled off chip at the VCM pad
+XRV1 VREFP VCM VSS ppolyf_u_3k r_length=66.7u r_width=2u
+XRV2 VCM VREFN VSS ppolyf_u_3k r_length=66.7u r_width=2u
+.ends eeg_bias

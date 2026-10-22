@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="983" height="703" viewBox="0 0 983 703">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="0.0" y="0.0" width="983.0" height="632.8" fill="#fafafa" fill-opacity="1.0" stroke="#333" stroke-width="1.5"/>
+<rect x="110.5" y="110.5" width="762.0" height="411.8" fill="#ffffff" fill-opacity="1.0" stroke="#333" stroke-width="1.5"/>
+<rect x="120.5" y="135.5" width="250.0" height="361.8" fill="#cfe8cf" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="370.5" y="135.5" width="37.5" height="361.8" fill="#fff2b3" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="408.0" y="135.5" width="325.0" height="361.8" fill="#e3d7f2" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="733.0" y="135.5" width="17.5" height="376.8" fill="#d9d9d9" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="750.5" y="135.5" width="112.0" height="190.0" fill="#cfe0f5" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="750.5" y="325.5" width="112.0" height="186.8" fill="#ffffff" fill-opacity="1.0" stroke="#333" stroke-width="1.0" stroke-dasharray="6,4"/>
+<rect x="120.5" y="497.2" width="612.5" height="15.0" fill="#eeeeee" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="120.5" y="120.5" width="287.5" height="15.0" fill="#eeeeee" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="408.0" y="120.5" width="454.5" height="15.0" fill="#eeeeee" fill-opacity="1.0" stroke="#333" stroke-width="1.0"/>
+<rect x="120.5" y="135.5" width="25.0" height="361.8" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="133.0" y="320.1" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444" transform="rotate(-90 133.0 320.1)">in-TG + DC servo</text>
+<rect x="145.5" y="135.5" width="225.0" height="104.2" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="258.0" y="191.4" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">Cin_P 636p</text>
+<rect x="145.5" y="239.8" width="225.0" height="153.2" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="258.0" y="301.4" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">AFE core MOS, Cf/Cpf/CC</text>
+<rect x="145.5" y="393.0" width="225.0" height="104.2" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="258.0" y="448.9" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">Cin_N 636p</text>
+<rect x="408.0" y="135.5" width="325.0" height="83.8" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="570.5" y="181.1" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">C1_P 680p</text>
+<rect x="408.0" y="219.2" width="325.0" height="194.2" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="570.5" y="301.4" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">RIN/DAC1 | OTA1 | DAC2+C2 | OTA2 | quantizer | DWA/drivers</text>
+<rect x="408.0" y="413.5" width="325.0" height="83.8" fill="none" fill-opacity="1.0" stroke="#555" stroke-width="0.6" stroke-dasharray="3,3"/>
+<text x="570.5" y="459.1" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#444">C1_N 680p</text>
+<text x="245.5" y="153.0" font-size="13" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">AFE  1.45 mm2</text>
+<text x="391.8" y="221.4" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111" transform="rotate(-90 391.8 221.4)">Ch-A: bias/VCM/ref, chop drivers</text>
+<text x="570.5" y="153.0" font-size="13" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">ADC  1.88 mm2</text>
+<text x="741.8" y="323.9" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111" transform="rotate(-90 741.8 323.9)">isolation</text>
+<text x="806.5" y="230.5" font-size="10" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">Digital</text>
+<text x="806.5" y="245.5" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">0.34 mm2</text>
+<text x="806.5" y="418.9" font-size="10" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">Spare</text>
+<text x="806.5" y="433.9" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">0.33 mm2</text>
+<text x="426.8" y="507.8" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">S-ch: bias</text>
+<text x="264.2" y="131.0" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">N-ch W: refs VREFP/VREFN/VCM (shielded)</text>
+<text x="635.2" y="131.0" font-size="9" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#111">N-ch E: clocks/controls (shielded)</text>
+<line x1="120.5" y1="316.4" x2="733.0" y2="316.4" stroke="#c0392b" stroke-width="0.8" stroke-dasharray="8,4"/>
+<rect x="6.5" y="537.5" width="88.8" height="88.8" fill="#ececec" fill-opacity="1.0" stroke="#999" stroke-width="0.5"/>
+<rect x="887.8" y="537.5" width="88.8" height="88.8" fill="#ececec" fill-opacity="1.0" stroke="#999" stroke-width="0.5"/>
+<rect x="6.5" y="6.5" width="88.8" height="88.8" fill="#ececec" fill-opacity="1.0" stroke="#999" stroke-width="0.5"/>
+<rect x="887.8" y="6.5" width="88.8" height="88.8" fill="#ececec" fill-opacity="1.0" stroke="#999" stroke-width="0.5"/>
+<rect x="6.5" y="590.5" width="35.7" height="35.7" fill="#f6d5e0" fill-opacity="1.0" stroke="#b0577a" stroke-width="0.6"/>
+<text x="24.4" y="610.9" font-size="7" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#6b2a45">qrcode_id</text>
+<rect x="43.9" y="611.4" width="48.9" height="14.9" fill="#f6d5e0" fill-opacity="1.0" stroke="#b0577a" stroke-width="0.6"/>
+<text x="68.3" y="621.3" font-size="7" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#6b2a45">project_id</text>
+<rect x="6.5" y="540.0" width="14.9" height="48.9" fill="#f6d5e0" fill-opacity="1.0" stroke="#b0577a" stroke-width="0.6"/>
+<text x="13.9" y="566.9" font-size="7" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#6b2a45" transform="rotate(-90 13.9 566.9)">shuttle_id</text>
+<rect x="912.8" y="9.0" width="61.2" height="61.2" fill="#f6d5e0" fill-opacity="1.0" stroke="#b0577a" stroke-width="0.6"/>
+<text x="943.4" y="42.1" font-size="7" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#6b2a45">marker</text>
+<rect x="6.5" y="6.5" width="35.8" height="35.8" fill="#f6d5e0" fill-opacity="1.0" stroke="#b0577a" stroke-width="0.6"/>
+<text x="24.4" y="26.9" font-size="7" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#6b2a45">logo</text>
+<rect x="6.5" y="500.9" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="514.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">VSS</text>
+<rect x="6.5" y="465.6" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="478.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">VDD</text>
+<rect x="6.5" y="430.4" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="443.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">AVDD</text>
+<rect x="6.5" y="395.1" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="408.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">AVSS</text>
+<rect x="6.5" y="359.9" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="373.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">ELN</text>
+<rect x="6.5" y="324.6" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="337.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">ELN</text>
+<rect x="6.5" y="289.4" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="302.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">ELP</text>
+<rect x="6.5" y="254.1" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="267.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">ELP</text>
+<rect x="6.5" y="218.9" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="232.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">AVSS</text>
+<rect x="6.5" y="183.6" width="87.5" height="18.8" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="196.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">AVDD</text>
+<rect x="6.5" y="148.4" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="161.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVSS</text>
+<rect x="6.5" y="113.1" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="50.2" y="126.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVDD</text>
+<rect x="889.0" y="500.9" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="514.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVSS</text>
+<rect x="889.0" y="465.6" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="478.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVDD</text>
+<rect x="889.0" y="430.4" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="443.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">MCLK</text>
+<rect x="889.0" y="395.1" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="408.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">RESET_N</text>
+<rect x="889.0" y="359.9" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="373.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">SCLK</text>
+<rect x="889.0" y="324.6" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="337.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">CS_N</text>
+<rect x="889.0" y="289.4" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="302.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">MOSI</text>
+<rect x="889.0" y="254.1" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="267.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">MISO</text>
+<rect x="889.0" y="218.9" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="232.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DRDY_N</text>
+<rect x="889.0" y="183.6" width="87.5" height="18.8" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="196.8" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">RAW_DATA</text>
+<rect x="889.0" y="148.4" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="161.5" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVSS</text>
+<rect x="889.0" y="113.1" width="87.5" height="18.8" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="932.8" y="126.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000">DVDD</text>
+<rect x="111.2" y="538.8" width="18.8" height="87.5" fill="#9ecae1" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="143.5" y="538.8" width="18.8" height="87.5" fill="#9ecae1" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="175.8" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="208.0" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="240.2" y="538.8" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="249.6" y="586.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 249.6 586.2)">DVSS</text>
+<rect x="272.5" y="538.8" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="281.9" y="586.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 281.9 586.2)">DVDD</text>
+<rect x="304.8" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="337.0" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="369.2" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="401.5" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="433.8" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="466.0" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="498.2" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="530.5" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="562.8" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="595.0" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="627.2" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="659.5" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="691.8" y="538.8" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="701.1" y="586.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 701.1 586.2)">DVSS</text>
+<rect x="724.0" y="538.8" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="733.4" y="586.2" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 733.4 586.2)">DVDD</text>
+<rect x="756.2" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="788.5" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="820.8" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="853.0" y="538.8" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="111.2" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="120.6" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 120.6 54.0)">ATP</text>
+<rect x="143.5" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="152.9" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 152.9 54.0)">VCM</text>
+<rect x="175.8" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="185.1" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 185.1 54.0)">VREFP</text>
+<rect x="208.0" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="217.4" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 217.4 54.0)">VREFN</text>
+<rect x="240.2" y="6.5" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="249.6" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 249.6 54.0)">DVSS</text>
+<rect x="272.5" y="6.5" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="281.9" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 281.9 54.0)">DVDD</text>
+<rect x="304.8" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="314.1" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 314.1 54.0)">AVDD</text>
+<rect x="337.0" y="6.5" width="18.8" height="87.5" fill="#f28e2b" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="346.4" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 346.4 54.0)">AVSS</text>
+<rect x="369.2" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="401.5" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="433.8" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="466.0" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="498.2" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="530.5" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="562.8" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="595.0" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="627.2" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="659.5" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="691.8" y="6.5" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="701.1" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 701.1 54.0)">DVSS</text>
+<rect x="724.0" y="6.5" width="18.8" height="87.5" fill="#7f7f7f" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="733.4" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 733.4 54.0)">DVDD</text>
+<rect x="756.2" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="788.5" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="820.8" y="6.5" width="18.8" height="87.5" fill="#bdbdbd" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<rect x="853.0" y="6.5" width="18.8" height="87.5" fill="#4e79a7" fill-opacity="1.0" stroke="#222" stroke-width="0.5"/>
+<text x="862.4" y="54.0" font-size="8" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#000" transform="rotate(-90 862.4 54.0)">RAW_CLK</text>
+<text x="398.0" y="311.4" font-size="22" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#c0392b">&#8594;</text>
+<text x="741.8" y="248.9" font-size="22" font-family="Helvetica, Arial, sans-serif" text-anchor="middle" fill="#c0392b">&#8594;</text>
+<rect x="14" y="650.75" width="14" height="14" fill="#f28e2b" stroke="#222" stroke-width="0.5"/>
+<text x="33" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">analog pad (asig_5p0)</text>
+<rect x="176" y="650.75" width="14" height="14" fill="#4e79a7" stroke="#222" stroke-width="0.5"/>
+<text x="195" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">digital I/O used</text>
+<rect x="338" y="650.75" width="14" height="14" fill="#bdbdbd" stroke="#222" stroke-width="0.5"/>
+<text x="357" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">unused bidir</text>
+<rect x="500" y="650.75" width="14" height="14" fill="#9ecae1" stroke="#222" stroke-width="0.5"/>
+<text x="519" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">input-only (unused)</text>
+<rect x="662" y="650.75" width="14" height="14" fill="#7f7f7f" stroke="#222" stroke-width="0.5"/>
+<text x="681" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">DVDD/DVSS ring</text>
+<rect x="824" y="650.75" width="14" height="14" fill="#f6d5e0" stroke="#222" stroke-width="0.5"/>
+<text x="843" y="662.75" font-size="10.5" font-family="Helvetica, Arial, sans-serif">ID/marker/logo (corners)</text>
+<text x="14" y="690.75" font-size="11" font-family="Helvetica, Arial, sans-serif" fill="#555">wafer.space 1x0.5: die 3932 x 2531 um, core 3048 x 1647 um. Pads at measured positions (padring run RUN_2026-10-22_14-47-04). Red dashed line = differential mirror axis.</text>
+</svg>

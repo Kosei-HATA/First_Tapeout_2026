@@ -49,6 +49,9 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 | `AFE_IBIAS[1:0]` | out | ANA_TRIM[5:4], AFE bias-current select (decoded by the analog side) |
 | `BTRIM_P[1:0]` | out | BOOST_TRIM[1:0], PMOS-cascode booster units: 00 = 2, 01 = 4, 10 = 6, 11 = 8 (decoded by the analog bias block) |
 | `BTRIM_N[1:0]` | out | BOOST_TRIM[3:2], NMOS-cascode booster units, same coding |
+| `OFM[9:0]` | out | Electrode-offset DAC magnitude (OFF_CTRL[1:0], OFF_CODE_L) |
+| `OFS` | out | Electrode-offset DAC sign (OFF_CTRL[3]) |
+| `OFEN[3:0]` | out | Electrode-offset DAC range groups: thermometer of OFF_RANGE (1 → 0001 … 4 → 1111; 5..7 act as 4) |
 
 Parameter: `DAC_LOAD_CYCLE` (default 2, legal 2..31) sets the excess loop delay.
 
@@ -144,7 +147,7 @@ CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises a
 | Addr | Name | Access | Reset | Bits |
 |---|---|---|---|---|
 | 0x00 | ID | RO | 0xE6 | |
-| 0x01 | VERSION | RO | 0x04 | |
+| 0x01 | VERSION | RO | 0x05 | |
 | 0x02 | CONTROL | RW | 0x74 | 0 RUN, 1 FILTER_CLEAR (self-clearing, reads 0), 2 DWA_EN, 3 RAW_EN, 4 AFE_RST, 5 CHOP_EN, 6 CHOP_FAST (1 = 128 kHz, 0 = 64 kHz chop), 7 reads 0 |
 | 0x03 | STATUS | RO / W1C | 0x02 | 0 FIFO_NONEMPTY (RO), 1 SETTLING (RO, CIC not yet valid), 2 OVERRUN (W1C), 3 CMD_ERR (W1C) |
 | 0x04 | FORMAT | RO | 0x05 | [3:0] quantizer bits = 5 |
@@ -156,6 +159,8 @@ CHOP_BLANK      /‾‾‾‾‾‾‾ BLANK_LEN ‾‾‾‾‾‾\___  rises a
 | 0x0A | ANA_TRIM | RW | 0x28 | [3:0] CPF_TRIM (reset 8), [5:4] AFE_IBIAS (reset 2), [7:6] read 0; drive the CPF_TRIM / AFE_IBIAS ports |
 | 0x0B | BLANK | RW | 0x07 | [3:0] BLANK_LEN: blanking after each CHOP_OUT edge in MCLK, 0..15, 0 = no blanking (the pulse also covers 1 MCLK before the edge); [7:4] read 0 |
 | 0x0C | BOOST_TRIM | RW | 0x05 | [1:0] BTRIM_P (reset 1), [3:2] BTRIM_N (reset 1): cascode-booster units 00 = 2, 01 = 4, 10 = 6, 11 = 8; [7:4] read 0; drive the BTRIM_P / BTRIM_N ports |
+| 0x0D | OFF_CODE_L | RW | 0x00 | Electrode-offset DAC magnitude M[7:0] |
+| 0x0E | OFF_CTRL | RW | 0x00 | [1:0] M[9:8], [3] SIGN, [6:4] OFF_RANGE (0 = off, 1..4 = ±39 / 79 / 159 / 318 mV, 5..7 = 4); 2 and 7 read 0. The analog DAC cancels (1 − 2 SIGN) × M × 0.311 mV of ELP − ELN offset; M is limited to the bits of the range (`documentation/gf180_electrode_dc_20261022.md`) |
 
 - Other addresses read 0x00.
 - Writes to RO and undefined addresses are ignored.
@@ -262,7 +267,7 @@ The script runs the golden-model self checks and generates vectors into `build/`
 
 `tb_spi` checks:
 - ID, VERSION, FORMAT, ODR, defaults and undefined addresses.
-- CONTROL, CHOP_DLY, TEST, ANA_TRIM and BOOST_TRIM read-back and pins; CONTROL bit 7, ANA_TRIM bits 7:6 and BOOST_TRIM bits 7:4 read 0.
+- CONTROL, CHOP_DLY, TEST, ANA_TRIM, BOOST_TRIM, OFF_CODE_L and OFF_CTRL read-back and pins, including the OFEN range decode (ranges 0..4 and 7); CONTROL bit 7, ANA_TRIM bits 7:6, BOOST_TRIM bits 7:4 and OFF_CTRL bits 2 and 7 read 0.
 - CHOP high time and CHOP_OUT delay and high time measured on the pins: 128 kHz with delays 0, 90 and 200, then 64 kHz after CHOP_FAST = 0 with delays 200, 90 and 0, then back to 128 kHz.
 - BLANK read-back (bits 7:4 read 0), and CHOP_BLANK on the pins at rising and falling CHOP_OUT edges: it must rise 1 MCLK before the edge, be high at the edge, and fall BLANK_LEN MCLK after it. Covered: BLANK_LEN 7 (reset) and 15 at 128 kHz, 15 and 1 at 64 kHz with CHOP_DLY = 200 and 90, 0 at both rates (no pulse), and 7 again. CHOP_BLANK is also checked to be 0 during reset.
 - FILTER_CLEAR self-clearing and RO writes ignored.

@@ -14,7 +14,9 @@ NBLP the NMOS-cascode boosters).
 
 --cdsl C adds C (pF) from each amplifier input (INP, INN) to the common mode: the
 noise-gain load of an electrode DC-servo capacitor, whose other plate is driven
-from a low impedance (B7 study).
+from a low impedance (B7 study). --rtau T puts a resistor T/C in series with it
+(the thermal noise of an RC-shaped offset-DAC drive); with --cact A only A of the C
+(the active offset-DAC bits) gets the series resistor T/A, the rest is direct.
 
 Usage: python3 afe_bias_noise.py [--cases typical:27:2 ss:27:2:2:4 ...] [--rs 100] [--cdsl 0]
 """
@@ -37,7 +39,7 @@ def bcode(units):
     return {2: 0, 4: 1, 6: 2, 8: 3}[units]
 
 
-def deck(corner, temp, code, rs, afe=AFE, nbln=4, nblp=4, cdsl=0.0):
+def deck(corner, temp, code, rs, afe=AFE, nbln=4, nblp=4, cdsl=0.0, rtau=0.0, cact=None):
     t = afe_noise.deck(1, 256, "A", rs, 0.85, 2.15)
     for line in ("VBN VBN 0 0.8485\n", "VBCM VBCM 0 0.82\n", "VNC VNC 0 2.2\n", "VPC VPC 0 0.85\n"):
         assert line in t, line
@@ -59,18 +61,27 @@ def deck(corner, temp, code, rs, afe=AFE, nbln=4, nblp=4, cdsl=0.0):
     # initial guess for the bias block (the beta multiplier also has a zero-current state)
     t = t.replace(".control", ".nodeset v(xb.g1)=0.85 v(xb.gp)=2.2 v(vbn)=0.84 v(vbcm)=0.81 v(xb.nt)=0.84\n"
                   "+ v(xb.nc)=0.81 v(xb.nd)=0.8 v(xb.sb)=0 v(bln)=1.1 v(blp)=1.5 v(xb.s2)=0.05\n.control", 1)
-    if cdsl:
+    if cdsl and rtau:
+        ca = cdsl if cact is None else cact
+        r = rtau / (ca * 1e-12)
+        extra = ""
+        if ca < cdsl:
+            extra = f"CDSLP INP CM {cdsl - ca:g}p\nCDSLN INN CM {cdsl - ca:g}p\n"
+        t = t.replace("\nXDUT ", f"\n{extra}CACTP INP DSP {ca:g}p\nRDSLP DSP CM {r:.6g}\n"
+                      f"CACTN INN DSN {ca:g}p\nRDSLN DSN CM {r:.6g}\nXDUT ", 1)
+        assert "RDSLP" in t
+    elif cdsl:
         t = t.replace("\nXDUT ", f"\nCDSLP INP CM {cdsl:g}p\nCDSLN INN CM {cdsl:g}p\nXDUT ", 1)
         assert "CDSLP" in t
     assert "eeg_bias" in t and f".temp {temp}" in t
     return t
 
 
-def run(case, rs, afe=AFE, tag="", cdsl=0.0):
+def run(case, rs, afe=AFE, tag="", cdsl=0.0, rtau=0.0, cact=None):
     corner, temp, code, nbln, nblp = (list(case) + [4, 4])[:5]
     d = os.path.join(HERE, "runs", f"biased{tag}_{corner}_{temp}_{code}_n{nbln}_p{nblp}_rs{rs:g}")
     os.makedirs(d, exist_ok=True)
-    open(os.path.join(d, "tb.spice"), "w").write(deck(corner, temp, code, rs, afe, nbln, nblp, cdsl))
+    open(os.path.join(d, "tb.spice"), "w").write(deck(corner, temp, code, rs, afe, nbln, nblp, cdsl, rtau, cact))
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
     log = r.stdout + r.stderr
     open(os.path.join(d, "run.log"), "w").write(log)
@@ -91,17 +102,20 @@ def main():
     ap.add_argument("--rs", type=float, default=afe_noise.RS)
     ap.add_argument("--afe", default=AFE, help="AFE netlist (default: the written eeg_afe.spice)")
     ap.add_argument("--cdsl", type=float, default=0.0, help="pF from INP/INN to CM (DC-servo capacitor)")
+    ap.add_argument("--rtau", type=float, default=0.0, help="series resistor = rtau / C (s)")
+    ap.add_argument("--cact", type=float, default=None, help="pF of the C that has the series resistor")
     a = ap.parse_args()
     tag = "" if a.afe == AFE else "_" + os.path.splitext(os.path.basename(a.afe))[0]
     if a.cdsl:
-        tag += f"_cdsl{a.cdsl:g}p"
+        tag += (f"_cdsl{a.cdsl:g}p" + (f"_rtau{a.rtau * 1e9:g}n" if a.rtau else "")
+                + (f"_cact{a.cact:g}p" if a.cact is not None else ""))
     afe_noise.BOOST = "tr"
     cases = [tuple([c.split(":")[0]] + [int(x) for x in c.split(":")[1:]]) for c in a.cases]
     print("| corner | T (C) | code | booster units P/N | I0 (uA) | AFE IDD (mA) | chopped gain | thermal | 1/f | "
           "total (nVrms) | min margin (V) | margins |")
     print("|---|---|---|---|---|---|---|---|---|---|---|---|")
     with ThreadPoolExecutor(6) as ex:
-        for case, r, log in ex.map(lambda c: run(c, a.rs, a.afe, tag, a.cdsl), cases):
+        for case, r, log in ex.map(lambda c: run(c, a.rs, a.afe, tag, a.cdsl, a.rtau, a.cact), cases):
             corner, temp, code, nbln, nblp = (list(case) + [4, 4])[:5]
             if r is None:
                 print(f"| {corner} | {temp} | {code} | {nbln}/{nblp} | operating point failed | | | | | | | |")

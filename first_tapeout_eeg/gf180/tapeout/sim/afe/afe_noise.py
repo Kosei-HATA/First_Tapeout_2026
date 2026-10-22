@@ -72,7 +72,7 @@ GROUPS = [("NMOS pair", r"xcore\.xn_[np]$"), ("PMOS pair", r"xcore\.xp_[np]$"), 
           ("cascodes", r"xcore\.x[np]c_[np]$"), ("CMFB", r"xcmfb\."),
           ("input TG", r"\.xi[pn]_[ab]\."), ("output TG", r"\.xo[pn]_[ab]\."),
           ("boosters", r"xcore\.xg[np]c[pn]b$"), ("booster loads", r"xcore\.xg[np]c[pn]l$"),
-          ("booster bias", r"xcore\.xbl[pn]d$")]
+          ("booster bias", r"xcore\.xbl[pn]d$"), ("resistors", r"^r")]
 
 
 def candidate(core, tg, ln=0.28, lp=0.28, mp=1.0, itail=1.0, scasc=None, tgo=8, lnc=1.0, lpc=1.0,
@@ -257,6 +257,11 @@ def analyze(d, log, fch=FCH, keep=False):
     gens = {}  # (device path, generator) -> output density^2
     for n, v in nz.items():
         mo = re.match(r"onoise\.m\.(.+)\.m0\.(\w+)$", n)
+        if mo:
+            gens[mo.groups()] = v ** 2
+        # resistors (noisy ones): onoise_<name>_thermal / _1overf, where <name> is rxxx at
+        # the top level and r.<path> inside subcircuits; the plain onoise_<name> is their sum
+        mo = re.match(r"onoise_(r.*)_(thermal|1overf)$", n)
         if mo:
             gens[mo.groups()] = v ** 2
     kmax = int(fn[-1] / fch) - 1

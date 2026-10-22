@@ -74,7 +74,9 @@ CCN VBP ONI 10p
 * not X, N plate = VDD when X; inactive plates stay at VSS. For S = 0 the P plates rise
 * at the A->B edge: +sum(active Ck) x VDD into INP cancels the Cin step of a positive
 * ELP-ELN offset, magnitude x 0.311 mV per unit (60 fF). Each plate is driven through
-* R_k = 65 ns / C_k. Disabled groups: plates low, top plate at VCM.
+* R_k = 65 ns / C_k (thermal noise grows with the active capacitance, i.e.
+* with the cancelled offset). Inactive plates: clamped to VSS by an NMOS sized for
+* R_on x C_k = 0.2 ns. Disabled groups: plates low, top plate at VCM.
 .subckt eeg_afe_offdac INP INN VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 VDD VSS
 XSB SB S VDD VSS eeg_afe_inv s=1
 XNPH NPH PH VDD VSS eeg_afe_inv s=2
@@ -119,94 +121,124 @@ XRGN3N TN3 EN3 INN VSS nfet_03v3 W=40u L=0.28u nf=4 m=1
 XRGN3P TN3 ENB3 INN VDD pfet_03v3 W=80u L=0.28u nf=8 m=1
 XPKN3N TN3 ENB3 VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
 XPKN3P TN3 EN3 VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1
-* bit 0: 0.06 pF per side, group 0, R 1083 kohm, driver x1
+* bit 0: 0.06 pF per side, group 0, R 1083 kohm, driver x1, clamp W 0.5 um
 XNP0 NP0 EN0 M0 XB VDD VSS eeg_afe_nand3 s=1
 XNN0 NN0 EN0 M0 X VDD VSS eeg_afe_nand3 s=1
 XDP0 DP0 NP0 VDD VSS eeg_afe_inv s=1
 XDN0 DN0 NN0 VDD VSS eeg_afe_inv s=1
 RDP0 DP0 BP0 1.08333e+06
 RDN0 DN0 BN0 1.08333e+06
+XNA0 NA0 EN0 M0 VDD VSS eeg_afe_nand2 s=1
+XCLP0 BP0 NA0 VSS VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCLN0 BN0 NA0 VSS VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 COFP0 TP0 BP0 60f
 COFN0 TN0 BN0 60f
-* bit 1: 0.12 pF per side, group 0, R 541.7 kohm, driver x1
+* bit 1: 0.12 pF per side, group 0, R 541.7 kohm, driver x1, clamp W 0.5 um
 XNP1 NP1 EN0 M1 XB VDD VSS eeg_afe_nand3 s=1
 XNN1 NN1 EN0 M1 X VDD VSS eeg_afe_nand3 s=1
 XDP1 DP1 NP1 VDD VSS eeg_afe_inv s=1
 XDN1 DN1 NN1 VDD VSS eeg_afe_inv s=1
 RDP1 DP1 BP1 541667
 RDN1 DN1 BN1 541667
+XNA1 NA1 EN0 M1 VDD VSS eeg_afe_nand2 s=1
+XCLP1 BP1 NA1 VSS VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCLN1 BN1 NA1 VSS VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 COFP1 TP0 BP1 120f
 COFN1 TN0 BN1 120f
-* bit 2: 0.24 pF per side, group 0, R 270.8 kohm, driver x1
+* bit 2: 0.24 pF per side, group 0, R 270.8 kohm, driver x1, clamp W 1 um
 XNP2 NP2 EN0 M2 XB VDD VSS eeg_afe_nand3 s=1
 XNN2 NN2 EN0 M2 X VDD VSS eeg_afe_nand3 s=1
 XDP2 DP2 NP2 VDD VSS eeg_afe_inv s=1
 XDN2 DN2 NN2 VDD VSS eeg_afe_inv s=1
 RDP2 DP2 BP2 270833
 RDN2 DN2 BN2 270833
+XNA2 NA2 EN0 M2 VDD VSS eeg_afe_nand2 s=1
+XCLP2 BP2 NA2 VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
+XCLN2 BN2 NA2 VSS VSS nfet_03v3 W=1u L=0.28u nf=1 m=1
 COFP2 TP0 BP2 240f
 COFN2 TN0 BN2 240f
-* bit 3: 0.48 pF per side, group 0, R 135.4 kohm, driver x1
+* bit 3: 0.48 pF per side, group 0, R 135.4 kohm, driver x1, clamp W 1.5 um
 XNP3 NP3 EN0 M3 XB VDD VSS eeg_afe_nand3 s=1
 XNN3 NN3 EN0 M3 X VDD VSS eeg_afe_nand3 s=1
 XDP3 DP3 NP3 VDD VSS eeg_afe_inv s=1
 XDN3 DN3 NN3 VDD VSS eeg_afe_inv s=1
 RDP3 DP3 BP3 135417
 RDN3 DN3 BN3 135417
+XNA3 NA3 EN0 M3 VDD VSS eeg_afe_nand2 s=1
+XCLP3 BP3 NA3 VSS VSS nfet_03v3 W=1.5u L=0.28u nf=1 m=1
+XCLN3 BN3 NA3 VSS VSS nfet_03v3 W=1.5u L=0.28u nf=1 m=1
 COFP3 TP0 BP3 480f
 COFN3 TN0 BN3 480f
-* bit 4: 0.96 pF per side, group 0, R 67.71 kohm, driver x1
+* bit 4: 0.96 pF per side, group 0, R 67.71 kohm, driver x1, clamp W 3 um
 XNP4 NP4 EN0 M4 XB VDD VSS eeg_afe_nand3 s=1
 XNN4 NN4 EN0 M4 X VDD VSS eeg_afe_nand3 s=1
 XDP4 DP4 NP4 VDD VSS eeg_afe_inv s=1
 XDN4 DN4 NN4 VDD VSS eeg_afe_inv s=1
 RDP4 DP4 BP4 67708.3
 RDN4 DN4 BN4 67708.3
+XNA4 NA4 EN0 M4 VDD VSS eeg_afe_nand2 s=1
+XCLP4 BP4 NA4 VSS VSS nfet_03v3 W=3u L=0.28u nf=1 m=1
+XCLN4 BN4 NA4 VSS VSS nfet_03v3 W=3u L=0.28u nf=1 m=1
 COFP4 TP0 BP4 960f
 COFN4 TN0 BN4 960f
-* bit 5: 1.92 pF per side, group 0, R 33.85 kohm, driver x1
+* bit 5: 1.92 pF per side, group 0, R 33.85 kohm, driver x1, clamp W 6 um
 XNP5 NP5 EN0 M5 XB VDD VSS eeg_afe_nand3 s=1
 XNN5 NN5 EN0 M5 X VDD VSS eeg_afe_nand3 s=1
 XDP5 DP5 NP5 VDD VSS eeg_afe_inv s=1
 XDN5 DN5 NN5 VDD VSS eeg_afe_inv s=1
 RDP5 DP5 BP5 33854.2
 RDN5 DN5 BN5 33854.2
+XNA5 NA5 EN0 M5 VDD VSS eeg_afe_nand2 s=1
+XCLP5 BP5 NA5 VSS VSS nfet_03v3 W=6u L=0.28u nf=1 m=1
+XCLN5 BN5 NA5 VSS VSS nfet_03v3 W=6u L=0.28u nf=1 m=1
 COFP5 TP0 BP5 1920f
 COFN5 TN0 BN5 1920f
-* bit 6: 3.84 pF per side, group 0, R 16.93 kohm, driver x2
+* bit 6: 3.84 pF per side, group 0, R 16.93 kohm, driver x2, clamp W 12 um
 XNP6 NP6 EN0 M6 XB VDD VSS eeg_afe_nand3 s=1
 XNN6 NN6 EN0 M6 X VDD VSS eeg_afe_nand3 s=1
 XDP6 DP6 NP6 VDD VSS eeg_afe_inv s=2
 XDN6 DN6 NN6 VDD VSS eeg_afe_inv s=2
 RDP6 DP6 BP6 16927.1
 RDN6 DN6 BN6 16927.1
+XNA6 NA6 EN0 M6 VDD VSS eeg_afe_nand2 s=1
+XCLP6 BP6 NA6 VSS VSS nfet_03v3 W=12u L=0.28u nf=1 m=1
+XCLN6 BN6 NA6 VSS VSS nfet_03v3 W=12u L=0.28u nf=1 m=1
 COFP6 TP0 BP6 3840f
 COFN6 TN0 BN6 3840f
-* bit 7: 7.68 pF per side, group 1, R 8.464 kohm, driver x4
+* bit 7: 7.68 pF per side, group 1, R 8.464 kohm, driver x4, clamp W 24 um
 XNP7 NP7 EN1 M7 XB VDD VSS eeg_afe_nand3 s=1
 XNN7 NN7 EN1 M7 X VDD VSS eeg_afe_nand3 s=1
 XDP7 DP7 NP7 VDD VSS eeg_afe_inv s=4
 XDN7 DN7 NN7 VDD VSS eeg_afe_inv s=4
 RDP7 DP7 BP7 8463.54
 RDN7 DN7 BN7 8463.54
+XNA7 NA7 EN1 M7 VDD VSS eeg_afe_nand2 s=1
+XCLP7 BP7 NA7 VSS VSS nfet_03v3 W=24u L=0.28u nf=2 m=1
+XCLN7 BN7 NA7 VSS VSS nfet_03v3 W=24u L=0.28u nf=2 m=1
 COFP7 TP1 BP7 7680f
 COFN7 TN1 BN7 7680f
-* bit 8: 15.36 pF per side, group 2, R 4.232 kohm, driver x8
+* bit 8: 15.36 pF per side, group 2, R 4.232 kohm, driver x8, clamp W 48 um
 XNP8 NP8 EN2 M8 XB VDD VSS eeg_afe_nand3 s=2
 XNN8 NN8 EN2 M8 X VDD VSS eeg_afe_nand3 s=2
 XDP8 DP8 NP8 VDD VSS eeg_afe_inv s=8
 XDN8 DN8 NN8 VDD VSS eeg_afe_inv s=8
 RDP8 DP8 BP8 4231.77
 RDN8 DN8 BN8 4231.77
+XNA8 NA8 EN2 M8 VDD VSS eeg_afe_nand2 s=1
+XCLP8 BP8 NA8 VSS VSS nfet_03v3 W=48u L=0.28u nf=4 m=1
+XCLN8 BN8 NA8 VSS VSS nfet_03v3 W=48u L=0.28u nf=4 m=1
 COFP8 TP2 BP8 15360f
 COFN8 TN2 BN8 15360f
-* bit 9: 30.72 pF per side, group 3, R 2.116 kohm, driver x16
+* bit 9: 30.72 pF per side, group 3, R 2.116 kohm, driver x16, clamp W 96 um
 XNP9 NP9 EN3 M9 XB VDD VSS eeg_afe_nand3 s=4
 XNN9 NN9 EN3 M9 X VDD VSS eeg_afe_nand3 s=4
 XDP9 DP9 NP9 VDD VSS eeg_afe_inv s=16
 XDN9 DN9 NN9 VDD VSS eeg_afe_inv s=16
 RDP9 DP9 BP9 2115.89
 RDN9 DN9 BN9 2115.89
+XNA9 NA9 EN3 M9 VDD VSS eeg_afe_nand2 s=1
+XCLP9 BP9 NA9 VSS VSS nfet_03v3 W=96u L=0.28u nf=9 m=1
+XCLN9 BN9 NA9 VSS VSS nfet_03v3 W=96u L=0.28u nf=9 m=1
 COFP9 TP3 BP9 30720f
 COFN9 TN3 BN9 30720f
 .ends eeg_afe_offdac
@@ -215,6 +247,12 @@ COFN9 TN3 BN9 30720f
 XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
 XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1
 .ends eeg_afe_inv
+.subckt eeg_afe_nand2 Y A B VDD VSS s=1
+XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
+XNA Y A M1 VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+XNB M1 B VSS VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1
+.ends eeg_afe_nand2
 .subckt eeg_afe_nand3 Y A B C VDD VSS s=1
 XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1
 XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1

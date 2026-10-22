@@ -86,8 +86,10 @@ def offdac():
     """Electrode-offset DAC, sign-magnitude: per side, binary-weighted caps into INP/INN.
     Only the caps of the set magnitude bits switch, AVSS <-> AVDD through a series
     resistor R_k = TAU / C_k (all bits deliver their charge with the same time constant,
-    close to that of the electrode charge, RS x Cin); the other caps stay at AVSS. Range
-    groups are switched at the amplifier-input side (a disabled group is parked at VCM)."""
+    close to that of the electrode charge, RS x Cin). The plates of the other bits are
+    clamped to AVSS by a strong NMOS, so their R_k adds no noise: with no offset the DAC
+    adds only its capacitance at the amplifier input. Range groups are switched at the
+    amplifier-input side (a disabled group is parked at VCM)."""
     bits = " ".join(f"M{k}" for k in range(OFF_BITS))
     L = ["",
          "* electrode-offset cancellation DAC (tracker B7), sign-magnitude",
@@ -96,7 +98,9 @@ def offdac():
          "* not X, N plate = VDD when X; inactive plates stay at VSS. For S = 0 the P plates rise",
          "* at the A->B edge: +sum(active Ck) x VDD into INP cancels the Cin step of a positive",
          "* ELP-ELN offset, magnitude x 0.311 mV per unit (60 fF). Each plate is driven through",
-         f"* R_k = {OFF_TAU * 1e9:g} ns / C_k. Disabled groups: plates low, top plate at VCM.",
+         f"* R_k = {OFF_TAU * 1e9:g} ns / C_k (thermal noise grows with the active capacitance, i.e.",
+         "* with the cancelled offset). Inactive plates: clamped to VSS by an NMOS sized for",
+         "* R_on x C_k = 0.2 ns. Disabled groups: plates low, top plate at VCM.",
          f".subckt eeg_afe_offdac INP INN VCM PH S {bits} EN0 EN1 EN2 EN3 VDD VSS",
          "XSB SB S VDD VSS eeg_afe_inv s=1",
          "XNPH NPH PH VDD VSS eeg_afe_inv s=2",
@@ -120,13 +124,17 @@ def offdac():
         m = max(1, 2 ** (k - 5))  # plate driver strength (units of W 1/2.5 um)
         c = OFF_CU * 2 ** k
         r = OFF_TAU / c
-        L += [f"* bit {k}: {c * 1e12:.4g} pF per side, group {g}, R {r / 1e3:.4g} kohm, driver x{m}",
+        wcl = max(0.5, round(c * 0.28e-6 / (172e-6 * 2.6 * 0.2e-9) * 1e6 * 2) / 2)  # clamp W (um)
+        L += [f"* bit {k}: {c * 1e12:.4g} pF per side, group {g}, R {r / 1e3:.4g} kohm, driver x{m}, clamp W {wcl:g} um",
               f"XNP{k} NP{k} EN{g} M{k} XB VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
               f"XNN{k} NN{k} EN{g} M{k} X VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
               f"XDP{k} DP{k} NP{k} VDD VSS eeg_afe_inv s={m}",
               f"XDN{k} DN{k} NN{k} VDD VSS eeg_afe_inv s={m}",
               f"RDP{k} DP{k} BP{k} {r:.6g}",
               f"RDN{k} DN{k} BN{k} {r:.6g}",
+              f"XNA{k} NA{k} EN{g} M{k} VDD VSS eeg_afe_nand2 s=1",
+              f"XCLP{k} BP{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
+              f"XCLN{k} BN{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
               f"COFP{k} TP{g} BP{k} {c * 1e15:.6g}f",
               f"COFN{k} TN{g} BN{k} {c * 1e15:.6g}f"]
     L += [".ends eeg_afe_offdac",
@@ -135,6 +143,12 @@ def offdac():
           "XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",
           "XN Y A VSS VSS nfet_03v3 W={1u*s} L=0.28u nf={s} m=1",
           ".ends eeg_afe_inv",
+          ".subckt eeg_afe_nand2 Y A B VDD VSS s=1",
+          "XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",
+          "XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",
+          "XNA Y A M1 VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1",
+          "XNB M1 B VSS VSS nfet_03v3 W={2u*s} L=0.28u nf={s} m=1",
+          ".ends eeg_afe_nand2",
           ".subckt eeg_afe_nand3 Y A B C VDD VSS s=1",
           "XPA Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",
           "XPB Y B VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",

@@ -155,6 +155,64 @@ class Block:
 
 
 # ----------------------------------------------------------------------------------
+# generators
+# ----------------------------------------------------------------------------------
+MIM_CA = 1.99e-3    # cap_mim_2f0ff: F/m2 of area
+MIM_CP = 2.383e-10  # F/m of perimeter
+MIM_MAX_AREA = 10000.0  # um2 per MIM cap and per shared bottom plate (MIMTM.8b, MIMTM.11)
+
+
+def mim_unit_side(c_total, n):
+    """Side (um, 10 nm grid) of n equal square cap_mim_2f0ff units giving c_total (F) in all."""
+    c = c_total / n
+    a = (-4 * MIM_CP + ((4 * MIM_CP) ** 2 + 4 * MIM_CA * c) ** 0.5) / (2 * MIM_CA)  # m
+    return round(a * 1e6, 2)
+
+
+def mim_cap(w, l):
+    """Capacitance (F) of one cap_mim_2f0ff of w x l um, as the ngspice model computes it."""
+    return MIM_CA * w * l * 1e-12 + MIM_CP * 2 * (w + l) * 1e-6
+
+
+def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.0, g=1.0, hgap=2.6,
+              bw=5.0):
+    """MIM capacitor array (MIM-B): nx x ny units of w x l um, all in parallel between the
+    nets `top` (top plates) and `bot` (bottom plates), comb-routed on Metal5.
+
+    The bottom plate (Metal4) may only be reached through Via4 (MIMTM.10) and may carry at
+    most 10,000 um2 of MIM (MIMTM.11), so every unit keeps its own Metal4 island and both
+    nets run on Metal5. Per column, west to east: the `top` spine (s um, touching the top
+    plates), the units, a 1 um gap, the `bot` spine (t um) over a Metal4 tab of each unit's
+    bottom plate with Via4. The `top` spines join a bus above the array, the `bot` spines a
+    bus below it (bw um each), so the two combs interleave without crossing.
+    Rows are hgap apart: the Metal4 of a bottom plate (0.6 um beyond the top plate) must
+    stay 1.2 um from any other Metal4 (MIMTM.1).
+    Returns the outline (x0, y0, x1, y1) in um.
+    """
+    if w * l > MIM_MAX_AREA:
+        raise ValueError(f"MIM unit {w} x {l} um exceeds {MIM_MAX_AREA} um2")
+    px, py = s + w + 1.0 + t + g, l + hgap
+    yb = y0 + bw + 2.0                       # bottom edge of the first row of top plates
+    ytop = yb + (ny - 1) * py + l            # top edge of the last row
+    for i in range(nx):
+        xk = x0 + i * px
+        xs = xk + s + w + 1.0                # west edge of the bot spine
+        for j in range(ny):
+            yu = yb + j * py
+            b.pcell("cap_mim", {"mim_option": "MIM-B", "metal_level": "M5", "wc": w, "lc": l}, x=xk + s, y=yu)
+            b.box("metal4", xk + s + w + 0.3, yu - 0.6, xs + t, yu + l + 0.6)   # bottom-plate tab
+            b.vias("via4", xs, yu + 0.4, xs + t, yu + l - 0.4)
+        b.box("metal5", xk, yb, xk + s, ytop + 2.0 + bw)       # top spine, up into the top bus
+        b.box("metal5", xs, y0, xs + t, ytop)                  # bot spine, down into the bottom bus
+    x1 = x0 + nx * px - g
+    b.box("metal5", x0, ytop + 2.0, x1, ytop + 2.0 + bw)       # top bus
+    b.box("metal5", x0, y0, x1, y0 + bw)                       # bottom bus
+    b.label("metal5", top, x0 + 1.0, ytop + 2.0 + bw / 2)
+    b.label("metal5", bot, x0 + 1.0, y0 + bw / 2)
+    return x0, y0, x1, ytop + 2.0 + bw
+
+
+# ----------------------------------------------------------------------------------
 # netlists for LVS
 # ----------------------------------------------------------------------------------
 def _subckt_blocks(text):

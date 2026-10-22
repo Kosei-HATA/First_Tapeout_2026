@@ -14,8 +14,10 @@
 *   ADC_ZERO a TG from INP to INN (TEST_CFG[5], gate 1 10/23): with the AFE output
 *            chopper held open (CHOP_BLANK forced high by the RTL) the ADC converts
 *            zero through its own RIN, for an ADC-only noise and idle-tone test
-* C1 and C2 are ideal here (MIM in the layout; cap_mim_2f0ff voltage coefficient
-* about 9e-6 /V). 2 pF per integrator output stands for the wiring until PEX.
+* C1 and C2 are the MIM arrays of the layout (gf180/tapeout/layout/mim_arrays_lay.py):
+* eeg_c1 35 and eeg_c2 one cap_mim_2f0ff, sized with the area and perimeter terms of the
+* model; the integrator input (high impedance) is on the top plate. 2 pF per integrator
+* output stands for the wiring until PEX.
 *
 * Ports: INP INN (from the AFE output), CHOP1, DAC_CLK, CMP_STROBE, RST NRST, ADC_ZERO
 * (TEST_CFG[5]), SEL1_0..30, SEL2_0..30 (eeg_adc_dig SEL1/SEL2), TH0..TH30 (to eeg_adc_dig),
@@ -37,8 +39,8 @@ XRINN INN I1N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=32
 XCLK1 CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS eeg_adc_clk
 XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS
 + gf180_inside_cascode_ota
-C1P O1N I1P 680.51376829979684p
-C1N O1P I1N 680.51376829979684p
+XC1P I1P O1N eeg_c1
+XC1N I1N O1P eeg_c1
 XDAC1 I1P I1N VREFP VREFN SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 DAC_CLK AVDD AVSS eeg_dac1
 XR1P O1N I1P RST NRST AVDD AVSS eeg_adc_rst
 XR1N O1P I1N RST NRST AVDD AVSS eeg_adc_rst
@@ -46,8 +48,8 @@ XR1N O1P I1N RST NRST AVDD AVSS eeg_adc_rst
 XR21P O1P I2P AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
 XR21N O1N I2N AVSS ppolyf_u_3k r_length=195.5u r_width=2u m=3
 XOTA2 I2P I2N O2P O2N VCM VBN1 VNC1 VPC1 VBCM1 AVDD AVSS gf180_ct_ota_tel16_cmfb CCOMP=10p
-C2P O2N I2P 19.53125p
-C2N O2P I2N 19.53125p
+XC2P I2P O2N eeg_c2
+XC2N I2N O2P eeg_c2
 XDAC2 I2P I2N SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 IDP IDN VBPC2 VBNC2 AVDD AVSS eeg_dac2
 XR2P O2N I2P RST NRST AVDD AVSS eeg_adc_rst
 XR2N O2P I2N RST NRST AVDD AVSS eeg_adc_rst
@@ -75,3 +77,48 @@ XP A ZB B VDD pfet_03v3 W=20u L=0.28u nf=4
 XN A G B VSS nfet_03v3 W=1u L=0.28u nf=1
 XP A GN B VDD pfet_03v3 W=2u L=0.28u nf=1
 .ends eeg_adc_rst
+
+* C1, one side: 35 cap_mim_2f0ff of 98.61 um square in parallel (680.56 pF). TOP: OTA1
+* input, BOT: OTA1 output.
+.subckt eeg_c1 TOP BOT
+XC0 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC1 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC2 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC3 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC4 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC5 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC6 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC7 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC8 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC9 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC10 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC11 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC12 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC13 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC14 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC15 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC16 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC17 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC18 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC19 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC20 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC21 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC22 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC23 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC24 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC25 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC26 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC27 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC28 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC29 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC30 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC31 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC32 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC33 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+XC34 TOP BOT cap_mim_2f0ff c_length=98.61u c_width=98.61u
+.ends eeg_c1
+
+* C2, one side: one cap_mim_2f0ff of 98.83 um square (19.53 pF). TOP: OTA2 input, BOT: OTA2 output.
+.subckt eeg_c2 TOP BOT
+XC0 TOP BOT cap_mim_2f0ff c_length=98.83u c_width=98.83u
+.ends eeg_c2

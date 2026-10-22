@@ -79,6 +79,8 @@ def deck(vos_mv, rng, mag, rs, tstop, blank, afe=AFE, sine_mv=0.0, clkdrv=False,
     return f"""* eeg_afe electrode-offset check: {vos_mv:+g} mV, range {rng}, magnitude {mag}, RS {rs:g}
 .include {afe_noise.PDK}/design.ngspice
 .lib {afe_noise.PDK}/sm141064.ngspice typical
+.lib {afe_noise.PDK}/sm141064.ngspice mimcap_typical
+.lib {afe_noise.PDK}/sm141064.ngspice cap_mim
 .include {afe}
 .temp 27
 .options sparse reltol=1e-5 vntol=1e-8 abstol=1e-12 bypass=0

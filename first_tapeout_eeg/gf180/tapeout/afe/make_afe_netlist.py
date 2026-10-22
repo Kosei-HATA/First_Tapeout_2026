@@ -69,6 +69,9 @@ OFF_TAU = 65e-9  # offset-DAC charge time constant: RS 100 ohm x (Cin + electrod
 C_SC = 10e-15    # switched-capacitor DC path
 CHOLD = 30e-12  # per side, output-chopper blanking (documentation/gf180_afe_noise_20261022.md)
 ROUT = 0.0  # series resistor from the output TGs to OUTP/OUTN (0 = none; study variants)
+CIN_N, CIN_SIDE = 32, 99.70  # Cin per side: 32 cap_mim_2f0ff of 99.70 um square = 636.03 pF
+# (area and perimeter terms of the model; one MIM cap may not exceed 10,000 um2), as
+# gf180/tapeout/layout/mim_arrays_lay.py draws it
 RENAME = [("reuse_input_tg_m64", "eeg_afe_input_tg"), ("reuse_tg", "eeg_afe_output_tg"),
           ("gf180_reuse_cascoded_core", "eeg_afe_core"), ("gf180_ct_cmfb8", "eeg_afe_cmfb"),
           ("gf180_ccia_local_feedback", "eeg_afe_amp")]
@@ -199,8 +202,8 @@ def top():
 * amplifier, output chopper TGs
 .subckt eeg_afe ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
 + OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 VDD VSS
-CINP WP INP 636p
-CINN WN INN 636p
+XCINP INP WP eeg_cin
+XCINN INN WN eeg_cin
 CFBP ONI INP 2p
 CFBN OPI INN 2p
 CPFP WP OPI {CPF_BASE * 1e12:g}p
@@ -225,6 +228,17 @@ CHOLDN OUTN VSS {CHOLD * 1e12:g}p
 """
 
 
+def cin_array():
+    """Cin of one side as the MIM array of the layout: TOP = amplifier input (the top plate
+    has the smaller parasitic capacitance), BOT = chopper side."""
+    L = ["",
+         f"* Cin, one side: {CIN_N} cap_mim_2f0ff of {CIN_SIDE:g} um square in parallel (636 pF),",
+         "* the array of gf180/tapeout/layout/mim_arrays_lay.py. TOP: amplifier input, BOT: chopper side.",
+         ".subckt eeg_cin TOP BOT"]
+    L += [f"XC{k} TOP BOT cap_mim_2f0ff c_length={CIN_SIDE:g}u c_width={CIN_SIDE:g}u" for k in range(CIN_N)]
+    return "\n".join(L + [".ends eeg_cin", ""])
+
+
 def write(out=None):
     head = f"""* eeg_afe: chopper-stabilised capacitively coupled instrumentation amplifier (GF180, this rev)
 * Written by gf180/tapeout/afe/make_afe_netlist.py from gf180/tapeout/sim/afe/afe_noise.py
@@ -232,7 +246,7 @@ def write(out=None):
 * booster load L {afe_noise.LOAD_L:g} um). Do not edit by hand; change the generator and rerun.
 """
     out = out or OUT
-    open(out, "w").write(head + body() + offdac() + cpftrim() + top())
+    open(out, "w").write(head + body() + offdac() + cpftrim() + cin_array() + top())
     return out
 
 
@@ -243,6 +257,8 @@ def check():
     tb = f"""* eeg_afe netlist check (phase A, reset on)
 .include {afe_noise.PDK}/design.ngspice
 .lib {afe_noise.PDK}/sm141064.ngspice typical
+.lib {afe_noise.PDK}/sm141064.ngspice mimcap_typical
+.lib {afe_noise.PDK}/sm141064.ngspice cap_mim
 .include {OUT}
 .temp 27
 .options sparse reltol=1e-6 vntol=1e-10 abstol=3e-13 bypass=0

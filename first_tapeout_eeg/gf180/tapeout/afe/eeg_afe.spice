@@ -298,12 +298,49 @@ XTNO3 XN3 ONI B3 BN3 VDD VSS eeg_afe_tg
 XTNV3 XN3 VCM BN3 B3 VDD VSS eeg_afe_tg
 .ends eeg_afe_cpftrim
 
+* Cin, one side: 32 cap_mim_2f0ff of 99.7 um square in parallel (636 pF),
+* the array of gf180/tapeout/layout/mim_arrays_lay.py. TOP: amplifier input, BOT: chopper side.
+.subckt eeg_cin TOP BOT
+XC0 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC1 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC2 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC3 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC4 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC5 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC6 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC7 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC8 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC9 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC10 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC11 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC12 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC13 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC14 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC15 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC16 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC17 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC18 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC19 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC20 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC21 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC22 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC23 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC24 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC25 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC26 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC27 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC28 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC29 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC30 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+XC31 TOP BOT cap_mim_2f0ff c_length=99.7u c_width=99.7u
+.ends eeg_cin
+
 * AFE top: input chopper TGs, Cin, Cf, Cpf, reset switches, DC path, offset DAC,
 * amplifier, output chopper TGs
 .subckt eeg_afe ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB
 + OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 VDD VSS
-CINP WP INP 636p
-CINN WN INN 636p
+XCINP INP WP eeg_cin
+XCINN INN WN eeg_cin
 CFBP ONI INP 2p
 CFBN OPI INN 2p
 CPFP WP OPI 1.99p

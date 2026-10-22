@@ -10,7 +10,11 @@ Timing (RTL, e_n = MCLK edge n of a frame):
   e3  SEL1/SEL2 (controller), e4 DAC_CLK, e16 CHOP1 edges (--chop1)
 AFE_RST (AFE input reset and ADC integrator reset) is high until --trst.
 Electrodes: a sine of --amp V pk at --fsig on --vos V of offset (offset DAC off),
-100 ohm per leg, on VCM. Bias codes at their reset values, CPF_TRIM 8.
+100 ohm per leg, on VCM; the sine starts at the reset release. (Whatever the chopped
+input is when AFE_RST falls stays on Cin and shows at the output as a 128 kHz square
+wave of gain x that value, which the DC path removes with Rsc x Cf = 780 Mohm x 2 pF =
+1.6 ms; starting the sine mid-cycle made a +-152 mV square wave in a first run.)
+Bias codes at their reset values, CPF_TRIM 8.
 
 out.csv columns: sig, outp, outn (AFE output), o1p, o1n, i1p, i1n, o2p, o2n, norm1,
 i(avdd), on a --wstep grid (e2e_check.py reads them).
@@ -87,7 +91,7 @@ XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP V
 CVCMPAD VCM 0 100n
 VITST ITST 0 1
 * electrodes: sine on an offset, 100 ohm per leg, on VCM
-VSIG SIG 0 SIN({a.vos:g} {a.amp:g} {a.fsig:g} 1.1u)
+VSIG SIG 0 SIN({a.vos:g} {a.amp:g} {a.fsig:g} {a.trst:g})
 ESP SRCP VCM SIG 0 .5
 ESN SRCN VCM SIG 0 -.5
 RSP SRCP ELP 100

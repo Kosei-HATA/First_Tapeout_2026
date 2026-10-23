@@ -34,7 +34,7 @@ XBIAS VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREF
 XREF VREFP_PAD VREFN_PAD VREFP VREFN AVSS eeg_ref
 XTM ATP TC0 TC1 TC2 TC3 TC4 VCM VREFP VREFN VBN VBCM VBN1 VNC1 VPC1 VBPC2 VBNC2 ITST OUTP OUTN O2P O2N
 + AVDD AVSS eeg_testmux
-* decoupling: 72 x AVDD-AVSS, 48 x DVDD-DVSS (28.6 x 44.0 um cap_nmos_03v3)
+* decoupling: 75 x AVDD-AVSS, 48 x DVDD-DVSS (28.6 x 44.0 um cap_nmos_03v3)
 XDCA0 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCA1 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCA2 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
@@ -107,6 +107,9 @@ XDCA68 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCA69 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCA70 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCA71 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA72 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA73 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA74 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCD0 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCD1 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
 XDCD2 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u

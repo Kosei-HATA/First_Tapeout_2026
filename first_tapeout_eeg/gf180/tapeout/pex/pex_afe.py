@@ -81,7 +81,7 @@ def ports():
 # the Metal3 sheet under Cin meshed (--tess m3; square 0.204 / 0.198, which misses the
 # spreading in the sheet), T square; 10/23 before the fixes: E 0.350 / 0.346, W 3.970 / 3.935,
 # T 71.60 / 114.59
-RIN_EXTRACTED = {"E": (0.171, 0.213), "W": (0.344, 0.339), "T": (0.125, 0.124)}
+RIN_EXTRACTED = {"E": (0.171, 0.213), "W": (0.344, 0.339), "T": (0.119, 0.124)}
 
 
 def split_signal_path(text, variant):

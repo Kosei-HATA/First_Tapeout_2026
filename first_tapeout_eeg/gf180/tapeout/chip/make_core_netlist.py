@@ -42,7 +42,8 @@ OUT = os.path.join(HERE, "eeg_core.spice")
 
 # decoupling (cap_nmos_03v3 units; the layout's arrays, chip_lay.py)
 DECAP_UNIT = (28.6, 44.0)        # c_length x c_width um, about 5.3 pF each
-N_DECAP_A = 72                   # AVDD-AVSS in Ch-A under the trunks (about 380 pF)
+N_DECAP_A = 75                   # AVDD-AVSS in Ch-A under the trunks (about 400 pF; 72 before the
+                                 # AFE of 10/24 moved the Metal4 supply jumpers that rows avoid)
 N_DECAP_D = 48                   # DVDD-DVSS above the digital block (about 250 pF)
 
 

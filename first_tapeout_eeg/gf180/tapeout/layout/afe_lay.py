@@ -20,7 +20,8 @@ Hand-drawn wiring (the signal path is in series with the electrodes: tracker D6)
   - the core's INP / INN Metal5 bars (its top / bottom edge) joined to the Cin top-plate
     buses along the core's width and on over the output section; the offset DAC's INP /
     INN stubs onto those bars;
-  - WP / WN and INP / INN taps for the output section; the DC-path switches (sc_wiring);
+  - WP / WN and INN taps for the output section, the P side's INP pins straight into the
+    INP fill (fill_drop); the DC-path switches (sc_wiring);
   - AVSS / AVDD Metal5 rails from the east edge over the output section to the core's
     Metal4 supply rows over its tails (the core's 19 mA comes from the Ch-A side: the
     west of the band is the input chopper's).
@@ -118,15 +119,24 @@ def gate_diodes(a, x, y, h):
 SC_STUB = 21.0                 # Metal3 stubs on the DC-path switch's pins: up to here above the cell
 
 
-def sc_wiring(a, x, y, scn, sc, cap):
+def fill_drop(a, x, y, fill, net):
+    """A Metal3 drop from a Metal2 pin (via2 at x, y) straight up into the input fill
+    whose Metal5 starts at y fill (Metal3 / Metal4 / Metal5 via stack just above that)."""
+    a.box("via2", x - 0.13, y - 0.13, x + 0.13, y + 0.13)
+    a.wire("metal3", x - 0.19, y - 0.19, x + 0.19, fill + 1.4, net)
+    a.via_stack("metal3", "metal5", x - 0.6, fill + 0.2, x + 0.6, fill + 1.4, net)
+
+
+def sc_wiring(a, x, y, scn, sc, cap, fill=None):
     """The same wiring on both sides of the DC-path switched capacitor (cell sc at x, y,
     its MIM cap 2 um east): the middle node scn (SCP / SCN) to the MIM's top plate on
     Metal2 / Metal4, under a router keep-out; the gate lines CIA2 / CIB2 and the two
     signal pins (ONI / OPI west of the gate stubs, INP / INN east) on Metal3 stubs straight
     up from their pins, which the router reaches at their tops. In the first layout the
     router brought P side's CIB2 along under SCP's Metal4: 0.57 fF against 0.04 fF on the
-    N side, an AFE output ripple of 39 mV p-p (tracker D6). Returns the router pins
-    {net: [...]}."""
+    N side, an AFE output ripple of 39 mV p-p (tracker D6). fill: the P side's INP stub
+    runs on up into the INP fill starting at this y (fill_drop), no router pin. Returns
+    the router pins {net: [...]}."""
     xc = x + sc.width + 2.0                                   # the MIM cell
     s = sc.pins[scn][0]
     t = cap.pins["TOP"][0]
@@ -153,8 +163,11 @@ def sc_wiring(a, x, y, scn, sc, cap):
         assert xs + 0.19 <= min(x + g_[3], keep[0]), f"no column on the {pn} pin"
         used.append(xs)
         yg = y + (g_[2] + g_[4]) / 2
-        a.box("via2", xs - 0.13, yg - 0.13, xs + 0.13, yg + 0.13)
         a.box("metal2", xs - 0.19, yg - 0.19, xs + 0.19, yg + 0.19)
+        if side > 0 and fill is not None:
+            fill_drop(a, xs, yg, fill, net)
+            continue
+        a.box("via2", xs - 0.13, yg - 0.13, xs + 0.13, yg + 0.13)
         a.wire("metal3", xs - 0.19, yg - 0.19, xs + 0.19, y + SC_STUB, net)
         pins[net] = [("metal3", xs - 0.19, y + SC_STUB - 1.5, xs + 0.19, y + SC_STUB)]
     return pins
@@ -235,17 +248,23 @@ def build():
     cell_at(C["cc"], x0 + 1.0, ycc, "CCP", {"TOP": "VBP", "BOT": "OPI"})
     cell_at(C["cc"], x0 + 1.0 + C["cc"].width + 3.0, ycc, "CCN", {"TOP": "VBP", "BOT": "ONI"})
     ytop = ycc + C["cc"].height + 2.0
-    cell_at(C["cfb"], x0 + 1.0, ytop, "CFBP", {"TOP": "INP", "BOT": "ONI"})
-    cell_at(C["cpf"], x0 + 1.0 + C["cfb"].width + 3.0, ytop, "CPFP", {"TOP": "WP", "BOT": "OPI"})
+    # P side: the MIMs mirrored (the N side's mirror image): TOP plates (INP, WP) up against
+    # the INP fill, BOT plates (ONI, OPI, the trim nodes) down towards CC (tracker D6: with
+    # the BOT pins up under the INP fill and the router's INP along the row's bottom beside
+    # ONI, INP-ONI came out 12 fF above INN-OPI)
+    def flip(cell, x, name, cmap):
+        return cell_at(cell, x, ytop + cell.height, name, cmap, mirror=True)
+    flip(C["cfb"], x0 + 1.0, "CFBP", {"TOP": "INP", "BOT": "ONI"})
+    flip(C["cpf"], x0 + 1.0 + C["cfb"].width + 3.0, "CPFP", {"TOP": "WP", "BOT": "OPI"})
     # Cpf trim MIMs, P side (top): bit 0 two in series through MP0
     sw_x = {}
     xt = x0 + 1.0 + C["cfb"].width + C["cpf"].width + 8.0
     for nm, cell, tp, bt in (("CTP0A", "m5", "WP", "MP0"), ("CTP0B", "m5", "MP0", "XP0"), ("CTP1", "m5", "WP", "XP1"),
                              ("CTP2", "m717", "WP", "XP2"), ("CTP3", "m1023", "WP", "XP3")):
-        cell_at(C[cell], xt, ytop, nm, {"TOP": tp, "BOT": bt})
+        flip(C[cell], xt, nm, {"TOP": tp, "BOT": bt})
         xt += C[cell].width + 2.0
     sw_x["P"] = xt + 1.0
-    # N side (bottom, mirrored so the trim plates face the band): CFB_N, CPF_N, trim MIMs,
+    # N side (bottom, TOP plates down against the INN fill): CFB_N, CPF_N, trim MIMs,
     # 11 um above the Cin_N buses (the INN fill runs on under them: wiring()), 12 router rows
     # above the first layout's 425 (the cells' Metal2 pins keep their phase on the rows)
     yb = 425.0 + 12 * GRID[3]
@@ -258,19 +277,28 @@ def build():
         xt += C[cell].width + 2.0
     sw_x["N"] = xt + 1.0
     I["rows_pn"] = (ytop + max(C[k].height for k in ("cfb", "cpf", "m5", "m717", "m1023", "rstp", "scp")), yb)
+    # INP is wired by hand into the INP fill over the P row (wiring(): from rows_pn[0] + 2):
+    # CFB_P's top-plate bar by Metal5, the switches' INP pins by Metal3 drops (fill_drop)
+    y_fill = I["rows_pn"][0] + 2.0
+    a.box("metal5", x0 + 2.0, ytop + C["cfb"].height - 1.6, x0 + C["cfb"].width, y_fill + 0.6)
     # switches next to the buses: reset (INP-ONI / INN-OPI) and the DC-path switched
     # capacitor (CIA2 then CIB2, with its 54.5 fF MIM to AVSS)
     sw = {}
     for side, y0_, (rst, sc, csc, scn) in (("P", ytop, ("rstp", "scp", "CSCP", "SCP")), ("N", yb, ("rstn", "scn", "CSCN", "SCN"))):
         x = sw_x[side]
         p1 = cell_at(C[rst], x, y0_, f"XRST{side}", {"VSS": "AVSS", "RST": "RST2"})
+        if side == "P":                       # (west of the gate pin, on the INP pin's end)
+            s = C[rst].pins["INP"][0]
+            fill_drop(a, x + s[1] + 0.4, y0_ + (s[2] + s[4]) / 2, y_fill, "INP")
         x += C[rst].width + 2.0
         p2 = cell_at(C[sc], x, y0_, f"XSC{side}", {"VSS": "AVSS", "CIA": "CIA2", "CIB": "CIB2"})
         gate_diodes(a, x, y0_, C[sc].height)
         cell_at(C["m5"], x + C[sc].width + 2.0, y0_, csc, {"TOP": scn, "BOT": "AVSS"})
-        for n, segs in sc_wiring(a, x, y0_, scn, C[sc], C["m5"]).items():
+        fill = y_fill if side == "P" else None
+        for n, segs in sc_wiring(a, x, y0_, scn, C[sc], C["m5"], fill).items():
             nets[n] = [s for s in nets[n] if s not in p2.pins.get(n[:3], []) + p2.pins.get(n, [])] + segs
         nets.pop(scn)
+    nets.pop("INP")
     # the band between the rails: output chopper, CMFB, switches, trim logic
     S = bl.Shelves(a, x0 + 1.0, 527.0, W - x0 - 4.0, gap=2.0)
 
@@ -550,12 +578,11 @@ def wiring(a, I):
     pins["WP"] = [("metal4", xt, tp[2] - 6.0, xt + 4.0, tp[2] - 2.0)]
     a.wire("metal4", xt, bn[2] + 0.3, xt + 4.0, tn[4] + 6.0, "WN")
     pins["WN"] = [("metal4", xt, tn[4] + 2.0, xt + 4.0, tn[4] + 6.0)]
-    # INP / INN taps for the output section (CFB, reset and DC-path switches): Metal4 from
-    # the Cin array's top-plate jumper under the inner bus into the gap between the core and
-    # the section (Metal3 there is the bottom-plate plane under the array)
+    # INN tap for the N side of the output section (CFB, reset and DC-path switches): Metal4
+    # from the Cin array's top-plate jumper over the inner bus into the gap between the core
+    # and the section (Metal3 there is the bottom-plate plane under the array); the P side's
+    # INP pins are wired into the INP fill by hand (build())
     xi = EAST_X - 2.4
-    a.wire("metal4", xi, tp[2] - 6.0, xi + 1.2, tp[2] + 0.5, "INP")
-    pins["INP"] = [("metal4", xi, tp[2] - 6.0, xi + 1.2, tp[2] - 2.0)]
     a.wire("metal4", xi, tn[4] - 0.5, xi + 1.2, tn[4] + 6.0, "INN")
     pins["INN"] = [("metal4", xi, tn[4] + 2.0, xi + 1.2, tn[4] + 6.0)]
     # the core's INP / INN Metal5 bars (along its top / bottom edges) join the inner Cin buses

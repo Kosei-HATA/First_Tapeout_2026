@@ -16,8 +16,12 @@ than W 10 um strips), the boosters W 10 um:
 The branch current (9.6 mA per side, 19.2 mA in the tails) runs on Metal3 lanes over
 each column (blocks.lanes; 12 lanes of 1.2 um per branch net, 24 for SN, SP, VDD, VSS;
 0.67 mA per um of Metal3). The output nodes leave the cascodes of both columns at the
-top on Metal4 trunks (three of 5 um per net) that reach the east edge as the OUTP /
-OUTN ports. VSS and VDD come in from above through Metal4 bar segments over the supply
+top into a band above all cells: one trunk per net (OUTP Metal2, OUTN Metal3, 11 um) to
+the east edge as the OUTP / OUTN ports, under a Metal4 shield over the band and the whole
+cascode cells (VSS on the N column's side, VDD on the P column's; the router reaches the
+cascodes' gate bars from below), since the AFE's INP Metal5 runs over the cascodes to the
+top edge (tracker D6). The N boosters share strips, so that column N stays low enough for
+the band. VSS and VDD come in from above through Metal4 bar segments over the supply
 lanes of the two tails (via3 on the lanes), for the AFE's Metal5 supply rails.
 
 The input-pair gates INP / INN are hand-drawn (their wiring resistance is in series with
@@ -53,7 +57,9 @@ NETLIST = os.path.join(g.REPO, "gf180", "tapeout", "afe", "eeg_afe.spice")
 SW = 2.4
 TN, TP = 300.0, 400.0                 # target strip lengths of the two columns (um)
 WF = 20.0                             # finger width of the pairs, tails and cascodes
-TRUNK_W, N_TRUNK = 5.0, 3             # output trunks per net (Metal4)
+HEIGHT = 588.36                       # the core's height (the AFE's core band between the Cin arrays)
+TRUNK_W = 11.0                        # output trunks over the cascodes: OUTP Metal2, OUTN Metal3
+SHIELD_OPEN = 1.0                     # cascode cells: shield from this far above their bottom
 PWR_W, N_PWR = 6.0, 5                 # rows of Metal4 supply segments over each tail
 RAIL_GROW = {"VSS": 0.0, "VDD": 10.0}  # the AFE's Metal5 rails: supply rows grown by this (afe_lay)
 AVDD_RAIL_X0 = 304.0                  # the AFE's AVDD rails start here (core x, between the columns)
@@ -65,6 +71,7 @@ WIDE_KEEP = 0.31                      # wide Metal3 (over 10 um both ways) to a 
 INP_PAD, INN_PAD = 4.0, 3.4           # tap pads (Metal2): below the INP gate bar, above the INN bar
 ROUTER_X = {"N": 5.0, "P": 9.0}       # router access left free on the east of each tail (VBN, VBP)
 EDGE_BAR = 4.0                        # Metal5 bars joining the INP strips (top edge), INN (bottom)
+STUB_X = 26.0                         # the AFE's offdac_p INP stub lands on the INP bar west of here
 
 
 def split(total, per):
@@ -107,10 +114,18 @@ def cells(b):
     C["ncas"] = an.multi_strip_cell(b, "afec_ncas", "n", interleave(
         dev_strips("OUTN", "GNCP", "DNP", 512, 1.0, TN, {"DNP": 6, "OUTN": 6}, ["DNP", "OUTN"], WF),
         dev_strips("OUTP", "GNCN", "DNN", 512, 1.0, TN, {"DNN": 6, "OUTP": 6}, ["DNN", "OUTP"], WF)), bulk="VSS")
-    nb = []
-    for d, gt, n, l in (("GNCP", "DNP", 32, 4.0), ("GNCN", "DNN", 32, 4.0), ("GPCP", "BLN", 40, 8.0),
-                        ("GPCN", "BLN", 40, 8.0), ("BLN", "BLN", 8, 8.0)):
-        nb += dev_strips(d, gt, "VSS", n, l, TN, order=["VSS", d])
+    # NMOS boosters in four strips over the column's width (the column's top keeps a band
+    # free for the output trunks): XGNCPB / XGNCNB on their common VSS like a pair (32 + 32
+    # fingers, L4), then XGPCPL / XGPCNL / XBLND, all gated by BLN on VSS (40 + 40 + 8 fingers,
+    # L8), by two-finger units sharing a drain, A B B A with the diode's units mid-strip
+    nb = [dict(w=10.0, l=4.0, seq=pair_seq("GNCP", "DNP", "GNCN", "DNN", "VSS", 8),
+               gates={"DNP": ("t", 0), "DNN": ("t", 1)}, order=["VSS", "GNCP", "GNCN"])]
+    u = ["GPCP", "GPCN", "GPCN", "GPCP"] * 10
+    for us in (u[0:6] + ["BLN"] * 2 + u[6:13], u[13:19] + ["BLN"] * 2 + u[19:26], u[26:40]):
+        seq = ["VSS"]
+        for d in us:
+            seq += ["BLN", d, "BLN", "VSS"]
+        nb.append(dict(w=10.0, l=8.0, seq=seq, order=["VSS", "GPCP", "GPCN"] + ["BLN"] * ("BLN" in us)))
     C["nboost"] = an.multi_strip_cell(b, "afec_nboost", "n", nb, bulk="VSS")
     C["ppair"] = an.multi_strip_cell(b, "afec_ppair", "p", pair_strips(
         "DPP", "INP", "DPN", "INN", "SP", 8192, 0.28, TP, {"SP": 4, "DPP": 4, "DPN": 4}, WF), bulk="VDD")
@@ -139,6 +154,30 @@ def minus(lo, hi, cuts):
     if x < hi:
         out.append((x, hi))
     return out
+
+
+def mslot_openings(plate, vias):
+    """1 x 2 um openings (a Region) in a Metal4 plate wherever 30 x 30 um of it stay without
+    a via (vias: grown by 0.2 um), as the deck's MSLOT4.1 sees it: 20 um apart over each
+    such part, none on a via."""
+    k = 15000
+    opening = lambda r: r.sized(0, -k, 2).sized(-k, 0, 2).sized(0, k, 2).sized(k, 0, 2)
+    holes = g.pya.Region()
+    for _ in range(5):
+        bad = opening(opening(plate - holes) - vias)
+        if bad.is_empty():
+            return holes
+        for poly in bad.each():
+            for t in poly.decompose_trapezoids():
+                bb = t.bbox()
+                nx, ny = max(1, round(bb.width() / 20000)), max(1, round(bb.height() / 20000))
+                for i in range(nx):
+                    for j in range(ny):
+                        cx = bb.left + int((i + 0.5) * bb.width() / nx)
+                        cy = bb.bottom + int((j + 0.5) * bb.height() / ny)
+                        holes.insert(g.pya.Box(cx - 1000, cy - 500, cx + 1000, cy + 500))
+        holes = holes.not_interacting(vias)
+    raise RuntimeError("MSLOT4.1 openings did not converge")
 
 
 def strap_plan(x_lo, x_hi, supply_x, sites):
@@ -354,7 +393,7 @@ def build():
             y += C[key].height + 3.0
         tops[side] = y - 3.0
     pd = {p.name: p for p in placed}
-    height = max(tops.values()) + 6.0
+    height = HEIGHT
     width = xs["P"] + max(C[k].width for k in col["P"]) + 4.0 + 6.0
 
     def common(*keys, free=5.0):
@@ -370,27 +409,64 @@ def build():
         bars = bl.lanes(b, [pd[k.upper()] for k in keys], lx)
         for n, segs in bars.items():
             lanes.setdefault(n, []).extend(segs)
-    # ---- output trunks (Metal4) over the cascodes of both columns, to the east edge
-    vias3 = []
-    y_cas = max(pd["NCAS"].y, pd["PCAS"].y)
-    yt0 = y_cas + 4.0
+    # ---- output trunks in a band over both columns' cascodes, shielded from the AFE's INP
+    # Metal5 (over the cascodes to the top edge) by Metal4 (below): OUTP on Metal2, OUTN on
+    # Metal3 above it, the OUT lanes run up into them (tracker D6: Metal4 trunks under the
+    # INP Metal5 gave 0.6 pF INP-OUT and HD2 -70 dBc)
+    vias3, band = [], []
+    y_band = max(tops.values()) + 1.0
+    yt = {"OUTP": (y_band, y_band + TRUNK_W), "OUTN": (y_band + TRUNK_W + 1.5, y_band + 2 * TRUNK_W + 1.5)}
     ports_out = {}
-    for k in range(N_TRUNK):
-        for j, n in enumerate(("OUTP", "OUTN")):
-            y1 = yt0 + (2 * k + j) * (TRUNK_W + 2.0)
-            segs = lanes[n]
-            b.box("metal4", min(s[1] for s in segs), y1, width, y1 + TRUNK_W)
-            for s in segs:
-                if s[2] <= y1 and y1 + TRUNK_W <= s[4]:
-                    b.vias("via3", s[1], y1, s[3], y1 + TRUNK_W)
-                    vias3.append((s[1], y1, s[3], y1 + TRUNK_W))
-                elif min(s[4], y1 + TRUNK_W) - max(s[2], y1) >= 1.0:     # a lane ending on the trunk
-                    ya, yc = max(s[2], y1), min(s[4], y1 + TRUNK_W)
-                    b.vias_fit("via3", s[1], ya, s[3], yc)
-                    vias3.append((s[1], ya, s[3], yc))
-            ports_out.setdefault(n, []).append(("metal4", min(s[1] for s in segs), y1, width, y1 + TRUNK_W))
-    top_cas = min(pd["NCAS"].y + C["ncas"].height, pd["PCAS"].y + C["pcas"].height)
-    assert yt0 + 2 * N_TRUNK * (TRUNK_W + 2.0) < top_cas, "trunks do not fit over the cascodes"
+    for n, lay in (("OUTP", "metal2"), ("OUTN", "metal3")):
+        y1, y2 = yt[n]
+        xw = min(s[1] for s in lanes[n])
+        b.box(lay, xw, y1, width, y2)
+        band.append((lay, (xw, y1, width, y2), n))
+        ports_out[n] = (lay, xw, y1, width, y2)
+        for xl in sorted({s[1] for s in lanes[n]}):
+            ss = [s for s in lanes[n] if s[1] == xl]
+            xr, top_ = ss[0][3], max(s[4] for s in ss)
+            ext = (xl, top_ - 0.5, xr, y2 if n == "OUTP" else y1 + 0.5)
+            b.box("metal3", *ext)
+            lanes[n].append(("metal3",) + ext)
+            if n == "OUTP":
+                b.vias_fit("via2", xl, y1, xr, y2)
+    # the shield: a plate over the band up to the top edge, and one over each column's
+    # cascode cell, the whole cell wide, from SHIELD_OPEN above its bottom up to the band (the
+    # cells' own OUT straps and drains are Metal2 and Metal1). The N column's plate and the
+    # band west of the P column are on VSS, the P column's plate and the band over it on VDD:
+    # the columns' supply lanes run up under them to the OUTP trunk's top (via3), which also
+    # breaks up the plates for MSLOT4.1 (1 x 2 um openings where no via does). The router
+    # reaches the cascodes' gate bars from below on Metal3 between the lanes. West of STUB_X
+    # the core's top EDGE_BAR + 0.4 um stay free of Metal4 (the AFE lands offdac_p's INP stub
+    # there, on the INP bar). (Tracker D6: an opening along each P cascode gate bar, the cell
+    # ends and the 4 um between the OUTN trunk and the top edge left 17 fF INP-OUTN.)
+    um = lambda v: int(round(v * 1000))
+    rect = lambda *bx: g.pya.Region(g.pya.Box(*[um(v) for v in bx]))
+    y_low = yt["OUTN"][1] + 0.5
+    assert y_low <= height - EDGE_BAR - 0.4, "the output trunks do not fit under the top edge"
+    split, x_w, y_top = pd["PCAS"].x - 3.0, pd["NCAS"].x - 0.5, height - 0.4
+    shield = {"VSS": rect(x_w, y_band - 0.6, split - 0.3, y_top) - rect(x_w, y_low, STUB_X, y_top),
+              "VDD": rect(split + 0.3, y_band - 0.6, width - 1.0, y_top)}
+    for side, key, net in (("N", "NCAS", "VSS"), ("P", "PCAS", "VDD")):
+        p = pd[key]
+        shield[net] += rect(p.x - 0.5, p.y + SHIELD_OPEN, p.x + p.cell.width + 0.5, y_band - 0.6)
+        for xl in lx_side[side][net]:
+            ss = [sg for sg in lanes[net] if sg[1] == xl]
+            xr = ss[0][3]
+            ext = (xl, max(sg[4] for sg in ss) - 0.5, xr, y_band + TRUNK_W)
+            b.box("metal3", *ext)
+            lanes[net].append(("metal3",) + ext)
+            b.vias_fit("via3", xl, p.y + SHIELD_OPEN + 0.3, xr, y_band + TRUNK_W)
+            vias3.append((xl, p.y + SHIELD_OPEN + 0.3, xr, y_band + TRUNK_W))
+    vreg = g.pya.Region([g.pya.Box(*[um(v) for v in bx]) for bx in vias3]).sized(um(0.2))
+    for net, plate in shield.items():
+        plate.merge()
+        b.cell.shapes(b.li("metal4")).insert(plate - mslot_openings(plate, vreg))
+        for poly in plate.each():                   # (router: 0.3 um to wide Metal4, M4.2b)
+            for t in poly.decompose_trapezoids():
+                x1, y1, x2, y2 = [v / 1000 for v in (t.bbox().left, t.bbox().bottom, t.bbox().right, t.bbox().top)]
+                band.append(("metal4", (x1 - 0.05, y1 - 0.05, x2 + 0.05, y2 + 0.05), net))
     # ---- supply rows over the tails; the AFE's Metal5 rails cover them (afe_lay.wiring)
     rows = {}
     for net, key in (("VSS", "ntail"), ("VDD", "ptail")):
@@ -434,8 +510,16 @@ def build():
             continue
         xc = sum(s[1] + s[3] for s in keep) / (2 * len(keep))
         nets[n] = keep + [min(lanes[n], key=lambda s: abs(s[1] - xc))]
-    for n in ("OUTP", "OUTN"):                 # the trunks (not every one meets a lane of its net)
-        nets[n] = ports_out[n]
+    for n in ("OUTP", "OUTN"):                 # the trunks join all lanes of their net
+        nets.pop(n, None)
+    # the P cascodes' gate bars (GPCN's two between GPCP's two) are reached from below, on
+    # Metal3 between the lanes under the shield: each net on its own half of its bars, or
+    # GPCP's pin reserves (route.Router) close the column GPCN starts in
+    pc = pd["PCAS"]
+    xm = pc.x + pc.cell.width / 2
+    for n, east in (("GPCP", True), ("GPCN", False)):
+        nets[n] = [s if s not in pc.pins[n] else (s[0], max(s[1], xm + 2.0), s[2], s[3], s[4]) if east
+                   else (s[0], s[1], s[2], min(s[3], xm - 2.0), s[4]) for s in nets[n]]
     for n in ("INP", "INN"):
         nets.pop(n)
     # ---- ports
@@ -451,17 +535,20 @@ def build():
     for n, pin in pp.items():
         nets.setdefault(n, []).append(pin)
     for n in ("OUTP", "OUTN"):
-        s = ports_out[n][0]
-        b.label("metal4", n, width - 1.5, (s[2] + s[4]) / 2)
+        lay, _, y1, _, y2 = ports_out[n]
+        b.label(lay, n, width - 1.5, (y1 + y2) / 2)
     for n in ("VSS", "VDD"):
         s = pwr[n][0]
         b.label("metal4", n, (s[1] + s[3]) / 2, (s[2] + s[4]) / 2)
     r = route.Router(gx0, -1.5, width, height + 0.5, px=lg.PITCH)
     for bx in vias3:
         r.via_keepout(*bx)
-    for n, segs in list(lanes.items()) + list(pwr.items()) + list(ports_out.items()):
+    for n, segs in list(lanes.items()) + list(pwr.items()):
         for s in segs:
             r.obstacle(*s, n)
+    for lay, box, n in band:
+        if lay != "metal2":
+            r.obstacle(lay, *box, n)
     for lay, box, n in fixed:
         r.obstacle(lay, *box, n)
     failed = r.route(nets, rounds=6)

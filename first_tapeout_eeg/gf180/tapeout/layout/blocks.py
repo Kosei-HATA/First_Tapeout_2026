@@ -203,3 +203,70 @@ def cell_shapes(p, layer):
         out.append((p.x + x1, y1, p.x + x2, y2))
         it.next()
     return out
+
+
+class Unit:
+    """A unit cell (one element of an array): parts stacked bottom to top above a set of
+    Metal4 bus rows that span the whole width, so that units placed side by side join
+    their buses; the unit's own nets are routed inside it (route.Router) with the bus
+    rows as fixed shapes of their nets. Routed shapes keep `margin` from the side edges.
+    Port nets get a Metal3 stub at the top edge."""
+
+    def __init__(self, cell, width, height, pins, ports):
+        self.cell, self.width, self.height, self.pins, self.ports = cell, width, height, pins, ports
+
+
+def unit_cell(b, name, parts, buses, ports, width=None, gap=1.2, margin=0.8, bus_w=1.0, bus_gap=0.8,
+              px=lg.PITCH, gx0=None):
+    """parts: [(cell, {cell pin: net}, x)] bottom to top (x = left offset, None: 1.0 um);
+    buses: [net] bottom to top; ports: [net] (top-edge Metal3 stubs, spread over the width).
+    Returns a Unit; its .pins hold the bus rows ('metal4') and the port stubs ('metal3')."""
+    top = b.new_cell(name)
+    c = g.Cell(b.ly, top.cell) if not isinstance(top, g.Cell) else top
+    nets, fixed = {}, []
+    y = 0.6
+    bus_y = {}
+    w_max = max(cell.width + (x if x is not None else 1.0) for cell, _, x in parts) + margin + 0.2
+    width = max(width or 0.0, w_max)
+    for n in buses:
+        c.box("metal4", 0.0, y, width, y + bus_w)
+        bus_y[n] = (y, y + bus_w)
+        fixed.append(("metal4", (0.0, y, width, y + bus_w), n))
+        nets.setdefault(n, []).append(("metal4", 0.0, y, width, y + bus_w))
+        y += bus_w + bus_gap
+    y += gap
+    placed = []
+    for cell, cmap, x in parts:
+        x = 1.0 if x is None else x
+        c.place(cell.cell, x, y)
+        p = Placed(cell, x, y, False, cell.cell.name)
+        placed.append(p)
+        for pn, segs in p.pins.items():
+            if pn in cmap:
+                nets.setdefault(cmap[pn], []).extend(segs)
+        y += getattr(cell, "height", lg.H) + gap
+    height = y + 2.0
+    pins = {n: [("metal4", 0.0, a, width, bb)] for n, (a, bb) in bus_y.items()}
+    gx0 = (margin + 0.24) if gx0 is None else gx0
+    snap = lambda x: gx0 + round((x - gx0) / px) * px
+    for k, n in enumerate(ports):
+        x = snap(margin + (width - 2 * margin) * (k + 0.5) / len(ports))
+        c.box("metal3", x - 0.19, height - 1.6, x + 0.19, height)
+        fixed.append(("metal3", (x - 0.19, height - 1.6, x + 0.19, height), n))
+        nets.setdefault(n, []).append(("metal3", x - 0.19, height - 1.6, x + 0.19, height))
+        pins[n] = [("metal3", x - 0.19, height - 1.6, x + 0.19, height)]
+    r = route.Router(gx0, 0.0, width - margin, height - 0.2, px=px)
+    # keep the router's shapes clear of the side edges: block the first/last columns
+    r.obstacle("metal3", -1.0, -1.0, margin - 0.2, height + 1.0)
+    r.obstacle("metal4", -1.0, -1.0, margin - 0.2, height + 1.0)
+    for lay, box, n in fixed:
+        r.obstacle(lay, *box, n)
+    for p in placed:   # wires already inside the parts (e.g. driver buses) are obstacles
+        for lay in ("metal3", "metal4"):
+            for bx in cell_shapes(p, lay):
+                r.obstacle(lay, *bx)
+    failed = r.route({n: v for n, v in nets.items() if len(v) > 1}, rounds=6)
+    if failed:
+        raise RuntimeError(f"{name}: unrouted {failed}")
+    r.draw(c)
+    return Unit(c, width, height, pins, ports)

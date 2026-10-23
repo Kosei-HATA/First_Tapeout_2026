@@ -185,6 +185,15 @@ class Router:
     def route(self, nets, rounds=4):
         """nets: {name: [pin, ...]}. Returns the list of failed net names."""
         order = sorted(nets, key=lambda n: self._hpwl(nets[n]))
+        # Metal3 / Metal4 pins are wires of their nets: other nets keep clear of them
+        known = {(lay, tuple(round(v, 4) for v in box), n) for lay, box, n in self.fixed}
+        for n, pins in nets.items():
+            for pin in pins:
+                if pin[0] in ("metal3", "metal4"):
+                    key = (pin[0], tuple(round(v, 4) for v in pin[1:]), n)
+                    if key not in known:
+                        known.add(key)
+                        self.fixed.append((pin[0], tuple(pin[1:]), n))
         names = sorted(set(nets) | {n for _, _, n in self.fixed if n})
         self.index = {n: k for k, n in enumerate(names)}
         for _ in range(rounds):

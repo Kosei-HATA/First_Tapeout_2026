@@ -33,71 +33,86 @@ def strip_cell(b, name, kind, w, l, seq, gates=None, bulk=None, order=None, labe
     """A guarded strip as a cell (lower-left corner of the ring at (0, 0)).
     kind 'n'/'p'; seq as fets.Strip; gates as fets.draw_strip (default: all on top);
     bulk: the ring's net (default VSS for NMOS, VDD for PMOS); order: S/D nets in strap
-    order from the bottom (default: first appearance). Returns an AnalogCell."""
-    s = f.Strip(kind, w, l, seq)
-    bulk = bulk or ("VSS" if kind == "n" else "VDD")
-    nets = order or list(dict.fromkeys(s.sd))
+    order from the bottom (default: first appearance; nets left out get no strap).
+    Returns an AnalogCell."""
+    return multi_strip_cell(b, name, kind, [dict(w=w, l=l, seq=seq, gates=gates, order=order)], bulk, label)
+
+
+def _plan(spec):
+    """Vertical plan of one strip: (Strip, gates, inside, outside, below, bar_b, bar_t)."""
+    s = f.Strip(spec.get("kind"), spec["w"], spec["l"], spec["seq"])
+    nets = spec.get("order") or list(dict.fromkeys(s.sd))
     gnets = list(dict.fromkeys(s.g))
-    if gates is None:
-        gates = {n: ("t", k) for k, n in enumerate(gnets)}
-    nfit = max(1, int((w - 0.6) / STRAP_P) + 1)       # straps that fit over the COMP
+    gates = spec.get("gates") or {n: ("t", k) for k, n in enumerate(gnets)}
+    nfit = max(1, int((s.w - 0.6) / STRAP_P) + 1)       # straps that fit over the COMP
     inside, outside = nets[:nfit], nets[nfit:]
     if outside and any(gates[n][0] == "b" for n in gnets):
-        raise ValueError(f"{name}: straps below the strip need all gate bars on top")
+        raise ValueError("straps below the strip need all gate bars on top")
     lev_t = max([gates[n][1] for n in gnets if gates[n][0] == "t"] + [-1]) + 1
     lev_b = max([gates[n][1] for n in gnets if gates[n][0] == "b"] + [-1]) + 1
     below = len(outside) * STRAP_P + (0.6 if outside else 0.0)
     bar_t = (f.PO_EXT + lev_t * f.GBAR + 0.1) if lev_t else 0.0
     bar_b = (f.PO_EXT + lev_b * f.GBAR + 0.1) if lev_b else 0.0
-    # geometry: ring, then GAP, then (straps below / bars below), strip, bars above, GAP
+    return s, gates, inside, outside, max(below, bar_b), bar_t
+
+
+def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
+    """Several strips of one kind stacked inside one guard ring (and one Nwell for PMOS).
+    specs: list of dict(w, l, seq, gates=None, order=None), bottom to top. Every strip
+    gets its S/D straps across the whole inside of the ring and Metal2 pins over its gate
+    bars (see strip_cell). Returns an AnalogCell."""
+    bulk = bulk or ("VSS" if kind == "n" else "VDD")
+    plans = [_plan(dict(sp, kind=kind)) for sp in specs]
     m = GAP + (f.NW_ENC if kind == "p" else 0.0)
     x_s = RING_W + m + 0.5                          # strip COMP left (0.5 for dummy poly)
-    y_s = RING_W + m + max(below, bar_b)
-    width = x_s + s.length + 0.5 + m + RING_W
-    height = y_s + w + bar_t + m + RING_W
+    width = x_s + max(pl[0].length for pl in plans) + 0.5 + m + RING_W
     c = b.new_cell(name)
-    # S/D straps over the COMP: centred in the strip, STRAP_P apart
-    k = len(inside)
-    ys_in = [y_s + w / 2 + (j - (k - 1) / 2) * STRAP_P for j in range(k)]
-    ys_out = [y_s - 0.6 - (j + 0.5) * STRAP_P for j in range(len(outside))][::-1]
-    ext = {}
-    yc = f._contacts(y_s + f.CO_ENC, y_s + w - f.CO_ENC)
-    col_bot = yc[0] - f.CO / 2 - f.M1_ENC
-    for n, y in zip(outside[::-1], ys_out[::-1]):
-        ext[n] = (col_bot - (y - 0.3), 0.0)
-    geo = f.draw_strip(c, s, x_s, y_s, gates=gates, ext=ext, well=False)
-    # dummy poly at both ends (field poly, not over the COMP)
-    for xd in (x_s - 0.24 - 0.28, x_s + s.length + 0.24):
-        c.box("poly2", xd, y_s - f.PO_EXT, xd + 0.28, y_s + w + f.PO_EXT)
     pins = {}
-    # S/D straps run across the whole inside of the ring (more router columns per pin)
     sx1, sx2 = RING_W + 0.4, width - RING_W - 0.4
-    for n, y in list(zip(inside, ys_in)) + list(zip(outside[::-1], ys_out[::-1])):
-        x1, x2 = f.strap(c, geo, n, y, w=0.5, x1=sx1, x2=sx2)
-        pins.setdefault(n, []).append(("metal2", x1, y - 0.25, x2, y + 0.25))
-    # gate pins: Metal2 over each bar, widened to PIN_MIN where the bars of that level
-    # leave room (route.Router needs a grid column inside a pin)
-    by_level = {}
-    for n, bx in geo.bars.items():
-        by_level.setdefault(gates[n], []).append((bx[0], n))
     lo_x, hi_x = RING_W + GAP, width - RING_W - GAP
-    for lev, items in by_level.items():
-        items.sort()
-        for k, (_, n) in enumerate(items):
-            x1, y1, x2, y2 = geo.bars[n]
-            left = geo.bars[items[k - 1][1]][2] + 0.3 if k > 0 else lo_x
-            right = geo.bars[items[k + 1][1]][0] - 0.3 if k + 1 < len(items) else hi_x
-            grow = max(0.0, (PIN_MIN - (x2 - x1)) / 2)
-            px1, px2 = max(left, x1 - grow), min(right, x2 + grow)
-            if px2 - px1 < PIN_MIN:            # shifted against a neighbour: use the room on the other side
-                px1, px2 = max(left, px2 - PIN_MIN), min(right, px1 + PIN_MIN)
-            c.box("metal2", px1, y1, px2, y2)
-            for kk, gn in enumerate(s.g):
-                if gn == n:
-                    xg = x_s + s.gx[kk] + l / 2
-                    c.box("via1", xg - 0.13, (y1 + y2) / 2 - 0.13, xg + 0.13, (y1 + y2) / 2 + 0.13)
-            pins.setdefault(n, []).append(("metal2", px1, y1, px2, y2))
-    # ring (and the Nwell of a PMOS strip, covering the ring)
+    y = RING_W + m
+    for s, gates, inside, outside, below, bar_t in plans:
+        y_s = y + below
+        w = s.w
+        k = len(inside)
+        ys_in = [y_s + w / 2 + (j - (k - 1) / 2) * STRAP_P for j in range(k)]
+        ys_out = [y_s - 0.6 - (j + 0.5) * STRAP_P for j in range(len(outside))][::-1]
+        ext = {}
+        yc = f._contacts(y_s + f.CO_ENC, y_s + w - f.CO_ENC)
+        col_bot = yc[0] - f.CO / 2 - f.M1_ENC
+        for n, yy in zip(outside[::-1], ys_out[::-1]):
+            ext[n] = (col_bot - (yy - 0.3), 0.0)
+        geo = f.draw_strip(c, s, x_s, y_s, gates=gates, ext=ext, well=False)
+        for xd in (x_s - 0.24 - 0.28, x_s + s.length + 0.24):    # dummy poly at both ends
+            c.box("poly2", xd, y_s - f.PO_EXT, xd + 0.28, y_s + w + f.PO_EXT)
+        # S/D straps across the whole inside of the ring (more router columns per pin)
+        for n, yy in list(zip(inside, ys_in)) + list(zip(outside[::-1], ys_out[::-1])):
+            x1, x2 = f.strap(c, geo, n, yy, w=0.5, x1=sx1, x2=sx2)
+            pins.setdefault(n, []).append(("metal2", x1, yy - 0.25, x2, yy + 0.25))
+        # gate pins: Metal2 over each bar, widened to PIN_MIN where the bars of that level
+        # leave room (route.Router needs a grid column inside a pin)
+        by_level = {}
+        for n, bx in geo.bars.items():
+            by_level.setdefault(gates[n], []).append((bx[0], n))
+        for lev, items in by_level.items():
+            items.sort()
+            for kk, (_, n) in enumerate(items):
+                x1, y1, x2, y2 = geo.bars[n]
+                left = geo.bars[items[kk - 1][1]][2] + 0.3 if kk > 0 else lo_x
+                right = geo.bars[items[kk + 1][1]][0] - 0.3 if kk + 1 < len(items) else hi_x
+                grow = max(0.0, (PIN_MIN - (x2 - x1)) / 2)
+                px1, px2 = max(left, x1 - grow), min(right, x2 + grow)
+                if px2 - px1 < PIN_MIN:        # against a neighbour: use the room on the other side
+                    px1, px2 = max(left, px2 - PIN_MIN), min(right, px1 + PIN_MIN)
+                c.box("metal2", px1, y1, px2, y2)
+                for j, gn in enumerate(s.g):
+                    if gn == n:
+                        xg = x_s + s.gx[j] + s.ls[j] / 2
+                        c.box("via1", xg - 0.13, (y1 + y2) / 2 - 0.13, xg + 0.13, (y1 + y2) / 2 + 0.13)
+                pins.setdefault(n, []).append(("metal2", px1, y1, px2, y2))
+        y = y_s + w + bar_t + gap
+    height = y - gap + m + RING_W
+    # ring (and the Nwell of a PMOS cell, covering the ring)
     f.ring(c, "p" if kind == "n" else "n", 0, 0, width, height, w=RING_W, well=False)
     if kind == "p":
         c.box("nwell", -0.22, -0.22, width + 0.22, height + 0.22)
@@ -192,6 +207,8 @@ def mim_cell(b, name, side, top, bot, n=1, label=True):
             c.label(lay, net, (x1 + x2) / 2, (y1 + y2) / 2)
     cell = AnalogCell(c, width, height, pins)
     cell.keepout = (xs[0] - 0.6, y0 - 0.6, xe + 0.6, yt + 2.0)
+    # Metal4 must keep 1.2 um from the bottom plates and their tabs (MIMTM.1)
+    cell.keepout4 = (xs[0] - 1.9, y0 - 1.9, xe + 1.9, yt + 3.2)
     return cell
 
 

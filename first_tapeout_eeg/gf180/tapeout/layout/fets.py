@@ -49,19 +49,28 @@ def _contacts(lo, hi):
 
 
 class Strip:
-    """A MOS finger strip (see the module doc). kind 'n' or 'p'; w, l in um."""
+    """A MOS finger strip (see the module doc). kind 'n' or 'p'; w in um; l in um, or a
+    list with one length per finger (fingers of different lengths sharing diffusion)."""
 
     def __init__(self, kind, w, l, seq):
         if len(seq) % 2 != 1 or len(seq) < 3:
             raise ValueError("seq must be sd0, g1, sd1, ..., gn, sdn")
         if w < 2 * CO_ENC + CO:
             raise ValueError(f"finger width {w} um too small for a contact")
-        self.kind, self.w, self.l, self.seq = kind, w, l, list(seq)
+        self.kind, self.w, self.seq = kind, w, list(seq)
         self.sd, self.g = self.seq[0::2], self.seq[1::2]
         self.n = len(self.g)
-        self.gx = [SD_END + k * (l + SD_IN) for k in range(self.n)]   # gate left edges
-        self.length = 2 * SD_END + self.n * l + (self.n - 1) * SD_IN
-        self.sdx = [SD_END - CO_GATE - CO / 2] + [x + l + CO_GATE + CO / 2 for x in self.gx]
+        self.ls = list(l) if isinstance(l, (list, tuple)) else [l] * self.n
+        if len(self.ls) != self.n:
+            raise ValueError("one gate length per finger")
+        self.l = self.ls[0]
+        self.gx = []                                                  # gate left edges
+        x = SD_END
+        for lk in self.ls:
+            self.gx.append(x)
+            x += lk + SD_IN
+        self.length = x - SD_IN + SD_END
+        self.sdx = [SD_END - CO_GATE - CO / 2] + [gx + lk + CO_GATE + CO / 2 for gx, lk in zip(self.gx, self.ls)]
 
     def devices(self):
         """(gate net, sd left, sd right) per finger"""
@@ -94,7 +103,7 @@ def draw_strip(c, s, x0, y0, gates=None, ext=None, well=True):
     well:  draw the Nwell of a PMOS strip (False when the caller draws one well around
            several strips).
     Returns a StripGeom."""
-    w, l = s.w, s.l
+    w = s.w
     nets = list(dict.fromkeys(s.g))
     if gates is None:
         gates = {n: ("t", k) for k, n in enumerate(nets)}
@@ -109,6 +118,7 @@ def draw_strip(c, s, x0, y0, gates=None, ext=None, well=True):
     for k, net in enumerate(s.g):
         side, lev = gates[net]
         gx = x0 + s.gx[k]
+        l = s.ls[k]
         cx = gx + l / 2
         if side == "T":
             c.box("poly2", gx, y0 - PO_EXT, gx + l, lev)

@@ -348,6 +348,14 @@ def to_cdl(netlist_files, top):
                                                               "c_length") else f"{x:.6g}"
                     vals.append(f"{k}={v}")
                 line = " ".join([w[0]] + pos + vals)
+                # resistors and capacitors with m: m separate devices (KLayout combines them back)
+                mk = [v for v in vals if v.lower().startswith("m=")]
+                if mk and pos[-1] in _DEV and _DEV[pos[-1]] in "RC":
+                    mm = int(round(spice_num(mk[0].split("=", 1)[1], env)))
+                    rest = [v for v in vals if not v.lower().startswith("m=")]
+                    for k in range(mm):
+                        body.append(_device_line(" ".join([f"{w[0]}_m{k}"] + pos + rest)))
+                    continue
             body.append(_device_line(line))
         out.append(f".subckt {vname} " + " ".join(ports))
         out.extend(body)

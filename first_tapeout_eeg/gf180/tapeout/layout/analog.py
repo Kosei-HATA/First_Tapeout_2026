@@ -250,3 +250,90 @@ def moscap_cell(b, name, kind, gate, bulk, lc=28.6, wc=44.0, label=True):
             lay, a, b_, c_, d = segs[0]
             c.label(lay, net, (a + c_) / 2, (b_ + d) / 2)
     return AnalogCell(c, x2 + 0.4, y2 + 0.4, pins)
+
+
+def ladder_cell(b, name, nodes, l=2.0, w=2.0, per_row=20, sub="VSS", taps=(), gap=0.6, row_gap=1.2, label=True):
+    """Series chain of ppolyf_u_1k resistors (body l x w um) laid out as a serpentine:
+    nodes = [n0, n1, ..., nN] names the chain's nodes (N resistors; n0 / nN are the
+    ends). Resistors of a row are linked head to head with Metal1; rows turn at
+    alternate ends. Each end and each node in `taps` gets a Metal2 pad (pin). The
+    heads of neighbouring resistors share one PPLUS box (PP.2), every resistor keeps its
+    own SAB box (HRES.10: PPLUS over SAB by 0.1 exactly); one RESISTOR box per row.
+    Substrate-tap ring (net sub). Returns an AnalogCell."""
+    n = len(nodes) - 1
+    rows = [list(range(i, min(i + per_row, n))) for i in range(0, n, per_row)]
+    pitch = l + 2 * f.RES_HEAD + gap
+    m = RING_W + 0.8 + f.RES_RX
+    c = b.new_cell(name)
+    ycur = m + 1.6 + f.RES_RY
+    pos = {}                                   # resistor index -> (x_body, y_body, direction)
+    for r, idx in enumerate(rows):
+        yb = ycur
+        for j, k in enumerate(idx):
+            jj = j if r % 2 == 0 else (per_row - 1 - j)
+            xb = m + f.RES_HEAD + 1.6 + jj * pitch
+            pos[k] = (xb, yb, 1 if r % 2 == 0 else -1)
+        ycur = yb + w + row_gap
+    width = m + 1.6 + per_row * pitch + 1.6 + m
+    height = ycur - row_gap + f.RES_RY + 1.6 + m
+    heads = {}                                 # node index -> list of (x, y) head centres
+    for k, (xb, yb, d) in pos.items():
+        c.box("poly2", xb - f.RES_HEAD, yb, xb + l + f.RES_HEAD, yb + w)
+        c.box("res_mk", xb, yb, xb + l, yb + w)
+        c.box("sab", xb - f.RES_SAB_X, yb - f.RES_SAB_Y, xb + l + f.RES_SAB_X, yb + w + f.RES_SAB_Y)
+        ys = f._contacts(yb + f.CO_ENC, yb + w - f.CO_ENC)
+        ends = []
+        for xc in (xb - f.RES_CO - f.CO / 2, xb + l + f.RES_CO + f.CO / 2):
+            for y in ys:
+                c.box("contact", xc - f.CO / 2, y - f.CO / 2, xc + f.CO / 2, y + f.CO / 2)
+            c.box("metal1", xc - f.M1_COL / 2, ys[0] - f.CO / 2 - f.M1_ENC, xc + f.M1_COL / 2, ys[-1] + f.CO / 2 + f.M1_ENC)
+            ends.append((xc, yb + w / 2))
+        west, east = ends
+        a, bnode = (west, east) if d > 0 else (east, west)     # node k at a, node k+1 at b
+        heads.setdefault(k, []).append(a)
+        heads.setdefault(k + 1, []).append(bnode)
+    for r, idx in enumerate(rows):             # PPLUS over the heads, RESISTOR per row
+        yb = pos[idx[0]][1]
+        xs = sorted(pos[k][0] for k in idx)
+        c.box("resistor", xs[0] - f.RES_RX, yb - f.RES_RY, xs[-1] + l + f.RES_RX, yb + w + f.RES_RY)
+        for x in xs:
+            c.box("pplus", x - f.RES_PP, yb - 0.18, x, yb + w + 0.18)
+            c.box("pplus", x + l, yb - 0.18, x + l + f.RES_PP, yb + w + 0.18)
+        for x1, x2 in zip(xs, xs[1:]):         # merge the PPLUS between neighbours
+            c.box("pplus", x1 + l, yb - 0.18, x2, yb + w + 0.18)
+    pins = {}
+    for k, hs in heads.items():
+        if len(hs) == 2:                       # Metal1 link between the two heads of node k
+            (x1, y1), (x2, y2) = hs
+            if abs(y1 - y2) < 1e-6:
+                c.box("metal1", min(x1, x2) - 0.19, y1 - 0.4, max(x1, x2) + 0.19, y1 + 0.4)
+            else:                              # row turn: vertical link at the row end
+                c.box("metal1", x1 - 0.19, min(y1, y2) - 0.4, x1 + 0.19, max(y1, y2) + 0.4)
+        net = nodes[k]
+        if k in (0, n) or net in taps:
+            x, y = hs[0] if len(hs) == 1 else ((hs[0][0] + hs[1][0]) / 2, (hs[0][1] + hs[1][1]) / 2)
+            if len(hs) == 1:                   # chain end: pad out of the row end
+                x2 = x - 1.6 if (pos[0 if k == 0 else n - 1][2] > 0) == (k == 0) else x + 1.6
+                c.box("via1", x - 0.13, y - 0.13, x + 0.13, y + 0.13)
+                c.box("metal2", min(x, x2) - 0.19, y - 0.19, max(x, x2) + 0.19, y + 0.19)
+                pins.setdefault(net, []).append(("metal2", min(x, x2) - 0.19, y - 0.19, max(x, x2) + 0.19, y + 0.19))
+            else:
+                (x1, y1), (x2, y2) = hs
+                c.box("via1", x1 - 0.13, y1 - 0.13, x1 + 0.13, y1 + 0.13)
+                xa, xb2 = min(x1, x2) - 0.19, max(x1, x2) + 0.19
+                if xb2 - xa < 1.6:
+                    xa, xb2 = (xa + xb2) / 2 - 0.8, (xa + xb2) / 2 + 0.8
+                c.box("metal2", xa, y1 - 0.19, xb2, y1 + 0.19)
+                pins.setdefault(net, []).append(("metal2", xa, y1 - 0.19, xb2, y1 + 0.19))
+    f.ring(c, "p", 0, 0, width, height, w=RING_W, well=False)
+    c.box("metal2", 0, 0, width, RING_W)
+    x = 0.4
+    while x < width - 0.4:
+        c.box("via1", x - 0.13, RING_W / 2 - 0.13, x + 0.13, RING_W / 2 + 0.13)
+        x += 0.8
+    pins.setdefault(sub, []).append(("metal2", 0, 0, width, RING_W))
+    if label:
+        for net, segs in pins.items():
+            lay, x1, y1, x2, y2 = segs[0]
+            c.label(lay, net, (x1 + x2) / 2, (y1 + y2) / 2)
+    return AnalogCell(c, width, height, pins)

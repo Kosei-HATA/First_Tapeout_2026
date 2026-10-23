@@ -37,6 +37,7 @@ class Router:
         self.owner = [[[FREE] * self.ny for _ in range(self.nx)] for _ in range(2)]
         self.index = {}         # net name -> owner id
         self.stubs = {}         # column -> [(lo, hi, net)] of the via2 stubs
+        self.why = {}           # failed net -> reason (last round)
         self._fixing = False
         self.shapes = []        # (layer key, x1, y1, x2, y2, net)
         self.fixed = []         # (layer key, (x1, y1, x2, y2), net name or None): existing shapes
@@ -262,16 +263,24 @@ class Router:
             self._commit_node(n0, net)
             if s0:
                 self._commit_stub(s0, n0[1], net, name)
-        rest = [k for k in range(len(pins)) if k != k0]
-        tl = list(tree)[:200]
-        rest.sort(key=lambda k: min(abs(c[0][1] - t[1]) + abs(c[0][2] - t[2]) for c in cand[k][:20] for t in tl))
-        for k in rest:
-            targets = [(n, s) for n, s in self.access(pins[k], net)]
-            path = self._astar(net, list(tree), targets)
+        # grow the tree towards whichever remaining pin it reaches first (all remaining
+        # pins are targets of each search), so big nets get short Steiner trees
+        rest = set(k for k in range(len(pins)) if k != k0)
+        while rest:
+            owner = {}
+            for k in rest:
+                for n, st in self.access(pins[k], net):
+                    owner.setdefault(n, (k, st))
+            blocked = [k for k in rest if not any(o[0] == k for o in owner.values())]
+            if blocked:
+                self.why[name] = ("no access", [pins[k] for k in blocked])
+                return False
+            path = self._astar(net, list(tree), [(n, None) for n in owner])
             if path is None:
+                self.why[name] = ("unreachable", [pins[k] for k in rest][:4])
                 return False
             end = path[-1]
-            stub = dict(targets)[end]
+            k, stub = owner[end]
             for a, b in zip(path, path[1:]):
                 self._commit_edge(a, b, net, name)
             for n in path:
@@ -279,6 +288,11 @@ class Router:
                 tree.add(n)
             if stub:
                 self._commit_stub(stub, end[1], net, name)
+            rest.discard(k)
+            # a pin whose access nodes are already in the tree is joined too
+            for k2 in list(rest):
+                if pins[k2][0] != "metal2" and any(n in tree for n, _ in self.access(pins[k2], net)):
+                    rest.discard(k2)
         return True
 
     # ---- committing shapes

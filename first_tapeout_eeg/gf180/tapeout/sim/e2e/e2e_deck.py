@@ -57,7 +57,7 @@ def deck(a):
     nets = [os.path.join(AFE, "eeg_afe.spice"), os.path.join(AFE, "eeg_afe_clk.spice")]
     nets += [os.path.join(ad.ADC, n) for n in ad.NETS]
     incs = "\n".join(f".include {n}" for n in nets)
-    vec = ("v(sig) v(outp) v(outn) v(xadc.o1p) v(xadc.o1n) v(xadc.i1p) v(xadc.i1n) v(xadc.o2p) v(xadc.o2n) "
+    vec = ("v(sig) v(outp) v(outn) v(xadc.o1p) v(xadc.o1n) v(xadc.i1p) v(xadc.i1n) v(o2p) v(o2n) "
            "v(norm1) i(vavdd)")
     return f"""* E2E: eeg_afe -> eeg_adc, {a.corner} {a.temp:g} C, {a.amp * 1e3:g} mV pk {a.fsig:g} Hz on {a.vos * 1e3:g} mV
 .include {md.PDK}/design.ngspice
@@ -113,7 +113,7 @@ XA ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RSTA CIA NCIA CIB NCIB CDA NCDA CDB NC
 XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST 0 {sel}
 + {s2l}
 + {th}
-+ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ AVDD 0 DVDD 0 eeg_adc
++ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD 0 DVDD 0 eeg_adc
 XCTRL {th} DLOAD DRESET_EVENT AVDD 0 {sel}
 + {seln}
 + {s2l}

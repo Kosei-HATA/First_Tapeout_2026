@@ -1,0 +1,158 @@
+* eeg_core: the chip core of the GF180 EEG ADC (this rev), written by make_core_netlist.py
+* (do not edit). Blocks, their connections and the pad nets: see the script's doc string.
+.subckt eeg_core ELP ELN VCM VREFP_PAD VREFN_PAD ATP MCLK RESET_N SCLK CS_N MOSI MISO
++ MISO_OE DRDY_N RAW_DATA RAW_CLK AVDD AVSS DVDD DVSS
+* AFE, its clock driver and the driver's supply
+XAFE ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RSTA CIA NCIA CIB NCIB CDA NCDA CDB NCDB
++ OFPH OFS OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 OFEN0 OFEN1 OFEN2 OFEN3 CPF0 CPF1 CPF2 CPF3 AVDD AVSS eeg_afe
+XACLK CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB OFPH RSTA
++ AVDD_CLK AVSS_CLK eeg_afe_clk
+XRCKP AVDD_CLK AVDD AVSS ppolyf_u_1k r_length=2u r_width=20u
+XRCKN AVSS_CLK AVSS AVSS ppolyf_u_1k r_length=2u r_width=20u
+XDCK0 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK1 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK2 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK3 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK4 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK5 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK6 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK7 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK8 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDCK9 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+* ADC and its digital block
+XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO
++ SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30
++ SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30
++ TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30
++ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD DVSS eeg_adc
+XADIG DAC_LOAD DWA_EN MCLK ADC_RST_N TH_CAPTURE DVDD DVSS CODE0 CODE1 CODE2 CODE3 CODE4 SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 eeg_adc_dig
+* digital block
+XDIG ADC_RST_N AFE_RST CHOP CHOP1 CHOP_BLANK CHOP_EN CHOP_OUT CMP_STROBE CS_N DAC_CLK DAC_LOAD DRDY_N DWA_EN MCLK MISO MISO_OE MOSI OFS RAW_CLK RAW_DATA RESET_N SCLK TH_CAPTURE DVDD DVSS IB0 IB1 BN0 BN1 BP0 BP1 CODE0 CODE1 CODE2 CODE3 CODE4 CPF0 CPF1 CPF2 CPF3 OFEN0 OFEN1 OFEN2 OFEN3 OFM0 OFM1 OFM2 OFM3 OFM4 OFM5 OFM6 OFM7 OFM8 OFM9 TC0 TC1 TC2 TC3 TC4 ADC_ZERO DBG_SEL0 DBG_SEL1 eeg_digital_top
+* bias, references, test multiplexer
+XBIAS VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP VREFN IB1 IB0 BP1 BP0
++ BN1 BN0 AVDD AVSS eeg_bias
+XREF VREFP_PAD VREFN_PAD VREFP VREFN AVSS eeg_ref
+XTM ATP TC0 TC1 TC2 TC3 TC4 VCM VREFP VREFN VBN VBCM VBN1 VNC1 VPC1 VBPC2 VBNC2 ITST OUTP OUTN O2P O2N
++ AVDD AVSS eeg_testmux
+* decoupling: 72 x AVDD-AVSS, 48 x DVDD-DVSS (28.6 x 44.0 um cap_nmos_03v3)
+XDCA0 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA1 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA2 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA3 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA4 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA5 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA6 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA7 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA8 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA9 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA10 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA11 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA12 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA13 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA14 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA15 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA16 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA17 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA18 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA19 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA20 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA21 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA22 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA23 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA24 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA25 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA26 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA27 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA28 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA29 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA30 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA31 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA32 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA33 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA34 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA35 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA36 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA37 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA38 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA39 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA40 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA41 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA42 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA43 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA44 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA45 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA46 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA47 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA48 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA49 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA50 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA51 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA52 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA53 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA54 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA55 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA56 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA57 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA58 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA59 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA60 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA61 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA62 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA63 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA64 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA65 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA66 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA67 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA68 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA69 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA70 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCA71 AVDD AVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD0 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD1 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD2 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD3 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD4 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD5 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD6 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD7 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD8 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD9 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD10 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD11 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD12 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD13 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD14 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD15 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD16 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD17 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD18 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD19 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD20 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD21 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD22 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD23 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD24 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD25 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD26 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD27 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD28 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD29 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD30 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD31 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD32 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD33 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD34 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD35 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD36 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD37 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD38 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD39 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD40 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD41 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD42 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD43 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD44 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD45 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD46 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+XDCD47 DVDD DVSS cap_nmos_03v3 c_length=28.6u c_width=44.0u
+.ends eeg_core

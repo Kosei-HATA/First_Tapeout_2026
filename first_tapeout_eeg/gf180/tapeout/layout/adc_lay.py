@@ -60,7 +60,7 @@ X_DVDD = 1203.0                      # DVDD riser along the east edge (Metal5)
 # ports
 WEST_PORTS = ["INP", "INN", "VREFP", "VREFN", "VCM", "VBN1", "VNC1", "VPC1", "VBCM1", "VBPC2", "VBNC2",
               "IDP", "IDN", "IQ"]
-TOP_PORTS = ["CHOP1", "RST", "ADC_ZERO"]
+TOP_PORTS = ["CHOP1", "RST", "ADC_ZERO", "O2P", "O2N"]   # O2P / O2N: to the test multiplexer
 EAST_PORTS = ["MCLK", "ADC_RST_N", "TH_CAPTURE", "DAC_LOAD", "DWA_EN"] + [f"CODE{k}" for k in range(5)] + \
     ["DAC_CLK"]
 
@@ -263,39 +263,6 @@ def ports(a):
     return out
 
 
-def macro_pads(a, inst):
-    """Router pins outside a LibreLane macro for its edge pins: Metal3 pads (1.4 um tall)
-    on the outer ends of the horizontal Metal3 pins (west / east edges), so that each
-    holds a router node, and 3 um Metal2 extensions of the vertical Metal2 pins (north /
-    south edges). The macro's own pins are replaced by these in inst.pins."""
-    x1m, y1m, x2m, y2m = inst.bbox
-    for net, segs in inst.pins.items():
-        new = []
-        for seg in segs:
-            lay, x1, y1, x2, y2 = seg
-            box = None
-            if lay == "metal3" and y2 - y1 <= 1.0:
-                yc = (y1 + y2) / 2
-                if abs(x1 - x1m) < 0.01:
-                    box = ("metal3", x1 - 2.5, yc - 0.7, x1 + 0.5, yc + 0.7)
-                elif abs(x2 - x2m) < 0.01:
-                    box = ("metal3", x2 - 0.5, yc - 0.7, x2 + 2.5, yc + 0.7)
-            elif lay == "metal2":
-                if abs(y2 - y2m) < 0.01:
-                    box = ("metal2", x1, y2 - 0.5, x2, y2 + 3.0)
-                elif abs(y1 - y1m) < 0.01:
-                    box = ("metal2", x1, y1 - 3.0, x2, y1 + 0.5)
-            if box is None:
-                new.append(seg)
-                continue
-            if box[0] == "metal3":
-                a.wire(*box, net)
-            else:
-                a.box(*box)
-            new.append(box)
-        inst.pins[net] = new
-
-
 def build():
     a = A.Assembly(TOP)
     nets = {}
@@ -349,7 +316,7 @@ def build():
         {"RST_N": "ADC_RST_N", "VDD": "DVDD", "VSS": "DVSS"},
         **{f"SEL1[{k}]": f"SEL1_{k}" for k in range(31)}, **{f"SEL2[{k}]": f"SEL2_{k}" for k in range(31)},
         **{f"TH[{k}]": f"TH{k}" for k in range(31)}, **{f"CODE[{k}]": f"CODE{k}" for k in range(5)}))
-    macro_pads(a, I["dig"])
+    A.macro_pads(a, I["dig"])
     for k in ("rdac", "ota1", "ota2", "aclk", "dac2"):
         a.cover(I[k])
     for k in ("rdac", "ota1", "ota2", "aclk", "quant", "dig"):

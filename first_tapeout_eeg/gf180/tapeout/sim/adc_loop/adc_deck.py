@@ -57,7 +57,7 @@ def deck(a):
         chop = "3.3"
     poly = " ".join(f"SEL{j} 0" for j in range(31)) + " -.5" + " 0.0097751710654936461" * 31
     incs = "\n".join(f".include {os.path.join(ADC, n)}" for n in NETS)
-    vec = ("v(sig) v(xadc.o1p) v(xadc.o1n) v(xadc.i1p) v(xadc.i1n) v(xadc.o2p) v(xadc.o2n) "
+    vec = ("v(sig) v(xadc.o1p) v(xadc.o1n) v(xadc.i1p) v(xadc.i1n) v(o2p) v(o2n) "
            "v(xadc.i2p) v(xadc.i2n) v(norm1) i(vavdd)")
     if a.zero:  # ADC_ZERO: AFE output chopper open, only the 30 pF hold capacitors on the
         # inputs (started 20 mV apart), the INP-INN switch closed; v(sig) is then INP - INN
@@ -111,7 +111,7 @@ VRST RST 0 PWL(0 3.3 1u 3.3 1.005u 0)
 XADC INP INN CHOP1 DAC_CLK CMP_STROBE RST AZERO {sel}
 + {s2l}
 + {th}
-+ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ AVDD 0 DVDD 0 eeg_adc
++ VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD 0 DVDD 0 eeg_adc
 XCTRL {th} DLOAD DRESET_EVENT AVDD 0 {sel}
 + {seln}
 + {s2l}

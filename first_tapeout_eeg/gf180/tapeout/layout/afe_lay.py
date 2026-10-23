@@ -350,7 +350,8 @@ def corners(a, I):
     return pins
 
 
-EAST_PORTS_LO = ["OUTP", "OUTN", "VBN", "VBCM", "BLP", "BLN", "VCM"]
+EAST_PORTS_LO = ["VBN", "VBCM", "BLP", "BLN", "VCM"]
+EAST_PORTS_OUT = ["OUTP", "OUTN"]         # on the rows of the ADC's INP / INN (adc_lay.WEST_PORTS)
 EAST_PORTS_HI = ["RST2", "CIA2", "CIB2", "CDA2", "NCDA2", "CDB2", "NCDB2", "CPF0", "CPF1", "CPF2", "CPF3"]
 
 
@@ -440,7 +441,8 @@ def wiring(a, I):
     I["rails"] = rails
     # ports on the east and west edges (Metal4 stubs on router rows)
     gx0, px, gy0, py = GRID
-    sides = [(EAST_PORTS_LO, 470.0, 4, W - 3.0), (EAST_PORTS_HI, 642.0, 4, W - 3.0)] + \
+    sides = [(EAST_PORTS_LO, 470.0, 4, W - 3.0), (EAST_PORTS_HI, 642.0, 4, W - 3.0),
+             (EAST_PORTS_OUT, 870.0, 8, W - 3.0)] + \
         [(names, y0, step, 0.0) for names, y0, step in I["west_ports"]]
     for names, y0, step, xa in sides:
         j0 = round((y0 - gy0) / py)

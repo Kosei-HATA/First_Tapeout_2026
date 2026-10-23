@@ -192,6 +192,19 @@ class Assembly(g.Block):
                                 net = pn
                                 break
                     r.obstacle(lay, *box, net)
+            # MIM bottom plates near the edge (MIMTM.1: other Metal4 1.2 um away): the top
+            # plate (FuseTop) sized by the bottom plate's 0.6 um and the rule, less the
+            # router's own keep-out
+            li = inst.src.find_layer(75, 0)
+            if li is not None:
+                it = inst.srctop.begin_shapes_rec(li)
+                while not it.at_end():
+                    b = pya.DBox(*_box_um(it.shape().bbox().transformed(it.trans()))).transformed(inst.trans)
+                    it.next()
+                    if inner.contains(b.p1) and inner.contains(b.p2):
+                        continue
+                    g_ = 0.6 + 1.2 - 0.28
+                    r.obstacle("metal4", b.left - g_, b.bottom - g_, b.right + g_, b.top + g_)
 
     # ---- hand-drawn wiring
     def wire(self, layer, x1, y1, x2, y2, net=None):
@@ -226,3 +239,36 @@ class Assembly(g.Block):
             r.obstacle(lay, *box, net)
         for box in self.via3s:
             r.via_keepout(*box)
+
+
+def macro_pads(a, inst):
+    """Router pins outside a LibreLane macro for its edge pins: Metal3 pads (1.4 um tall)
+    on the outer ends of the horizontal Metal3 pins (west / east edges), so that each
+    holds a router node, and 3 um Metal2 extensions of the vertical Metal2 pins (north /
+    south edges). The macro's own pins are replaced by these in inst.pins."""
+    x1m, y1m, x2m, y2m = inst.bbox
+    for net, segs in inst.pins.items():
+        new = []
+        for seg in segs:
+            lay, x1, y1, x2, y2 = seg
+            box = None
+            if lay == "metal3" and y2 - y1 <= 1.0:
+                yc = (y1 + y2) / 2
+                if abs(x1 - x1m) < 0.01:
+                    box = ("metal3", x1 - 2.5, yc - 0.7, x1 + 0.5, yc + 0.7)
+                elif abs(x2 - x2m) < 0.01:
+                    box = ("metal3", x2 - 0.5, yc - 0.7, x2 + 2.5, yc + 0.7)
+            elif lay == "metal2":
+                if abs(y2 - y2m) < 0.01:
+                    box = ("metal2", x1, y2 - 0.5, x2, y2 + 3.0)
+                elif abs(y1 - y1m) < 0.01:
+                    box = ("metal2", x1, y1 - 3.0, x2, y1 + 0.5)
+            if box is None:
+                new.append(seg)
+                continue
+            if box[0] == "metal3":
+                a.wire(*box, net)
+            else:
+                a.box(*box)
+            new.append(box)
+        inst.pins[net] = new

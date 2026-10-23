@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Layout of eeg_bias (gf180/tapeout/bias/eeg_bias.spice, tracker E5): the master
-current reference and the AFE / ADC bias, for the Ch-A column (about 150 um wide).
+current reference and the AFE / ADC bias, for the Ch-A column (110 um wide, beside the
+wiring corridor on the AFE side).
 
-Cells, bottom to top (blocks.Shelves, 146.3 um wide at most):
-  - the GP mirror: 296 PMOS fingers W10/L4 in ten guarded strips, two fingers per drain
+Cells, bottom to top (blocks.Shelves, 102 um wide at most):
+  - the GP mirror: 296 PMOS fingers W10/L4 in guarded strips of 20, two fingers per drain
     region; MP4 (the GP diode) and MP3 (G1) interleaved in the first strip
   - PMOS switches (W10/L0.5) of the AFE-tail and booster selects, the start-up PMOS
-    (W1/L50 x 2) and the DAC2 reference PMOS (W1/L6.2 x 2)
-  - the beta-multiplier NMOS (W10/L4: MN2 128 fingers, MN1 32), the NMOS diodes and
+    (W1/L50 x 2, one cell each) and the DAC2 reference PMOS (W1/L6.2 x 2)
+  - the beta-multiplier NMOS (W10/L4: MN2 128 fingers in seven strips, MN1 32), the NMOS diodes and
     mirrors (L1, L2) and the DAC2 reference NMOS (W1/L20)
   - one logic row: the three select decoders (NOR2, inverter, NAND2)
   - resistors: R0 (3.3 x 2), the four 1 kohm isolators, the cascode divider (the 129.25
     and 149.06 um legs in two series halves each, so the row stays narrow; LVS adds
-    series resistors back up), the VCM divider
+    series resistors back up), the VCM divider (its two legs in halves as well)
   - the filter and decoupling capacitors: MOS capacitor units of 28.6 x 44 um (PDK
     cap_nmos / cap_pmos pcells), which leave Metal3/Metal4 free for routing over them
 Power: Metal3 straps on the west (VSS) and east (VDD) edges. Ports: Metal3 stubs on the
@@ -33,8 +34,8 @@ PORTS = ["VBN", "VBCM", "BLP", "BLN", "VBN1", "VBCM1", "VNC1", "VPC1", "VBPC2", 
          "ITST", "VCM", "VREFP", "VREFN", "IB1", "IB0", "BP1", "BP0", "BN1", "BN0"]
 SW = 2.4           # power strap width
 X0 = SW + 1.6      # cells start here (on the 0.8 um grid)
-MAXW = 147.0
-MAXF = 30          # fingers per W10/L4 strip
+MAXW = 102.0
+MAXF = 20          # fingers per W10/L4 strip
 
 
 def mirror_seq(pairs, src="VDD", gate="GP"):
@@ -79,10 +80,11 @@ def build():
            ("bias_sw5", ["NDA", "GNA", "ND", "GNB", "NDB"]), ("bias_sw6", ["NDC", "GNC", "ND"])]
     for name, seq in swc:   # XSWC is W 10 um in two fingers of 5 um (W is the total width)
         add(an.strip_cell(b, name, "p", 5.0 if name == "bias_sw2" else 10.0, 0.5, seq), name)
-    add(an.strip_cell(b, "bias_su1", "p", 1.0, 50.0, ["VDD", "VSS", "SBM", "VSS", "SB"], order=["VDD", "SB"]), "SU1")
+    add(an.strip_cell(b, "bias_su1a", "p", 1.0, 50.0, ["VDD", "VSS", "SBM"], order=["VDD", "SBM"]), "SU1A")
+    add(an.strip_cell(b, "bias_su1b", "p", 1.0, 50.0, ["SBM", "VSS", "SB"], order=["SBM", "SB"]), "SU1B")
     add(an.strip_cell(b, "bias_md", "p", 1.0, 6.2, ["IDN", "GP", "VDD", "GP", "ND2"], order=["VDD", "IDN", "ND2"]), "MD")
     # ---- NMOS beta multiplier (W10/L4): MN2 128 fingers (S2 source), MN1 32 (diode)
-    for k, nf in enumerate((26, 26, 26, 26, 24)):
+    for k, nf in enumerate((18, 18, 18, 18, 18, 18, 20)):
         add(an.strip_cell(b, f"bias_mn2_{k}", "n", 10.0, 4.0, mirror_seq(["GP"] * (nf // 2), src="S2", gate="G1"),
                           order=["S2", "GP"]), f"MN2_{k}")
     for k in range(2):
@@ -132,7 +134,8 @@ def build():
     add(an.res_cell(b, "bias_rdiv", [64.625, 64.625, 19.99, 10.07, 19.99, 74.53, 74.53], 1.0,
                     [("VDD", "RM1"), ("RM1", "VNC1"), ("VNC1", "VBPC2"), ("VBPC2", "VPC1"), ("VPC1", "VBNC2"),
                      ("VBNC2", "RM2"), ("RM2", "VSS")]), "RDIV")
-    add(an.res_cell(b, "bias_rvcm", 99.47, 1.0, [("VREFP", "VCM"), ("VCM", "VREFN")]), "RVCM")
+    add(an.res_cell(b, "bias_rvcm", 49.735, 1.0, [("VREFP", "RVA"), ("RVA", "VCM"), ("VCM", "RVB"), ("RVB", "VREFN")]),
+        "RVCM")
     # ---- MOS capacitors (28.6 x 44 um units, eeg_bias.spice)
     S.newline()
     mcn = an.moscap_cell(b, "bias_mcn", "n", "G", "B")

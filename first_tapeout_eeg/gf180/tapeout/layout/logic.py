@@ -349,3 +349,76 @@ def nmos_cell(b, name, w, l, nf, d, gate, s, rails=("VDD", "VSS")):
         lay, x1, y1, x2, y2 = pins[n][0]
         c.label(lay, n, (x1 + x2) / 2, (y1 + y2) / 2)
     return LogicCell(c, width, pins)
+
+
+def driver_cell(b, name, wp_tot, wn_tot, wfp=10.0, wfn=8.0, a="A", y="Y", rails=("VDD", "VSS")):
+    """Large inverter for the clock drivers: total widths wp_tot / wn_tot (um, L 0.28) in
+    fingers of about wfp / wfn um (LVS adds parallel fingers up, so only the totals must
+    match the netlist's W). Wide rails (1.2 um, Metal1 + Metal2, taps under them), the
+    sources reach them through lengthened S/D columns; the output joins Metal2 straps
+    over both strips with 1.2 um Metal3 bars and a Metal4 bus between the strips (pin);
+    the input is a Metal1 plate over both gate bars with Metal2 on it (pin).
+    Cell (0, 0)..(width, height); returns a LogicCell (height in .height)."""
+    vdd, vss = rails
+    nfp, nfn = max(1, round(wp_tot / wfp)), max(1, round(wn_tot / wfn))
+    wp, wn = wp_tot / nfp, wn_tot / nfn
+    seq = lambda r, n: [r] + sum(([a, y if k % 2 == 0 else r] for k in range(n)), [])
+    ps, ns = f.Strip("p", wp, L_LOGIC, seq(vdd, nfp)), f.Strip("n", wn, L_LOGIC, seq(vss, nfn))
+    yn0 = 2.0
+    yp0 = yn0 + wn + 1.8
+    ytop = yp0 + wp + 2.0                         # VDD rail centre line region top
+    width = _width(max(ps.length, ns.length))
+    c = b.new_cell(name)
+    # rails and taps
+    for (y1, y2), kind in (((0.0, 1.2), "p"), ((ytop - 1.2, ytop), "n")):
+        c.box("metal1", 0, y1, width, y2)
+        c.box("metal2", 0, y1, width, y2)
+        f._tap(c, kind, 0, y1 + 0.39, width, y2 - 0.39, (0.06, y1 + 0.39, width - 0.06, y2 - 0.39), well=False)
+        c.vias("via1", 0.2, y1 + 0.1, width - 0.2, y2 - 0.1)
+    c.box("nwell", -0.2, yp0 - f.NW_ENC, width + 0.2, ytop + 0.2)
+    yc_n = f._contacts(yn0 + f.CO_ENC, yn0 + wn - f.CO_ENC)
+    yc_p = f._contacts(yp0 + f.CO_ENC, yp0 + wp - f.CO_ENC)
+    nbot = yc_n[0] - f.CO / 2 - f.M1_ENC
+    ptop = yc_p[-1] + f.CO / 2 + f.M1_ENC
+    ngeo = f.draw_strip(c, ns, MX, yn0, gates={a: ("t", 0)}, ext={vss: (nbot - 0.6, 0.0)})
+    pgeo = f.draw_strip(c, ps, MX, yp0, gates={a: ("b", 0)}, ext={vdd: (0.0, (ytop - 0.6) - ptop)}, well=False)
+    # input: Metal1 plate over both bars, Metal2 pin on it
+    nb, pb = ngeo.bars[a], pgeo.bars[a]
+    x1, x2 = max(nb[0], pb[0]), min(nb[2], pb[2])
+    c.box("metal1", x1, nb[1], x2, pb[3])
+    c.box("metal2", x1, nb[1], x2, pb[3])
+    c.vias("via1", x1, nb[1], x2, pb[3])
+    pins = {a: [("metal2", x1, nb[1], x2, pb[3])]}
+    # output straps (Metal2, 1.0 um) over both strips, then Metal3 bars and the Metal4 bus
+    ys = []
+    for geo, y0s, w in ((ngeo, yn0, wn), (pgeo, yp0, wp)):
+        k = max(1, int((w - 0.4) / 2.0))
+        for j in range(k):
+            yy = y0s + w / 2 + (j - (k - 1) / 2) * 2.0
+            f.strap(c, geo, y, yy, w=1.0)
+            ys.append(yy)
+    xa = MX + min(ps.sdx[1], ns.sdx[1]) - 0.4
+    xb = MX + min(ps.sdx[-1] if nfp % 2 == 0 else ps.sdx[-1], ns.sdx[-1]) + 0.4
+    xs = []
+    x = xa
+    while x + 1.2 <= xb + 1e-6:
+        xs.append(x)
+        x += 4.0
+    yb1, yb2 = ys[0] - 0.5, ys[-1] + 0.5
+    for x in xs:
+        c.box("metal3", x, yb1, x + 1.2, yb2)
+        for yy in ys:
+            c.vias("via2", x, yy - 0.5, x + 1.2, yy + 0.5)
+    ybus = (nb[1] + pb[3]) / 2
+    c.box("metal4", xs[0], ybus - 1.0, xs[-1] + 1.2, ybus + 1.0)
+    for x in xs:
+        c.vias("via3", x, ybus - 1.0, x + 1.2, ybus + 1.0)
+    pins[y] = [("metal4", xs[0], ybus - 1.0, xs[-1] + 1.2, ybus + 1.0)]
+    pins[vdd] = [("metal2", 0, ytop - 1.2, width, ytop)]
+    pins[vss] = [("metal2", 0, 0.0, width, 1.2)]
+    for n in (a, y, vdd, vss):
+        lay, x1_, y1_, x2_, y2_ = pins[n][0]
+        c.label(lay, n, (x1_ + x2_) / 2, (y1_ + y2_) / 2)
+    cell = LogicCell(c, width, pins)
+    cell.height = ytop
+    return cell

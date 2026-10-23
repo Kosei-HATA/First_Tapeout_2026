@@ -65,7 +65,8 @@ def deck(a):
 .lib {md.PDK}/sm141064.ngspice {ad.RES[a.corner]}
 .lib {md.PDK}/sm141064.ngspice mimcap_{ad.CAPC[a.corner]}
 .lib {md.PDK}/sm141064.ngspice cap_mim
-.lib {md.PDK}/sm141064.ngspice moscap_{ad.CAPC[a.corner]}
+.param moscap_corner={ad.MOSF[ad.CAPC[a.corner]]}
+.include {ad.MOSLIN}
 .include quantizer.spice
 {incs}
 .include {ad.BIAS}

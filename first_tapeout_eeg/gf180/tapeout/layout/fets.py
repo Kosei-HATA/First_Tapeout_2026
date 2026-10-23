@@ -276,16 +276,30 @@ RES_GAP = 0.60       # poly to poly between strips of an array (HRES.3 0.4; SAB 
 def res_array(c, x0, y0, l, w, n, gap=RES_GAP):
     """n parallel ppolyf_u_1k strips (body l x w um, along x) stacked in y at pitch w + gap,
     sharing one RESISTOR, one SAB and one PPLUS box per end. Body k spans
-    x0..x0+l, y0 + k * (w + gap) .. + w. Returns a list of ((xa, y), (xb, y)) Metal1
-    terminal centres (west, east) per strip; the Metal1 pads are 0.38 x (w - 0.16)."""
+    x0..x0+l, y0 + k * (w + gap) .. + w. l may be a list (one length per strip, west ends
+    aligned); then every strip gets its own SAB and PPLUS (gap >= 1.0: SB.2 0.42 between
+    the SAB boxes). Returns a list of ((xa, y), (xb, y)) Metal1 terminal centres (west,
+    east) per strip; the Metal1 pads are 0.38 x (w - 0.16)."""
     pitch = w + gap
     yt = y0 + (n - 1) * pitch + w
-    c.box("resistor", x0 - RES_RX, y0 - RES_RY, x0 + l + RES_RX, yt + RES_RY)
-    c.box("sab", x0 - RES_SAB_X, y0 - RES_SAB_Y, x0 + l + RES_SAB_X, yt + RES_SAB_Y)
-    c.box("pplus", x0 - RES_PP, y0 - 0.18, x0, yt + 0.18)
-    c.box("pplus", x0 + l, y0 - 0.18, x0 + l + RES_PP, yt + 0.18)
+    ls = list(l) if isinstance(l, (list, tuple)) else [l] * n
+    lmax = max(ls)
+    c.box("resistor", x0 - RES_RX, y0 - RES_RY, x0 + lmax + RES_RX, yt + RES_RY)
+    if len(set(ls)) == 1:
+        c.box("sab", x0 - RES_SAB_X, y0 - RES_SAB_Y, x0 + lmax + RES_SAB_X, yt + RES_SAB_Y)
+        c.box("pplus", x0 - RES_PP, y0 - 0.18, x0, yt + 0.18)
+        c.box("pplus", x0 + lmax, y0 - 0.18, x0 + lmax + RES_PP, yt + 0.18)
+    else:
+        if gap < 1.0:
+            raise ValueError("strips of different lengths need gap >= 1.0")
+        for k, lk in enumerate(ls):
+            yb = y0 + k * pitch
+            c.box("sab", x0 - RES_SAB_X, yb - RES_SAB_Y, x0 + lk + RES_SAB_X, yb + w + RES_SAB_Y)
+            c.box("pplus", x0 - RES_PP, yb - 0.18, x0, yb + w + 0.18)
+            c.box("pplus", x0 + lk, yb - 0.18, x0 + lk + RES_PP, yb + w + 0.18)
     out = []
     for k in range(n):
+        l = ls[k]
         yb = y0 + k * pitch
         c.box("poly2", x0 - RES_HEAD, yb, x0 + l + RES_HEAD, yb + w)
         c.box("res_mk", x0, yb, x0 + l, yb + w)

@@ -150,3 +150,35 @@ def check(b, top, netlists, outdir, drc=True, lvs=True):
         res["lvs"] = ok
         print(f"{top} LVS:", "match" if ok else "MISMATCH", *([] if ok else lines), sep="\n  " if not ok else " ")
     return res
+
+
+class Shelves:
+    """Shelf placement of cells (AnalogCell / LogicCell) from (x0, y0) upwards, left to
+    right within max_w; gap between cells. place() returns a Placed."""
+
+    def __init__(self, top, x0, y0, max_w, gap=2.0):
+        self.top, self.x0, self.y0, self.max_w, self.gap = top, x0, y0, max_w, gap
+        self.x, self.y, self.h = x0, y0, 0.0
+        self.placed = []
+
+    def newline(self):
+        if self.h > 0:
+            self.y += self.h + self.gap
+        self.x, self.h = self.x0, 0.0
+
+    def place(self, cell, inst_name, newline=False):
+        h = getattr(cell, "height", lg.H)
+        if newline or (self.x > self.x0 and self.x + cell.width > self.x0 + self.max_w):
+            self.newline()
+        self.top.place(cell.cell, self.x, self.y)
+        p = Placed(cell, self.x, self.y, False, inst_name)
+        if hasattr(cell, "keepout"):
+            k = cell.keepout
+            p.keepout = (self.x + k[0], self.y + k[1], self.x + k[2], self.y + k[3])
+        self.placed.append(p)
+        self.x += cell.width + self.gap
+        self.h = max(self.h, h)
+        return p
+
+    def top_y(self):
+        return self.y + self.h

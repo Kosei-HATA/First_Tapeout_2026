@@ -1,0 +1,19 @@
+* Linear stand-ins for the PDK MOS capacitors cap_nmos_03v3 / cap_pmos_03v3 (section
+* "moscap" of sm141064.spice), for the simulation decks. The layout and the LVS netlist
+* keep the PDK devices.
+*
+* The PDK writes each as a capacitor whose value is an expression of its own voltage
+* (cvar1 + cvar2 tanh(cvar3 v + cvar4)); ngspice-46 transients with them stop with
+* "timestep too small" (10/23: the eeg_bias start-up once the circuit is static, the ADC
+* loop at t = 0). Here the value is the PDK's in strong inversion, cvar1 + cvar2 =
+* 3.983 (NMOS) / 3.958 (PMOS) fF/um2. Every node they sit on is in inversion: 0.82 to
+* 2.0 V gate to VSS (eeg_bias), 1.4 / 1.9 V (eeg_ref), 1.1 V below VDD (the PMOS on GP);
+* at 0.82 V the PDK curve is 6 % lower.
+* Corner: the deck sets .param moscap_corner (typical 1, ff 0.9, ss 1.1, as the PDK's
+* moscap_ff / moscap_ss) before it includes this file.
+.subckt cap_nmos_03v3 1 2 c_length=1e-6 c_width=1e-6
+C1 1 2 {moscap_corner*c_length*c_width*3.983e-3}
+.ends cap_nmos_03v3
+.subckt cap_pmos_03v3 1 2 c_length=1e-6 c_width=1e-6
+C1 1 2 {moscap_corner*c_length*c_width*3.958e-3}
+.ends cap_pmos_03v3

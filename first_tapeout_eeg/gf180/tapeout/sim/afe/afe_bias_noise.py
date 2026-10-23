@@ -33,6 +33,8 @@ AFE = os.path.join(REPO, "gf180", "tapeout", "afe", "eeg_afe.spice")
 BIAS = os.path.join(REPO, "gf180", "tapeout", "bias", "eeg_bias.spice")
 RES_CORNER = {"typical": "res_typical", "ss": "res_ss", "ff": "res_ff", "sf": "res_typical", "fs": "res_typical"}
 CAPC = {"ss": "ss", "ff": "ff"}  # MIM corner
+MOSF = {"typical": 1.0, "ff": 0.9, "ss": 1.1}   # MOS capacitor corner factors (PDK moscap_*)
+MOSLIN = os.path.normpath(os.path.join(HERE, "..", "moscap_lin.spice"))   # linear MOS capacitors
 
 
 def bcode(units):
@@ -56,7 +58,8 @@ def deck(corner, temp, code, rs, afe=AFE, nbln=4, nblp=4, cdsl=0.0, rtau=0.0, ca
                   f".lib {afe_noise.PDK}/sm141064.ngspice {corner}\n"
                   f".lib {afe_noise.PDK}/sm141064.ngspice {RES_CORNER[corner]}\n"
                   f".lib {afe_noise.PDK}/sm141064.ngspice mimcap_{CAPC.get(corner, 'typical')}\n"
-                  f".lib {afe_noise.PDK}/sm141064.ngspice cap_mim")
+                  f".lib {afe_noise.PDK}/sm141064.ngspice cap_mim\n"
+                  f".param moscap_corner={MOSF[CAPC.get(corner, 'typical')]}\n.include {MOSLIN}")
     t = t.replace(".include cand.spice", f".include {afe}\n.include {BIAS}")
     t = t.replace(".temp 27", f".temp {temp}")
     t = t.replace("print i(vdd) v(vbp) v(opi) v(oni) v(inp)",

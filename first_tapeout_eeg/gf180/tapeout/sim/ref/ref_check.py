@@ -30,6 +30,8 @@ VCM = 1.65
 T = 1 / 1.024e6
 TM = T / 32
 RES = {"typical": "res_typical", "ss": "res_ss", "ff": "res_ff"}
+MOSF = {"typical": 1.0, "ff": 0.9, "ss": 1.1}   # MOS capacitor corner factors (PDK moscap_*)
+MOSLIN = os.path.normpath(os.path.join(HERE, "..", "moscap_lin.spice"))   # linear MOS capacitors
 CAPS = {"typical": "typical", "ss": "ss", "ff": "ff"}
 
 
@@ -42,7 +44,8 @@ def deck(corner, temp):
 .lib {PDK}/sm141064.ngspice {RES[corner]}
 .lib {PDK}/sm141064.ngspice mimcap_{CAPS[corner]}
 .lib {PDK}/sm141064.ngspice cap_mim
-.lib {PDK}/sm141064.ngspice moscap_{CAPS[corner]}
+.param moscap_corner={MOSF[CAPS[corner]]}
+.include {MOSLIN}
 .include {REF}
 .temp {temp}
 .options sparse reltol=1e-6 abstol=1e-15 vntol=1e-9

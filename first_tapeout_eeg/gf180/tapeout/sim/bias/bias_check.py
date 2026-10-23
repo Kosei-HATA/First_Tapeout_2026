@@ -19,6 +19,8 @@ import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
+MOSF = {"typical": 1.0, "ff": 0.9, "ss": 1.1}   # MOS capacitor corner factors (PDK moscap_*)
+MOSLIN = os.path.normpath(os.path.join(HERE, "..", "moscap_lin.spice"))   # linear MOS capacitors
 BIAS = os.path.join(REPO, "gf180", "tapeout", "bias", "eeg_bias.spice")
 PDK = os.path.expanduser("~/.ciel/ciel/gf180mcu/versions/"
                          "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7/gf180mcuD/libs.tech/ngspice")
@@ -57,6 +59,8 @@ def build(code, corner="typical", temp=27, rl=None, start=False):
 .lib {PDK}/sm141064.ngspice {rcorner}
 .lib {PDK}/sm141064.ngspice mimcap_{ccorner}
 .lib {PDK}/sm141064.ngspice cap_mim
+.param moscap_corner={MOSF[ccorner]}
+.include {MOSLIN}
 .include bias.spice
 .temp {temp}
 .options sparse reltol=1e-5

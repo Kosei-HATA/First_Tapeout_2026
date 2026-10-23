@@ -34,6 +34,8 @@ NETS = ["eeg_adc_otas.spice", "eeg_adc_clk.spice", "eeg_dac1.spice", "eeg_dac2.s
         "eeg_quantizer.spice", "eeg_ref.spice", "eeg_adc.spice"]
 RES = {"typical": "res_typical", "ss": "res_ss", "ff": "res_ff", "sf": "res_typical", "fs": "res_typical"}
 CAPC = {"typical": "typical", "ss": "ss", "ff": "ff", "sf": "typical", "fs": "typical"}
+MOSF = {"typical": 1.0, "ff": 0.9, "ss": 1.1}   # MOS capacitor corner factors (PDK moscap_*)
+MOSLIN = os.path.normpath(os.path.join(HERE, "..", "moscap_lin.spice"))   # linear MOS capacitors
 # fine: as make_deck.py (spectra); fast: functional runs of the full transistor ADC
 TOLS = {"fine": "reltol=1e-5 vntol=1e-7 abstol=1e-12 chgtol=1e-16",
         "fast": "reltol=1e-4 vntol=1e-6 abstol=1e-11 chgtol=1e-15"}
@@ -71,7 +73,8 @@ def deck(a):
 .lib {md.PDK}/sm141064.ngspice {RES[a.corner]}
 .lib {md.PDK}/sm141064.ngspice mimcap_{CAPC[a.corner]}
 .lib {md.PDK}/sm141064.ngspice cap_mim
-.lib {md.PDK}/sm141064.ngspice moscap_{CAPC[a.corner]}
+.param moscap_corner={MOSF[CAPC[a.corner]]}
+.include {MOSLIN}
 .include quantizer.spice
 {incs}
 .include {BIAS}

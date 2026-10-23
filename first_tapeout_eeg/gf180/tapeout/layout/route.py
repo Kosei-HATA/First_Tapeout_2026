@@ -237,18 +237,25 @@ class Router:
         cand = [self.access(p, net) for p in pins]
         if any(not c for c in cand):
             return False
-        # start from the pin with the fewest candidates
-        k0 = min(range(len(pins)), key=lambda k: len(cand[k]))
         tree = set()
-        stubs = {}
-        n0, s0 = cand[k0][0]
-        tree.add(n0)
-        stubs[n0] = s0
-        self._commit_node(n0, net)
-        if s0:
-            self._commit_stub(s0, n0[1], net, name)
+        # start from a wire pin (a strap or port of this net: all its nodes join the tree),
+        # else from the Metal2 pin with the fewest candidates
+        wires = [k for k in range(len(pins)) if pins[k][0] != "metal2"]
+        if wires:
+            k0 = max(wires, key=lambda k: len(cand[k]))
+            for n0, _ in cand[k0]:
+                tree.add(n0)
+        else:
+            k0 = min(range(len(pins)), key=lambda k: len(cand[k]))
+            xc = (pins[k0][1] + pins[k0][3]) / 2
+            n0, s0 = min(cand[k0], key=lambda c: abs(self.X(c[0][1]) - xc))
+            tree.add(n0)
+            self._commit_node(n0, net)
+            if s0:
+                self._commit_stub(s0, n0[1], net, name)
         rest = [k for k in range(len(pins)) if k != k0]
-        rest.sort(key=lambda k: min(abs(c[0][1] - n0[1]) + abs(c[0][2] - n0[2]) for c in cand[k]))
+        tl = list(tree)[:200]
+        rest.sort(key=lambda k: min(abs(c[0][1] - t[1]) + abs(c[0][2] - t[2]) for c in cand[k][:20] for t in tl))
         for k in rest:
             targets = [(n, s) for n, s in self.access(pins[k], net)]
             path = self._astar(net, list(tree), targets)

@@ -13,13 +13,16 @@ Placement (local um; the differential axis at y = 723.5):
     DC-path switches.
   - west corners: the offset-DAC halves offdac_p / offdac_n (offdac_lay.py), the clock
     driver eeg_afe_clk and its supply decoupling.
-Hand-drawn wiring:
-  - the Cin buses extended west (WP / WN to the input chopper's stripes, INP / INN to the
-    offset DAC); the chopper's WP / WN stripes run on into those buses;
-  - WP / WN taps under the outer buses for the output section (CPF, Cpf trim);
-  - the core's INP / INN stubs straight into the buses (7 um);
+Hand-drawn wiring (the signal path is in series with the electrodes: tracker D6):
+  - WP / WN from the input chopper's stripes into the Cin bottom-plate buses and the
+    Metal3 planes under the arrays (w_entry: Metal3 / Metal4 / Metal5 plates over the
+    chopper, a Metal5 sheet under it for WN);
+  - the core's INP / INN Metal5 bars (its top / bottom edge) joined to the Cin top-plate
+    buses along the core's width and on over the output section; the offset DAC's INP /
+    INN stubs onto those bars;
+  - WP / WN and INP / INN taps for the output section; the DC-path switches (sc_wiring);
   - AVSS / AVDD Metal5 rails from the east edge over the output section to the core's
-    Metal4 supply bars over its tails (the core's 19 mA comes from the Ch-A side: the
+    Metal4 supply rows over its tails (the core's 19 mA comes from the Ch-A side: the
     west of the band is the input chopper's).
 Everything else: route.Router on Metal3 / Metal4.
 
@@ -35,6 +38,8 @@ import blocks as bl
 import route
 import assemble as A
 import fets as f
+import afecore_lay as CORE
+import afetg_lay as TG
 from ota_lay import dev_seq
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -110,6 +115,51 @@ def gate_diodes(a, x, y, h):
         a.box("metal2", x + wa, y + wy, x + wb, d[3])
 
 
+SC_STUB = 21.0                 # Metal3 stubs on the DC-path switch's pins: up to here above the cell
+
+
+def sc_wiring(a, x, y, scn, sc, cap):
+    """The same wiring on both sides of the DC-path switched capacitor (cell sc at x, y,
+    its MIM cap 2 um east): the middle node scn (SCP / SCN) to the MIM's top plate on
+    Metal2 / Metal4, under a router keep-out; the gate lines CIA2 / CIB2 and the two
+    signal pins (ONI / OPI west of the gate stubs, INP / INN east) on Metal3 stubs straight
+    up from their pins, which the router reaches at their tops. In the first layout the
+    router brought P side's CIB2 along under SCP's Metal4: 0.57 fF against 0.04 fF on the
+    N side, an AFE output ripple of 39 mV p-p (tracker D6). Returns the router pins
+    {net: [...]}."""
+    xc = x + sc.width + 2.0                                   # the MIM cell
+    s = sc.pins[scn][0]
+    t = cap.pins["TOP"][0]
+    a.box("metal2", x + s[3] - 0.5, y + s[2], x + sc.width + 1.2, y + s[4])
+    a.vias_fit("via2", x + sc.width + 0.2, y + s[2] - 0.13, x + sc.width + 1.2, y + s[4] + 0.13)
+    a.vias_fit("via3", x + sc.width + 0.2, y + s[2] - 0.13, x + sc.width + 1.2, y + s[4] + 0.13)
+    a.box("metal4", x + sc.width + 0.2, y + s[2] - 0.13, xc + t[3], y + s[4] + 0.13)
+    keep = (x + sc.width - 1.1, y - 1.0, xc + cap.width, y + t[4] + 0.6)
+    for lay in ("metal3", "metal4"):
+        a.manual.append((lay, keep, scn))
+    gx0, px = GRID[0], GRID[1]
+    pins, used = {}, []
+    sig = [p for p in sc.pins if p not in (scn, "CIA", "CIB", "VSS")]          # INP / ONI or INN / OPI
+    order = [("CIA", "CIA2", 0), ("CIB", "CIB2", 0)] + [(p, p, d) for p, d in zip(sorted(sig, key=lambda p: sc.pins[p][0][2]), (-1, 1))]
+    for pn, net, side in order:
+        g_ = sc.pins[pn][0]
+        if side == 0:                                     # gate pins: the column nearest the pin centre
+            k = round((x + (g_[1] + g_[3]) / 2 - gx0) / px)
+        else:                                             # signal pins: west / east of the gate stubs
+            k = round(((min(used) - px if side < 0 else max(used) + px) - gx0) / px)
+        while gx0 + k * px - 0.19 < x + g_[1] or any(abs(gx0 + k * px - u) < px - 1e-6 for u in used):
+            k += 1
+        xs = gx0 + k * px
+        assert xs + 0.19 <= min(x + g_[3], keep[0]), f"no column on the {pn} pin"
+        used.append(xs)
+        yg = y + (g_[2] + g_[4]) / 2
+        a.box("via2", xs - 0.13, yg - 0.13, xs + 0.13, yg + 0.13)
+        a.box("metal2", xs - 0.19, yg - 0.19, xs + 0.19, yg + 0.19)
+        a.wire("metal3", xs - 0.19, yg - 0.19, xs + 0.19, y + SC_STUB, net)
+        pins[net] = [("metal3", xs - 0.19, y + SC_STUB - 1.5, xs + 0.19, y + SC_STUB)]
+    return pins
+
+
 def build():
     a = A.Assembly(TOP)
     nets = {}
@@ -156,10 +206,9 @@ def build():
     for k in ("core",):
         a.cover(I[k])
     add(I["core"])
-    # the input chopper's bulk: the PMOS n-well bar (Metal3), and the NMOS ring (Metal2,
-    # run east under the gate lanes and the n-well bar to a Metal3 pad in the gap beside
-    # the core)
-    conn("AVDD", I["tg"].pins["AVDD"])
+    # the input chopper's bulk: the PMOS n-well bar (Metal3, wired by hand to offdac_p's AVDD
+    # in w_entry), and the NMOS ring (Metal2, run east under the gate lanes and the n-well bar
+    # to a Metal3 pad in the gap beside the core)
     rs = I["tg"].pins["AVSS"][0]
     xg2 = I["tg"].bbox[2]
     ym = (rs[2] + rs[4]) / 2
@@ -196,8 +245,10 @@ def build():
         cell_at(C[cell], xt, ytop, nm, {"TOP": tp, "BOT": bt})
         xt += C[cell].width + 2.0
     sw_x["P"] = xt + 1.0
-    # N side (bottom, mirrored so the trim plates face the band): CFB_N, CPF_N, trim MIMs
-    yb = 425.0
+    # N side (bottom, mirrored so the trim plates face the band): CFB_N, CPF_N, trim MIMs,
+    # 11 um above the Cin_N buses (the INN fill runs on under them: wiring()), 12 router rows
+    # above the first layout's 425 (the cells' Metal2 pins keep their phase on the rows)
+    yb = 425.0 + 12 * GRID[3]
     cell_at(C["cfb"], x0 + 1.0, yb, "CFBN", {"TOP": "INN", "BOT": "OPI"})
     cell_at(C["cpf"], x0 + 1.0 + C["cfb"].width + 3.0, yb, "CPFN", {"TOP": "WN", "BOT": "ONI"})
     xt = x0 + 1.0 + C["cfb"].width + C["cpf"].width + 8.0
@@ -206,6 +257,7 @@ def build():
         cell_at(C[cell], xt, yb, nm, {"TOP": tp, "BOT": bt})
         xt += C[cell].width + 2.0
     sw_x["N"] = xt + 1.0
+    I["rows_pn"] = (ytop + max(C[k].height for k in ("cfb", "cpf", "m5", "m717", "m1023", "rstp", "scp")), yb)
     # switches next to the buses: reset (INP-ONI / INN-OPI) and the DC-path switched
     # capacitor (CIA2 then CIB2, with its 54.5 fF MIM to AVSS)
     sw = {}
@@ -215,8 +267,10 @@ def build():
         x += C[rst].width + 2.0
         p2 = cell_at(C[sc], x, y0_, f"XSC{side}", {"VSS": "AVSS", "CIA": "CIA2", "CIB": "CIB2"})
         gate_diodes(a, x, y0_, C[sc].height)
-        x += C[sc].width + 2.0
-        cell_at(C["m5"], x, y0_, csc, {"TOP": scn, "BOT": "AVSS"})
+        cell_at(C["m5"], x + C[sc].width + 2.0, y0_, csc, {"TOP": scn, "BOT": "AVSS"})
+        for n, segs in sc_wiring(a, x, y0_, scn, C[sc], C["m5"]).items():
+            nets[n] = [s for s in nets[n] if s not in p2.pins.get(n[:3], []) + p2.pins.get(n, [])] + segs
+        nets.pop(scn)
     # the band between the rails: output chopper, CMFB, switches, trim logic
     S = bl.Shelves(a, x0 + 1.0, 527.0, W - x0 - 4.0, gap=2.0)
 
@@ -268,7 +322,7 @@ def build():
 # west corners: offset-DAC halves (offdac_lay.py), the clock driver eeg_afe_clk and the
 # 100 ohm resistors of its supply (AVDD_CLK / AVSS_CLK)
 OD_X = 0.8                      # offdac_n / offdac_p origin x (ports on the router columns)
-OD_P_Y = 1040.0                 # offdac_p origin y, above the WP bus
+OD_P_Y = 1100.0                 # offdac_p origin y, above the WP entry (w_entry)
 CK_X, CK_Y = 14.0, 306.0        # eeg_afe_clk origin (its shapes from y CK_Y - 1)
 OD_PORTS = ["VCM", "S", "PH"] + [f"M{k}" for k in range(10)] + [f"EN{k}" for k in range(4)]
 OD_NET = dict({"VCM": "VCM", "S": "OFS", "PH": "OFPH"}, **{f"M{k}": f"OFM{k}" for k in range(10)},
@@ -289,8 +343,8 @@ def corners(a, I):
     (straps AVDD_CLK / AVSS_CLK on offdac_n's top edge), joined to the driver's straps by
     hand (AVSS_CLK on Metal3, AVDD_CLK on Metal5 over the driver), and two 100 ohm
     resistors (ppolyf_u_1k, 2 x 20 um) to AVDD / AVSS beside the driver.
-    Top-left: offdac_p above the WP bus (INP stub down into the INP bus), its control
-    ports routed to the west edge; its AVDD / AVSS straps run on to the top edge."""
+    Top-left: offdac_p above the WP entry (INP stub down onto the core's INP bar), its
+    control ports routed to the west edge; its AVDD / AVSS straps run on to the top edge."""
     pins = {}
     tp, bp = I["cinp"].pin("INP", "metal5"), I["cinp"].pin("WP", "metal5")
     tn, bn = I["cinn"].pin("INN", "metal5"), I["cinn"].pin("WN", "metal5")
@@ -303,16 +357,21 @@ def corners(a, I):
     a.cover(ck)
     for inst in (odn, odp):
         a.cover(inst)
-    # INN / INP stubs of the offset DAC into the Cin buses (crossing WN / WP on Metal3)
-    for inst, n, bus in ((odn, "INN", tn), (odp, "INP", tp)):
+    # INN / INP stubs of the offset DAC: Metal4 across the WN / WP entries (w_entry) onto
+    # the core's INN / INP Metal5 bars along its bottom / top edge
+    core = I["core"]
+    for inst, n in ((odn, "INN"), (odp, "INP")):
         s = inst.pin(n, "metal3")
         xc = (s[1] + s[3]) / 2
+        a.box("metal3", xc - 0.3, s[2], xc + 0.3, s[4])
+        a.vias_fit("via3", xc - 0.3, s[2], xc + 0.3, s[4])
         if n == "INN":
-            a.wire("metal3", xc - 0.6, s[2], xc + 0.6, bus[4] - 0.3, n)
-            a.via_stack("metal3", "metal5", xc - 0.6, bus[2] + 0.3, xc + 0.6, bus[4] - 0.3, n)
+            a.wire("metal4", xc - 0.6, s[2], xc + 0.6, core.bbox[1] + 3.6, n)
+            a.vias_fit("via4", xc - 0.6, core.bbox[1] + 0.4, xc + 0.6, core.bbox[1] + 3.6)
         else:
-            a.wire("metal3", xc - 0.6, bus[2] + 0.3, xc + 0.6, s[4], n)
-            a.via_stack("metal3", "metal5", xc - 0.6, bus[2] + 0.3, xc + 0.6, bus[4] - 0.3, n)
+            a.wire("metal4", xc - 0.6, core.bbox[3] - 3.6, xc + 0.6, s[4], n)
+            a.vias_fit("via4", xc - 0.6, core.bbox[3] - 3.6, xc + 0.6, core.bbox[3] - 0.4)
+        I["od_stub_" + n] = (xc - 0.6, xc + 0.6)
     # chopper gates: port stub -> 2 um Metal3 up -> Metal4 jog -> 1.2 um Metal3 into the lane
     for n, yj in TG_JOG.items():
         s = ck.pin(n, "metal3")
@@ -341,6 +400,7 @@ def corners(a, I):
     # the two 100 ohm resistors (west end on the driver's supply, east end on AVDD / AVSS)
     rn = an.res_cell(a, "afe_rck_n", 2.0, 20.0, [("AVSS_CLK", "AVSS")], sub="AVSS")
     rp = an.res_cell(a, "afe_rck_p", 2.0, 20.0, [("AVDD_CLK", "AVDD")], sub="AVSS")
+    I["rckp_top"] = CK_Y + 14.0 + rp.height
     for cell, x, y, nm in ((rn, 0.8, CK_Y + 14.0, "RCKN"), (rp, dvdd[3] + 8.0, CK_Y + 14.0, "RCKP")):
         a.place(cell.cell, x, y)
         p = bl.Placed(cell, x, y, False, nm)
@@ -361,8 +421,97 @@ def corners(a, I):
     for p in OD_PORTS:
         n = OD_NET[p] + "_P"
         pins.setdefault(n, []).append(odp.pin(n, "metal3"))
-    I["west_ports"] = [(CLK_WEST, ck.bbox[3] + 1.0, 2), ([OD_NET[p] + "_P" for p in OD_PORTS], odp.bbox[3] + 8.0, 4)]
+    I["west_ports"] = [(CLK_WEST, ck.bbox[3] + 1.0, 2), ([OD_NET[p] + "_P" for p in OD_PORTS], odp.bbox[3] + 8.0, 3)]
     return pins
+
+
+W_ROW = 15.0                    # pitch of the via rows in the W entries (under 30 um: MSLOT)
+
+
+def w_entry(a, I, y_wn, y_wp):
+    """WP / WN from the input chopper into the Metal3 planes under the Cin arrays
+    (gf180lay.mim_array plane), on Metal3 / Metal4 / Metal5 with via rows between them:
+      top: over the chopper's top and through the corner between the core and offdac_p
+        (moved up to make room), up to 0.6 um from the Cin_P buses;
+      bottom: under the chopper (above the clock driver's gate jogs), on Metal3 between
+        the jogs, and through the corner between the core, the clock driver and offdac_n.
+    The offset DAC's INP / INN stubs cross them on Metal4 (corners()); the input chopper's
+    n-well bias (AVDD bar) goes up beside them to offdac_p's AVDD strap (Metal3 / Metal4).
+    The WP / WN wiring is in series with the signal (tracker D6)."""
+    tg, core, cinp, odp = I["tg"], I["core"], I["cinp"], I["odp"]
+    bp, bn = cinp.pin("WP", "metal5"), I["cinn"].pin("WN", "metal5")
+    xa = cinp.bbox[0]                                    # the arrays' west edge
+    vb = tg.pin("AVDD", "metal3")
+    sp = [p for p in odp.pins["AVDD"] if p[0] == "metal3"][0]
+    y_tw = odp.bbox[1] - 6.6                             # top of the WP entry
+    # chopper AVDD bar -> offdac_p's AVDD strap: Metal3 up beside the WP entry, Metal5 over
+    # its top (the INP stub crosses on Metal4 below)
+    yr1, yr2 = odp.bbox[1] - 5.4, odp.bbox[1] - 1.4
+    a.wire("metal3", vb[1], vb[4] - 1.0, vb[3], yr2, "AVDD")
+    a.via_stack("metal3", "metal5", vb[1], yr1, vb[3], yr2, "AVDD")
+    a.box("metal5", vb[1], yr1, sp[3], yr2)
+    a.via_stack("metal3", "metal5", sp[1], yr1, sp[3], yr2, "AVDD")
+    a.wire("metal3", sp[1], yr1, sp[3], sp[2] + 1.0, "AVDD")
+    stub = {n: (x1 - 0.3, x2 + 0.3) for n, (x1, x2) in (("WP", I["od_stub_INP"]), ("WN", I["od_stub_INN"]))}
+    # the input chopper's own Metal3 / Metal4 reach a bit beyond its stripes (gate lanes)
+    ext = {}
+    for lay in ("metal3", "metal4"):
+        li = tg.src.find_layer(*g.L[lay])
+        bxs = [A.pya.DBox(*A._box_um(sh.bbox())).transformed(tg.trans) for sh in
+               A.pya.Region(tg.srctop.begin_shapes_rec(li)).merged().each()]
+        ext[lay] = (min(b.bottom for b in bxs), max(b.top for b in bxs))
+
+    def plate(net, m3, m4, m5, holes=()):
+        """Boxes per metal, via rows every W_ROW where Metal4 meets Metal3 / Metal5; holes:
+        2 um openings in the Metal5 where no via rows break it up (MSLOT5.1)."""
+        for lay, boxes in (("metal3", m3), ("metal4", m4)):
+            for bx in boxes:
+                a.wire(lay, *bx, net)
+        um = lambda v: int(round(v * 1000))
+        reg = lambda boxes: A.pya.Region([A.pya.Box(*[um(v) for v in bx]) for bx in boxes]).merged()
+        m5r = reg(m5) - reg(holes)
+        a.cell.shapes(a.li("metal5")).insert(m5r)
+        merged = {"via3": reg(m3), "via4": m5r}
+        for x1, y1, x2, y2 in m4:
+            y = y1 + 1.0
+            while y + 2.0 < y2 - 0.5:
+                row = A.pya.Region(A.pya.Box(um(x1), um(y), um(x2), um(y + 2.0)))
+                for via, other in merged.items():
+                    for p in (other & row).merged().each():
+                        b = p.bbox()
+                        if b.width() >= 1000 and b.height() >= 1999:
+                            a.vias_fit(via, b.left / 1000, b.bottom / 1000, b.right / 1000, b.top / 1000)
+                y += W_ROW
+    cuts = [(vb[1] - 0.3, vb[3] + 0.3)]
+    # top: WP
+    yc = core.bbox[3] + 0.6
+    west, east = (5.0, vb[1] - 0.3), (vb[3] + 0.3, xa - 0.3)
+    y3, y4 = ext["metal3"][1] + 0.6, ext["metal4"][1] + 0.6
+    m4 = [(west[0], y4, west[1], y_tw)] + [(x1, yc, x2, y_tw) for x1, x2 in CORE.minus(east[0], east[1], [stub["WP"]])]
+    m3 = [(west[0], y3, west[1], y_tw), (east[0], yc, xa + 0.6, y_tw)]
+    xs5 = I["wp_stripes_x2"] + 0.6                       # east of the widened WP stripes
+    m5 = [(5.0, y_wn, 27.0, bp[2] + 0.5), (5.0, bp[2], xa - 0.6, y_tw), (xs5, y_wn, core.bbox[0] - 0.6, bp[2] + 0.5),
+          (core.bbox[0] - 1.0, yc, xa - 0.6, bp[2] + 0.5)]
+    plate("WP", m3, m4, m5)
+    # bottom: WN (the clock driver's gate jogs at TG_JOG, its 100 ohm resistor RCKP below)
+    yj0, yj1 = min(TG_JOG.values()), max(TG_JOG.values()) + 2.0
+    yw0 = I["rckp_top"] + 2.0
+    x_lane = min(tg.pin(n, "metal3")[1] for n in TG_JOG) - 0.3      # the chopper's gate lanes, jogs
+    y3, y4 = min(y_wp, ext["metal3"][0] - 0.6), min(y_wp, ext["metal4"][0] - 0.6)
+    m4 = [(5.0, yj1 + 1.0, x_lane, y4)] + \
+        [(x1, yw0, x2, yj0 - 0.6) for x1, x2 in CORE.minus(x_lane + 6.0, xa - 0.3, [stub["WN"]])]
+    links = [(100.0 + k * (x_lane - 100.0 + 1.0) / 3, bn[4] + 0.8, 100.0 + (k + 1) * (x_lane - 100.0 + 1.0) / 3 - 1.0,
+              yj1 + 1.0) for k in range(3)]                  # Metal3 between the jogs, strips under 30 um
+    m3 = [(5.0, yj1 + 1.0, x_lane, y3)] + links + \
+        [(100.0, bn[4] + 0.8, xa + 0.6, yj0 - 0.6), (x_lane + 6.0, yw0, xa + 0.6, core.bbox[1] - 0.6)]
+    # Metal5: one sheet from the chopper's bottom edge down to the Cin_N bus, east to the
+    # core (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a row of
+    # holes over the jogs (no via rows there)
+    m5 = [(5.0, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (x_lane + 6.0, yw0, xa - 0.6, bn[2] + 0.5),
+          (vb[3] - 1.0, bn[4] - 0.5, xa - 0.6, core.bbox[1] - 0.6)]
+    yh = (yj0 + yj1) / 2 - 1.0
+    holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < core.bbox[0] - 1.0]
+    plate("WN", m3, m4, m5, holes)
 
 
 EAST_PORTS_LO = ["VBN", "VBCM", "BLP", "BLN", "VCM"]
@@ -376,81 +525,99 @@ def wiring(a, I):
     cinp, cinn, core, tg = I["cinp"], I["cinn"], I["core"], I["tg"]
     tp, bp = cinp.pin("INP", "metal5"), cinp.pin("WP", "metal5")
     tn, bn = cinn.pin("INN", "metal5"), cinn.pin("WN", "metal5")
-    # bus extensions to the west (WP / WN for the input chopper, INP / INN for the offset DAC)
+    # bus extensions to the west (WP / WN for the input chopper)
     a.wire("metal5", 5.0, bp[2], bp[1] + 1.0, bp[4], "WP")
     a.wire("metal5", 5.0, bn[2], bn[1] + 1.0, bn[4], "WN")
-    a.wire("metal5", 200.0, tp[2], tp[1] + 1.0, tp[4], "INP")
-    a.wire("metal5", 200.0, tn[2], tn[1] + 1.0, tn[4], "INN")
-    # the input chopper's WP stripes up into the WP bus, WN stripes down into the WN bus
+    # the input chopper's WP stripes up into the WP bus (past the WN stripes' ends they widen
+    # to the whole lane period); the WN stripes end in a Metal5 sheet below the chopper
+    # (w_entry)
     src, top = tg.src, tg.srctop
     li = src.find_layer(*g.L["metal5"])
-    for sh in top.shapes(li).each():
-        b = A.pya.DBox(*A._box_um(sh.bbox())).transformed(tg.trans)
-        if b.height() < 300 or b.width() > 5.0:
-            continue
-        if abs(b.top - tg.bbox[3]) < 0.01:           # WP stripe (reaches the block's top)
-            a.wire("metal5", b.left, b.top - 1.0, b.right, bp[4], "WP")
-        elif abs(b.bottom - tg.bbox[1]) < 0.01:      # WN stripe
-            a.wire("metal5", b.left, bn[2], b.right, b.bottom + 1.0, "WN")
-    # WP / WN taps for the output section: Metal4 from the inner bus under the outer one
+    half = (TG.PERIOD_X - TG.STRIPE_GAP) / 2
+    stripes = [A.pya.DBox(*A._box_um(sh.bbox())).transformed(tg.trans) for sh in top.shapes(li).each()]
+    stripes = [b for b in stripes if b.height() > 300 and b.width() < TG.PERIOD_X / 2]   # (not the spines)
+    wp = [b for b in stripes if abs(b.top - tg.bbox[3]) < 0.01]       # WP stripes reach the block's top
+    wn = [b for b in stripes if abs(b.bottom - tg.bbox[1]) < 0.01]    # WN stripes its bottom
+    y_wn, y_wp = max(b.top for b in wn) + 0.6, min(b.bottom for b in wp) - 0.6
+    for b in wp:
+        a.wire("metal5", b.center().x - half, y_wn, b.center().x + half, bp[4], "WP")
+    I["wp_stripes_x2"] = max(b.center().x for b in wp) + half
+    w_entry(a, I, y_wn, y_wp)
+    # WP / WN taps for the output section: Metal4 from the inner bus into the Cin array's
+    # bottom-plate island under the outer bus (gf180lay.mim_array feet)
     xt = W - 12.0
     a.wire("metal4", xt, tp[2] - 6.0, xt + 4.0, bp[4] - 0.3, "WP")
-    a.via_stack("metal4", "metal5", xt, bp[2] + 0.3, xt + 4.0, bp[4] - 0.3, "WP")
     pins["WP"] = [("metal4", xt, tp[2] - 6.0, xt + 4.0, tp[2] - 2.0)]
     a.wire("metal4", xt, bn[2] + 0.3, xt + 4.0, tn[4] + 6.0, "WN")
-    a.via_stack("metal4", "metal5", xt, bn[2] + 0.3, xt + 4.0, bn[4] - 0.3, "WN")
     pins["WN"] = [("metal4", xt, tn[4] + 2.0, xt + 4.0, tn[4] + 6.0)]
-    # INP / INN taps for the output section (CFB, reset and DC-path switches): via stacks
-    # on the inner buses in the gap between the core and the section, Metal3 into the band
+    # INP / INN taps for the output section (CFB, reset and DC-path switches): Metal4 from
+    # the Cin array's top-plate jumper under the inner bus into the gap between the core and
+    # the section (Metal3 there is the bottom-plate plane under the array)
     xi = EAST_X - 2.4
-    a.via_stack("metal3", "metal5", xi, tp[2] + 0.3, xi + 1.2, tp[4] - 0.3, "INP")
-    a.wire("metal3", xi, tp[2] - 6.0, xi + 1.2, tp[2] + 0.3, "INP")
-    pins["INP"] = [("metal3", xi, tp[2] - 6.0, xi + 1.2, tp[2] - 2.0)]
-    a.via_stack("metal3", "metal5", xi, tn[2] + 0.3, xi + 1.2, tn[4] - 0.3, "INN")
-    a.wire("metal3", xi, tn[4] - 0.3, xi + 1.2, tn[4] + 6.0, "INN")
-    pins["INN"] = [("metal3", xi, tn[4] + 2.0, xi + 1.2, tn[4] + 6.0)]
-    # the core's INP / INN stubs into the buses
+    a.wire("metal4", xi, tp[2] - 6.0, xi + 1.2, tp[2] + 0.5, "INP")
+    pins["INP"] = [("metal4", xi, tp[2] - 6.0, xi + 1.2, tp[2] - 2.0)]
+    a.wire("metal4", xi, tn[4] - 0.5, xi + 1.2, tn[4] + 6.0, "INN")
+    pins["INN"] = [("metal4", xi, tn[4] + 2.0, xi + 1.2, tn[4] + 6.0)]
+    # the core's INP / INN Metal5 bars (along its top / bottom edges) join the inner Cin buses
+    # along the core's width (Metal5 over the gap, Metal4 under it with via4): the gate
+    # wiring is in series with the signal (tracker D6)
     for n, bus, up in (("INP", tp, True), ("INN", tn, False)):
-        s_ = core.pin(n, "metal3")
-        xc = (s_[1] + s_[3]) / 2
-        if up:
-            a.wire("metal3", s_[1], s_[2], s_[3], bus[2] - 1.0, n)
-            a.via_stack("metal3", "metal5", xc - 0.6, bus[2] - 2.2, xc + 0.6, bus[2] + 1.0, n)
-        else:
-            a.wire("metal3", s_[1], bus[4] + 1.0, s_[3], s_[4], n)
-            a.via_stack("metal3", "metal5", xc - 0.6, bus[4] - 1.0, xc + 0.6, bus[4] + 2.2, n)
-    # supply rails (Metal5) from the east edge over the output section to the core's bars
-    bars = {"AVSS": [], "AVDD": []}
+        x1, x2 = cinp.bbox[0], core.bbox[2] - 1.0             # (west of the arrays: the W entries)
+        y1, y2 = (core.bbox[3] - 3.0, bus[2] + 3.0) if up else (bus[4] - 3.0, core.bbox[1] + 3.0)
+        a.box("metal5", x1, y1, x2, y2)
+        ya, yb_ = (core.bbox[3] + 0.3, bus[2] - 0.3) if up else (bus[4] + 0.3, core.bbox[1] - 0.3)
+        a.wire("metal4", x1, ya, x2, yb_, n)
+        a.vias_fit("via4", x1, ya, x2, yb_)
+    # east of the core the Cin buses run over the output section: the INP / INN fills go on
+    # over it (2 um clear of the section's Metal5; the east columns' current ran 150 um along
+    # the 5 um bus), with no other net's Metal4 under them between the INP / INN and WP / WN
+    # taps (a router obstacle: the amplifier inputs)
+    for bus, (y1, y2), (k1, k2) in ((tp, (I["rows_pn"][0] + 2.0, tp[2] + 3.0), (I["rows_pn"][0] + 1.7, tp[2] - 0.3)),
+                                    (tn, (tn[4] - 3.0, I["rows_pn"][1] - 1.0), (tn[4] + 0.3, I["rows_pn"][1] - 1.3))):
+        a.box("metal5", core.bbox[2] - 2.0, y1, W - 1.0, y2)
+        a.manual.append(("metal4", (xi + 1.8, k1, xt - 0.6, k2), None))
+    # supply rails (Metal5) from the east edge over the output section to the core's supply
+    # segments (Metal4, PWR_W tall, on the supply lanes of its tails: AVSS in the N column,
+    # AVDD in the P column; the AVDD rails start between the columns, so the N column's
+    # gate straps keep their Metal5)
+    segs = {"AVSS": [], "AVDD": []}
     li4 = core.src.find_layer(*g.L["metal4"])
+    rows4 = A.pya.Region()                            # (merged: the via3 arrays' own Metal4 lies inside)
     for sh in core.srctop.shapes(li4).each():
-        b = A.pya.DBox(*A._box_um(sh.bbox())).transformed(core.trans)
-        if abs(b.height() - 6.0) < 0.01 and b.width() > 150:
-            bars["AVSS" if b.left < core.bbox[0] + 100 else "AVDD"].append((b.left, b.bottom, b.right, b.top))
-    vss = sorted(bars["AVSS"], key=lambda bx: bx[1])
-    yv2 = max(bx[3] for bx in vss)
-    vdd = sorted([bx for bx in bars["AVDD"] if bx[1] > yv2 + 4.0], key=lambda bx: bx[1])
+        lb = A.pya.DBox(*A._box_um(sh.bbox()))
+        if abs(lb.height() - CORE.PWR_W) < 0.01 and lb.width() < 150:
+            rows4.insert(sh.bbox())
+    for p in rows4.merged().each():
+        lb = A.pya.DBox(*A._box_um(p.bbox()))
+        b = lb.transformed(core.trans)
+        segs["AVSS" if lb.center().x < CORE.AVDD_RAIL_X0 else "AVDD"].append((b.left, b.bottom, b.right, b.top))
+    xw0 = core.trans * A.pya.DPoint(CORE.AVDD_RAIL_X0, 0.0)
 
-    def strips(lst, grow):
-        """Metal5 strips under 30 um (MSLOT5.1) over groups of bars: [(y1, y2, bars)]"""
+    def strips(net, grow):
+        """Metal5 strips under 30 um (MSLOT5.1) over the rows of segments: [(y1, y2, segments)]"""
         out = []
-        for bx in lst:
-            y1, y2 = bx[1] - grow, bx[3] + grow
+        for y in sorted({bx[1] for bx in segs[net]}):
+            row = [bx for bx in segs[net] if abs(bx[1] - y) < 0.01]
+            y1, y2 = y - grow, row[0][3] + grow
             if out and y2 - out[-1][0] <= 29.0 and y1 <= out[-1][1] + 6.0:
-                out[-1] = (out[-1][0], y2, out[-1][2] + [bx])
+                out[-1] = (out[-1][0], y2, out[-1][2] + row)
             else:
-                out.append((y1, y2, [bx]))
+                out.append((y1, y2, row))
         return out
-    xw = tg.bbox[2] + 0.6                             # west ends: over the gap beside the chopper
-    rails = {"AVSS": strips(vss, 0.0), "AVDD": strips(vdd, 10.0)}
+    xw = tg.bbox[2] + 0.6                             # AVSS west ends: over the gap beside the chopper
+    vss_top = max(bx[3] for bx in segs["AVSS"])
+    segs["AVDD"] = [bx for bx in segs["AVDD"] if bx[1] > vss_top + 4.0]
+    rails = {"AVSS": strips("AVSS", CORE.RAIL_GROW["VSS"]), "AVDD": strips("AVDD", CORE.RAIL_GROW["VDD"])}
     for net, lst in rails.items():
+        x_west = xw if net == "AVSS" else xw0.x
         for y1, y2, bl_ in lst:
-            a.wire("metal5", xw, y1, W, y2, net)
+            a.wire("metal5", x_west, y1, W, y2, net)
             for bx in bl_:
-                a.vias("via4", *bx)
+                a.vias_fit("via4", *bx)
         y1, y2, _ = lst[0]
         a.label("metal5", net, W - 1.0, (y1 + y2) / 2)
         # Metal4 pads under the rails for the router (the chopper's bulk, the section's cells)
-        for x in (xw + 0.6, W - 20.0):
+        for x in ((xw + 0.6, W - 20.0) if net == "AVSS" else (W - 20.0,)):
             a.via_stack("metal4", "metal5", x, y1 + 1.0, x + 4.0, y2 - 1.0, net)
             pins.setdefault(net, []).append(("metal4", x, y1 + 1.0, x + 4.0, y2 - 1.0))
     I["rails"] = rails

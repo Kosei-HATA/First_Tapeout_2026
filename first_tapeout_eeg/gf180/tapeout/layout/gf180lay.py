@@ -20,6 +20,7 @@ Conventions:
   - The LVS netlist comes from the simulation netlist (gf180/tapeout/*/*.spice) through
     to_cdl(): X devices become M/R/C devices with the PDK model names.
 """
+import math
 import os
 import re
 import subprocess
@@ -155,6 +156,20 @@ class Cell:
             for j in range(ny):
                 self.box(via, ox + i * pitch, oy + j * pitch, ox + i * pitch + VIA_SIZE, oy + j * pitch + VIA_SIZE)
 
+    def vias_fit(self, via, x1, y1, x2, y2):
+        """vias() over the box shrunk so that its via array sits on the 5 nm grid (vias()
+        centres the array; an off-grid start rounds into 0.255 / 0.265 um vias and 0.355 um
+        spaces). For boxes of arbitrary size."""
+        p = VIA_SIZE + VIA_SPACE
+
+        def fit(a, c):
+            a = math.ceil(round(a / 0.005, 6)) * 0.005
+            n = max(1, int((c - a - 2 * VIA_ENC + VIA_SPACE) / p + 1e-9))
+            span = n * p - VIA_SPACE + 2 * VIA_ENC
+            return a, a + span + math.floor(round((c - a - span) / 0.01, 6)) * 0.01
+        (xa, xc), (ya, yc) = fit(min(x1, x2), max(x1, x2)), fit(min(y1, y2), max(y1, y2))
+        self.vias(via, xa, ya, xc, yc)
+
     def stack(self, lo, hi, x1, y1, x2, y2):
         """Vias from metal lo to metal hi (e.g. 'metal1', 'metal4') over the box."""
         for k in range(METALS.index(lo), METALS.index(hi)):
@@ -219,7 +234,7 @@ def mim_cap(w, l):
 
 
 def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.0, g=1.0, hgap=2.6,
-              bw=5.0, count=None, south=False):
+              bw=5.0, count=None, south=False, bridge=False, jumper_w=None, feet=False, plane=False):
     """MIM capacitor array (MIM-B): nx x ny units of w x l um, all in parallel between the
     nets `top` (top plates) and `bot` (bottom plates), comb-routed on Metal5.
 
@@ -237,6 +252,17 @@ def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.
     Rows are hgap apart: the Metal4 of a bottom plate (0.6 um beyond the top plate) must
     stay 1.2 um from any other Metal4 (MIMTM.1). count < nx * ny leaves the last places
     of the last column empty (e.g. 35 units on a 9 x 4 grid).
+    For low resistance from the plates to the buses (the AFE's Cin is in series with the
+    signal), all off by default:
+      bridge    Metal5 over the row gaps across each unit's width: a column's top plates
+                become one Metal5 strip;
+      jumper_w  (south) the top net's jumper under the bot bus, its landing above the bus
+                and the via4 at both ends jumper_w um wide (from the column's west edge)
+                instead of the spine's s;
+      feet      (south) Metal4 islands of the bot net under the bot bus at each bot spine,
+                between the jumpers: via4 to the bus, via3 down;
+      plane     a Metal3 sheet of the bot net under the whole array (2 um holes on a 25 um
+                grid, MSLOT3.1), joined to the feet by their via3.
     Returns the outline (x0, y0, x1, y1) in um; with south=True y1 is the edge of the last
     row's bottom plates, so other Metal4 must stay 1.2 um above it.
     """
@@ -264,15 +290,41 @@ def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.
             b.box("metal4", xk + s + w + 0.3, yu - 0.6, xs + t, yu + l + 0.6)   # bottom-plate tab
             b.vias("via4", xs, yu + 0.4, xs + t, yu + l - 0.4)
         if south:
+            jw = jumper_w or s
             b.box("metal5", xk, yl, xk + s, ytop)              # top spine, down to its landing
-            b.vias("via4", xk, yl, xk + s, yl + jh)
-            b.box("metal4", xk, yt0, xk + s, yl + jh)          # jumper under the bot bus
-            b.vias("via4", xk, yt0, xk + s, yt1)               # into the top bus
+            vias = b.vias_fit if jumper_w else b.vias
+            if jumper_w:                                       # wide landing, up to the first top plate
+                b.box("metal5", xk, yl, xk + jw, yb + 0.01)
+            vias("via4", xk, yl, xk + jw, yl + jh)
+            b.box("metal4", xk, yt0, xk + jw, yl + jh)         # jumper under the bot bus
+            vias("via4", xk, yt0, xk + jw, yt1)                # into the top bus
             b.box("metal5", xs, yb0, xs + t, ytop)             # bot spine, down into the bot bus
+            if feet:                                           # bot-net island up to the next jumper
+                fx1, fx2 = xk + jw + 0.4, min(xk + px, x0 + nx * px - g) - 0.4
+                b.box("metal4", fx1, yt0, fx2, yl + jh)
+                b.vias_fit("via4", fx1, yb0, fx2, yb1)
+                b.vias_fit("via3", fx1, yt0, fx2, yl + jh)
         else:
             b.box("metal5", xk, yb, xk + s, ytop + 2.0 + bw)   # top spine, up into the top bus
             b.box("metal5", xs, y0, xs + t, ytop)              # bot spine, down into the bottom bus
+        if bridge:                                             # Metal5 over the row gaps
+            for j in range(ny - 1):
+                if i * ny + j + 1 < count:
+                    yu = yb + j * py
+                    b.box("metal5", xk + s, yu + l - 0.01, xk + s + w, yu + py + 0.01)
     x1 = x0 + nx * px - g
+    if plane:                                                  # bot-net Metal3 sheet under the array,
+        um = lambda v: int(round(v * 1000))                    # with 2 um holes on a 25 um grid above
+        sheet = pya.Region(pya.Box(um(x0), um(y0), um(x1), um(ytop)))     # the buses (MSLOT3.1: no
+        holes = pya.Region()                                   # 30 um square without an opening)
+        hx = x0 + 12.0
+        while hx + 2.0 < x1:
+            hy = y0 + 15.0
+            while hy + 2.0 < ytop:
+                holes.insert(pya.Box(um(hx), um(hy), um(hx + 2.0), um(hy + 2.0)))
+                hy += 25.0
+            hx += 25.0
+        b.cell.shapes(b.li("metal3")).insert(sheet - holes)
     if south:
         b.box("metal5", x0, yt0, x1, yt1)                      # top bus
         b.box("metal5", x0, yb0, x1, yb1)                      # bot bus

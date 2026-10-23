@@ -17,10 +17,23 @@ The branch current (9.6 mA per side, 19.2 mA in the tails) runs on Metal3 lanes 
 each column (blocks.lanes; 12 lanes of 1.2 um per branch net, 24 for SN, SP, VDD, VSS;
 0.67 mA per um of Metal3). The output nodes leave the cascodes of both columns at the
 top on Metal4 trunks (three of 5 um per net) that reach the east edge as the OUTP /
-OUTN ports. VSS and VDD come in from above on Metal4 bars over the two tails (via3 on
-their lanes), for the AFE's Metal5 supply straps. Ports: INP on the top edge, INN on the
-bottom edge (towards the Cin buses), VBN, VBP, BLP, BLN on the east edge. The gates and
-the boosters' nets: route.Router.
+OUTN ports. VSS and VDD come in from above through Metal4 bar segments over the supply
+lanes of the two tails (via3 on the lanes), for the AFE's Metal5 supply rails.
+
+The input-pair gates INP / INN are hand-drawn (their wiring resistance is in series with
+the signal, input-referred one to one; tracker D6, documentation/gf180_pex_20261023.md):
+  - straps: vertical Metal4 straps over each pair, INP and INN side by side, cut at the
+    supply lanes (so that INN can pass the tail between them); Metal5 on the straps where
+    the AFE's supply rails leave it free (above RAIL_TOP);
+  - taps: on every strip, Metal2 pads below the INP gate bar and above the INN bar, via2
+    to Metal3 islands between the lanes, via3 to the strap of the net;
+  - INP: Metal5 from the straps up over the cascodes to the top edge (the AFE joins it to
+    the Cin_P top-plate bus along the core's width);
+  - INN: Metal4 straps on through the tails between the supply segments, via4 below the
+    tails onto Metal5 that runs down over the boosters to the bottom edge (joined to the
+    Cin_N bus the same way).
+Ports: INP (Metal5, top edge), INN (Metal5, bottom edge), VBN, VBP, BLP, BLN on the east
+edge. The other gates and the boosters' nets: route.Router.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/afecore_lay.py [--drc] [--lvs]
 """
@@ -41,7 +54,17 @@ SW = 2.4
 TN, TP = 300.0, 400.0                 # target strip lengths of the two columns (um)
 WF = 20.0                             # finger width of the pairs, tails and cascodes
 TRUNK_W, N_TRUNK = 5.0, 3             # output trunks per net (Metal4)
-PWR_W, N_PWR = 6.0, 5                 # Metal4 supply bars over each tail
+PWR_W, N_PWR = 6.0, 5                 # rows of Metal4 supply segments over each tail
+RAIL_GROW = {"VSS": 0.0, "VDD": 10.0}  # the AFE's Metal5 rails: supply rows grown by this (afe_lay)
+AVDD_RAIL_X0 = 304.0                  # the AFE's AVDD rails start here (core x, between the columns)
+STRAP_W = 11.0                        # target width of the INP / INN straps
+STRAP_GAP = 0.6                       # Metal4 / Metal5 between straps (MT.2b 0.6)
+SEG_KEEP = 0.35                       # Metal4 between a supply segment and an INN strap (M4.2b 0.3)
+LANE_KEEP = 0.28                      # Metal3 island to a lane (M3.2a)
+WIDE_KEEP = 0.31                      # wide Metal3 (over 10 um both ways) to a lane (M3.2b 0.3)
+INP_PAD, INN_PAD = 4.0, 3.4           # tap pads (Metal2): below the INP gate bar, above the INN bar
+ROUTER_X = {"N": 5.0, "P": 9.0}       # router access left free on the east of each tail (VBN, VBP)
+EDGE_BAR = 4.0                        # Metal5 bars joining the INP strips (top edge), INN (bottom)
 
 
 def split(total, per):
@@ -104,6 +127,189 @@ def cells(b):
     return C
 
 
+def minus(lo, hi, cuts):
+    """The parts of [lo, hi] outside the intervals cuts."""
+    out, x = [], lo
+    for a, b in sorted(cuts):
+        if b <= x or a >= hi:
+            continue
+        if a > x:
+            out.append((x, a))
+        x = max(x, b)
+    if x < hi:
+        out.append((x, hi))
+    return out
+
+
+def strap_plan(x_lo, x_hi, supply_x, sites):
+    """INP / INN straps over a pair between x_lo and x_hi: the cells between the supply
+    lanes (left edges supply_x, SEG_KEEP kept around each), each split into straps of about
+    STRAP_W, the nets alternating west to east. Returns [[net, x1, x2, cell, tap sites]],
+    the sites being the parts of the free Metal3 intervals `sites` inside the strap
+    (at least two vias wide); straps without a site are left out."""
+    cells = minus(x_lo, x_hi, [(x - SEG_KEEP, x + 1.2 + SEG_KEEP) for x in supply_x])
+    out = []
+    for c1, c2 in cells:
+        w = c2 - c1
+        if w < 4.0:
+            continue
+        k = max(1, round((w + STRAP_GAP) / (STRAP_W + STRAP_GAP)))
+        sw = (w - (k - 1) * STRAP_GAP) / k
+        for j in range(k):
+            x1 = c1 + j * (sw + STRAP_GAP)
+            x2 = x1 + sw
+            st = [(max(a, x1), min(b, x2)) for a, b in sites if min(b, x2) - max(a, x1) >= 0.9]
+            if st:
+                out.append([None, x1, x2, (c1, c2), st])
+    for k, s in enumerate(out):
+        s[0] = ("INP", "INN")[k % 2]
+    return out
+
+
+def tile(x1, x2, avoid=(), w_max=28.0, gap=1.0):
+    """Metal5 strips under 30 um (MSLOT5.1) over x1..x2, gap um apart, with the gaps
+    placed outside the intervals `avoid` (straps of the strips' net that must not bridge
+    two strips). Returns [(a, b)]."""
+    out, a = [], x1
+    while x2 - a > w_max:
+        b, moved = a + w_max, True
+        while moved:                           # a gap that would cut a strap goes west of it
+            moved = False
+            for p, q in avoid:
+                if p < b + gap and q > b:
+                    b, moved = p - gap, True
+        if b - a < 4.0:
+            raise ValueError(f"no room for a strip gap after x {a:.1f}")
+        out.append((a, b))
+        a = b + gap
+    out.append((a, x2))
+    return out
+
+
+def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, height):
+    """Draw the INP / INN wiring (module doc). supply: {column: supply lane x list} (VSS
+    over the N tail, VDD over the P tail), rows: {column: y of the supply rows}; Metal5
+    stays below rail_bot (the AVSS rails cross the whole core), and above rail_mid (top of
+    the AVSS rails) in the N column, above rail_top (AVDD rails) in the P column. Returns
+    (fixed shapes [(layer, box, net)] for the router, via3 boxes, {column: INN pieces
+    (x1, x2) through the tail}, {net: label point})."""
+    fixed, vias3, pieces = [], [], {}
+    inp_x, tops = [], {}
+    y_tb = rail_bot - 7.24                         # INN Metal4 down to here, via4 above it
+    for side, pk, tk in (("N", "NPAIR", "NTAIL"), ("P", "PPAIR", "PTAIL")):
+        p, t = pd[pk], pd[tk]
+        x_lo, x_hi = p.x + 0.4, p.x + p.cell.width - 0.4
+        y_lo, top = p.y, p.y + p.cell.height
+        tops[side] = top
+        occupied = [(s[1] - LANE_KEEP, s[3] + LANE_KEEP) for segs in lanes.values() for s in segs
+                    if s[1] < x_hi and s[3] > x_lo and s[2] < top and s[4] > y_lo]
+        plan = strap_plan(x_lo, x_hi, supply[side], minus(x_lo, x_hi, occupied))
+        # taps on every strip: Metal2 pad, via2, Metal3 island, via3 onto the strap
+        for net, x1, x2, cell, sites in plan:
+            for _, px1, py1, px2, py2 in p.pins[net]:
+                ya, yb_ = (py2 - INP_PAD, py2) if net == "INP" else (py1, py1 + INN_PAD)
+                for sa, sb in sites:
+                    sa, sb = max(sa, px1), min(sb, px2)
+                    if sb - sa < 0.9:
+                        continue
+                    b.vias_fit("via2", sa, ya, sb, yb_)
+                    b.vias_fit("via3", sa, ya, sb, yb_)
+                    vias3.append((sa, ya, sb, yb_))
+                    fixed.append(("metal3", (sa, ya, sb, yb_), net))
+        # straps: Metal4 over the pair, Metal5 on them (in the P column above rail_top, where
+        # the AFE's AVDD rails cross; INP on to the top edge), via4 rows between the two
+        for net, x1, x2, cell, sites in plan:
+            m5y1 = max(rail_top if x2 > AVDD_RAIL_X0 - 0.6 else rail_mid, y_lo + 1.0)
+            if net == "INP":
+                m4 = (x1, y_lo + 1.0, x2, top + 1.0)
+                m5 = (x1, m5y1, x2, height)
+                inp_x.append((x1, x2))
+            else:
+                m4 = (x1, y_lo, x2, max(top + 0.5, max(q[2] for q in p.pins["INN"]) + INN_PAD))
+                m5 = (x1, m5y1, x2, top)
+            b.box("metal4", *m4)
+            b.box("metal5", *m5)
+            fixed.append(("metal4", m4, net))
+            y = m5y1 + 0.5
+            while y + 2.0 < min(m4[3], m5[3]) - 0.5:
+                b.vias_fit("via4", x1, y, x2, y + 2.0)
+                y += 11.5
+        # INN through the tail: every strap cell, in pieces under 30 um cut in the gaps
+        # between straps, from y_tb up to the pair (the INN straps go on from there); the
+        # pieces are linked across the supply lanes where no supply row is (Metal4), and Metal3
+        # strips in the free lane places under them add to it (via3 rows); the router keeps
+        # the tail's east end (the tail's gate pins)
+        t_hi = t.x + t.cell.width - ROUTER_X[side]
+        groups = {}
+        for s in plan:
+            groups.setdefault(s[3], []).append(s)
+        pcs = []
+        for _, ss in sorted(groups.items()):
+            run = []
+            for s in ss + [None]:
+                if s is not None and (not run or s[2] - run[0][1] <= 28.0):
+                    run.append(s)
+                    continue
+                if min(run[-1][2], t_hi) - run[0][1] >= 2.0:
+                    pcs.append((run[0][1], min(run[-1][2], t_hi)))
+                run = [s] if s is not None else []
+        for a, c in pcs:
+            b.box("metal4", a, y_tb, c, y_lo + 0.5)
+            fixed.append(("metal4", (a, y_tb, c, y_lo + 0.5), "INN"))
+        sr = sorted(rows[side])
+        spans = [(y_tb, sr[0] - SEG_KEEP)] + [(sr[k] + PWR_W + SEG_KEEP, sr[k + 1] - SEG_KEEP)
+                                             for k in range(len(sr) - 1)] + [(sr[-1] + PWR_W + SEG_KEEP, y_lo + 0.5)]
+        for (a1, c1), (a2, c2) in zip(pcs, pcs[1:]):
+            if a2 - c1 < 3.0:                           # a supply lane or a strap gap between them
+                for y1, y2 in spans:
+                    if y2 - y1 >= 2.0:
+                        ym = (y1 + y2) / 2
+                        lk = (c1, max(y1, ym - 5.0), a2, min(y2, ym + 5.0))
+                        b.box("metal4", *lk)
+                        fixed.append(("metal4", lk, "INN"))
+        tail_lanes = [(s[1] - WIDE_KEEP, s[3] + WIDE_KEEP) for segs in lanes.values() for s in segs
+                      if s[1] < t_hi and s[3] > t.x and s[2] < y_lo and s[4] > t.y]
+        free3 = minus(t.x + 0.4, t_hi, tail_lanes)
+        for a, c in pcs:
+            for fa, fc in free3:
+                x1, x2 = max(a, fa), min(c, fc)
+                if x2 - x1 < 0.9:
+                    continue
+                m3 = (x1, t.y, x2, y_lo - 0.6)
+                b.box("metal3", *m3)
+                fixed.append(("metal3", m3, "INN"))
+                y = t.y + 0.5
+                while y + 2.0 < y_lo - 1.0:
+                    b.vias_fit("via3", x1, y, x2, y + 2.0)
+                    vias3.append((x1, y, x2, y + 2.0))
+                    y += 10.0
+        pieces[side] = pcs
+    # INN Metal5 over the boosters, from the bottom edge up to the via4 rows on the pieces,
+    # the strips joined by a bar along the edge (the AFE joins the bar to the Cin_N bus)
+    allp = pieces["N"] + pieces["P"]
+    bot = tile(min(a for a, _ in allp), max(c for _, c in allp))
+    for a, c in bot:
+        b.box("metal5", a, 0.0, c, rail_bot)
+    b.box("metal5", bot[0][0], 0.0, bot[-1][1], EDGE_BAR)
+    for pa, pc in allp:
+        for a, c in bot:
+            if min(c, pc) - max(a, pa) >= 0.9:
+                b.vias_fit("via4", max(a, pa), y_tb, min(c, pc), rail_bot - 0.24)
+    # INP Metal5 over the cascodes, from above the pairs to the top edge; the strips join
+    # the INP straps (gaps never cut one) and keep clear of the INN straps' tops
+    x_mid = (pd["NPAIR"].x + pd["NPAIR"].cell.width + pd["PPAIR"].x) / 2
+    top_strips = tile(pd["NPAIR"].x + 0.4, pd["PPAIR"].x + pd["PPAIR"].cell.width - 0.4, avoid=inp_x)
+    for a, c in top_strips:
+        y1 = (tops["N"] if a < x_mid else tops["P"]) + 1.0
+        if a < x_mid < c:
+            y1 = max(tops.values()) + 1.0
+        b.box("metal5", a, y1, c, height)
+    b.box("metal5", top_strips[0][0], height - EDGE_BAR, top_strips[-1][1], height)
+    lbl = {"INP": ((top_strips[len(top_strips) // 2][0] + top_strips[len(top_strips) // 2][1]) / 2, height - 0.5),
+           "INN": ((bot[len(bot) // 2][0] + bot[len(bot) // 2][1]) / 2, 0.5)}
+    return fixed, vias3, pieces, lbl
+
+
 def spread(x1, x2, plan, w=1.2):
     """Lane left edges for {net: count} spread evenly over x1..x2, nets interleaved."""
     order = []
@@ -136,7 +342,7 @@ def build():
         return p
 
     x0 = round((SW + 2.4) / lg.PITCH) * lg.PITCH
-    yb = 4.0                                        # room for the INN port's stub
+    yb = 4.0                                        # margin under the boosters (INN Metal5 to the edge)
     col = {"N": ["nboost", "ntail", "npair", "ncas"], "P": ["pboost", "ptail", "ppair", "pcas"]}
     xs = {"N": x0}
     xs["P"] = round((x0 + max(C[k].width for k in col["N"]) + 8.0) / lg.PITCH) * lg.PITCH
@@ -156,11 +362,11 @@ def build():
         return max(p.x for p in ps) + 2.2 + free, min(p.x + p.cell.width for p in ps) - 2.2
 
     # ---- lanes over the tail, pair and cascodes of each column
-    lanes = {}
+    lanes, lx_side = {}, {}
     for side, plan in (("N", {"SN": 24, "DNP": 12, "DNN": 12, "OUTN": 12, "OUTP": 12, "VSS": 24}),
                        ("P", {"SP": 24, "DPP": 12, "DPN": 12, "OUTN": 12, "OUTP": 12, "VDD": 24})):
         keys = col[side][1:]
-        lx = spread(*common(*keys), plan)
+        lx = lx_side[side] = spread(*common(*keys), plan)
         bars = bl.lanes(b, [pd[k.upper()] for k in keys], lx)
         for n, segs in bars.items():
             lanes.setdefault(n, []).extend(segs)
@@ -178,38 +384,65 @@ def build():
                 if s[2] <= y1 and y1 + TRUNK_W <= s[4]:
                     b.vias("via3", s[1], y1, s[3], y1 + TRUNK_W)
                     vias3.append((s[1], y1, s[3], y1 + TRUNK_W))
+                elif min(s[4], y1 + TRUNK_W) - max(s[2], y1) >= 1.0:     # a lane ending on the trunk
+                    ya, yc = max(s[2], y1), min(s[4], y1 + TRUNK_W)
+                    b.vias_fit("via3", s[1], ya, s[3], yc)
+                    vias3.append((s[1], ya, s[3], yc))
             ports_out.setdefault(n, []).append(("metal4", min(s[1] for s in segs), y1, width, y1 + TRUNK_W))
     top_cas = min(pd["NCAS"].y + C["ncas"].height, pd["PCAS"].y + C["pcas"].height)
     assert yt0 + 2 * N_TRUNK * (TRUNK_W + 2.0) < top_cas, "trunks do not fit over the cascodes"
-    # ---- supply bars (Metal4) over the tails, via3 on their lanes
-    pwr = {}
+    # ---- supply rows over the tails; the AFE's Metal5 rails cover them (afe_lay.wiring)
+    rows = {}
     for net, key in (("VSS", "ntail"), ("VDD", "ptail")):
+        p = pd[key.upper()]
+        nb_ = max(1, min(N_PWR, int((p.cell.height - 4.0) / (PWR_W + 2.0))))
+        rows[net] = [p.y + 2.0 + k * (p.cell.height - 4.0 - PWR_W) / max(1, nb_ - 1) for k in range(nb_)]
+    rail_bot = rows["VSS"][0] - 0.6                      # Metal5 keeps 0.6 um from the rails (MT.2b)
+    rail_mid = rows["VSS"][-1] + PWR_W + RAIL_GROW["VSS"] + 0.6
+    rail_top = rows["VDD"][-1] + PWR_W + RAIL_GROW["VDD"] + 0.6
+    # ---- INP / INN gate network
+    fixed, gvias3, pieces, lbl = gate_network(
+        b, pd, lanes, {"N": lx_side["N"]["VSS"], "P": lx_side["P"]["VDD"]}, {"N": rows["VSS"], "P": rows["VDD"]},
+        rail_bot, rail_mid, rail_top, height)
+    vias3 += gvias3
+    # ---- supply segments (Metal4) on the tails' supply lanes, between the INN pieces
+    pwr = {}
+    for net, key, side in (("VSS", "ntail", "N"), ("VDD", "ptail", "P")):
         p = pd[key.upper()]
         segs = [s for s in lanes[net] if s[2] <= p.y + p.cell.height and s[4] >= p.y]
         x1, x2 = min(s[1] for s in segs), max(s[3] for s in segs)
-        nb_ = max(1, min(N_PWR, int((p.cell.height - 4.0) / (PWR_W + 2.0))))
-        for k in range(nb_):
-            y1 = p.y + 2.0 + k * (p.cell.height - 4.0 - PWR_W) / max(1, nb_ - 1)
-            b.box("metal4", x1, y1, x2, y1 + PWR_W)
-            for s in segs:
-                if s[2] <= y1 and y1 + PWR_W <= s[4]:
+        cuts = [(a - SEG_KEEP, c + SEG_KEEP) for a, c in pieces[side]]
+        for y1 in rows[net]:
+            for a, c in minus(x1, x2, cuts):
+                on = [s for s in segs if a - 1e-6 <= s[1] and s[3] <= c + 1e-6 and s[2] <= y1 and y1 + PWR_W <= s[4]]
+                if not on:
+                    continue
+                b.box("metal4", a, y1, c, y1 + PWR_W)
+                for s in on:
                     b.vias("via3", s[1], y1, s[3], y1 + PWR_W)
                     vias3.append((s[1], y1, s[3], y1 + PWR_W))
-            pwr.setdefault(net, []).append(("metal4", x1, y1, x2, y1 + PWR_W))
-    # the lanes replace the Metal2 strap pins of their nets in the column cells
+                pwr.setdefault(net, []).append(("metal4", a, y1, c, y1 + PWR_W))
+    # the lanes replace the Metal2 strap pins of their nets in the column cells; the straps
+    # of the cells already join all lanes of a net (and the trunks and supply segments their
+    # lanes), so the router only joins the boosters' pins of a lane net to its nearest lane;
+    # the gates INP / INN are not routed
     for n in lanes:
         keep = [sg for sg in nets.get(n, []) if not any(sg in p.pins.get(n, []) for p in placed
                                                          if p.name not in ("NBOOST", "PBOOST"))]
-        nets[n] = keep + lanes[n]
-    for n in ("OUTP", "OUTN"):
-        nets[n] = nets[n] + ports_out[n]
-    for n in ("VSS", "VDD"):
-        nets[n] = nets[n] + pwr[n]
+        if not keep:
+            nets.pop(n, None)
+            continue
+        xc = sum(s[1] + s[3] for s in keep) / (2 * len(keep))
+        nets[n] = keep + [min(lanes[n], key=lambda s: abs(s[1] - xc))]
+    for n in ("OUTP", "OUTN"):                 # the trunks (not every one meets a lane of its net)
+        nets[n] = ports_out[n]
+    for n in ("INP", "INN"):
+        nets.pop(n)
     # ---- ports
     gx0 = 0.24
-    snap = lambda v: gx0 + round((v - gx0) / lg.PITCH) * lg.PITCH
-    pp = bl.ports_top(b, ["INP"], [snap(width / 2)], height)
-    pp.update(bl.ports_bottom(b, ["INN"], [snap(width / 2)], 0.0))
+    pp = {}
+    for n, (x, y) in lbl.items():
+        b.label("metal5", n, x, y)
     for k, n in enumerate(["VBN", "VBP", "BLP", "BLN"]):
         y = -1.5 + round((yb + 20.0 + k * 6.0 + 1.5) / route.P) * route.P
         b.box("metal4", width - 3.0, y - 0.19, width, y + 0.19)
@@ -229,6 +462,8 @@ def build():
     for n, segs in list(lanes.items()) + list(pwr.items()) + list(ports_out.items()):
         for s in segs:
             r.obstacle(*s, n)
+    for lay, box, n in fixed:
+        r.obstacle(lay, *box, n)
     failed = r.route(nets, rounds=6)
     if failed:
         for n in failed:

@@ -40,6 +40,7 @@ import blocks as bl
 import route
 import assemble as A
 import fets as f
+import afetg_lay as TG
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # the padring run (work copy eeg_padring, RUN_2026-10-23_13-27-25): its GDS (gzipped) and
@@ -412,16 +413,19 @@ def decaps(a, I):
 def electrodes(a, I):
     """ELP / ELN pad straps to the input chopper's Metal5 spines (EP outer, EN inner):
     Metal5 over Metal4 (via4 between them, west of the chopper), each split in strips
-    (slot rule). ELN crosses the EP spine on a Metal4 jumper (at most 28 um tall, no slot)
-    between the chopper's EP straps (Metal4 rows on the EP spine every 44 um, with their
-    own via4 to the spine); the jumper's via4 onto the EN spine leaves out the chopper's
-    EN rows (they have their via4 there)."""
+    (slot rule). ELP's strap runs onto the EP spine (its Metal4 onto the chopper's EP
+    bands). ELN's crosses the EP spine on Metal4 jumpers (one per gap between the
+    chopper's EP bands: Metal4 rows from the EP spine east, afetg_lay.band_rows) into the
+    chopper's EN bands (Metal4 rows from the EN spine east, with their own via4 onto it)."""
     P = I["pads"]
-    tg = (I["afe"].bbox[0] + 2.0, I["afe"].bbox[1] + 483.5)      # afe_tgin origin (afe_lay)
-    ep = (tg[0], tg[0] + 12.0)                                   # spines (afetg_lay SPINE_W)
-    en = (tg[0] + 14.0, tg[0] + 26.0)
-    ep_rows = [tg[1] + 17.02 + 44.0 * m for m in range(11)]       # EP Metal4 straps, 2 um tall
-    en_rows = [tg[1] + 39.02 + 44.0 * m for m in range(11)]       # EN Metal4 straps
+    sp = {}
+    for n in ("ELP", "ELN"):            # the whole spines (a pin can be a via island on one)
+        b = A.pya.DBox(*I["afe"].pin(n, "metal5")[1:]).transformed(I["afe"].trans.inverted())
+        sp[n] = max(local_shapes(I["afe"], "metal5", (b.left, b.bottom, b.right, b.top)), key=lambda s: s[3] - s[1])
+    ep, en = (sp["ELP"][0], sp["ELP"][2]), (sp["ELN"][0], sp["ELN"][2])
+    rows = TG.band_rows(sp["ELP"][1], sp["ELP"][3])                       # spines = the lanes' span
+    ep_rows = [(y1, y2) for kind, y1, y2 in rows if kind == "EP"]
+    en_rows = [(y1, y2) for kind, y1, y2 in rows if kind == "EN"]
     for k, net in (("analog[2]", "ELP"), ("analog[3]", "ELP"), ("analog[4]", "ELN"), ("analog[5]", "ELN")):
         x1, y1, x2, y2 = pad_plate(a, P[k], "west")
         y1, y2 = y1 + 0.5, y2 - 0.5
@@ -433,25 +437,18 @@ def electrodes(a, I):
         for xa in range(int(x2) + 4, int(xlast) - 5, 12):
             slab_stack(a, "metal4", "metal5", xa, y1, xa + 6.0, y2, net, maxw=20.0)
         if net == "ELN":
-            gaps = [(r + 2.0 + 1.5, r2 - 1.5) for r, r2 in zip(ep_rows, ep_rows[1:])]
-            ga, gb = max(gaps, key=lambda g_: min(g_[1], y2) - max(g_[0], y1))
-            ga, gb = max(ga, y1), min(gb, y2)
-            gb = min(gb, ga + 28.0)
-            a.wire("metal4", xe - 6.0, ga, en[0] + 6.0, gb, net)
-            # west via4: on the strap's Metal5 strips only (not in their slots)
-            n = max(1, int((y2 - y1 + 2.0) / 22.0 + 0.999))
+            n = max(1, int((y2 - y1 + 2.0) / 22.0 + 0.999))      # the strap's Metal5 strips (slab)
             w = (y2 - y1 - (n - 1) * 2.0) / n
-            for j in range(n):
-                sa, sb = max(ga, y1 + j * (w + 2.0)), min(gb, y1 + j * (w + 2.0) + w)
-                if sb - sa > 1.0:
-                    a.via_stack("metal4", "metal5", xe - 6.0, sa, xe, sb, net)
-            # east via4 onto the EN spine, around the chopper's EN rows
-            cuts = sorted([(r - 0.6, r + 2.6) for r in en_rows if r + 2.6 > ga and r - 0.6 < gb])
-            ya = ga
-            for ca, cb in cuts + [(gb, gb)]:
-                if ca - ya > 1.0:
-                    a.via_stack("metal4", "metal5", en[0], ya, en[0] + 6.0, ca, net)
-                ya = max(ya, cb)
+            for (_, ra), (rb, _) in zip(ep_rows, ep_rows[1:]):
+                ga, gb = max(ra + TG.ROW_GAP, y1), min(rb - TG.ROW_GAP, y2)
+                if not any(min(gb, r2) - max(ga, r1) >= 3.0 for r1, r2 in en_rows):
+                    continue                                     # must land on an EN band
+                a.wire("metal4", xe - 6.0, ga, en[0] + 6.0, gb, net)
+                # west via4: on the strap's Metal5 strips only (not in their slots)
+                for j in range(n):
+                    sa, sb = max(ga, y1 + j * (w + 2.0)), min(gb, y1 + j * (w + 2.0) + w)
+                    if sb - sa > 1.0:
+                        a.via_stack("metal4", "metal5", xe - 6.0, sa, xe, sb, net)
 
 
 def pin_pads(a, inst, names=None, w=4.0, h=1.4):

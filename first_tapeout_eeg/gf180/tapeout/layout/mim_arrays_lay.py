@@ -9,7 +9,7 @@
   eeg_c2   C2, one side of the ADC second integrator (19.53 pF): one unit of 98.83 um.
 Cin and C1 have both buses on their south edge (gf180lay.mim_array south=True; TOP
 outermost): the AFE and ADC place them mirrored above and below their circuits, which
-then reach both nets along one edge.
+then reach both nets along one edge. Cin's wiring is widened (OPTIONS).
 
 The units are equal squares sized with the cap_mim_2f0ff model (area and perimeter terms)
 so the totals match the netlists; one MIM cap may not exceed 10,000 um2 (MIMTM.8b). The
@@ -35,12 +35,17 @@ ARRAYS = {
     "eeg_c1": (5, 4, 97.23, ADC, 18, True),
     "eeg_c2": (1, 1, 98.83, ADC, 1, False),
 }
+# Cin is in series with the electrode signal (tracker D6): its plates' wiring is made wide
+# (gf180lay.mim_array: top plates bridged into columns, 80 um jumpers into the TOP bus, BOT
+# islands and a Metal3 plane under the array that the AFE feeds from the input chopper)
+OPTIONS = {"eeg_cin": dict(bridge=True, jumper_w=80.0, feet=True, plane=True)}
 
 
 def build(name):
     nx, ny, a, _, count, south = ARRAYS[name]
     b = g.Block(name)
-    x0, y0, x1, y1 = g.mim_array(b, nx, ny, a, a, top="TOP", bot="BOT", count=count, south=south)
+    x0, y0, x1, y1 = g.mim_array(b, nx, ny, a, a, top="TOP", bot="BOT", count=count, south=south,
+                                 **OPTIONS.get(name, {}))
     return b, (x1 - x0, y1 - y0), count * g.mim_cap(a, a)
 
 

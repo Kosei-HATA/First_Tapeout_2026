@@ -76,8 +76,10 @@ def ports():
 
 # wiring resistance of the signal path per side (pex_rin.py, typical, ohm): electrode
 # side E (in series with the source), Cin bottom-plate side W (chopper to Cin), top-plate
-# side T (Cin to the input-pair gates)
-RIN_EXTRACTED = {"E": (0.350, 0.346), "W": (3.970, 3.935), "T": (71.60, 114.59)}
+# side T (Cin to the input-pair gates). The layout of 10/24 (D6 fixes 1-5), pex_rin.py --afe
+# (square), E with the chip's straps of 10/23 (0.04 / 0.05); 10/23 before the fixes:
+# E 0.350 / 0.346, W 3.970 / 3.935, T 71.60 / 114.59
+RIN_EXTRACTED = {"E": (0.179, 0.173), "W": (0.204, 0.198), "T": (0.125, 0.124)}
 
 
 def split_signal_path(text, variant):

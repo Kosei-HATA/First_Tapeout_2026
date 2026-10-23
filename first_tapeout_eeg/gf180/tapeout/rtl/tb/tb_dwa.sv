@@ -1,17 +1,22 @@
 // tb_dwa - eeg_dwa (N = 31) against an independent reference model.
 //
+// Each load is preceded by a capture of k (capture strobe, then 0..3 idle
+// cycles in which k and dwa_en take random values, then the load strobe), as
+// eeg_clkgen sequences th_capture and dac_load.
 // Checks after every load:
 //   * popcount(sel) == k
 //   * the ones form one contiguous run modulo 31 (DWA mode)
 //   * sel equals the run of k elements starting at the reference pointer
 //   * ptr == reference pointer, which advances by (p + k) mod 31
 //   * dwa_en = 0: sel is the thermometer 0..k-1 and the pointer is held
-//   * sel/ptr do not change without load (k is changed between loads)
+//   * dwa_en is taken at the load, not at the capture
+//   * sel/ptr do not change at the capture nor without load (k is changed
+//     between loads)
 //   * element usage counts differ by at most 1 (first-order DWA property),
 //     checked over the initial DWA-only phase
-// Stimulus: reset state, 20 sweeps of k = 0..31, runs of constant k (0, 31,
-// 1, 30, 15, 16), 150000 random loads, dwa_en = 0 phases, and random
-// toggling of dwa_en.
+// Stimulus: reset state, a load before the first capture (reset k = 16),
+// 20 sweeps of k = 0..31, runs of constant k (0, 31, 1, 30, 15, 16), 150000
+// random loads, dwa_en = 0 phases, and random toggling of dwa_en.
 `timescale 1ns / 1ps
 
 module tb_dwa;
@@ -20,6 +25,7 @@ module tb_dwa;
 
     logic        clk = 1'b0;
     logic        rst_n = 1'b0;
+    logic        capture = 1'b0;
     logic        load = 1'b0;
     logic        dwa_en = 1'b1;
     logic [4:0]  k = 5'd0;
@@ -27,13 +33,14 @@ module tb_dwa;
     logic [4:0]  ptr;
 
     eeg_dwa #(.N(N)) dut (
-        .clk    (clk),
-        .rst_n  (rst_n),
-        .load   (load),
-        .dwa_en (dwa_en),
-        .k      (k),
-        .sel    (sel),
-        .ptr    (ptr)
+        .clk     (clk),
+        .rst_n   (rst_n),
+        .capture (capture),
+        .load    (load),
+        .dwa_en  (dwa_en),
+        .k       (k),
+        .sel     (sel),
+        .ptr     (ptr)
     );
 
     always #5 clk = ~clk;
@@ -75,12 +82,41 @@ module tb_dwa;
         if (errors <= 10) $display("ERROR @%0t load %0d: %s", $time, nloads, msg);
     endtask
 
-    // one load with value kk and mode en, followed by a check
+    // usage bookkeeping after a load in DWA mode
+    task automatic track(input logic [30:0] v);
+        integer mn, mx;
+        mn = 1 << 30;
+        mx = -1;
+        for (int j = 0; j < N; j++) begin
+            use_cnt[j] = use_cnt[j] + v[j];
+            if (use_cnt[j] < mn) mn = use_cnt[j];
+            if (use_cnt[j] > mx) mx = use_cnt[j];
+        end
+        usage_checks = usage_checks + 1;
+        if (mx - mn > 1) err($sformatf("element usage spread %0d > 1", mx - mn));
+    endtask
+
+    // one capture of kk, then a load in mode en, followed by a check
     task automatic do_load(input integer kk, input bit en);
-        logic [30:0] exp_sel;
-        integer      exp_ptr;
+        logic [30:0] exp_sel, sel_before;
+        integer      exp_ptr, gap;
+        logic [4:0]  ptr_before;
         @(negedge clk);
-        k      = kk[4:0];
+        sel_before = sel;
+        ptr_before = ptr;
+        k       = kk[4:0];
+        dwa_en  = $random(seed);
+        capture = 1'b1;
+        @(negedge clk);
+        capture = 1'b0;
+        k       = $random(seed);
+        gap     = {$random(seed)} % 4;
+        repeat (gap) begin
+            @(negedge clk);
+            k      = $random(seed);
+            dwa_en = $random(seed);
+        end
+        if (sel !== sel_before || ptr !== ptr_before) err("sel/ptr changed at the capture");
         dwa_en = en;
         load   = 1'b1;
         @(negedge clk);
@@ -99,18 +135,7 @@ module tb_dwa;
         if (sel !== exp_sel) err($sformatf("sel=%08h expected %08h (k=%0d p=%0d en=%0d)", sel, exp_sel, kk, p_ref, en));
         if (ptr !== exp_ptr[4:0]) err($sformatf("ptr=%0d expected %0d", ptr, exp_ptr));
         p_ref = exp_ptr;
-        if (track_usage) begin
-            integer mn, mx;
-            mn = 1 << 30;
-            mx = -1;
-            for (int j = 0; j < N; j++) begin
-                use_cnt[j] = use_cnt[j] + sel[j];
-                if (use_cnt[j] < mn) mn = use_cnt[j];
-                if (use_cnt[j] > mx) mx = use_cnt[j];
-            end
-            usage_checks = usage_checks + 1;
-            if (mx - mn > 1) err($sformatf("element usage spread %0d > 1", mx - mn));
-        end
+        if (track_usage) track(sel);
         // change k without load: outputs must hold
         @(negedge clk);
         k = $random(seed);
@@ -125,6 +150,15 @@ module tb_dwa;
         repeat (3) @(negedge clk);
         if (sel !== 31'h0000_FFFF || ptr !== 5'd0) err($sformatf("reset state sel=%08h ptr=%0d", sel, ptr));
         rst_n = 1'b1;
+        // a load before the first capture uses the reset k = 16 from pointer 0
+        @(negedge clk);
+        load = 1'b1;
+        @(negedge clk);
+        load = 1'b0;
+        nloads = nloads + 1;
+        if (sel !== run_mask(0, 16) || ptr !== 5'd16) err($sformatf("first load without capture: sel=%08h ptr=%0d", sel, ptr));
+        p_ref = 16;
+        track(sel);
         // DWA-only phase from the reset pointer 0: the cumulative usage of the
         // elements selected by the loads must never differ by more than one.
         for (int rep = 0; rep < 20; rep++)

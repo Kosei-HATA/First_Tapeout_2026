@@ -10,9 +10,13 @@ Unit cell (blocks.unit_cell), one per element, bottom to top:
   - PMOS (one guard ring, Nwell): the same on XS / XP
   - the two inverters DB = not SEL, D = not DB
   - SEL on a Metal3 stub at the top edge
-Array: 16 units in row 0, 15 in row 1 above it (both with the buses at the bottom; row 1's
-buses are joined to row 0's by Metal3 risers at the west end). West of the array: the
-bias diodes (PMOS W1/L20 x 10 on IDP, NMOS on IDN) and the four 1 pF MIM decouplers.
+Array: 16 units in row 0 and 15 in row 1, mirrored above it, so the SEL stubs of both
+rows face a 26 um channel between them and the buses lie on the block's bottom and top
+edges (joined by Metal3 risers at the east end). The SEL lines leave the channel at the
+west end and run down a west column to their ports on the bottom edge (SEL0 westmost);
+eeg_adc_dig sits below the DAC in the ADC (gf180/tapeout/layout/adc_lay.py). East of the
+array: the bias diodes (PMOS W1/L20 x 10 on IDP, NMOS on IDN) and the four 1 pF MIM
+decouplers; the bias, output and supply ports are Metal4 stubs on the east edge.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/dac2_lay.py [--drc] [--lvs]
 """
@@ -28,6 +32,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 NETLIST = os.path.join(g.REPO, "gf180", "tapeout", "adc", "eeg_dac2.spice")
 BUSES = ["VSS", "IDN", "VBNC", "OUTN", "OUTP", "VBPC", "IDP", "VDD"]
 N_UNITS = 31
+SEL_W = 30.0        # west column for the SEL lines down to the bottom-edge ports
+CH = 26.0           # channel between the rows: the units' SEL stubs face it
 
 
 class Combo:
@@ -70,7 +76,7 @@ def unit(b):
 def build():
     b = g.Block("eeg_dac2")
     u = unit(b)
-    # bias: the two mirror diodes and the decoupling MIMs, west of the array
+    # bias: the two mirror diodes and the decoupling MIMs, east of the array
     pd = an.multi_strip_cell(b, "dac2_pd", "p", [dict(w=1.0, l=20.0, seq=["VDD", "IDP", "IDP", "IDP", "VDD"],
                                                        order=["VDD", "IDP"]) for _ in range(5)])
     nd = an.multi_strip_cell(b, "dac2_nd", "n", [dict(w=1.0, l=20.0, seq=["VSS", "IDN", "IDN", "IDN", "VSS"],
@@ -82,24 +88,47 @@ def build():
     def conn(net, segs):
         nets.setdefault(net, []).extend(segs)
 
-    x_arr = 4.0 + max(pd.width, nd.width) + 4.0 + 2 * (mims[0].width + 2.0) + 6.0
-    x_arr = round(x_arr / lg.PITCH) * lg.PITCH
+    def unit_y(seg, y0, mir):
+        lay, a, y1, c_, y2 = seg
+        return (y0 - y2, y0 - y1) if mir else (y0 + y1, y0 + y2)
+
+    x_arr = round((4.0 + SEL_W) / lg.PITCH) * lg.PITCH
+    width_arr = 16 * u.width
+    y_row1 = 2 * u.height + CH              # row 1 is mirrored: its origin is its top edge
     rows = [list(range(16)), list(range(16, N_UNITS))]
+    # the units' Metal3 / Metal4 shapes are obstacles for the block router except the bus
+    # rows (named) and the SEL stubs (pins)
+    obst = []
+    bus_y = {}
     for r, units in enumerate(rows):
-        y0 = r * (u.height + 2.0)
+        y0, mir = (0.0, False) if r == 0 else (y_row1, True)
         for k, e in enumerate(units):
             x = x_arr + k * u.width
-            b.place(u.cell, x, y0)
-            lay, a, y1, c_, y2 = u.pins["SEL"][0]
-            b.label("metal3", f"SEL{e}", x + (a + c_) / 2, y0 + y2 - 0.3)
-            conn(f"SEL{e}", [(lay, x + a, y0 + y1, x + c_, y0 + y2)])
-        # this row's buses, as pins at the west end of the row
+            b.place(u.cell, x, y0, mirror=mir)
+            y1, y2 = unit_y(u.pins["SEL"][0], y0, mir)
+            lay, a, _, c_, _ = u.pins["SEL"][0]
+            sel = (lay, x + a, y1, x + c_, y2)
+            conn(f"SEL{e}", [sel])
+            p = bl.Placed(u, x, y0, mir, f"U{e}")
+            rows_m4 = {}
+            for n in BUSES:
+                for sg in p.pins[n]:
+                    rows_m4[(round(sg[2], 3), round(sg[4], 3))] = n
+            for lay in ("metal3", "metal4"):
+                for bx in bl.cell_shapes(p, lay):
+                    if lay == "metal4" and (round(bx[1], 3), round(bx[3], 3)) in rows_m4:
+                        obst.append((lay, bx, rows_m4[(round(bx[1], 3), round(bx[3], 3))]))
+                    elif lay == "metal3" and abs(bx[0] - sel[1]) < 1e-3 and abs(bx[1] - sel[2]) < 1e-3:
+                        continue
+                    else:
+                        obst.append((lay, bx, None))
+        # this row's buses, as pins at the east end of the row (towards the bias section)
         for n in BUSES:
-            lay, a, y1, c_, y2 = u.pins[n][0]
-            conn(n, [("metal4", x_arr, y0 + y1, x_arr + 2 * u.width, y0 + y2)])
-    width_arr = 16 * u.width
-    # west side: bias diodes and MIMs
-    x = 4.0
+            y1, y2 = unit_y(u.pins[n][0], y0, mir)
+            xe = x_arr + len(units) * u.width
+            conn(n, [("metal4", xe - 2 * u.width, y1, xe, y2)])
+    # east side: bias diodes and MIMs
+    x = x_arr + width_arr + 6.0
     pd_p = bl.Placed(pd, x, 0.0, False, "PD")
     b.place(pd.cell, x, 0.0)
     nd_p = bl.Placed(nd, x, pd.height + 2.0, False, "ND")
@@ -117,44 +146,32 @@ def build():
     for p in (pd_p, nd_p):
         for n, segs in p.pins.items():
             conn(n, segs)
-    height = max(2 * (u.height + 2.0), nd_p.y + nd.height + 2.0, 2 * (mims[0].height + 2.0)) + 4.0
-    width = x_arr + width_arr + 4.0
-    # block ports: west-edge Metal3 stubs for the bias, outputs and supplies
-    port_nets = ["IDP", "IDN", "VBPC", "VBNC", "OUTP", "OUTN", "VDD", "VSS"]
+    height = max(y_row1, nd_p.y + nd.height + 2.0, 2 * (mims[0].height + 2.0)) + 4.0
+    width = x_m + 2 * (mims[0].width + 2.0) + 6.0
     gx0 = (x_arr + 1.04) % lg.PITCH
     snap = lambda v: gx0 + round((v - gx0) / lg.PITCH) * lg.PITCH
+    # block ports: east-edge Metal4 stubs for the bias, outputs and supplies; SEL0..30
+    # Metal3 stubs on the bottom edge of the west column (in index order from the west)
+    port_nets = ["IDP", "IDN", "VBPC", "VBNC", "OUTP", "OUTN", "VDD", "VSS"]
     for k, n in enumerate(port_nets):
-        px = snap(2.0 + k * 0.0)
-        py = height - 2.0 - k * 3.0
-        b.box("metal4", 0.0, py - 0.5, 3.0, py + 0.5)
-        b.label("metal4", n, 0.5, py)
-        conn(n, [("metal4", 0.0, py - 0.5, 3.0, py + 0.5)])
+        py = -1.0 + round((height - 2.0 - k * 3.0 + 1.0) / route.P) * route.P
+        b.box("metal4", width - 3.0, py - 0.19, width, py + 0.19)
+        b.label("metal4", n, width - 1.5, py)
+        conn(n, [("metal4", width - 3.0, py - 0.19, width, py + 0.19)])
+    pp = bl.ports_bottom(b, [f"SEL{e}" for e in range(N_UNITS)],
+                         [snap(4.0 + k * lg.PITCH) for k in range(N_UNITS)], -1.0)
+    for n, pin in pp.items():
+        conn(n, [pin])
     r = route.Router(gx0, -1.0, width, height, px=lg.PITCH)
     for k3, k4 in keep:
         r.obstacle("metal3", *k3)
         r.obstacle("metal4", *k4)
-    # the array area is closed to the block router except its own pins: block it, then
-    # open the bus ends and the SEL stubs by naming them
-    r.obstacle("metal3", x_arr + 2 * u.width, -1.0, x_arr + width_arr + 1.0, height)
-    r.obstacle("metal4", x_arr + 2 * u.width, -1.0, x_arr + width_arr + 1.0, height)
-    for rr in range(2):
-        y0 = rr * (u.height + 2.0)
-        bus_rows = {(round(y0 + seg[0][2], 3), round(y0 + seg[0][4], 3)) for seg in u.pins.values() if seg[0][0] == "metal4"}
-        for k in range(2):
-            for lay in ("metal3", "metal4"):
-                for bx in bl.cell_shapes(bl.Placed(u, x_arr + k * u.width, y0, False, "U"), lay):
-                    if lay == "metal4" and (round(bx[1], 3), round(bx[3], 3)) in bus_rows:
-                        continue                       # the bus rows are named below
-                    r.obstacle(lay, *bx)
-        for n in BUSES:
-            lay, a, y1, c_, y2 = u.pins[n][0]
-            r.obstacle("metal4", x_arr, y0 + y1, x_arr + 2 * u.width, y0 + y2, n)
-    sel = {n: v for n, v in nets.items() if n.startswith("SEL")}
-    for n in sel:                       # inputs: not routed here, but other nets keep clear
-        for sg in nets.pop(n):
-            r.obstacle(sg[0], *sg[1:], n)
+    for lay, bx, n in obst:
+        r.obstacle(lay, *bx, n)
     failed = r.route(nets, rounds=6)
     if failed:
+        for n in failed:
+            print("why", n, r.why.get(n))
         raise RuntimeError(f"unrouted {failed}")
     r.draw(b)
     return b, (width, height)

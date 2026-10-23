@@ -5,9 +5,10 @@
 // comparator) changes the code by at most one LSB per wrong bit.
 //
 // The count is built as a balanced adder tree (31 -> 16 x 2b -> 8 x 3b ->
-// 4 x 4b -> 2 x 5b -> 5b) to keep the logic depth low; this block is part of
-// the th_q -> SEL path that must settle within one MCLK cycle when
-// DAC_LOAD_CYCLE = 2. Each tree level is a flat vector of equal-width fields.
+// 4 x 4b -> 2 x 5b -> 5b) to keep the logic depth low; in eeg_adc_dig it sits
+// on the TH -> (CODE, DWA selection) path, which has two MCLK periods from the
+// comparator strobe to the capture edge e2. Each tree level is a flat vector of
+// equal-width fields.
 `timescale 1ns / 1ps
 `default_nettype none
 

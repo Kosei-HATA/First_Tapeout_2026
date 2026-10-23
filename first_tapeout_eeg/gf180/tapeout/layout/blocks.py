@@ -121,6 +121,17 @@ def ports_top(c, names, x_list, y_top, length=1.5):
     return out
 
 
+def ports_bottom(c, names, x_list, y_bot=0.0, length=1.5):
+    """Signal ports: Metal3 stubs starting at the block's bottom edge, labelled. Returns
+    {net: ('metal3', box)}."""
+    out = {}
+    for n, x in zip(names, x_list):
+        c.box("metal3", x - 0.15, y_bot, x + 0.15, y_bot + length)
+        c.label("metal3", n, x, y_bot + 0.3)
+        out[n] = ("metal3", x - 0.15, y_bot, x + 0.15, y_bot + length)
+    return out
+
+
 def route_nets(c, region, nets, obstacles=(), rounds=6):
     """Route {net: [pin, ...]} inside region (x1, y1, x2, y2) on Metal3/Metal4 and draw it.
     obstacles: [(layer, x1, y1, x2, y2)]. Raises if a net fails."""

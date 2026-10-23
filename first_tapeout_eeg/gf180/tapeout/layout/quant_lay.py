@@ -15,6 +15,9 @@ Array: 16 + 15 units in two rows. Below them: the 62 preamp loads (300 kohm,
 297.98 x 1 um) in one resistor row with all west ends on AVSS, the ladder (320 units of
 2 x 2 um in a serpentine, taps T0..T30), the VBQ bias (NMOS mirror from IQ, PMOS diode,
 2 pF MIM) and the strobe buffer. Routing: route.Router.
+Block ports, all on the east edge (Metal4 stubs; the ADC assembly feeds them from the
+east): the analog / clock / supply ports beside the middle zone, TH0..15 beside row 0 and
+TH16..30 beside row 1 (east of the comparators the rows leave room for their wires).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/quant_lay.py [--drc] [--lvs]
 """
@@ -146,9 +149,6 @@ def build():
             for sg in segs:
                 nets[pn].remove(sg)
             conn(net, segs)
-            if pn == "TH":
-                lay, a, y1, c_, y2 = segs[0]
-                b.label("metal3", net, (a + c_) / 2, (y1 + y2) / 2)
         for n in BUSES:            # the buses of each row are joined at the west end
             pass
     for pn in ("RP", "RN", "VOP", "VON", "TH"):
@@ -209,9 +209,20 @@ def build():
                     if lay == "metal3" and tuple(round(v, 3) for v in bx) in stubs:
                         continue
                     r.obstacle(lay, *bx)
-    for n in [n for n in nets if n.startswith("TH")]:     # outputs: not routed here, but
-        for sg in nets.pop(n):                             # other nets keep clear of them
-            r.obstacle(sg[0], *sg[1:], n)
+    # TH outputs: east-edge stubs beside their row (row 0 below the middle zone, row 1
+    # above it), spread over the row height
+    x2 = width - SW - 1.0
+    for e in range(N):
+        r_, k = divmod(e, 16)
+        n = f"TH{e}"
+        if r_ == 0:
+            py = 6.0 + k * (u.height - 12.0) / 15
+        else:
+            py = y_top + 6.0 + k * (u.height - 12.0) / 15
+        py = -1.0 + round((py + 1.0) / route.P) * route.P        # on the router's Metal4 rows
+        b.box("metal4", x2 - 3.0, py - 0.19, x2, py + 0.19)
+        b.label("metal4", n, x2 - 1.5, py)
+        conn(n, [("metal4", x2 - 3.0, py - 0.19, x2, py + 0.19)])
     failed = r.route(nets, rounds=6)
     if failed:
         for n in failed:

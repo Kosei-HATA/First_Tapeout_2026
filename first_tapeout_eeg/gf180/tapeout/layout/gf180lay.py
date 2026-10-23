@@ -219,7 +219,7 @@ def mim_cap(w, l):
 
 
 def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.0, g=1.0, hgap=2.6,
-              bw=5.0):
+              bw=5.0, count=None, south=False):
     """MIM capacitor array (MIM-B): nx x ny units of w x l um, all in parallel between the
     nets `top` (top plates) and `bot` (bottom plates), comb-routed on Metal5.
 
@@ -229,26 +229,56 @@ def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.
     plates), the units, a 1 um gap, the `bot` spine (t um) over a Metal4 tab of each unit's
     bottom plate with Via4. The `top` spines join a bus above the array, the `bot` spines a
     bus below it (bw um each), so the two combs interleave without crossing.
+    south=True puts both buses below the array, for arrays that face their circuit with
+    one edge: from y0 up the `top` bus, 1 um, the `bot` bus, then the units. The `top`
+    spines stop 0.6 um above the `bot` bus and cross under it on a Metal4 jumper (Via4
+    at both ends), which keeps 1.2 um from the first row's bottom plates (MIMTM.1); the
+    crossing adds a few fF between the two nets, in parallel with the array.
     Rows are hgap apart: the Metal4 of a bottom plate (0.6 um beyond the top plate) must
-    stay 1.2 um from any other Metal4 (MIMTM.1).
-    Returns the outline (x0, y0, x1, y1) in um.
+    stay 1.2 um from any other Metal4 (MIMTM.1). count < nx * ny leaves the last places
+    of the last column empty (e.g. 35 units on a 9 x 4 grid).
+    Returns the outline (x0, y0, x1, y1) in um; with south=True y1 is the edge of the last
+    row's bottom plates, so other Metal4 must stay 1.2 um above it.
     """
+    count = nx * ny if count is None else count
     if w * l > MIM_MAX_AREA:
         raise ValueError(f"MIM unit {w} x {l} um exceeds {MIM_MAX_AREA} um2")
     px, py = s + w + 1.0 + t + g, l + hgap
-    yb = y0 + bw + 2.0                       # bottom edge of the first row of top plates
+    if south:
+        yt0, yt1 = y0, y0 + bw               # top bus
+        yb0, yb1 = yt1 + 1.0, yt1 + 1.0 + bw  # bot bus
+        yl = yb1 + 0.6                       # foot of the top spines (landing of the jumper)
+        jh = 1.2
+        yb = yl + jh + 1.8 + 0.4             # first row: jumper 1.2 um below its bottom plate
+    else:
+        yb = y0 + bw + 2.0                   # bottom edge of the first row of top plates
     ytop = yb + (ny - 1) * py + l            # top edge of the last row
     for i in range(nx):
         xk = x0 + i * px
         xs = xk + s + w + 1.0                # west edge of the bot spine
         for j in range(ny):
+            if i * ny + j >= count:
+                continue
             yu = yb + j * py
             b.pcell("cap_mim", {"mim_option": "MIM-B", "metal_level": "M5", "wc": w, "lc": l}, x=xk + s, y=yu)
             b.box("metal4", xk + s + w + 0.3, yu - 0.6, xs + t, yu + l + 0.6)   # bottom-plate tab
             b.vias("via4", xs, yu + 0.4, xs + t, yu + l - 0.4)
-        b.box("metal5", xk, yb, xk + s, ytop + 2.0 + bw)       # top spine, up into the top bus
-        b.box("metal5", xs, y0, xs + t, ytop)                  # bot spine, down into the bottom bus
+        if south:
+            b.box("metal5", xk, yl, xk + s, ytop)              # top spine, down to its landing
+            b.vias("via4", xk, yl, xk + s, yl + jh)
+            b.box("metal4", xk, yt0, xk + s, yl + jh)          # jumper under the bot bus
+            b.vias("via4", xk, yt0, xk + s, yt1)               # into the top bus
+            b.box("metal5", xs, yb0, xs + t, ytop)             # bot spine, down into the bot bus
+        else:
+            b.box("metal5", xk, yb, xk + s, ytop + 2.0 + bw)   # top spine, up into the top bus
+            b.box("metal5", xs, y0, xs + t, ytop)              # bot spine, down into the bottom bus
     x1 = x0 + nx * px - g
+    if south:
+        b.box("metal5", x0, yt0, x1, yt1)                      # top bus
+        b.box("metal5", x0, yb0, x1, yb1)                      # bot bus
+        b.label("metal5", top, x0 + 1.0, (yt0 + yt1) / 2)
+        b.label("metal5", bot, x0 + 1.0, (yb0 + yb1) / 2)
+        return x0, y0, x1, ytop + 0.6
     b.box("metal5", x0, ytop + 2.0, x1, ytop + 2.0 + bw)       # top bus
     b.box("metal5", x0, y0, x1, y0 + bw)                       # bottom bus
     b.label("metal5", top, x0 + 1.0, ytop + 2.0 + bw / 2)
@@ -367,7 +397,8 @@ def to_cdl(netlist_files, top):
 
 
 _DEV = {"nfet_03v3": "M", "pfet_03v3": "M", "ppolyf_u": "R", "ppolyf_u_1k": "R", "ppolyf_u_3k": "R",
-        "cap_nmos_03v3": "C", "cap_pmos_03v3": "C", "cap_mim_2f0ff": "C"}
+        "cap_nmos_03v3": "C", "cap_pmos_03v3": "C", "cap_mim_2f0ff": "C",
+        "nfet_05v0": "M", "pfet_05v0": "M"}      # 05v0: the standard cells of the LibreLane macros
 _MODEL = {"cap_mim_2f0ff": "cap_mim_2f0fF"}
 
 

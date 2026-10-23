@@ -2,7 +2,7 @@
 
 RTL and simulation testbenches for the digital block of the GF180MCU EEG ADC: a continuous-time 2nd-order sigma-delta modulator with a 5-bit flash quantizer (31 comparators) and two 31-element unit DACs.
 
-Status (2026-10-23): RTL written and verified in simulation with Icarus Verilog 13. Since gate 1 (10/23, `documentation/gf180_gate1_20261023.md`) the digital logic is two blocks: `eeg_digital_top` (clocking, CIC, FIFO, SPI, registers, raw stream) and the ADC-side `eeg_adc_dig` (TH capture, code, DWA), which sits in the ADC next to the quantizer and the DAC drivers. It has not been synthesized; Yosys was not available locally. The code uses a plain synchronous SystemVerilog-2012 subset meant for Yosys/LibreLane: `always_ff`/`always_comb`, no latches, and no `initial` blocks, delays or classes in RTL.
+Status (2026-10-23): RTL written and verified in simulation with Icarus Verilog 13. Since gate 1 (10/23, `documentation/gf180_gate1_20261023.md`) the digital logic is two blocks: `eeg_digital_top` (clocking, CIC, FIFO, SPI, registers, raw stream) and the ADC-side `eeg_adc_dig` (TH capture, code, DWA), which sits in the ADC next to the quantizer and the DAC drivers. Both blocks are hardened as LibreLane macros, timed at the 3.3 V corners of the 7-track library (`gf180/tapeout/digital/`, 10/23; see Timing assumptions). The code uses a plain synchronous SystemVerilog-2012 subset meant for Yosys/LibreLane: `always_ff`/`always_comb`, no latches, and no `initial` blocks, delays or classes in RTL.
 
 Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (512 kHz, R = 512): fs = 1.024 MHz, R = 1024, 37-bit CIC, shift by 12.
 
@@ -16,7 +16,7 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 | `eeg_clkgen.sv` | Frame counter and strobes, 128/64 kHz chop, chop_out delay, output-chopper blanking, MCLK/4 |
 | `eeg_chop1.sv` | OTA1 chopper clock: 1..16 kHz or off, edges at e16 |
 | `eeg_therm2bin.sv` | popcount(TH): bubble-tolerant thermometer-to-binary converter (adder tree) |
-| `eeg_dwa.sv` | DWA element selection (N = 31), thermometer mode when disabled |
+| `eeg_dwa.sv` | DWA element selection (N = 31), thermometer mode when disabled; the next selection is computed at the capture strobe and applied at the load strobe |
 | `eeg_cic3.sv` | sinc^3 decimator, R = 1024, W = 37 |
 | `eeg_rnd_sat.sv` | Round-half-even shift by 12 plus 24-bit saturation (helper of `eeg_cic3`) |
 | `eeg_fifo.sv` | 8 x 48-bit sample FIFO, SEQ counter, overrun handling |
@@ -68,16 +68,17 @@ Parameter: `DAC_LOAD_CYCLE` (default 2, legal 2..31) sets the excess loop delay.
 | Port | Dir | Description |
 |---|---|---|
 | `MCLK` | in | The same 32.768 MHz clock as `eeg_digital_top` |
-| `RST_N` | in | `ADC_RST_N` of `eeg_digital_top` |
+| `RST_N` | in | `ADC_RST_N` of `eeg_digital_top`, resynchronized inside (two flip-flops: asynchronous assert; release two MCLK edges later, still one edge before the first TH_CAPTURE edge), so the reset tree of the block starts at a local flip-flop |
 | `TH_CAPTURE`, `DAC_LOAD`, `DWA_EN` | in | From `eeg_digital_top` |
 | `TH[30:0]` | in | Quantizer thermometer outputs. TH[i] = 1 when the input is above threshold i; thresholds ascend. |
-| `CODE[4:0]` | out | popcount of the captured TH, to `eeg_digital_top` |
+| `CODE[4:0]` | out | popcount of TH at e2 (a register), to `eeg_digital_top` |
 | `SEL1[30:0]`, `SEL2[30:0]` | out | DAC1/DAC2 element selection; 1 = element to the positive reference |
 
 - The 31 TH lines and the 62 SEL lines stay inside the ADC; between the two blocks run MCLK, ADC_RST_N, TH_CAPTURE, DAC_LOAD, DWA_EN and CODE[4:0] (`eeg_digital_sys.sv`).
 - The timing is that of the single block before the split: TH is captured at e2, SEL1/SEL2 change at e3.
+- Inside, the popcount, the thermometer and the DWA rotation run between TH and the registers loaded at e2 (CODE, the sampled k and the next selection of each DWA selector). The e2 → e3 step is a 2:1 selection (or a 5-bit thermometer decode) and the pointer update a 5-bit add (10/23, for STA at 3.3 V; before, TH went into a 31-bit register th_q at e2 and the whole chain ran from th_q to SEL in one MCLK period).
 
-Size: about 1,005 flip-flops in all, counted from the RTL rather than from synthesis: about 900 in `eeg_digital_top` and about 103 in `eeg_adc_dig` (th_q 31, SEL1/SEL2 62, two 5-bit pointers). The largest parts are the FIFO (412, of which 384 are storage) and the CIC (301). This is within the 800–1200 FF budget of the 10/08 proposal.
+Size: about 1,050 flip-flops in all, counted from the RTL rather than from synthesis: about 900 in `eeg_digital_top` and about 151 in `eeg_adc_dig` (reset synchronizer 2; CODE 5; per DWA selector the sampled k 5, the precomputed selection 31, SEL 31 and the pointer 5; synthesis shares the two sampled k). The largest parts are the FIFO (412, of which 384 are storage) and the CIC (301). This is within the 800–1200 FF budget of the 10/08 proposal.
 
 Values during reset and right after it:
 - SEL1/SEL2 = elements 0..15 (k = 16, code 15), the same reset state as the XSPICE controller model.
@@ -98,7 +99,7 @@ One modulator frame is 32 MCLK cycles (fs = 1.024 MHz). `e<n>` is the rising MCL
 edge            e0  e1  e2  e3  e4  e5  e6  e7  e8  e9         e31 e0
 frame cycle     | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |  ...     | 31| 0 |
 CMP_STROBE      /‾‾‾\_____________________________________________/‾‾‾\
-th_capture      ____/‾‾‾\__________________________________________________  TH -> th_q at e2
+th_capture      ____/‾‾‾\__________________________________________________  CODE, next SEL from TH at e2
 dac_load (=2)   ________/‾‾‾\______________________________________________  SEL1/SEL2 change at e3
 DAC_CLK         ________________/‾‾‾\______________________________________  DAC1 switches at e4
 cic_en          ____________/‾‾‾\__________________________________________  CIC integrators at e4
@@ -149,16 +150,18 @@ CHOP1           toggles only at e16, every 512/256/128/64/32 frames (1/2/4/8/16 
 ### Timing assumptions
 
 1. **TH (no synchronizer).**
-   - TH is the quantizer's answer to CMP_STROBE, so it is launched by edge e0 of the same clock. `eeg_adc_dig` captures it at e2, two MCLK periods later (61 ns), into `th_q`.
+   - TH is the quantizer's answer to CMP_STROBE, so it is launched by edge e0 of the same clock. `eeg_adc_dig` samples it at e2, two MCLK periods later (61 ns): the popcount, the thermometer and the DWA rotation run between TH and the registers loaded at e2.
    - The analog quantizer must have its decision settled before e2 − t_setup, after clock-to-out, routing and comparator regeneration. It must hold the decision past e2 + t_hold, which needs an output latch (for example an SR latch after the StrongARM) that keeps the result until the next strobe.
    - The transistor quantizer (`gf180/tapeout/adc/eeg_quantizer.spice`) meets this: all TH bits settle within 4.0 ns of the CMP_STROBE edge at ss/−20 °C (2.3 ns typical) with 0.3 pF of routing on each TH, and a NOR SR latch holds them until the next strobe (`documentation/gf180_quantizer_20261022.md`).
-   - For STA, constrain TH as a 2-cycle path launched by the CMP_STROBE flip-flop.
-   - Each TH bit is registered before the popcount. An unresolved comparator therefore changes the code by at most 1 LSB. It never feeds an inconsistent value into the binary code.
+   - For STA, TH is a 2-cycle path with a 15 ns input delay (strobe flip-flop, route, clock driver, comparator, latch, route back): `gf180/tapeout/digital/eeg_adc_dig/eeg_adc_dig.sdc`.
+   - Until 10/23 each TH bit was registered before the popcount, so an unresolved comparator could change the code by at most 1 LSB. Now the popcount precedes the register, and a comparator still unresolved at e2 could make the captured code (and the selection) inconsistent by more than 1 LSB. TH settles within about 4 ns of the strobe, more than 50 ns before e2, so this needs a regeneration time of over 100 comparator time constants.
    - `tb_top` drives TH only from mid-cycle 1 to mid-cycle 2 and random bits otherwise, so it would catch a capture at the wrong edge.
-2. **Critical path.**
-   - With DAC_LOAD_CYCLE = 2 the path th_q → popcount → (31 − c) → DWA rotation → SEL registers must settle in one MCLK period (30.5 ns).
-   - If STA fails, use DAC_LOAD_CYCLE = 3. That adds 30.5 ns of ELD and gives the path 2 cycles, which needs a multicycle constraint.
-   - The CIC path runs th_q → popcount → CODE (across the block boundary) → 37-bit adder. th_q changes only at e2 and the CIC takes the input at e4, so it can be constrained as a 2-cycle path. Each comb step is a single 37-bit subtractor.
+2. **Critical path and STA (10/23).**
+   - DVDD is 3.3 V (tracker F2), so both blocks are timed with the 3.3 V liberty files: tt_025C_3v30, ss_125C_3v00 and ff_n40C_3v60, each with nom/min/max parasitics (LibreLane, `gf180/tapeout/digital/*/config.yaml`), plus ss_n40C_3v00 checked separately with OpenSTA on the final netlists and parasitics. The first version of `eeg_adc_dig` (th_q → popcount → (31 − c) → rotation → SEL in one MCLK) met tt at 3.3 V (+6.0 ns) but missed ss/125 °C by 17.6 ns.
+   - Now the e2 → e3 step is a 2:1 selection, a 5-bit thermometer decode or a 5-bit add. The popcount, the thermometer and the rotation run from TH to the registers loaded at e2, a 2-cycle path (`eeg_adc_dig.sdc`, TH input delay 15 ns).
+   - `eeg_digital_top`: the CIC integrator and comb adders (37 bit, single-cycle paths) set its critical paths. With the 7-track library they missed ss/125 °C by 0.7–3.8 ns, so this block uses the 9-track library (gf180mcu_fd_sc_mcu9t5v0, also foundry and silicon-verified). CODE is a 2-cycle path: it changes only at e2 (a register in `eeg_adc_dig`) and is sampled under enables at e4 (CIC) and e0 (raw serializer); there is no hold check on it, because neither consumer is enabled at e2 (`eeg_digital_top.sdc`).
+   - Delay cells (dly*) are excluded in both blocks. The repair otherwise used them as wire and fanout buffers (3.3 ns each at ss), four in a row on the TH path.
+   - Results are in the Open items list ("Synthesis and STA").
 3. **SPI.**
    - SCLK ≤ 2 MHz.
    - SCLK high and low times ≥ 4 MCLK (122 ns).
@@ -291,7 +294,7 @@ The script runs the golden-model self checks and generates vectors into `build/`
 |---|---|---|
 | golden_selfcheck | `model/cic_golden.py` | CRC check value 0xF4, rounding ties, saturation, DC response = x · 2^18 |
 | therm2bin | `tb_therm2bin` | Every clean thermometer code, every single-bit bubble on each code, 100k random patterns |
-| dwa | `tb_dwa` | 160k loads covering every k = 0..31. Checks popcount = k, contiguous run mod 31, exact run position against a reference pointer, pointer = (p + k) mod 31, and no change without load. Also checks the dwa_en = 0 thermometer mode with pointer hold, and that element-usage spread stays ≤ 1 (first-order DWA property). |
+| dwa | `tb_dwa` | 160k loads covering every k = 0..31, each after a capture of k with 0..3 idle cycles in between (random k and dwa_en in the gap). Checks popcount = k, contiguous run mod 31, exact run position against a reference pointer, pointer = (p + k) mod 31, dwa_en taken at the load, and no change at the capture or without load. Also checks a load before the first capture (reset k = 16), the dwa_en = 0 thermometer mode with pointer hold, and that element-usage spread stays ≤ 1 (first-order DWA property). |
 | clkgen | `tb_clkgen` | Strobe positions in every frame, with DAC_LOAD_CYCLE 2 and 7. Checks CHOP every cycle against a reference at both rates while CHOP_FAST is toggled at random, unaligned times (47 rate changes took effect; shorter requests reverted within one superperiod and correctly had no effect). Every CHOP and CHOP_OUT phase must be a full 128 or 256 MCLK (no runt), and CHOP edges must fall on cmp_strobe. Also checks chop_out against the recorded chop history for delays 0, 1, 37, 127, 128, 129, 200 and 255 at both rates and across rate changes, raw_clk period and phase, and an asynchronous reset in the middle of 64 kHz operation. CHOP_BLANK is compared every cycle with a reference, plus independent checks:<br>• every pulse rises exactly one cycle before a CHOP_OUT edge;<br>• CHOP_BLANK is high in the cycle before every CHOP_OUT edge with BLANK_LEN ≠ 0;<br>• each pulse is exactly BLANK_LEN + 1 cycles long, with BLANK_LEN taken at its start.<br>The CHOP_OUT edge at the first MCLK edge after reset is exempt. These run for BLANK_LEN 0, 1, 7 and 15 at both rates and every delay, a 0..15 sweep, BLANK_LEN changes during a pulse, CHOP_DLY changes, and pulses right after rate changes. |
 | rnd_sat | `tb_rnd_sat` | 25k vectors from the golden model: ties to even and odd, around ±2^23, saturation, random 37-bit values |
 | cic_impulse | `tb_cic` | Impulses (c = 31 and c = 0 on a ±1 baseline) at 9 phases of the decimation period; every strobe bit-exact |
@@ -331,28 +334,28 @@ The script runs the golden-model self checks and generates vectors into `build/`
 
 The `tb_dwa` element-usage check runs over its first 50,640 loads. A mutation check outside the repository confirmed that the testbenches catch bugs: 12 injected RTL bugs were all detected (rounding, integrator form, NSKIP, DWA pointer, popcount, CRC polynomial, FIFO overwrite, partial-frame pop, capture edge, chop_out delay, RAW bit order, W1C priority). Four more for the chop-rate logic were also detected by `tb_clkgen`: switching every 8th frame, switching immediately, ignoring the previous superperiod's rate for CHOP_OUT, and no post-reset gating of CHOP_OUT. Four more for CHOP_BLANK were detected as well: width off by one, length not latched, rising edges only, and following CHOP instead of CHOP_OUT. Five more for the early start of CHOP_BLANK were also detected: predicting with the old CHOP_DLY, CHOP_OUT without the extra CHOP_DLY register, BLANK_LEN instead of BLANK_LEN + 1 cycles, starting at the edge, and wrong rate bookkeeping at a wrap. Three more for gate 1 (10/23) were detected by `tb_spi`: no ADC_ZERO forcing of CHOP_BLANK, the DBG_SEL pairs swapped, and the debug pair taking priority over the raw stream.
 
-### Results (run of 2026-10-23, Icarus Verilog 13.0, Python 3.13.9)
+### Results (run of 2026-10-23, after the eeg_adc_dig timing change; Icarus Verilog 13.0, Python 3.13.9)
 
-Output of `./run_tests.sh` (clean `build/`, total about 1 min 40 s):
+Output of `./run_tests.sh` (clean `build/`, total about 1 min 45 s):
 
 ```
 PASS  golden_selfcheck    0s  cic_golden self checks passed
 PASS  gen_vectors         7s  top_stream: 60000 frames, codes 3..27, 56 valid outputs, wraps i3 80
-PASS  therm2bin           2s  tb_therm2bin (101024 patterns)
-PASS  dwa                10s  tb_dwa (160912 loads, every k 0..31 >= 100 times, 50640 usage-spread checks)
+PASS  therm2bin           3s  tb_therm2bin (101024 patterns)
+PASS  dwa                11s  tb_dwa (160913 loads, every k 0..31 >= 100 times, 50641 usage-spread checks)
 PASS  clkgen              1s  tb_clkgen (2697 frames, 47 rate changes, CHOP phases 128/256 MCLK: 373/149, CHOP_OUT phases: 368/131, 86321 chop_out checks [48079 at 128 kHz, 38242 at 64 kHz] with delays 0/1/37/127/128/129/200/255, CHOP_BLANK pulses for BLANK_LEN 1/7/15 (1 MCLK before + BLANK_LEN after the edge): 73/183/139 [303 at 128 kHz, 136 at 64 kHz, 371 with CHOP_DLY != 0, 123 within 512 MCLK after a rate change, 13 blank_len changes during a pulse, all lengths 1..15 seen], 21580 raw_clk periods)
 PASS  chop1               2s  chop1 rates, e16 edges, phase lengths and 1 ms rate changes
 PASS  rnd_sat             0s  tb_rnd_sat (25156 vectors)
-PASS  cic_impulse         0s  tb_cic impulse (41984 operations, 41 output strobes bit-exact, 39 valid)
+PASS  cic_impulse         1s  tb_cic impulse (41984 operations, 41 output strobes bit-exact, 39 valid)
 PASS  cic_step            0s  tb_cic step (29749 operations, 29 output strobes bit-exact, 27 valid)
 PASS  cic_stream         56s  tb_cic stream (20600001 operations, 20116 output strobes bit-exact, 20110 valid)
 PASS  spi_fifo_regs       6s  tb_spi (163 SPI transfers at 2 and 1 MHz, 25 READ_SAMPLE frames, 994059 DRDY_N checks, 7 CHOP/CHOP_OUT and 14 CHOP_BLANK pin checks at 128 and 64 kHz, 11400 DBG_SEL pin checks, max MISO latency 91.5 ns, max MISO_OE latency 60.8 ns)
-PASS  top_dlc2           11s  tb_top DAC_LOAD_CYCLE=2 (40 samples bit-exact vs golden, 43149 SEL checks [29837 DWA, 13312 thermometer], 43148 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 91.55..91.55 ns, 43149 DAC_CLK pulses 1 MCLK after SEL, 43129 RAW words, 10788 CHOP edges at 128 kHz, 10787 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
+PASS  top_dlc2           14s  tb_top DAC_LOAD_CYCLE=2 (40 samples bit-exact vs golden, 43149 SEL checks [29837 DWA, 13312 thermometer], 43148 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 91.55..91.55 ns, 43149 DAC_CLK pulses 1 MCLK after SEL, 43129 RAW words, 10788 CHOP edges at 128 kHz, 10787 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
 PASS  top_dlc5            4s  tb_top DAC_LOAD_CYCLE=5 (12 samples bit-exact vs golden, 14477 SEL checks [10381 DWA, 4096 thermometer], 14476 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 183.11..183.11 ns, 14477 DAC_CLK pulses 1 MCLK after SEL, 14458 RAW words, 3620 CHOP edges at 128 kHz, 3619 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
 == summary: 13 passed, 0 failed ==
 ```
 
-- The `tb_top` results (samples, SEL checks, ELD, RAW words, CHOP and CHOP_BLANK counts) are the same as before the split into `eeg_digital_top` and `eeg_adc_dig`.
+- The `tb_top` results (samples, SEL checks, ELD, RAW words, CHOP and CHOP_BLANK counts) are the same as before the split into `eeg_digital_top` and `eeg_adc_dig`, and as before the 10/23 timing change of `eeg_adc_dig`.
 
 The vector generator also reports this coverage for the stream test (`build/vectors.log`):
 - 20,599,999 accepted inputs, 2 clears (1 input discarded by a clear in the same cycle), 20,116 strobes, 20,110 valid.
@@ -380,13 +383,13 @@ The rounding test adds 25,156 vectors with 10,077 saturating cases.
 - **ADC_ZERO.** CHOP_BLANK = (clock-generator blanking) OR TEST_CFG[5]. Both are flip-flop outputs and TEST_CFG only changes on a register write, so the OR does not glitch in operation.
 - **Reset state.**
   - SEL = elements 0..15 (k = 16) and pointer 0, matching the XSPICE controller model.
-  - `th_q` resets to code 15.
+  - CODE resets to 15. The DWA selectors' sampled k resets to 16 and their precomputed selection to elements 0..15, so a load before the first capture gives the same SEL and pointer as before.
   - The clkgen counter resets so that frame 0 starts at the first edge after reset.
 - **MISO_OE.** It is released through a combinational path from the CS_N pad, so it drops at once when CS_N rises.
 
 ## Open items
 
-- **Synthesis and STA have not been run.** The critical path at DAC_LOAD_CYCLE = 2 is th_q → popcount → DWA → SEL in 30.5 ns, now inside `eeg_adc_dig`. The TH input needs a 2-cycle constraint, CODE (th_q → CIC) can take a 2-cycle constraint across the two blocks, and the CS_N → MISO_OE path is combinational.
+- **Synthesis and STA (10/23).** Both blocks are LibreLane macros (`gf180/tapeout/digital/`; GDS, LEF, netlists and a gate-level CDL for chip LVS in `gf180/tapeout/layout/gds/`). Setup and hold are met at all 3.3 V corners. The worst setup slack is at ss/125 °C/3.0 V: +5.36 ns for `eeg_adc_dig` and +1.10 ns for `eeg_digital_top`. At tt it is +14.78 and +15.62 ns, and at ss/−40 °C/3.0 V (OpenSTA) +12.68 and +10.48 ns. The worst hold slack is at ff: +0.20 and +0.19 ns. KLayout and magic DRC are clean, LVS matches and there are no antenna violations. What remains are design-rule warnings only: max transition (3 ns limit) on a few nets at ss/125 °C, and max capacitance (0.2 pF limit) and max fanout (10) on clock-tree nets. All are far inside the library limits (clkbuf_16: 5.7 pF, 8.6 ns). The CS_N → MISO_OE path is combinational. The two blocks share MCLK, and the MCLK skew between their pins must stay below about 1 ns (the hold margin at ff of the strobes from `eeg_digital_top`).
 - **ELD in the loop design.** The XSPICE reference loop updates the DACs at the comparator clock, with almost no ELD. The RTL adds (DAC_LOAD_CYCLE + 1) MCLK = 91.6 ns, which the CT loop design must include or compensate.
 - **DWA on DAC2.**
   - The XSPICE controller applies DWA only to DAC1 and drives DAC2 with the straight held thermometer code.

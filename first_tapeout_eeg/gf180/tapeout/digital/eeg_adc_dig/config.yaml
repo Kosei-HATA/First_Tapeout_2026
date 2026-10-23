@@ -1,0 +1,64 @@
+# LibreLane (v3, Classic flow) hard macro: eeg_adc_dig (gf180/tapeout/rtl/eeg_adc_dig.sv),
+# the ADC's digital part (TH capture, thermometer to binary, DWA x2), placed in the
+# bottom-right corner of the ADC with DAC2 directly above it (pins: SEL1 west, SEL2 on
+# the west part of the north edge below the SEL inputs of DAC2, TH and the interface
+# to eeg_digital_top east). Run from the template's nix shell:
+#   cd /Users/noah/Codings/ws_gf180/eeg_padring && nix-shell --run "librelane <this file>
+#   --pdk gf180mcuD --pdk-root gf180mcu --manual-pdk --scl gf180mcu_fd_sc_mcu7t5v0"
+meta:
+  version: 3
+  flow: Classic
+
+DESIGN_NAME: eeg_adc_dig
+VERILOG_FILES:
+- dir::../../rtl/eeg_adc_dig.sv
+- dir::../../rtl/eeg_therm2bin.sv
+- dir::../../rtl/eeg_dwa.sv
+USE_SLANG: true
+
+CLOCK_PORT: MCLK
+CLOCK_PERIOD: 30.5          # 32.768 MHz
+
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 420, 240]
+PL_TARGET_DENSITY_PCT: 55
+FP_PIN_ORDER_CFG: dir::pin_order.cfg
+
+VDD_NETS: [VDD]
+GND_NETS: [VSS]
+# power: vertical Metal4 straps only (the chip assembly lands Metal5 on them)
+PDN_MULTILAYER: false
+PDN_VPITCH: 40
+PDN_VWIDTH: 3
+
+RT_MAX_LAYER: Metal4
+
+
+# timing: DVDD is 3.3 V (tracker F2), so the 3.3 V liberty files of the 7-track
+# library replace the PDK's 5 V corners; eeg_adc_dig.sdc makes TH a 2-cycle path
+PNR_SDC_FILE: dir::eeg_adc_dig.sdc
+SIGNOFF_SDC_FILE: dir::eeg_adc_dig.sdc
+CELL_LIBS:
+  "*_tt_025C_3v30":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+  "*_ss_125C_3v00":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ss_125C_3v00.lib
+  "*_ff_n40C_3v60":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ff_n40C_3v60.lib
+STA_CORNERS:
+- nom_tt_025C_3v30
+- nom_ss_125C_3v00
+- nom_ff_n40C_3v60
+- min_tt_025C_3v30
+- min_ss_125C_3v00
+- min_ff_n40C_3v60
+- max_tt_025C_3v30
+- max_ss_125C_3v00
+- max_ff_n40C_3v60
+DEFAULT_CORNER: nom_tt_025C_3v30
+
+
+# no delay cells (dlyb/dlyc) as wire or fanout buffers: in run f1 the repair put four
+# dlyb_1 (3.3 ns each at ss) in series on the TH -> DWA path
+EXTRA_EXCLUDED_CELLS:
+- gf180mcu_fd_sc_mcu7t5v0__dly*

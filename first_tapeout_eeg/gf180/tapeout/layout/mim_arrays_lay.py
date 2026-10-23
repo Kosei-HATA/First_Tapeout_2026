@@ -3,9 +3,13 @@
 
   eeg_cin  Cin, one side of the AFE input capacitor (636 pF): 32 units of 99.70 um square,
            8 x 4. Top plates INP side (TOP), bottom plates the chopper side WP (BOT).
-  eeg_c1   C1, one side of the ADC first integrator (680.51 pF): 35 units of 98.61 um,
-           7 x 5. TOP to the OTA1 input (I1), BOT to the OTA1 output (O1).
+  eeg_c1   C1, one side of the ADC first integrator (340.30 pF since 10/23, halved as area
+           fallback 2): 18 units of 97.23 um, 5 x 4 with two places empty. TOP to the OTA1
+           input (I1), BOT to the OTA1 output (O1).
   eeg_c2   C2, one side of the ADC second integrator (19.53 pF): one unit of 98.83 um.
+Cin and C1 have both buses on their south edge (gf180lay.mim_array south=True; TOP
+outermost): the AFE and ADC place them mirrored above and below their circuits, which
+then reach both nets along one edge.
 
 The units are equal squares sized with the cap_mim_2f0ff model (area and perimeter terms)
 so the totals match the netlists; one MIM cap may not exceed 10,000 um2 (MIMTM.8b). The
@@ -25,19 +29,19 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 AFE = os.path.join(g.REPO, "gf180", "tapeout", "afe", "eeg_afe.spice")
 ADC = os.path.join(g.REPO, "gf180", "tapeout", "adc", "eeg_adc.spice")
 
-# name: (nx, ny, side um, netlist)
+# name: (nx, ny, side um, netlist, count, buses on the south edge)
 ARRAYS = {
-    "eeg_cin": (8, 4, 99.70, AFE),
-    "eeg_c1": (7, 5, 98.61, ADC),
-    "eeg_c2": (1, 1, 98.83, ADC),
+    "eeg_cin": (8, 4, 99.70, AFE, 32, True),
+    "eeg_c1": (5, 4, 97.23, ADC, 18, True),
+    "eeg_c2": (1, 1, 98.83, ADC, 1, False),
 }
 
 
 def build(name):
-    nx, ny, a, _ = ARRAYS[name]
+    nx, ny, a, _, count, south = ARRAYS[name]
     b = g.Block(name)
-    x0, y0, x1, y1 = g.mim_array(b, nx, ny, a, a, top="TOP", bot="BOT")
-    return b, (x1 - x0, y1 - y0), nx * ny * g.mim_cap(a, a)
+    x0, y0, x1, y1 = g.mim_array(b, nx, ny, a, a, top="TOP", bot="BOT", count=count, south=south)
+    return b, (x1 - x0, y1 - y0), count * g.mim_cap(a, a)
 
 
 def main():

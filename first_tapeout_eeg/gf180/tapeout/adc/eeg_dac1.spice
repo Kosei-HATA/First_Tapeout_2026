@@ -1,14 +1,15 @@
 * eeg_dac1: DAC1 of the ADC (tracker B3, B6), GF180, this rev
 *
-* 31 steered unit cells. Each cell has a 300 kohm resistor from VRP and one from VRN
-* (ppolyf_u_1k, 291.28 x 1 um; until 10/23 ppolyf_u_3k 195.5 x 2 um as in the
+* 31 steered unit cells. Each cell has a 600 kohm resistor from VRP and one from VRN,
+* each two 300 kohm units in series (ppolyf_u_1k, 291.28 x 1 um; 300 kohm per element
+* until C1 was halved on 10/23; until 10/23 ppolyf_u_3k 195.5 x 2 um as in the
 * dac1s_cell of gf180/sim/dac1_cell/dac1_cell.spice, but the process offers the 1 kohm/sq
 * option of the high-resistance poly, not 3 kohm/sq); NMOS switches (W 1 um) steer each
-* resistor's current to OUTP or OUTN:
+* element's current to OUTP or OUTN:
 *   SEL = 1: VRP resistor -> OUTP, VRN resistor -> OUTN (positive output)
 *   SEL = 0: VRP resistor -> OUTN, VRN resistor -> OUTP
 * The resistors never leave their references, so VRP sources the same 31 x 0.25 V /
-* 300 kohm = 25.6 uA for every code (per toggle only about 0.2 fC moves, against
+* 600 kohm = 12.9 uA for every code (per toggle only about 0.2 fC moves, against
 * 11.9 fC for the TG-switched cell), and the reference path may carry a filter
 * resistor (eeg_ref.spice, documentation/gf180_dac1_ref_20261022.md).
 *
@@ -74,8 +75,10 @@ XI1 QB N1 VDD VSS eeg_dac1_inv s=1
 XI2 Q QB VDD VSS eeg_dac1_inv s=1
 XND D QB BRK VDD VSS eeg_dac1_nor2
 XNDB DB Q BRK VDD VSS eeg_dac1_nor2
-XRP VRP XP VSS ppolyf_u_1k r_length=291.28u r_width=1u
-XRN VRN XN VSS ppolyf_u_1k r_length=291.28u r_width=1u
+XRPA VRP MP VSS ppolyf_u_1k r_length=291.28u r_width=1u
+XRPB MP XP VSS ppolyf_u_1k r_length=291.28u r_width=1u
+XRNA VRN MN VSS ppolyf_u_1k r_length=291.28u r_width=1u
+XRNB MN XN VSS ppolyf_u_1k r_length=291.28u r_width=1u
 XSPP XP D OUTP VSS nfet_03v3 W=1u L=0.28u nf=1
 XSPN XP DB OUTN VSS nfet_03v3 W=1u L=0.28u nf=1
 XSNN XN D OUTN VSS nfet_03v3 W=1u L=0.28u nf=1

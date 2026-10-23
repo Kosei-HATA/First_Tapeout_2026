@@ -157,10 +157,11 @@ def ota1(b):
     pcp = dict(w=10.0, l=1.0, seq=dev_seq("OUTP", "VPC", "P2P", 128), order=["P2P", "OUTP"], straps={"P2P": 3, "OUTP": 3})
     pcn = dict(w=10.0, l=1.0, seq=dev_seq("OUTN", "VPC", "P2N", 128), order=["P2N", "OUTN"], straps={"P2N": 3, "OUTN": 3})
     pcas = an.multi_strip_cell(b, "ota1_pcas", "p", [pcp, pcn, pcn, pcp, pcp, pcn, pcn, pcp], bulk="VDD")
-    # PMOS loads W10/L4 x 512 per side: 16 strips of 64 fingers, P1P / P1N interleaved
+    # PMOS loads W10/L4 x 512 per side: 22 strips of 48 fingers (the last four 40),
+    # P1P / P1N interleaved (128 groups of four finger pairs)
     pload = an.multi_strip_cell(b, "ota1_pload", "p", [
-        dict(w=10.0, l=4.0, seq=pair_seq("P1P", "VBP", "P1N", "VBP", "VDD", 8, start_b=(k % 2 == 1)),
-             order=["VDD", "P1P", "P1N"], straps={"VDD": 2, "P1P": 2, "P1N": 2}) for k in range(16)], bulk="VDD")
+        dict(w=10.0, l=4.0, seq=pair_seq("P1P", "VBP", "P1N", "VBP", "VDD", 6 if k < 18 else 5, start_b=(k % 2 == 1)),
+             order=["VDD", "P1P", "P1N"], straps={"VDD": 2, "P1P": 2, "P1N": 2}) for k in range(22)], bulk="VDD")
     # input chopper (four chop_tg): INP / INN -> CIP / CIN
     chn = an.multi_strip_cell(b, "ota1_chn", "n", comm("n", "CIA", "CIB", 8, "INP", "INN", "CIP", "CIN"), bulk="VSS")
     chp = an.multi_strip_cell(b, "ota1_chp", "p", comm("p", "NCIA", "NCIB", 16, "INP", "INN", "CIP", "CIN"), bulk="VDD")
@@ -197,8 +198,16 @@ def build_ota1():
         return p
 
     x0 = round((SW + 2.4) / lg.PITCH) * lg.PITCH
-    # column A (NMOS world), bottom to top: input pair + tail, commutator halves, cascodes
+    # column A (NMOS world), bottom to top: input chopper, compensation MIMs, input pair +
+    # tail, commutator halves, cascodes
     y = 0.0
+    place(C["chn"], x0, y, "CHN")
+    place(C["chp"], x0 + C["chn"].width + 3.0, y, "CHP")
+    y += max(C["chn"].height, C["chp"].height) + 3.0
+    ccs = []
+    for k, out in enumerate(("OUTP", "OUTN")):
+        ccs.append(place(C["cc"], x0 + k * (C["cc"].width + 3.0), y, f"CC{k}", {"OUT": out}))
+    y += C["cc"].height + 3.0
     pa = [place(C["nin"], x0, y, "NIN")]
     y += C["nin"].height + 3.0
     pa.append(place(C["ntg"], x0, y, "NTG"))
@@ -206,29 +215,22 @@ def build_ota1():
     y += max(C["ntg"].height, C["ptg"].height) + 3.0
     pa.append(place(C["ncas"], x0, y, "NCAS"))
     ya_top = y + C["ncas"].height
-    # column B (PMOS world), east of A, bottom to top: cascodes, commutator halves, loads
+    # column B (PMOS world), east of A, bottom to top: CMFB, loads, commutator halves,
+    # cascodes (the cascodes of both columns at the top, joined by the OUTP / OUTN trunks)
     xb = x0 + C["nin"].width + 6.0
     y = 0.0
-    pb = [place(C["pcas"], xb, y, "PCAS")]
-    y += C["pcas"].height + 3.0
+    place(C["cmn"], xb, y, "CMN")
+    place(C["cmp"], xb + C["cmn"].width + 3.0, y, "CMP")
+    y += max(C["cmn"].height, C["cmp"].height) + 3.0
+    pb = [place(C["pload"], xb, y, "PLOAD")]
+    y += C["pload"].height + 3.0
     pb.append(place(C["nptg"], xb, y, "NPTG"))
     pb.append(place(C["pptg"], xb + C["nptg"].width + 3.0, y, "PPTG"))
     y += max(C["nptg"].height, C["pptg"].height) + 3.0
-    pb.append(place(C["pload"], xb, y, "PLOAD"))
-    yb_top = y + C["pload"].height
-    # east: input chopper, CMFB, compensation MIMs
-    xe = xb + max(C["pcas"].width, C["pload"].width) + 6.0
-    y = 0.0
-    pe = []
-    for key in ("chn", "chp", "cmn", "cmp"):
-        pe.append(place(C[key], xe, y, key.upper()))
-        y += C[key].height + 3.0
-    ccs = []
-    for k, out in enumerate(("OUTP", "OUTN")):
-        ccs.append(place(C["cc"], xe, y, f"CC{k}", {"OUT": out}))
-        y += C["cc"].height + 3.0
-    height = max(ya_top, yb_top, y) + 12.0
-    width = xe + max(C[k].width for k in ("chn", "chp", "cmn", "cmp", "cc")) + 4.0 + SW
+    pb.append(place(C["pcas"], xb, y, "PCAS"))
+    yb_top = y + C["pcas"].height
+    height = max(ya_top, yb_top) + 12.0
+    width = xb + max(C["pcas"].width, C["pload"].width) + 4.0 + SW
     # ---- high-current lanes (Metal3 bars over the stacked cells). Every narrow cell gets
     # one lane per net it carries inside its own x range; the full-width cells (input pair,
     # cascodes, loads) join the lanes of a net to each other through their straps.

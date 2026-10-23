@@ -1,0 +1,76 @@
+# LibreLane (v3, Classic flow) hard macro: eeg_digital_top (gf180/tapeout/rtl/
+# eeg_digital_top.sv): reset synchronizer, frame timing, CIC, FIFO, SPI, registers,
+# raw stream. Placed in the east digital column of the core (x 2560-3008, core
+# coordinates), next to the east pads. 9-track library (faster than the 7-track one
+# used in eeg_adc_dig): with the 7-track cells the CIC adders missed setup at
+# ss/125 C/3.0 V by 0.7-3.8 ns. Run from the template's nix shell:
+#   cd /Users/noah/Codings/ws_gf180/eeg_padring && nix-shell --run "librelane <this file>
+#   --pdk gf180mcuD --pdk-root gf180mcu --manual-pdk --scl gf180mcu_fd_sc_mcu9t5v0"
+meta:
+  version: 3
+  flow: Classic
+
+DESIGN_NAME: eeg_digital_top
+VERILOG_FILES:
+- dir::../../rtl/eeg_digital_top.sv
+- dir::../../rtl/eeg_clkgen.sv
+- dir::../../rtl/eeg_chop1.sv
+- dir::../../rtl/eeg_cic3.sv
+- dir::../../rtl/eeg_rnd_sat.sv
+- dir::../../rtl/eeg_fifo.sv
+- dir::../../rtl/eeg_spi_slave.sv
+- dir::../../rtl/eeg_regs.sv
+- dir::../../rtl/eeg_raw.sv
+USE_SLANG: true
+
+CLOCK_PORT: MCLK
+CLOCK_PERIOD: 30.5          # 32.768 MHz
+
+# pins: east = pads (bottom to top in pad order), west = eeg_adc_dig and the ADC
+# clock driver, north = analog control to the north channel
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 440, 700]
+PL_TARGET_DENSITY_PCT: 55
+FP_PIN_ORDER_CFG: dir::pin_order.cfg
+
+VDD_NETS: [VDD]
+GND_NETS: [VSS]
+# power: vertical Metal4 straps only (the chip assembly lands Metal5 on them)
+PDN_MULTILAYER: false
+PDN_VPITCH: 40
+PDN_VWIDTH: 3
+
+RT_MAX_LAYER: Metal4
+
+# timing: DVDD is 3.3 V (tracker F2), so the 3.3 V liberty files of the 9-track
+# library replace the PDK's 5 V corners; eeg_digital_top.sdc makes CODE a 2-cycle path
+PNR_SDC_FILE: dir::eeg_digital_top.sdc
+SIGNOFF_SDC_FILE: dir::eeg_digital_top.sdc
+CELL_LIBS:
+  "*_tt_025C_3v30":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_3v30.lib
+  "*_ss_125C_3v00":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ss_125C_3v00.lib
+  "*_ff_n40C_3v60":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ff_n40C_3v60.lib
+STA_CORNERS:
+- nom_tt_025C_3v30
+- nom_ss_125C_3v00
+- nom_ff_n40C_3v60
+- min_tt_025C_3v30
+- min_ss_125C_3v00
+- min_ff_n40C_3v60
+- max_tt_025C_3v30
+- max_ss_125C_3v00
+- max_ff_n40C_3v60
+DEFAULT_CORNER: nom_tt_025C_3v30
+
+# timing repair after global routing (CIC integrator and comb adders, reset tree)
+RUN_POST_GRT_RESIZER_TIMING: true
+# not used: two 9-track cells in which magic flags CO.3 (poly overlap of contact;
+# KLayout DRC is clean), and the delay cells, which the repair otherwise uses as
+# wire and fanout buffers (3 ns each at ss)
+EXTRA_EXCLUDED_CELLS:
+- gf180mcu_fd_sc_mcu9t5v0__xnor3_4
+- gf180mcu_fd_sc_mcu9t5v0__dffrnq_4
+- gf180mcu_fd_sc_mcu9t5v0__dly*

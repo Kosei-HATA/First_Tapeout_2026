@@ -11,9 +11,9 @@
 //
 // Data path per frame (e_n = rising MCLK edge that starts frame cycle n):
 //   e0  CMP_STROBE rises; the quantizer compares and latches its decision.
-//   e2  eeg_adc_dig captures TH[30:0] (TH_CAPTURE = cycle 1);
-//       CODE = popcount(TH), k = 31 - CODE
-//   e3  eeg_adc_dig updates SEL1/SEL2 from k (DAC_LOAD = cycle DAC_LOAD_CYCLE = 2).
+//   e2  eeg_adc_dig samples TH[30:0] (TH_CAPTURE = cycle 1): CODE <= popcount(TH),
+//       and its DWA selectors compute the selection for k = 31 - CODE
+//   e3  eeg_adc_dig updates SEL1/SEL2 (DAC_LOAD = cycle DAC_LOAD_CYCLE = 2).
 //       Excess loop delay CMP_STROBE -> SEL = (DAC_LOAD_CYCLE + 1) MCLK = 91.6 ns.
 //   e4  CIC integrators take x = 2*CODE - 31 (cic_en = cycle 3).
 //
@@ -43,7 +43,7 @@ module eeg_digital_top #(
     output logic        TH_CAPTURE,           // frame cycle 1: eeg_adc_dig captures TH at its end (e2)
     output logic        DAC_LOAD,             // frame cycle DAC_LOAD_CYCLE: SEL1/SEL2 update at its end
     output logic        DWA_EN,               // CONTROL.DWA_EN
-    input  logic [4:0]  CODE,                 // quantizer code from eeg_adc_dig (popcount of the captured TH)
+    input  logic [4:0]  CODE,                 // quantizer code from eeg_adc_dig (popcount of TH at e2, registered)
     // analog interface
     output logic        CMP_STROBE,           // comparator clock (one MCLK cycle per frame)
     output logic        DAC_CLK,              // DAC1 update: high one MCLK, from one MCLK after SEL1/SEL2 change
@@ -90,7 +90,8 @@ module eeg_digital_top #(
     logic       chop_fast;
     logic [7:0] chop_dly;
     logic [3:0] blank_len;
-    logic       chop_blank;
+    logic       gen_blank;                // clock-generator blanking (CHOP_BLANK before ADC_ZERO);
+                                          // not chop_blank: netgen LVS merges names that differ only in case
 
     eeg_clkgen #(
         .DAC_LOAD_CYCLE (DAC_LOAD_CYCLE)
@@ -107,7 +108,7 @@ module eeg_digital_top #(
         .cic_en     (cic_en),
         .chop       (CHOP),
         .chop_out   (CHOP_OUT),
-        .chop_blank (chop_blank),
+        .chop_blank (gen_blank),
         .raw_clk    (raw_clk)
     );
 
@@ -125,7 +126,7 @@ module eeg_digital_top #(
 
     // ADC_ZERO (TEST_CFG[5]) keeps the output chopper blanked. Both inputs are
     // registers; TEST_CFG only changes on a register write.
-    assign CHOP_BLANK = chop_blank | TEST_CFG[5];
+    assign CHOP_BLANK = gen_blank | TEST_CFG[5];
 
     // ------------------------------------------------------------------
     // Decimation filter

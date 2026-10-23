@@ -1,0 +1,17 @@
+* LVS wrapper for the layout block offdac_n (gf180/tapeout/layout/offdac_lay.py): the
+* N half of the offset DAC (gf180/tapeout/afe/eeg_afe.spice) and, under its MIMs, the
+* decoupling of the AFE clock driver's supply (10 cap_nmos_03v3, AVDD_CLK gate,
+* AVSS_CLK source/drain; the guard rings tap the substrate, AVSS).
+.subckt offdac_n INN VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 AVDD AVSS AVDD_CLK AVSS_CLK
+XH INN VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 AVDD AVSS eeg_afe_offdac_n
+XDC0 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC1 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC2 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC3 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC4 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC5 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC6 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC7 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC8 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+XDC9 AVDD_CLK AVSS_CLK cap_nmos_03v3 c_length=28.6u c_width=92u
+.ends offdac_n

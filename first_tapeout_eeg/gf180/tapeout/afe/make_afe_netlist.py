@@ -160,7 +160,12 @@ def offdac():
     close to that of the electrode charge, RS x Cin). The plates of the other bits are
     clamped to AVSS by a strong NMOS, so their R_k adds no noise: with no offset the DAC
     adds only its capacitance at the amplifier input. Range groups are switched at the
-    amplifier-input side (a disabled group is parked at VCM)."""
+    amplifier-input side (a disabled group is parked at VCM).
+    Since 10/23 the DAC is two self-contained halves (eeg_afe_offdac_p into INP,
+    eeg_afe_offdac_n into INN), laid out in the two west corners of the AFE beside Cin_P
+    and Cin_N (gf180/tapeout/layout/offdac_lay.py). Each half has its own copy of the
+    shared logic (S inverter, PH inverter, XOR TGs, X chain, EN inverters) and of the
+    NAND2 that gates its clamps; the devices are the same as before."""
     bits = " ".join(f"M{k}" for k in range(OFF_BITS))
     L = ["",
          "* electrode-offset cancellation DAC (tracker B7), sign-magnitude",
@@ -172,43 +177,49 @@ def offdac():
          f"* R_k = {OFF_TAU * 1e9:g} ns / C_k (thermal noise grows with the active capacitance, i.e.",
          "* with the cancelled offset). Inactive plates: clamped to VSS by an NMOS sized for",
          "* R_on x C_k = 0.2 ns. Disabled groups: plates low, top plate at VCM.",
+         "* Two self-contained halves (P into INP, N into INN), each with its own copy of the",
+         "* shared logic (10/23, for the layout in the two west corners of the AFE).",
          f".subckt eeg_afe_offdac INP INN VCM PH S {bits} EN0 EN1 EN2 EN3 VDD VSS",
-         "XSB SB S VDD VSS eeg_afe_inv s=1",
-         "XNPH NPH PH VDD VSS eeg_afe_inv s=2",
-         "XMXA S XR NPH PH VDD VSS eeg_afe_tg",    # passes S while PH low
-         "XMXB SB XR PH NPH VDD VSS eeg_afe_tg",   # passes not S while PH high
-         "XXR1 XRB XR VDD VSS eeg_afe_inv s=2",
-         "XXR2 X XRB VDD VSS eeg_afe_inv s=8",
-         "XXR3 XB X VDD VSS eeg_afe_inv s=8"]
-    for g in range(4):
-        L.append(f"XENB{g} ENB{g} EN{g} VDD VSS eeg_afe_inv s=1")
-    tg = {0: (10, 20), 1: (10, 20), 2: (20, 40), 3: (40, 80)}  # range TG W (um), NMOS/PMOS
-    for g in range(4):
-        wn, wp = tg[g]
-        for s, node in (("P", "INP"), ("N", "INN")):
-            L.append(f"XRG{s}{g}N T{s}{g} EN{g} {node} VSS nfet_03v3 W={wn}u L=0.28u nf={wn // 10 or 1} m=1")
-            L.append(f"XRG{s}{g}P T{s}{g} ENB{g} {node} VDD pfet_03v3 W={wp}u L=0.28u nf={wp // 10 or 1} m=1")
-            L.append(f"XPK{s}{g}N T{s}{g} ENB{g} VCM VSS nfet_03v3 W=1u L=0.28u nf=1 m=1")
-            L.append(f"XPK{s}{g}P T{s}{g} EN{g} VCM VDD pfet_03v3 W=2u L=0.28u nf=1 m=1")
-    for k in range(OFF_BITS):
-        g = OFF_GROUP[k]
-        m = max(1, 2 ** (k - 5))  # plate driver strength (units of W 1/2.5 um)
-        c = OFF_CU * 2 ** k
-        r = OFF_TAU / c
-        wcl = max(0.5, round(c * 0.28e-6 / (172e-6 * 2.6 * 0.2e-9) * 1e6 * 2) / 2)  # clamp W (um)
-        L += [f"* bit {k}: {c * 1e12:.4g} pF per side, group {g}, R {r / 1e3:.4g} kohm, driver x{m}, clamp W {wcl:g} um",
-              f"XNP{k} NP{k} EN{g} M{k} XB VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
-              f"XNN{k} NN{k} EN{g} M{k} X VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
-              f"XDP{k} DP{k} NP{k} VDD VSS eeg_afe_inv s={m}",
-              f"XDN{k} DN{k} NN{k} VDD VSS eeg_afe_inv s={m}",
-              poly1k(f"RDP{k}", f"DP{k}", f"BP{k}", "VSS", r),
-              poly1k(f"RDN{k}", f"DN{k}", f"BN{k}", "VSS", r),
-              f"XNA{k} NA{k} EN{g} M{k} VDD VSS eeg_afe_nand2 s=1",
-              f"XCLP{k} BP{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
-              f"XCLN{k} BN{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
-              *mim(f"COFP{k}", f"TP{g}", f"BP{k}", c),
-              *mim(f"COFN{k}", f"TN{g}", f"BN{k}", c)]
-    L += [".ends eeg_afe_offdac",
+         f"XOP INP VCM PH S {bits} EN0 EN1 EN2 EN3 VDD VSS eeg_afe_offdac_p",
+         f"XON INN VCM PH S {bits} EN0 EN1 EN2 EN3 VDD VSS eeg_afe_offdac_n",
+         ".ends eeg_afe_offdac"]
+    rg = {0: 1, 1: 1, 2: 2, 3: 4}  # range TG strength: NMOS W 10 um x s, PMOS W 20 um x s
+    for s, node, xs in (("P", "INP", "XB"), ("N", "INN", "X")):
+        L += ["",
+              f"* offset-DAC half {s}: plates B{s}k, group top plates T{s}g into {node}",
+              f".subckt eeg_afe_offdac_{s.lower()} {node} VCM PH S {bits} EN0 EN1 EN2 EN3 VDD VSS",
+              "XSB SB S VDD VSS eeg_afe_inv s=1",
+              "XNPH NPH PH VDD VSS eeg_afe_inv s=2",
+              "XMXA S XR NPH PH VDD VSS eeg_afe_tg",    # passes S while PH low
+              "XMXB SB XR PH NPH VDD VSS eeg_afe_tg",   # passes not S while PH high
+              "XXR1 XRB XR VDD VSS eeg_afe_inv s=2",
+              "XXR2 X XRB VDD VSS eeg_afe_inv s=8"]
+        if s == "P":
+            L.append("XXR3 XB X VDD VSS eeg_afe_inv s=8")
+        for g in range(4):
+            L.append(f"XENB{g} ENB{g} EN{g} VDD VSS eeg_afe_inv s=1")
+        for g in range(4):
+            L.append(f"XRG{s}{g} T{s}{g} {node} EN{g} ENB{g} VDD VSS eeg_afe_rg s={rg[g]}")
+            L.append(f"XPK{s}{g} T{s}{g} VCM ENB{g} EN{g} VDD VSS eeg_afe_tg")
+        for k in range(OFF_BITS):
+            g = OFF_GROUP[k]
+            m = max(1, 2 ** (k - 5))  # plate driver strength (units of W 1/2.5 um)
+            c = OFF_CU * 2 ** k
+            r = OFF_TAU / c
+            wcl = max(0.5, round(c * 0.28e-6 / (172e-6 * 2.6 * 0.2e-9) * 1e6 * 2) / 2)  # clamp W (um)
+            L += [f"* bit {k}: {c * 1e12:.4g} pF, group {g}, R {r / 1e3:.4g} kohm, driver x{m}, clamp W {wcl:g} um",
+                  f"XN{s}{k} N{s}{k} EN{g} M{k} {xs} VDD VSS eeg_afe_nand3 s={max(1, m // 4)}",
+                  f"XD{s}{k} D{s}{k} N{s}{k} VDD VSS eeg_afe_inv s={m}",
+                  poly1k(f"RD{s}{k}", f"D{s}{k}", f"B{s}{k}", "VSS", r),
+                  f"XNA{k} NA{k} EN{g} M{k} VDD VSS eeg_afe_nand2 s=1",
+                  f"XCL{s}{k} B{s}{k} NA{k} VSS VSS nfet_03v3 W={wcl:g}u L=0.28u nf={max(1, int(wcl // 10))} m=1",
+                  *mim(f"COF{s}{k}", f"T{s}{g}", f"B{s}{k}", c)]
+        L += [f".ends eeg_afe_offdac_{s.lower()}"]
+    L += ["* range TG of the offset DAC: NMOS W 10 um x s (G), PMOS W 20 um x s (GN)",
+          ".subckt eeg_afe_rg A Y G GN VDD VSS s=1",
+          "XN A G Y VSS nfet_03v3 W={10u*s} L=0.28u nf={s} m=1",
+          "XP A GN Y VDD pfet_03v3 W={20u*s} L=0.28u nf={2*s} m=1",
+          ".ends eeg_afe_rg",
           "* s: strength (W and finger count scale with s)",
           ".subckt eeg_afe_inv Y A VDD VSS s=1",
           "XP Y A VDD VDD pfet_03v3 W={2.5u*s} L=0.28u nf={s} m=1",

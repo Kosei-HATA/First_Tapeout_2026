@@ -18,3 +18,5 @@ gf180/tapeout/sim/test/runs/
 gf180/tapeout/layout/runs/
 gf180/tapeout/digital/*/runs/
 gf180/tapeout/layout/gds/adc_top.gds
+gf180/tapeout/layout/gds/afe_top.gds
+gf180/tapeout/layout/gds/eeg_afe_core.gds

@@ -1,0 +1,55 @@
+* LVS wrapper for the AFE layout afe_top (gf180/tapeout/layout/afe_lay.py): eeg_afe
+* (gf180/tapeout/afe/eeg_afe.spice) with its clock driver eeg_afe_clk and the driver's
+* supply (the decap under offdac_n's MIMs, the 100 ohm resistors to AVDD / AVSS).
+* Nets that the chip joins outside the AFE are separate ports here: the driver's outputs
+* at the west edge (CIA CIB CDA NCDA CDB NCDB RST OFPH) and their copies at the output
+* section on the east edge (CIA2 CIB2 CDA2 NCDA2 CDB2 NCDB2 RST2), and the controls and
+* VCM of each offset-DAC half (_N on the bottom edge, _P on the west edge).
+.subckt afe_top ELP
++ ELN OUTP OUTN VCM VBN VBCM BLP BLN RST2 CIA2 CIB2 CDA2
++ NCDA2 CDB2 NCDB2 CPF0 CPF1 CPF2 CPF3 CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST
++ CIA CIB CDA NCDA CDB NCDB RST OFPH VCM_N OFPH_N OFS_N OFM0_N
++ OFM1_N OFM2_N OFM3_N OFM4_N OFM5_N OFM6_N OFM7_N OFM8_N OFM9_N OFEN0_N OFEN1_N OFEN2_N
++ OFEN3_N VCM_P OFPH_P OFS_P OFM0_P OFM1_P OFM2_P OFM3_P OFM4_P OFM5_P OFM6_P OFM7_P
++ OFM8_P OFM9_P OFEN0_P OFEN1_P OFEN2_P OFEN3_P AVDD AVSS
+XCLK CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB OFPH RST AVDD_CLK AVSS_CLK
++ eeg_afe_clk
+XRCKP AVDD_CLK AVDD AVSS ppolyf_u_1k r_length=2u r_width=20u
+XRCKN AVSS_CLK AVSS AVSS ppolyf_u_1k r_length=2u r_width=20u
+XODN INN VCM_N OFPH_N OFS_N
++ OFM0_N OFM1_N OFM2_N OFM3_N OFM4_N OFM5_N OFM6_N OFM7_N OFM8_N OFM9_N OFEN0_N OFEN1_N OFEN2_N OFEN3_N
++ AVDD AVSS AVDD_CLK AVSS_CLK offdac_n
+XODP INP VCM_P OFPH_P OFS_P
++ OFM0_P OFM1_P OFM2_P OFM3_P OFM4_P OFM5_P OFM6_P OFM7_P OFM8_P OFM9_P OFEN0_P OFEN1_P OFEN2_P OFEN3_P
++ AVDD AVSS offdac_p
+XCINP INP WP eeg_cin
+XCINN INN WN eeg_cin
+XCFBP INP ONI cap_mim_2f0ff c_length=31.46u c_width=31.46u
+XCFBN INN OPI cap_mim_2f0ff c_length=31.46u c_width=31.46u
+XCPFP WP OPI cap_mim_2f0ff c_length=30.92u c_width=30.92u
+XCPFN WN ONI cap_mim_2f0ff c_length=30.92u c_width=30.92u
+XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 AVDD AVSS eeg_afe_cpftrim
+XRSTP INP RST2 ONI AVSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
+XRSTN INN RST2 OPI AVSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
+XSCP1 INP CIA2 SCP AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP2 SCP CIB2 ONI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCSCP SCP AVSS cap_mim_2f0ff c_length=5u c_width=5u
+XSCN1 INN CIA2 SCN AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN2 SCN CIB2 OPI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCSCN SCN AVSS cap_mim_2f0ff c_length=5u c_width=5u
+* eeg_afe_amp: input chopper (CIA / CIB from the driver), core, output chopper (CDA2 ...
+* from the east edge), CMFB
+XTG ELP ELN WP WN CIA NCIA CIB NCIB AVDD AVSS afe_tgin
+XCORE INP INN OPI ONI VBN VBP BLP BLN AVDD AVSS eeg_afe_core
+XOP_A OPI OUTP CDA2 NCDA2 AVDD AVSS eeg_afe_output_tg
+XON_A ONI OUTN CDA2 NCDA2 AVDD AVSS eeg_afe_output_tg
+XOP_B OPI OUTN CDB2 NCDB2 AVDD AVSS eeg_afe_output_tg
+XON_B ONI OUTP CDB2 NCDB2 AVDD AVSS eeg_afe_output_tg
+XCMFB OPI ONI VCM VBCM VBP AVDD AVSS eeg_afe_cmfb
+XCCP VBP OPI cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCCN VBP ONI cap_mim_2f0ff c_length=70.65u c_width=70.65u
+XCHOLDP_0 OUTP AVSS cap_mim_2f0ff c_length=86.58u c_width=86.58u
+XCHOLDP_1 OUTP AVSS cap_mim_2f0ff c_length=86.58u c_width=86.58u
+XCHOLDN_0 OUTN AVSS cap_mim_2f0ff c_length=86.58u c_width=86.58u
+XCHOLDN_1 OUTN AVSS cap_mim_2f0ff c_length=86.58u c_width=86.58u
+.ends afe_top

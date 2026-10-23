@@ -1,0 +1,8 @@
+* LVS wrapper for the layout block afe_tgin (gf180/tapeout/layout/afetg_lay.py): the four
+* input chopper TGs of eeg_afe_amp (gf180/tapeout/afe/eeg_afe.spice).
+.subckt afe_tgin EP EN WP WN CIA NCIA CIB NCIB VDD VSS
+XIP_A EP WP CIA NCIA VDD VSS eeg_afe_input_tg
+XIN_A EN WN CIA NCIA VDD VSS eeg_afe_input_tg
+XIP_B EP WN CIB NCIB VDD VSS eeg_afe_input_tg
+XIN_B EN WP CIB NCIB VDD VSS eeg_afe_input_tg
+.ends afe_tgin

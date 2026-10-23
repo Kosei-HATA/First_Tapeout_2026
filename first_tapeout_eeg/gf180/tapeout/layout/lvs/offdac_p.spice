@@ -1,0 +1,5 @@
+* LVS wrapper for the layout block offdac_p (gf180/tapeout/layout/offdac_lay.py): the
+* P half of the offset DAC (gf180/tapeout/afe/eeg_afe.spice) with the block's supply names.
+.subckt offdac_p INP VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 AVDD AVSS
+XH INP VCM PH S M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 EN0 EN1 EN2 EN3 AVDD AVSS eeg_afe_offdac_p
+.ends offdac_p

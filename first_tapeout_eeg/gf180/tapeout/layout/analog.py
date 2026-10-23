@@ -130,7 +130,7 @@ def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
     return AnalogCell(c, width, height, pins)
 
 
-def res_cell(b, name, l, w, terms, sub="VSS", gap=f.RES_GAP, pad=1.6, label=True):
+def res_cell(b, name, l, w, terms, sub="VSS", gap=f.RES_GAP, pad=1.6, label=True, west_bus=False):
     """Resistor row: len(terms) ppolyf_u_1k strips (body l x w um along x; l may be a
     list of lengths), strip k from terms[k][0] (west) to terms[k][1] (east); Metal2 pads
     (pad um long, outwards) on the heads; substrate-tap ring (net sub). Returns an
@@ -154,6 +154,15 @@ def res_cell(b, name, l, w, terms, sub="VSS", gap=f.RES_GAP, pad=1.6, label=True
             xe = xt + sgn * pad
             c.box("metal2", min(xt, xe) - 0.19, yt - 0.19, max(xt, xe) + 0.19, yt + 0.19)
             pins.setdefault(net, []).append(("metal2", min(xt, xe) - 0.19, yt - 0.19, max(xt, xe) + 0.19, yt + 0.19))
+    if west_bus:            # all west ends on one net: a Metal2 bar joins their pads (one pin)
+        wnet = terms[0][0]
+        if any(t[0] != wnet for t in terms):
+            raise ValueError(f"{name}: west_bus needs one west net")
+        segs = pins.pop(wnet)
+        xb1 = min(sg[1] for sg in segs)
+        yb1, yb2 = min(sg[2] for sg in segs), max(sg[4] for sg in segs)
+        c.box("metal2", xb1, yb1, xb1 + 1.6, yb2)
+        pins[wnet] = [("metal2", xb1, yb1, xb1 + 1.6, yb2)] + segs
     f.ring(c, "p", 0, 0, width, height, w=RING_W, well=False)
     c.box("metal2", 0, 0, width, RING_W)
     x = 0.4

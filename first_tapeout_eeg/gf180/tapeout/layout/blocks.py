@@ -134,10 +134,24 @@ def route_nets(c, region, nets, obstacles=(), rounds=6):
     return r
 
 
-def check(b, top, netlists, outdir, drc=True, lvs=True):
-    """Write the block, run DRC and LVS against the netlists; prints and returns results."""
+def check(b, top, netlists, outdir, drc=True, lvs=True, ties=()):
+    """Write the block, run DRC and LVS against the netlists; prints and returns results.
+    ties: [(net, into)]: nets that the p-substrate joins in the layout (e.g. DVSS into
+    AVSS: both have substrate taps): the LVS netlist renames `net` to `into` in the top
+    subcircuit and the layout's labels follow."""
     os.makedirs(outdir, exist_ok=True)
     b.strip_sublabels()
+    if ties:
+        ren = dict(ties)
+        li_all = [b.ly.find_layer(*g.L[k]) for k in g.L if k.endswith("_label")]
+        for li in li_all:
+            if li is None:
+                continue
+            for sh in list(b.cell.shapes(li).each()):
+                if sh.is_text() and sh.text.string in ren:
+                    t = sh.text
+                    t.string = ren[t.string]
+                    sh.text = t
     gds = b.write(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gds", f"{top}.gds"))
     res = {}
     if drc:
@@ -145,7 +159,22 @@ def check(b, top, netlists, outdir, drc=True, lvs=True):
         print(f"{top} DRC:", res["drc"] or "clean")
     if lvs:
         cdl = os.path.join(outdir, f"{top}.cdl")
-        open(cdl, "w").write(g.to_cdl(netlists, top))
+        txt = g.to_cdl(netlists, top)
+        if ties:
+            import re
+            ren = dict(ties)
+            head, body = txt.split(f".subckt {top} ", 1)
+            ports_line, rest = body.split("\n", 1)
+            ports = []
+            for p_ in ports_line.split():
+                p_ = ren.get(p_, p_)
+                if p_ not in ports:
+                    ports.append(p_)
+            top_body, tail = rest.split(f".ends {top}", 1)
+            for a, z in ren.items():
+                top_body = re.sub(rf"(?<=\s){re.escape(a)}(?=\s|$)", z, top_body, flags=re.M)
+            txt = head + f".subckt {top} " + " ".join(ports) + "\n" + top_body + f".ends {top}" + tail
+        open(cdl, "w").write(txt)
         ok, lines = g.lvs(gds, cdl, top, outdir)
         res["lvs"] = ok
         print(f"{top} LVS:", "match" if ok else "MISMATCH", *([] if ok else lines), sep="\n  " if not ok else " ")
@@ -228,6 +257,7 @@ def unit_cell(b, name, parts, buses, ports, width=None, gap=1.2, margin=0.8, bus
     bus_y = {}
     w_max = max(cell.width + (x if x is not None else 1.0) for cell, _, x in parts) + margin + 0.2
     width = max(width or 0.0, w_max)
+    width = -(-round(width / px, 6) // 1) * px      # a whole number of router columns
     for n in buses:
         c.box("metal4", 0.0, y, width, y + bus_w)
         bus_y[n] = (y, y + bus_w)

@@ -41,6 +41,7 @@ class Router:
         self._fixing = False
         self.shapes = []        # (layer key, x1, y1, x2, y2, net)
         self.fixed = []         # (layer key, (x1, y1, x2, y2), net name or None): existing shapes
+        self.novia = set()      # (i, j): no via3 here (an existing via3 is too close)
 
     # ---- coordinates
     def X(self, i):
@@ -88,16 +89,56 @@ class Router:
         with net = a net name, that net may use it (e.g. a power strap the net joins)."""
         self.fixed.append((layer, (x1, y1, x2, y2), net))
 
+    def via_keepout(self, x1, y1, x2, y2):
+        """An existing via3 (box): no via3 of the router within 0.36 of it (V3.2a/b) and
+        none overlapping it (V3.1)."""
+        h = 0.13 + 0.36
+        for i in range(max(0, self.ci(x1 - 1.0)), min(self.nx, self.ci(x2 + 1.0) + 1)):
+            if x1 - h < self.X(i) < x2 + h:
+                for j in range(max(0, self.cj(y1 - 1.0)), min(self.ny, self.cj(y2 + 1.0) + 1)):
+                    if y1 - h < self.Y(j) < y2 + h:
+                        self.novia.add((i, j))
+
     def _apply_fixed(self, layer, x1, y1, x2, y2, owner):
+        """Claim the nodes around a fixed shape: nodes on the lines (columns / rows) that
+        touch the shape go to `owner` (OBS for anonymous shapes) within KEEP of it; lines
+        that pass beside it closer than the spacing rule are blocked for everyone, also
+        for the owner (a parallel wire of the same net would leave a gap under 0.28)."""
         x1, x2, y1, y2 = min(x1, x2), max(x1, x2), min(y1, y2), max(y1, y2)
+        H = PAD / 2
         if layer == "metal3":
-            for i in range(max(0, self.ci(x1 - 0.5)), min(self.nx, self.ci(x2 + 0.5) + 1)):
-                if x1 - KEEP < self.X(i) < x2 + KEEP:
-                    self._claim(0, y1, y2, i, owner)
+            idx = range(max(0, self.ci(x1 - 0.5)), min(self.nx, self.ci(x2 + 0.5) + 1))
+            across = lambda i: self.X(i)
+            along_lo, along_hi, a_lo, a_hi = y1, y2, x1, x2
+            n_along, o_along, p_along = self.ny, self.y0, self.py
         else:
-            for j in range(max(0, self.cj(y1 - 0.5)), min(self.ny, self.cj(y2 + 0.5) + 1)):
-                if y1 - KEEP < self.Y(j) < y2 + KEEP:
-                    self._claim(1, x1, x2, j, owner)
+            idx = range(max(0, self.cj(y1 - 0.5)), min(self.ny, self.cj(y2 + 0.5) + 1))
+            across = lambda j: self.Y(j)
+            along_lo, along_hi, a_lo, a_hi = x1, x2, y1, y2
+            n_along, o_along, p_along = self.nx, self.x0, self.px
+        lay = 0 if layer == "metal3" else 1
+        for t in idx:
+            c = across(t)
+            if not (a_lo - KEEP < c < a_hi + KEEP):
+                continue
+            touching_line = a_lo - H <= c <= a_hi + H
+            k0 = max(0, int((along_lo - KEEP - o_along) / p_along) - 1)
+            k1 = min(n_along - 1, int((along_hi + KEEP - o_along) / p_along) + 1)
+            for k in range(k0, k1 + 1):
+                v = o_along + k * p_along
+                if not (along_lo - KEEP < v < along_hi + KEEP):
+                    continue
+                # on the shape's own line the owner may use the nodes beyond its ends too
+                # (its wire continues the shape); lines beside it are closed to everyone
+                who = owner if touching_line else OBS
+                i, j = (t, k) if lay == 0 else (k, t)
+                cur = self.owner[lay][i][j]
+                if who == OBS or cur == OBS:
+                    self.owner[lay][i][j] = OBS
+                elif cur == FREE or cur == who:
+                    self.owner[lay][i][j] = who
+                else:                          # touching shapes of two nets: nobody's
+                    self.owner[lay][i][j] = OBS
 
     def free(self, layer, i, j, net):
         if not (0 <= i < self.nx and 0 <= j < self.ny):
@@ -118,6 +159,17 @@ class Router:
                 x = self.X(i)
                 if x1 + 0.19 - 1e-6 <= x <= x2 - 0.19 + 1e-6 and self._stub_free(i, yc, self.Y(j), net):
                     out.append(((0, i, j), (x, yc, self.Y(j))))
+            if not out and 0.38 - 1e-6 <= x2 - x1 < PAD + self.px - 1e-6:
+                # (only pins too narrow to hold a column: on a wider pin the pad at its
+                # centre could sit on a wire between the columns)
+                # narrow pin between two columns: via2 at the pin centre, a Metal3 jog to the
+                # nearest column (it reaches into the neighbour column's keep-out, so that
+                # column must be free around the pin too)
+                xc = (x1 + x2) / 2
+                i = self.ci(xc)
+                if 0 <= i < self.nx and self._stub_free(i, yc, self.Y(j), net) and \
+                        self._jog_free(i, xc, yc, net):
+                    out.append(((0, i, j), (xc, yc, self.Y(j))))
         else:
             layer = 0 if lay == "metal3" else 1
             for i in range(max(0, self.ci(x1)), min(self.nx, self.ci(x2) + 1)):
@@ -126,6 +178,19 @@ class Router:
                             self.free(layer, i, j, net):
                         out.append(((layer, i, j), None))
         return out
+
+    def _jog_free(self, i, xc, yc, net):
+        """The neighbour column on the jog's side must be free within KEEP of yc."""
+        k = i + (1 if xc > self.X(i) else -1)
+        if not (0 <= k < self.nx):
+            return True
+        for jj in range(max(0, self.cj(yc) - 2), min(self.ny, self.cj(yc) + 3)):
+            if abs(self.Y(jj) - yc) < PAD / 2 + KEEP and not self.free(0, k, jj, net):
+                return False
+        for a, b, n in self.stubs.get(k, ()):
+            if n != net and yc - PAD / 2 < b + 0.28 and yc + PAD / 2 > a - 0.28:
+                return False
+        return True
 
     def _stub_free(self, i, yc, yj, net):
         lo, hi = min(yc, yj) - PAD / 2, max(yc, yj) + PAD / 2
@@ -175,6 +240,8 @@ class Router:
                 nbrs = [((1, i + 1, j), self.px), ((1, i - 1, j), self.px), ((0, i, j), VIA_COST)]
             for m, c in nbrs:
                 if not self.free(m[0], m[1], m[2], net):
+                    continue
+                if m[0] != layer and (i, j) in self.novia:
                     continue
                 nd = d + c
                 if nd < dist.get(m, 1e18):
@@ -233,6 +300,11 @@ class Router:
                         self._claim(0, min(yc, yj) - PAD / 2, max(yc, yj) + PAD / 2, node[1], net)
                         self.stubs.setdefault(node[1], []).append(
                             (min(yc, yj) - PAD / 2, max(yc, yj) + PAD / 2, net))
+                        if abs(x - self.X(node[1])) > 1e-6:
+                            k = node[1] + (1 if x > self.X(node[1]) else -1)
+                            if 0 <= k < self.nx and self._jog_free(node[1], x, yc, net):
+                                self._claim(0, yc - PAD / 2, yc + PAD / 2, k, net)
+                                self.stubs.setdefault(k, []).append((yc - PAD / 2, yc + PAD / 2, net))
 
     @staticmethod
     def _hpwl(pins):
@@ -246,6 +318,7 @@ class Router:
             return True
         cand = [self.access(p, net) for p in pins]
         if any(not c for c in cand):
+            self.why[name] = ("no access at start", [p for p, c in zip(pins, cand) if not c])
             return False
         tree = set()
         # start from a wire pin (a strap or port of this net: all its nodes join the tree),
@@ -324,8 +397,15 @@ class Router:
 
     def _commit_stub(self, stub, i, net, name):
         x, yc, yj = stub
+        xi = self.X(i)
         self.shapes.append(("via2", x - 0.13, yc - 0.13, x + 0.13, yc + 0.13, name))
-        self.shapes.append(("metal3", x - PAD / 2, min(yc, yj) - PAD / 2, x + PAD / 2, max(yc, yj) + PAD / 2, name))
+        if abs(x - xi) > 1e-6:                 # jog from the pin centre to the column
+            self.shapes.append(("metal3", min(x, xi) - PAD / 2, yc - PAD / 2, max(x, xi) + PAD / 2, yc + PAD / 2, name))
+            k = i + (1 if x > xi else -1)
+            if 0 <= k < self.nx:
+                self._claim(0, yc - PAD / 2, yc + PAD / 2, k, net)
+                self.stubs.setdefault(k, []).append((yc - PAD / 2, yc + PAD / 2, net))
+        self.shapes.append(("metal3", xi - PAD / 2, min(yc, yj) - PAD / 2, xi + PAD / 2, max(yc, yj) + PAD / 2, name))
         self._claim(0, min(yc, yj) - PAD / 2, max(yc, yj) + PAD / 2, i, net)
         self.stubs.setdefault(i, []).append((min(yc, yj) - PAD / 2, max(yc, yj) + PAD / 2, net))
 

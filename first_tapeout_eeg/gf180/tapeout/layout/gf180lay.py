@@ -77,7 +77,8 @@ class Cell:
 
     @staticmethod
     def um(v):
-        return int(round(v * 1000))
+        """um -> dbu (1 nm) on the 5 nm manufacturing grid (the *_OFFGRID checks)"""
+        return int(round(v * 200)) * 5
 
     def box(self, key, x1, y1, x2, y2):
         b = pya.Box(self.um(min(x1, x2)), self.um(min(y1, y2)), self.um(max(x1, x2)), self.um(max(y1, y2)))

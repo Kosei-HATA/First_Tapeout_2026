@@ -360,14 +360,25 @@ def driver_cell(b, name, wp_tot, wn_tot, wfp=10.0, wfn=8.0, a="A", y="Y", rails=
     the input is a Metal1 plate over both gate bars with Metal2 on it (pin).
     Cell (0, 0)..(width, height); returns a LogicCell (height in .height)."""
     vdd, vss = rails
-    nfp, nfn = max(1, round(wp_tot / wfp)), max(1, round(wn_tot / wfn))
+
+    def split(w_tot, wf):
+        """finger count near w_tot / wf whose finger width is on the 5 nm grid"""
+        n0 = max(1, round(w_tot / wf))
+        for n in sorted(range(max(1, n0 - 3), n0 + 4), key=lambda n: abs(n - n0)):
+            wk = w_tot / n
+            if abs(wk / 0.005 - round(wk / 0.005)) < 1e-6 and wk <= wf * 1.3:
+                return n
+        raise ValueError(f"{name}: no on-grid finger width for W {w_tot}")
+
+    nfp, nfn = split(wp_tot, wfp), split(wn_tot, wfn)
     wp, wn = wp_tot / nfp, wn_tot / nfn
     seq = lambda r, n: [r] + sum(([a, y if k % 2 == 0 else r] for k in range(n)), [])
     ps, ns = f.Strip("p", wp, L_LOGIC, seq(vdd, nfp)), f.Strip("n", wn, L_LOGIC, seq(vss, nfn))
     yn0 = 2.0
     yp0 = yn0 + wn + 1.8
     ytop = yp0 + wp + 2.0                         # VDD rail centre line region top
-    width = _width(max(ps.length, ns.length))
+    ox = MX + 1.6                                 # strips start 1.6 um in: a west zone without
+    width = _width(max(ps.length, ns.length) + 1.6)   # Metal3 bars, where the input is reached
     c = b.new_cell(name)
     # rails and taps
     for (y1, y2), kind in (((0.0, 1.2), "p"), ((ytop - 1.2, ytop), "n")):
@@ -380,15 +391,18 @@ def driver_cell(b, name, wp_tot, wn_tot, wfp=10.0, wfn=8.0, a="A", y="Y", rails=
     yc_p = f._contacts(yp0 + f.CO_ENC, yp0 + wp - f.CO_ENC)
     nbot = yc_n[0] - f.CO / 2 - f.M1_ENC
     ptop = yc_p[-1] + f.CO / 2 + f.M1_ENC
-    ngeo = f.draw_strip(c, ns, MX, yn0, gates={a: ("t", 0)}, ext={vss: (nbot - 0.6, 0.0)})
-    pgeo = f.draw_strip(c, ps, MX, yp0, gates={a: ("b", 0)}, ext={vdd: (0.0, (ytop - 0.6) - ptop)}, well=False)
+    ngeo = f.draw_strip(c, ns, ox, yn0, gates={a: ("t", 0)}, ext={vss: (nbot - 0.6, 0.0)})
+    pgeo = f.draw_strip(c, ps, ox, yp0, gates={a: ("b", 0)}, ext={vdd: (0.0, (ytop - 0.6) - ptop)}, well=False)
     # input: Metal1 plate over both bars, Metal2 pin on it
     nb, pb = ngeo.bars[a], pgeo.bars[a]
     x1, x2 = max(nb[0], pb[0]), min(nb[2], pb[2])
-    c.box("metal1", x1, nb[1], x2, pb[3])
-    c.box("metal2", x1, nb[1], x2, pb[3])
+    c.box("metal1", 0.2, nb[1], x2, pb[3])
     c.vias("via1", x1, nb[1], x2, pb[3])
-    pins = {a: [("metal2", x1, nb[1], x2, pb[3])]}
+    # the Metal2 pin spans both bars and runs to the west edge, where the output bars
+    # leave Metal3 free (nothing else is on Metal2 between the strips)
+    px1, px2 = 0.2, max(nb[2], pb[2])
+    c.box("metal2", px1, nb[1], px2, pb[3])
+    pins = {a: [("metal2", px1, nb[1], px2, pb[3])]}
     # output straps (Metal2, 1.0 um) over both strips, then Metal3 bars and the Metal4 bus
     ys = []
     for geo, y0s, w in ((ngeo, yn0, wn), (pgeo, yp0, wp)):
@@ -397,8 +411,8 @@ def driver_cell(b, name, wp_tot, wn_tot, wfp=10.0, wfn=8.0, a="A", y="Y", rails=
             yy = y0s + w / 2 + (j - (k - 1) / 2) * 2.0
             f.strap(c, geo, y, yy, w=1.0)
             ys.append(yy)
-    xa = MX + min(ps.sdx[1], ns.sdx[1]) - 0.4
-    xb = MX + min(ps.sdx[-1] if nfp % 2 == 0 else ps.sdx[-1], ns.sdx[-1]) + 0.4
+    xa = ox + min(ps.sdx[1], ns.sdx[1]) - 0.4
+    xb = ox + min(ps.sdx[-1], ns.sdx[-1]) + 0.4
     xs = []
     x = xa
     while x + 1.2 <= xb + 1e-6:

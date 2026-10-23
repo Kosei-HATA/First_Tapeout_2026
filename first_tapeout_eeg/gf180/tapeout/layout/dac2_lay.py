@@ -150,8 +150,9 @@ def build():
             lay, a, y1, c_, y2 = u.pins[n][0]
             r.obstacle("metal4", x_arr, y0 + y1, x_arr + 2 * u.width, y0 + y2, n)
     sel = {n: v for n, v in nets.items() if n.startswith("SEL")}
-    for n in sel:
-        nets.pop(n)
+    for n in sel:                       # inputs: not routed here, but other nets keep clear
+        for sg in nets.pop(n):
+            r.obstacle(sg[0], *sg[1:], n)
     failed = r.route(nets, rounds=6)
     if failed:
         raise RuntimeError(f"unrouted {failed}")

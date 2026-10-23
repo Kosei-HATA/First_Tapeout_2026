@@ -83,7 +83,9 @@ def flatten(subs, top, leaf=None, env=None, nets=None, prefix=""):
                 out += flatten(subs, model, leaf, cenv, cnets, prefix + w[0] + ".")
         else:
             vals = {k: g.spice_num(v, env) for k, v in kv.items() if k in ("w", "l", "nf", "m")}
-            d = Dev(prefix + w[0], model, *[local(t) for t in pos[:4]], vals.get("w", 0) * 1e6,
+            tn = [local(t) for t in pos[:-1]][:4]
+            tn += [model] * (4 - len(tn))          # two-terminal devices: pad
+            d = Dev(prefix + w[0], model, *tn, vals.get("w", 0) * 1e6,
                     vals.get("l", 0) * 1e6, int(round(vals.get("nf", 1))) * int(round(vals.get("m", 1))))
             if model in FET:
                 d.w *= vals.get("m", 1)
@@ -266,6 +268,8 @@ def logic_block(name, files, max_w=140.0, vdd="VDD", vss="VSS", sw=2.4, x0=4.0, 
         for lay in ("metal3", "metal4"):
             for bx in bl.cell_shapes(p, lay):
                 r.obstacle(lay, *bx, ynet)
+        for bx in bl.cell_shapes(p, "via3"):
+            r.via_keepout(*bx)
     failed = r.route(nets, rounds=6)
     if failed:
         raise RuntimeError(f"{name}: unrouted {failed}")

@@ -39,6 +39,7 @@ import analog as an
 import blocks as bl
 import route
 import assemble as A
+import fets as f
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # the padring run (work copy eeg_padring, RUN_2026-10-23_13-27-25): its GDS (gzipped) and
@@ -523,6 +524,37 @@ def digital_pads(a, I):
     return pins
 
 
+# long control nets from the digital block to small gates (antenna rule ANT.5 on Metal4:
+# the macro's driver diffusion alone, 1.4 um2, is too small for 2-4 mm of wire)
+ANT_NETS = ["CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP_EN", "AFE_RST", "OFS"] + [f"OFM{k}" for k in range(10)] + \
+    [f"OFEN{k}" for k in range(4)] + [f"TC{k}" for k in range(5)] + ["IB0", "IB1", "BP0", "BP1", "BN0", "BN1"] + \
+    [f"CPF{k}" for k in range(4)] + ["CHOP1", "ADC_ZERO"]
+
+
+def antenna_row(a, nets, x0, y0, d=2.4, pitch=4.4, g=1.2):
+    """Antenna diodes: an N+ diffusion d x d um per net (no diode marker: the LVS sees a
+    conductor, the antenna check counts its area) in a row inside one P+ substrate-tap
+    ring (DF.14), each lifted to a Metal3 router pin; the ring to DVSS through a Metal3
+    pad on a Metal1 tab at its west end. Returns {net: [pins]}."""
+    n = len(nets)
+    w, h = 2 * g + (n - 1) * pitch + d, 2 * g + d
+    f.ring(a, "p", x0, y0, x0 + w, y0 + h, w=f.TAP_W, well=False)
+    pins = {}
+    for k, net in enumerate(nets):
+        x = x0 + g + k * pitch
+        box = (x, y0 + g, x + d, y0 + g + d)
+        f.tap(a, "n", *box, well=False)
+        a.vias("via1", *box)
+        a.via_stack("metal2", "metal3", *box, net)
+        pins[net] = [("metal3",) + box]
+    tab = (x0 - 3.0, y0, x0 + 0.42, y0 + h)
+    a.box("metal1", *tab)
+    a.vias("via1", *tab)
+    a.via_stack("metal2", "metal3", *tab, "DVSS")
+    pins["DVSS"] = [("metal3",) + tab]
+    return pins
+
+
 AFE_NET = {"CIA2": "CIA", "CIB2": "CIB", "CDA2": "CDA", "NCDA2": "NCDA", "CDB2": "CDB", "NCDB2": "NCDB",
            "RST2": "RSTA", "RST": "RSTA"}
 ADC_NET = {"INP": "OUTP", "INN": "OUTN", "RST": "AFE_RST"}
@@ -591,6 +623,9 @@ def signals(a, I):
                        ("analog[10]", "VREFP_PAD", "north"), ("analog[11]", "VREFN_PAD", "north")):
         add(n, [pad_pin(a, P[k], side, n)])
     for n, segs in digital_pads(a, I).items():
+        nets.setdefault(n, []).extend(segs)
+    # antenna diodes for the long control nets, under the digital block's south edge
+    for n, segs in antenna_row(a, ANT_NETS, I["dig"].bbox[0] + 8.0, I["dig"].bbox[1] - 24.0).items():
         nets.setdefault(n, []).extend(segs)
     # the test multiplexer's supply straps (Metal3, west edge) to anchors on the trunks
     tm = I["tm"]

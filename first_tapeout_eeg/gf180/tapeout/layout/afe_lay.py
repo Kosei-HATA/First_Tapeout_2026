@@ -34,6 +34,7 @@ import analog as an
 import blocks as bl
 import route
 import assemble as A
+import fets as f
 from ota_lay import dev_seq
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -94,6 +95,19 @@ def section_cells(a):
     p, n = lg.inv_seq(1)
     C["inv"] = lg.cmos_cell(a, "afe_trim_inv", p, n, 2.5, 1.0, ["A", "Y"])
     return C
+
+
+def gate_diodes(a, x, y, h):
+    """Antenna diodes for the DC-path switch's gates (CIA2 / CIB2, 0.14 um2 each, reached by
+    long Metal3 from the east ports: ANT.4): an N+ diffusion just above the cell (no diode
+    marker, so the LVS sees a conductor while the antenna check counts its area), tied by
+    Metal2 straight up from the gate pin (afe_scp / afe_scn pins CIA at x 1.51..3.11, CIB
+    at x 2.31..3.91); the cell's guard ring is the substrate tap (DF.14)."""
+    for (xa, xb), (wa, wb, wy) in (((0.4, 2.0), (1.51, 1.89, 4.21)), ((3.0, 4.6), (3.53, 3.91, 5.01))):
+        d = (x + xa, y + h + 1.06, x + xb, y + h + 2.66)
+        f.tap(a, "n", *d, well=False)
+        a.vias("via1", *d)
+        a.box("metal2", x + wa, y + wy, x + wb, d[3])
 
 
 def build():
@@ -200,6 +214,7 @@ def build():
         p1 = cell_at(C[rst], x, y0_, f"XRST{side}", {"VSS": "AVSS", "RST": "RST2"})
         x += C[rst].width + 2.0
         p2 = cell_at(C[sc], x, y0_, f"XSC{side}", {"VSS": "AVSS", "CIA": "CIA2", "CIB": "CIB2"})
+        gate_diodes(a, x, y0_, C[sc].height)
         x += C[sc].width + 2.0
         cell_at(C["m5"], x, y0_, csc, {"TOP": scn, "BOT": "AVSS"})
     # the band between the rails: output chopper, CMFB, switches, trim logic

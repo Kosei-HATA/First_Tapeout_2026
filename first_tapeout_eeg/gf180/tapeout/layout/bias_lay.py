@@ -10,12 +10,14 @@ Cells, bottom to top (blocks.Shelves, 102 um wide at most):
     (W1/L50 x 2, one cell each) and the DAC2 reference PMOS (W1/L6.2 x 2)
   - the beta-multiplier NMOS (W10/L4: MN2 128 fingers in seven strips, MN1 32), the NMOS diodes and
     mirrors (L1, L2) and the DAC2 reference NMOS (W1/L20)
-  - one logic row: the three select decoders (NOR2, inverter, NAND2)
   - resistors: R0 (3.3 x 2), the four 1 kohm isolators, the cascode divider (the 129.25
     and 149.06 um legs in two series halves each, so the row stays narrow; LVS adds
     series resistors back up), the VCM divider (its two legs in halves as well)
   - the filter and decoupling capacitors: MOS capacitor units of 28.6 x 44 um (PDK
     cap_nmos / cap_pmos pcells), which leave Metal3/Metal4 free for routing over them
+  - one logic row: the three select decoders (NOR2, inverter, NAND2), at the top beside
+    the ports, so that the select inputs' Metal3 stays short (antenna rule ANT.4: their
+    gates are small; the long wires are the decoder outputs, driven from a diffusion)
 Power: Metal3 straps on the west (VSS) and east (VDD) edges. Ports: Metal3 stubs on the
 top edge. Routing: route.Router (Metal3/Metal4).
 
@@ -107,7 +109,26 @@ def build():
                       order=["VSS", "NC", "NA2"]), "NL2B")
     add(an.strip_cell(b, "bias_nd2", "n", 1.0, 20.0, ["ND2", "ND2", "VSS", "ND2", "IDP"], order=["VSS", "ND2", "IDP"]),
         "ND2")
-    # ---- logic row: the three decoders
+    S.newline()
+    # ---- resistors
+    add(an.res_cell(b, "bias_r0", 3.3, 2.0, [("S2", "VSS")]), "R0")
+    add(an.res_cell(b, "bias_riso", 1.8, 2.0, [("NT", "VBN"), ("NC", "VBCM"), ("NA1", "VBN1"), ("NA2", "VBCM1")]), "RISO")
+    add(an.res_cell(b, "bias_rdiv", [64.625, 64.625, 19.99, 10.07, 19.99, 74.53, 74.53], 1.0,
+                    [("VDD", "RM1"), ("RM1", "VNC1"), ("VNC1", "VBPC2"), ("VBPC2", "VPC1"), ("VPC1", "VBNC2"),
+                     ("VBNC2", "RM2"), ("RM2", "VSS")]), "RDIV")
+    add(an.res_cell(b, "bias_rvcm", 49.735, 1.0, [("VREFP", "RVA"), ("RVA", "VCM"), ("VCM", "RVB"), ("RVB", "VREFN")]),
+        "RVCM")
+    # ---- MOS capacitors (28.6 x 44 um units, eeg_bias.spice)
+    S.newline()
+    mcn = an.moscap_cell(b, "bias_mcn", "n", "G", "B")
+    mcp = an.moscap_cell(b, "bias_mcp", "p", "G", "B")
+    add(mcp, "CGP", nets_map={"G": "GP", "B": "VDD"})
+    for node, n in (("VBN", 4), ("VBCM", 2), ("VBN1", 4), ("VBCM1", 2), ("VNC1", 2), ("VPC1", 2), ("VBPC2", 2),
+                    ("VBNC2", 2)):
+        for k in range(n):
+            add(mcn, f"C{node}_{k}", nets_map={"G": node, "B": "VSS"})
+    # ---- logic row: the three decoders, at the top next to the ports (the select inputs'
+    # Metal3 from the ports stays short: antenna rule ANT.4 for their small gates)
     S.newline()
     y_logic = S.y
     rows = bl.Rows(b, X0, y_logic)
@@ -126,27 +147,8 @@ def build():
         c = rows.add(0, nand2, f"XL{gc}")
         conn(a1, c.pins["A"]), conn(a0, c.pins["B"]), conn(gc, c.pins["Y"])
     S.y, S.h, S.x = y_logic + lg.H, 0.0, X0
-    S.newline()
-    S.y += 1.6
-    # ---- resistors
-    add(an.res_cell(b, "bias_r0", 3.3, 2.0, [("S2", "VSS")]), "R0")
-    add(an.res_cell(b, "bias_riso", 1.8, 2.0, [("NT", "VBN"), ("NC", "VBCM"), ("NA1", "VBN1"), ("NA2", "VBCM1")]), "RISO")
-    add(an.res_cell(b, "bias_rdiv", [64.625, 64.625, 19.99, 10.07, 19.99, 74.53, 74.53], 1.0,
-                    [("VDD", "RM1"), ("RM1", "VNC1"), ("VNC1", "VBPC2"), ("VBPC2", "VPC1"), ("VPC1", "VBNC2"),
-                     ("VBNC2", "RM2"), ("RM2", "VSS")]), "RDIV")
-    add(an.res_cell(b, "bias_rvcm", 49.735, 1.0, [("VREFP", "RVA"), ("RVA", "VCM"), ("VCM", "RVB"), ("RVB", "VREFN")]),
-        "RVCM")
-    # ---- MOS capacitors (28.6 x 44 um units, eeg_bias.spice)
-    S.newline()
-    mcn = an.moscap_cell(b, "bias_mcn", "n", "G", "B")
-    mcp = an.moscap_cell(b, "bias_mcp", "p", "G", "B")
-    add(mcp, "CGP", nets_map={"G": "GP", "B": "VDD"})
-    for node, n in (("VBN", 4), ("VBCM", 2), ("VBN1", 4), ("VBCM1", 2), ("VNC1", 2), ("VPC1", 2), ("VBPC2", 2),
-                    ("VBNC2", 2)):
-        for k in range(n):
-            add(mcn, f"C{node}_{k}", nets_map={"G": node, "B": "VSS"})
     keep = []
-    y_top = S.top_y() + 10.0
+    y_top = max(S.top_y(), y_logic + lg.H) + 10.0
     width = X0 + MAXW + 1.0 + SW + 0.6
     # ---- power straps and ports
     xs_vss, xs_vdd = SW / 2 + 0.4, width - SW / 2 - 0.4

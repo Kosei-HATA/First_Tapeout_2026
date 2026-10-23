@@ -300,3 +300,29 @@ def unit_cell(b, name, parts, buses, ports, width=None, gap=1.2, margin=0.8, bus
         raise RuntimeError(f"{name}: unrouted {failed}")
     r.draw(c)
     return Unit(c, width, height, pins, ports)
+
+
+def lanes(c, placed, net_lanes, w=1.2, extend=None):
+    """High-current joins over stacked cells: for every net, Metal3 bars (w wide) at the
+    given lane x positions (left edges), each from the net's lowest to its highest Metal2
+    strap among the placed cells that the lane crosses, with a via2 array on every such
+    strap. Lanes of different nets must not overlap. extend: {net: (y_lo, y_hi)} to run
+    a net's bars further (e.g. to a port). Returns {net: [('metal3', box), ...]}."""
+    out = {}
+    for net, xs in net_lanes.items():
+        for x in xs:
+            ys = []
+            for p in placed:
+                for lay, a, y1, b_, y2 in p.pins.get(net, []):
+                    if lay == "metal2" and a <= x and x + w <= b_ and (y2 - y1) <= 1.01:
+                        ys.append((y1, y2))
+            if not ys:
+                continue
+            lo, hi = min(y for y, _ in ys), max(y for _, y in ys)
+            if extend and net in extend:
+                lo, hi = min(lo, extend[net][0]), max(hi, extend[net][1])
+            c.box("metal3", x, lo, x + w, hi)
+            for y1, y2 in ys:
+                c.vias("via2", x, y1, x + w, y2)
+            out.setdefault(net, []).append(("metal3", x, lo, x + w, hi))
+    return out

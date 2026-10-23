@@ -39,9 +39,12 @@ def strip_cell(b, name, kind, w, l, seq, gates=None, bulk=None, order=None, labe
 
 
 def _plan(spec):
-    """Vertical plan of one strip: (Strip, gates, inside, outside, below, bar_b, bar_t)."""
+    """Vertical plan of one strip: (Strip, gates, inside, outside, below, bar_b, bar_t).
+    spec["straps"] = {net: k} gives a net k straps over the COMP (k entries in order)."""
     s = f.Strip(spec.get("kind"), spec["w"], spec["l"], spec["seq"])
     nets = spec.get("order") or list(dict.fromkeys(s.sd))
+    reps = spec.get("straps") or {}
+    nets = [n for n in nets for _ in range(reps.get(n, 1))]
     gnets = list(dict.fromkeys(s.g))
     gates = spec.get("gates") or {n: ("t", k) for k, n in enumerate(gnets)}
     nfit = max(1, int((s.w - 0.6) / STRAP_P) + 1)       # straps that fit over the COMP
@@ -56,11 +59,15 @@ def _plan(spec):
     return s, gates, inside, outside, max(below, bar_b), bar_t
 
 
-def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
+def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0, bars=None, bar_w=1.2):
     """Several strips of one kind stacked inside one guard ring (and one Nwell for PMOS).
-    specs: list of dict(w, l, seq, gates=None, order=None), bottom to top. Every strip
-    gets its S/D straps across the whole inside of the ring and Metal2 pins over its gate
-    bars (see strip_cell). Returns an AnalogCell."""
+    specs: list of dict(w, l, seq, gates=None, order=None, straps=None), bottom to top.
+    Every strip gets its S/D straps across the whole inside of the ring and Metal2 pins
+    over its gate bars (see strip_cell).
+    bars: {net: [x, ...]} vertical Metal3 bars (bar_w wide, x = left edge, cell
+    coordinates) from the net's lowest to its highest strap, with via2 arrays on every
+    strap of the net they cross: low-resistance joins for high-current nets, and wide
+    Metal3 pins (they replace the net's Metal2 strap pins). Returns an AnalogCell."""
     bulk = bulk or ("VSS" if kind == "n" else "VDD")
     plans = [_plan(dict(sp, kind=kind)) for sp in specs]
     m = GAP + (f.NW_ENC if kind == "p" else 0.0)
@@ -68,6 +75,7 @@ def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
     width = x_s + max(pl[0].length for pl in plans) + 0.5 + m + RING_W
     c = b.new_cell(name)
     pins = {}
+    strap_y = {}
     sx1, sx2 = RING_W + 0.4, width - RING_W - 0.4
     lo_x, hi_x = RING_W + GAP, width - RING_W - GAP
     y = RING_W + m
@@ -89,6 +97,7 @@ def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
         for n, yy in list(zip(inside, ys_in)) + list(zip(outside[::-1], ys_out[::-1])):
             x1, x2 = f.strap(c, geo, n, yy, w=0.5, x1=sx1, x2=sx2)
             pins.setdefault(n, []).append(("metal2", x1, yy - 0.25, x2, yy + 0.25))
+            strap_y.setdefault(n, []).append(yy)
         # gate pins: Metal2 over each bar, widened to PIN_MIN where the bars of that level
         # leave room (route.Router needs a grid column inside a pin)
         by_level = {}
@@ -112,6 +121,16 @@ def multi_strip_cell(b, name, kind, specs, bulk=None, label=True, gap=1.0):
                 pins.setdefault(n, []).append(("metal2", px1, y1, px2, y2))
         y = y_s + w + bar_t + gap
     height = y - gap + m + RING_W
+    for n, xs in (bars or {}).items():
+        ys = strap_y.get(n)
+        if not ys:
+            raise ValueError(f"{name}: no straps of {n} for its bars")
+        y1, y2 = min(ys) - 0.25, max(ys) + 0.25
+        for x in xs:
+            c.box("metal3", x, y1, x + bar_w, y2)
+            for yy in ys:
+                c.vias("via2", x, yy - 0.25, x + bar_w, yy + 0.25)
+        pins[n] = [("metal3", x, y1, x + bar_w, y2) for x in xs]
     # ring (and the Nwell of a PMOS cell, covering the ring)
     f.ring(c, "p" if kind == "n" else "n", 0, 0, width, height, w=RING_W, well=False)
     if kind == "p":
@@ -201,23 +220,24 @@ def mim_cell(b, name, side, top, bot, n=1, label=True):
         c.box("metal4", x + side / 2 - a / 2, yt - 0.01, x + side / 2 + a / 2, yt + 2.0)
         c.vias("via4", x + side / 2 - a / 2, yt + 1.0, x + side / 2 + a / 2, yt + 2.0)
     yt = y0 + side + 0.6
-    # lower bar and island (top plates)
-    c.box("metal5", xs[0], 1.0, xe, 2.0)
-    c.vias("via4", xs[0], 1.0, xe, 2.0)
-    # upper bar and island (bottom plates)
-    c.box("metal5", xs[0], yt + 1.0, xe, yt + 4.4)
-    c.box("metal4", xs[0], yt + 3.4, xe, yt + 4.4)
-    c.vias("via4", xs[0], yt + 3.4, xe, yt + 4.4)
-    width, height = xe + 1.0, yt + 5.0
-    pins = {top: [("metal4", xs[0], 1.0, xe, 2.0)], bot: [("metal4", xs[0], yt + 3.4, xe, yt + 4.4)]}
+    # lower bar and island (top plates): 1.6 um tall, 1.4 um below the bottom plates
+    c.box("metal5", xs[0], 0.4, xe, 2.0)
+    c.vias("via4", xs[0], 0.4, xe, 2.0)
+    # upper bar and island (bottom plates): 1.4 um above the tabs
+    c.box("metal5", xs[0], yt + 1.0, xe, yt + 5.0)
+    c.box("metal4", xs[0], yt + 3.4, xe, yt + 5.0)
+    c.vias("via4", xs[0], yt + 3.4, xe, yt + 5.0)
+    width, height = xe + 1.0, yt + 5.6
+    pins = {top: [("metal4", xs[0], 0.4, xe, 2.0)], bot: [("metal4", xs[0], yt + 3.4, xe, yt + 5.0)]}
     if label:
         for net, segs in pins.items():
             lay, x1, y1, x2, y2 = segs[0]
             c.label(lay, net, (x1 + x2) / 2, (y1 + y2) / 2)
     cell = AnalogCell(c, width, height, pins)
     cell.keepout = (xs[0] - 0.6, y0 - 0.6, xe + 0.6, yt + 2.0)
-    # Metal4 must keep 1.2 um from the bottom plates and their tabs (MIMTM.1)
-    cell.keepout4 = (xs[0] - 1.9, y0 - 1.9, xe + 1.9, yt + 3.2)
+    # Metal4 must keep 1.2 um from the bottom plates and their tabs (MIMTM.1); the router
+    # adds its own 0.28 um spacing (route.KEEP), so the box grows by 0.92 um
+    cell.keepout4 = (xs[0] - 1.52, y0 - 1.52, xe + 1.52, yt + 2.92)
     return cell
 
 

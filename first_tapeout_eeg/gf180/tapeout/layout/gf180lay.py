@@ -418,6 +418,24 @@ def drc(gds, top, outdir, decks="all,-antenna,-density,-cup"):
     return counts
 
 
+def _lvs_deck():
+    """The PDK LVS deck with a deeper ambiguity resolution for the net matcher
+    (max_depth 32, max_branch_complexity 65536 instead of 8 / 500): circuits like the
+    chopped OTA1 are symmetric up to labels several devices away, and with the default
+    depth the matcher guessed D1P / D1N the wrong way round. The PDK file is not
+    changed; a copy with absolute include paths sits next to the pmap shim."""
+    src = os.path.join(TECH, "lvs", "gf180mcu.lvs")
+    dst = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shims", "gf180mcu_deep.lvs")
+    txt = open(src).read()
+    txt = txt.replace("# %include rule_decks/", f"# %include {os.path.join(TECH, 'lvs', 'rule_decks')}/")
+    marker = "result = compare"
+    assert txt.count(marker) == 1
+    txt = txt.replace(marker, "max_depth(32)\nmax_branch_complexity(65536)\n" + marker)
+    if not os.path.exists(dst) or open(dst).read() != txt:
+        open(dst, "w").write(txt)
+    return dst
+
+
 def lvs(gds, cdl, top, outdir, sub="VSS", mode="flat"):
     """Run the PDK LVS deck (variant D: 5LM, 11K top, MIM-B; substrate net `sub`) with the
     switches its run_lvs.py would pass (that wrapper needs docopt, which the nix shell's
@@ -433,7 +451,7 @@ def lvs(gds, cdl, top, outdir, sub="VSS", mode="flat"):
           "topcell": top, "input": gds, "schematic": cdl,
           "report": os.path.join(outdir, f"{top}.lvsdb"), "target_netlist": os.path.join(outdir, f"{top}_ext.cir")}
     shims = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shims")  # pmap stand-in
-    cmd = f"PATH={shims}:$PATH klayout -b -r {TECH}/lvs/gf180mcu.lvs " + " ".join(f"-rd {k}={v}" for k, v in sw.items())
+    cmd = f"PATH={shims}:$PATH klayout -b -r {_lvs_deck()} " + " ".join(f"-rd {k}={v}" for k, v in sw.items())
     log = os.path.join(outdir, f"{top}_lvs.log")
     _nix(cmd, log)
     txt = open(log).read()

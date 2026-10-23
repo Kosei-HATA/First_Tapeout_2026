@@ -34,7 +34,13 @@ Sheet and via resistances: magic's gf180mcuD tech, variant () and the high corne
 (hrhc): Metal1-4 90 (104) mohm/sq, Metal5 40 (49) mohm/sq, via1-4 4.5 (15) ohm per
 0.26 um cut, poly 7.3 (15) ohm/sq, poly contact 8 (15) ohm per 0.22 um cut.
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/pex_rin.py [--corner typ|high] [--nets ELP AFE.WP ...]
+--afe measures on the AFE block alone (gf180/tapeout/layout/runs/afe_top/afe_top.lvsdb,
+AFE coordinates), for checking a new AFE layout before the chip is assembled: E then starts
+where the chip's pad straps meet the chopper's spines (the y bands of AFE_STRAP, as the chip
+of 10/23 places them) instead of at the core's pad connections, so it leaves out the straps
+themselves (0.04 / 0.05 ohm).
+
+Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/pex_rin.py [--corner typ|high] [--nets ELP AFE.WP ...] [--afe]
 """
 import argparse
 import os
@@ -50,6 +56,12 @@ from scipy.sparse.linalg import spsolve
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 LVSDB = os.path.join(REPO, "gf180", "tapeout", "layout", "runs", "chip_top", "eeg_core.lvsdb")
+LVSDB_AFE = os.path.join(REPO, "gf180", "tapeout", "layout", "runs", "afe_top", "afe_top.lvsdb")
+AFE_ORIGIN = (482.0, 542.0)    # the AFE's place in the core (um)
+# where the pad straps meet the chopper's spines, AFE coordinates (um): ELP's straps overlap
+# the EP spine (x 2..14), ELN's cross under it on Metal4 to the EN spine (x 16..28)
+AFE_STRAP = {"ELP": [(2.0, 772.34, 14.0, 815.66), (2.0, 913.34, 14.0, 956.66)],
+             "ELN": [(16.0, 490.34, 28.0, 533.66), (16.0, 631.34, 28.0, 674.66)]}
 # LVS layers (gf180mcu.lvs): conductors (Metal4 / Metal5 inside the MIM marker are l25 /
 # l26) and cuts (l8 contact, here only the poly contacts of the gate net)
 COND = {"po": ["l12"], "m1": ["l13"], "m2": ["l15"], "m3": ["l17"], "m4": ["l20", "l25"], "m5": ["l23", "l26"]}
@@ -180,10 +192,10 @@ def gate_channels(geo):
     return out
 
 
-def block_of(x, y):
-    """Region of a point (core coordinates, um): AFE parts by the placement of afe_lay.py
-    (AFE origin at 482, 542; input chopper x 2..190, core band y 422..1025)."""
-    xa, ya = x - 482.0, y - 542.0
+def block_of(x, y, origin=AFE_ORIGIN):
+    """Region of a point (um; core coordinates, or AFE ones with origin (0, 0)): AFE parts
+    by the placement of afe_lay.py (input chopper x 2..190, core band y 422..1025)."""
+    xa, ya = x - origin[0], y - origin[1]
     if xa < 0:
         return "pad straps"
     if xa < 192.0 and 422.0 <= ya <= 1025.0:
@@ -193,17 +205,20 @@ def block_of(x, y):
     return "Cin arrays and buses"
 
 
-def section(lvs, xref, sc, wells, name, corner):
+def section(lvs, xref, sc, wells, name, corner, afe=False):
     """R_eff of one net (one section of one side), with the power split by element kind
-    and by region."""
-    net = xref.other_net_for(sc.net_by_name(name))
+    and by region. afe: the AFE block's lvsdb (net names without the AFE. prefix)."""
+    net = xref.other_net_for(sc.net_by_name(name.replace("AFE.", "") if afe else name))
     geo = net_geometry(lvs, net)
     sec = SECTION[name]
     src, snk = [], []
     if sec in ("E", "W"):
         for p, pm in pillars(geo, wells):
             src.append(("m1", p, G_P if pm else G_N))
-    if sec == "E":
+    if sec == "E" and afe:
+        for x1, y1, x2, y2 in AFE_STRAP[name]:
+            snk.append(("m5", kdb.Polygon(kdb.Box(int(x1 * 1000), int(y1 * 1000), int(x2 * 1000), int(y2 * 1000))), 1.0))
+    elif sec == "E":
         edge = kdb.Region(kdb.Box(0, 0, 380000, 3000000))   # the core's west edge: pad connections
         for p in (geo["m5"] & edge).merged().each():
             snk.append(("m5", kdb.Polygon(p.bbox()), 1.0))
@@ -232,7 +247,7 @@ def section(lvs, xref, sc, wells, name, corner):
     for a, b, r, k in els:
         q = (V[a] - V[b]) ** 2 * cond(r)
         kind[k] += q
-        region[block_of(*loc[a])] += q
+        region[block_of(*loc[a], origin=(0.0, 0.0) if afe else AFE_ORIGIN)] += q
     return dict(name=name, reff=p, nsrc=len(src), nsnk=len(snk), nodes=n, els=len(els), t=time.time() - t,
                 kind=dict(kind), region=dict(region))
 
@@ -241,17 +256,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--corner", choices=sorted(SHEET), default="typ")
     ap.add_argument("--nets", nargs="+", default=list(SECTION))
+    ap.add_argument("--afe", action="store_true", help="the AFE block's lvsdb (E from the strap landings)")
     a = ap.parse_args()
     t = time.time()
     lvs = kdb.LayoutVsSchematic()
-    lvs.read(LVSDB)
+    lvsdb = LVSDB_AFE if a.afe else LVSDB
+    lvs.read(lvsdb)
     xref = lvs.xref()
     sc = next(lvs.reference.each_circuit_top_down())
     wells = kdb.Region(lvs.internal_top_cell().begin_shapes_rec(lvs.layer_of(lvs.layer_by_name(NWELL))))
-    print(f"read {os.path.relpath(LVSDB, REPO)} in {time.time() - t:.0f} s; corner {a.corner}")
+    print(f"read {os.path.relpath(lvsdb, REPO)} in {time.time() - t:.0f} s; corner {a.corner}")
     res = {}
     for name in a.nets:
-        r = section(lvs, xref, sc, wells, name, a.corner)
+        r = section(lvs, xref, sc, wells, name, a.corner, a.afe)
         res[name] = r
         print(f"{name} ({SECTION[name]}): {r['nsrc']} sources, {r['nsnk']} sinks, {r['nodes']} nodes, "
               f"{r['els']} resistors ({r['t']:.0f} s): R_eff {r['reff'] * 1e3:.0f} mohm", flush=True)

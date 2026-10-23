@@ -137,10 +137,10 @@
 - **新しい PDK（792ef670）での確認**：precheck と同じくダミーのメタルとポリを本物の層に移して、CUP 以外の全デッキ：違反なし。
 - **Magic DRC は結果になっていない**
   - precheck の Magic DRC は「違反なし」と出るが、Magic は途中で落ちている（segmentation fault、終了コード 139）。LibreLane は Magic を `check=False` で動かし、空の報告を 0 件と数える。precheck は Magic の違反では止めない設定（ERROR_ON_MAGIC_DRC が False）。
-  - 落ちる場所：`drc listall why` の中の bpBinArrayBuild（DRCInteractionCheck → drcSubCheckPaint）。Magic 8.3 の 660 版（イメージ）でも 677 版（テンプレートの nix）でも落ち、スタックを 64 MB にしても落ちる。
+  - 落ちる場所：`drc listall why` の中の bpBinArrayBuild（DRCInteractionCheck → drcSubCheckPaint）。Magic 8.3 の 660 版（イメージ）でも 677 版（テンプレートの nix）でも落ち、スタックを 64 MB にしても落ちる。イメージの 660 版は、ダミー COMP を除いても落ちる（677 版は最後まで走る）。
   - 引き金：precheck が chip_top へ展開するダミー COMP（COMP_FILL）。AFE の Cin の上のダミー COMP を両方とも残すと落ちる。chip_top に COMP_FILL と afe_top だけを置いても落ちる。
   - 効かなかったこと：Cin を NDMY の区画で覆う（13,479 µm² × 21 個、間 20 µm。DE.3／DE.4 を満たす。間にダミー COMP が残る）、重なったインスタンス 16,433 個（PDK の穴埋めのタイルの重なりと IO セル）を除く、Cin や AFE の階層を平らにする。NDMY は 1 つ 15,000 µm² 未満（DE.3）なので、Cin の下からダミー COMP をなくすことはできない。
-  - 代わりの確認（`gf180/tapeout/chip/precheck/magic_check.py`）：ダミー COMP を除いたチップ全体の Magic DRC は最後まで走る。出るのは 2 種類だけで、どちらも Magic の規則の書き方による。KLayout の対応する規則は通る。
+  - 代わりの確認（`gf180/tapeout/chip/precheck/magic_check.py`、テンプレートの nix の 677 版）：ダミー COMP を除いたチップ全体の Magic DRC は最後まで走る。出るのは 2 種類だけで、どちらも Magic の規則の書き方による。KLayout の対応する規則は通る。
     - MIMTM.2（MIM の下の板による via4 の囲み 0.4 µm）：設計規則では FuseTop から 1.06 µm 以内の via だけが対象。Magic は下の板の Metal4 の上のすべての via4 を対象にする。指摘 331 個は、どれも FuseTop から 1.25 µm 以上離れている。
     - PRES／HRES.7（抵抗の SAB とコンタクトの間 0.22 µm）：描いた形では、抵抗のポリの上のコンタクト 3,860 個がすべて SAB から 0.25 µm（KLayout の HRES.7／8／10 は通る）。Magic の指摘 3,874 個は、どれも幅 0.03 µm の重なりで、Magic が内部で作り直したコンタクトと SAB の形による。
   - ダミー COMP そのものの規則は、KLayout の dummy_comp と density のデッキで確かめていて違反なし。

@@ -182,3 +182,24 @@ class Shelves:
 
     def top_y(self):
         return self.y + self.h
+
+
+def cell_shapes(p, layer):
+    """Boxes (x1, y1, x2, y2) of `layer` inside placed cell p, in block coordinates
+    (all levels of its hierarchy)."""
+    c = p.cell.cell
+    li = c.ly.find_layer(*g.L[layer])
+    out = []
+    if li is None:
+        return out
+    it = c.cell.begin_shapes_rec(li)
+    while not it.at_end():
+        bb = it.shape().bbox().transformed(it.trans())
+        x1, y1, x2, y2 = bb.left / 1000, bb.bottom / 1000, bb.right / 1000, bb.top / 1000
+        if p.mirror:
+            y1, y2 = p.y - y2, p.y - y1
+        else:
+            y1, y2 = p.y + y1, p.y + y2
+        out.append((p.x + x1, y1, p.x + x2, y2))
+        it.next()
+    return out

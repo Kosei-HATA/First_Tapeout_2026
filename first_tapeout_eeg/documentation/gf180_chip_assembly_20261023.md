@@ -157,3 +157,5 @@
 - **結果**：配線 114 秒、チップ全体（パッドリング込み、穴埋め前）の DRC 違反なし、コアの LVS は `eeg_core.spice` と一致（合わせて 16 分）。穴埋めのあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし（21 分）。
 - **穴埋めのあとの密度（10/24、precheck の density の段）**：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.6 %、Metal4 57.9 %、Metal5 65.0 %。10/23 から Metal3（Cin の下の面）、Metal4、Metal5（入力の信号経路の太い帯）が増えた。どれも下限を超え、密度のデッキで違反なし。
 - **Magic DRC（ダミー COMP を除く、`magic_check.py pre_20261024`、9 分）**：最後まで走った。出たのは 10/23 と同じ 2 種類だけ（PRES／HRES.7 が 3,872 個、MIMTM.2 が 327 個。10/23 は 3,874 個と 331 個）。どちらも Magic の規則の書き方によるもので、KLayout の対応する規則は通る（上の節）。MIMTM.2 の 327 個は、どれも FuseTop から 1.25 µm 以上離れている（110 個が 1.25〜2 µm、217 個が 2〜5 µm。規則の対象は 1.06 µm 以内）。
+- **wafer.space の precheck（10/24、`run_precheck.sh`、タグ pre_20261024）**：「Precheck successfully completed」。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は 10/23 と同じく途中で落ちていて結果になっていない（上の Magic DRC が代わりの確認）。
+- **このあと**：PEX の確認（D6）で、AFE の INP と ONI／OPI の結合によるフルスケールの HD2 −70 dBc が見つかった。AFE を直してから、組み立て、DRC／LVS、穴埋め、precheck をもう一度流す。

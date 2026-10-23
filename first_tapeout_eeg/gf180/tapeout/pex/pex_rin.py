@@ -30,7 +30,9 @@ Conductors: --algo square (SquareCounting, the default) or tess (Tesselation, a 
 element mesh of triangles of at most 4 um2). On wires and narrow buses they agree (AFE.INP:
 71.6 ohm against 70.3 / 71.1 ohm with 4 / 1 um2 triangles); on wide sheets fed from a point
 SquareCounting misses the spreading (a Metal3 sheet of 860 x 420 um from a corner to 8 feet:
-0.059 against 0.13 ohm), so layouts with planes are measured with tess.
+0.059 against 0.13 ohm), so layouts with planes are measured with tess. A full mesh of W or T
+of the layout of 10/24 does not fit in memory (over 40 GB); --tess m3 meshes only the given
+conductors (W: the Metal3 sheet under Cin) and counts squares on the others.
 
 Sheet and via resistances: magic's gf180mcuD tech, variant () and the high corner
 (hrhc): Metal1-4 90 (104) mohm/sq, Metal5 40 (49) mohm/sq, via1-4 4.5 (15) ohm per
@@ -43,7 +45,7 @@ of 10/23 places them) instead of at the core's pad connections, so it leaves out
 themselves (0.04 / 0.05 ohm).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/pex_rin.py [--corner typ|high] [--nets ELP AFE.WP ...] [--afe]
-       [--algo square|tess]
+       [--algo square|tess] [--tess m3 ...]
 """
 import argparse
 import os
@@ -213,9 +215,10 @@ def block_of(x, y, origin=AFE_ORIGIN):
     return "Cin arrays and buses"
 
 
-def section(lvs, xref, sc, wells, name, corner, afe=False, algo="square"):
+def section(lvs, xref, sc, wells, name, corner, afe=False, algo="square", tess_layers=None):
     """R_eff of one net (one section of one side), with the power split by element kind
-    and by region. afe: the AFE block's lvsdb (net names without the AFE. prefix)."""
+    and by region. afe: the AFE block's lvsdb (net names without the AFE. prefix).
+    tess_layers: mesh only these conductors with Tesselation (overrides algo)."""
     net = xref.other_net_for(sc.net_by_name(name.replace("AFE.", "") if afe else name))
     geo = net_geometry(lvs, net)
     sec = SECTION[name]
@@ -245,6 +248,8 @@ def section(lvs, xref, sc, wells, name, corner, afe=False, algo="square"):
     # tess: mesh every conductor; KLayout's triangulation stops on some shapes (an internal
     # error), then only the plane layers, then Metal5 only, then none
     tries = [tuple(COND), ("m3", "m4", "m5"), ("m5",), ()] if algo == "tess" else [()]
+    if tess_layers:
+        tries = [tuple(tess_layers)]
     for tess in tries:
         try:
             n, els, pn, loc = network(geo, ports, corner, tess)
@@ -275,6 +280,8 @@ def main():
     ap.add_argument("--nets", nargs="+", default=list(SECTION))
     ap.add_argument("--afe", action="store_true", help="the AFE block's lvsdb (E from the strap landings)")
     ap.add_argument("--algo", choices=["square", "tess"], default="square", help="conductor algorithm")
+    ap.add_argument("--tess", nargs="+", choices=sorted(COND), help="mesh only these conductors with Tesselation "
+                    "(e.g. m3 for the Cin bottom-plate sheet of W; a full mesh of W / T does not fit in memory)")
     a = ap.parse_args()
     t = time.time()
     lvs = kdb.LayoutVsSchematic()
@@ -283,10 +290,11 @@ def main():
     xref = lvs.xref()
     sc = next(lvs.reference.each_circuit_top_down())
     wells = kdb.Region(lvs.internal_top_cell().begin_shapes_rec(lvs.layer_of(lvs.layer_by_name(NWELL))))
-    print(f"read {os.path.relpath(lvsdb, REPO)} in {time.time() - t:.0f} s; corner {a.corner}, {a.algo}")
+    print(f"read {os.path.relpath(lvsdb, REPO)} in {time.time() - t:.0f} s; corner {a.corner}, "
+          + ("tess on " + "+".join(a.tess) if a.tess else a.algo))
     res = {}
     for name in a.nets:
-        r = section(lvs, xref, sc, wells, name, a.corner, a.afe, a.algo)
+        r = section(lvs, xref, sc, wells, name, a.corner, a.afe, a.algo, a.tess)
         res[name] = r
         print(f"{name} ({SECTION[name]}): {r['nsrc']} sources, {r['nsnk']} sinks, {r['nodes']} nodes, "
               f"{r['els']} resistors ({r['t']:.0f} s, tess on {r['used']}): R_eff {r['reff'] * 1e3:.0f} mohm", flush=True)

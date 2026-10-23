@@ -17,7 +17,9 @@ Flow, per block:
      (here INN; nets of subcircuits come out as CORE.SN, CLK.PH0, ...).
   3. The DUT for ngspice: a subcircuit with the ports (names and order) of the block's
      schematic wrapper, the extracted devices (MIM renamed to the simulation model
-     cap_mim_2f0ff), the capacitances between the schematic nets, and the floating nodes
+     cap_mim_2f0ff), the capacitances between the schematic nets (what magic gives a MIM
+     top plate down to the conductors under it moved to the bottom plate, which lies
+     between them: mim_shield), and the floating nodes
      (dummy poly, isolated diffusion or metal: capacitors only) folded into their
      neighbours by the star-mesh transform, which is exact for a node with capacitors
      only. Two files: <block>_pex.spice (devices and capacitances) and
@@ -56,12 +58,21 @@ LVS_LAYERS = {"m1": ["l13"], "m2": ["l15"], "m3": ["l17"], "m4": ["l20", "l25"],
               "a": ["l12", "l9", "l10", "l11"], "w": ["l6"]}
 ALL_LAYERS = [l for k, v in LVS_LAYERS.items() if k != "w" for l in v]
 MODELS = {"cap_mim_2f0_m4m5_noshield": "cap_mim_2f0ff"}
-# magic puts the MIM region on the Metal4 plane as the top plate's type, so the area and
-# fringe capacitance of that region to the substrate lands on the top plate; physically the
-# Metal4 bottom plate under it faces the substrate and shields the top plate. build() moves
-# it to the bottom plate: per MIM, Metal4 area 7.602 aF/um2 and fringe 29.04 aF/um (the
-# values of magic's .ext for a lone cap_mim cell: 87.15 fF for a 99.7 um square)
-MIM_AREA, MIM_FRINGE = 7.602e-18, 29.04e-18
+# magic puts the MIM region on the Metal4 plane as the top plate's type, so the capacitance
+# of that region down to the conductors under it (Metal3 ... wells) and to the substrate
+# lands on the top plate; physically the Metal4 bottom plate lies under the whole top plate,
+# faces them and shields the top plate. build() moves it to the bottom plate (mim_shield):
+# top plates (LVS layer l67, fusetop) and bottom plates (l66 / l25 / l20) from the lvsdb,
+# per lower LVS layer, top down (an upper one shields the lower ones), magic's area (aF/um2)
+# and edge (aF/um, for the conductor under a 0.2 um band outside the plate edge)
+# capacitances from the Metal4 plane (gf180mcuD.tech, defaultoverlap / defaultsideoverlap
+# allm4, which includes *mimcap); what no conductor covers faces the substrate
+# (defaultareacap / defaultperimeter allm4: 86.8 fF for a lone 99.7 um cap_mim, magic's
+# .ext of the cell 87.15 fF)
+MIM_TOP, MIM_BOT = "l67", ("l66", "l25", "l20")
+MIM_UNDER = [(("l17",), 59.027, 47.871), (("l15",), 20.238, 36.563), (("l13",), 12.212, 32.104),
+             (("l12",), 8.557, 29.407), (("l9", "l10", "l11"), 8.148, 29.065), (("l6",), 7.602, 28.153)]
+MIM_SUB, MIM_BAND = (7.602, 28.153), 0.2
 SUPPLIES = ("AVDD", "AVSS", "DVDD", "DVSS", "AVDD_CLK", "AVSS_CLK", "VDD", "VSS")
 # block: GDS, lvsdb, the netlist and subcircuit whose ports (names, order) the DUT takes, the
 # DUT name, magic uses deleted before the extraction, a prefix taken off the schematic names
@@ -292,29 +303,78 @@ def fold_floating(caps, keep):
     return out, len(floating)
 
 
-def mim_substrate(devs, caps, sub):
-    """Move each MIM's area/fringe capacitance to the substrate net `sub` from its top
-    plate (first terminal in magic's netlist) to its bottom plate (see MIM_AREA)."""
+def mim_shield(caps, lvsdb, sub, rename):
+    """Move the capacitance that magic gives a MIM top plate down to the conductors under it
+    and to the substrate net `sub` to its bottom plate (see MIM_TOP). caps (a, b, F) on the
+    schematic names; rename() turns an LVS net name into one. A conductor of the top plate's
+    own net under it (nothing in magic) faces the bottom plate: added. Returns the caps,
+    {(top, bottom): F moved or added}, the total wanted and the part magic did not have."""
+    lvs = kdb.LayoutVsSchematic()
+    lvs.read(lvsdb)
+    xref = lvs.xref()
+    dbu = lvs.internal_layout().dbu
+    cell = lvs.internal_top_cell()
+
+    def region(names):
+        r = kdb.Region()
+        for l in names:
+            r += kdb.Region(cell.begin_shapes_rec(lvs.layer_of(lvs.layer_by_name(l))))
+        return r
+
+    def inside(poly):  # a point inside a polygon: the centre of one of its trapezoids
+        pts = list(poly.decompose_trapezoids()[0].each_point())
+        return kdb.DPoint(sum(p.x for p in pts) / len(pts) * dbu, sum(p.y for p in pts) / len(pts) * dbu)
+
+    def net_at(names, pt):
+        for l in names:
+            n = lvs.probe_net(lvs.layer_by_name(l), pt)
+            if n is not None:
+                s = xref.other_net_for(n)
+                return rename(s.expanded_name() if s is not None else "LAYOUT." + n.expanded_name())
+        return None
+
+    tops = region([MIM_TOP]).merged()
+    band = int(round(MIM_BAND / dbu))
+    zone = tops.sized(band)
+    under = [(names, ca, ce, (region(names) & zone).merged()) for names, ca, ce in MIM_UNDER]
+    want = defaultdict(float)  # (top, bottom, conductor under) -> F
+    for p in tops.each():
+        plate = kdb.Region(p)
+        edge = plate.sized(band) - plate
+        pt = inside(p)
+        t, b = net_at([MIM_TOP], pt), net_at(MIM_BOT, pt)
+        if t is None or b is None:
+            continue
+        cov_a, cov_e = kdb.Region(), kdb.Region()
+        for names, ca, ce, r in under:
+            a, e = (r & plate) - cov_a, (r & edge) - cov_e
+            for q in a.each():
+                want[(t, b, net_at(names, inside(q)))] += ca * q.area() * dbu ** 2 * 1e-18
+            for q in e.each():
+                want[(t, b, net_at(names, inside(q)))] += ce * q.area() * dbu ** 2 / MIM_BAND * 1e-18
+            cov_a += a
+            cov_e += e
+        want[(t, b, sub)] += (MIM_SUB[0] * (plate - cov_a).area() * dbu ** 2
+                              + MIM_SUB[1] * (edge - cov_e).area() * dbu ** 2 / MIM_BAND) * 1e-18
+    key = lambda a, b: (a, b) if a < b else (b, a)
     agg = defaultdict(float)
     for a, b, c in caps:
-        agg[(a, b) if a < b else (b, a)] += c
-    moved = 0.0
-    key = lambda a, b: (a, b) if a < b else (b, a)
-    for _, nn, model, par in devs:
-        if model != "cap_mim_2f0_m4m5_noshield":
+        if a != b:
+            agg[key(a, b)] += c
+    moved, total, left = defaultdict(float), 0.0, 0.0
+    for (t, b, x), c in want.items():
+        if x is None or t == b:
             continue
-        p = dict(w.split("=") for w in par)
-        w, l = spice_val(p["c_width"]) * 1e6, spice_val(p["c_length"]) * 1e6
-        c = MIM_AREA * w * l + MIM_FRINGE * 2 * (w + l)
-        top, bot = nn[0], nn[1]
-        if top == sub:
-            continue
-        c = min(c, agg.get(key(top, sub), 0.0))
-        agg[key(top, sub)] -= c
-        if bot != sub:
-            agg[key(bot, sub)] += c
-        moved += c
-    return [(a, b, c) for (a, b), c in agg.items() if c > 0], moved
+        total += c
+        if x != t:
+            have = agg.get(key(t, x), 0.0)
+            left += max(c - have, 0.0)
+            c = min(c, have)
+            agg[key(t, x)] -= c
+        if x != b:
+            agg[key(b, x)] += c
+        moved[(t, b)] += c
+    return [(a, b, c) for (a, b), c in agg.items() if c > 0], moved, total, left
 
 
 def build(block, cthresh=0.01, skip_magic=False):
@@ -328,8 +388,6 @@ def build(block, cthresh=0.01, skip_magic=False):
         msp, dt = run_magic(gds, block, outdir, cthresh, cfg.get("drop", ()))
         print(f"magic: {dt:.0f} s")
     top, mports, devs, caps = read_magic(msp)
-    caps, moved = mim_substrate(devs, caps, cfg["sub"])
-    print(f"MIM substrate capacitance moved from the top to the bottom plates: {moved * 1e12:.2f} pF")
     nodes = set(mports)
     for _, nn, _, _ in devs:
         nodes.update(nn)
@@ -342,8 +400,8 @@ def build(block, cthresh=0.01, skip_magic=False):
     for p in mports:  # ports keep their labels
         nmap[p] = p
     strip = cfg.get("strip", "")
-    ren = {n: sanitize(nmap.get(n, n)[len(strip):] if strip and nmap.get(n, n).startswith(strip)
-                       else nmap.get(n, n)) for n in nodes}
+    rename = lambda s: sanitize(s[len(strip):] if strip and s.startswith(strip) else s)
+    ren = {n: rename(nmap.get(n, n)) for n in nodes}
     # several magic nodes on one schematic net: allowed for ports (joined outside, e.g. AVDD
     # pieces), reported otherwise
     groups = defaultdict(list)
@@ -358,6 +416,12 @@ def build(block, cthresh=0.01, skip_magic=False):
         devnodes.update(nn)
         rdevs.append((name, nn, MODELS.get(model, model), par))
     rcaps = [(ren[a], ren[b], c) for a, b, c in caps]
+    rcaps, moved, total, left = mim_shield(rcaps, os.path.join(LAYOUT, cfg["lvsdb"]), ren.get(cfg["sub"], cfg["sub"]),
+                                           rename)
+    print(f"MIM top plates: {total * 1e12:.2f} pF down to the conductors under them and the substrate "
+          f"taken to the bottom plates ({left * 1e12:.2f} pF of it not on the top plate in magic's netlist)")
+    for (t, b), c in sorted(moved.items(), key=lambda kv: -kv[1])[:8]:
+        print(f"  {t} -> {b}: {c * 1e12:.3f} pF")
     keep = devnodes | set(wports)
     fcaps, nfl = fold_floating(rcaps, keep)
     missing_ports = [p for p in wports if p not in devnodes and p not in {a for a, _, _ in fcaps} | {b for _, b, _ in fcaps}]

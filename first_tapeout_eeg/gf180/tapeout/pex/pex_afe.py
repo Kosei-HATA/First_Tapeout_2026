@@ -76,10 +76,12 @@ def ports():
 
 # wiring resistance of the signal path per side (pex_rin.py, typical, ohm): electrode
 # side E (in series with the source), Cin bottom-plate side W (chopper to Cin), top-plate
-# side T (Cin to the input-pair gates). The layout of 10/24 (D6 fixes 1-5), pex_rin.py --afe
-# (square), E with the chip's straps of 10/23 (0.04 / 0.05); 10/23 before the fixes:
-# E 0.350 / 0.346, W 3.970 / 3.935, T 71.60 / 114.59
-RIN_EXTRACTED = {"E": (0.179, 0.173), "W": (0.204, 0.198), "T": (0.125, 0.124)}
+# side T (Cin to the input-pair gates). The chip of 10/24 (D6 fixes 1-7), pex_rin.py on the
+# chip core: E with the pad straps (--algo tess on Metal3..5; square 0.174 / 0.215), W with
+# the Metal3 sheet under Cin meshed (--tess m3; square 0.204 / 0.198, which misses the
+# spreading in the sheet), T square; 10/23 before the fixes: E 0.350 / 0.346, W 3.970 / 3.935,
+# T 71.60 / 114.59
+RIN_EXTRACTED = {"E": (0.171, 0.213), "W": (0.344, 0.339), "T": (0.125, 0.124)}
 
 
 def split_signal_path(text, variant):
@@ -304,24 +306,26 @@ SINE_T0 = 20e-6       # the sine starts after the reset (released at 11 us) with
 SINE_FFT0 = 2.0e-3    # FFT window start: 7 x the DC path's 286 us after the start
 
 
-def sine_one(variant, sine_mv=0.943):
+def sine_one(variant, sine_mv=0.943, fft0=SINE_FFT0, nper=4):
     """Full-scale sine at fch/64 (2 kHz), starting at 20 us (after the INP/INN reset, so
     that Cin keeps no input charge: the start-up effect of the AFE document); the output
     integrated over every chopper period, HD2..HD5 from an FFT over 4 signal periods from
     2 ms (coherent, rectangular window). (afe_offset.py --sine starts the FFT at 0.5 ms; in
     this bench the DC path (286 us) still settles there, after the reset and, in pex, from
     the offset of the DC-path switch coupling, and its leakage covered the harmonics at
-    -89 to -93 dBc.)"""
-    d = os.path.join(RUNS, f"sine_{variant}_{sine_mv:g}mV")
-    tstop = SINE_FFT0 + 4 * 64 * TCH
+    -89 to -93 dBc.) fft0 / nper: a quicker check (--fft0 1e-3 --periods 2, half the run
+    time) sees an HD2 of -70 dBc as well, but leaves a floor near -105 dBc."""
+    tag = "" if (fft0, nper) == (SINE_FFT0, 4) else f"_{fft0 * 1e3:g}ms{nper}"
+    d = os.path.join(RUNS, f"sine_{variant}_{sine_mv:g}mV{tag}")
+    tstop = fft0 + nper * 64 * TCH
     log, dt = run(d, tran_deck(variant, 0.0, tstop=tstop, sine_mv=sine_mv))
     x = np.loadtxt(os.path.join(d, "tr.csv"))
     t, vo = x[:, 0], x[:, 1]
     q = np.concatenate([[0.0], np.cumsum(0.5 * (vo[1:] + vo[:-1]) * np.diff(t))])
-    edges = SINE_FFT0 + TCH * np.arange(64 * 4 + 1)
+    edges = fft0 + TCH * np.arange(64 * nper + 1)
     per = np.diff(np.interp(edges, t, q)) / TCH
     spec = np.abs(np.fft.rfft(per - per.mean())) / (len(per) / 2)
-    h = [spec[4 * k] for k in range(1, 6)]
+    h = [spec[nper * k] for k in range(1, 6)]
     return dict(variant=variant, t=dt, gain=h[0] / (sine_mv * 1e-3), hd=[20 * np.log10(v / h[0]) for v in h[1:]])
 
 
@@ -349,6 +353,8 @@ def main():
     ap.add_argument("--rwire", action="store_true", help="noise: the extracted wiring resistance in series (RIN_EXTRACTED)")
     ap.add_argument("--dac", type=int, default=0, help="tran: offset-DAC range 1..4 set for the input (0: off)")
     ap.add_argument("--blank", type=int, default=7, help="tran: output-chopper blanking in MCLK")
+    ap.add_argument("--fft0", type=float, default=SINE_FFT0, help="sine: FFT window start (s)")
+    ap.add_argument("--periods", type=int, default=4, help="sine: signal periods in the FFT window")
     a = ap.parse_args()
     if a.what == "noise":
         jobs = [(v, p, RIN_EXTRACTED if a.rwire else None) for v in a.variants for p in a.phase]
@@ -364,7 +370,7 @@ def main():
         print("| DUT | gain at 2 kHz | HD2 (dBc) | HD3 (dBc) | HD4 (dBc) | HD5 (dBc) | run (s) |")
         print("|---|---|---|---|---|---|---|")
         with ThreadPoolExecutor(len(a.variants)) as ex:
-            for r in ex.map(sine_one, a.variants):
+            for r in ex.map(lambda v: sine_one(v, fft0=a.fft0, nper=a.periods), a.variants):
                 print(f"| {r['variant']} | {r['gain']:.2f} | " + " | ".join(f"{h:.1f}" for h in r["hd"]) + f" | {r['t']:.0f} |",
                       flush=True)
     else:

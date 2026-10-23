@@ -77,6 +77,11 @@ BLOCKS = {
     # blocks for the bench checks of DAC1 (dac1_check.py) and the OTA1 chopper (ota1_edge.py)
     "adc_rdac": dict(gds="gds/adc_rdac.gds", lvsdb="runs/adc_rdac/adc_rdac.lvsdb",
                      ports=("gf180/tapeout/layout/lvs/adc_rdac.spice", "adc_rdac"), dut="adc_rdac", sub="AVSS"),
+    # the quantizer alone (its input coupling, D6 item 7): DVSS joins AVSS through the
+    # substrate taps (as in its LVS), so the DUT's DVSS port stays open
+    "eeg_quantizer": dict(gds="gds/eeg_quantizer.gds", lvsdb="runs/eeg_quantizer/eeg_quantizer.lvsdb",
+                          ports=("gf180/tapeout/adc/eeg_quantizer.spice", "eeg_quantizer"), dut="eeg_quantizer",
+                          sub="AVSS"),
     "gf180_inside_cascode_ota": dict(gds="gds/gf180_inside_cascode_ota.gds",
                                      lvsdb="runs/gf180_inside_cascode_ota/gf180_inside_cascode_ota.lvsdb",
                                      ports=("gf180/tapeout/adc/eeg_adc_otas.spice", "gf180_inside_cascode_ota"),

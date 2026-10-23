@@ -18,6 +18,7 @@ around the DAC1 updates) for the settling comparison.
 Usage: python3 gf180/tapeout/pex/pex_adc.py <variant> [adc_deck.py options, e.g. --tstop 100e-6 --fsig 20e3]
 Then: (cd gf180/tapeout/pex/runs/adc/<variant>... && ngspice -b circuit.spice)
       python3 gf180/tapeout/pex/pex_adc.py settle <run folder> ...   (VG disturbance at the DAC1 updates)
+      python3 gf180/tapeout/pex/pex_adc.py codes <run folder> ...    (quantizer decisions vs ideal thresholds)
 """
 import os
 import subprocess
@@ -53,7 +54,36 @@ def settling(folder, t0=20e-6):
                 vg_rms=np.std(vg[t > t0]))
 
 
+def codes(folder, t0=20e-6):
+    """The quantizer's decisions in the loop: O2P - O2N at each strobe edge (CMP_STROBE
+    rises at TS0 + k T) quantized with the ideal thresholds (k - 15) x 3.125 mV, against
+    the code the loop used (the DAC1 level norm1 at mid-frame after the load at
+    T0_LOAD + k T: code = 31 - number of thresholds below O2). Returns the share of
+    frames that agree, the mean difference (LSB) and the best common offset of the
+    thresholds (mV) with its agreement."""
+    T, TS0, T0L = 1 / 1.024e6, 1.9866597656e-06, 2.0784625e-06
+    x = np.loadtxt(os.path.join(folder, "out.csv"))
+    t, o2, n1 = x[:, 0], x[:, 11] - x[:, 13], x[:, 19]
+    ks = np.arange(int(np.ceil((t0 - TS0) / T)), int((t[-1] - T0L) / T) - 1)
+    act = np.rint((np.interp(T0L + (ks + 0.5) * T, t, n1) + 0.5) * 31).astype(int)
+    o2s = np.interp(TS0 + ks * T, t, o2)
+    th = (np.arange(31) - 15) * 3.125e-3
+    ideal = lambda off: 31 - (o2s[:, None] > th[None, :] + off).sum(1)
+    best = max(((np.mean(act == ideal(o)), o) for o in np.arange(-10e-3, 10.01e-3, 0.1e-3)))
+    return dict(n=len(ks), agree=np.mean(act == ideal(0.0)), diff=np.mean(act - ideal(0.0)),
+                best_off=best[1], best_agree=best[0], o2min=o2s.min(), o2max=o2s.max())
+
+
 def main():
+    if sys.argv[1] == "codes":
+        print("| DUT | frames | agree with ideal thresholds | mean code - ideal (LSB) | best common offset (mV): agree "
+              "| O2 at the strobes (mV) |")
+        print("|---|---|---|---|---|---|")
+        for f in sys.argv[2:]:
+            r = codes(f)
+            print(f"| {os.path.basename(f.rstrip('/'))} | {r['n']} | {r['agree'] * 100:.1f} % | {r['diff']:+.2f} | "
+                  f"{r['best_off'] * 1e3:+.1f}: {r['best_agree'] * 100:.1f} % | {r['o2min'] * 1e3:.1f}..{r['o2max'] * 1e3:.1f} |")
+        return
     if sys.argv[1] == "settle":
         print("| DUT | DAC1 updates | VG peak, mean (uV) | VG peak, max (uV) | after 50 ns | 100 ns | 200 ns | 500 ns "
               "| VG rms (uV) |")

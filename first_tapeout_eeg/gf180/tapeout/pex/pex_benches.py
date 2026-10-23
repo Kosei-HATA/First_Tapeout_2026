@@ -8,6 +8,10 @@ devices with the extracted capacitances (pex) of the layout blocks:
         charge per frame, extra charge per toggle), on the block adc_rdac (RIN and DAC1,
         pex.py adc_rdac): eeg_dac1 is the block with RIN shorted end to end (INP = I1P,
         INN = I1N), so that RIN carries no current and only its parasitics stay;
+  quant gf180/tapeout/sim/quantizer/quantizer_check.py on the block eeg_quantizer (pex.py
+        eeg_quantizer): 'timing' (8 strobes over several codes: the charge each strobe
+        displaces on INP and INN, the kick that moves the decision) and, with --static,
+        the thresholds of the 31 comparators on a slow ramp;
   ota1  gf180/tapeout/sim/adc_loop/ota1_edge.py with the chopper driver eeg_adc_clk
         (--drv): the charge one OTA1 chopper edge leaves in the first integrator,
         q = beta I + gamma v_o1, on the block gf180_inside_cascode_ota (pex.py
@@ -15,9 +19,11 @@ devices with the extracted capacitances (pex) of the layout blocks:
         (The bench keeps its own values: RIN 9375, C1 680.5 pF, CL 4 pF; the comparison
         is between the three versions.)
 
-Usage: python3 gf180/tapeout/pex/pex_benches.py dac1|ota1 [--variants sch dev pex] [--even-only]
+Usage: python3 gf180/tapeout/pex/pex_benches.py dac1|quant|ota1 [--variants sch dev pex] [--even-only] [--cells k ...]
+       [--static]
        (dac1 runs the variants one after another: start one process per variant to have them in parallel;
-       variant pexnox = pex without the couplings of the steering nodes XP / XN to the switching nets)
+       variant pexnox = pex without the couplings of the steering nodes XP / XN to the switching nets;
+       --cells: only the one-cell even test, toggling cell k instead of cell 0, the others 15 on / 16 off)
 """
 import argparse
 import os
@@ -26,6 +32,9 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
+
+if not hasattr(np, "trapezoid"):        # numpy < 2 (gf180/tools/venv310): dac1_check integrates with it
+    np.trapezoid = np.trapz
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
@@ -66,6 +75,25 @@ def dac1_wrapper(variant):
     return path
 
 
+def even_cell(dc, o, k):
+    """dac1_check.even's one-cell test with cell k toggling (the others 15 on, 16 off:
+    cells 0..14 on, with k's place taken by cell 15 when k < 15)."""
+    lead, tail = [0] * 4, [0] * 4
+    p1 = lead + [0, 1] * 32 + tail
+    p2 = lead + [0, 0, 1, 1] * 16 + tail
+    nf = len(p1)
+    tog = lambda p: sum(p[j] != p[j - 1] for j in range(1, len(p)))
+    on = [i for i in range(31) if i != k][:15]
+    static = [[1] * nf if i in on else [0] * nf for i in range(31)]
+    q = []
+    for tag, pat in (("a", p1), ("b", p2)):
+        sels = [pat if i == k else static[i] for i in range(31)]
+        x = dc.run(o, f"even_cell{k}{tag}_{o.corner}{o.temp:g}", sels, nf)
+        t, idiff = x[:, 0], x[:, 1] - x[:, 3]
+        q.append(dc.integ(t, idiff, dc.T0 + 4 * dc.T + 4 * dc.TM, dc.T0 + (nf - 2) * dc.T + 4 * dc.TM))
+    return (q[0] - q[1]) / (tog(p1) - tog(p2))
+
+
 def otas_file(variant):
     """eeg_adc_otas.spice with gf180_inside_cascode_ota from the block extraction (sch: as
     it is), headed by the MIM model sections that the bench of ota1_edge.py does not load
@@ -85,10 +113,19 @@ def otas_file(variant):
     return path
 
 
-def dac1(variants, even_only=False):
+def dac1(variants, even_only=False, cells=None):
     sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "sim", "dac1"))
     import dac1_check as dc
     o = argparse.Namespace(corner="typical", temp=27.0, voff=0.0, mc=0, tol="A")
+    if cells:
+        for v in variants:
+            dc.DAC1 = dac1_wrapper(v)
+            dc.HERE = os.path.join(RUNS, f"dac1_{v}")
+            with ThreadPoolExecutor(len(cells)) as ex:
+                res = list(ex.map(lambda k: even_cell(dc, o, k), cells))
+            for k, e in zip(cells, res):
+                print(f"| {v} | cell {k} | {e * 1e15:+.5f} fC/toggle |", flush=True)
+        return
     print("| DUT | even, one cell (fC/toggle) | even, all 31 (fC/toggle) | VRP k=0 (uA) | VRP k=15 (uA) "
           "| VRP k=31 (uA) | extra VRP charge per toggle (fC) |")
     print("|---|---|---|---|---|---|---|")
@@ -106,6 +143,21 @@ def dac1(variants, even_only=False):
         print(f"| {v} | {e['one'] * 1e15:+.5f} | {e['all'] * 1e15:+.5f} | {r['VRP current, steady k = 0 (uA)']:.4f} | "
               f"{r['VRP current, steady k = 15 (uA)']:.4f} | {r['VRP current, steady k = 31 (uA)']:.4f} | "
               f"{r['extra VRP charge per toggle (fC)']:+.4f} |", flush=True)
+
+
+def quant(variants, static=False):
+    sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "sim", "quantizer"))
+    import quantizer_check as qc
+    for v in variants:
+        qc.QNET = (os.path.join(ADC, "eeg_quantizer.spice") if v == "sch" else
+                   os.path.join(HERE, "runs", "eeg_quantizer_c", f"eeg_quantizer_{v}.spice"))
+        qc.HERE = os.path.join(RUNS, f"quant_{v}")
+        a = argparse.Namespace(corner="typical", temp=27, mc=0, step=0.2e-3, iq=None)
+        a.iq = qc.iq_default(a.corner, a.temp)
+        print(f"== {v}", flush=True)
+        qc.timing(a)
+        if static:
+            qc.static(a)
 
 
 def ota1(variants):
@@ -141,12 +193,16 @@ def ota1(variants):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["dac1", "ota1"])
+    ap.add_argument("what", choices=["dac1", "quant", "ota1"])
     ap.add_argument("--variants", nargs="+", default=["sch", "dev", "pex"])
     ap.add_argument("--even-only", action="store_true", help="dac1: the even test only")
+    ap.add_argument("--cells", type=int, nargs="+", help="dac1: one-cell even test of these cells only")
+    ap.add_argument("--static", action="store_true", help="quant: the threshold ramp as well")
     a = ap.parse_args()
     if a.what == "dac1":
-        dac1(a.variants, a.even_only)
+        dac1(a.variants, a.even_only, a.cells)
+    elif a.what == "quant":
+        quant(a.variants, a.static)
     else:
         ota1(a.variants)
 

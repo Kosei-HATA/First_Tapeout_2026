@@ -525,13 +525,26 @@ def do_bb(variants):
 # electrode input impedance
 # ----------------------------------------------------------------------------------
 def zin_deck(variant, f_sig, amp, cm, tsettle, tstop):
-    """The electrode currents run through 0 V meters into 1 F integrators (q = int i dt, smooth),
-    so the spikes at the chopper edges are counted exactly on a coarse output grid."""
+    """Lock-in integrators in the simulator: 1 F capacitors charged by B sources with the
+    electrode current (x 1e6), the electrode voltage, the output and the source, each times
+    cos / sin(2 pi f t), so the fundamentals come from their values at the window's ends, as
+    exact as the simulator's own time steps (the electrode current has pC spikes at every
+    chopper edge, which a 100 ns output grid samples unevenly: its phase against the chopper
+    repeats every 8 periods and put a false 16 kHz component into the 16 kHz point). The
+    current integrators (q = int i dt) give the DC means of both electrode currents."""
     chop = f"PULSE(0 3.3 {TCH / 2:.6e} 0.5n 0.5n {TCH / 2 - 0.5e-9:.6e} {TCH:.6e})"
     bl = f"PULSE(0 3.3 {TCH / 2 - pa.MCLK:.6e} 0.5n 0.5n {pa.MCLK + pa.BLANK - 0.5e-9:.6e} {TCH / 2:.6e})"
     src = (f"SIN(0 {amp:g} {f_sig:g} 50u)" if f_sig > 0 else f"PWL(0 0 50u 0 51u {amp:g})")
     en_n = "0.5" if cm else "-0.5"
-    return f"""* afe_top {variant}: input impedance, {'common' if cm else 'differential'} mode, {f_sig:g} Hz
+    w = 2 * np.pi * f_sig
+    lock = ""
+    for name, expr in (("I", "1e6 * i(vmp)"), ("V", "v(elp) - v(cm)" if cm else "v(elp) - v(eln)"),
+                       ("O", "v(outp) - v(outn)"), ("S", "v(src)")):
+        for k, fn in (("C", "cos"), ("S", "sin")):
+            n = f"L{name}{k}"
+            lock += f"B{n} 0 {n} I = ({expr}) * {fn}({w:.12g} * time)\nC{n} {n} 0 1\nR{n} {n} 0 1e15\n"
+    nodes = ["qp", "qn"] + [f"l{a}{b}" for a in "ivos" for b in "cs"]
+    return f"""* afe_top {variant}: input impedance, {'common' if cm else 'differential'} mode, {f_sig:g} Hz, {amp:g} V
 {pa.head()}.include {pa.BIAS}
 {pa.dut_text(variant)}
 .temp 27
@@ -556,21 +569,16 @@ RQP QP 0 1e15
 FQN 0 QN VMN 1
 CQN QN 0 1
 RQN QN 0 1e15
-GQO 0 QO OUTP OUTN 1
-CQO QO 0 1
-RQO QO 0 1e15
-RLOADP OUTP CM {pa.RIN:g}
+{lock}RLOADP OUTP CM {pa.RIN:g}
 RLOADN OUTN CM {pa.RIN:g}
 {pa.xline()}
 .nodeset v(xdut.inp)=1.65 v(xdut.inn)=1.65 v(xdut.opi)=1.65 v(xdut.oni)=1.65 v(outp)=1.65 v(outn)=1.65
-.ic v(qp)=0 v(qn)=0 v(qo)=0
+.ic {" ".join(f"v({n})=0" for n in nodes)}
 .control
 set noaskquit
 tran 100n {tstop:.6e} {tsettle:.6e} 4n
 linearize
-let vp = v(elp) - v(cm)
-let vq = v(eln) - v(cm)
-wrdata tr.csv v(qp) v(qn) vp vq v(qo) v(src)
+wrdata tr.csv {" ".join(f"v({n})" for n in nodes)}
 quit
 .endc
 .end
@@ -584,62 +592,62 @@ def whole_periods(f_sig, n_min):
     return p * -(-n_min // p)
 
 
-def zin_one(variant, f_sig, cm, amp=0.2e-3):
-    """Fundamental of V and of the electrode current over whole signal periods after tsettle
-    (current from the charge integrator by parts: int i e^-jwt = [q e^-jwt] + jw int q e^-jwt;
-    the output the same way from its integral); f = 0: a DC step, the mean current over 16
-    chopper periods."""
+def zin_one(variant, f_sig, cm, amp):
+    """Fundamentals over whole signal (and chopper) periods after tsettle from the lock-in
+    integrators: X = 2 (dC - j dS) / tw; f = 0: a DC step, the means over 16 chopper periods
+    (run in pairs +-amp by do_zin, which cancels the electrode currents that flow without a
+    signal)."""
     tsettle = 0.4e-3
     span = whole_periods(f_sig, 1) / f_sig if f_sig > 0 else 16 * TCH
-    tag = f"zin_{variant}_{'cm' if cm else 'dm'}_{f_sig:g}Hz"
+    tag = f"zin_{variant}_{'cm' if cm else 'dm'}_{f_sig:g}Hz" + ("_neg" if amp < 0 else "")
     d = os.path.join(OUT, "work", tag)
     t0 = time.time()
     run(d, zin_deck(variant, f_sig, amp, cm, tsettle, tsettle + span))
     x = np.loadtxt(os.path.join(d, "tr.csv"))
-    t, qp, qn, vp, vq, qo, vs = x[:, 0], x[:, 1], x[:, 3], x[:, 5], x[:, 7], x[:, 9], x[:, 11]
-    m = t >= tsettle
-    t, qp, qn, vp, vq, qo, vs = t[m], qp[m], qn[m], vp[m], vq[m], qo[m], vs[m]
-    tw = t[-1] - t[0]
-    if f_sig > 0:
-        w = 2 * np.pi * f_sig
-        e = np.exp(-1j * w * t)
-        vf = lambda y: 2 * trapz(y * e, t) / tw
-        jf = lambda q: 2 * ((q[-1] * e[-1] - q[0] * e[0]) + 1j * w * trapz(q * e, t)) / tw
-    else:
-        vf = lambda y: trapz(y, t) / tw
-        jf = lambda q: (q[-1] - q[0]) / tw
-    g = None
-    if cm:
-        z = vf(vp) / jf(qp)          # per side (each electrode to the common mode)
-    else:
-        z = (vf(vp) - vf(vq)) / jf(qp)
-        if f_sig > 0:
-            g = complex(jf(qo) / vf(vs))
-    return dict(f=f_sig, z=complex(z), g=g, cm=cm, variant=variant, t=time.time() - t0)
+    tw = x[-1, 0] - x[0, 0]
+    dv = lambda k: x[-1, 2 * k + 1] - x[0, 2 * k + 1]
+    lock = (lambda k: 2 * (dv(k) - 1j * dv(k + 1)) / tw) if f_sig > 0 else (lambda k: dv(k) / tw + 0j)
+    return dict(f=f_sig, cm=cm, variant=variant, amp=amp, i=lock(2) / 1e6, v=lock(4), o=lock(6), s=lock(8),
+                ip=dv(0) / tw, in_=dv(1) / tw, t=time.time() - t0)
 
 
-def do_zin(variants, points=None, workers=8):
+def do_zin(variants, points=None, workers=8, amp=1e-3):
     pts = points or [0.0, 100.0, 1e3, 4e3, 16e3, 50e3]
-    jobs = [(v, fz, cm) for v in variants for fz in (pts if v == "sch" else [0.0, 1e3]) for cm in (False, True)]
+    jobs = [(v, fz, cm, a) for v in variants for fz in (pts if v == "sch" else [0.0, 1e3]) for cm in (False, True)
+            for a in ((amp, -amp) if fz == 0 else (amp,))]
     # the longest first: pex, then the low frequencies (one period of 100 Hz is 10 ms)
     jobs.sort(key=lambda j: (j[0] == "sch", j[1] == 0, j[1]))
-    rows, grows = [], []
+    res = {}
     with ThreadPoolExecutor(workers) as ex:
-        futs = [ex.submit(zin_one, *j) for j in jobs]
-        for fu in as_completed(futs):
+        for fu in as_completed([ex.submit(zin_one, *j) for j in jobs]):
             r = fu.result()
-            rows.append((r["f"], r["z"].real, r["z"].imag, f"transient-chopped-{'cm' if r['cm'] else 'dm'}",
-                         r["variant"]))
-            if r["g"] is not None:
-                grows.append((r["f"], float(db(r["g"])), float(np.degrees(np.angle(r["g"]))),
-                              "transient-chopped-blanked", r["variant"]))
-            print(r["variant"], "cm" if r["cm"] else "dm", r["f"], f"Z {r['z']:.4g}",
-                  f"G {abs(r['g']):.2f}" if r["g"] is not None else "", f"({r['t']:.0f} s)", flush=True)
+            res[(r["variant"], r["f"], r["cm"], r["amp"] > 0)] = r
+            print(r["variant"], "cm" if r["cm"] else "dm", r["f"], f"{r['amp']:+g} V", f"V {r['v']:.4g}",
+                  f"I {r['i']:.4g}", f"I_ELP mean {r['ip'] * 1e9:.3f} nA, I_ELN mean {r['in_'] * 1e9:.3f} nA",
+                  f"({r['t']:.0f} s)", flush=True)
+    rows, grows, bias = [], [], []
+    for (v, f, cm, pos), r in sorted(res.items()):
+        if not pos:
+            continue
+        if f == 0:
+            rn = res[(v, f, cm, False)]
+            z = (r["v"] - rn["v"]) / (r["i"] - rn["i"])
+            bias.append(f"{v} {'cm' if cm else 'dm'} pair: I_ELP {(r['ip'] + rn['ip']) / 2 * 1e9:+.3f} nA, "
+                        f"I_ELN {(r['in_'] + rn['in_']) / 2 * 1e9:+.3f} nA")
+        else:
+            z = r["v"] / r["i"]
+            if not cm:
+                g = r["o"] / r["s"]
+                grows.append((f, float(db(g)), float(np.degrees(np.angle(g))), "transient-chopped-blanked", v))
+        rows.append((f, float(z.real), float(z.imag), f"transient-chopped-{'cm' if cm else 'dm'}", v))
+        print(v, "cm" if cm else "dm", f, f"Z {z:.5g}", flush=True)
+    print("\n".join(bias))
     grows.sort(key=lambda r: (r[4], r[0]))
     write_csv(os.path.join(OUT, "afe_baseband_transient.csv"), ["f_hz", "gain_db", "phase_deg", "method", "netlist"],
               grows, "AFE chopped transfer source (diff, 100 ohm per leg) -> OUTP-OUTN from the transient runs of zin\n"
-              "(0.2 mV sine, choppers at 128 kHz with the 7-MCLK blanking, fundamental over whole signal and chopper\n"
-              "periods after 0.4 ms): the check of afe_baseband_*.csv, whose harmonic sum has no blanking")
+              f"({amp * 1e3:g} mV sine, choppers at 128 kHz with the 7-MCLK blanking, fundamental over whole signal and\n"
+              "chopper periods after 0.4 ms, lock-in integrators in the simulator): the check of afe_baseband_*.csv,\n"
+              "whose harmonic sum has no blanking")
     # frozen-phase AC reference
     for v in variants:
         for cm in (False, True):
@@ -650,12 +658,13 @@ def do_zin(variants, points=None, workers=8):
                 rows.append((float(f[i]), float(zz[i].real), float(zz[i].imag),
                              f"frozen-phase-AC-{'cm' if cm else 'dm'} (reference only)", v))
     rows.sort(key=lambda r: (r[4], r[3], r[0]))
-    write_csv(os.path.join(OUT, "afe_zin.csv"), ["f_hz", "re_ohm", "im_ohm", "method", "netlist"],
-              [(float(a), float(b), float(c), m, n) for a, b, c, m, n in rows],
+    write_csv(os.path.join(OUT, "afe_zin.csv"), ["f_hz", "re_ohm", "im_ohm", "method", "netlist"], rows,
               "Electrode-side input impedance of the AFE, typical 27 C, CPF_TRIM 8, 100 ohm per leg, fch 128 kHz\n"
               "dm: (V_ELP - V_ELN) / I_ELP with a differential drive; cm: V_ELP / I_ELP per side with both driven\n"
-              "transient-chopped: fundamental of a 0.2 mV sine after settling (f = 0: DC step, average over\n"
-              "chopper periods); frozen-phase AC: chopper stopped in phase A, for reference only")
+              f"transient-chopped: fundamental of a {amp * 1e3:g} mV sine over whole signal and chopper periods after\n"
+              "0.4 ms, from lock-in integrators in the simulator; f = 0: DC steps of +- the amplitude, the difference\n"
+              "of the means over 16 chopper periods (the electrode currents that flow without a signal cancel):\n"
+              + "\n".join(bias) + "\nfrozen-phase AC: chopper stopped in phase A, for reference only")
 
 
 def do_zin_ac(variants):
@@ -680,10 +689,11 @@ def main():
     ap.add_argument("--variants", nargs="+", default=["sch", "pex"])
     ap.add_argument("--points", nargs="+", type=float)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--amp", type=float, default=1e-3, help="zin: sine / step amplitude (V)")
     a = ap.parse_args()
     os.makedirs(os.path.join(OUT, "work"), exist_ok=True)
     if a.what == "zin":
-        do_zin(a.variants, a.points, a.workers)
+        do_zin(a.variants, a.points, a.workers, a.amp)
     else:
         {"afe_loop": do_afe_loop, "ota": do_ota, "ntf": do_ntf, "bb": do_bb, "zin_ac": do_zin_ac}[a.what](a.variants)
 

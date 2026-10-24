@@ -166,4 +166,12 @@
 - **コアの LVS が一度だけ不一致になった。** 原因はデカップリングの数：`decaps()` は、行の Metal2 の帯が電源の Metal4 の継ぎに当たる行を外して置くので、AFE の電源の継ぎの位置が変わって 1 行（3 個）多く置けた（AVDD–AVSS 72 → 75 個）。LVS では並列の MOS 容量が 1 つにまとまり、その面積（94,380 µm²、ネットリストは 90,604.8 µm²、ちょうど 75／72）だけが食い違い、AVDD／AVSS が不一致と出た。`make_core_netlist.py` の `N_DECAP_A` を 75 にして `eeg_core.spice` を作り直し（差はデカップリングの 3 行だけ）、LVS は一致。組み立ては同じ GDS を作る（sha256 が同じ）ので、DRC はその前の実行の結果（違反なし）がそのまま使える。
 - **結果（2 回目）**：配線 105 秒、チップ全体（穴埋め前）の DRC 違反なし、コアの LVS 一致（ネットリストを作り直したあと）。穴埋め（14 秒）のあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし。
 - **Magic DRC（2 回目、ダミー COMP を除く、`magic_check.py pre_20261024b`）**：最後まで走り、出たのは同じ 2 種類だけ（PRES／HRES.7 が 3,872 個、MIMTM.2 が 334 個）。MIMTM.2 はどれも FuseTop から 1.25 µm 以上（110 個が 1.25〜2 µm、224 個が 2〜5 µm）。
-- **wafer.space の precheck（2 回目、タグ pre_20261024b）**：「Precheck successfully completed」。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は同じく途中で落ちていて、上の `magic_check.py` が代わりの確認。穴埋めのあとの密度：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.8 %、Metal4 58.6 %、Metal5 65.0 %。**この形（`chip_top_fill.gds`、sha256 2e0209b3…）が D6 の直しをすべて入れた今のチップ。**
+- **wafer.space の precheck（2 回目、タグ pre_20261024b）**：「Precheck successfully completed」。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は同じく途中で落ちていて、上の `magic_check.py` が代わりの確認。穴埋めのあとの密度：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.8 %、Metal4 58.6 %、Metal5 65.0 %。この形（`chip_top_fill.gds`、sha256 2e0209b3…）は、下の 3 回目で置き換えた。
+
+## 組み直し（10/24、3 回目：B7 の DC 経路の対称化と B4 のラッチの対称化のあと）
+
+- **入れた変更**：AFE（0cb0fff4、B7 の (d)：DC 経路の片側に相を入れ替えた枝を足し、8 個のスイッチを出力チョッパの相 CDA2／CDB2 で動かす。回路も変わった）、量子化器（dbb2d657、B4：比較器のラッチを軸で鏡像に描き直し）。afe_top と adc_top の外形と端子は同じ。`chip_lay.py` は変えていない。
+- **コアのネットリスト**：`make_core_netlist.py` で作り直したが、`eeg_core.spice` は変わらなかった（ブロックのネットリストを読み込む形なので、AFE の回路の変更はそのまま LVS に入る）。デカップリングは 75 個のまま。
+- **結果**：チップ全体（穴埋め前）の DRC 違反なし、コアの LVS 一致。穴埋めのあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし。配線は 559 秒（ほかの解析と並べて回したため、前の 105〜114 秒より長い）。
+- **Magic DRC（3 回目、ダミー COMP を除く、`magic_check.py pre_20261024c`）**：最後まで走り、出たのは同じ 2 種類だけ（PRES／HRES.7 が 3,872 個、MIMTM.2 が 340 個）。MIMTM.2 はどれも FuseTop から 1.25 µm 以上（114 個が 1.25〜2 µm、226 個が 2〜5 µm）。
+- **wafer.space の precheck（3 回目、タグ pre_20261024c）**：「Precheck successfully completed」。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は同じく途中で落ちていて、上の `magic_check.py` が代わりの確認。穴埋めのあとの密度：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.8 %、Metal4 58.6 %、Metal5 65.1 %。**この形（`chip_top_fill.gds`、sha256 40e021fd…）が、D6 の直しと B7、B4 の直しをすべて入れた今のチップ。**

@@ -2,7 +2,7 @@
 
 RTL and simulation testbenches for the digital block of the GF180MCU EEG ADC: a continuous-time 2nd-order sigma-delta modulator with a 5-bit flash quantizer (31 comparators) and two 31-element unit DACs.
 
-Status (2026-10-23): RTL written and verified in simulation with Icarus Verilog 13. Since gate 1 (10/23, `documentation/gf180_gate1_20261023.md`) the digital logic is two blocks: `eeg_digital_top` (clocking, CIC, FIFO, SPI, registers, raw stream) and the ADC-side `eeg_adc_dig` (TH capture, code, DWA), which sits in the ADC next to the quantizer and the DAC drivers. Both blocks are hardened as LibreLane macros, timed at the 3.3 V corners of the 7-track library (`gf180/tapeout/digital/`, 10/23; see Timing assumptions). The code uses a plain synchronous SystemVerilog-2012 subset meant for Yosys/LibreLane: `always_ff`/`always_comb`, no latches, and no `initial` blocks, delays or classes in RTL.
+Status (2026-10-24): RTL written and verified in simulation with Icarus Verilog 13, including 4 s and 20 s end-to-end runs with code streams from the CT loop model and the LibreLane gate-level netlists of both macros in lockstep with the RTL (`documentation/gf180_digital_verification_20261024.md`). Since gate 1 (10/23, `documentation/gf180_gate1_20261023.md`) the digital logic is two blocks: `eeg_digital_top` (clocking, CIC, FIFO, SPI, registers, raw stream) and the ADC-side `eeg_adc_dig` (TH capture, code, DWA), which sits in the ADC next to the quantizer and the DAC drivers. Both blocks are hardened as LibreLane macros, timed at the 3.3 V corners of the 7-track library (`gf180/tapeout/digital/`, 10/23; see Timing assumptions). The code uses a plain synchronous SystemVerilog-2012 subset meant for Yosys/LibreLane: `always_ff`/`always_comb`, no latches, and no `initial` blocks, delays or classes in RTL.
 
 Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (512 kHz, R = 512): fs = 1.024 MHz, R = 1024, 37-bit CIC, shift by 12.
 
@@ -27,7 +27,12 @@ Numbers here supersede `documentation/gf180_digital_spi_proposal_20261008.md` (5
 | `model/sdm2_model.py` | 2nd-order 5-bit sigma-delta behavioral model (code-stream generator) |
 | `model/cic_golden.py` | Bit-exact golden model of `eeg_cic3`, plus a CRC-8 reference |
 | `model/gen_vectors.py` | Writes all stimulus and golden files to `build/` |
-| `run_tests.sh` | Runs everything and prints PASS/FAIL per test |
+| `model/ct2_codes.py` | Code streams from the CT 2nd-order 5-bit loop of `gf180/behavioral/ct2_dac2_options.py` (DAC2 at e3, DAC1 at e4), with the bit-exact CIC outputs, for the end-to-end test |
+| `model/e2e_spectrum.py` | Spectrum of the end-to-end test's 1 kSPS output: SNDR in 0.5..100 Hz, CIC3 droop and aliasing against theory, the same codes decimated in floating point |
+| `tb/tb_e2e.sv` | End-to-end test of `eeg_digital_sys` with a long code stream, checked at the ports only |
+| `tb/gl_shadow.sv` | The LibreLane gate-level netlists of both macros in lockstep with the RTL of a system testbench (all outputs and the wires between the blocks at every MCLK) |
+| `run_tests.sh` | Runs everything and prints PASS/FAIL per test (`--gl`: also the gate-level lockstep runs of `tb_spi` and `tb_top`) |
+| `run_e2e.sh` | End-to-end runs with the behavioral-loop code streams: 4 s and 20 s of output (`--gl`: with the gate-level netlists in lockstep) |
 
 ## Interface of `eeg_digital_top`
 
@@ -154,6 +159,7 @@ CHOP1           toggles only at e16, every 512/256/128/64/32 frames (1/2/4/8/16 
    - The analog quantizer must have its decision settled before e2 − t_setup, after clock-to-out, routing and comparator regeneration. It must hold the decision past e2 + t_hold, which needs an output latch (for example an SR latch after the StrongARM) that keeps the result until the next strobe.
    - The transistor quantizer (`gf180/tapeout/adc/eeg_quantizer.spice`) meets this: all TH bits settle within 4.0 ns of the CMP_STROBE edge at ss/−20 °C (2.3 ns typical) with 0.3 pF of routing on each TH, and a NOR SR latch holds them until the next strobe (`documentation/gf180_quantizer_20261022.md`).
    - For STA, TH is a 2-cycle path with a 15 ns input delay (strobe flip-flop, route, clock driver, comparator, latch, route back): `gf180/tapeout/digital/eeg_adc_dig/eeg_adc_dig.sdc`.
+   - On the chip (10/24, `gf180/tapeout/digital/chip_sta/`, with the chip wiring extracted from the core's LVS database), TH arrives 14–23 ns after MCLK at `eeg_adc_dig` at ss/125 °C (about 10 ns at tt): CMP_STROBE drives 0.26–0.43 pF to the quantizer from a buf_1. That is more than the 15 ns above, but the path inside `eeg_adc_dig` has the slack: the chip-level setup margin of TH is +1.0 ns in the worst combination (digital ss/125 °C/3.0 V, comparator ss/−20 °C, twice the coupling to the neighbours) and +6.3 ns with the coupling counted once.
    - Until 10/23 each TH bit was registered before the popcount, so an unresolved comparator could change the code by at most 1 LSB. Now the popcount precedes the register, and a comparator still unresolved at e2 could make the captured code (and the selection) inconsistent by more than 1 LSB. TH settles within about 4 ns of the strobe, more than 50 ns before e2, so this needs a regeneration time of over 100 comparator time constants.
    - `tb_top` drives TH only from mid-cycle 1 to mid-cycle 2 and random bits otherwise, so it would catch a capture at the wrong edge.
 2. **Critical path and STA (10/23).**
@@ -286,7 +292,13 @@ Run everything:
 
 ```
 ./run_tests.sh          # about 2 minutes; --quick skips the 20k-output CIC stream
+./run_tests.sh --gl     # adds tb_spi and tb_top with the gate-level netlists in lockstep (about 5 minutes more)
+./run_e2e.sh s4 s20     # end-to-end, 4 s and 20 s of output (about 30 minutes and 2.5 hours)
+./run_e2e.sh --gl short # the first 100 samples with the gate-level netlists in lockstep (about 15 minutes)
+for k in 0 1 2 3 4; do ./run_e2e.sh --gl s4:$k/5 & done   # s4 in 5 chunks, each from reset (about 2 hours in parallel)
 ```
+
+`run_e2e.sh` uses `PYTHON` (default `../../tools/venv310/bin/python`, numpy and scipy) for the code streams and the spectrum, and both `--gl` options use the cell models of the PDK in the LibreLane work copy (`PDK_ROOT`).
 
 The script runs the golden-model self checks and generates vectors into `build/`. It then compiles and runs every testbench with `iverilog -g2012 -Wall`, which compiles without warnings. It prints one PASS/FAIL line per test and keeps one log per test in `build/logs/`. No waveform files are written. `build/` holds about 21 MB, mostly the 20.6 MB CIC stream, and is listed in `rtl/.gitignore`.
 
@@ -302,6 +314,8 @@ The script runs the golden-model self checks and generates vectors into `build/`
 | cic_stream | `tb_cic` | 20.6 M codes from the 2nd-order 5-bit sigma-delta model (sine plus DC plus noise, fixed seed) with a mid-stream clear and a clear in the same cycle as an input. Every strobe is compared, including the start-up strobes after each clear. Covers wrap-around of i2, i3 and all 3 comb stages, and rounding ties. |
 | spi_fifo_regs | `tb_spi` | `eeg_digital_sys` with constant TH, master asynchronous to MCLK at 2 MHz and 1 MHz. See the list below. |
 | top_dlc2 / top_dlc5 | `tb_top` | Integrated test of `eeg_digital_sys` with DAC_LOAD_CYCLE = 2 and 5. See the list below. |
+| spi_fifo_regs_gl / top_dlc2_gl (`--gl`) | `tb_spi`, `tb_top` + `gl_shadow` | The same tests with the final netlists of both macros (`gf180/tapeout/layout/gds/*.nl.v`, the ones on the chip, cell models without timing) driven with the same inputs: all 108 outputs of `eeg_digital_sys` and the 9 wires between the blocks (ADC_RST_N, TH_CAPTURE, DAC_LOAD, DWA_EN, CODE[4:0]) must equal the RTL at every MCLK falling edge, 4-state (an X is a mismatch) |
+| short / s4 / s20, s4:K/N (`run_e2e.sh`) | `tb_e2e` | See the list below. `s4:K/N` runs chunk K of N of the s4 stream from reset (the gate-level s4 in parallel runs; the golden outputs come from the chunk's own codes). |
 
 `tb_spi` checks:
 - ID, VERSION, FORMAT, ODR, defaults and undefined addresses.
@@ -332,7 +346,32 @@ The script runs the golden-model self checks and generates vectors into `build/`
 - CHOP edges fall on CMP_STROBE edges, and every CHOP phase is 128 MCLK (CHOP_FAST stays at its default, 128 kHz).
 - With the default BLANK_LEN = 7, CHOP_BLANK is high from 1 MCLK before to 7 MCLK after every CHOP_OUT edge, and there are no other pulses. The edge at the first MCLK edge after reset is exempt.
 
+`tb_e2e` checks (ports only; the code stream from `model/ct2_codes.py`):
+- TH as in `tb_top` (valid only around the capture edge); after a pre-roll of all codes, the start command is released in frame cycle 8 and the stream starts in the next frame.
+- Every sample read over SPI (2 MHz, at each DRDY_N) is bit-exact against the golden CIC output of the stream, with STATUS = 0x80 (no overrun), SEQ = 0, 1, 2, ... and the CRC; the samples are written out for `model/e2e_spectrum.py`.
+- Every frame: SEL1/SEL2 against a reference DWA (pointer from reset), popcount(SEL) = 31 − c of the previous frame at the next CMP_STROBE, SEL changing only (DAC_LOAD_CYCLE + 1) MCLK after the CMP_STROBE rise, DAC_CLK one MCLK later and one MCLK wide, the RAW word, CHOP edges on CMP_STROBE with 128-MCLK phases, CHOP_BLANK from 1 MCLK before to 7 MCLK after each CHOP_OUT edge, CHOP1 (4 kHz) edges at e16 every 128 frames.
+- Streams: `s4` 32 Hz at the chip full scale (0.279 V pk at the ADC input) + 44.5 mV DC (the largest offset-DAC residual) + 2 mV pk at 128 kHz, 4250 samples (0.25 s settling + 4 s); `s20` 0.5 Hz at full scale − 44.5 mV DC + 900 Hz at 27.9 mV pk (aliases to 100 Hz through the CIC3), 20250 samples (0.25 s + 20 s).
+
 The `tb_dwa` element-usage check runs over its first 50,640 loads. A mutation check outside the repository confirmed that the testbenches catch bugs: 12 injected RTL bugs were all detected (rounding, integrator form, NSKIP, DWA pointer, popcount, CRC polynomial, FIFO overwrite, partial-frame pop, capture edge, chop_out delay, RAW bit order, W1C priority). Four more for the chop-rate logic were also detected by `tb_clkgen`: switching every 8th frame, switching immediately, ignoring the previous superperiod's rate for CHOP_OUT, and no post-reset gating of CHOP_OUT. Four more for CHOP_BLANK were detected as well: width off by one, length not latched, rising edges only, and following CHOP instead of CHOP_OUT. Five more for the early start of CHOP_BLANK were also detected: predicting with the old CHOP_DLY, CHOP_OUT without the extra CHOP_DLY register, BLANK_LEN instead of BLANK_LEN + 1 cycles, starting at the edge, and wrong rate bookkeeping at a wrap. Three more for gate 1 (10/23) were detected by `tb_spi`: no ADC_ZERO forcing of CHOP_BLANK, the DBG_SEL pairs swapped, and the debug pair taking priority over the raw stream.
+
+### Results (runs of 2026-10-24: gate level and end to end)
+
+`./run_tests.sh --gl` (clean `build/`, Icarus Verilog 13.0, Python 3.9.6, about 7 minutes): the 13 tests below pass with the same counts as on 10/23, and
+
+```
+PASS  spi_fifo_regs_gl  101s  gate level == RTL at every MCLK falling edge (994067 cycles, 117 signals: all outputs of both macros and the wires between them)
+PASS  top_dlc2_gl       195s  gate level == RTL at every MCLK falling edge (1380777 cycles, 117 signals: all outputs of both macros and the wires between them)
+== summary: 15 passed, 0 failed ==
+```
+
+`./run_e2e.sh` (`documentation/gf180_digital_verification_20261024.md`):
+
+| Case | Result |
+|---|---|
+| s4 | 4250 samples bit-exact, 4.35 M frames of per-frame checks (SEL, popcount, ELD 91.55 ns, DAC_CLK, RAW, 1.09 M CHOP / CHOP_BLANK edges, 34016 CHOP1 edges); 1 kSPS output SNDR 148.0 dB in 0.5..100 Hz (the 24-bit rounding, 0.024 nVrms at the electrode) |
+| s20 | 20250 samples bit-exact (identical to the golden file), 20.74 M frames of per-frame checks (5.18 M CHOP / CHOP_BLANK edges, 162016 CHOP1 edges); SNDR 148.1 dB, the 900 Hz tone aliases to 100 Hz at −57.69 dB (CIC3 theory −57.68 dB) |
+| short `--gl` | 100 samples bit-exact, gate level == RTL over 3.35 M cycles |
+| s4:K/5 `--gl` | the 5 chunks of s4 from reset in parallel: 4256 samples bit-exact, gate level == RTL over 139.8 M cycles |
 
 ### Results (run of 2026-10-23, after the eeg_adc_dig timing change; Icarus Verilog 13.0, Python 3.13.9)
 
@@ -389,7 +428,8 @@ The rounding test adds 25,156 vectors with 10,077 saturating cases.
 
 ## Open items
 
-- **Synthesis and STA (10/23).** Both blocks are LibreLane macros (`gf180/tapeout/digital/`; GDS, LEF, netlists and a gate-level CDL for chip LVS in `gf180/tapeout/layout/gds/`). Setup and hold are met at all 3.3 V corners. The worst setup slack is at ss/125 °C/3.0 V: +5.36 ns for `eeg_adc_dig` and +1.10 ns for `eeg_digital_top`. At tt it is +14.78 and +15.62 ns, and at ss/−40 °C/3.0 V (OpenSTA) +12.68 and +10.48 ns. The worst hold slack is at ff: +0.20 and +0.19 ns. KLayout and magic DRC are clean, LVS matches and there are no antenna violations. What remains are design-rule warnings only: max transition (3 ns limit) on a few nets at ss/125 °C, and max capacitance (0.2 pF limit) and max fanout (10) on clock-tree nets. All are far inside the library limits (clkbuf_16: 5.7 pF, 8.6 ns). The CS_N → MISO_OE path is combinational. The two blocks share MCLK, and the MCLK skew between their pins must stay below about 1 ns (the hold margin at ff of the strobes from `eeg_digital_top`).
+- **Synthesis and STA (10/23).** Both blocks are LibreLane macros (`gf180/tapeout/digital/`; GDS, LEF, netlists and a gate-level CDL for chip LVS in `gf180/tapeout/layout/gds/`). Setup and hold are met at all 3.3 V corners. The worst setup slack is at ss/125 °C/3.0 V: +5.36 ns for `eeg_adc_dig` and +1.10 ns for `eeg_digital_top`. At tt it is +14.78 and +15.62 ns, and at ss/−40 °C/3.0 V (OpenSTA) +12.68 and +10.48 ns. The worst hold slack is at ff: +0.20 and +0.19 ns. KLayout and magic DRC are clean, LVS matches and there are no antenna violations. What remains are design-rule warnings only: max transition (3 ns limit) on a few nets at ss/125 °C, and max capacitance (0.2 pF limit) and max fanout (10) on clock-tree nets. All are far inside the library limits (clkbuf_16: 5.7 pF, 8.6 ns). The CS_N → MISO_OE path is combinational. The two blocks share MCLK, and the MCLK skew between their pins must stay below about 1 ns (the hold margin at ff of the strobes from `eeg_digital_top`). On the chip (10/24) the skew is below 0.02 ns, and the margins between the blocks are at least +9.9 ns (setup) and +1.89 ns (hold) at all nine corners (`documentation/gf180_digital_verification_20261024.md`).
+- **Output drive on the chip (10/24).** LibreLane sized every output for its default load (73 fF), so all outputs of `eeg_digital_top` are buf_1. On the chip CHOP, CHOP_OUT, CHOP_BLANK, CHOP_EN and AFE_RST run about 3.3 mm to the AFE clock driver (0.6–1.7 pF), CHOP1 0.46–0.75 pF and CMP_STROBE 0.26–0.43 pF, beyond the 0.46 pF of buf_1 for five to seven of them. At ss/125 °C the rising edges at the receivers are 20.6 ns (CHOP, 10–90 %), 25 ns (CHOP_BLANK) and 8.8 ns (CMP_STROBE). The AFE and OTA1 chopper drivers still switch each phase once per edge with unchanged dead times (transistor-level check, `gf180/tapeout/digital/chip_sta/drive_check.py`). The quantizer and the DAC1 break pulse are also unaffected apart from the delay, the chip-level TH margin is +4.6 ns at transistor level in the worst combination, and crosstalk from the slow lines onto their static neighbours stays below 0.8 V. A candidate run `d1` with the chip loads as per-port `set_load` (`gf180/tapeout/digital/eeg_digital_top/eeg_digital_top_d1.sdc`: buf_16 / clkbuf_16 on the long nets, same footprint and pins, clean, gate level equal to the RTL) brings the edges below 3 ns and the TH margin to +9.7 ns, but its fast edges raise the crosstalk onto the static lines that stay buf_1 by 1.2–3 times. Since the current macros meet everything, `d1` is not used.
 - **ELD in the loop design.** The XSPICE reference loop updates the DACs at the comparator clock, with almost no ELD. The RTL adds (DAC_LOAD_CYCLE + 1) MCLK = 91.6 ns, which the CT loop design must include or compensate.
 - **DWA on DAC2.**
   - The XSPICE controller applies DWA only to DAC1 and drives DAC2 with the straight held thermometer code.
@@ -400,5 +440,6 @@ The rounding test adds 25,156 vectors with 10,077 saturating cases.
 - **Comparator latch.** The comparator needs an output latch, and its regeneration plus latch delay must fit before e2 (about 61 ns minus margins).
 - **Not covered in simulation:**
   - Wrap of i1, which needs more than 2·10^9 full-scale inputs.
-  - Gate-level and timing simulation.
+  - Timing simulation (SDF); the gate-level netlists are run without delays, in lockstep with the RTL (`--gl`), and timing is covered by STA.
   - Metastability effects on the synchronizers.
+- **Aliasing of the CIC3.** The output is decimated to 1 kSPS by the sinc³ alone, so content at 0.9–1.1 kHz (and around the other multiples of 1 kHz) folds into the band with only −57.7 dB (900 Hz) and −62.9 dB (1100 Hz) of attenuation at the band edge (100 Hz), −77 to −79 dB into the middle of the band (950 / 1050 Hz → 50 Hz); the end-to-end run confirms −57.69 dB at 900 Hz bit-exactly. White noise folds negligibly, but interference near 1 kHz must be limited on the input side (electrode filtering, AFE bandwidth).

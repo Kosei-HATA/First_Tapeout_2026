@@ -2,12 +2,19 @@
 # Run all digital-block tests: golden-model self checks, vector generation,
 # unit testbenches and the integrated top-level tests.
 #
-# usage: ./run_tests.sh [--quick]
+# usage: ./run_tests.sh [--quick] [--gl]
 #   --quick  skip the long CIC stream test (20,000+ outputs, about 1 minute)
+#   --gl     also run tb_spi and tb_top (DAC_LOAD_CYCLE = 2) with the LibreLane
+#            gate-level netlists of both macros in lockstep (tb/gl_shadow.sv):
+#            every output and inter-block wire equal to the RTL at every MCLK
+#            (about 10 minutes more)
 #
 # Tools (override with environment variables):
 #   IVERILOG (default: iverilog), VVP (default: vvp),
 #   PYTHON   (default: /opt/homebrew/anaconda3/bin/python3 if present, else python3)
+#   PDK_ROOT (default: the LibreLane work copy's gf180mcu; cell models for --gl)
+#   GL_TOP_NL, GL_ADC_NL (default: the chip's netlists in ../layout/gds/), GL_TAG (a
+#   suffix for the names of the --gl tests, e.g. a candidate macro run)
 # Outputs go to build/ (vectors, compiled simulations, one log per test).
 # No waveform files are written.
 
@@ -26,11 +33,23 @@ if [ -z "${PYTHON:-}" ]; then
 fi
 
 QUICK=0
-[ "${1:-}" = "--quick" ] && QUICK=1
+GL=0
+for arg in "$@"; do
+    case $arg in
+        --quick) QUICK=1 ;;
+        --gl)    GL=1 ;;
+        *) echo "usage: $0 [--quick] [--gl]"; exit 1 ;;
+    esac
+done
+PDK_ROOT=${PDK_ROOT:-/Users/noah/Codings/ws_gf180/eeg_padring/gf180mcu}
+SCL=$PDK_ROOT/gf180mcuD/libs.ref
+GL_TOP_NL=${GL_TOP_NL:-../layout/gds/eeg_digital_top.nl.v}
+GL_ADC_NL=${GL_ADC_NL:-../layout/gds/eeg_adc_dig.nl.v}
+GLS=${GL_TAG:+_$GL_TAG}
 
 BUILD=build
 LOGS=$BUILD/logs
-mkdir -p "$LOGS"
+mkdir -p "$LOGS" "$BUILD/gl"
 
 RTL="eeg_clkgen.sv eeg_chop1.sv eeg_therm2bin.sv eeg_dwa.sv eeg_rnd_sat.sv eeg_cic3.sv
      eeg_fifo.sv eeg_regs.sv eeg_spi_slave.sv eeg_raw.sv eeg_digital_top.sv eeg_adc_dig.sv
@@ -56,12 +75,24 @@ run_python() {
     fi
 }
 
-# run_sim name top "extra iverilog args" "plusargs"
+# run_sim name top "extra iverilog args" "plusargs" [gl]
+# gl: add the gate-level netlists in lockstep (second root gl_shadow); no -Wall,
+# since the cell models warn about implicit wires and inherited timescales
 run_sim() {
-    local name=$1 top=$2 ivargs=$3 plusargs=$4
+    local name=$1 top=$2 ivargs=$3 plusargs=$4 gl=${5:-}
     local log=$LOGS/$name.log t0=$SECONDS
+    local flags=$IVFLAGS extra="" roots="-s $top"
+    if [ -n "$gl" ]; then
+        sed 's/^module eeg_digital_top (/module eeg_digital_top_gl (/' "$GL_TOP_NL" > $BUILD/gl/eeg_digital_top_gl.v
+        sed 's/^module eeg_adc_dig (/module eeg_adc_dig_gl (/' "$GL_ADC_NL" > $BUILD/gl/eeg_adc_dig_gl.v
+        flags="-g2012 -I tb -DFUNCTIONAL -DTB=$top"
+        roots="-s $top -s gl_shadow"
+        extra="tb/gl_shadow.sv $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/gf180mcu_fd_sc_mcu9t5v0.v
+               $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/gf180mcu_fd_sc_mcu7t5v0.v
+               $BUILD/gl/eeg_digital_top_gl.v $BUILD/gl/eeg_adc_dig_gl.v"
+    fi
     # shellcheck disable=SC2086
-    if ! $IVERILOG $IVFLAGS $ivargs -o "$BUILD/$name.vvp" -s "$top" $RTL "tb/$top.sv" > "$log" 2>&1; then
+    if ! $IVERILOG $flags $ivargs -o "$BUILD/$name.vvp" $roots $RTL "tb/$top.sv" $extra > "$log" 2>&1; then
         record "$name" FAIL $((SECONDS - t0)) "compile error, see $log"
         return
     fi
@@ -69,7 +100,9 @@ run_sim() {
     $VVP -n "$BUILD/$name.vvp" $plusargs >> "$log" 2>&1
     local result
     result=$(grep -E "^(PASS|FAIL)" "$log" | tail -n 1)
-    if [ -n "$result" ] && ! grep -q -E "^FAIL" "$log"; then
+    if [ -n "$gl" ] && ! grep -q -E "^PASS: gate level" "$log"; then
+        record "$name" FAIL $((SECONDS - t0)) "no gate-level result, see $log"
+    elif [ -n "$result" ] && ! grep -q -E "^FAIL" "$log"; then
         record "$name" PASS $((SECONDS - t0)) "${result#PASS: }"
     else
         record "$name" FAIL $((SECONDS - t0)) "${result:-no result line, see $log}"
@@ -101,6 +134,11 @@ fi
 run_sim spi_fifo_regs tb_spi     "" ""
 run_sim top_dlc2      tb_top     "-Ptb_top.DLC=2 -Ptb_top.NSAMP=40" ""
 run_sim top_dlc5      tb_top     "-Ptb_top.DLC=5 -Ptb_top.NSAMP=12" ""
+if [ $GL -eq 1 ]; then
+    echo "gate level: $GL_TOP_NL, $GL_ADC_NL"
+    run_sim spi_fifo_regs_gl$GLS tb_spi "" "" gl
+    run_sim top_dlc2_gl$GLS      tb_top "-Ptb_top.DLC=2 -Ptb_top.NSAMP=40" "" gl
+fi
 
 echo
 echo "== summary: $npass passed, $nfail failed =="

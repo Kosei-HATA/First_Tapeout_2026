@@ -98,13 +98,14 @@ def load(d):
     return x[:, 0], x[:, 1], x[:, 3], x[:, 5], x[:, 7]     # t, OUTP-OUTN, OPI-ONI, CDA, CDB
 
 
-def periods(t, vo, cda, cdb, t0, t1):
-    """Per chopper period from the first phase-A edge at or after t0: held level in phase A
-    and phase B, the period average, and the average over each of the 8 ADC clocks."""
+def periods(t, vo, cda, cdb, t0, t1, n=None):
+    """Per chopper period from the first phase-A edge at or after t0 (n periods, or as many
+    as end before t1): held level in phase A and phase B, the period average, and the
+    average over each of the 8 ADC clocks."""
     q = np.concatenate([[0.0], np.cumsum(0.5 * (vo[1:] + vo[:-1]) * np.diff(t))])
     e0 = first_edge(t0)
     rows, clk = [], []
-    for k in range(int((t1 - e0) / TCH + 1e-9)):
+    for k in range(n if n is not None else int((t1 - e0) / TCH + 1e-9)):
         a, b = e0 + k * TCH, e0 + (k + 1) * TCH
         s = (t >= a) & (t < b)
         qe = np.interp(a + TADC * np.arange(9), t, q)
@@ -204,7 +205,9 @@ def main():
             d = job_dir(f"sine_{v}_{dc}_{p.FCH / n:g}Hz" + (f"_fast{a.fast:g}" if a.fast != 1 else ""))
             p.run(d, deck(v, dc, tstop=tstop, sine_mv=FS_MV, div=n, fast=a.fast))
             t, vo, va, cda, cdb = load(d)
-            r, _ = periods(t, vo, cda, cdb, a.fft0, tstop)
+            # exactly nper x n periods (coherent FFT), from the last phase-A edge at or before
+            # fft0; from the first edge after it only nper x n - 1 periods end before tstop
+            r, _ = periods(t, vo, cda, cdb, a.fft0 - TCH, tstop, n=nper * n)
             per = r[:, 3]
             spec = np.abs(np.fft.rfft(per - per.mean())) / (len(per) / 2)
             h = [spec[nper * k] for k in range(1, 6)]

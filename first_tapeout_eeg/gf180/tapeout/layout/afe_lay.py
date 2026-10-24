@@ -21,7 +21,8 @@ Hand-drawn wiring (the signal path is in series with the electrodes: tracker D6)
     buses along the core's width and on over the output section; the offset DAC's INP /
     INN stubs onto those bars;
   - WP / WN and INN taps for the output section, the P side's INP pins straight into the
-    INP fill (fill_drop); the DC-path switches (sc_wiring);
+    INP fill (fill_drop); the DC-path switches, two per side (sc_wiring), and their gate
+    lines CDA2 / CDB2 from the east ports to the P side's switches, between AVSS shields;
   - AVSS / AVDD Metal5 rails from the east edge over the output section to the core's
     Metal4 supply rows over its tails (the core's 19 mA comes from the Ch-A side: the
     west of the band is the input chopper's).
@@ -89,13 +90,20 @@ def section_cells(a):
     pm = dict(w=10.0, l=2.0, seq=["VDD", "ND", "ND", "ND", "VDD", "ND", "VBP", "ND", "VDD", "ND", "ND", "ND", "VDD",
                                   "ND", "VBP", "ND", "VDD"], order=["VDD", "ND", "VBP"])
     C["cmfb_p"] = an.multi_strip_cell(a, "afe_cmfb_p", "p", [pm, pm], bulk="VDD")
-    # reset switches (W1/L1) and the DC-path switched capacitors (W0.5/L0.28, CIA then CIB)
+    # reset switches (W1/L1) and the DC-path switched capacitors (W0.5/L0.28, gate pins CIA then
+    # CIB, wired to SC_GATES)
     C["rstp"] = an.strip_cell(a, "afe_rstp", "n", 1.0, 1.0, ["INP", "RST", "ONI"], bulk="VSS")
     C["rstn"] = an.strip_cell(a, "afe_rstn", "n", 1.0, 1.0, ["INN", "RST", "OPI"], bulk="VSS")
     C["scp"] = an.strip_cell(a, "afe_scp", "n", 0.5, 0.28, ["INP", "CIA", "SCP", "CIB", "ONI"],
                              gates={"CIA": ("t", 0), "CIB": ("t", 1)}, bulk="VSS")
     C["scn"] = an.strip_cell(a, "afe_scn", "n", 0.5, 0.28, ["INN", "CIA", "SCN", "CIB", "OPI"],
                              gates={"CIA": ("t", 0), "CIB": ("t", 1)}, bulk="VSS")
+    # the DC path's second branch, phases swapped (tracker B7): the same strip with the gates
+    # exchanged, so that its pins and gate tracks sit where the first branch's do
+    C["scp2"] = an.strip_cell(a, "afe_scp2", "n", 0.5, 0.28, ["INP", "CIB", "SCP2", "CIA", "ONI"],
+                              gates={"CIB": ("t", 0), "CIA": ("t", 1)}, bulk="VSS")
+    C["scn2"] = an.strip_cell(a, "afe_scn2", "n", 0.5, 0.28, ["INN", "CIB", "SCN2", "CIA", "OPI"],
+                              gates={"CIB": ("t", 0), "CIA": ("t", 1)}, bulk="VSS")
     # Cpf trim logic: eeg_afe_tg (NMOS W1, PMOS W2, here two fingers each) and the inverters
     C["tg"] = lg.tg_cell(a, "afe_trim_tg", 2, 2, 0.5, 1.0, a="A", y="Y", gn="G", gp="GN")
     p, n = lg.inv_seq(1)
@@ -104,7 +112,7 @@ def section_cells(a):
 
 
 def gate_diodes(a, x, y, h):
-    """Antenna diodes for the DC-path switch's gates (CIA2 / CIB2, 0.14 um2 each, reached by
+    """Antenna diodes for the DC-path switch's gates (CDA2 / CDB2, 0.14 um2 each, reached by
     long Metal3 from the east ports: ANT.4): an N+ diffusion just above the cell (no diode
     marker, so the LVS sees a conductor while the antenna check counts its area), tied by
     Metal2 straight up from the gate pin (afe_scp / afe_scn pins CIA at x 1.51..3.11, CIB
@@ -117,6 +125,11 @@ def gate_diodes(a, x, y, h):
 
 
 SC_STUB = 21.0                 # Metal3 stubs on the DC-path switch's pins: up to here above the cell
+# the DC-path switches' gates (cell pins CIA / CIB) on the output-chopper phases: the input-
+# chopper phases less the blanking window, so that no switch opens during an input-chopper
+# edge (on CIA2 / CIB2 they sampled its transient: 1.6 mV of offset, 4.5 mV p-p ripple in the
+# extracted layout, tracker B7)
+SC_GATES = {"CIA": "CDA2", "CIB": "CDB2"}
 
 
 def fill_drop(a, x, y, fill, net):
@@ -130,9 +143,10 @@ def fill_drop(a, x, y, fill, net):
 def sc_wiring(a, x, y, scn, sc, cap, fill=None):
     """The same wiring on both sides of the DC-path switched capacitor (cell sc at x, y,
     its MIM cap 2 um east): the middle node scn (SCP / SCN) to the MIM's top plate on
-    Metal2 / Metal4, under a router keep-out; the gate lines CIA2 / CIB2 and the two
+    Metal2 / Metal4, under a router keep-out; the gate lines (SC_GATES) and the two
     signal pins (ONI / OPI west of the gate stubs, INP / INN east) on Metal3 stubs straight
-    up from their pins, which the router reaches at their tops. In the first layout the
+    up from their pins, which the router reaches at their tops (the P side's gate stubs are
+    joined by hand: wiring()). In the first layout the
     router brought P side's CIB2 along under SCP's Metal4: 0.57 fF against 0.04 fF on the
     N side, an AFE output ripple of 39 mV p-p (tracker D6). fill: the P side's INP stub
     runs on up into the INP fill starting at this y (fill_drop), no router pin. Returns
@@ -150,7 +164,8 @@ def sc_wiring(a, x, y, scn, sc, cap, fill=None):
     gx0, px = GRID[0], GRID[1]
     pins, used = {}, []
     sig = [p for p in sc.pins if p not in (scn, "CIA", "CIB", "VSS")]          # INP / ONI or INN / OPI
-    order = [("CIA", "CIA2", 0), ("CIB", "CIB2", 0)] + [(p, p, d) for p, d in zip(sorted(sig, key=lambda p: sc.pins[p][0][2]), (-1, 1))]
+    order = [(g_, n_, 0) for g_, n_ in SC_GATES.items()] + \
+        [(p, p, d) for p, d in zip(sorted(sig, key=lambda p: sc.pins[p][0][2]), (-1, 1))]
     for pn, net, side in order:
         g_ = sc.pins[pn][0]
         if side == 0:                                     # gate pins: the column nearest the pin centre
@@ -281,9 +296,9 @@ def build():
     # CFB_P's top-plate bar by Metal5, the switches' INP pins by Metal3 drops (fill_drop)
     y_fill = I["rows_pn"][0] + 2.0
     a.box("metal5", x0 + 2.0, ytop + C["cfb"].height - 1.6, x0 + C["cfb"].width, y_fill + 0.6)
-    # switches next to the buses: reset (INP-ONI / INN-OPI) and the DC-path switched
-    # capacitor (CIA2 then CIB2, with its 54.5 fF MIM to AVSS)
-    sw = {}
+    # switches next to the buses: reset (INP-ONI / INN-OPI) and the DC path's two switched
+    # capacitors (phase A then B, and the phases swapped, on the output-chopper phases
+    # SC_GATES; each with its 54.5 fF MIM to AVSS)
     for side, y0_, (rst, sc, csc, scn) in (("P", ytop, ("rstp", "scp", "CSCP", "SCP")), ("N", yb, ("rstn", "scn", "CSCN", "SCN"))):
         x = sw_x[side]
         p1 = cell_at(C[rst], x, y0_, f"XRST{side}", {"VSS": "AVSS", "RST": "RST2"})
@@ -291,14 +306,22 @@ def build():
             s = C[rst].pins["INP"][0]
             fill_drop(a, x + s[1] + 0.4, y0_ + (s[2] + s[4]) / 2, y_fill, "INP")
         x += C[rst].width + 2.0
-        p2 = cell_at(C[sc], x, y0_, f"XSC{side}", {"VSS": "AVSS", "CIA": "CIA2", "CIB": "CIB2"})
-        gate_diodes(a, x, y0_, C[sc].height)
-        cell_at(C["m5"], x + C[sc].width + 2.0, y0_, csc, {"TOP": scn, "BOT": "AVSS"})
         fill = y_fill if side == "P" else None
-        for n, segs in sc_wiring(a, x, y0_, scn, C[sc], C["m5"], fill).items():
-            nets[n] = [s for s in nets[n] if s not in p2.pins.get(n[:3], []) + p2.pins.get(n, [])] + segs
-        nets.pop(scn)
+        for k, (sc_, csc_, scn_) in enumerate(((sc, csc, scn), (sc + "2", csc + "2", scn + "2"))):
+            p2 = cell_at(C[sc_], x, y0_, f"XSC{side}{k + 1}", dict(SC_GATES, VSS="AVSS"))
+            gate_diodes(a, x, y0_, C[sc_].height)
+            cell_at(C["m5"], x + C[sc_].width + 2.0, y0_, csc_, {"TOP": scn_, "BOT": "AVSS"})
+            for n, segs in sc_wiring(a, x, y0_, scn_, C[sc_], C["m5"], fill).items():
+                pin = {v: k_ for k_, v in SC_GATES.items()}.get(n, n)
+                nets[n] = [s for s in nets[n] if s not in p2.pins.get(pin, [])]
+                if side == "P" and n in SC_GATES.values():     # joined by hand (wiring())
+                    I.setdefault("sc_p_gates", {}).setdefault(n, []).extend(segs)
+                else:
+                    nets[n] += segs
+            nets.pop(scn_)
+            x += C[sc_].width + 2.0 + C["m5"].width + 2.0
     nets.pop("INP")
+    I["sc_p_top"] = ytop + SC_STUB              # the P side's switch stubs end here (wiring())
     # the band between the rails: output chopper, CMFB, switches, trim logic
     S = bl.Shelves(a, x0 + 1.0, 527.0, W - x0 - 4.0, gap=2.0)
 
@@ -544,6 +567,8 @@ def w_entry(a, I, y_wn, y_wp):
 
 EAST_PORTS_LO = ["VBN", "VBCM", "BLP", "BLN", "VCM"]
 EAST_PORTS_OUT = ["OUTP", "OUTN"]         # on the rows of the ADC's INP / INN (adc_lay.WEST_PORTS)
+# (CIA2 / CIB2 stay as ports for the chip's wiring; nothing inside uses them since the DC path
+# runs on CDA2 / CDB2)
 EAST_PORTS_HI = ["RST2", "CIA2", "CIB2", "CDA2", "NCDA2", "CDB2", "NCDB2", "CPF0", "CPF1", "CPF2", "CPF3"]
 
 
@@ -661,6 +686,42 @@ def wiring(a, I):
             a.box("metal4", *box)
             a.label("metal4", n, xa + 1.5, y)
             pins.setdefault(n, []).append(("metal4",) + box)
+    # the DC path's gate lines (SC_GATES) to the P side's switches by hand: from their port
+    # stubs up the east corridor beside the hold capacitors (the only way up) in the two
+    # easternmost columns, an AVSS Metal3 shield west of them, then west over the switches on
+    # two Metal4 rows above the stubs, between AVSS rows, down to the gate stubs. A gate line
+    # rises at the end of each blanking window, and a coupling to WP / WN is a kick at the
+    # input (gain 300) at the start of the held window: the router had run CDB2 40 um along
+    # WP above the switches (3.3 fF against 0.1 fF to WN, a 3.9 mV spike at the start of
+    # phase B, 4.5 mV p-p, tracker B7). The N side's gate stubs are the router's.
+    k_e = int((W - 0.49 - gx0) / px)
+    gates = sorted(SC_GATES.values())
+    j0 = int((I["sc_p_top"] + 0.5 - gy0) / py) + 1           # the first row clear of the stubs' tops
+    yrow = {n: gy0 + (j0 + len(gates) - k) * py for k, n in enumerate(gates)}
+    ysh = (gy0 + j0 * py, gy0 + (j0 + len(gates) + 1) * py)
+    stubs = I["sc_p_gates"]
+    risers = []
+    for k, n in enumerate(gates):
+        y = pins[n][0][2] + 0.19                     # its port stub's row
+        xr = gx0 + (k_e - k) * px
+        a.box("via3", xr - 0.13, y - 0.13, xr + 0.13, y + 0.13)
+        seg = (xr - 0.19, y - 0.19, xr + 0.19, yrow[n] + 0.19)
+        a.wire("metal3", *seg, n)
+        pins[n].append(("metal3",) + seg)            # (the port stub stays a pin: the router keeps clear)
+        risers.append(y)
+        a.wire("metal4", min(s[1] for s in stubs[n]), yrow[n] - 0.19, xr + 0.19, yrow[n] + 0.19, n)
+        for s in stubs[n] + [("metal3",) + seg]:
+            a.wire("metal3", s[1], s[4] - 0.38, s[3], yrow[n] + 0.19, n)
+            xc = (s[1] + s[3]) / 2
+            a.box("via3", xc - 0.13, yrow[n] - 0.13, xc + 0.13, yrow[n] + 0.13)
+    xs = gx0 + (k_e - len(gates)) * px
+    shield = (xs - 0.19, min(risers) - 1.0, xs + 0.19, ysh[1] + 0.19)
+    a.wire("metal3", *shield, "AVSS")
+    pins["AVSS"].append(("metal3",) + shield)
+    xw = min(s[1] for n in gates for s in stubs[n]) - 0.6
+    for y in ysh:
+        a.wire("metal4", xw, y - 0.19, gx0 + k_e * px + 0.19, y + 0.19, "AVSS")
+        a.box("via3", xs - 0.13, y - 0.13, xs + 0.13, y + 0.13)
     return pins
 
 

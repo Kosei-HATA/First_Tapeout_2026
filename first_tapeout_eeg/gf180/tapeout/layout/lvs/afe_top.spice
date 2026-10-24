@@ -3,8 +3,9 @@
 * supply (the decap under offdac_n's MIMs, the 100 ohm resistors to AVDD / AVSS).
 * Nets that the chip joins outside the AFE are separate ports here: the driver's outputs
 * at the west edge (CIA CIB CDA NCDA CDB NCDB RST OFPH) and their copies at the output
-* section on the east edge (CIA2 CIB2 CDA2 NCDA2 CDB2 NCDB2 RST2), and the controls and
-* VCM of each offset-DAC half (_N on the bottom edge, _P on the west edge).
+* section on the east edge (CIA2 CIB2 CDA2 NCDA2 CDB2 NCDB2 RST2; CIA2 / CIB2 are unused
+* since the DC path runs on CDA2 / CDB2), and the controls and VCM of each offset-DAC half
+* (_N on the bottom edge, _P on the west edge).
 .subckt afe_top ELP
 + ELN OUTP OUTN VCM VBN VBCM BLP BLN RST2 CIA2 CIB2 CDA2
 + NCDA2 CDB2 NCDB2 CPF0 CPF1 CPF2 CPF3 CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST
@@ -31,12 +32,18 @@ XCPFN WN ONI cap_mim_2f0ff c_length=30.92u c_width=30.92u
 XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 AVDD AVSS eeg_afe_cpftrim
 XRSTP INP RST2 ONI AVSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 XRSTN INN RST2 OPI AVSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
-XSCP1 INP CIA2 SCP AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-XSCP2 SCP CIB2 ONI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP1 INP CDA2 SCP AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP2 SCP CDB2 ONI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 XCSCP SCP AVSS cap_mim_2f0ff c_length=5u c_width=5u
-XSCN1 INN CIA2 SCN AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-XSCN2 SCN CIB2 OPI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP3 INP CDB2 SCP2 AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP4 SCP2 CDA2 ONI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCSCP2 SCP2 AVSS cap_mim_2f0ff c_length=5u c_width=5u
+XSCN1 INN CDA2 SCN AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN2 SCN CDB2 OPI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 XCSCN SCN AVSS cap_mim_2f0ff c_length=5u c_width=5u
+XSCN3 INN CDB2 SCN2 AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN4 SCN2 CDA2 OPI AVSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XCSCN2 SCN2 AVSS cap_mim_2f0ff c_length=5u c_width=5u
 * eeg_afe_amp: input chopper (CIA / CIB from the driver), core, output chopper (CDA2 ...
 * from the east edge), CMFB
 XTG ELP ELN WP WN CIA NCIA CIB NCIB AVDD AVSS afe_tgin

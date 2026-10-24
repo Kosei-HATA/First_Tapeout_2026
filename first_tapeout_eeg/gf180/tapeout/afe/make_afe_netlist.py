@@ -50,9 +50,12 @@ eeg_afe_offdac cancels (1 - 2 S) x magnitude x 0.311 mV (differential, at the
 electrodes), range +-39/79/159/318 mV with 1/2/3/4 groups enabled. Only the caps of
 the set magnitude bits switch, each through a series resistor that gives all bits the
 same charge time constant (65 ns, about RS x Cin at RS = 100 ohm). INP/INN DC path: a switched-capacitor resistor per side
-(54.52 fF, the smallest MIM cap, clocked by the input-chopper phases, about 143 Mohm at
-128 kHz) from the amplifier input to the opposite output, in parallel with Cf; the reset
-switch stays.
+from the amplifier input to the opposite output, in parallel with Cf: two branches of
+54.52 fF (the smallest MIM cap) clocked by the output-chopper phases CDA / CDB (the
+input-chopper phases less the blanking window, so that the DC path samples no chopper
+edge), the second with the phases swapped, so that the charge balances on the average of
+both phases (one branch alone holds the phase-B output and doubles phase A: tracker B7,
+10/24), about 72 Mohm at 128 kHz; the reset switch stays.
 
 Usage: python3 make_afe_netlist.py [--check] [--tau 65e-9] [--rout 0] [--chold 30e-12] [--out <path>]
        (--tau, --rout, --chold with --out: study variants of the DAC time constant and of an
@@ -282,14 +285,26 @@ XCPF WP WN OPI ONI VCM CPF0 CPF1 CPF2 CPF3 VDD VSS eeg_afe_cpftrim
 XRSTP INP RST ONI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 XRSTN INN RST OPI VSS nfet_03v3 W=1u L=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5
 * INP/INN DC path: switched-capacitor resistor to the opposite output (parallel to Cf),
-* {C_SC * 1e15:.4g} fF per side (the smallest MIM cap), one transfer per chopper period
-* (about {1 / (128e3 * C_SC) / 1e6:.0f} Mohm at 128 kHz)
-XSCP1 INP CIA SCP VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-XSCP2 SCP CIB ONI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+* two branches per side with the phases swapped, {C_SC * 1e15:.4g} fF each (the smallest MIM
+* cap): one charges from the input in phase A and dumps into the output in phase B, the
+* other the reverse, so the charge balances on the average of both phases (one branch
+* alone holds the phase-B output: tracker B7); two transfers per chopper period
+* (about {1 / (2 * 128e3 * C_SC) / 1e6:.0f} Mohm at 128 kHz). The switches run on the output-chopper
+* phases CDA / CDB (the input-chopper phases less the blanking window), so that no switch
+* opens during an input-chopper edge (opening with CIA / CIB there sampled its transient:
+* 1.6 mV of offset in the extracted layout, tracker B7)
+XSCP1 INP CDA SCP VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP2 SCP CDB ONI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 {chr(10).join(mim("CSCP", "SCP", "VSS", C_SC))}
-XSCN1 INN CIA SCN VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
-XSCN2 SCN CIB OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP3 INP CDB SCP2 VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCP4 SCP2 CDA ONI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+{chr(10).join(mim("CSCP2", "SCP2", "VSS", C_SC))}
+XSCN1 INN CDA SCN VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN2 SCN CDB OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
 {chr(10).join(mim("CSCN", "SCN", "VSS", C_SC))}
+XSCN3 INN CDB SCN2 VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+XSCN4 SCN2 CDA OPI VSS nfet_03v3 W=0.5u L=0.28u nf=1 m=1
+{chr(10).join(mim("CSCN2", "SCN2", "VSS", C_SC))}
 XOFF INP INN VCM OFPH OFS {bits} OFEN0 OFEN1 OFEN2 OFEN3 VDD VSS eeg_afe_offdac
 XAMP ELP ELN WP WN INP INN OPI ONI {'OUTPX OUTNX' if ROUT else 'OUTP OUTN'} VCM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS eeg_afe_amp
 {f'* output low-pass: {ROUT:g} ohm from the output TGs into the hold capacitors{chr(10)}ROUTP OUTPX OUTP {ROUT:g}{chr(10)}ROUTN OUTNX OUTN {ROUT:g}{chr(10)}' if ROUT else ''}* hold capacitors for output-chopper blanking (CDA/CDB low for 7 MCLK after each edge)

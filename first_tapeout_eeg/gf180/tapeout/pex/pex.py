@@ -97,6 +97,11 @@ BLOCKS = {
                                      lvsdb="runs/gf180_inside_cascode_ota/gf180_inside_cascode_ota.lvsdb",
                                      ports=("gf180/tapeout/adc/eeg_adc_otas.spice", "gf180_inside_cascode_ota"),
                                      dut="gf180_inside_cascode_ota", sub="VSS"),
+    # OTA2 alone, for its open-loop AC with the stage-2 load (viz_data.py ota)
+    "gf180_ct_ota_tel16_cmfb": dict(gds="gds/gf180_ct_ota_tel16_cmfb.gds",
+                                    lvsdb="runs/gf180_ct_ota_tel16_cmfb/gf180_ct_ota_tel16_cmfb.lvsdb",
+                                    ports=("gf180/tapeout/adc/eeg_adc_otas.spice", "gf180_ct_ota_tel16_cmfb"),
+                                    dut="gf180_ct_ota_tel16_cmfb", sub="VSS"),
 }
 
 

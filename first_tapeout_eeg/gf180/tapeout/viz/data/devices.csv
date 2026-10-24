@@ -1,0 +1,26 @@
+block,device,count,gate_area_um2,capacitance_pF,resistance_kohm
+ADC,cap_mim_2f0fF,13,0.0,765.656,0.0
+ADC,nfet_03v3,1075,32099.7,0.0,0.0
+ADC,nfet_05v0,10088,6080.5,0.0,0.0
+ADC,pfet_03v3,1156,59138.1,0.0,0.0
+ADC,pfet_05v0,10899,8357.4,0.0,0.0
+ADC,ppolyf_u_1k,160,0.0,0.0,55144.1
+AFE,cap_mim_2f0fF,42,0.0,1483.871,0.0
+AFE,cap_nmos_03v3,1,0.0,115.773,0.0
+AFE,nfet_03v3,287,95815.2,0.0,0.0
+AFE,pfet_03v3,253,113371.3,0.0,0.0
+AFE,ppolyf_u_1k,22,0.0,0.0,4197.8
+AVDD decoupling,cap_nmos_03v3,1,0.0,415.272,0.0
+Bias generator,cap_nmos_03v3,8,0.0,110.739,0.0
+Bias generator,cap_pmos_03v3,1,0.0,5.537,0.0
+Bias generator,nfet_03v3,27,7057.9,0.0,0.0
+Bias generator,pfet_03v3,47,12009.2,0.0,0.0
+Bias generator,ppolyf_u_1k,12,0.0,0.0,532.5
+DVDD decoupling,cap_nmos_03v3,1,0.0,265.774,0.0
+Digital controller,nfet_05v0,32120,22212.9,0.0,0.0
+Digital controller,pfet_05v0,32302,28903.3,0.0,0.0
+Reference filter,cap_mim_2f0fF,1,0.0,50.243,0.0
+Reference filter,cap_nmos_03v3,2,0.0,44.296,0.0
+Reference filter,ppolyf_u,2,0.0,0.0,0.2
+Test multiplexer,nfet_03v3,126,52.9,0.0,0.0
+Test multiplexer,pfet_03v3,122,148.4,0.0,0.0

@@ -1,0 +1,6 @@
+version,total_nvrms,thermal_nvrms,flicker_nvrms,gain
+Schematic,4.637,3.873,2.55,287.28
+Layout devices only,4.639,3.872,2.554,286.74
+"Layout + parasitic C, 10/23",4.701,3.922,2.59,284.99
+Final layout + parasitic C,4.811,4.013,2.654,284.81
+Final + parasitic C + wiring R,5.048,4.294,2.654,284.81

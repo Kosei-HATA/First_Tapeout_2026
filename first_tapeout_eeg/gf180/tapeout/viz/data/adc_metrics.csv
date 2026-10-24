@@ -1,0 +1,11 @@
+metric,unit,schematic,pex_1023,pex_1024,note
+"DAC1 even-order error, one element",fC,5e-05,0.473,-0.00139,Requirement |q| <= 0.008 fC
+"DAC1 even-order error, 31 elements",fC,-3e-05,-0.687,-0.00124,Requirement |q| <= 0.008 fC
+"SNDR with DAC1 even-order error, behavioural",dB,167.0,68.9,122.8,Lower end of the simulated range; 16.5 bit needs 101 dB
+Clock CLKQ to O2P coupling,fF,,32.5,2.127,
+Clock CLKQ to O2N coupling,fF,,5.3,2.123,
+Loop gain,V/V,1.0075,1.0046,1.0021,
+"Loop residual, rms",DAC1 range = 1,0.0203,0.0455,0.0267,About 10 % higher after the B4 latch fix
+"Second-integrator swing, minimum",mV,-32.8,-49.6,-36.0,Quantizer range +-46.9 mV
+"Second-integrator swing, maximum",mV,31.5,32.6,32.9,Quantizer range +-46.9 mV
+Decisions at the ideal threshold,%,98.8,11.2,65.0,93.8 % after the B4 latch fix

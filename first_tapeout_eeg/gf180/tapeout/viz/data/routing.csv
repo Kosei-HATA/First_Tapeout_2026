@@ -1,0 +1,46 @@
+net_class,layer,top_level_area_um2
+Supply,Metal1,0.0
+Ground,Metal1,160.3
+Electrode input,Metal1,0.0
+AFE output,Metal1,0.0
+Reference and bias,Metal1,0.0
+Clocks and phases,Metal1,34.6
+Digital control,Metal1,178.6
+Digital I/O,Metal1,0.0
+Block-internal,Metal1,0.0
+Supply,Metal2,3074.7
+Ground,Metal2,5580.3
+Electrode input,Metal2,1185.6
+AFE output,Metal2,0.0
+Reference and bias,Metal2,1185.6
+Clocks and phases,Metal2,46.3
+Digital control,Metal2,243.2
+Digital I/O,Metal2,97.3
+Block-internal,Metal2,1207.1
+Supply,Metal3,2690.6
+Ground,Metal3,5119.3
+Electrode input,Metal3,943.7
+AFE output,Metal3,430.5
+Reference and bias,Metal3,9763.8
+Clocks and phases,Metal3,6441.2
+Digital control,Metal3,14953.6
+Digital I/O,Metal3,2532.9
+Block-internal,Metal3,1994.9
+Supply,Metal4,13232.0
+Ground,Metal4,12790.9
+Electrode input,Metal4,18661.4
+AFE output,Metal4,126.4
+Reference and bias,Metal4,4057.2
+Clocks and phases,Metal4,8124.8
+Digital control,Metal4,25493.5
+Digital I/O,Metal4,543.6
+Block-internal,Metal4,1103.2
+Supply,Metal5,340116.4
+Ground,Metal5,404614.3
+Electrode input,Metal5,17458.1
+AFE output,Metal5,0.0
+Reference and bias,Metal5,54.0
+Clocks and phases,Metal5,0.0
+Digital control,Metal5,0.0
+Digital I/O,Metal5,0.0
+Block-internal,Metal5,31539.3

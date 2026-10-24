@@ -1,0 +1,6 @@
+metric,unit,spec,schematic,pex_1023,final,verdict
+"Chopped gain, +-0.5 mV input",V/V,Calibrated,290.68,290.14,297.89,ok
+"Residual offset, input-referred",uV,<< 110,0,-0.11,-0.37,ok
+"Output ripple outside blanking, p-p",mV,<= 4,0,39,2.02,ok
+INP parasitic capacitance,pF,,,7.09,20.0,ok
+INN parasitic capacitance,pF,,,7.36,25.0,ok

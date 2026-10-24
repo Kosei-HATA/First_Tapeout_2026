@@ -1,0 +1,38 @@
+id,area,title,due,status
+A1,Architecture,"Gain allocation, Cin/Cf = 318",2026-10-23,done
+A2,Architecture,Slot: half height 1x0.5,2026-10-23,done
+A3,Architecture,DAC2: scaled MOS current DAC,2026-10-22,done
+A4,Architecture,"Clocking: ADC 1.024 MHz, chopper 128 kHz",2026-10-22,done
+A5,Architecture,Test features and decoupling,2026-10-23,done
+A6,Architecture,16.5-bit residual budget,2026-10-22,done
+A7,Architecture,Pad assignment,2026-10-31,done
+B1,Analog design,AFE core (CCIA),2026-11-12,in progress
+B2,Analog design,"ADC loop: OTA1, OTA2, DAC2 cells",2026-11-07,done
+B3,Analog design,DAC1,2026-11-07,done
+B4,Analog design,Quantizer,2026-11-07,done
+B5,Analog design,Bias generator,2026-11-10,in progress
+B6,Analog design,Reference path,2026-11-10,done
+B7,Analog design,Electrode offset DAC and DC path,2026-11-12,in progress
+B8,Analog design,Clock drivers,2026-11-10,done
+C1,Digital,RTL,2026-10-31,done
+C2,Digital,Unit tests and bit-true runs,2026-11-07,done
+C3,Digital,Macro hardening and STA,2026-11-21,done
+D1,Verification,Simulation deck robustness,2026-10-24,done
+D2,Verification,L1: block characterization,2026-11-14,done
+D3,Verification,L2: calibrated behavioural model,2026-11-14,in progress
+D4,Verification,L3: short-window transistor E2E,2026-11-17,in progress
+D5,Verification,Configuration review for this revision,2026-11-18,not started
+D6,Verification,L4: PEX of critical blocks,2026-10-30,done
+E1,Layout,KLayout generators,2026-11-14,done
+E2,Layout,Early layout of fixed blocks,2026-11-18,done
+E3,Layout,AFE layout,2026-11-28,done
+E4,Layout,ADC layout,2026-12-01,done
+E5,Layout,"Bias, reference and clock-driver layout",2026-12-02,done
+E6,Layout,Pad ring,2026-12-03,done
+E7,Layout,"Top-level assembly, DRC, LVS, antenna, density",2026-10-30,done
+E8,Layout,Precheck and GDS submission,2026-12-16,in progress
+M1,Milestone,Gate 1 decisions (decided 10/23),2026-10-31,done
+M2,Milestone,"Layout complete (target 10/30, met 10/24)",2026-10-30,done
+M3,Milestone,Configuration decision for this revision,2026-11-18,not started
+M4,Milestone,Slot purchase deadline,2026-12-09,not started
+M5,Milestone,GDS submission,2026-12-16,not started

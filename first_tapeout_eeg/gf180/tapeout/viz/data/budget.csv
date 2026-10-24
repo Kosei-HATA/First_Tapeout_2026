@@ -1,0 +1,6 @@
+component,kind,nvrms,note
+AFE,component,4.859,"4.811 nVrms with parasitic C, x1.01 for blanking"
+"ADC, referred to input",component,2.93,All ADC stages
+Pads and electrode straps,component,1.5,Budget value
+Input wiring resistance,component,1.47,"1.31 ohm both sides, 4kTR"
+Target for 16.50 bit,target,5.88,"SNDR 101.1 dB at 0.943 mV pk, 0.5-100 Hz"

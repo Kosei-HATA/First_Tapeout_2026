@@ -1,0 +1,92 @@
+net,net_class,top_level_area_um2,span_mm
+OFEN3,Digital control,1794.4,4.544
+OFEN2,Digital control,1788.0,4.529
+OFEN1,Digital control,1781.6,4.515
+OFEN0,Digital control,1775.2,4.5
+OFM9,Digital control,1764.5,4.474
+OFS,Digital control,1758.8,4.461
+OFM8,Digital control,1756.7,4.458
+OFM7,Digital control,1747.7,4.443
+OFM6,Digital control,1741.5,4.428
+OFM5,Digital control,1735.4,4.414
+OFM4,Digital control,1729.2,4.399
+OFM3,Digital control,1723.6,4.384
+OFM2,Digital control,1716.9,4.37
+OFM1,Digital control,1711.0,4.355
+OFM0,Digital control,1704.6,4.34
+AFE_RST,Clocks and phases,1860.9,4.15
+CHOP_EN,Clocks and phases,1230.0,3.094
+CHOP_BLANK,Clocks and phases,1224.1,3.08
+CHOP_OUT,Clocks and phases,1218.2,3.066
+CHOP,Clocks and phases,1215.4,3.056
+TC0,Digital control,1141.7,2.973
+TC1,Digital control,1140.5,2.972
+TC2,Digital control,1139.7,2.97
+TC4,Digital control,1139.9,2.968
+TC3,Digital control,1138.1,2.967
+VCM,Reference and bias,2000.8,2.927
+CPF3,Digital control,964.5,2.406
+CPF2,Digital control,958.7,2.392
+CPF1,Digital control,875.8,2.283
+CPF0,Digital control,869.5,2.269
+CHOP1,Clocks and phases,699.2,1.824
+ADC_ZERO,Digital control,697.0,1.819
+NCDB,Clocks and phases,838.8,1.776
+CDB,Clocks and phases,835.9,1.771
+NCDA,Clocks and phases,832.3,1.766
+CDA,Clocks and phases,827.2,1.757
+CIB,Clocks and phases,826.3,1.757
+CIA,Clocks and phases,823.0,1.752
+RSTA,Clocks and phases,823.4,1.747
+VREFP,Reference and bias,685.7,1.722
+VBN,Reference and bias,680.5,1.714
+VBCM,Reference and bias,681.2,1.709
+VREFN,Reference and bias,663.4,1.665
+RAW_CLK,Digital I/O,617.1,1.617
+VBN1,Reference and bias,620.4,1.613
+VNC1,Reference and bias,612.3,1.596
+VPC1,Reference and bias,608.3,1.586
+VBPC2,Reference and bias,605.8,1.578
+VBNC2,Reference and bias,601.3,1.567
+BN1,Digital control,609.1,1.553
+ITST,Reference and bias,591.1,1.543
+BN0,Digital control,598.5,1.538
+BP1,Digital control,602.8,1.535
+IB1,Digital control,596.7,1.52
+BP0,Digital control,595.0,1.517
+IB0,Digital control,589.0,1.503
+OFPH,Clocks and phases,554.7,1.455
+ATP,Reference and bias,789.6,1.35
+MCLK,Digital I/O,522.4,1.273
+RAW_DATA,Digital I/O,482.8,1.258
+CMP_STROBE,Clocks and phases,446.2,1.167
+O2P,Reference and bias,429.4,1.128
+O2N,Reference and bias,428.6,1.126
+DRDY_N,Digital I/O,402.6,1.048
+VBCM1,Reference and bias,390.4,1.016
+IQ,Reference and bias,388.5,1.011
+IDN,Reference and bias,387.9,1.01
+IDP,Reference and bias,387.1,1.008
+MISO_OE,Digital I/O,322.5,0.838
+MISO,Digital I/O,295.6,0.767
+BLP,Reference and bias,286.3,0.742
+BLN,Reference and bias,285.8,0.741
+OUTP,AFE output,280.8,0.72
+OUTN,AFE output,275.3,0.714
+ADC_RST_N,Clocks and phases,271.5,0.708
+MOSI,Digital I/O,215.8,0.558
+CODE0,Digital control,167.8,0.435
+CODE1,Digital control,141.9,0.367
+VREFN_PAD,Reference and bias,414.4,0.362
+CS_N,Digital I/O,135.7,0.348
+ELN,Electrode input,9424.2,0.314
+ELP,Electrode input,9479.1,0.306
+RESET_N,Digital I/O,118.8,0.305
+CODE2,Digital control,116.0,0.299
+CODE3,Digital control,90.1,0.23
+VREFP_PAD,Reference and bias,354.9,0.206
+CODE4,Digital control,64.2,0.162
+SCLK,Digital I/O,55.0,0.138
+DAC_CLK,Clocks and phases,37.3,0.091
+DBG_SEL1,Digital control,2.0,0.004
+DBG_SEL0,Digital control,2.0,0.004

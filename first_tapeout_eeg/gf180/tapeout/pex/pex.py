@@ -246,7 +246,7 @@ def map_nodes(nodes, uses, top, lvsdb, unit):
     lvs = kdb.LayoutVsSchematic()
     lvs.read(lvsdb)
     xref = lvs.xref()
-    regions = {l: lvs.layer_by_name(l) for l in ALL_LAYERS}
+    regions = {l: lvs.layer_by_name(l) for v in LVS_LAYERS.values() for l in v}
     out, miss = {}, []
     for n in nodes:
         p = node_point(n, uses, top, unit)

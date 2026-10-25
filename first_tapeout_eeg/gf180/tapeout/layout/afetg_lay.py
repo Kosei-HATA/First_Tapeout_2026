@@ -8,6 +8,15 @@ All four TGs in one strip pattern, the commutator ring
 XIP_B), so every S/D region is shared and every strip carries all four signal nets.
 W 10 um fingers, L 0.28: NMOS 2048 fingers (12 strips), PMOS 4096 (two cells of 12
 strips, below and above the NMOS cell: the block is symmetric about its middle).
+Every other strip is the P / N mirror image (EP <-> EN, WP <-> WN: ring EN -CIA- WN -CIB-
+EP ..., straps EN WN EP WP from the bottom), the upper PMOS cell starting on the other
+parity: a strip's top strap pair runs 0.64 um from its own CIA / NCIA gate pin, its bottom
+pair 1.9 um from the CIB / NCIB pin of the strip below. With one order in every strip the
+WN straps sat beside every CIA / NCIA pin (WN-CIA / NCIA 205 / 409 fF in the block against
+WP 110 / 221) and the EP straps beside the CIB / NCIB pins: the commutator moved the gate
+feed-through from ELN to ELP, +-36.6 nA between the electrodes without a signal (tracker
+D6, documentation/gf180_pex_20261023.md). Mirrored, WP and WN share the CIA / NCIA pins
+6 : 6 in each cell and EP / EN the NCIB pins 11 : 11 (the NMOS cell's 11 CIB pins 5 : 6).
 
 The signal current of the electrodes flows through these nets, so their wiring is wide
 (each net's wiring is in series with the signal: tracker D6, documentation/
@@ -24,6 +33,8 @@ gf180_pex_20261023.md):
     (chip_lay.electrodes() knows the band rows: band_rows()).
 Gates: Metal3 lanes (CIA / CIB over the NMOS cell, NCIA / NCIB over both PMOS cells) with
 via2 on every strip's gate pin, out of the bottom edge for the clock driver eeg_afe_clk.
+The WN stripes run on over the top strip's gate pins, as over the pins of the strips below
+(afe_top's WP plates and stripe widening start above the block's top edge).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/afetg_lay.py [--drc] [--lvs]
 """
@@ -76,13 +87,18 @@ def band_rows(y_lo, y_hi):
         k += 1
 
 
-def strips(ga, gb, periods):
+MIRROR = {"EP": "EN", "EN": "EP", "WP": "WN", "WN": "WP"}
+
+
+def strips(ga, gb, periods, flip=0):
+    """The cell's strips, bottom to top; strip k is mirrored (MIRROR) when k + flip is odd."""
     base, extra = divmod(periods, STRIPS)
     out = []
     for k in range(STRIPS):
         n = base + (1 if k < extra else 0)
-        out.append(dict(w=10.0, l=L, seq=ring_seq(ga, gb, n), gates={ga: ("t", 0), gb: ("t", 1)},
-                        order=["EP", "WP", "EN", "WN"], straps={"EP": 3, "WP": 3, "EN": 3, "WN": 3}))
+        m = (lambda s: MIRROR.get(s, s)) if (k + flip) % 2 else (lambda s: s)
+        out.append(dict(w=10.0, l=L, seq=[m(s) for s in ring_seq(ga, gb, n)], gates={ga: ("t", 0), gb: ("t", 1)},
+                        order=[m(s) for s in ("EP", "WP", "EN", "WN")], straps={"EP": 3, "WP": 3, "EN": 3, "WN": 3}))
     return out
 
 
@@ -90,7 +106,7 @@ def build():
     b = g.Block(NAME)
     pl = an.multi_strip_cell(b, "afetg_p0", "p", strips("NCIA", "NCIB", PERIODS_P // 2), bulk="VDD")
     nc = an.multi_strip_cell(b, "afetg_n", "n", strips("CIA", "CIB", PERIODS_N), bulk="VSS")
-    pu = an.multi_strip_cell(b, "afetg_p1", "p", strips("NCIA", "NCIB", PERIODS_P // 2), bulk="VDD")
+    pu = an.multi_strip_cell(b, "afetg_p1", "p", strips("NCIA", "NCIB", PERIODS_P // 2, flip=1), bulk="VDD")
     x0 = 2 * SPINE_W + 4.0
     placed = []
     y = 0.0
@@ -123,7 +139,10 @@ def build():
              for n in ("WP", "WN")}
     half = (PERIOD_X / 2 - STRIPE_GAP) / 2
     ys = [placed[1].y - 1.5, placed[1].y + nc.height / 3, placed[1].y + 2 * nc.height / 3, placed[2].y - 1.5]
-    for n, (s1, s2) in (("WP", (y_lo, height + 3.0)), ("WN", (-3.0, y_hi))):
+    # the WN stripes run on over the top strip's gate pins, as over every other strip's pins
+    y_gt = max(s[4] for p in placed for gn in ("CIA", "CIB", "NCIA", "NCIB") for s in p.pins.get(gn, [])
+               if s[0] == "metal2") + 0.3
+    for n, (s1, s2) in (("WP", (y_lo, height + 3.0)), ("WN", (-3.0, max(y_hi, y_gt)))):
         bounds = [s1] + [y + (0.3 if n == "WP" else -0.3) for y in ys] + [s2]
         for x1, x2 in pairs[n]:
             xc = (x1 + x2) / 2
@@ -152,8 +171,10 @@ def build():
         for xl in lanes_x[n]:
             b.vias("via3", xl, y1, xl + LANE_W, y2)
     # ---- gate lanes: CIA / CIB over the NMOS cell, NCIA / NCIB over both PMOS cells,
-    # west of the S/D lanes (inside the rings), out of the top edge
-    gate_x = {"CIA": x0 + wcell + 3.0, "CIB": x0 + wcell + 6.0, "NCIA": x0 + wcell + 9.0, "NCIB": x0 + wcell + 12.0}
+    # east of the cells, out of the bottom edge. Order CIA CIB NCIB NCIA: the two outer
+    # lanes (nearest to whatever lies beside the group below the block, afe_lay) are a
+    # phase's complementary pair, whose feed-through into a W node cancels
+    gate_x = {"CIA": x0 + wcell + 3.0, "CIB": x0 + wcell + 6.0, "NCIB": x0 + wcell + 9.0, "NCIA": x0 + wcell + 12.0}
     width = x0 + wcell + 16.0
     for n, xg in gate_x.items():
         segs = [s for p in placed for s in p.pins.get(n, []) if s[0] == "metal2"]

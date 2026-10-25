@@ -16,7 +16,9 @@ Placement (local um; the differential axis at y = 723.5):
 Hand-drawn wiring (the signal path is in series with the electrodes: tracker D6):
   - WP / WN from the input chopper's stripes into the Cin bottom-plate buses and the
     Metal3 planes under the arrays (w_entry: Metal3 / Metal4 / Metal5 plates over the
-    chopper, a Metal5 sheet under it for WN);
+    chopper, a Metal5 sheet under it for WN, with a corridor free of WN for the chopper's
+    gate lanes: WP and WN must see the same gate feed-through, or the commutator pumps a
+    DC current between the electrodes, tracker D6);
   - the core's INP / INN Metal5 bars (its top / bottom edge) joined to the Cin top-plate
     buses along the core's width and on over the output section; the offset DAC's INP /
     INN stubs onto those bars;
@@ -378,9 +380,23 @@ CK_X, CK_Y = 14.0, 306.0        # eeg_afe_clk origin (its shapes from y CK_Y - 1
 OD_PORTS = ["VCM", "S", "PH"] + [f"M{k}" for k in range(10)] + [f"EN{k}" for k in range(4)]
 OD_NET = dict({"VCM": "VCM", "S": "OFS", "PH": "OFPH"}, **{f"M{k}": f"OFM{k}" for k in range(10)},
               **{f"EN{k}": f"OFEN{k}" for k in range(4)})
-CLK_WEST = ["CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP_EN", "AFE_RST", "CIA", "CIB", "CDA", "NCDA", "CDB", "NCDB",
-            "RST", "OFPH"]
-TG_JOG = {"CIA": 428.0, "NCIA": 433.0, "CIB": 438.0, "NCIB": 443.0}    # Metal4 jogs to the chopper's gates
+# (west ports from the bottom; the top five rows run under the WN sheet, so they hold nets
+# whose edges both fall inside one chopper phase or that are static: OFPH changes when the
+# new phase's input TG closes, and under WN its 10 fF moved C x VDD from one electrode to
+# the other every period, 4.2 nA, tracker D6)
+CLK_WEST = ["CHOP", "CHOP_OUT", "CHOP_BLANK", "OFPH", "AFE_RST", "CIA", "CIB", "CDA", "NCDA", "CDB", "NCDB",
+            "RST", "CHOP_EN"]
+# the chopper's gates: Metal2 jogs (bottom edges, JOG_W tall) just above the clock driver,
+# under the router's west rows and clear of the WN sheet; the lanes rise from them through
+# a corridor without WN (w_entry). The first layouts' Metal4 jogs ran 108 um under the WN
+# sheet and over its Metal3 links (30-40 fF each, WN only); OLD_JOG keeps their places as
+# router obstacles so that the router sees what it saw then
+TG_JOG = {"CIA": CK_Y + 94.0, "NCIA": CK_Y + 96.2, "CIB": CK_Y + 98.4, "NCIB": CK_Y + 100.6}
+JOG_W = 1.6
+JOG_STUB = CK_Y + 104.0          # CIA / CIB risers run on to here: their west rows land on them
+OLD_JOG = {"CIA": 428.0, "NCIA": 433.0, "CIB": 438.0, "NCIB": 443.0}
+OLD_LANE = {"CIA": "CIA", "CIB": "CIB", "NCIA": "NCIB", "NCIB": "NCIA"}    # whose lane x it had
+CORR = (6.0, 6.5)                # WN keeps this clear west of the first lane / east of the last
 
 
 def corners(a, I):
@@ -389,7 +405,8 @@ def corners(a, I):
     Bottom-left: offdac_n on the bottom edge (its control ports are AFE ports there, its
     INN stub runs up into the INN bus east of the clock driver), eeg_afe_clk above it.
     The driver's four chopper gates go to the input chopper's gate lanes on wide hand-
-    drawn Metal3 / Metal4 (16-33 pF each); its other ports and CIA / CIB go to the west
+    drawn Metal3 / Metal2 (16-33 pF each: Metal2 jogs just above the driver, lanes up the
+    WN-free corridor of w_entry); its other ports and CIA / CIB go to the west
     edge (the chip routes them on). Its supply: the 105 pF decap under offdac_n's MIMs
     (straps AVDD_CLK / AVSS_CLK on offdac_n's top edge), joined to the driver's straps by
     hand (AVSS_CLK on Metal3, AVDD_CLK on Metal5 over the driver), and two 100 ohm
@@ -423,18 +440,24 @@ def corners(a, I):
             a.wire("metal4", xc - 0.6, core.bbox[3] - 3.6, xc + 0.6, s[4], n)
             a.vias_fit("via4", xc - 0.6, core.bbox[3] - 3.6, xc + 0.6, core.bbox[3] - 0.4)
         I["od_stub_" + n] = (xc - 0.6, xc + 0.6)
-    # chopper gates: port stub -> 2 um Metal3 up -> Metal4 jog -> 1.2 um Metal3 into the lane
+    # chopper gates: port stub -> 2 um Metal3 up -> Metal2 jog (TG_JOG) -> 1.2 um Metal3 lane
+    # straight up the corridor into the chopper's gate lane
     for n, yj in TG_JOG.items():
         s = ck.pin(n, "metal3")
         xc = (s[1] + s[3]) / 2
         ln = I["tg"].pin(n, "metal3")
         xl = (ln[1] + ln[3]) / 2
+        top = max(yj + JOG_W, JOG_STUB if n in CLK_WEST else 0.0)
         a.wire("metal3", xc - 0.19, s[2], xc + 0.19, s[4] + 1.2, n)
-        a.wire("metal3", xc - 1.0, s[4] + 1.0, xc + 1.0, yj + 2.0, n)
-        a.via_stack("metal3", "metal4", xc - 1.0, yj, xc + 1.0, yj + 2.0, n)
-        a.wire("metal4", xc - 1.0, yj, xl + 0.6, yj + 2.0, n)
-        a.via_stack("metal3", "metal4", xl - 0.6, yj, xl + 0.6, yj + 2.0, n)
+        a.wire("metal3", xc - 1.0, s[4] + 1.0, xc + 1.0, top, n)
+        a.via_stack("metal2", "metal3", xc - 1.0, yj, xc + 1.0, yj + JOG_W, n)
+        a.box("metal2", xc - 1.0, yj, xl + 0.6, yj + JOG_W)
+        a.via_stack("metal2", "metal3", xl - 0.6, yj, xl + 0.6, yj + JOG_W, n)
         a.wire("metal3", xl - 0.6, yj, xl + 0.6, ln[4], n)
+        # the first layouts' riser above this one and their Metal4 jog: router obstacles
+        lo = I["tg"].pin(OLD_LANE[n], "metal3")
+        a.manual.append(("metal3", (xc - 1.0, top, xc + 1.0, OLD_JOG[n] + 2.0), None))
+        a.manual.append(("metal4", (xc - 1.0, OLD_JOG[n], (lo[1] + lo[3]) / 2 + 0.6, OLD_JOG[n] + 2.0), None))
     # driver supply: AVSS_CLK straps joined on Metal3 under the driver's west edge;
     # AVDD_CLK up on Metal5 and over the driver to its east strap
     dvss, dvdd = ck.pin("AVSS_CLK", "metal3"), ck.pin("AVDD_CLK", "metal3")
@@ -484,8 +507,9 @@ def w_entry(a, I, y_wn, y_wp):
     (gf180lay.mim_array plane), on Metal3 / Metal4 / Metal5 with via rows between them:
       top: over the chopper's top and through the corner between the core and offdac_p
         (moved up to make room), up to 0.6 um from the Cin_P buses;
-      bottom: under the chopper (above the clock driver's gate jogs), on Metal3 between
-        the jogs, and through the corner between the core, the clock driver and offdac_n.
+      bottom: under the chopper (west of the corridor of its gate lanes), on Metal3 links
+        over the first layouts' jog band, and through the corner between the core, the
+        clock driver and offdac_n.
     The offset DAC's INP / INN stubs cross them on Metal4 (corners()); the input chopper's
     n-well bias (AVDD bar) goes up beside them to offdac_p's AVDD strap (Metal3 / Metal4).
     The WP / WN wiring is in series with the signal (tracker D6)."""
@@ -534,34 +558,49 @@ def w_entry(a, I, y_wn, y_wp):
                             a.vias_fit(via, b.left / 1000, b.bottom / 1000, b.right / 1000, b.top / 1000)
                 y += W_ROW
     cuts = [(vb[1] - 0.3, vb[3] + 0.3)]
-    # top: WP
+    # top: WP. Over the chopper the plates start 0.6 um above its top edge (from just over its
+    # Metal4 rows the WP Metal4 covered the top strip's NCIA / NCIB pins: 5.6 fF more WP-NCIB
+    # than WN-NCIB, tracker D6); the rows they left stay router obstacles
     yc = core.bbox[3] + 0.6
     west, east = (5.0, vb[1] - 0.3), (vb[3] + 0.3, xa - 0.3)
-    y3, y4 = ext["metal3"][1] + 0.6, ext["metal4"][1] + 0.6
+    y3 = y4 = tg.bbox[3] - 3.0 + 0.6                    # (the WP stripes stand 3 um out of the block)
+    for lay in ("metal3", "metal4"):
+        if ext[lay][1] + 0.6 < y3:
+            a.manual.append((lay, (west[0], ext[lay][1] + 0.6, west[1], y3), None))
     m4 = [(west[0], y4, west[1], y_tw)] + [(x1, yc, x2, y_tw) for x1, x2 in CORE.minus(east[0], east[1], [stub["WP"]])]
     m3 = [(west[0], y3, west[1], y_tw), (east[0], yc, xa + 0.6, y_tw)]
     xs5 = I["wp_stripes_x2"] + 0.6                       # east of the widened WP stripes
     m5 = [(5.0, y_wn, 27.0, bp[2] + 0.5), (5.0, bp[2], xa - 0.6, y_tw), (xs5, y_wn, core.bbox[0] - 0.6, bp[2] + 0.5),
           (core.bbox[0] - 1.0, yc, xa - 0.6, bp[2] + 0.5)]
     plate("WP", m3, m4, m5)
-    # bottom: WN (the clock driver's gate jogs at TG_JOG, its 100 ohm resistor RCKP below)
-    yj0, yj1 = min(TG_JOG.values()), max(TG_JOG.values()) + 2.0
+    # bottom: WN. The chopper's gate lanes rise from the jogs above the clock driver (TG_JOG)
+    # through a corridor that no WN crosses but the Cin_N bus (CORR clear of the outer lanes).
+    # West of it the plates keep the first layouts' outline (the Metal3 links under the old
+    # jog band, the Metal5 holes over it); the corridor's former WN Metal3 / Metal4 stay
+    # router obstacles, so that the router sees what it saw then.
+    yj0, yj1 = min(OLD_JOG.values()), max(OLD_JOG.values()) + 2.0
     yw0 = I["rckp_top"] + 2.0
-    x_lane = min(tg.pin(n, "metal3")[1] for n in TG_JOG) - 0.3      # the chopper's gate lanes, jogs
+    lanes = sorted(tg.pin(n, "metal3")[1] for n in TG_JOG)
+    x_lane = lanes[0] - 0.3                                          # (the first layouts' edge)
+    cw, ce = lanes[0] - CORR[0], lanes[-1] + 1.2 + CORR[1]
     y3, y4 = min(y_wp, ext["metal3"][0] - 0.6), min(y_wp, ext["metal4"][0] - 0.6)
-    m4 = [(5.0, yj1 + 1.0, x_lane, y4)] + \
-        [(x1, yw0, x2, yj0 - 0.6) for x1, x2 in CORE.minus(x_lane + 6.0, xa - 0.3, [stub["WN"]])]
-    links = [(100.0 + k * (x_lane - 100.0 + 1.0) / 3, bn[4] + 0.8, 100.0 + (k + 1) * (x_lane - 100.0 + 1.0) / 3 - 1.0,
-              yj1 + 1.0) for k in range(3)]                  # Metal3 between the jogs, strips under 30 um
-    m3 = [(5.0, yj1 + 1.0, x_lane, y3)] + links + \
-        [(100.0, bn[4] + 0.8, xa + 0.6, yj0 - 0.6), (x_lane + 6.0, yw0, xa + 0.6, core.bbox[1] - 0.6)]
+    m4 = [(5.0, yj1 + 1.0, cw, y4)] + \
+        [(x1, yw0, x2, yj0 - 0.6) for x1, x2 in CORE.minus(ce, xa - 0.3, [stub["WN"]])]
+    links = [(100.0 + k * (x_lane - 100.0 + 1.0) / 3, bn[4] + 0.8,
+              min(cw, 100.0 + (k + 1) * (x_lane - 100.0 + 1.0) / 3 - 1.0), yj1 + 1.0) for k in range(3)]
+    m3 = [(5.0, yj1 + 1.0, cw, y3)] + links + [(100.0, bn[4] + 0.8, cw, yj0 - 0.6), (ce, bn[4] + 0.8, xa + 0.6, yj0 - 0.6),
+                                               (ce, yw0, xa + 0.6, core.bbox[1] - 0.6)]
+    for lay, bx in (("metal4", (cw, yj1 + 1.0, x_lane, y4)), ("metal4", (x_lane + 6.0, yw0, ce, yj0 - 0.6)),
+                    ("metal3", (cw, bn[4] + 0.8, x_lane, y3)), ("metal3", (x_lane, bn[4] + 0.8, ce, yj0 - 0.6)),
+                    ("metal3", (x_lane + 6.0, yw0, ce, core.bbox[1] - 0.6))):
+        a.manual.append((lay, bx, None))
     # Metal5: one sheet from the chopper's bottom edge down to the Cin_N bus, east to the
-    # core (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a row of
-    # holes over the jogs (no via rows there)
-    m5 = [(5.0, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (x_lane + 6.0, yw0, xa - 0.6, bn[2] + 0.5),
-          (vb[3] - 1.0, bn[4] - 0.5, xa - 0.6, core.bbox[1] - 0.6)]
+    # corridor (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a row of
+    # holes over the old jog band (no via rows there); a strip east of the corridor
+    m5 = [(5.0, bn[2] - 0.5, cw, y_wp), (ce, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (ce, yw0, xa - 0.6, bn[2] + 0.5),
+          (max(vb[3] - 1.0, ce), bn[4] - 0.5, xa - 0.6, core.bbox[1] - 0.6)]
     yh = (yj0 + yj1) / 2 - 1.0
-    holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < core.bbox[0] - 1.0]
+    holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < cw - 1.0]
     plate("WN", m3, m4, m5, holes)
 
 
@@ -591,7 +630,9 @@ def wiring(a, I):
     stripes = [b for b in stripes if b.height() > 300 and b.width() < TG.PERIOD_X / 2]   # (not the spines)
     wp = [b for b in stripes if abs(b.top - tg.bbox[3]) < 0.01]       # WP stripes reach the block's top
     wn = [b for b in stripes if abs(b.bottom - tg.bbox[1]) < 0.01]    # WN stripes its bottom
-    y_wn, y_wp = max(b.top for b in wn) + 0.6, min(b.bottom for b in wp) - 0.6
+    # (the WP widening starts clear of the top strip's gate pins: from the block's top edge, as
+    # w_entry's WP plates)
+    y_wn, y_wp = max(max(b.top for b in wn), tg.bbox[3] - 3.0) + 0.6, min(b.bottom for b in wp) - 0.6
     for b in wp:
         a.wire("metal5", b.center().x - half, y_wn, b.center().x + half, bp[4], "WP")
     I["wp_stripes_x2"] = max(b.center().x for b in wp) + half

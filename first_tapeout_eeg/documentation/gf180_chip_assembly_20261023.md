@@ -175,3 +175,10 @@
 - **結果**：チップ全体（穴埋め前）の DRC 違反なし、コアの LVS 一致。穴埋めのあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし。配線は 559 秒（ほかの解析と並べて回したため、前の 105〜114 秒より長い）。
 - **Magic DRC（3 回目、ダミー COMP を除く、`magic_check.py pre_20261024c`）**：最後まで走り、出たのは同じ 2 種類だけ（PRES／HRES.7 が 3,872 個、MIMTM.2 が 340 個）。MIMTM.2 はどれも FuseTop から 1.25 µm 以上（114 個が 1.25〜2 µm、226 個が 2〜5 µm）。
 - **wafer.space の precheck（3 回目、タグ pre_20261024c）**：「Precheck successfully completed」。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は同じく途中で落ちていて、上の `magic_check.py` が代わりの確認。穴埋めのあとの密度：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.8 %、Metal4 58.6 %、Metal5 65.1 %。**この形（`chip_top_fill.gds`、sha256 40e021fd…）が、D6 の直しと B7、B4 の直しをすべて入れた今のチップ。**
+
+## 組み直し（10/25、4 回目：電極の DC 電流の直しのあと）
+
+- **入れた変更**：AFE の入力チョッパとその周り（`afetg_lay.py`、`afe_lay.py`。信号がなくても電極に流れていた差動 ±36.6 nA を ±1.65 nA に下げた。`gf180_pex_20261023.md` の「電極に流れる DC 電流（10/25）」）。afe_top の外形と端子の位置は同じで、変わったのは西の端子の列の OFPH と CHOP_EN の入れ替えだけ（チップの配線器は端子を名前で引くので `chip_lay.py` は変えていない）。回路は変えていないので、コアのネットリスト（`eeg_core.spice`）もそのまま。
+- **結果**：配線 215 秒、チップ全体（穴埋め前）の DRC 違反なし、コアの LVS 一致（デカップリングは AVDD–AVSS 75 個のまま。合わせて 24 分）。穴埋め（14 秒）のあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし（18 分）。
+- **Magic DRC（4 回目、ダミー COMP を除く、`magic_check.py pre_20261025`）**：最後まで走り、出たのは同じ 2 種類だけ（PRES／HRES.7 が 3,872 個、MIMTM.2 が 340 個で、3 回目と同じ。7 分）。MIMTM.2 はどれも FuseTop から 1.25 µm 以上（114 個が 1.25〜2 µm、226 個が 2〜5 µm）。
+- **wafer.space の precheck（4 回目、タグ pre_20261025）**：「Precheck successfully completed」（40 分）。密度、ゼロ面積の図形、アンテナ、KLayout DRC はどれも 0 件、CoB のパッドマスクも一致。Magic DRC は同じく途中で落ちていて、上の `magic_check.py` が代わりの確認。穴埋めのあとの密度：COMP 49.7 %、Poly2 39.6 %、Metal1 40.4 %、Metal2 38.4 %、Metal3 53.8 %、Metal4 58.6 %、Metal5 65.0 %。**この形（`chip_top_fill.gds`、sha256 b0d0b34f…）が、D6 の直し、B7 と B4 の直し、電極の DC 電流の直しをすべて入れた今のチップ。**

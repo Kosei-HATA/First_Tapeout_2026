@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""Magic DRC of the chip as the precheck runs it, but without the dummy COMP fill (tracker
-E8), natively in the template's nix shell (Magic 8.3.677).
+"""Magic DRC of the chip as the precheck runs it, but without the dummy COMP and Poly2 fill
+(tracker E8), natively in the template's nix shell (Magic 8.3.677).
 
 With the COMP fill, Magic 8.3 (revision 660 in the precheck image, 677 here) crashes in
 bpBinArrayBuild during "drc listall why" (DRCInteractionCheck -> drcSubCheckPaint): the
 precheck flattens COMP_FILL into chip_top, and chip_top with only COMP_FILL and afe_top
 already crashes. The precheck does not notice (LibreLane runs Magic with check=False and
-reads the empty report as 0 errors). Without COMP_FILL Magic finishes; the dummy COMP itself
-is checked by the KLayout decks (dummy_comp, density). Details:
+reads the empty report as 0 errors). Without COMP_FILL Magic finished up to the fourth
+assembly (10/25); with the fifth (WN Metal5 back over the chopper's gate-lane corridor in
+afe_top) the POLY2_FILL trips the same crash (without COMP, Metal5 or all the metal fill it
+still crashes; without COMP and Poly2 it finishes), so both are left out. The dummy COMP and
+poly themselves are checked by the KLayout decks (dummy_comp, density). Details:
 documentation/gf180_chip_assembly_20261023.md.
 
 Input: the precheck run's GDS after the ID insertion (dummy metal / poly already moved to
@@ -45,10 +48,12 @@ def main():
     ly = db.Layout()
     ly.read(src)
     top = ly.cell("chip_top")
+    skip = ("COMP_FILL", "POLY2_FILL")
     for inst in list(top.each_inst()):
-        if ly.cell(inst.cell_index).name == "COMP_FILL":
+        if ly.cell(inst.cell_index).name in skip:
             inst.delete()
-    ly.cell("COMP_FILL").prune_cell()
+    for name in skip:
+        ly.cell(name).prune_cell()
     gds = os.path.join(out, "chip_top_nocomp.gds")
     ly.write(gds)
 
@@ -59,7 +64,7 @@ def main():
     r = subprocess.run(["nix-shell", "--run", cmd], cwd=g.NIX_DIR, capture_output=True, text=True)
     open(log, "w").write(r.stdout + r.stderr)
     done = "DRC Checking DONE" in r.stdout
-    print(f"Magic DRC ({tag}, without COMP fill): exit {r.returncode}, {'finished' if done else 'DID NOT FINISH'}")
+    print(f"Magic DRC ({tag}, without COMP and Poly2 fill): exit {r.returncode}, {'finished' if done else 'DID NOT FINISH'}")
     if not done:
         sys.exit(1)
     counts, rule = collections.Counter(), None

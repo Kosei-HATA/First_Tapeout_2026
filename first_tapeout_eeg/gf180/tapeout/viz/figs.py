@@ -477,8 +477,7 @@ def fig_rwire():
                  "Noise-equivalent series resistance per side (Ω, log): E pad to chopper · W chopper to the Cin bottom plate · "
                  "T Cin top plate to the input-pair gates",
                  note="T was set by the auto-routed gate wiring of the input pair (0.38 µm wires, single vias) before the D6 fixes. "
-                      "The per-side target for 16.50 bit is 0.35 Ω.\nW · N is 0.23 Ω above W · P: below the chopper only the 5 µm "
-                      "Cin_N bus crosses the corridor of the chopper's gate lanes (since 25 Oct, electrode-current fix).")
+                      "The per-side target for 16.50 bit is 0.35 Ω.")
     ax = fig.add_subplot()
     n = len(groups)
     y = np.arange(n)[::-1] * 1.0
@@ -691,7 +690,8 @@ def fig_checks():
               "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–25 Oct 2026",
               ["Check", "Scope", "Tool", "Result", "Violations", "Detail"], body, [0.22, 0.15, 0.2, 0.09, 0.07, 0.27],
               note="The precheck's Magic step crashes inside Magic and is reported as 0 by LibreLane; Magic DRC was rerun without the "
-                   "dummy COMP fill. Its two remaining rule types come from the Magic deck's wording; the drawn geometry meets both.",
+                   "dummy COMP and poly fill (the same crash). Its two remaining rule types come from the Magic deck's wording; the drawn "
+                   "geometry meets both.",
               colours=colours, h_row=0.33, w=15.0)
 
 

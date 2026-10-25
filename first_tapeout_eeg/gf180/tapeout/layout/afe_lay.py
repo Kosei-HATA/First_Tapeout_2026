@@ -16,9 +16,10 @@ Placement (local um; the differential axis at y = 723.5):
 Hand-drawn wiring (the signal path is in series with the electrodes: tracker D6):
   - WP / WN from the input chopper's stripes into the Cin bottom-plate buses and the
     Metal3 planes under the arrays (w_entry: Metal3 / Metal4 / Metal5 plates over the
-    chopper, a Metal5 sheet under it for WN, with a corridor free of WN for the chopper's
-    gate lanes: WP and WN must see the same gate feed-through, or the commutator pumps a
-    DC current between the electrodes, tracker D6);
+    chopper, a Metal5 sheet under it for WN, with a corridor free of WN Metal3 / Metal4 for
+    the chopper's gate lanes, the sheet covering all four alike: WP and WN must see the same
+    gate feed-through, or the commutator pumps a DC current between the electrodes, tracker
+    D6);
   - the core's INP / INN Metal5 bars (its top / bottom edge) joined to the Cin top-plate
     buses along the core's width and on over the output section; the offset DAC's INP /
     INN stubs onto those bars;
@@ -396,7 +397,7 @@ JOG_W = 1.6
 JOG_STUB = CK_Y + 104.0          # CIA / CIB risers run on to here: their west rows land on them
 OLD_JOG = {"CIA": 428.0, "NCIA": 433.0, "CIB": 438.0, "NCIB": 443.0}
 OLD_LANE = {"CIA": "CIA", "CIB": "CIB", "NCIA": "NCIB", "NCIB": "NCIA"}    # whose lane x it had
-CORR = (6.0, 6.5)                # WN keeps this clear west of the first lane / east of the last
+CORR = (6.0, 6.5)                # WN Metal3 / Metal4 keep this clear west of the first lane / east of the last
 
 
 def corners(a, I):
@@ -406,7 +407,7 @@ def corners(a, I):
     INN stub runs up into the INN bus east of the clock driver), eeg_afe_clk above it.
     The driver's four chopper gates go to the input chopper's gate lanes on wide hand-
     drawn Metal3 / Metal2 (16-33 pF each: Metal2 jogs just above the driver, lanes up the
-    WN-free corridor of w_entry); its other ports and CIA / CIB go to the west
+    corridor of w_entry, under the WN Metal5 only); its other ports and CIA / CIB go to the west
     edge (the chip routes them on). Its supply: the 105 pF decap under offdac_n's MIMs
     (straps AVDD_CLK / AVSS_CLK on offdac_n's top edge), joined to the driver's straps by
     hand (AVSS_CLK on Metal3, AVDD_CLK on Metal5 over the driver), and two 100 ohm
@@ -507,9 +508,9 @@ def w_entry(a, I, y_wn, y_wp):
     (gf180lay.mim_array plane), on Metal3 / Metal4 / Metal5 with via rows between them:
       top: over the chopper's top and through the corner between the core and offdac_p
         (moved up to make room), up to 0.6 um from the Cin_P buses;
-      bottom: under the chopper (west of the corridor of its gate lanes), on Metal3 links
-        over the first layouts' jog band, and through the corner between the core, the
-        clock driver and offdac_n.
+      bottom: under the chopper (Metal3 / Metal4 west of the corridor of its gate lanes,
+        Metal5 over it too), on Metal3 links over the first layouts' jog band, and through
+        the corner between the core, the clock driver and offdac_n.
     The offset DAC's INP / INN stubs cross them on Metal4 (corners()); the input chopper's
     n-well bias (AVDD bar) goes up beside them to offdac_p's AVDD strap (Metal3 / Metal4).
     The WP / WN wiring is in series with the signal (tracker D6)."""
@@ -574,7 +575,11 @@ def w_entry(a, I, y_wn, y_wp):
           (core.bbox[0] - 1.0, yc, xa - 0.6, bp[2] + 0.5)]
     plate("WP", m3, m4, m5)
     # bottom: WN. The chopper's gate lanes rise from the jogs above the clock driver (TG_JOG)
-    # through a corridor that no WN crosses but the Cin_N bus (CORR clear of the outer lanes).
+    # through a corridor free of WN Metal3 / Metal4 (CORR clear of the outer lanes); the
+    # Metal5 sheet runs on over it, since the WN current crosses there to the Cin array (with
+    # only the 5 um Cin_N bus across, WN was 0.23 ohm higher, tracker D6). Over the corridor
+    # the sheet covers the four lanes alike, and the outer two (CIA, NCIA) and the inner two
+    # (CIB, NCIB) are each a phase's complementary pair, so their feed-through into WN cancels.
     # West of it the plates keep the first layouts' outline (the Metal3 links under the old
     # jog band, the Metal5 holes over it); the corridor's former WN Metal3 / Metal4 stay
     # router obstacles, so that the router sees what it saw then.
@@ -594,13 +599,14 @@ def w_entry(a, I, y_wn, y_wp):
                     ("metal3", (cw, bn[4] + 0.8, x_lane, y3)), ("metal3", (x_lane, bn[4] + 0.8, ce, yj0 - 0.6)),
                     ("metal3", (x_lane + 6.0, yw0, ce, core.bbox[1] - 0.6))):
         a.manual.append((lay, bx, None))
-    # Metal5: one sheet from the chopper's bottom edge down to the Cin_N bus, east to the
-    # corridor (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a row of
-    # holes over the old jog band (no via rows there); a strip east of the corridor
-    m5 = [(5.0, bn[2] - 0.5, cw, y_wp), (ce, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (ce, yw0, xa - 0.6, bn[2] + 0.5),
+    # Metal5: one sheet from the chopper's bottom edge down to the Cin_N bus, east to the core
+    # over the corridor (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a
+    # row of holes over the old jog band (no via rows there); below the bus, a strip east of
+    # the corridor (clear of the jogs)
+    m5 = [(5.0, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (ce, yw0, xa - 0.6, bn[2] + 0.5),
           (max(vb[3] - 1.0, ce), bn[4] - 0.5, xa - 0.6, core.bbox[1] - 0.6)]
     yh = (yj0 + yj1) / 2 - 1.0
-    holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < cw - 1.0]
+    holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < core.bbox[0] - 1.0]
     plate("WN", m3, m4, m5, holes)
 
 

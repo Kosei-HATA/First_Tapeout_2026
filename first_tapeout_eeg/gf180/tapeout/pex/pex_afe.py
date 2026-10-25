@@ -76,14 +76,14 @@ def ports():
 
 # wiring resistance of the signal path per side (pex_rin.py, typical, ohm): electrode
 # side E (in series with the source), Cin bottom-plate side W (chopper to Cin), top-plate
-# side T (Cin to the input-pair gates). The chip of 10/25 (fourth assembly, 9b5f495a),
-# pex_rin.py on the chip core: E with the pad straps (--tess m3 m4 m5), W with the Metal3
-# sheet under Cin meshed (--tess m3; SquareCounting misses the spreading in the sheet), T
-# square. WN is 0.23 ohm above the 10/24 chip (0.339): the WN sheet below the chopper now
-# leaves the corridor of the chopper's gate lanes (afe_lay.w_entry), and only the 5 um Cin_N
-# bus crosses it. 10/24: E 0.171 / 0.213, W 0.344 / 0.339, T 0.119 / 0.124; 10/23 before the
-# D6 fixes: E 0.350 / 0.346, W 3.970 / 3.935, T 71.60 / 114.59
-RIN_EXTRACTED = {"E": (0.168, 0.211), "W": (0.343, 0.570), "T": (0.119, 0.124)}
+# side T (Cin to the input-pair gates). The chip of 10/25 (fifth assembly), pex_rin.py on
+# the chip core: E with the pad straps (--tess m3 m4 m5), W with the Metal3 sheet under Cin
+# meshed (--tess m3; SquareCounting misses the spreading in the sheet), T square. The fourth
+# assembly (9b5f495a) had WN 0.570: the WN sheet below the chopper left the corridor of the
+# chopper's gate lanes and only the 5 um Cin_N bus crossed it; its Metal5 is back over the
+# corridor (afe_lay.w_entry). 10/24: E 0.171 / 0.213, W 0.344 / 0.339, T 0.119 / 0.124;
+# 10/23 before the D6 fixes: E 0.350 / 0.346, W 3.970 / 3.935, T 71.60 / 114.59
+RIN_EXTRACTED = {"E": (0.168, 0.211), "W": (0.343, 0.354), "T": (0.119, 0.124)}
 
 
 def split_signal_path(text, variant):

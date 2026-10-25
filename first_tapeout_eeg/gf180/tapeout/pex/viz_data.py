@@ -103,6 +103,13 @@ VDVDD DVDD 0 3.3
 """
 
 
+# ngspice's default gmin (1e-12 S across every junction, times the device multiplier M) puts
+# 1-6 nS on the electrodes through the input chopper's M = 1024 / 512 switches: the whole low-
+# frequency real part of the input admittance, and 3.4 nA out of each electrode in the
+# extraction (not in silicon). The AFE decks use 1e-15.
+AFE_GMIN = "gmin=1e-15"
+
+
 def run(d, deck, name="tb.spice"):
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, name), "w").write(deck)
@@ -178,6 +185,30 @@ def write_csv(path, cols, rows, comment=""):
     print("wrote", os.path.relpath(path, REPO))
 
 
+def _norm(v):
+    try:
+        return f"{float(v):.6g}"
+    except (TypeError, ValueError):
+        return str(v)
+
+
+def merge_rows(path, rows, key):
+    """The rows of an earlier run that no new row replaces (same values in the key columns),
+    then the new ones: a partial run (--variants pex, --points 0) adds to a combined file."""
+    if not os.path.exists(path):
+        return list(rows)
+    new = {tuple(_norm(r[k]) for k in key) for r in rows}
+    old = [ln.rstrip("\n").split(",") for ln in open(path).readlines()[1:] if ln.strip()]
+    return [o for o in old if tuple(_norm(o[k]) for k in key) not in new] + list(rows)
+
+
+def merge_json(path, res):
+    old = json.load(open(path)) if os.path.exists(path) else {}
+    old.update(res)
+    json.dump(old, open(path, "w"), indent=1)
+    return old
+
+
 # ----------------------------------------------------------------------------------
 # AFE, frozen phase
 # ----------------------------------------------------------------------------------
@@ -235,7 +266,7 @@ def afe_ac_deck(variant, phase, mode, fstart=1.0, fstop=1e9, ppd=40, cm=False):
 {pa.head()}.include {pa.BIAS}
 {afe_dut(variant, "", mode)}
 .temp 27
-.options sparse reltol=1e-6 vntol=1e-10 abstol=3e-13 bypass=0
+.options {AFE_GMIN} sparse reltol=1e-6 vntol=1e-10 abstol=3e-13 bypass=0
 VDD VDD 0 3.3
 VCM CM 0 1.65
 {pa.BIAS_LINES}VCHOP CHOP 0 {chop}
@@ -302,7 +333,7 @@ def do_afe_loop(variants):
             np.save(os.path.join(OUT, "work", f"afe_{v}_{ph}_H.npy"), np.vstack([f, s["vout"], s["ve"],
                                                                                s["ip"], s["iq"]]))
             print(v, ph, json.dumps(res[f"{v}_{ph}"]))
-    json.dump(res, open(os.path.join(OUT, "afe_loop_summary.json"), "w"), indent=1)
+    merge_json(os.path.join(OUT, "afe_loop_summary.json"), res)
 
 
 # ----------------------------------------------------------------------------------
@@ -419,7 +450,7 @@ def do_ota(variants):
                       f"beta = (in diff)/(out diff) by output current injection (loaded open-loop gain)\n"
                       + json.dumps(res[key]))
             print(key, json.dumps(res[key]))
-    json.dump(res, open(os.path.join(OUT, "ota_summary.json"), "w"), indent=1)
+    merge_json(os.path.join(OUT, "ota_summary.json"), res)
 
 
 # ----------------------------------------------------------------------------------
@@ -548,7 +579,7 @@ def zin_deck(variant, f_sig, amp, cm, tsettle, tstop):
 {pa.head()}.include {pa.BIAS}
 {pa.dut_text(variant)}
 .temp 27
-.options sparse reltol=1e-5 vntol=1e-8 abstol=1e-12 bypass=0
+.options {AFE_GMIN} sparse reltol=1e-5 vntol=1e-8 abstol=1e-12 bypass=0
 VDD VDD 0 3.3
 VCM CM 0 1.65
 {pa.BIAS_LINES}VCHOP CHOP 0 {chop}
@@ -625,15 +656,15 @@ def do_zin(variants, points=None, workers=8, amp=1e-3):
             print(r["variant"], "cm" if r["cm"] else "dm", r["f"], f"{r['amp']:+g} V", f"V {r['v']:.4g}",
                   f"I {r['i']:.4g}", f"I_ELP mean {r['ip'] * 1e9:.3f} nA, I_ELN mean {r['in_'] * 1e9:.3f} nA",
                   f"({r['t']:.0f} s)", flush=True)
-    rows, grows, bias = [], [], []
+    rows, grows, bias = [], [], {}
     for (v, f, cm, pos), r in sorted(res.items()):
         if not pos:
             continue
         if f == 0:
             rn = res[(v, f, cm, False)]
             z = (r["v"] - rn["v"]) / (r["i"] - rn["i"])
-            bias.append(f"{v} {'cm' if cm else 'dm'} pair: I_ELP {(r['ip'] + rn['ip']) / 2 * 1e9:+.3f} nA, "
-                        f"I_ELN {(r['in_'] + rn['in_']) / 2 * 1e9:+.3f} nA")
+            bias[f"{v} {'cm' if cm else 'dm'} pair"] = dict(I_ELP_nA=round((r["ip"] + rn["ip"]) / 2 * 1e9, 4),
+                                                           I_ELN_nA=round((r["in_"] + rn["in_"]) / 2 * 1e9, 4))
         else:
             z = r["v"] / r["i"]
             if not cm:
@@ -641,9 +672,13 @@ def do_zin(variants, points=None, workers=8, amp=1e-3):
                 grows.append((f, float(db(g)), float(np.degrees(np.angle(g))), "transient-chopped-blanked", v))
         rows.append((f, float(z.real), float(z.imag), f"transient-chopped-{'cm' if cm else 'dm'}", v))
         print(v, "cm" if cm else "dm", f, f"Z {z:.5g}", flush=True)
+    bias = merge_json(os.path.join(OUT, "afe_zin_bias.json"), bias)
+    bias = [f"{k}: I_ELP {b['I_ELP_nA']:+.3f} nA, I_ELN {b['I_ELN_nA']:+.3f} nA" for k, b in sorted(bias.items())]
     print("\n".join(bias))
-    grows.sort(key=lambda r: (r[4], r[0]))
-    write_csv(os.path.join(OUT, "afe_baseband_transient.csv"), ["f_hz", "gain_db", "phase_deg", "method", "netlist"],
+    p = os.path.join(OUT, "afe_baseband_transient.csv")
+    grows = merge_rows(p, grows, (4, 0))
+    grows.sort(key=lambda r: (r[4], float(r[0])))
+    write_csv(p, ["f_hz", "gain_db", "phase_deg", "method", "netlist"],
               grows, "AFE chopped transfer source (diff, 100 ohm per leg) -> OUTP-OUTN from the transient runs of zin\n"
               f"({amp * 1e3:g} mV sine, choppers at 128 kHz with the 7-MCLK blanking, fundamental over whole signal and\n"
               "chopper periods after 0.4 ms, lock-in integrators in the simulator): the check of afe_baseband_*.csv,\n"
@@ -657,14 +692,17 @@ def do_zin(variants, points=None, workers=8, amp=1e-3):
                 i = np.argmin(np.abs(np.log(f / fr)))
                 rows.append((float(f[i]), float(zz[i].real), float(zz[i].imag),
                              f"frozen-phase-AC-{'cm' if cm else 'dm'} (reference only)", v))
-    rows.sort(key=lambda r: (r[4], r[3], r[0]))
-    write_csv(os.path.join(OUT, "afe_zin.csv"), ["f_hz", "re_ohm", "im_ohm", "method", "netlist"], rows,
+    p = os.path.join(OUT, "afe_zin.csv")
+    rows = merge_rows(p, rows, (4, 3, 0))
+    rows.sort(key=lambda r: (r[4], r[3], float(r[0])))
+    write_csv(p, ["f_hz", "re_ohm", "im_ohm", "method", "netlist"], rows,
               "Electrode-side input impedance of the AFE, typical 27 C, CPF_TRIM 8, 100 ohm per leg, fch 128 kHz\n"
               "dm: (V_ELP - V_ELN) / I_ELP with a differential drive; cm: V_ELP / I_ELP per side with both driven\n"
               f"transient-chopped: fundamental of a {amp * 1e3:g} mV sine over whole signal and chopper periods after\n"
               "0.4 ms, from lock-in integrators in the simulator; f = 0: DC steps of +- the amplitude, the difference\n"
-              "of the means over 16 chopper periods (the electrode currents that flow without a signal cancel):\n"
-              + "\n".join(bias) + "\nfrozen-phase AC: chopper stopped in phase A, for reference only")
+              "of the means over 16 chopper periods (the electrode currents that flow without a signal cancel; their\n"
+              "averages, the currents at zero input, positive into the AFE):\n"
+              + "\n".join(bias) + f"\nfrozen-phase AC: chopper stopped in phase A, for reference only. ngspice {AFE_GMIN}")
 
 
 def do_zin_ac(variants):
@@ -676,7 +714,10 @@ def do_zin_ac(variants):
             zz = s["vp"] / s["ip"] if cm else s["ve"] / s["ip"]
             rows += [(float(a), float(b.real), float(b.imag), f"frozen-phase-AC-{'cm' if cm else 'dm'} (reference only)", v)
                      for a, b in zip(f, zz)]
-    write_csv(os.path.join(OUT, "afe_zin_frozen_ac.csv"), ["f_hz", "re_ohm", "im_ohm", "method", "netlist"], rows,
+    p = os.path.join(OUT, "afe_zin_frozen_ac.csv")
+    rows = merge_rows(p, rows, (4, 3, 0))
+    rows.sort(key=lambda r: (r[4], r[3], float(r[0])))
+    write_csv(p, ["f_hz", "re_ohm", "im_ohm", "method", "netlist"], rows,
               "Electrode-side input impedance of the AFE with the chopper stopped in phase A (an LTI circuit; the\n"
               "chopper's switched-capacitor action is missing, so this is a reference only, not the chip's input\n"
               "impedance: see the transient-chopped rows of afe_zin.csv), typical 27 C, CPF_TRIM 8, 100 ohm per leg\n"

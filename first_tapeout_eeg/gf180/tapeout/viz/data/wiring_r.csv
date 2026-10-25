@@ -5,9 +5,9 @@ W: chopper to Cin bottom plate,P,10/23 extraction,3.97
 W: chopper to Cin bottom plate,N,10/23 extraction,3.94
 T: Cin top plate to input-pair gates,P,10/23 extraction,71.6
 T: Cin top plate to input-pair gates,N,10/23 extraction,114.6
-E: electrode pad to chopper,P,Final layout,0.171
-E: electrode pad to chopper,N,Final layout,0.213
-W: chopper to Cin bottom plate,P,Final layout,0.344
-W: chopper to Cin bottom plate,N,Final layout,0.339
+E: electrode pad to chopper,P,Final layout,0.168
+E: electrode pad to chopper,N,Final layout,0.211
+W: chopper to Cin bottom plate,P,Final layout,0.343
+W: chopper to Cin bottom plate,N,Final layout,0.57
 T: Cin top plate to input-pair gates,P,Final layout,0.119
 T: Cin top plate to input-pair gates,N,Final layout,0.124

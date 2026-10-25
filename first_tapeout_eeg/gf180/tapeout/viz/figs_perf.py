@@ -196,8 +196,9 @@ def fig_e2e_effects():
     pe, d = e2e_runs()
     fig = figure(12.4, 9.0, "End-to-end run: what the parasitics change",
                  "Evaluation window 20–70 µs · the same 16 kHz full-scale sine as the previous figure",
-                 note="Middle: the A/B square wave decays with the DC path's time constant (fit 143 µs, DC path 138 µs): the "
-                      "P/N imbalance left when the AFE reset is released. The AFE alone settles to 2.02 mV p-p (0.1–1.5 ms).\n"
+                 note="Middle: the A/B square wave is the P/N imbalance left when the AFE reset is released; it decays (fit 101 µs "
+                      "in this window, DC path 138 µs). Before the 25 Oct fix of the input chopper's clock coupling (WP against WN) "
+                      "it was 18.8 mV.\nThe AFE alone settles to 2.38 mV p-p (0.1–1.5 ms). "
                       "Bottom: the residual is noise-shaped quantization error, mostly above the band; one DAC1 element is "
                       "1/31 = 0.032 of the range.")
     axs = fig.subplots(3, 1, sharex=True)
@@ -274,8 +275,9 @@ def fig_e2e_metrics():
     dots(axs[0, 2], "residual", "DAC1 residual after the sine fit", "rms (DAC1 range = 1)", (0, 0.045), "{:.4f}",
          ref=1 / 31, ref_lab="one element")
     dots(axs[0, 3], "avdd_ma", "AVDD current", "mA", (26.0, 28.5), "{:.2f}")
-    dots(axs[1, 0], "ab_mv", "AFE output, phase A − B", "mV", (0, 24), "{:.2f}", ref=2.02, ref_lab="AFE alone, settled: 2.02",
+    dots(axs[1, 0], "ab_mv", "AFE output, phase A − B", "mV", (-6, 6), "{:+.2f}", ref=2.38, ref_lab="AFE alone, settled: 2.38 p-p",
          side=True, ref_right=True)
+    axs[1, 0].axhline(0, color=HAIR, lw=1)
     ax = axs[1, 1]
     v = [max(-s[r]["adc_in_min_mv"], s[r]["adc_in_max_mv"]) for r in runs]
     for xi, vi, r in zip(x, v, runs):

@@ -30,7 +30,7 @@ from vizstyle import ACCENT, BAD, HAIR, INK, INK2, LIGHT, MUTED, OK, WARN, figur
 DATA, OUT = sys.argv[1], sys.argv[2]
 os.makedirs(OUT, exist_ok=True)
 PREFIX = "gf180_viz_20261024_"
-STAMP = "Final layout, 24 Oct 2026"
+STAMP = "Final layout, 25 Oct 2026"
 
 # net-class palette (checked for colour-vision deficiency separation in this order)
 PAL = {"Supply": "#ea580c", "Ground": "#4f46e5", "Electrode input": "#e11d48", "AFE output": "#0d9488",
@@ -477,7 +477,8 @@ def fig_rwire():
                  "Noise-equivalent series resistance per side (Ω, log): E pad to chopper · W chopper to the Cin bottom plate · "
                  "T Cin top plate to the input-pair gates",
                  note="T was set by the auto-routed gate wiring of the input pair (0.38 µm wires, single vias) before the D6 fixes. "
-                      "The per-side target for 16.50 bit is 0.35 Ω.")
+                      "The per-side target for 16.50 bit is 0.35 Ω.\nW · N is 0.23 Ω above W · P: below the chopper only the 5 µm "
+                      "Cin_N bus crosses the corridor of the chopper's gate lanes (since 25 Oct, electrode-current fix).")
     ax = fig.add_subplot()
     n = len(groups)
     y = np.arange(n)[::-1] * 1.0
@@ -526,7 +527,9 @@ def fig_dist():
                 ax.plot([hi + off, hi + off], [-175, val], color=vcol[v], lw=1.6, alpha=0.45, solid_capstyle="butt")
                 ax.scatter([hi + off], [val], s=44, color=vcol[v], zorder=3, edgecolor="white", linewidth=0.8,
                            label=v if hi == 0 or (h == "HD2" and v.startswith("Single")) else None)
-                ax.text(hi + off + 0.06, val + 2.2, f"{val:.0f}".replace("-", "−"), fontsize=7.4, color=vcol[v], ha="left", va="bottom")
+                left = vi == 0 and len(vers) > 1          # (labels outward, clear of the neighbouring stem)
+                ax.text(hi + off + (-0.06 if left else 0.06), val + 2.2, f"{val:.0f}".replace("-", "−"), fontsize=7.4, color=vcol[v],
+                        ha="right" if left else "left", va="bottom")
         ax.axhline(-111, color=BAD, ls=(0, (5, 3)), lw=1)
         ax.text(3.45, -111 + 1.5, "spec ≤ −111 dBc", ha="right", va="bottom", fontsize=8, color=BAD)
         ax.set_xticks(range(4), harm)
@@ -547,7 +550,7 @@ def fig_metrics():
     dm = {r["metric"]: r for r in load("adc_metrics")}
     fig = figure(13.6, 7.6, "Schematic against layout, AFE and ADC",
                  "Each panel compares the schematic, the 10/23 extraction (before the D6 fixes) and the final extracted layout",
-                 note="AFE gain from the ±0.5 mV chopped transient (200 µs); the 70 µs end-to-end sine gives 291.45 V/V (schematic) and 291.36 V/V (final). "
+                 note="AFE gain from the ±0.5 mV chopped transient (200 µs); the 70 µs end-to-end sine gives 291.45 V/V (schematic) and 291.34 V/V (final). "
                       "SNDR values are the low end of each simulated range.\nADC 'after fixes' is the 10/24 extraction before the B4 latch fix; "
                       "the decision-accuracy panel also shows the value after it.")
     axs = fig.subplots(2, 5)
@@ -685,7 +688,7 @@ def fig_checks():
         colours[(i, 3)] = OK if res in ("pass", "match") else BAD if res == "no result" else WARN
         body.append([r["check"], r["scope"], r["tool"], "● " + res, "–" if r["violations"] == "" else f"{int(num(r['violations'])):,}", r["detail"]])
     table_fig("13_checks", "Checks on the final chip",
-              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–24 Oct 2026",
+              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–25 Oct 2026",
               ["Check", "Scope", "Tool", "Result", "Violations", "Detail"], body, [0.22, 0.15, 0.2, 0.09, 0.07, 0.27],
               note="The precheck's Magic step crashes inside Magic and is reported as 0 by LibreLane; Magic DRC was rerun without the "
                    "dummy COMP fill. Its two remaining rule types come from the Magic deck's wording; the drawn geometry meets both.",

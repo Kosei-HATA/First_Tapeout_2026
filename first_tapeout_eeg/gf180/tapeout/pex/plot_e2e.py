@@ -232,7 +232,7 @@ def main():
         ax[0].plot(us(tt), -fitv * 0.96875 * 1e3, color=STYLE[r]["color"], ls=STYLE[r]["ls"], lw=1.2)
         ax[1].plot(us(d["tk"]), d["rn"], color=STYLE[r]["color"], ls=STYLE[r]["ls"], lw=1.0, marker="o", ms=2)
     ax[0].set_ylabel("DAC1 のレベル、符号を反転 (mV)")
-    ax[1].set_ylabel("量子化の残差（DAC の段）")
+    ax[1].set_ylabel("量子化の残差（DAC1 の範囲 = 1）")
     ax[1].set_xlabel("時間 (µs)")
     top_legend(ax[0], runs, [key_dot("点：フレームの中ほどの値"), key_line("線：16 kHz の正弦波の当てはめ"),
                              key_line(f"電極の入力 × {gref:.1f}（sch の全体の利得）", color=INK, lw=0.8)])
@@ -274,7 +274,7 @@ def main():
 
     # 7 table
     rows = [("AFE の利得（周期平均の当てはめ）", "gain_afe", "{:.1f}"), ("全体の利得（電極 → DAC1）", "gain_all", "{:.1f}"),
-            ("ADC の利得（AFE の出力 → DAC1）", "gain_adc", "{:.3f}"), ("量子化の残差（DAC の段、rms）", "residual", "{:.4f}"),
+            ("ADC の利得（AFE の出力 → DAC1）", "gain_adc", "{:.3f}"), ("量子化の残差（DAC1 の範囲 = 1、rms）", "residual", "{:.4f}"),
             ("AVDD の電流 (mA)", "avdd_ma", "{:.2f}"), ("AFE の出力の相 A − B の差 (mV)", "ab_mv", "{:+.2f}"),
             ("ADC の入力の瞬時値 最小 (mV)", "adc_in_min_mv", "{:.1f}"), ("同 最大 (mV)", "adc_in_max_mv", "{:.1f}"),
             ("O1 最小／最大 (mV)", ("o1_min_mv", "o1_max_mv"), "{:.1f}／{:.1f}"),

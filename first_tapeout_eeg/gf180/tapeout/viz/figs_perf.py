@@ -373,7 +373,8 @@ def fig_afe_baseband():
                  "frozen-phase transfer · typical, 27 °C",
                  note="G(f) = Σ_k odd 4/(πk)² · [H(k·fch + f) + H*(k·fch − f)], fch = 128 kHz, k ≤ 7811. Dashed: with the chopper-period "
                       "average that the end-to-end checks apply (adds sinc(f/fch)).\nBlanking is not modelled: the sum counts the "
-                      "settling after each chopper edge, which the 7-MCLK blanking hides, so the chip's gain is a few per cent higher.")
+                      "settling after each chopper edge, which the 7-MCLK blanking hides. Diamonds: chopped transient runs with the "
+                      "blanking, 4.0 % (schematic) and 4.7 % (extracted) above the sum, at the frozen-phase in-band gain.")
     axs = fig.subplots(3, 1, sharex=True, gridspec_kw=dict(height_ratios=[1.1, 1.1, 0.9]))
     for net in ("sch", "pex"):
         r = rcsv(f"afe_baseband_{net}_A")
@@ -391,8 +392,11 @@ def fig_afe_baseband():
         for net in ("sch", "pex"):
             rr = [x for x in r if x.get("netlist", net) == net]
             if rr:
-                axs[0].scatter(col(rr, "f_hz"), col(rr, "gain"), s=40, marker="D", facecolor="white", edgecolor=NET[net]["color"],
-                               linewidth=1.4, zorder=4, label=f"{NET[net]['label']}: chopped transient with blanking")
+                dia = dict(s=40, marker="D", facecolor="white", edgecolor=NET[net]["color"], linewidth=1.4, zorder=4)
+                gt = col(rr, "gain_db")
+                axs[0].scatter(col(rr, "f_hz"), 10 ** (gt / 20), label=f"{NET[net]['label']}: chopped transient with blanking", **dia)
+                axs[1].scatter(col(rr, "f_hz"), gt - gt[0], **dia)
+                axs[2].scatter(col(rr, "f_hz"), col(rr, "phase_deg"), **dia)
     for ax in axs:
         logf(ax, 0.1, 64e3)
         band(ax, label=ax is axs[0])
@@ -401,7 +405,8 @@ def fig_afe_baseband():
     axs[0].legend(loc="lower left", fontsize=8)
     axs[1].set_ylim(-4.5, 0.5)
     axs[1].set_ylabel("|G| relative to 0.1 Hz (dB)")
-    axs[1].text(0.15, -3.9, "solid: harmonic sum · dashed: with the chopper-period average", fontsize=7.8, color=MUTED)
+    axs[1].text(0.15, -3.9, "solid: harmonic sum · dashed: with the chopper-period average · diamonds: transient, relative to its "
+                "lowest frequency", fontsize=7.8, color=MUTED)
     axs[2].set_ylim(-32, 3)
     axs[2].set_ylabel("Phase of G (°)")
     axs[2].set_xlabel("Frequency (Hz)")
@@ -556,12 +561,13 @@ def neg_re(zd, net):
 def fig_zin_smith():
     zd, tr = zin_data()
     lo, hi = neg_re(zd, "pex")
+    lo_s = f"{lo:.0f} Hz" if lo < 1e3 else f"{lo / 1e3:.1f} kHz"
     fig = figure(13.0, 7.6, "AFE input impedance on Smith charts",
-                 "Electrode-side impedance, chopper stopped in phase A (frozen-phase AC, an LTI reference; typical, 27 °C, 100 Ω per leg) · "
-                 "Γ = (Z − Z0)/(Z + Z0)",
+                 "Electrode-side impedance: lines frozen-phase AC (chopper stopped in phase A, an LTI reference), diamonds chopped "
+                 "transient · typical, 27 °C, 100 Ω per leg · Γ = (Z − Z0)/(Z + Z0)",
                  note="Z0 is a chart normalization, not a line impedance: 100 MΩ puts the EEG band mid-chart; 50 Ω is the usual RF reference. "
-                      f"Markers at decades of frequency.\nFrom {lo / 1e3:.1f} kHz to {hi / 1e6:.0f} MHz the frozen differential input has Re Z < 0, "
-                      "so its trace runs just outside |Γ| = 1 there.")
+                      f"Markers at decades of frequency; diamonds in each chart's range (DC on the left).\nFrom {lo_s} to {hi / 1e6:.0f} MHz "
+                      "the frozen differential input has Re Z < 0, so its trace runs just outside |Γ| = 1 there.")
     axs = fig.subplots(1, 2)
     views = ((axs[0], 100e6, "Z0 = 100 MΩ, 1 Hz – 10 kHz", (1, 1e4), (1, 10, 100, 1e3, 1e4)),
              (axs[1], 50.0, "Z0 = 50 Ω, 1 MHz – 1 GHz", (1e6, 1e9), (1e6, 1e7, 1e8, 1e9)))
@@ -579,10 +585,19 @@ def fig_zin_smith():
                 ax.scatter([gm.real], [gm.imag], s=18, facecolor="white", edgecolor=ZSTY[key]["color"], linewidth=1.1, zorder=4)
                 if key == ("pex", "dm"):
                     ax.annotate(hz(fm) + ("Hz" if fm >= 1e3 else " Hz"), (gm.real, gm.imag), textcoords="offset points", xytext=(7, -2), fontsize=7.4,
-                                color=ACCENT)
+                                color=ACCENT, zorder=6, bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
+        dm = []
         for net, mode, f, z in tr:
-            g = gamma(z, z0)
-            ax.scatter([g.real], [g.imag], s=46, marker="D", color=ZSTY[(net, mode)]["color"], zorder=5)
+            if (f0 * 0.999 <= f <= f1 * 1.001) or (f == 0 and f0 <= 1):
+                g = gamma(z, z0)
+                ax.scatter([g.real], [g.imag], s=46, marker="D", color=ZSTY[(net, mode)]["color"], zorder=5)
+                if mode == "dm":
+                    dm.append((abs(z), g))
+        if dm and z0 > 1e6:
+            za, zb = min(a for a, _ in dm), max(a for a, _ in dm)
+            ax.annotate(f"chopped differential:\n|Z| {za / 1e6:.1f}–{zb / 1e6:.1f} MΩ, far below Z0", xy=(-0.97, 0.0), xytext=(-0.78, 0.34),
+                        fontsize=7.4, color=INK2, zorder=6, arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.8),
+                        bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
     axs[0].legend(loc="upper left", bbox_to_anchor=(-0.02, 1.02), fontsize=7.8)
     save(fig, "23_zin_smith")
 
@@ -590,10 +605,13 @@ def fig_zin_smith():
 def fig_zin_bode():
     zd, tr = zin_data()
     fig = figure(12.6, 7.8, "AFE input impedance against frequency",
-                 "Electrode side, chopper stopped in phase A (frozen-phase AC, an LTI reference) · typical, 27 °C, 100 Ω per leg",
+                 "Electrode side: lines frozen-phase AC (chopper stopped in phase A, an LTI reference), diamonds chopped transient · "
+                 "typical, 27 °C, 100 Ω per leg",
                  note="Differential: Z = (V_ELP − V_ELN)/I_ELP with a differential drive; common mode: V_ELP/I_ELP per side with both "
                       "electrodes driven. The chopped input's switched-capacitor\naction is missing from the frozen-phase circuit; "
-                      "chopped values come from transient runs (diamonds, where available).")
+                      "chopped values come from transient runs (diamonds; DC drawn at the left edge). The schematic's differential phase "
+                      "near −180° is a negative resistance (−578 kΩ: the Cpf trim 8\ncancels the switched-capacitor current 1 % too much); "
+                      "the extracted chip is +3.5 MΩ.")
     axs = fig.subplots(2, 1, sharex=True, gridspec_kw=dict(height_ratios=[1.4, 1]))
     for key in (("sch", "dm"), ("pex", "dm"), ("sch", "cm"), ("pex", "cm")):
         f, z = zd[key]
@@ -603,15 +621,19 @@ def fig_zin_bode():
         axs[0].scatter([max(f, 0.3)], [abs(z)], s=46, marker="D", color=ZSTY[(net, mode)]["color"], zorder=5)
         axs[1].scatter([max(f, 0.3)], [np.degrees(np.angle(z))], s=46, marker="D", color=ZSTY[(net, mode)]["color"], zorder=5)
     for ax in axs:
-        logf(ax, 1, 1e9)
+        logf(ax, 0.2 if tr else 1, 1e9)
         band(ax, label=ax is axs[0])
         vmark(ax, FCH, "chopper 128 kHz", 0.98) if ax is axs[0] else ax.axvline(FCH, color=MUTED, lw=0.8, ls=(0, (1, 2)))
     axs[0].set_yscale("log")
-    axs[0].set_ylim(0.5, 3e9)
+    axs[0].set_ylim(0.5, 2e10)
     axs[0].yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: (hz(v) if v >= 1e3 else f"{v:g} ") + "Ω"))
     axs[0].set_ylabel("|Z|")
-    axs[0].legend(loc="lower left", fontsize=8)
-    axs[1].set_ylim(-140, 10)
+    h, _ = axs[0].get_legend_handles_labels()
+    if tr:
+        h.append(Line2D([], [], marker="D", ls="", color=MUTED, label="Chopped transient"))
+        axs[0].text(0.3, 2.2e8, "DC", fontsize=7.5, color=MUTED, ha="center", va="bottom")
+    axs[0].legend(handles=h, loc="lower left", fontsize=8)
+    axs[1].set_ylim(-190, 10)
     axs[1].yaxis.set_major_locator(mticker.MultipleLocator(45))
     axs[1].axhline(-90, color=GRID2, lw=0.9)
     axs[1].set_ylabel("Phase of Z (°)")

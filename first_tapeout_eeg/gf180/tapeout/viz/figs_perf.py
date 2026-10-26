@@ -196,7 +196,7 @@ def fig_e2e_effects():
     pe, d = e2e_runs()
     fig = figure(12.4, 9.0, "End-to-end run: what the parasitics change",
                  "Evaluation window 20–70 µs · the same 16 kHz full-scale sine as the previous figure",
-                 note="Middle: the A/B square wave is the P/N imbalance left when the AFE reset is released; it decays (fit 101 µs "
+                 note="Middle: the A/B square wave is the P/N imbalance left when the AFE reset is released; it decays (fit 103 µs "
                       "in this window, DC path 138 µs). Before the 25 Oct fix of the input chopper's clock coupling (WP against WN) "
                       "it was 18.8 mV.\nThe AFE alone settles to 2.38 mV p-p (0.1–1.5 ms). "
                       "Bottom: the residual is noise-shaped quantization error, mostly above the band; one DAC1 element is "

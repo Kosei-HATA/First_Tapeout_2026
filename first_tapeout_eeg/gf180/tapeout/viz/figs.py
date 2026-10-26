@@ -7,7 +7,8 @@ recorded values (budget, afe_noise, wiring_r, afe_metrics, adc_metrics, distorti
 checks, schedule: documentation/gf180_pex_20261023.md, gf180_adc_d6_fix_20261023.md,
 gf180_chip_assembly_20261023.md, gf180_tapeout_tracker.md).
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs.py gf180/tapeout/viz/data documentation/figures [names]"""
+usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs.py gf180/tapeout/viz/data documentation/figures/gf180/r6_20261026/viz [names]
+       (the chip version, r6, is set in vizstyle.py: file names gf180_viz_<chip>_NN_*.png)"""
 import csv
 import datetime as dt
 import math
@@ -25,12 +26,12 @@ from matplotlib.patches import Patch, Rectangle  # noqa: E402
 from PIL import Image  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from vizstyle import ACCENT, BAD, HAIR, INK, INK2, LIGHT, MUTED, OK, WARN, figure  # noqa: E402
+from vizstyle import ACCENT, BAD, CHIP, CHIP_DATE, HAIR, INK, INK2, LIGHT, MUTED, OK, WARN, figure  # noqa: E402
 
 DATA, OUT = sys.argv[1], sys.argv[2]
 os.makedirs(OUT, exist_ok=True)
-PREFIX = "gf180_viz_20261024_"
-STAMP = "Final layout, 26 Oct 2026"
+PREFIX = f"gf180_viz_{CHIP}_"
+STAMP = f"Chip {CHIP}"
 
 # net-class palette (checked for colour-vision deficiency separation in this order)
 PAL = {"Supply": "#ea580c", "Ground": "#4f46e5", "Electrode input": "#e11d48", "AFE output": "#0d9488",
@@ -548,10 +549,10 @@ def fig_metrics():
     am = {r["metric"]: r for r in load("afe_metrics")}
     dm = {r["metric"]: r for r in load("adc_metrics")}
     fig = figure(13.6, 7.6, "Schematic against layout, AFE and ADC",
-                 "Each panel compares the schematic, the 10/23 extraction (before the D6 fixes) and the final extracted layout",
+                 f"Each panel compares the schematic, the 10/23 extraction (before the D6 fixes) and the extraction of {STAMP.lower()}",
                  note="AFE gain from the ±0.5 mV chopped transient (200 µs); the 70 µs end-to-end sine gives 291.45 V/V (schematic) and 291.34 V/V (final). "
-                      "SNDR values are the low end of each simulated range.\nADC 'after fixes' is the 10/24 extraction before the B4 latch fix; "
-                      "the decision-accuracy panel also shows the value after it.")
+                      "SNDR values are the low end of each simulated range.\nADC loop: 20 kHz, 0.3 V pk, 100 µs, evaluated over 20–100 µs "
+                      "(80 frames); the final ADC includes the D6 and B4 (comparator latch) fixes.")
     axs = fig.subplots(2, 5)
     cats3 = ["Schematic", "10/23", "Final"]
     cols3 = [INK2, LIGHT, ACCENT]
@@ -602,7 +603,7 @@ def fig_metrics():
     ax = axs[0, 4]
     e1, e31 = dm["DAC1 even-order error, one element"], dm["DAC1 even-order error, 31 elements"]
     for k, (row, mk, lab) in enumerate([(e1, "o", "1 element"), (e31, "s", "31 elements")]):
-        vals = [abs(num(row[c])) for c in ("schematic", "pex_1023", "pex_1024")]
+        vals = [abs(num(row[c])) for c in ("schematic", "pex_1023", "final")]
         ax.scatter(np.arange(3) + (k - 0.5) * 0.18, vals, s=40, marker=mk, color=cols3, zorder=3, edgecolor="white", linewidth=0.8)
     ax.scatter([], [], marker="o", color=INK2, label="1 element")
     ax.scatter([], [], marker="s", color=INK2, label="31 elements")
@@ -610,20 +611,20 @@ def fig_metrics():
     ax.set_ylim(1e-5, 3)
     ax.axhline(0.008, color=BAD, ls=(0, (4, 3)), lw=1)
     ax.annotate("requirement 0.008", (2.55, 0.008), textcoords="offset points", xytext=(0, 3), ha="right", va="bottom", fontsize=7.5, color=BAD)
-    ax.set_xticks(range(3), ["Schematic", "10/23", "After fixes"], fontsize=8)
+    ax.set_xticks(range(3), cats3, fontsize=8)
     ax.set_xlim(-0.6, 2.6)
     ax.set_ylabel("|q| per switching (fC, log)", fontsize=8.5)
     ax.set_title("DAC1 even-order error", fontsize=9.2)
     ax.legend(loc="upper left", fontsize=7.6)
     ax.grid(axis="x", visible=False)
     r = dm["SNDR with DAC1 even-order error, behavioural"]
-    dots(axs[1, 0], [num(r["schematic"]), num(r["pex_1023"]), num(r["pex_1024"])], "SNDR with DAC1 error", "dB (behavioural)",
-         ref=101.1, ref_label="16.5 bit needs 101.1", ylim=(50, 185), fmt="{:.0f}", cats=["Schematic", "10/23", "After fixes"])
+    dots(axs[1, 0], [num(r["schematic"]), num(r["pex_1023"]), num(r["final"])], "SNDR with DAC1 error", "dB (behavioural)",
+         ref=101.1, ref_label="16.5 bit needs 101.1", ylim=(50, 185), fmt="{:.0f}")
     ax = axs[1, 1]
     cp, cn = dm["Clock CLKQ to O2P coupling"], dm["Clock CLKQ to O2N coupling"]
     ax.bar(x - 0.18, [num(cp["pex_1023"]), num(cn["pex_1023"])], width=0.34, color=LIGHT, label="10/23")
-    ax.bar(x + 0.18, [num(cp["pex_1024"]), num(cn["pex_1024"])], width=0.34, color=ACCENT, label="After fixes")
-    for xi, v in zip(list(x - 0.18) + list(x + 0.18), [num(cp["pex_1023"]), num(cn["pex_1023"]), num(cp["pex_1024"]), num(cn["pex_1024"])]):
+    ax.bar(x + 0.18, [num(cp["final"]), num(cn["final"])], width=0.34, color=ACCENT, label="Final")
+    for xi, v in zip(list(x - 0.18) + list(x + 0.18), [num(cp["pex_1023"]), num(cn["pex_1023"]), num(cp["final"]), num(cn["final"])]):
         ax.text(xi, v + 0.6, f"{v:.3g}", ha="center", va="bottom", fontsize=8)
     ax.set_xticks(x, ["O2P", "O2N"], fontsize=8)
     ax.set_ylabel("fF", fontsize=8.5)
@@ -632,11 +633,11 @@ def fig_metrics():
     ax.grid(axis="x", visible=False)
     ax.set_ylim(0, 38)
     r = dm["Loop residual, rms"]
-    dots(axs[1, 2], [num(r["schematic"]), num(r["pex_1023"]), num(r["pex_1024"])], "ADC loop residual", "rms (DAC1 range = 1)",
-         ylim=(0, 0.06), fmt="{:.4f}", cats=["Schematic", "10/23", "After fixes"])
+    dots(axs[1, 2], [num(r["schematic"]), num(r["pex_1023"]), num(r["final"])], "ADC loop residual", "rms (DAC1 range = 1)",
+         ylim=(0, 0.06), fmt="{:.4f}")
     ax = axs[1, 3]
     lo, hi = dm["Second-integrator swing, minimum"], dm["Second-integrator swing, maximum"]
-    for k, c in enumerate(("schematic", "pex_1023", "pex_1024")):
+    for k, c in enumerate(("schematic", "pex_1023", "final")):
         a, b = num(lo[c]), num(hi[c])
         ax.plot([k, k], [a, b], color=cols3[k], lw=7, solid_capstyle="butt")
         ax.text(k + 0.2, a, f"{a:.1f}".replace("-", "−"), fontsize=7.5, va="center", color=INK2)
@@ -646,15 +647,14 @@ def fig_metrics():
     ax.axhline(-46.9, color=BAD, ls=(0, (4, 3)), lw=1)
     ax.annotate("quantizer range ±46.9", (2.55, 46.9), textcoords="offset points", xytext=(0, 3), ha="right", va="bottom", fontsize=7.5, color=BAD)
     ax.set_ylim(-60, 60)
-    ax.set_xticks(range(3), ["Schematic", "10/23", "After fixes"], fontsize=8)
+    ax.set_xticks(range(3), cats3, fontsize=8)
     ax.set_xlim(-0.6, 2.6)
     ax.set_ylabel("mV", fontsize=8.5)
     ax.set_title("Second-integrator swing", fontsize=9.2)
     ax.grid(axis="x", visible=False)
     r = dm["Decisions at the ideal threshold"]
-    vals = [num(r["schematic"]), num(r["pex_1023"]), num(r["pex_1024"]), 93.8]
-    dots(axs[1, 4], vals, "Decisions at the ideal threshold", "% of frames", ylim=(0, 110), fmt="{:.1f}",
-         cats=["Sch.", "10/23", "Fixes", "+ B4"], cols=[INK2, LIGHT, ACCENT, "#0d9488"])
+    dots(axs[1, 4], [num(r["schematic"]), num(r["pex_1023"]), num(r["final"])], "Decisions at the ideal threshold", "% of frames",
+         ylim=(0, 110), fmt="{:.1f}")
     save(fig, "11_layout_comparison")
 
 
@@ -717,10 +717,10 @@ def fig_schedule():
     items = [r for r in s if r["area"] != "Milestone"]
     ms = [r for r in s if r["area"] == "Milestone"]
     D = lambda t: dt.datetime.strptime(t, "%Y-%m-%d")  # noqa: E731
-    today = dt.datetime(2026, 10, 24)
+    today = dt.datetime.strptime(CHIP_DATE, "%Y%m%d")     # the state of the tracker on the chip's day
     col = {"done": OK, "in progress": WARN, "not started": LIGHT}
     fig = figure(12.6, 10.4, "Schedule", "Tracker items at their due dates, coloured by status; vertical rules are milestones",
-                 note="Status as recorded in gf180_tapeout_tracker.md on 24 Oct 2026; the dashed red rule is that day.")
+                 note=f"Status as recorded in gf180_tapeout_tracker.md on {today:%-d %b %Y}; the dashed red rule is that day.")
     ax = fig.add_subplot()
     rows = []
     for r in items:

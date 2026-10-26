@@ -3,13 +3,13 @@ condition,version,harmonic,dbc
 "2 kHz, full scale, chopped transient",Schematic,HD3,-117.4
 "2 kHz, full scale, chopped transient",Schematic,HD4,-145.3
 "2 kHz, full scale, chopped transient",Schematic,HD5,-134.4
-"2 kHz, full scale, chopped transient",Final layout,HD2,-134.2
+"2 kHz, full scale, chopped transient",Final layout,HD2,-133.9
 "2 kHz, full scale, chopped transient",Final layout,HD3,-118.1
-"2 kHz, full scale, chopped transient",Final layout,HD4,-143.0
-"2 kHz, full scale, chopped transient",Final layout,HD5,-141.5
+"2 kHz, full scale, chopped transient",Final layout,HD4,-141.4
+"2 kHz, full scale, chopped transient",Final layout,HD5,-141.1
 "In band, full scale, static DC path",Single DC path (before B7),HD2,-87.1
 "In band, full scale, static DC path",Single DC path (before B7),HD3,-101.6
-"In band, full scale, static DC path",Final layout,HD2,-167.2
+"In band, full scale, static DC path",Final layout,HD2,-164.0
 "In band, full scale, static DC path",Final layout,HD3,-120.3
-"In band, full scale, static DC path",Final layout,HD4,-149.0
-"In band, full scale, static DC path",Final layout,HD5,-145.5
+"In band, full scale, static DC path",Final layout,HD4,-148.9
+"In band, full scale, static DC path",Final layout,HD5,-146.0

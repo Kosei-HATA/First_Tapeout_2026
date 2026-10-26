@@ -4,7 +4,8 @@ figs.py: the end-to-end transient with parasitics (pex/pex_e2e.py, read through
 pex/plot_e2e.py), Bode plots of the AFE amplifier, the AFE baseband transfer with chopping, the
 ADC OTAs and the modulator's NTF/STF, and the AFE input impedance (pex/viz_data.py).
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs_perf.py gf180/tapeout/pex documentation/figures [names]"""
+usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs_perf.py gf180/tapeout/pex documentation/figures/gf180/r6_20261026/viz [names]
+       (the chip version, r6, is set in vizstyle.py; the runs it reads must be of that chip)"""
 import csv
 import importlib.util
 import json
@@ -26,7 +27,7 @@ PEX, OUT = sys.argv[1], sys.argv[2]
 VIZ = os.path.join(PEX, "runs", "viz")
 E2E = os.path.join(PEX, "runs", "e2e")
 os.makedirs(OUT, exist_ok=True)
-PREFIX = "gf180_viz_20261024_"
+PREFIX = f"gf180_viz_{vizstyle.CHIP}_"
 TEAL = "#0d9488"
 GRID2 = "#cbd5e1"
 BAND = (0.5, 100.0)                      # band of the 16.5-bit residual budget
@@ -54,6 +55,12 @@ def rcsv(name):
 
 def col(rows, name):
     return np.array([float(r[name]) for r in rows])
+
+
+def afe_ripple():
+    """The AFE alone: output ripple outside the blanking (mV p-p), the final column of figs.py's afe_metrics.csv."""
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "afe_metrics.csv"), encoding="utf-8") as f:
+        return float(next(r for r in csv.DictReader(f) if r["metric"].startswith("Output ripple"))["final"])
 
 
 def summary(name):
@@ -194,11 +201,15 @@ def fig_e2e():
 
 def fig_e2e_effects():
     pe, d = e2e_runs()
+    # decay of the extracted A - B: adjacent held levels, log-linear fit over the window
+    rh, ht = d["pex"]["rh"], d["pex"]["ht"]
+    ab = (rh[:-1] - rh[1:]) * (-1.0) ** np.arange(len(rh) - 1)
+    tau = -1 / np.polyfit(0.5 * (ht[:-1] + ht[1:]), np.log(np.abs(ab)), 1)[0]
     fig = figure(12.4, 9.0, "End-to-end run: what the parasitics change",
                  "Evaluation window 20–70 µs · the same 16 kHz full-scale sine as the previous figure",
-                 note="Middle: the A/B square wave is the P/N imbalance left when the AFE reset is released; it decays (fit 103 µs "
+                 note=f"Middle: the A/B square wave is the P/N imbalance left when the AFE reset is released; it decays (fit {tau * 1e6:.0f} µs "
                       "in this window, DC path 138 µs). Before the 25 Oct fix of the input chopper's clock coupling (WP against WN) "
-                      "it was 18.8 mV.\nThe AFE alone settles to 2.38 mV p-p (0.1–1.5 ms). "
+                      f"it was 18.8 mV.\nThe AFE alone shows {afe_ripple():.2f} mV p-p (0.1–0.2 ms). "
                       "Bottom: the residual is noise-shaped quantization error, mostly above the band; one DAC1 element is "
                       "1/31 = 0.032 of the range.")
     axs = fig.subplots(3, 1, sharex=True)
@@ -275,7 +286,7 @@ def fig_e2e_metrics():
     dots(axs[0, 2], "residual", "DAC1 residual after the sine fit", "rms (DAC1 range = 1)", (0, 0.045), "{:.4f}",
          ref=1 / 31, ref_lab="one element")
     dots(axs[0, 3], "avdd_ma", "AVDD current", "mA", (26.0, 28.5), "{:.2f}")
-    dots(axs[1, 0], "ab_mv", "AFE output, phase A − B", "mV", (-6, 6), "{:+.2f}", ref=2.38, ref_lab="AFE alone, settled: 2.38 p-p",
+    dots(axs[1, 0], "ab_mv", "AFE output, phase A − B", "mV", (-6, 6), "{:+.2f}", ref=afe_ripple(), ref_lab=f"AFE alone: {afe_ripple():.2f} p-p",
          side=True, ref_right=True)
     axs[1, 0].axhline(0, color=HAIR, lw=1)
     ax = axs[1, 1]
@@ -370,13 +381,23 @@ def fig_afe_bode():
 
 
 def fig_afe_baseband():
+    # transient (lowest frequency) against the harmonic sum at that frequency
+    above = {}
+    if os.path.exists(os.path.join(VIZ, "afe_baseband_transient.csv")):
+        for net in ("sch", "pex"):
+            rr = [x for x in rcsv("afe_baseband_transient") if x.get("netlist", net) == net]
+            r = rcsv(f"afe_baseband_{net}_A")
+            if rr:
+                f0, g0 = float(rr[0]["f_hz"]), float(rr[0]["gain_db"])
+                above[net] = 10 ** ((g0 - np.interp(f0, col(r, "f_hz"), col(r, "gain_db"))) / 20) - 1
+    pct = " and ".join(f"{100 * above[n]:.1f} % ({w})" for n, w in (("sch", "schematic"), ("pex", "extracted")) if n in above)
     fig = figure(12.6, 8.6, "AFE baseband transfer with chopping",
                  "Electrode (differential, 100 Ω per leg) to OUTP − OUTN · harmonic sum over the odd chopper harmonics of the "
                  "frozen-phase transfer · typical, 27 °C",
                  note="G(f) = Σ_k odd 4/(πk)² · [H(k·fch + f) + H*(k·fch − f)], fch = 128 kHz, k ≤ 7811. Dashed: with the chopper-period "
                       "average that the end-to-end checks apply (adds sinc(f/fch)).\nBlanking is not modelled: the sum counts the "
                       "settling after each chopper edge, which the 7-MCLK blanking hides. Diamonds: chopped transient runs with the "
-                      "blanking, 4.0 % (schematic) and 4.7 % (extracted) above the sum, at the frozen-phase in-band gain.")
+                      f"blanking, {pct} above the sum, at the frozen-phase in-band gain.")
     axs = fig.subplots(3, 1, sharex=True, gridspec_kw=dict(height_ratios=[1.1, 1.1, 0.9]))
     for net in ("sch", "pex"):
         r = rcsv(f"afe_baseband_{net}_A")
@@ -606,14 +627,16 @@ def fig_zin_smith():
 
 def fig_zin_bode():
     zd, tr = zin_data()
+    zdc = {net: z.real for net, mode, f, z in tr if mode == "dm" and f == 0}   # chopped differential at DC
+    rs, rp = minus(f"{zdc['sch'] / 1e3:.0f}"), minus(f"{zdc['pex'] / 1e6:+.1f}")
     fig = figure(12.6, 7.8, "AFE input impedance against frequency",
                  "Electrode side: lines frozen-phase AC (chopper stopped in phase A, an LTI reference), diamonds chopped transient · "
                  "typical, 27 °C, 100 Ω per leg",
                  note="Differential: Z = (V_ELP − V_ELN)/I_ELP with a differential drive; common mode: V_ELP/I_ELP per side with both "
                       "electrodes driven. The chopped input's switched-capacitor\naction is missing from the frozen-phase circuit; "
                       "chopped values come from transient runs (diamonds; DC drawn at the left edge). The schematic's differential phase "
-                      "near −180° is a negative resistance (−578 kΩ: the Cpf trim 8\ncancels the switched-capacitor current 1 % too much); "
-                      "the extracted chip is +3.5 MΩ.")
+                      f"near −180° is a negative resistance ({rs} kΩ: the Cpf trim 8\ncancels the "
+                      f"switched-capacitor current 1 % too much); the extracted chip is {rp} MΩ (DC).")
     axs = fig.subplots(2, 1, sharex=True, gridspec_kw=dict(height_ratios=[1.4, 1]))
     for key in (("sch", "dm"), ("pex", "dm"), ("sch", "cm"), ("pex", "cm")):
         f, z = zd[key]

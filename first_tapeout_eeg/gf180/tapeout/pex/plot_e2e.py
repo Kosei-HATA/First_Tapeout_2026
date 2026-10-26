@@ -16,7 +16,11 @@ phase-A / phase-B difference: the held value of each chopper half period (outsid
 blanking) fitted with the signal sine; twice the mean of the residual times (-1)^k is the
 A - B difference of the held levels (the ripple's square wave, p-p).
 
-Usage: python3 gf180/tapeout/pex/plot_e2e.py [--runs d4 sch pex pexchip] [--date 20261024] [--t0 20e-6]
+The figures go to documentation/figures/gf180/<CHIP>_<CHIP_DATE>/e2e_pex/ as
+gf180_e2e_pex_<CHIP>_N_*.png, with the chip on every figure: the runs must be of that chip
+(the same CHIP as gf180/tapeout/viz/vizstyle.py).
+
+Usage: python3 gf180/tapeout/pex/plot_e2e.py [--runs d4 sch pex pexchip] [--t0 20e-6]
        [--suffix _smoke] [--out <folder>]
 """
 import argparse
@@ -32,7 +36,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 RUNS = os.path.join(HERE, "runs", "e2e")
-FIGS = os.path.join(REPO, "documentation", "figures")
+CHIP, CHIP_DATE = "r6", "20261026"       # the chip of the pex / pexchip runs (sixth assembly)
+CHIP_LABEL = "6 回目のチップ（r6、10/26）"
+FIGS = os.path.join(REPO, "documentation", "figures", "gf180", f"{CHIP}_{CHIP_DATE}", "e2e_pex")
 
 FS = 1.024e6
 T = 1 / FS
@@ -47,7 +53,7 @@ SIGNAL = 0.26                            # the part kept for the signal (V pk)
 STYLE = {
     "d4": dict(color="#2a78d6", ls=":", label="D4 のデッキ（回路図、AFE とドライバを AVDD に直接）"),
     "sch": dict(color="#eb6834", ls="--", label="回路図（afe_top のラッパ、抽出と同じ区切り）"),
-    "pex": dict(color="#1baf7a", ls="-", label="寄生込み（最終のチップの抽出）"),
+    "pex": dict(color="#1baf7a", ls="-", label=f"寄生込み（チップ {CHIP} の抽出）"),
     "pexchip": dict(color="#eda100", ls="-.", label="寄生込み＋チップの最上位の配線（OUTP／OUTN）"),
 }
 INK, INK2, GRID, SURF = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
@@ -144,6 +150,7 @@ def sliding(d, key="vo"):
 
 
 def save(fig, path):
+    fig.text(0.995, 0.995, CHIP_LABEL, ha="right", va="top", fontsize=9, color=INK2)
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("wrote", os.path.relpath(path, REPO))
@@ -152,16 +159,16 @@ def save(fig, path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--runs", nargs="+", default=["d4", "sch", "pex", "pexchip"])
-    ap.add_argument("--date", default="20261024")
     ap.add_argument("--fsig", type=float, default=16e3)
     ap.add_argument("--t0", type=float, default=20e-6)
     ap.add_argument("--blank", type=int, default=7)
     ap.add_argument("--suffix", default="", help="run folder suffix (e.g. _smoke)")
     ap.add_argument("--out", default=FIGS)
     a = ap.parse_args()
+    os.makedirs(a.out, exist_ok=True)
     runs = [r for r in a.runs if os.path.exists(os.path.join(RUNS, r + a.suffix, "out.csv"))]
     D = {r: load(os.path.join(RUNS, r + a.suffix), a.fsig, a.t0, a.blank) for r in runs}
-    pre = os.path.join(a.out, f"gf180_e2e_pex_{a.date}")
+    pre = os.path.join(a.out, f"gf180_e2e_pex_{CHIP}")
     us = lambda t: t * 1e6
 
     # 1 electrode input and AFE output (period averages)

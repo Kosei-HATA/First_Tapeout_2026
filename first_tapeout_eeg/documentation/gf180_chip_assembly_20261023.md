@@ -40,11 +40,11 @@
 
 配置図（GDS をそのまま描き、ブロック名を書き足したもの）：
 
-![チップ全体の配置](figures/gf180_chip_placement_20261023.png)
+![チップ全体の配置](figures/gf180/r0_20261023/gf180_chip_placement_20261023.png)
 
-![AFE の配置](figures/gf180_afe_placement_20261023.png)
+![AFE の配置](figures/gf180/r0_20261023/gf180_afe_placement_20261023.png)
 
-![ADC の配置](figures/gf180_adc_placement_20261023.png)
+![ADC の配置](figures/gf180/r0_20261023/gf180_adc_placement_20261023.png)
 
 ## 電源
 

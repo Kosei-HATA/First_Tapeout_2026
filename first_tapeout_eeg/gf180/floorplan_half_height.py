@@ -16,7 +16,7 @@ the core, so the core has no reserve for them.
 Block areas (low/high, mm2) come from documentation/gf180_area_estimate_20261021.md
 (DAC2 as a MOS current-steering DAC with stage 2 scaled x10, 2026-10-22). The script
 checks containment/overlap of blocks, pads and the corner cells, prints the placement
-table and writes documentation/figures/gf180_floorplan_20261022.svg.
+table and writes documentation/figures/gf180/plan_20261022/gf180_floorplan_20261022.svg.
 
 Run: python3 gf180/floorplan_half_height.py
 """
@@ -315,7 +315,8 @@ def main():
     check()
     table()
     here = os.path.dirname(os.path.abspath(__file__))
-    out = os.path.join(here, "..", "documentation", "figures", "gf180_floorplan_20261022.svg")
+    out = os.path.join(here, "..", "documentation", "figures", "gf180", "plan_20261022",
+                       "gf180_floorplan_20261022.svg")
     svg(os.path.normpath(out))
     print(f"\nwrote {os.path.normpath(out)}")
 

@@ -12,7 +12,7 @@ Routing and space between blocks: +15 % (low) / +25 % (high), as in the estimate
 The chart uses the midpoint of each range; the whiskers show low..high.
 Die and core are the wafer.space 1x0.5 slot (gf180/floorplan_half_height.py).
 
-Writes documentation/figures/gf180_area_by_function_20261022.svg and prints the table.
+Writes documentation/figures/gf180/plan_20261022/gf180_area_by_function_20261022.svg and prints the table.
 Run: python3 gf180/area_by_function.py
 """
 import os
@@ -54,7 +54,7 @@ GRAYS = {  # non-function area: (label, light, dark)
 }
 FONT = 'system-ui, -apple-system, "Hiragino Sans", "Noto Sans CJK JP", "Segoe UI", sans-serif'
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "documentation", "figures",
-                   "gf180_area_by_function_20261022.svg")
+                   "gf180", "plan_20261022", "gf180_area_by_function_20261022.svg")
 
 
 def mid(lo, hi):

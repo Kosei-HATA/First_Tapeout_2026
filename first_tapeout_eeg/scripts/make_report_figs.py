@@ -13,7 +13,7 @@ plt.rcParams["axes.unicode_minus"] = False
 
 ROOT = os.path.expanduser("~/Codings/First_Tapeout_2026/first_tapeout_eeg")
 RES = os.path.join(ROOT, "source/trials/20260902/results")
-OUT = os.path.join(ROOT, "documentation/figures/20260905")
+OUT = os.path.join(ROOT, "documentation/figures/sky130/20260905")
 os.makedirs(OUT, exist_ok=True)
 
 C_MEAS = "#0072B2"   # measured (blue)

@@ -215,10 +215,12 @@ def mim_cell(b, name, side, top, bot, n=1, label=True):
         a = min(2.0, side / 2)
         # top plate down to the bar
         c.box("metal5", x + side / 2 - a / 2, 1.0, x + side / 2 + a / 2, y0 + 0.5)
-        # bottom-plate tab up, Via4 onto the upper bar
+        # bottom-plate tab up, Via4 onto the upper bar; the tab is 0.3 um wider than the
+        # vias each side and reaches 0.5 um above them (Magic's MIMTM.2: 0.4 um of bottom
+        # plate around every Via4 on it; the DRM only within 1.06 um of FuseTop)
         yt = y0 + side + 0.6
-        c.box("metal4", x + side / 2 - a / 2, yt - 0.01, x + side / 2 + a / 2, yt + 2.0)
-        c.vias("via4", x + side / 2 - a / 2, yt + 1.0, x + side / 2 + a / 2, yt + 2.0)
+        c.box("metal4", x + side / 2 - a / 2 - 0.3, yt - 0.01, x + side / 2 + a / 2 + 0.3, yt + 2.0)
+        c.vias("via4", x + side / 2 - a / 2, yt + 0.5, x + side / 2 + a / 2, yt + 1.5)
     yt = y0 + side + 0.6
     # lower bar and island (top plates): 1.6 um tall, 1.4 um below the bottom plates
     c.box("metal5", xs[0], 0.4, xe, 2.0)

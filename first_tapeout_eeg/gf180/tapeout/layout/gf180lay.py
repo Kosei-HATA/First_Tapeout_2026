@@ -288,7 +288,9 @@ def mim_array(b, nx, ny, w, l, x0=0.0, y0=0.0, top="TOP", bot="BOT", s=3.0, t=3.
             yu = yb + j * py
             b.pcell("cap_mim", {"mim_option": "MIM-B", "metal_level": "M5", "wc": w, "lc": l}, x=xk + s, y=yu)
             b.box("metal4", xk + s + w + 0.3, yu - 0.6, xs + t, yu + l + 0.6)   # bottom-plate tab
-            b.vias("via4", xs, yu + 0.4, xs + t, yu + l - 0.4)
+            # Via4 0.35 um short of the tab's east edge: Magic's MIMTM.2 wants 0.4 um of
+            # bottom plate around every Via4 on it (the DRM only within 1.06 um of FuseTop)
+            b.vias("via4", xs, yu + 0.4, xs + t - 0.35, yu + l - 0.4)
         if south:
             jw = jumper_w or s
             b.box("metal5", xk, yl, xk + s, ytop)              # top spine, down to its landing

@@ -30,7 +30,7 @@ from vizstyle import ACCENT, BAD, HAIR, INK, INK2, LIGHT, MUTED, OK, WARN, figur
 DATA, OUT = sys.argv[1], sys.argv[2]
 os.makedirs(OUT, exist_ok=True)
 PREFIX = "gf180_viz_20261024_"
-STAMP = "Final layout, 25 Oct 2026"
+STAMP = "Final layout, 26 Oct 2026"
 
 # net-class palette (checked for colour-vision deficiency separation in this order)
 PAL = {"Supply": "#ea580c", "Ground": "#4f46e5", "Electrode input": "#e11d48", "AFE output": "#0d9488",
@@ -687,11 +687,11 @@ def fig_checks():
         colours[(i, 3)] = OK if res in ("pass", "match") else BAD if res == "no result" else WARN
         body.append([r["check"], r["scope"], r["tool"], "● " + res, "–" if r["violations"] == "" else f"{int(num(r['violations'])):,}", r["detail"]])
     table_fig("13_checks", "Checks on the final chip",
-              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–25 Oct 2026",
+              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–26 Oct 2026",
               ["Check", "Scope", "Tool", "Result", "Violations", "Detail"], body, [0.22, 0.15, 0.2, 0.09, 0.07, 0.27],
-              note="The precheck's Magic step crashes inside Magic and is reported as 0 by LibreLane; Magic DRC was rerun without the "
-                   "dummy COMP and poly fill (the same crash). Its two remaining rule types come from the Magic deck's wording; the drawn "
-                   "geometry meets both.",
+              note="Until 25 Oct the precheck's Magic step crashed inside Magic (a bin-index bug hit by the PDK's COMP / Poly2 fill "
+                   "arrays) and LibreLane reported it as 0. Since 26 Oct those fill cells hold at most 9 instances each, and Magic runs "
+                   "to the end with all fill.",
               colours=colours, h_row=0.33, w=15.0)
 
 

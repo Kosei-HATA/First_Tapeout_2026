@@ -279,7 +279,8 @@ RES_HEAD = 0.64      # poly head beyond the body, each end
 RES_PP = 0.82        # PPLUS over the head, from the body edge outwards (HRES.10: 0.1 over SAB)
 RES_SAB_X, RES_SAB_Y = 0.10, 0.28   # SAB beyond the body (HRES.9 0.28)
 RES_RX, RES_RY = 1.04, 0.40         # RESISTOR beyond the body (HRES.4: 0.4 beyond the poly)
-RES_CO = 0.35        # body edge to the head contacts (HRES.8: SAB to contact 0.22)
+RES_CO = 0.32        # body edge to the head contacts: SAB to contact 0.22 exactly (HRES.8 min
+                     # 0.22; Magic's PRES/HRES.7 also wants the contact within SAB + 0.44)
 RES_GAP = 0.60       # poly to poly between strips of an array (HRES.3 0.4; SAB merged)
 
 

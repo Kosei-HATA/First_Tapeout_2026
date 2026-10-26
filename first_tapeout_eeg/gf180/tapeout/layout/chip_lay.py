@@ -726,10 +726,76 @@ def nofill(a, I):
 
 
 def fill(gds, out, runs):
-    """The PDK's dummy fill (COMP, Poly2, Metal1..5 on their dummy layers) over the chip."""
+    """The PDK's dummy fill (COMP, Poly2, Metal1..5 on their dummy layers) over the chip;
+    the dummy COMP and poly cells regrouped by fill_tree()."""
     rb = os.path.join(g.TECH, "scripts", "fill_all.rb")
     g._nix(f"klayout -b -r {rb} -rd input={gds} -rd output={out}", os.path.join(runs, "fill.log"))
+    for name, (n, made) in fill_tree(out).items():
+        print(f"  {name}: {n} instances regrouped into {made} cells")
     return out
+
+
+FILL_CELLS = ["COMP_FILL", "POLY2_FILL"]
+FILL_FAN = 9
+
+
+def fill_tree(path):
+    """Regroup the instances of the PDK's dummy COMP and poly fill cells (fill_all.rb puts
+    5000-6000 arrays in each) into trees of at most FILL_FAN instances per cell, in place.
+    Magic bins a cell's instances from 10 on, and its on-the-fly sub-binning of the
+    oversized bin (bpEnumNextBin, with an area outside the bin array) writes out of bounds
+    when an array is exactly as wide or tall as the bins: the precheck's Magic DRC crashed
+    on COMP_FILL and POLY2_FILL (documentation/gf180_chip_assembly_20261023.md). With at
+    most 9 instances in a cell Magic keeps no bins. The groups are named <cell>$$G<n>,
+    which the precheck's MAGIC_GDS_FLATGLOB ('*$$*') flattens like the fill cells
+    themselves: the dummy COMP and poly stay paint of chip_top, as before (as separate
+    cells they would overlap each other, Magic's "Can't overlap those layers"). The metal
+    fill cells keep their flat instances: no bin of theirs reaches a bad index (checked
+    with an instrumented Magic), and as trees they slow KLayout's deep DRC down a lot.
+    Returns {cell: (instances, cells made)}."""
+    ly = A.pya.Layout()
+    ly.read(path)
+    made = {}
+    for name in FILL_CELLS:
+        cell = ly.cell(name)
+        if cell is None:
+            continue
+        items = []
+        for inst in cell.each_inst():
+            b = inst.bbox()
+            items.append((inst.cell_inst.dup(), (b.left + b.right) / 2, (b.bottom + b.top) / 2))
+        count = [0]
+
+        def group(items):
+            if len(items) <= FILL_FAN:
+                return [t[0] for t in items]
+            out = []
+            for col in _thirds(items, 1):
+                for part in _thirds(col, 2):
+                    if len(part) == 1:
+                        out.append(part[0][0])
+                        continue
+                    count[0] += 1
+                    sub = ly.create_cell(f"{name}$$G{count[0]}")
+                    for ia in group(part):
+                        sub.insert(ia)
+                    out.append(A.pya.CellInstArray(sub.cell_index(), A.pya.Trans()))
+            return out
+
+        top = group(items)
+        cell.clear_insts()
+        for ia in top:
+            cell.insert(ia)
+        made[name] = (len(items), count[0])
+    ly.write(path)
+    return made
+
+
+def _thirds(items, k):
+    """items sorted on their k-th field (1: x, 2: y of the centre), in three equal runs"""
+    s = sorted(items, key=lambda t: t[k])
+    n = len(s)
+    return [s[i * n // 3:(i + 1) * n // 3] for i in range(3) if (i + 1) * n // 3 > i * n // 3]
 
 
 def strip_block_labels(a):

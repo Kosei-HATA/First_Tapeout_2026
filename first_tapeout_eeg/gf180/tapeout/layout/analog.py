@@ -196,9 +196,10 @@ def res_cell(b, name, l, w, terms, sub="VSS", gap=f.RES_GAP, pad=1.6, label=True
     return AnalogCell(c, width, height, pins)
 
 
-def mim_cell(b, name, side, top, bot, n=1, label=True):
-    """n square cap_mim_2f0ff units (side um) in a row between `top` (top plates) and
-    `bot` (bottom plates). Pins are Metal4 islands for route.Router:
+def mim_cell(b, name, side, top, bot, n=1, label=True, length=None):
+    """n cap_mim_2f0ff units in a row between `top` (top plates) and `bot` (bottom plates),
+    side um wide and `length` um tall (square if not given). Pins are Metal4 islands for
+    route.Router:
       below the row: Metal5 straps from the top plates join a Metal5 bar over a Metal4
         island (Via4 array), the `top` pin;
       above the row: a Metal4 tab up from each bottom plate, Via4 to a Metal5 bar that
@@ -206,22 +207,23 @@ def mim_cell(b, name, side, top, bot, n=1, label=True):
     The bottom plates are only reached through Via4 (MIMTM.10). Returns an AnalogCell
     with keepout = the capacitor box (no Metal3/Metal4 routing there)."""
     gx = 3.0                                      # between units (bottom plates 1.8 apart)
+    ln = side if length is None else length
     c = b.new_cell(name)
     y0 = 4.0                                      # capacitor bottom edge
     xs = [1.0 + k * (side + gx) for k in range(n)]
     xe = xs[-1] + side
     for x in xs:
-        c.pcell("cap_mim", {"mim_option": "MIM-B", "metal_level": "M5", "wc": side, "lc": side}, x=x, y=y0)
+        c.pcell("cap_mim", {"mim_option": "MIM-B", "metal_level": "M5", "wc": side, "lc": ln}, x=x, y=y0)
         a = min(2.0, side / 2)
         # top plate down to the bar
         c.box("metal5", x + side / 2 - a / 2, 1.0, x + side / 2 + a / 2, y0 + 0.5)
         # bottom-plate tab up, Via4 onto the upper bar; the tab is 0.3 um wider than the
         # vias each side and reaches 0.5 um above them (Magic's MIMTM.2: 0.4 um of bottom
         # plate around every Via4 on it; the DRM only within 1.06 um of FuseTop)
-        yt = y0 + side + 0.6
+        yt = y0 + ln + 0.6
         c.box("metal4", x + side / 2 - a / 2 - 0.3, yt - 0.01, x + side / 2 + a / 2 + 0.3, yt + 2.0)
         c.vias("via4", x + side / 2 - a / 2, yt + 0.5, x + side / 2 + a / 2, yt + 1.5)
-    yt = y0 + side + 0.6
+    yt = y0 + ln + 0.6
     # lower bar and island (top plates): 1.6 um tall, 1.4 um below the bottom plates
     c.box("metal5", xs[0], 0.4, xe, 2.0)
     c.vias("via4", xs[0], 0.4, xe, 2.0)

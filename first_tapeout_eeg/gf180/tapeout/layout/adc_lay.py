@@ -5,11 +5,16 @@ core x 1290..2500, y 100..1547; documentation/gf180_floorplan_20261022.md). Top 
 adc_top; LVS against lvs/adc_top.spice (eeg_adc and eeg_adc_dig).
 
 Placement (local um; the differential axis at y = 723.5):
-  - C1 arrays (eeg_c1, 340 pF since 10/23) above and below the band at the west, both
-    with their buses facing it: C1P (TOP = I1P outer, BOT = O1N), C1N mirrored (I1N, O1P).
+  - C1 (425 pF per side since 10/29, x1.25; eeg_adc.spice): the main arrays (eeg_c1a, 20
+    units, 5 x 4) above and below the band at the west, both with their buses facing it:
+    C1P (TOP = I1P outer, BOT = O1N), C1N mirrored (I1N, O1P). The rest of C1 (eeg_c1x, 4
+    smaller units in a row) lies in the band's west end on each side, its buses facing
+    those of the main array: C1PX mirrored right under C1P (the two TOP buses abut), C1NX
+    above the bottom rails (c1_extension()).
   - band: adc_rdac (RIN + DAC1) at the west, OTA1 east of it, both centred on the axis;
-    east of OTA1 the second stage: OTA2, C2P / C2N (MIM cells), the OTA1 chopper driver
-    eeg_adc_clk; R21 in the band's top channel.
+    east of OTA1 the second stage: OTA2, C2P / C2N (MIM cells, two units each), the OTA1
+    chopper driver eeg_adc_clk, the stage-2 reset TGs east of OTA2; R21 in the band's top
+    channel.
   - top right: the quantizer (ports on its east edge); bottom right: DAC2 (SEL ports on
     its bottom edge) above eeg_adc_dig (LibreLane macro: SEL1 west, SEL2 north, TH and the
     frame interface east).
@@ -18,7 +23,8 @@ Hand-drawn wiring (assemble.Assembly.wire / via_stack):
     straps (Metal5) up the gap between rdac and OTA1 from the C1N buses (O1P crosses the
     I1N bus on a Metal4 tap); O1N from the C1P bus, extended east of the array; Metal4
     runs to the port stubs. Crossings between two of these nets lie between the two
-    plates of one C1 or between the virtual grounds.
+    plates of one C1 or between the virtual grounds. C1's two parts are joined by Metal4
+    jumpers: O1N under the abutting I1P buses; I1N and O1P under the bottom rails.
   - power: AVSS / AVDD Metal5 rails along the bottom of the band (AVSS next to the I1N
     bus) and in the top channel east of the C1 array, joined by two Metal5 trunks at the
     east; block straps extended to them with via stacks. DVDD / DVSS rails over
@@ -51,12 +57,17 @@ TOP = "adc_top"
 W, H = 1210.0, 1447.0
 GRID = (0.24, 0.8, 0.0, route.P)          # router: columns x0, pitch; rows y0, pitch
 # power rails (y ranges) and the east trunks (x ranges)
-R_AVSS_B, R_AVDD_B = (418.0, 426.0), (428.0, 436.0)
+R_AVSS_B, R_AVDD_B = (422.4, 430.4), (432.4, 440.4)    # 5.68 um above C1N (416.72 tall since 10/29)
 R_AVDD_T, R_AVSS_T = (1012.0, 1020.0), (1024.0, 1032.0)
 X_TOPRAIL = 545.0
 T_AVDD, T_AVSS = (1150.0, 1158.0), (1162.0, 1170.0)
 R_DVDD, R_DVSS = (100.0, 106.0), (112.0, 118.0)
 X_DVDD = 1203.0                      # DVDD riser along the east edge (Metal5)
+# C1's rest (eeg_c1x): the west edge of both parts and the bottom of C1NX (3.6 um above the
+# AVDD rail); the west edges of the 10 um Metal4 jumpers between C1's parts (in the first
+# columns, clear of the arrays' own jumpers at the column edges)
+X_C1X, Y_C1NX = 12.0, 444.0
+X_JUMP = (40.0, 60.0)
 # ports
 WEST_PORTS = ["INP", "INN", "VREFP", "VREFN", "VCM", "VBN1", "VNC1", "VPC1", "VBCM1", "VBPC2", "VBNC2",
               "IDP", "IDN", "IQ"]
@@ -66,15 +77,15 @@ EAST_PORTS = ["MCLK", "ADC_RST_N", "TH_CAPTURE", "DAC_LOAD", "DWA_EN"] + [f"CODE
 
 
 def small_cells(a):
-    """R21, the reset TG, the NRST inverter, the ADC_ZERO switch and the C2 MIM cell, as
-    cells of the assembly."""
+    """R21, the reset TG, the NRST inverter, the ADC_ZERO switch and the C2 MIM cell (two
+    units of 61.68 x 98.83 um, 24.41 pF), as cells of the assembly."""
     r21 = an.res_cell(a, "adc_r21", 291.28, 1.0, [("O1P", "I2P"), ("O1N", "I2N")] * 3, sub="AVSS")
     tg = lg.tg_cell(a, "adc_rst_tg", 2, 2, 0.5, 1.0, a="A", y="B", gn="G", gp="GN")
     p, n = lg.inv_seq(1)
     inv = lg.cmos_cell(a, "adc_inv", p, n, 2.0, 1.0, ["A", "Y"])
     ztg = lg.tg_cell(a, "adc_zero_tg", 4, 4, 2.5, 5.0, a="A", y="B", gn="Z", gp="ZB")
     zero = Combo(a, "adc_zero", [(inv, {"A": "Z", "Y": "ZB"}), (ztg, {})])
-    c2 = an.mim_cell(a, "adc_c2", 98.83, "TOP", "BOT")
+    c2 = an.mim_cell(a, "adc_c2", 61.68, "TOP", "BOT", n=2, length=98.83)
     return r21, tg, inv, zero, c2
 
 
@@ -150,6 +161,23 @@ def stage1(a, I):
     a.via_stack("metal4", "metal5", xs1, y_o1n[0], xs1 + 5.0, y_o1n[1], "O1N")
     pins["O1N"] = [("metal4", xc + 2.0, y_o1n[0], xs1 - 2.0, y_o1n[1])]
     return pins
+
+
+def c1_extension(a, I):
+    """C1's rest (eeg_c1x) on both sides, with Metal4 jumpers (Via4 at both ends) between
+    the buses of a net: C1PX mirrored right under C1P, its TOP bus abutting C1P's (one I1P
+    bus), the O1N jumper under them; C1NX above the bottom rails, the I1N and O1P jumpers
+    under the rails (O1P also under both I1N buses)."""
+    c1p, c1n = I["c1p"], I["c1n"]
+    I["c1px"] = a.put("eeg_c1x", X_C1X, c1p.bbox[1], mirror=True, name="C1PX", nets={"TOP": "I1P", "BOT": "O1N"},
+                      mim=True)
+    I["c1nx"] = a.put("eeg_c1x", X_C1X, Y_C1NX, name="C1NX", nets={"TOP": "I1N", "BOT": "O1P"}, mim=True)
+    for lo, hi, net, x in ((I["c1px"], c1p, "O1N", X_JUMP[0]), (c1n, I["c1nx"], "I1N", X_JUMP[0]),
+                           (c1n, I["c1nx"], "O1P", X_JUMP[1])):
+        b1, b2 = lo.pin(net, "metal5"), hi.pin(net, "metal5")
+        a.wire("metal4", x, b1[2], x + 10.0, b2[4], net)
+        a.vias("via4", x, b1[2], x + 10.0, b1[4])
+        a.vias("via4", x, b2[2], x + 10.0, b2[4])
 
 
 def strap_to_rail(a, inst, net, rail, up):
@@ -298,8 +326,10 @@ def build():
 
     # ---- blocks
     I = {}
-    I["c1p"] = a.put("eeg_c1", 0.0, H - 412.32, name="C1P", nets={"TOP": "I1P", "BOT": "O1N"}, mim=True)
-    I["c1n"] = a.put("eeg_c1", 0.0, 412.32, mirror=True, name="C1N", nets={"TOP": "I1N", "BOT": "O1P"}, mim=True)
+    h1 = a.load("eeg_c1a")[2][3]                     # the main C1 array's height (buses at y 0)
+    I["c1p"] = a.put("eeg_c1a", 0.0, H - h1, name="C1P", nets={"TOP": "I1P", "BOT": "O1N"}, mim=True)
+    I["c1n"] = a.put("eeg_c1a", 0.0, h1, mirror=True, name="C1N", nets={"TOP": "I1N", "BOT": "O1P"}, mim=True)
+    c1_extension(a, I)
     I["rdac"] = a.put("adc_rdac", 4.0, 585.0, name="RDAC", grid=GRID)
     I["ota1"] = a.put("gf180_inside_cascode_ota", 421.0, 494.2, name="OTA1", grid=GRID, nets={
         "INP": "I1P", "INN": "I1N", "OUTP": "O1P", "OUTN": "O1N", "VCMREF": "VCM", "VBN": "VBN1", "VNC": "VNC1",
@@ -335,14 +365,14 @@ def build():
     cell_at(inv, 500.0, 968.0 + 6.0, "XRSTB", {"A": "RST", "Y": "NRST", "VDD": "AVDD", "VSS": "AVSS"})
     cell_at(zero, 70.0, 868.0, "XZERO", {"A": "INP", "B": "INN", "Z": "ADC_ZERO", "ZB": "ZB0",
                                          "VDD": "AVDD", "VSS": "AVSS"})
-    for name, x, cmap in (("C2P", 868.0, {"TOP": "I2P", "BOT": "O2N"}), ("C2N", 975.0, {"TOP": "I2N", "BOT": "O2P"})):
+    for name, x, cmap in (("C2P", 868.0, {"TOP": "I2P", "BOT": "O2N"}), ("C2N", 1002.5, {"TOP": "I2N", "BOT": "O2P"})):
         p = cell_at(c2, x, 800.0, name, cmap)
         k3, k4 = c2.keepout, c2.keepout4
         keep.append(((p.x + k3[0], p.y + k3[1], p.x + k3[2], p.y + k3[3]),
                      (p.x + k4[0], p.y + k4[1], p.x + k4[2], p.y + k4[3])))
-    cell_at(tg, 1090.0, 870.0, "XR2P", {"A": "O2N", "B": "I2P", "G": "RST", "GN": "NRST",
+    cell_at(tg, 1050.0, 760.0, "XR2P", {"A": "O2N", "B": "I2P", "G": "RST", "GN": "NRST",
                                          "VDD": "AVDD", "VSS": "AVSS"})
-    cell_at(tg, 1090.0, 840.0, "XR2N", {"A": "O2P", "B": "I2N", "G": "RST", "GN": "NRST",
+    cell_at(tg, 1050.0, 730.0, "XR2N", {"A": "O2P", "B": "I2N", "G": "RST", "GN": "NRST",
                                          "VDD": "AVDD", "VSS": "AVSS"})
 
     # ---- hand-drawn wiring and ports

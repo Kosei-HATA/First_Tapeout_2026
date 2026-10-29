@@ -1,0 +1,72 @@
+* mim_mm.spice: GF180MCU MIM capacitors with per-instance mismatch for ngspice Monte Carlo
+* (gf180mcuD, open_pdks f6eeac7d). NOT GF data: the PDK has no local (mismatch) model for MIM
+* (gf180mcu-pdk docs/analog/model_parameters/LV/tables_clear/08_MIM.csv: "Local Statistical" N;
+* model release 9: "global statistical model for cap_mim_*" only). The coefficients below are
+* stand-ins (see the report).
+*
+* Use INSTEAD of  .lib sm141064.ngspice cap_mim  (same subckt names, ports, parameters and
+* nominal equations as sm141064.ngspice lines 38972-39029), after design.ngspice and one of
+*   .lib sm141064.ngspice mimcap_typical | mimcap_ss | mimcap_ff | mimcap_statistical
+* (they set mim_corner_* and mc_c_cox_*; mimcap_statistical is the PDK's global variation,
+* one draw per run shared by every MIM cap, sigma 2.5 % at cap_mc_skew = 3).
+*
+*   C     = (c_cox*W*L + c_capsw*2*(W+L)) * (1 + mc_c_cox_*) * (1 + mis_c*sw_stat_mismatch)
+*   mis_c = agauss(0, 0.7071*mim_mm_a*1um/sqrt(par*W*L), 1), drawn once per instance
+*   mim_mm_a: Pelgrom pair coefficient (fraction x um): sigma of (C1-C2)/C of two adjacent
+*             equal caps = mim_mm_a/sqrt(W*L/um^2); one cap has 0.7071 of that (as fets_mm).
+*   par: number of identical unit caps one instance stands for. With m=k on the instance
+*        line give par=k too (the GF convention for fets_mm): m alone multiplies C by k but
+*        keeps ONE draw with the sigma of a single unit. Separate X lines draw independently.
+* With sw_stat_mismatch = 0 the capacitance is identical to the PDK's cap_mim section.
+* The voltage-coefficient parameters of the PDK cards are unused in ngspice and left out.
+
+.param mim_mm_a1p5=0.0141
+.param mim_mm_a1p0=0.0141
+.param mim_mm_a2p0=0.0141
+
+.subckt cap_mim_1f5ff 1 2 c_length=l c_width=w dtemp=0 par=1
+.param c_cox='1.47e-3*mim_corner_1p5ff'
+.param c_capsw='3.79e-10*mim_corner_1p5ff'
+.param c_tnom=25
+.param c_tc1=4.0604e-05
+.param c_tc2=-6.90e-08
+.param c_area='c_length*c_width'
+.param c_peri='2*(c_length+c_width)'
+.param var_c='0.7071*mim_mm_a1p5*1e-6/sqrt(par*c_area)'
+.param mis_c='agauss(0,var_c,1)'
+.param c_c0='(c_cox*c_area+c_capsw*c_peri)*(1+mc_c_cox_1p5ff)*(1+mis_c*sw_stat_mismatch)'
+.model cap_mim_1f5_model c cap=c_c0 tc1=c_tc1 tc2=c_tc2 tnom=c_tnom
+c_cap 1 2 cap_mim_1f5_model dtemp=dtemp
+.ends cap_mim_1f5ff
+
+.subckt cap_mim_1f0ff 1 2 c_length=l c_width=w dtemp=0 par=1
+.param c_cox='0.987e-3*mim_corner_1p0ff'
+.param c_capsw='3.3e-10*mim_corner_1p0ff'
+.param c_tnom=25
+.param c_tc1=1.302e-5
+.param c_tc2=-4.93e-9
+.param c_area='c_length*c_width'
+.param c_peri='2*(c_length+c_width)'
+.param var_c='0.7071*mim_mm_a1p0*1e-6/sqrt(par*c_area)'
+.param mis_c='agauss(0,var_c,1)'
+.param c_c0='(c_cox*c_area+c_capsw*c_peri)*(1+mc_c_cox_1p0ff)*(1+mis_c*sw_stat_mismatch)'
+.model cap_mim_1f0_model c cap=c_c0 tc1=c_tc1 tc2=c_tc2 tnom=c_tnom
+c_cap 1 2 cap_mim_1f0_model dtemp=dtemp
+.ends cap_mim_1f0ff
+
+.subckt cap_mim_2f0ff 1 2 c_length=l c_width=w dtemp=0 par=1
+.param gleak='9.51e-10/5*10000'
+.param c_cox='1.99e-3*mim_corner_2p0ff'
+.param c_capsw='2.383e-10*mim_corner_2p0ff'
+.param c_tnom=25
+.param c_tc1=1.46e-5
+.param c_tc2=-5.55e-8
+.param c_area='c_length*c_width'
+.param c_peri='2*(c_length+c_width)'
+.param var_c='0.7071*mim_mm_a2p0*1e-6/sqrt(par*c_area)'
+.param mis_c='agauss(0,var_c,1)'
+.param c_c0='(c_cox*c_area+c_capsw*c_peri)*(1+mc_c_cox_2p0ff)*(1+mis_c*sw_stat_mismatch)'
+.model cap_mim_2f0_model c cap=c_c0 tc1=c_tc1 tc2=c_tc2 tnom=c_tnom
+c_cap 1 2 cap_mim_2f0_model dtemp=dtemp
+r_leak 1 2 r='1/(gleak*c_area)' dtemp=dtemp tc1=c_tc1 tc2=c_tc2
+.ends cap_mim_2f0ff

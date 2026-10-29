@@ -35,7 +35,8 @@ loaded by the ADC input RIN 18.75 kohm per side (as pex_afe.py).
             1 Hz). 1 Hz - 1 GHz.
   ntf       NTF and STF of the CT 2nd-order loop as implemented (time constants of
             gf180/behavioral/ct2_dac2_options.py: C1 halved with the resistors doubled and
-            stage 2 scaled by 10 keep them; NRZ DACs, DAC2 updated 3 MCLK and DAC1 4 MCLK after
+            stage 2 scaled by 10 keep them; C1 and C2 x1.25 since 10/29, KC12; with
+            EEG_PEX_REV=r7 the files go to runs/viz_r7); NRZ DACs, DAC2 updated 3 MCLK and DAC1 4 MCLK after
             the strobe), linear quantizer (gain from the 3.125 mV threshold step and the 2/31
             DAC step), integrator leakage from the OTA DC gains of `ota` (sch). Exact
             discretization (matrix exponential); STF(f) = k H_u(j 2 pi f) NTF(e^{j 2 pi f T}),
@@ -77,7 +78,12 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, HERE)
 import pex_afe as pa  # noqa: E402
 
-OUT = os.path.join(HERE, "runs", "viz")
+_REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the runs of a changed layout (r7: runs/viz_r7)
+OUT = os.path.join(HERE, "runs", "viz" + (f"_{_REV}" if _REV else ""))
+KC12 = 1.25                                          # C1 and C2 against the loop model's values (x1.25 since 10/29, r7)
+# the integrator outputs' capacitance to the supplies in adc_top's extraction (ota, pex): O1, O2 (r7: the larger
+# C1 and C2 add bottom plate, runs/adc_top_c_r7/adc_top_caps.txt: O1 to the supplies 2.23-2.27 pF, r6 1.82-1.85)
+CW_PEX = {"": ("2.6p", "0.8p"), "r7": ("3.0p", "0.9p")}[_REV]
 ADC = os.path.join(REPO, "gf180", "tapeout", "adc")
 REF = os.path.join(ADC, "eeg_ref.spice")
 PEXR = os.path.join(HERE, "runs")
@@ -348,7 +354,7 @@ def ota_deck(which, variant, phase, mode):
     if which == "ota1":
         ota = ota_sch if variant == "sch" else os.path.join(PEXR, "gf180_inside_cascode_ota_c",
                                                            "gf180_inside_cascode_ota_pex.spice")
-        cw = "2p" if variant == "sch" else "2.6p"
+        cw = "2p" if variant == "sch" else CW_PEX[0]
         body = f"""{chop}EP INP VCM SIG 0 0.5
 EN INN VCM SIG 0 -0.5
 XRINP INP I1P 0 ppolyf_u_1k r_length=291.28u r_width=1u m=16
@@ -374,7 +380,7 @@ RTN I1N IAN 1m
                                                            "gf180_ct_ota_tel16_cmfb_pex.spice")
         q = os.path.join(ADC, "eeg_quantizer.spice") if variant == "sch" else os.path.join(
             PEXR, "eeg_quantizer_c", "eeg_quantizer_pex.spice")
-        cw = "2p" if variant == "sch" else "0.8p"
+        cw = "2p" if variant == "sch" else CW_PEX[1]
         th = " ".join(f"TH{k}" for k in range(31))
         body = f"""EP S2P VCM SIG 0 0.5
 EN S2N VCM SIG 0 -0.5
@@ -461,8 +467,8 @@ def do_ntf(_variants):
     fs = 1.024e6
     T = 1 / fs
     vref = 0.5
-    rin, rd1, c1 = 9375.0, 300e3 / 31, 680.5137683e-12
-    r21, rd2, c2 = 1e6, (320e6 / 3) / 31, 1.953125e-12
+    rin, rd1, c1 = 9375.0, 300e3 / 31, 680.5137683e-12 * KC12
+    r21, rd2, c2 = 1e6, (320e6 / 3) / 31, 1.953125e-12 * KC12
     tau2, tau1 = 3 / 32 * T, 4 / 32 * T
     kq = (2 / 31) / 3.125e-3                       # DAC level per volt of O2 (diff)
     ota = {}
@@ -511,7 +517,8 @@ def do_ntf(_variants):
               [(float(a), float(b), float(c), float(d), float(e), float(g), float(h))
                for a, b, c, d, e, g, h in zip(f, db(ntf), deg(ntf), db(stf), deg(stf), db(ntfi), deg(ntfi))],
               "CT 2nd-order 5-bit loop as implemented: fs 1.024 MHz, NRZ DAC2 at 3/32 T and DAC1 at 4/32 T after the\n"
-              "strobe, RIN C1 = 6.380 us, RD1 C1 = 6.586 us, R21 C2 = 1.953 us, RD2 C2 = 6.720 us, VREF 0.5 V,\n"
+              f"strobe, RIN C1 = {rin * c1 * 1e6:.3f} us, RD1 C1 = {rd1 * c1 * 1e6:.3f} us, R21 C2 = {r21 * c2 * 1e6:.3f} us, "
+              f"RD2 C2 = {rd2 * c2 * 1e6:.3f} us (C1, C2 x{KC12:g}), VREF 0.5 V,\n"
               f"quantizer gain {kq:.2f}/V (linear); leaky integrators from the OTA DC gains A1 {db(a1):.1f} dB,\n"
               f"A2 {db(a2):.1f} dB (ota, sch); ntf_ideal: infinite OTA gain. STF normalized to its DC value\n"
               f"({s0:.4f} DAC level per volt at the ADC input, i.e. DC gain RD1/(RIN VREF) = 2.065).")

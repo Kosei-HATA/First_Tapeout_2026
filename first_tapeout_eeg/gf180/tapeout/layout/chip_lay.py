@@ -6,7 +6,10 @@ the core against gf180/tapeout/chip/eeg_core.spice.
 Padring: LibreLane padring flow of the template work copy (/Users/noah/Codings/ws_gf180/
 eeg_padring, run RUN_2026-10-23_13-27-25; copy in gf180/tapeout/chip/padring/): 14 analog pads (asig_5p0) for AVDD x3, AVSS
 x3, ELP x2, ELN x2, ATP, VCM, VREFP, VREFN, the nine used digital pads bidir[0..8]
-(bi_24t), and every unused signal slot as an unconnected analog pad (no tie-offs).
+(bi_24t), and every unused signal slot as an unconnected analog pad (no tie-offs). Its IO
+cells go in as the PDK has them, except that repeated via placements are dropped and five
+vertices 2 nm off the 5 nm grid are rounded onto it (drop_copies(), snap_padring()): Magic
+warned about both.
 
 Floorplan (die um; the pads' inner edges at x 376 / 3556 and y 376 / 2155):
   - AFE afe_top     x  482 .. 1582, y 542 .. 1989
@@ -72,7 +75,7 @@ NB_AVSS = ((2106.0, 2125.0), (2127.0, 2146.0))
 CA_AVDD = ((1592.0, 1618.0), (1620.0, 1646.0))      # Ch-A trunks
 CA_AVSS = ((1650.0, 1676.0), (1678.0, 1704.0))
 SB_X1 = 2840.0                                       # east end of the south straps (bias)
-ADC_RAIL = {"AVSS": (418.0, 426.0), "AVDD": (428.0, 436.0)}   # adc_lay R_AVSS_B / R_AVDD_B
+ADC_RAIL = {"AVSS": (422.4, 430.4), "AVDD": (432.4, 440.4)}   # adc_lay R_AVSS_B / R_AVDD_B
 
 
 def pads():
@@ -725,23 +728,53 @@ def nofill(a, I):
         a.cell.shapes(a.ly.layer(*PMNDMY)).insert(A.pya.DBox(*b))
 
 
+def drop_copies(cells):
+    """Delete the instances that repeat another one exactly (same cell, transformation and
+    array) in each of cells; returns {cell name: copies deleted}. A copy changes no shape,
+    but Magic warns once for each ("placed on top of itself"). KLayout 0.30.12's fill_region
+    (dbFillTool.cc, GenericRasterizer::rasterize) splits the PDK's staggered fill lattice into
+    orthogonal sub-lattices and enumerates some of them three times (Metal1..4: 32 x 32 +
+    5 x 5 = 1049 offsets for 999 sub-lattices; Metal5: 8 x 8 + 1 for 63; COMP and Poly2:
+    5 x 5 + 1 for 24), so 1.6-4.3 % of the fill cells came three times. The PDK's IO library
+    repeats 171 via placements (moscap_routing, Bondpad_5LM, gf180mcu_fd_io__fill1 / 5 / 10)."""
+    out = {}
+    for cell in cells:
+        seen, copies = set(), []
+        for inst in cell.each_inst():
+            key = (str(inst.cell_inst), inst.prop_id)
+            if key in seen:
+                copies.append(inst)
+            seen.add(key)
+        for inst in copies:
+            inst.delete()
+        if copies:
+            out[cell.name] = len(copies)
+    return out
+
+
 def fill(gds, out, runs):
-    """The PDK's dummy fill (COMP, Poly2, Metal1..5 on their dummy layers) over the chip;
-    the dummy COMP and poly cells regrouped by fill_tree()."""
+    """The PDK's dummy fill (COMP, Poly2, Metal1..5 on their dummy layers) over the chip,
+    without the fill cells fill_region repeats (drop_copies()); the dummy COMP and poly cells
+    regrouped by fill_tree()."""
     rb = os.path.join(g.TECH, "scripts", "fill_all.rb")
     g._nix(f"klayout -b -r {rb} -rd input={gds} -rd output={out}", os.path.join(runs, "fill.log"))
-    for name, (n, made) in fill_tree(out).items():
+    ly = A.pya.Layout()
+    ly.read(out)
+    print("  fill copies dropped:", drop_copies([ly.cell(n) for n in FILL_ALL if ly.cell(n)]))
+    for name, (n, made) in fill_tree(ly).items():
         print(f"  {name}: {n} instances regrouped into {made} cells")
+    ly.write(out)
     return out
 
 
 FILL_CELLS = ["COMP_FILL", "POLY2_FILL"]
+FILL_ALL = FILL_CELLS + [f"METAL{i}_FILL" for i in range(1, 6)]
 FILL_FAN = 9
 
 
-def fill_tree(path):
+def fill_tree(ly):
     """Regroup the instances of the PDK's dummy COMP and poly fill cells (fill_all.rb puts
-    5000-6000 arrays in each) into trees of at most FILL_FAN instances per cell, in place.
+    5000-6000 arrays in each) into trees of at most FILL_FAN instances per cell, in ly.
     Magic bins a cell's instances from 10 on, and its on-the-fly sub-binning of the
     oversized bin (bpEnumNextBin, with an area outside the bin array) writes out of bounds
     when an array is exactly as wide or tall as the bins: the precheck's Magic DRC crashed
@@ -753,8 +786,6 @@ def fill_tree(path):
     fill cells keep their flat instances: no bin of theirs reaches a bad index (checked
     with an instrumented Magic), and as trees they slow KLayout's deep DRC down a lot.
     Returns {cell: (instances, cells made)}."""
-    ly = A.pya.Layout()
-    ly.read(path)
     made = {}
     for name in FILL_CELLS:
         cell = ly.cell(name)
@@ -787,7 +818,6 @@ def fill_tree(path):
         for ia in top:
             cell.insert(ia)
         made[name] = (len(items), count[0])
-    ly.write(path)
     return made
 
 
@@ -821,6 +851,41 @@ def lvs_core(a, I, runs):
     return bl.check(a, "eeg_core", NETLISTS, runs, drc=False, lvs=True, ties=TIES)
 
 
+MFG_GRID = 5                                     # nm (dbu 1 nm)
+
+
+def snap_padring(ly, pr):
+    """Move the vertices of the padring's polygons that are off the 5 nm grid onto it;
+    returns {(cell, layer): shapes moved}. The PDK's IO library has five such shapes, each
+    2 nm off: Metal1 at x 0.107 um in 3LM_METAL_RAIL (two shapes), and the 45-degree corner of
+    POWER_RAIL_COR, _0 and _1 (Metal5, 4, 3) at 343.897 um. Magic reads the GDS on the 5 nm
+    grid of the gf180mcuD tech (cifinput gridlimit 5): it rescales once, still snaps them,
+    and warns ("units rescaled", "Input off lambda grid ... snapped to grid"). Rounding to
+    the nearest 5 nm moves each of those vertices by 2 nm; the 45-degree edge keeps its angle."""
+    assert abs(ly.dbu - 0.001) < 1e-9
+    on = lambda p: p.x % MFG_GRID == 0 and p.y % MFG_GRID == 0  # noqa: E731
+    moved = {}
+    for ci in [pr.cell_index()] + list(pr.called_cells()):
+        cell = ly.cell(ci)
+        for li in ly.layer_indexes():
+            fix = []
+            for sh in cell.shapes(li).each():
+                if not (sh.is_box() or sh.is_polygon() or sh.is_simple_polygon()):
+                    continue
+                poly = sh.polygon
+                if all(on(p) for p in poly.each_point_hull()) and all(
+                        on(p) for h in range(poly.holes()) for p in poly.each_point_hole(h)):
+                    continue
+                assert poly.holes() == 0, f"{cell.name}: off-grid polygon with holes"
+                fix.append((sh, A.pya.Polygon([A.pya.Point(MFG_GRID * round(p.x / MFG_GRID), MFG_GRID * round(p.y / MFG_GRID))
+                                               for p in poly.each_point_hull()])))
+            for sh, poly in fix:
+                sh.polygon = poly
+            if fix:
+                moved[(cell.name, ly.get_info(li).to_s())] = len(fix)
+    return moved
+
+
 def build():
     a = A.Assembly(TOP)
     P = pads()
@@ -829,6 +894,8 @@ def build():
     src = A.pya.Layout()
     src.read(PADRING)
     pr.copy_tree(src.top_cell())
+    print("padring: copies dropped", drop_copies([pr] + [a.ly.cell(ci) for ci in pr.called_cells()]))
+    print("padring: moved onto the 5 nm grid", snap_padring(a.ly, pr))
     a.cell.insert(A.pya.DCellInstArray(pr.cell_index(), A.pya.DTrans(0, 0)))
     I = {"pads": P}
     I["afe"] = a.put("afe_top", *AFE_O, name="AFE")

@@ -5,10 +5,10 @@
 *            291.28 x 1 um), so RIN/RD1 = 31/32 by construction (a DAC1 element is two
 *            units in series); OTA1
 *            (gf180_inside_cascode_ota, input pair L 1 um m 1024, eeg_adc_otas.spice)
-*            chopped by CHOP1 through eeg_adc_clk; C1 340.3 pF per side; DAC1
+*            chopped by CHOP1 through eeg_adc_clk; C1 425.4 pF per side; DAC1
 *            eeg_dac1 (steered cells, common-break drive from DAC_CLK)
 *   stage 2  scaled x10: R21 100 kohm = 3 parallel 300 kohm unit resistors; OTA2
-*            (gf180_ct_ota_tel16_cmfb); C2 19.53 pF per side; DAC2 eeg_dac2 (current
+*            (gf180_ct_ota_tel16_cmfb); C2 24.41 pF per side; DAC2 eeg_dac2 (current
 *            steering, SEL2 at e3)
 *   quantizer eeg_quantizer on O2P/O2N (31 comparators, ladder from VREFP/VREFN)
 *   reset    TGs across C1 and C2 while RST = 1 (the integrators start from zero)
@@ -18,10 +18,17 @@
 * C1 halved (10/23, area fallback 2 of documentation/gf180_gate1_20261023.md): C1
 * 680.5 -> 340.3 pF per side with RIN and the DAC1 elements doubled, so the stage-1 time
 * constants stay; the RIN noise rises by sqrt(2) (0.91 -> 1.29 nVrms input-referred).
-* C1 and C2 are the MIM arrays of the layout (gf180/tapeout/layout/mim_arrays_lay.py):
-* eeg_c1 18 and eeg_c2 one cap_mim_2f0ff, sized with the area and perimeter terms of the
-* model; the integrator input (high impedance) is on the top plate. 2 pF per integrator
-* output stands for the wiring until PEX.
+* C1 and C2 x1.25 (10/29, documentation/gf180_realistic_eval_20261028.md): C1 340.3 -> 425.4
+* pF and C2 19.53 -> 24.41 pF per side, the resistors and DAC currents unchanged, so every
+* time constant of the loop grows by 1.25 and the RIN noise stays. With the fast poly
+* resistor and the fast MIM together (RC 0.72 of typical) the extracted loop swung its
+* quantizer input to -75 .. +92 mV with no input at all (range +-46.9 mV; adc_loop_mc.py,
+* the behavioral model agrees); after the change that corner runs at 0.90 of the typical
+* time constants.
+* C1 and C2 are MIM arrays of the layout (gf180/tapeout/layout/mim_arrays_lay.py, adc_lay.py):
+* C1 = eeg_c1a (20 cap_mim_2f0ff, 5 x 4) + eeg_c1x (4 smaller ones in the ADC's band), C2 two
+* units, sized with the area and perimeter terms of the model; the integrator input (high
+* impedance) is on the top plate. 2 pF per integrator output stands for the wiring until PEX.
 *
 * Ports: INP INN (from the AFE output), CHOP1, DAC_CLK, CMP_STROBE, RST (AFE_RST; its complement
 * for the reset TGs is made here), ADC_ZERO
@@ -92,30 +99,48 @@ XN A G B VSS nfet_03v3 W=1u L=0.28u nf=1
 XP A GN B VDD pfet_03v3 W=2u L=0.28u nf=1
 .ends eeg_adc_rst
 
-* C1, one side: 18 cap_mim_2f0ff of 97.23 um square in parallel (340.30 pF). TOP: OTA1
-* input, BOT: OTA1 output.
+* C1, one side (425.37 pF since 10/29, x1.25: see the header): the main array eeg_c1a and the
+* rest, eeg_c1x, in the ADC's band, in parallel. TOP: OTA1 input, BOT: OTA1 output.
 .subckt eeg_c1 TOP BOT
-XC0 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC1 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC2 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC3 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC4 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC5 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC6 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC7 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC8 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC9 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC10 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC11 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC12 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC13 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC14 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC15 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC16 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
-XC17 TOP BOT cap_mim_2f0ff c_length=97.23u c_width=97.23u
+XA TOP BOT eeg_c1a
+XX TOP BOT eeg_c1x
 .ends eeg_c1
 
-* C2, one side: one cap_mim_2f0ff of 98.83 um square (19.53 pF). TOP: OTA2 input, BOT: OTA2 output.
+* C1's main array: 20 cap_mim_2f0ff of 98.33 um square in parallel (386.69 pF).
+.subckt eeg_c1a TOP BOT
+XC0 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC1 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC2 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC3 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC4 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC5 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC6 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC7 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC8 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC9 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC10 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC11 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC12 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC13 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC14 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC15 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC16 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC17 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC18 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+XC19 TOP BOT cap_mim_2f0ff c_length=98.33u c_width=98.33u
+.ends eeg_c1a
+
+* C1's extension: 4 cap_mim_2f0ff of 69.47 um square in parallel (38.68 pF).
+.subckt eeg_c1x TOP BOT
+XC0 TOP BOT cap_mim_2f0ff c_length=69.47u c_width=69.47u
+XC1 TOP BOT cap_mim_2f0ff c_length=69.47u c_width=69.47u
+XC2 TOP BOT cap_mim_2f0ff c_length=69.47u c_width=69.47u
+XC3 TOP BOT cap_mim_2f0ff c_length=69.47u c_width=69.47u
+.ends eeg_c1x
+
+* C2, one side: two cap_mim_2f0ff of 61.68 x 98.83 um (24.41 pF since 10/29, x1.25). TOP: OTA2
+* input, BOT: OTA2 output.
 .subckt eeg_c2 TOP BOT
-XC0 TOP BOT cap_mim_2f0ff c_length=98.83u c_width=98.83u
+XC0 TOP BOT cap_mim_2f0ff c_length=98.83u c_width=61.68u
+XC1 TOP BOT cap_mim_2f0ff c_length=98.83u c_width=61.68u
 .ends eeg_c2

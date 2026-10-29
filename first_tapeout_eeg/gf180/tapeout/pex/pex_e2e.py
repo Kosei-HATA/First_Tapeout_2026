@@ -45,9 +45,10 @@ import tr_window as tw  # noqa: E402
 import pex_afe as pa  # noqa: E402
 
 ADC_SCH = os.path.join(ed.ad.ADC, "eeg_adc.spice")
-ADC_PEX = os.path.join(HERE, "runs", "adc_top_c", "eeg_adc_pex.spice")
+_REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
+ADC_PEX = os.path.join(HERE, "runs", "adc_top_c" + (f"_{_REV}" if _REV else ""), "eeg_adc_pex.spice")
 AFE_PEX = os.path.join(pa.PEXDIR, "afe_top_pex.spice")
-RUNS = os.path.join(HERE, "runs", "e2e")
+RUNS = os.path.join(HERE, "runs", "e2e" + (f"_{_REV}" if _REV else ""))     # r7: runs/e2e_r7
 CHIPWIN = os.path.join(HERE, "runs", "chipwin_outpn_cha", "outpn_cha_cw.spice")
 R_ROUTE = 0.090 * 150.4 / 0.38          # Metal4 route of OUTP / OUTN across Ch-A (ohm)
 DECK_NETS = {"OUTP", "OUTN", "AVDD", "DVDD", "VCM", "ITST", "VBN", "VBCM", "BLP", "BLN", "VBN1", "VBCM1",

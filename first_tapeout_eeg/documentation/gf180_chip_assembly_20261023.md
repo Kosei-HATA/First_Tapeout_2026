@@ -127,7 +127,7 @@
 
 ## wafer.space の precheck（10/23）
 
-- **使ったもの**：公式のイメージ `ghcr.io/wafer-space/gf180mcu-precheck`（7/22 版、digest `sha256:e24fd396…`、revision 8d58ff75、PDK d658698b）。ネットワークを切って動かす。GitHub の最新版（10/20）との違いは PDK と LibreLane の更新だけで、検査の中身は同じ。手順は `gf180/tapeout/chip/precheck/run_precheck.sh`。
+- **使ったもの**：公式のイメージ `ghcr.io/wafer-space/gf180mcu-precheck`（7/22 版、digest `sha256:e24fd396…`、revision 8d58ff75、PDK d658698b）。ネットワークを切って動かす。手順は `gf180/tapeout/chip/precheck/run_precheck.sh`。10/26 の pre_20261026 まではこの版で回した。GitHub の 10/20 版は PDK と LibreLane を上げたもので、PDK の更新で検査の中身も変わる（密度のデッキに DCF.1a が入るなど）。10/27 に 10/20 版と `--cob` で回し直した（いちばん下の節）。
   - ishi-kai の環境のイメージ（`gf180-ishi-analog:20261015`）は解析用で、precheck は入っていない。
 - **入力**：穴埋めのあとの `chip_top_fill.gds`（最上位 chip_top、スロット 1x0p5、`--cob` なし）。約 45 分（Apple Silicon で amd64 のイメージを動かす）。
 - **結果**：「Precheck successfully completed」。
@@ -209,3 +209,97 @@
 - **結果**：配線 110 秒、チップ全体（穴埋め前）の DRC 違反なし、コアの LVS 一致（合わせて 14 分）。穴埋め（15 秒）のあとの全 DRC（アンテナと密度を含む全デッキ、CUP を除く）も違反なし（15 分）。
 - **Magic DRC（6 回目、穴埋めすべて、`magic_check.py pre_20261026`）**：テンプレートの nix の Magic 8.3.677 で最後まで走り、違反 0 件（7 分）。調べた版でも、範囲外の添字と危ない区画は 0。
 - **wafer.space の precheck（6 回目、タグ pre_20261026）**：「Precheck successfully completed」（43 分）。密度、ゼロ面積の図形、アンテナ、KLayout DRC は 0 件、CoB のパッドマスクも一致。**Magic DRC が初めて最後まで走り（`drc listall why` のあとの「DRC Checking DONE」まで、8 分 17 秒）、0 件**（`run_precheck.sh` の「did NOT finish」の警告も出ない）。穴埋めのあとの密度：COMP 49.73 %、Poly2 39.58 %、Metal1 40.41 %、Metal2 38.42 %、Metal3 53.80 %、Metal4 58.57 %、Metal5 65.05 %。**この形（`chip_top_fill.gds`、sha256 1343e9cc…）が、D6 の直し、B7 と B4 の直し、電極の DC 電流の直し、WN の配線抵抗の直し、Magic DRC の直しをすべて入れた今のチップ。**
+
+## 最新の precheck と `--cob` での確認（10/27）
+
+事務局の指定：今回は CoB（Chip on Board）で発注しているので、ローカルで回すときは `--cob` を付け、Half Height のスロット（`--slot 1x0p5`）にする（例：`python3 precheck.py --input chip_top.gds --slot 1x0p5 --cob`）。wafer.space は waiver を受け付けず、チェックを通った設計だけが製造される。pre_20261024〜pre_20261026 は `--cob` なしで、CoB の確認（パッドマスク、ID の 4 つのセルの位置）は precheck の外で別に確かめていた。そこで、提出する 6 回目の GDS を、指定どおりの引数と最新の precheck で回し直した。
+
+- **`--cob` で増える検査**（`precheck.py`）
+  - KLayout.CheckPadMask：CheckSize のあとに入る。スロットのパッドマスク（`mask_1x0p5.gds`）の Pad の開口が、すべて GDS にあること（中央などに足した開口はかまわない）。
+  - GenerateID：ID の 4 つのセル（`gf180mcu_ws_ip__qrcode_id`、`__shuttle_id`、`__project_id`、`__marker`）が、それぞれ 1 つだけ、テンプレートの座標に置いてあること（assert）。
+  - どちらも、落ちると precheck がそこで止まる。段の番号は 1 つずれる（ID を入れた形は `05-klayout-generateid/chip_top.gds`）。
+- **使ったもの**：10/20 版のイメージ（digest `sha256:104d9ccb…`、revision 9b4e7dab、PDK open_pdks 792ef670、Magic 8.3.677、KLayout 0.30.12、LibreLane 3.1.0.dev3、10.1 GB）。
+  - 7/22 版からの変更は Makefile の PDK と flake.lock（LibreLane、nix-eda 6.24.0 → 7.11.0 など）だけで、`precheck.py` とスクリプトは同じ。
+  - PDK の更新で検査が変わる。密度のデッキに DCF.1a が入った（COMP もダミー COMP もない 20 µm 角以上の場所が違反。除くのは NDMY、RES_MK、Pad、IND_MK と、ウェルと DUALGATE の縁の帯）。CO.5a／b はコンタクトの囲みを NPLUS／PPLUS で見るようになり（緩くなる側）、DF.11 は接する辺の長さで見るようになった。Magic の tech ファイルも変わった（NPLUS／PPLUS の生成、compose、MIM の既定値、FILLOBS の読み込み）。
+  - 手元の PDK（テンプレート。穴埋めと全 DRC に使っている）はもともと 792ef670 で、10/26 の穴埋めのあとの全 DRC でも、DCF.1a、新しい CO.5a／b、DF.11 は通っていた。
+- **`run_precheck.sh` の変更**
+  - `--cob` を付け、イメージを 10/20 版にした（`PRECHECK_IMAGE` で 7/22 版も回せる）。
+  - precheck は Magic の違反では止まらない（ERROR_ON_MAGIC_DRC が False）。そこで、`metrics.json` の数がすべて 0 であることを確かめるようにした。
+  - 段のフォルダは番号で決め打ちしない。
+  - 別に回していたパッドマスクの確認は、precheck の中の段に置き換えた。
+- **結果（タグ pre_20261027_cob、54 分）**：「Precheck successfully completed」。入力は `chip_top_fill.gds`（sha256 1343e9cc…）。
+  - パッドマスク一致（「Success: Pad mask matches!」）。ID の 4 つのセルの位置の検査も通った（「Inserted ID: FFFFFFFF」。本番の ID は wafer.space が入れる）。
+  - 密度（DCF.1a を含む）、ゼロ面積の図形、アンテナ（13 デッキ）、Magic DRC、KLayout DRC（162 デッキ、29 分）は、どれも 0 件。Magic DRC は 8.3.677 で、「DRC Checking DONE」まで走った（8 分 39 秒）。
+  - LibreLane の `warning.log` と `error.log` は空。
+  - 密度は 10/26 と同じ（COMP 49.73 %、Poly2 39.58 %、Metal1 40.41 %、Metal2 38.42 %、Metal3 53.80 %、Metal4 58.57 %、Metal5 65.05 %）。
+- **Magic が GDS を読むときの警告**：「placed on top of itself. Ignoring the extra one.」が 16,175 件出る（10/26 も同じ数）。
+  - 同じセルを同じ位置に 2 つ置いたインスタンスで、内訳は金属の穴埋め 15,270、COMP の穴埋め 376、ポリの穴埋め 358、ビアのセル（`*_CDNS_*`）171。
+  - Magic は片方を無視するだけで、形は同じなので DRC の結果は変わらない。precheck の検査の対象でもない。それでも警告を残さないため、同じ日の夜に直した（次の節）。
+
+## Magic の警告をなくす組み直し（10/27 夜）
+
+警告を残さないため、Magic が GDS を読むときに出していた 3 種類を、GDS の側で消した。マスクの形は変えていない。
+
+- **重なったインスタンス**（`chip_lay.drop_copies()`）：同じセル、同じ変換、同じ配列のインスタンスを 1 つだけ残す。出どころは 2 つ。
+  - 穴埋め：KLayout 0.30.12 の `fill_region` は、PDK のずらした穴埋めの格子を直交する部分格子に分けるとき、一部を 3 回数える（`dbFillTool.cc`。Metal1〜4 は 999 の部分格子に 32 × 32 + 5 × 5 = 1,049 のずらし、Metal5 は 63 に 8 × 8 + 1、COMP と Poly2 は 24 に 5 × 5 + 1）。そのため、穴埋めのセルの 1.6〜4.3 % が 3 回入っていた。穴埋めのあとで消す。
+  - パッドリング：PDK の IO ライブラリが、ビアのセルを 171 か所で重ねて置いている（moscap_routing 132、Bondpad_5LM 33、gf180mcu_fd_io__fill1／5／10 が 2 ずつ）。パッドリングを読み込んだあとで消す。
+- **5 nm の格子から外れた頂点**（`chip_lay.snap_padring()`）：IO ライブラリの 5 つの図形の頂点が、5 nm の格子から 2 nm ずれていた（3LM_METAL_RAIL の Metal1 2 つと、POWER_RAIL_COR／_0／_1 の 45 度の角）。Magic は gf180mcuD の 5 nm の格子で読むので、「units rescaled」と「snapped to grid」を出していた。いちばん近い 5 nm に丸めた。動いたのは 2 つの箱の継ぎ目と、ほかの図形の中に入っている辺だけで、マスクは変わらない。
+- **`RLIMIT_NOFILE`**：`run_precheck.sh` で docker のファイル数の上限を 1024 にした。
+- **XOR**：r6（10/26）と比べて、穴埋め前は 45 層、穴埋め後は 52 層、すべて同じ。確かめとして、穴埋め前と穴埋め後の GDS どうしでは、穴埋めの層だけに差が出た。差の数は穴埋めの位置の数と同じで、どの穴埋めも 1 回だけになっている。
+- **結果（タグ pre_20261027b、最新のイメージ、`--slot 1x0p5 --cob`、49 分）**：「Precheck successfully completed」。全項目 0 件、パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は最後まで走って 0 件。
+  - 警告の数：重なったインスタンス 16,175 → 0、格子 2 → 0、`RLIMIT_NOFILE` 1 → 0。
+  - 残るのは 2 種類で、どちらも GDS の中身とは関係しない。Magic が GDS を読むたびに出す「Calma reading is not undoable!」（1 行）と、公式の precheck の設定から LibreLane が出す `KLAYOUT_*_OPTIONS` の deprecated（3 行）。
+  - LibreLane の `warning.log` と `error.log` は空。
+- **密度**：COMP 48.27 %、Poly2 38.07 %、Metal1 39.89 %、Metal2 37.96 %、Metal3 53.36 %、Metal4 58.27 %、Metal5 64.88 %。
+  - 10/26 の数字（COMP 49.73 % など）より下がった。形は XOR で同じなので、10/26 は重なった穴埋めのセルを重ねて数えていたとみられる（密度のデッキは `(comp + comp_dummy).area / chip_area`）。
+  - どれも下限（COMP 25 %、Poly2 14 %、金属 30 %）と、COMP の上限 70 % の内。
+- **GDS**：`chip_top_fill.gds` は sha256 74468c9f…（224,082,796 バイト）。形が同じなので、性能は r6 のまま。
+
+## 組み直し（10/29、7 回目：ADC の C1・C2 を 1.25 倍）
+
+R ff と MIM ff の組で ADC のループがリミットサイクルになる（`gf180_realistic_eval_20261028.md` の「ADC」）。10/29 のユーザーの判断で、C1 と C2 を 1.25 倍にした。
+
+- 抵抗と DAC の電流は変えないので、ループのすべての時定数が 1.25 倍になり、RIN の雑音は変わらない。
+- ADC の中と、その下の電源レールのほかは変えていない。
+
+**ネットリスト（`gf180/tapeout/adc/eeg_adc.spice`）**
+
+- C1（片側）：340.30 → 425.37 pF。主配列 eeg_c1a（98.33 µm 角 20 個、386.69 pF）と、残りの eeg_c1x（69.47 µm 角 4 個、38.68 pF）を並列にした。
+- C2（片側）：19.53 → 24.41 pF。61.68 × 98.83 µm を 2 個。
+
+**レイアウト**
+
+- `mim_arrays_lay.py`
+  - eeg_c1（97.23 µm 角 18 個）を、eeg_c1a（5 × 4）と eeg_c1x（4 × 1）に分けた。MIM 1 個は 10,000 µm² 以下（MIMTM.8b）なので、98.33 µm 角は上限に近い。
+  - eeg_c2 は 2 個の長方形にした。そのため、`analog.mim_cell` に長さの引数を足した。
+  - 3 つとも DRC 違反なし、LVS 一致。
+- `adc_lay.py`
+  - C1 の主配列は前と同じ西の端の上下に置く（C1P が上、C1N が鏡で下）。高さは 412.32 → 416.72 µm になった。
+  - 残りの eeg_c1x は、上下の主配列のあいだの帯の西の端に、主配列とバスを向かい合わせて置いた。C1PX は C1P のすぐ下に鏡で置き、TOP のバスどうしが接する。C1NX は下の電源レールの上に置く。
+  - 2 つの部分は Metal4 の渡り（両端に Via4）でつなぐ。O1N は接した I1P のバスの下、I1N と O1P は下のレールの下を通す。
+  - C2N を x 975 → 1002.5 µm に動かした。2 段目のリセットの TG（XR2P／XR2N）は OTA2 の東（1050, 760／730）に移した。
+  - 下の電源レール（AVSS、AVDD）を 4.4 µm 上げた。C1N が 4.4 µm 高くなり、O1P の Metal4 の取り出しが AVSS の Metal4 の橋に重なるため。
+  - adc_top の外形（1210 × 1447 µm）と端子は同じ。DRC 違反なし、LVS 一致。
+- `chip_lay.py`：`ADC_RAIL` を同じ 4.4 µm 上げた（Ch-A から ADC の下のレールへのストラップ）。
+
+**結果**
+
+- 配線 180 秒、チップ（穴埋め前）の DRC 違反なし、コアの LVS 一致。
+- **XOR（10/27 夜の r6 と比べる、穴埋め前）**：45 層のうち 27 層は同じ。
+  - 違う 18 層は、ADC の中（MIM の配列とマーカー、C1 の渡り、C2、2 段目のリセットの TG、下のレール）か、Ch-A の x 1640〜1732 µm、y 960〜1002 µm（ADC の下のレールへのストラップの Metal4、Via4、Metal5）だけにある。
+  - AFE、デジタル、バイアス、基準、パッドリングは変わっていない（`gf180/tapeout/layout/runs/chip_top/xor_r6_r7_chip_top_20261029.log`）。
+- 穴埋め（30 秒）のあとの全 DRC も違反なし（30 分）。
+  - 重なった写しを消した数：COMP 440、Poly2 412、Metal1〜5 は 3,386／3,284／4,384／3,142／654。
+  - COMP と Poly2 は、819 個ずつのセルの木に組み替えた。
+- **wafer.space の precheck（タグ pre_20261029_r7）**：「Precheck successfully completed」。
+  - 最新のイメージ（10/20 版。10/29 にも `latest` の digest が 104d9ccb… のままと確かめた）を、`--slot 1x0p5 --cob` で回した。
+  - 2 時間 19 分かかった（ほかの計算と並べて回したため。Magic DRC 22 分、KLayout DRC 1 時間 25 分）。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は「DRC Checking DONE」まで走った。
+  - Magic の警告（重なり、格子、`RLIMIT_NOFILE`）は 0 件。LibreLane の `warning.log` と `error.log` は空。10/27 夜と同じ。
+- **密度**：COMP 48.27 %、Poly2 38.07 %（どちらも同じ）。Metal1 39.68 %、Metal2 37.75 %、Metal3 53.16 %（どれも −0.2 ポイント）。Metal4 59.07 %（+0.80）、Metal5 65.77 %（+0.89）。MIM が広がった分、Metal4 と Metal5 が増えた。
+- **GDS**：`chip_top_fill.gds` は sha256 b1a260ee…（224,076,194 バイト）。
+  - gz を `gf180/tapeout/chip/gds/chip_top_fill_r7_20261029.gds.gz` に置いた（41,885,093 バイト、sha256 43b767ef…）。
+  - **この形（sha256 b1a260ee…）が、C1・C2 の直しまで入れた今のチップ。**
+- 抽出と性能の確かめは別の文書にある。
+  - ADC のループ（トランジスタの角とモンテカルロ）：`gf180_realistic_eval_20261028.md` の「ADC」。
+  - チップの配線：`gf180/tapeout/pex/runs/chipnets_r7/README.md`。ADC への AVDD の抵抗は 1.454 Ω（r6 1.453 Ω）で、ほかは同じ。

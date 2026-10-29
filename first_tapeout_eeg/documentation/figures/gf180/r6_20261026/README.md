@@ -1,6 +1,6 @@
 # r6：Magic DRC の直しのあと（10/26、今の版）
 
-- チップ：c752ec78（6 回目の組み立て：抵抗の頭のコンタクト、MIM の下の板の Via4、穴埋めの COMP／ポリを木に組み替えた形）。チップ全体の DRC 違反なし、コアの LVS 一致、precheck は pre_20261026 で通った（`chip_top_fill.gds` の sha256 1343e9cc…）。
+- チップ：c752ec78（6 回目の組み立て：抵抗の頭のコンタクト、MIM の下の板の Via4、穴埋めの COMP／ポリを木に組み替えた形）。チップ全体の DRC 違反なし、コアの LVS 一致、precheck は pre_20261026 で通り、10/27 に最新の precheck（10/20 版）と `--slot 1x0p5 --cob` でも通った（pre_20261027_cob。`chip_top_fill.gds` の sha256 1343e9cc…）。
 - GDS（穴埋めのあと、precheck に出した形）は `gf180/tapeout/chip/gds/chip_top_fill_r6_20261026.gds.gz`（gzip、42 MB）。
 - ここの図は、すべてこの版の GDS、コアの LVS の結果、抽出から描いた（10/26 夜）。ファイル名と図の右上に版（r6）を書いた。
 - 比べるために前の値を並べた列（回路図、10/23 の抽出、B7 の前の DC 経路など）は、図の中にそう書いてある。
@@ -13,7 +13,7 @@
 | 07〜09 | 雑音の予算、AFE の雑音、配線抵抗 | `pex_rin.py`（`runs/rin_r6_{W,E,T}.log`）、`final_noise_pex_r6.log`、`final_noise_rwire_pex_r6.log` |
 | 10 | 歪み | `afe_dcpath.py static`（`final_static_pex_r6.log`）、`pex_afe.py sine`（`afe_sine_r6.log`） |
 | 11 | 回路図と抽出の比較 | AFE：`final_gain_pex_r6.log`、`final_ripple_pex_r6.log`。ADC：`dac1_even_r6.log`、行動モデル（`beh_dac1_r6.log`）、ループ（`pex_adc.py`、`runs/adc/pex_tstop_100e-6_fsig_20e3/`）、CLKQ の結合（`runs/adc_top_c/eeg_adc_pex.spice`） |
-| 12、13 | 密度、検証 | 穴埋めのあとの全 DRC、precheck pre_20261026、Magic DRC |
+| 12、13 | 密度、検証 | 穴埋めのあとの全 DRC、precheck pre_20261027_cob（10/20 版、`--slot 1x0p5 --cob`）、Magic DRC |
 | 15 | 日程 | 10/26 の管理表 |
 | 16〜18 | 寄生込みの E2E | `pex_e2e.py run pex`／`run pexchip`（6 回目の抽出）。d4 と sch は回路図 |
 | 19、20 | AFE のループ、帯域内の伝達 | `viz_data.py afe_loop`、`bb`、`zin`（帯域内の過渡の菱形） |

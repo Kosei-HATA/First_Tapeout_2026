@@ -35,7 +35,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
-RUNS = os.path.join(HERE, "runs", "e2e")
+_REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the runs of a changed layout (r7: runs/e2e_r7)
+RUNS = os.path.join(HERE, "runs", "e2e" + (f"_{_REV}" if _REV else ""))
 CHIP, CHIP_DATE = "r6", "20261026"       # the chip of the pex / pexchip runs (sixth assembly)
 CHIP_LABEL = "6 回目のチップ（r6、10/26）"
 FIGS = os.path.join(REPO, "documentation", "figures", "gf180", f"{CHIP}_{CHIP_DATE}", "e2e_pex")

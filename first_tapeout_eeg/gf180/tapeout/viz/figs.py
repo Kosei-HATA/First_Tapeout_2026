@@ -687,11 +687,11 @@ def fig_checks():
         colours[(i, 3)] = OK if res in ("pass", "match") else BAD if res == "no result" else WARN
         body.append([r["check"], r["scope"], r["tool"], "● " + res, "–" if r["violations"] == "" else f"{int(num(r['violations'])):,}", r["detail"]])
     table_fig("13_checks", "Checks on the final chip",
-              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–26 Oct 2026",
+              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–27 Oct 2026",
               ["Check", "Scope", "Tool", "Result", "Violations", "Detail"], body, [0.22, 0.15, 0.2, 0.09, 0.07, 0.27],
-              note="Until 25 Oct the precheck's Magic step crashed inside Magic (a bin-index bug hit by the PDK's COMP / Poly2 fill "
-                   "arrays) and LibreLane reported it as 0. Since 26 Oct those fill cells hold at most 9 instances each, and Magic runs "
-                   "to the end with all fill.",
+              note="Precheck pre_20261027_cob: --slot 1x0p5 --cob as the shuttle specifies, latest image (20 Oct, PDK 792ef670). "
+                   "Until 25 Oct its Magic step crashed (a Magic bin-index bug hit by the COMP / Poly2 fill arrays) and was reported "
+                   "as 0; since 26 Oct those fill cells hold at most 9 instances each.",
               colours=colours, h_row=0.33, w=15.0)
 
 

@@ -30,7 +30,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 ADC_LOOP = os.path.join(REPO, "gf180", "tapeout", "sim", "adc_loop")
 SCH = os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_adc.spice")
-PEXDIR = os.path.join(HERE, "runs", "adc_top_c")
+_REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
+PEXDIR = os.path.join(HERE, "runs", "adc_top_c" + (f"_{_REV}" if _REV else ""))
 
 
 def settling(folder, t0=20e-6):

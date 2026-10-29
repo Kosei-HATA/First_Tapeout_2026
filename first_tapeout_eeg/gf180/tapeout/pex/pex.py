@@ -45,6 +45,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 LAYOUT = os.path.join(REPO, "gf180", "tapeout", "layout")
 RUNS = os.path.join(HERE, "runs")
+# EEG_PEX_REV=r7: the extraction of a changed layout goes to runs/<block>_c_r7 (pex_chipnets:
+# runs/chipnets_r7), where pex_adc, pex_e2e and afe_startup read it back with the same
+# setting, so that runs still reading the current files (a long transient rebuilds its deck
+# for every chunk) keep them
+REV = os.environ.get("EEG_PEX_REV", "")
+SUFFIX = f"_{REV}" if REV else ""
 NIX_DIR = "/Users/noah/Codings/ws_gf180/eeg_padring"
 MAGIC_TECH = ("/Users/noah/Codings/ws_gf180/gf180mcu-project-template/gf180mcu/gf180mcuD/"
               "libs.tech/magic/gf180mcuD.tech")
@@ -384,7 +390,7 @@ def mim_shield(caps, lvsdb, sub, rename):
 
 def build(block, cthresh=0.01, skip_magic=False):
     cfg = BLOCKS[block]
-    outdir = os.path.join(RUNS, f"{block}_c")
+    outdir = os.path.join(RUNS, f"{block}_c{SUFFIX}")
     gds = os.path.join(LAYOUT, cfg["gds"])
     dut = cfg["dut"]
     if skip_magic:

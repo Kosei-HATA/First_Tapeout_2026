@@ -1,14 +1,14 @@
 check,scope,tool,result,violations,detail,date
 "DRC, all decks incl. antenna and density",Chip with fill,"KLayout, gf180mcuD (open_pdks 792ef670)",pass,0,"CUP deck excluded, as in the template flow",2026-10-26
 LVS,Chip core against eeg_core.spice,KLayout,match,0,"88,768 devices, 53,423 nets",2026-10-26
-"Precheck: top cell, origin, slot size, ID",Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,"1x0p5 slot, 3932 × 2531 µm, seal ring present",2026-10-26
-Precheck: density,Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,Dummy metal and poly counted as drawn,2026-10-26
-Precheck: zero-area polygons,Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,,2026-10-26
-Precheck: antenna,Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,13 decks,2026-10-26
-Precheck: KLayout DRC,Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,162 decks,2026-10-26
-Precheck: Magic DRC,Submitted GDS,Magic 8.3.660 in the precheck image,pass,0,Runs to the end with all fill (8 min),2026-10-26
+"Precheck: top cell, origin, slot size",Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,"1x0p5 slot, 3932 × 2531 µm, seal ring present",2026-10-27
+"Precheck (CoB): ID cells, pad mask",Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,Four ID cells at the template positions; pads match mask_1x0p5,2026-10-27
+Precheck: density,Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,Incl. DCF.1a (new in PDK 792ef670); dummy fill counted as drawn,2026-10-27
+Precheck: zero-area polygons,Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,,2026-10-27
+Precheck: antenna,Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,13 decks,2026-10-27
+Precheck: KLayout DRC,Submitted GDS,"wafer.space precheck (2026-10-20), --cob",pass,0,162 decks,2026-10-27
+Precheck: Magic DRC,Submitted GDS,Magic 8.3.677 in the precheck image,pass,0,Runs to the end with all fill (9 min),2026-10-27
 Magic DRC with all fill,"Chip with fill, precheck GDS",Magic 8.3.677,pass,0,Same deck and settings as the precheck,2026-10-26
-CoB pad mask,Submitted GDS,wafer.space precheck image (2026-07-22),pass,0,Pad openings match mask_1x0p5,2026-10-26
 RTL against golden model,Digital controller and ADC digital,Unit tests and bit-true runs,pass,0,Bit-exact over 4 s and 20 s of codes,2026-10-24
 Gate level against RTL,Hardened macros,Gate-level simulation,pass,0,146 M cycles match,2026-10-24
 Static timing,"Macros, and chip wiring","LibreLane (9 corners), OpenSTA at chip level",pass,0,Setup and hold met; tightest chip-level path +1.0 ns (TH capture),2026-10-24

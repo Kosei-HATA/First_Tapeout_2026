@@ -299,7 +299,135 @@ R ff と MIM ff の組で ADC のループがリミットサイクルになる�
 - **密度**：COMP 48.27 %、Poly2 38.07 %（どちらも同じ）。Metal1 39.68 %、Metal2 37.75 %、Metal3 53.16 %（どれも −0.2 ポイント）。Metal4 59.07 %（+0.80）、Metal5 65.77 %（+0.89）。MIM が広がった分、Metal4 と Metal5 が増えた。
 - **GDS**：`chip_top_fill.gds` は sha256 b1a260ee…（224,076,194 バイト）。
   - gz を `gf180/tapeout/chip/gds/chip_top_fill_r7_20261029.gds.gz` に置いた（41,885,093 バイト、sha256 43b767ef…）。
-  - **この形（sha256 b1a260ee…）が、C1・C2 の直しまで入れた今のチップ。**
+  - この形（sha256 b1a260ee…）が C1・C2 の直しを入れたチップだったが、コアの DVDD がパッドにつながっていなかった（次の節）。
 - 抽出と性能の確かめは別の文書にある。
   - ADC のループ（トランジスタの角とモンテカルロ）：`gf180_realistic_eval_20261028.md` の「ADC」。
   - チップの配線：`gf180/tapeout/pex/runs/chipnets_r7/README.md`。ADC への AVDD の抵抗は 1.454 Ω（r6 1.453 Ω）で、ほかは同じ。
+
+## 組み直し（10/29、8 回目：コアの DVDD をパッドにつなぐ）
+
+10/29 に、外部の確認（ユーザーから）で、コアの DVDD がどの DVDD パッドにもつながっていないと指摘を受けた。パッドリング込みのチップ全体で Metal1〜5／Via1〜4 のつながりを抽出し直し、そのとおりだと確かめた。
+
+**何が起きていたか**
+
+- 東の隙間の DVDD の幹線は 2 本ある（x 3500〜3520 µm と 3522〜3542 µm。MSLOT5.1 のため 30 µm 未満の 2 本に分けた）。
+- 東の dvdd パッドからの帯と、デジタルパッドの High 固定の受け口は、東の 1 本にだけ届いていた（`chip_lay.dpower`）。
+- デジタルブロックの DVDD の帯とデカップリングの DVDD の帯は、西の 1 本で止まっていた（`dpower`、`decaps`）。2 本をつなぐものはなかった。
+  - 西の 1 本（ラベル DVDD）：デジタルブロック、ADC の DVDD、DVDD のデカップリング 48 個。パッドなし。
+  - 東の 1 本：パッドリングの 18 ピン（DVDD のボンドパッドと High 固定のピン）。ブロックなし。
+- このままでは、デジタルの制御回路、ADC のデジタル部、DVDD のデカップリングに電源が来ない。チップは動かない。10/23 の最初の組み立て（4c4441aa）から r7 まで、すべての版にあった。
+- DVSS も 2 本に分けてあるが、dvss パッドからの帯が 2 本をまたぐので、1 つのネットになっている。AVDD／AVSS の幹線も、帯が 2 本をまたいでいる。
+
+**見落とした理由**
+
+- コアの LVS は、パッドリングを外して比べる。東の 1 本のネットには素子がないので、LVS は何も言わない。
+- DRC と precheck は、つながりを見ない。
+- D7 のチップの配線の抽出（`pex_chipnets.py`）は、アナログの電源と信号だけを対象にしていた。
+
+**直し**
+
+- デジタルブロックの DVDD の帯（5 本）と、デカップリングの DVDD の帯（4 行）を、DVDD の幹線の 2 本をまたいで東の端（x 3541 µm）まで伸ばした。
+- 変わるのは東の隙間の Metal5 だけ。
+
+**流れに足した確認（`chip_lay.connect_check()`）**
+
+毎回の組み立てで、`chip_top.gds` を書いたあと、DRC の前に回る（`--connect` で単独でも回せる。20 秒ほど）。パッドリング込みのチップ全体で Metal1〜5／Via1〜4 のつながりを抽出し、次を確かめる。
+
+- コアの LVS のポートのラベル（`port_labels()`：ELP、ELN、ATP、VCM、VREFP_PAD、VREFN_PAD、デジタルパッドの信号、AVDD、AVSS、DVDD、DVSS）と、電源の幹線の 2 本目の点が、パッドリングとブロックの両方に届くこと。
+- 同じ名前の点は 1 つのネットに、違う名前の点は違うネットにあること。
+- パッドリングだけに届いてブロックに届かないネットと、デカップリングに届いてパッドに届かないネットがないこと。
+
+r7 の GDS で回すと、DVDD の 5 件（2 本が別のネット、パッドだけのネット、パッドのないデカップリング）を出し、ほかはすべて通った。
+
+あとから、デジタルパッドの High／Low 固定 58 本（`tie_points()`）も、それぞれ DVDD／DVSS の幹線と同じネットにあることを確かめる点に足した。r7 では、Low 固定の 41 本は DVSS にあり、High 固定の 17 本はパッド側の DVDD（コアとは切れた側）にあった。
+
+**チップ全体の LVS（パッドリング込み、`chip_lay.lvs_chip()`）**
+
+`--lvs` で、コアの LVS の前に回る（`--lvs-chip` で単独でも回せる）。パッドリングを外さずに、チップ全体を回路図と比べる。
+
+- **回路図**（`gf180/tapeout/chip/eeg_chip.spice`、`chip_lay.chip_netlist()` が書く）：chip_top は eeg_core の中身（`eeg_core.spice`。コアのネットは同じ名前）と、パッドリングのセル。
+  - IO セル 76 個（asig_5p0 47、bi_24t 9、dvdd 8、dvss 8、コーナー 4）は、`pad_geometry.json` のとおりに置く。フィラー 682 個（fill10 414、fill1 226、fill5 22、fillnc 20）は、チップのパッドリングにある数だけ置く。
+  - アナログパッドのネットは `ANALOG_PADS`（AVDD 3、AVSS 3、ELP 2、ELN 2、ATP、VCM、VREFP_PAD、VREFN_PAD）。使わない 33 個は、それぞれ自分のネット（NC_*）。
+  - デジタルパッドは `DPAD` の信号のピンと High／Low 固定。出力のパッドの Y は使わない（NC_*_Y）。
+  - IO セルの電源のピンは、DVDD と VDD がチップの DVDD、DVSS と VSS がチップの DVSS（テンプレートのパッドリングと同じ 1 つの電源。dvdd のセルが中で DVDD と VDD を、dvss のセルが DVSS と VSS をつなぐ）。
+- **パッドセルのネットリスト**：PDK の `gf180mcu_fd_io.cdl`。デッキの読み込みが CDL の書き方（`$[model]`、`$W=`／`$L=`、`$SUB=`、`AREA=`／`PJ=`）を読まないので、`chip_lay.io_cdl()` で書き直した（`$SUB` は抵抗のバルクの節点に）。
+  - IO セルを 1 種ずつ、PDK の GDS とこのネットリストで LVS にかけて確かめた。トランジスタ、ppolyf_u、cap_nmos_06v0、diode_pd2nw_06v0 は、すべて素子とネットが一致した。
+  - 例外は n+／p 基板の ESD ダイオード（diode_nd2ps_06v0）5 行。デッキは ESD と SAB の下の n+ をダイオードとして抽出しない（`diode_extraction.lvs` の `diode_exclude`）。IO セルはそこに描いているので、オープンソースのデッキでは確かめられない。回路図から外し、その旨をネットリストに注記した。PDK の IO セルを変えずに使っている。
+- **レイアウト**：`chip_top.gds` の写しで、トップより下のテキストをすべて消す（IO セルの中のラベルが、平らにした抽出でネットに名前を付けるため）。そのうえで、ボンドパッド 76 個にネットの名前、コアのポート（`port_labels()`）、ADC のヒント（`adc_hints()`）のラベルを置き、1 つのセルに平らにして OASIS で書く（`chip_top.oas`。2,640 万の図形が 4 MB）。
+  - 平らにする理由：PDK のデッキは、平らのモードでも isosub（23/5、IO セルに描いてある）だけを階層のまま読む（KLayout の issue 2345 の回避）。階層を残すと、抽出したネットリストにセルが中身のない回路として残り、回路図に同じ名前がある 13 個（IO セル 9 種、eeg_bias、eeg_ref、eeg_testmux、eeg_digital_top）が align のあとも消えない。回路図の側のその 13 個も平らにならず、中身のない回路と比べて不一致になり、チップ全体を比べられない。さらに `flag_missing_ports` が、トップの回路が複数あるところで止まる。10/29 の最初の 2 回（r7 と r8、各 3 時間）はこれで止まった。コアには isosub がないので、コアの LVS では起きない。
+  - 平らにした写しは、39 層すべての XOR が元と同じで、ラベル 96 個も同じ（r8 で確かめた）。
+- **r7（コアの DVDD が切れた版）で確かめた**（平らにした写しで 2 時間 11 分。ほかの計算と並べたため）：比べ終わり、「Netlists don't match」。誤りは 13 件で、DVDD が 2 つ（パッドの側とコアの側）に分かれてどちらも回路図の DVDD と合わない 2 件と、それに引きずられた 11 件（AVSS と、デジタルブロックとパッドの間の信号 10 本：RESET_N、MOSI、SCLK、CS_N、DRDY_N、MISO、RAW_CLK、RAW_DATA、MCLK、MISO_OE）。ほかの警告は、デジタルと AFE の対称なネットの対応（ambiguous）だけ。この検査があれば、r0〜r7 の DVDD の切れを見つけられた。
+- 基板が DVSS と AVSS_CLK を AVSS につなぐ（`TIES`）のは、コアの LVS と同じ。
+
+**GDS だけからの電源の確認（`gf180/tapeout/pex/supply_check.py`）**
+
+LVS は、私たちのコードが書いた回路図と比べる。レイアウトと回路図が同じ思い違いをしていれば、どちらの LVS も通ってしまう。そこで、私たちのネットリストとチップのラベルを使わない確認も足した（ユーザーの指摘、10/29）。毎回の組み立てで、`connect_check()` のあとに回る。
+
+- パッド：DVDD／DVSS は IO セルの種類（`gf180mcu_fd_io__dvdd`／`__dvss`）、AVDD／AVSS は床面計画のパッドの表（`pad_coordinates.csv`）。ボンドパッドの位置は、テンプレートのパッドリングの出力（`pad_geometry.json`）。
+- ネット：GDS の Metal1〜5／Via1〜4 のつながり。
+- ブロックの電源ピン：デジタルのマクロは LEF（LibreLane）の VDD／VSS、ほかのブロックは自分の GDS のラベル（ブロックの LVS で確かめたもの）。
+- 抵抗：チップの配線（chip_top に描いた形）の、パッドから各ブロックまで（`pex_chipnets.network()`、PDK のシート抵抗）。パッドセルとリングのレールは入らない。
+- r7 では 3 件を出した：デジタルブロックの VDD（LEF の 11 本）、ADC のデジタル部の VDD（10 本）、ADC の DVDD が、どの電源のパッドにもつながらない。AVDD のパッドから ADC までの抵抗は 1.457 Ω で、`pex_chipnets.py`（`chipnets_r7`）の 1.454 Ω と合う。
+
+**結果（8 回目）**
+
+- 配線 407 秒。パッドリング込みのつながりの確認、DRC、コアの LVS は、どれも問題なし（DRC 違反なし、LVS 一致）。
+- GDS だけからの電源の確認：問題なし。DVDD はパッドからデジタルブロックまで 0.19 Ω、デカップリングまで 0.67 Ω、ADC まで 4.32 Ω。DVSS は 1.12 Ω、1.50 Ω、1.41 Ω。
+- **XOR（r7 と比べる、穴埋め前）**：45 層のうち 44 層が同じ。違うのは Metal5 の 9 個（合わせて 144 µm²）だけで、どれも DVDD の 2 本の間のすき間（x 3520〜3522 µm）の、帯がまたぐところ（デジタルブロックの帯 5 本、デカップリングの帯 4 行）。アナログの形は同じなので、r7 の抽出とシミュレーションはそのまま r8 にあてはまる。
+- 穴埋め（88 秒）のあとの全 DRC も違反なし。`chip_top_fill.gds` は sha256 f3bd2538…。
+- **wafer.space の precheck（タグ pre_20261029_r8）**：「Precheck successfully completed」。
+  - 最新のイメージ（10/20 版、digest 104d9ccb…）を、`--slot 1x0p5 --cob` で回した。2 時間 31 分（ほかの計算と並べて回したため。アンテナ 51 分、Magic DRC 38 分、KLayout DRC 52 分）。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は「DRC Checking DONE」まで走った。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力は、GDS を読むときの決まった一文（Calma reading is not undoable）だけで、r7 と同じ。
+- **GDS**：gz を `gf180/tapeout/chip/gds/chip_top_fill_r8_20261029.gds.gz` に置いた（41,886,078 バイト、sha256 2c5ea71e…。展開すると f3bd2538… に戻る）。
+
+**別の道具でのチップ全体の LVS（Magic の抽出と Netgen、10/29）**
+
+KLayout の LVS とは別の道具で、同じチップを比べた。Magic（8.3.677、gf180mcuD の tech）で平らに抽出し（73 分）、Netgen（1.5.323、PDK の `gf180mcuD_setup.tcl`）で比べた（2 分）。`chip_lay.py --netgen`（`netgen_chip()`、Magic と Netgen を回すのは `gf180lay.netgen_lvs()`）で回せる。時間がかかるので、毎回の組み立てには入れていない。
+
+- PDK の ESD のトランジスタ（`*_dss`）は、ドレインとソースの SAB の長さ（`d_sab`、`s_sab`）を持つ。Magic はこれを抽出しないので、Netgen では比べない（`chip_lay.NETGEN_SETUP`）。bi_24t を 1 つだけ比べたときの「property errors」はこれだけだった。
+
+- **回路図**：`eeg_chip.spice` を Netgen の形（X の素子のまま）にしたものと、PDK の IO セルの SPICE（`gf180mcu_fd_io.spice`、ESD ダイオードも全部）。
+- **レイアウト**：KLayout の LVS と同じ写し（トップより下のテキストを消し、ボンドパッドとコアのポートにラベル）。ADC のヒントは KLayout のためのものなので置かない。
+- 先に確かめたこと：IO セル 1 種ずつ（asig_5p0、dvdd、dvss、bi_24t、fill10）は、ESD ダイオードも含めて PDK の SPICE と一致した。KLayout のデッキが抽出しない n+／p 基板の ESD ダイオードを、Magic は抽出する。adc_top 単体も、平らにして一致した（対称 1,781 組）。
+- **結果**：素子 90,780 と 90,779、ネット 51,212 と 51,211。違いは角のセル（PDK の `gf180mcu_fd_io__cor`）のデカップリングだけで、ほかは、コア、パッドとの境目、IO セル（ESD ダイオードを含む）まですべて一致した。
+  - 33 個の使わないパッドは互いに区別できない（どれも同じ形）ので、Netgen は端子の名前の対応を決められない。比べる端子を両方にある 18 個（使うパッド）にして回し直しても、違いは同じだった。
+- **角のセルの違いは Magic の読み方によるもので、レイアウトの誤りではない**（10/29 に確かめた）。
+  - 角のセルには MOS 容量のデカップリングが 70 個あり、PDK のネットリストではすべて DVDD と DVSS の間にある。Magic の抽出では、4 つの角のどれでも、そのうち 22 個（`moscap_corner` 2 つの 16 個と `moscap_corner_2` の 6 個）の拡散側が、DVSS から切れた別の節点になる。Netgen は、つながる先のない端子を持つ素子どうしを並列とみなしてまとめるので（`Merged 7 parallel devices`）、8 組が 1 つに見えていた。初めに「南東の角の 1 つ」と書いたのは、この見え方を読み違えたもの。
+  - この 22 個から DVSS へは、`moscap_routing` のセルの p+ の拡散（COMP 3,361 µm²）を通る。その p+ の注入（PPLUS）は、セル自身には 128 µm² しかなく、残りはほかのセルに描いてある。Magic は層の読み替えをセルごとにするので、`moscap_routing` の中ではこの COMP を拡散にしない（このセルの抽出の節点は Metal1 の 56 個だけ）。上のセルが書く「つながっている」という記録（merge）が、ない節点を指すことになり、ext2spice は `no such node` を角ごとに 9 回出して、そのつながりを捨てる。
+  - KLayout で角のセルを平らにして、拡散、コンタクト、金属のつながりを見ると（n+ と p+ は別の層にし、コンタクトでだけつなぐ）、70 個のどれも、ゲートが DVDD、拡散側が DVSS になる。前に書いた「突き合わせの接合の扱いの違い」は誤りだった（その確かめ方は、`moscap_corner` に直接描いた p+ のタップだけを見ていて、容量の n+ を見ていなかった）。
+  - PDK の GDS の角のセルを 1 つだけ Magic にかけても、同じ違いになる（PDK が DVSS のラベルを付けた金属が切れて、`DVSS_uq5` という別の名前になる）。下のセルを読み込むときに平らにする（`gds flatglob`）と、`no such node` は 0 回で、70 個がすべて DVDD と DVSS の間になり、PDK の SPICE と一致した（Circuits match uniquely）。
+  - `netgen_chip()` は、IO セルの中のセルをすべて（チップでは 863 種）、読み込むときに平らにする。`gds flatglob *` はトップのセルまで平らにして消してしまうので、名前を 1 つずつ渡す。平らにしない前の結果は `runs/chip_top/lvs_netgen_nonflat_20261029/` に残した。
+- **平らにして回し直した結果（r8、10/30）**：Magic の `no such node` は 0 件（前は 338 件）。素子 90,779 と 90,779、ネット 51,211 と 51,211 で、Netgen は「Netlists match with 3153 symmetries」、「Final result: Circuits match uniquely.」。角のセルのデカップリング（cap_nmos_06v0）も両方 25 組にまとまる。
+  - 最初は、ネットリストは一致したのに「Top level cell failed pin matching」になった。レイアウトの写しには、コアの側の名前（デジタルパッドの信号 10 本の、パッドとコアの境目のラベル）を置いていて、Magic はトップのセルのラベルをすべてチップの端子にする。回路図では、これらは中の節点で、チップの端子はボンドパッドのネット（51 個）。`gf180lay.netgen_compare()` で、レイアウトの端子を回路図の端子の名前に絞るようにした（ラベルは中のネットの名前として残る）。抽出はそのままで、Netgen だけを回し直した（82 分）。
+  - 結果は `runs/chip_top/r8_20261029/lvs_netgen/`（最初の結果は `netgen_first.out`）。抽出は 5 時間 29 分（ほかの計算と並べたため、Magic の CPU は 2〜4 割）。r9 も同じ形で回している。
+
+## 組み直し（10/29、9 回目：AFE の AVSS の渡りに Metal3）
+
+AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ± 1.1 mA）は、AFE の東の 2 本のレールから Ch-A の AVSS の幹線へ、AVDD の幹線の下を Metal4 の渡り 2 本（高さ 22.92 µm と 13.96 µm、長さ 73 µm）で渡る。AFE の AVSS の出口はここだけで、PDK の電流密度の上限（Metal1〜4 で 0.67 mA/µm）の 87 %、+3σ で 101 % だった（`gf180_verification_coverage_20261029.md` の穴 4）。10/29 のユーザーの判断で、Metal3 を足した。
+
+**直し（`chip_lay.avss_metal3()`）**
+
+- 渡りと同じ大きさの Metal3 を Metal4 の下に置き、両端の Via4 の配列と同じ場所に Via3 の配列を足した（西 296／176 個、東 370／220 個）。
+- 渡りの下の Metal3 は、配線器が AFE の東の縁に沿って縦に引いた 10 本が横切っていた。南の帯から AFE の東の端子へ行くチョッパのクロックと制御（RST2、CIA2、CIB2、NCDA2、CDB2、NCDB2、CPF2、CPF3）と、バイアス（VBN、VBCM。試験用マルチプレクサまで北へ行く）。
+  - 配線器は Metal3 を縦、Metal4 を横にしか使わない。Metal3 を配線の前に置くと、この 10 本は渡りを避けて、AVDD と AVSS の幹線の下を東へ大きく回る。
+  - そこで、配線のあとで、10 本の渡りの下の部分（y 1030.9〜1073.5 µm、42.6 µm）だけを、同じ列のまま Metal2 に下ろした（両端に Via2）。ほかの配線は 8 回目と同じ。10 本は、上を AVSS の Metal3 と Metal4 で覆われる。
+  - Via2 の 2 個（4.5 Ω ずつ）が足される。クロックは AFE のゲートを、VBN と VBCM は電流の流れない節点を駆動するので、影響はない。
+
+**結果**
+
+- 電流密度（GDS から測った。Metal3 と Metal4 のシート抵抗は同じ 0.090 Ω/□ で、Metal3 の側は両端の Via3 が直列に入る）：typical で Metal4 46 %、Metal3 42 %。+3σ で 53 %、48 %。Via3 は 1 個あたり上限の 12〜14 %、Via4 は 25〜30 %（8 回目と同じ）。Metal3 は 2 本の渡りの全体を覆う。
+- GDS だけからの電源の確認（`supply_check.py`）：問題なし。AFE の AVSS はパッドから 1.215 Ω（8 回目 1.290）。ほかの値とパッドの電流は 8 回目と同じ。
+- `supply_check.main()` が GDS の道を引数で受けるようにした。8 回目は、この確認を流れに足す前に組んだので、流れから呼ばれたのは 9 回目が初めてだった（引数を受けずに止まった）。
+- 組み立て（`chip_lay.py --drc --lvs`、配線 273 秒）：パッドリング込みのつながりの確認、GDS だけからの電源の確認、DRC は、どれも問題なし（DRC 違反なし）。
+- **チップ全体の LVS（パッドリング込み、KLayout）：一致**（「Congratulations! Netlists match.」、平らにした写しで 89 分）。チップ全体で一致したのは、これが初めて。誤りは 0 件。警告は、対称なネットの対応（ambiguous）8,681 件だけで、そのうち 8,655 件はコアの LVS と同じもの（デジタル 5,425、ADC のデジタル部 3,226、AFE 4）、残りの 26 件は PDK の IO セルの ESD のクランプの中の節点（dvdd／dvss のセルの N6、角のセルの N7／N27、bi_24t の 1 つの N172／N173）。
+- コアの LVS：一致。
+- XOR（8 回目と比べる、穴埋め前）：45 層のうち 41 層が同じ。違うのは Metal3（渡りの下の 2 枚と、10 本の線の切れ目）、Via3（両端の配列 1,062 個）、Metal2（10 本の橋、0.38 × 42.6 µm）、Via2（20 個）だけで、どれも渡りのまわり（x 1583〜1656 µm、y 1030.9〜1073.5 µm）にある（`gf180/tapeout/layout/runs/chip_top/xor_r8_r9_chip_top_20261029.log`）。
+- チップの配線の抽出（`EEG_PEX_REV=r9`、`gf180/tapeout/pex/runs/chipnets_r9/README.md`）：AVSS のパッドから AFE まで 1.215 Ω（r7 1.290）。VBN と VBCM は試験用マルチプレクサへの枝だけ +9.0 Ω（Via2 の 2 個。バイアス回路から AFE への枝は同じ）。ほかはすべて r7 と同じ。動作点（AFE はリセット、ADC の電流 4.7 mA）では、AFE の AVSS がパッドから 36.7 mV（r7 37.8 mV）、AFE から見た VBN が 1.3 mV 高く、電源電流が 0.75 % 増える。AFE に流れる電流が少し増えるので、`gf180_realistic_eval_20261028.md` の r7 の結果は、r9 に対して少し控えめな見込みになる。
+- 穴埋め（47 秒）のあとの全 DRC も違反なし。`chip_top_fill.gds` は sha256 c96d5b1f…（224,109,258 バイト）。
+- **wafer.space の precheck（タグ pre_20261029_r9）**：「Precheck successfully completed」。最新のイメージ（10/20 版、digest 104d9ccb…）を `--slot 1x0p5 --cob` で回した。1 時間 13 分（アンテナ 16 分、Magic DRC 15 分、KLayout DRC 37 分）。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は「DRC Checking DONE」まで走った。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力は、GDS を読むときの決まった一文だけで、r8 と同じ。
+- **GDS**：gz を `gf180/tapeout/chip/gds/chip_top_fill_r9_20261029.gds.gz` に置いた（41,891,598 バイト、sha256 9e6b1f82…。展開すると c96d5b1f… に戻る）。発注の候補は r9。
+- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`、10/30）：一致**。IO セルの中の 863 種のセルを読み込むときに平らにし、レイアウトの端子をボンドパッドのネット（51 個）に絞った形で、Magic の `no such node` は 0 件、素子 90,779 と 90,779、ネット 51,211 と 51,211、「Netlists match with 3153 symmetries」、「Final result: Circuits match uniquely.」（4 時間 11 分。結果は `runs/chip_top/r9_20261029/lvs_netgen/`）。
+- 9 回目は、KLayout と Magic／Netgen の 2 つの道具でチップ全体の LVS が一致し、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認もすべて通った。

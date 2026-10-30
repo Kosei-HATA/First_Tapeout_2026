@@ -5,7 +5,8 @@ chip of 10/27 (sixth assembly, mask-identical rebuild; runs/chip_top/chip_top.gd
 chip_top_fill.gds, core LVS eeg_core.lvsdb). Results in runs/chipnets/ (README.md there). The
 seventh assembly (10/29, the ADC's C1 and C2 x1.25) with EEG_PEX_REV=r7 (pex.py) in
 runs/chipnets_r7/: rnet, caps, write and tables run again; blocks, verify, pad and afegrid are
-r6's (eeg_bias, eeg_ref, the pad cell and afe_top did not change), their results copied.
+r6's (eeg_bias, eeg_ref, the pad cell and afe_top did not change), their results copied. The ninth
+(10/29, Metal3 under the AFE's AVSS jumpers) likewise with EEG_PEX_REV=r9 in runs/chipnets_r9/.
 
 Steps (each saves its results, so later steps rerun alone):
   blocks  pex.py's extraction (magic: devices with the layout's geometry and every parasitic
@@ -61,8 +62,10 @@ import pex  # noqa: E402
 REPO = pex.REPO
 LAYOUT = pex.LAYOUT
 OUT = os.path.join(pex.RUNS, "chipnets" + pex.SUFFIX)    # EEG_PEX_REV: see pex.py
-# the chip the models are of: r6 (no EEG_PEX_REV), r7 (EEG_PEX_REV=r7: the ADC's C1 and C2 x1.25)
-CHIP_LABEL = {"": "10/27, sixth assembly", "r7": "10/29, seventh assembly"}.get(pex.REV, pex.REV)
+# the chip the models are of: r6 (no EEG_PEX_REV), r7 (EEG_PEX_REV=r7: the ADC's C1 and C2 x1.25),
+# r9 (EEG_PEX_REV=r9: also the core's DVDD to its pads (r8) and Metal3 under the AFE's AVSS jumpers)
+CHIP_LABEL = {"": "10/27, sixth assembly", "r7": "10/29, seventh assembly",
+              "r9": "10/29, ninth assembly"}.get(pex.REV, pex.REV)
 CHIP = os.path.join(LAYOUT, "runs", "chip_top")
 GDS_NOFILL = os.path.join(CHIP, "chip_top.gds")
 GDS_FILL = os.path.join(CHIP, "chip_top_fill.gds")

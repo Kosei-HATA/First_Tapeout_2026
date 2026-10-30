@@ -384,12 +384,13 @@ def _subckt_params(header):
     return {t.split("=", 1)[0].lower(): t.split("=", 1)[1] for t in header.split()[2:] if "=" in t}
 
 
-def to_cdl(netlist_files, top):
+def to_cdl(netlist_files, top, form="klayout"):
     """The subcircuit `top` (and the subcircuits it calls) from the simulation netlists,
     with X devices rewritten for the KLayout LVS deck. Parameterized subcircuits (e.g.
     eeg_afe_inv s=1) become one plain subcircuit per parameter set, named by
     variant_name(). Ideal capacitors named CW* are pre-layout wiring estimates (eeg_adc)
-    and are left out."""
+    and are left out. form="netgen": the X devices stay as they are (Magic extracts them as
+    subcircuits too) with their m, the MIM in the PDK's spelling (cap_mim_2f0fF)."""
     text = "\n".join(open(f).read() for f in netlist_files)
     text = re.sub(r"\n\+", " ", text)  # join continuation lines
     blocks = _subckt_blocks(text)
@@ -433,6 +434,9 @@ def to_cdl(netlist_files, top):
                                                               "c_length") else f"{x:.6g}"
                     vals.append(f"{k}={v}")
                 line = " ".join([w[0]] + pos + vals)
+                if form == "netgen":
+                    body.append(_netgen_line(line))
+                    continue
                 # resistors and capacitors with m: m separate devices (KLayout combines them back)
                 mk = [v for v in vals if v.lower().startswith("m=")]
                 if mk and pos[-1] in _DEV and _DEV[pos[-1]] in "RC":
@@ -441,7 +445,7 @@ def to_cdl(netlist_files, top):
                     for k in range(mm):
                         body.append(_device_line(" ".join([f"{w[0]}_m{k}"] + pos + rest)))
                     continue
-            body.append(_device_line(line))
+            body.append(_netgen_line(line) if form == "netgen" else _device_line(line))
         out.append(f".subckt {vname} " + " ".join(ports))
         out.extend(body)
         out.append(f".ends {vname}")
@@ -454,6 +458,13 @@ _DEV = {"nfet_03v3": "M", "pfet_03v3": "M", "ppolyf_u": "R", "ppolyf_u_1k": "R",
         "cap_nmos_03v3": "C", "cap_pmos_03v3": "C", "cap_mim_2f0ff": "C",
         "nfet_05v0": "M", "pfet_05v0": "M"}      # 05v0: the standard cells of the LibreLane macros
 _MODEL = {"cap_mim_2f0ff": "cap_mim_2f0fF"}
+
+
+def _netgen_line(line):
+    w = line.split()
+    if w and w[0][:2].upper() == "CW":
+        return "* wiring estimate, not a device: " + line
+    return " ".join(_MODEL.get(t, t) for t in w)
 
 
 def _device_line(line):
@@ -543,3 +554,77 @@ def lvs(gds, cdl, top, outdir, sub="VSS", mode="flat"):
     ok = "Congratulations! Netlists match" in txt
     lines = [l for l in txt.splitlines() if re.search(r"[Mm]atch|ERROR|Error", l)]
     return ok, lines[-6:]
+
+
+_MAGIC_EXTRACT = """crashbackups stop
+drc off
+gds readonly true
+{flatglob}gds read {gds}
+load {top}
+select top cell
+extract do local
+extract no capacitance
+extract no coupling
+extract no resistance
+extract no length
+extract unique
+extract all
+ext2spice lvs
+ext2spice hierarchy off
+ext2spice subcircuit top on
+ext2spice -o {out}
+quit -noprompt
+"""
+
+
+def netgen_lvs(gds, schematic, top, outdir, flatglob=(), setup_extra="", ports=None):
+    """LVS with other tools than lvs(): Magic (gf180mcuD tech, no parasitics) extracts `top`
+    flat, Netgen compares it with `schematic` (X devices as Magic writes them, e.g.
+    to_cdl(form="netgen")) under the PDK's gf180mcuD_setup.tcl, plus setup_extra (Tcl run
+    after it). flatglob: cells Magic flattens into their parents when it reads the GDS. Magic
+    turns GDS layers into its own types cell by cell, so diffusion whose implant is drawn in
+    another cell is not diffusion there; the parent's merges then name nodes that do not
+    exist ("no such node") and the connection is lost. ports: see netgen_compare(). Returns
+    (match, Netgen's final result, the number of "no such node")."""
+    gds, outdir = os.path.abspath(gds), os.path.abspath(outdir)
+    os.makedirs(outdir, exist_ok=True)
+    lay = os.path.join(outdir, f"{top}_magic.spice")
+    if os.path.exists(lay):
+        os.remove(lay)
+    tcl = os.path.join(outdir, "extract.tcl")
+    open(tcl, "w").write(_MAGIC_EXTRACT.format(flatglob="".join(f"gds flatglob {c}\n" for c in flatglob),
+                                               gds=gds, top=top, out=lay))
+    rc = os.path.join(PDK, "libs.tech", "magic", "gf180mcuD.magicrc")
+    log = os.path.join(outdir, "magic.log")
+    _nix(f"cd {outdir} && env PDK_ROOT={os.path.dirname(PDK)} PDK=gf180mcuD magic -dnull -noconsole -rcfile {rc} {tcl}", log)
+    lost = open(log).read().count("no such node")
+    if not os.path.exists(lay):
+        return False, f"no Magic netlist; see {log}", lost
+    ok, final = netgen_compare(lay, schematic, top, outdir, setup_extra, ports)
+    return ok, final, lost
+
+
+def netgen_compare(lay, schematic, top, outdir, setup_extra="", ports=None):
+    """Netgen on Magic's netlist `lay` (netgen_lvs()) against `schematic`. ports: the top
+    subcircuit's pins of the layout are cut down to these names (Magic makes every labelled
+    node of the top cell a pin; labels that only name internal nets, e.g. the core's side of
+    a pad, would otherwise fail Netgen's pin matching). Returns (match, final result)."""
+    lay, schematic, outdir = os.path.abspath(lay), os.path.abspath(schematic), os.path.abspath(outdir)
+    if ports is not None:
+        txt = open(lay).read()
+        m = re.search(rf"^\.subckt {re.escape(top)}((?:[ \t]+\S+)*)\n((?:\+.*\n)*)", txt, re.M | re.I)
+        have = (m.group(1) + " " + m.group(2).replace("+", " ")).split()
+        keep = [p for p in have if p in set(ports)]
+        lay2 = lay.replace(".spice", "_ports.spice")
+        open(lay2, "w").write(txt[:m.start()] + f".subckt {top} " + " ".join(keep) + "\n" + txt[m.end():])
+        lay = lay2
+    setup = os.path.join(outdir, "netgen_setup.tcl")
+    open(setup, "w").write(f"source {os.path.join(PDK, 'libs.tech', 'netgen', 'gf180mcuD_setup.tcl')}\n" + setup_extra)
+    rep = os.path.join(outdir, "netgen.out")
+    if os.path.exists(rep):
+        os.remove(rep)
+    _nix(f'netgen -batch lvs "{lay} {top}" "{schematic} {top}" {setup} {rep}', os.path.join(outdir, "netgen.log"))
+    txt = open(rep).read() if os.path.exists(rep) else ""
+    final = (re.findall(r"Final result:.*", txt) or ["no final result; see netgen.log"])[-1]
+    ok = "Circuits match uniquely" in final and "Property errors were found" not in txt
+    return ok, final

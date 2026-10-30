@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Chip top (tracker E7): the padring of the wafer.space 1x0.5 slot with the analog core
 and the digital blocks, die coordinates (um, die 3932 x 2531). Top cell chip_top; LVS of
-the core against gf180/tapeout/chip/eeg_core.spice.
+the core against gf180/tapeout/chip/eeg_core.spice. The core LVS prunes the padring, so
+every build also checks where the core meets the pads on the whole chip (connect_check():
+each port reaches its pads, no pad or decoupling net left without the other; since 10/29).
 
 Padring: LibreLane padring flow of the template work copy (/Users/noah/Codings/ws_gf180/
 eeg_padring, run RUN_2026-10-23_13-27-25; copy in gf180/tapeout/chip/padring/): 14 analog pads (asig_5p0) for AVDD x3, AVSS
@@ -30,13 +32,23 @@ Floorplan (die um; the pads' inner edges at x 376 / 3556 and y 376 / 2155):
 Router grid (route.Router): columns x 0.64 + 0.8 i, rows y 0.04 + 0.68 j (the grids of
 afe_top and adc_top at their origins).
 
+--lvs runs two LVS: the whole chip with its pad ring (lvs_chip(): the PDK's IO cells from
+their CDL against the chip's eeg_chip.spice, since 10/29) and the core (lvs_core()).
+--netgen compares the whole chip once more with other tools (netgen_chip(): Magic and Netgen).
+
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/chip_lay.py [--drc] [--lvs]
+       ... chip_lay.py --connect      (the pad-ring connectivity check of chip_top.gds only)
+       ... chip_lay.py --lvs-chip     (the full-chip LVS of chip_top.gds only)
+       ... chip_lay.py --netgen       (the full-chip LVS with Magic and Netgen of chip_top.gds only)
+       ... chip_lay.py --fill
 """
 import argparse
 import json
 import os
 import re
+import sys
 import time
+from collections import Counter
 import gf180lay as g
 import analog as an
 import blocks as bl
@@ -206,10 +218,12 @@ def power(a, I):
     slab_stack(a, "metal4", "metal5", xa, ya, xb, ya + 6.0, "AVSS", along="y", maxw=26.0)
     slab(a, "metal4", xa, ya, xb, yb, "AVSS", along="y", maxw=26.0)
     slab_stack(a, "metal4", "metal5", xa, yb - 6.0, xb, yb, "AVSS", along="y", maxw=26.0)
-    # AFE east rails: AVDD into the AVDD trunk on Metal5, AVSS under it on Metal4
+    # AFE east rails: AVDD into the AVDD trunk on Metal5, AVSS under it on Metal4 (and on
+    # Metal3 below that, added after routing: avss_metal3())
     afe = I["afe"]
     rails = [s for s in local_shapes(afe, "metal5", (1099.0, 500.0, 1100.0, 691.0)) if s[3] - s[1] > 10.0]
     xe = afe.bbox[2]
+    I["avss_jumpers"] = []
     for x1, y1, x2, y2 in rails:
         net = "AVSS" if y2 < afe.bbox[1] + 570.0 else "AVDD"
         if net == "AVDD":
@@ -219,6 +233,7 @@ def power(a, I):
             a.via_stack("metal4", "metal5", xe + 1.0, y1 + 0.5, xe + 6.0, y2 - 0.5, "AVSS")
             a.wire("metal4", xe + 1.0, y1 + 0.5, CA_AVSS[0][0] + 6.0, y2 - 0.5, "AVSS")
             a.via_stack("metal4", "metal5", CA_AVSS[0][0], y1 + 0.5, CA_AVSS[0][0] + 6.0, y2 - 0.5, "AVSS")
+            I["avss_jumpers"].append((xe + 1.0, y1 + 0.5, CA_AVSS[0][0] + 6.0, y2 - 0.5))
     I["afe_rails"] = rails
     # ADC west rails: AVSS into the AVSS trunk, AVDD under it on Metal4 (a taller jumper)
     adc = I["adc"]
@@ -256,7 +271,10 @@ def power(a, I):
 
 # digital supply: DVSS trunk in the isolation band (fed by the south / north dvss pads
 # beside it), DVDD trunk in the east gap (fed by the east dvdd pads); the digital block's
-# DVSS straps run west, its DVDD straps east, so neither crosses the other trunk
+# DVSS straps run west, its DVDD straps east, so neither crosses the other trunk. Each trunk
+# is two strips (MSLOT5.1) that the straps join by crossing both: the dvss pads' straps for
+# DVSS, the digital block's and the decoupling's straps for DVDD (until 10/29 these stopped
+# on the west strip and the dvdd pads fed only the east one: the core's DVDD reached no pad)
 IB_DVSS = ((2950.0, 2970.0), (2972.0, 2992.0))
 EG_DVDD = ((3500.0, 3520.0), (3522.0, 3542.0))
 DIG_STRAPS = [("DVDD", 642.0, 648.0), ("DVSS", 654.0, 660.0)] + \
@@ -317,13 +335,14 @@ def dpower(a, I):
         a.box("metal2", x1, ya, x2, yb)
         a.via_stack("metal2", "metal5", x1, ya, x2, yb, "DVSS")
         m5(x1, ya, IB_DVSS[1][1], yb)
-    # straps over the digital block, Via4 onto its Metal4 straps
+    # straps over the digital block, Via4 onto its Metal4 straps; the DVDD ones across both
+    # strips of the DVDD trunk
     xs = {n: [s for s in dig.pins[n.replace("D", "", 1)] if s[0] == "metal4"] for n in ("DVDD", "DVSS")}
     for net, y1, y2 in DIG_STRAPS:
         if net == "DVSS":
             m5(IB_DVSS[1][1] - 1.0, y1, dig.bbox[2] - 2.0, y2)
         else:
-            m5(dig.bbox[0] + 2.0, y1, EG_DVDD[0][0] + 1.0, y2)
+            m5(dig.bbox[0] + 2.0, y1, EG_DVDD[1][1] - 1.0, y2)
         for s in xs[net]:
             a.vias("via4", s[1], y1, s[3], y2)
     # the ADC's DVDD rail (and riser) and DVSS rail: Metal4 jumpers across the DVSS trunk
@@ -404,8 +423,9 @@ def decaps(a, I):
         for (lo, hi), net in ((ys["G"], "DVDD"), (ys["B"], "DVSS")):
             a.box("metal2", x0 + 2.0, lo, x0 + nx * uw - 2.0, hi)
             # Metal5 strap over the row's strap: DVSS west to the isolation trunk, DVDD east
+            # across both strips of the DVDD trunk
             a.box("metal5", (IB_DVSS[1][1] - 1.0) if net == "DVSS" else x0 + 1.0, lo - 3.0,
-                  x0 + nx * uw - 1.0 if net == "DVSS" else EG_DVDD[0][0] + 1.0, hi + 3.0)
+                  x0 + nx * uw - 1.0 if net == "DVSS" else EG_DVDD[1][1] - 1.0, hi + 3.0)
             for k in range(nx):
                 xa = x0 + k * uw + uw / 2 - 3.0
                 a.via_stack("metal2", "metal5", xa, lo, xa + 6.0, hi, net)
@@ -662,8 +682,53 @@ def route_all(a, I, nets):
     if failed:
         for n in failed:
             print("why", n, r.why.get(n))
+    n = avss_metal3(r, I)
     r.draw(a)
+    for x1, y1, x2, y2 in I["avss_jumpers"]:
+        a.wire("metal3", x1, y1, x2, y2, "AVSS")
+        a.via_stack("metal3", "metal4", x1, y1, x1 + 5.0, y2, "AVSS")
+        a.via_stack("metal3", "metal4", x2 - 6.0, y1, x2, y2, "AVSS")
+    print(f"AFE's AVSS jumpers: Metal3 under the Metal4, {n} router wires cross them on Metal2")
     return failed
+
+
+def avss_metal3(r, I):
+    """Room on Metal3 under the AFE's AVSS jumpers (r9, 10/29). The AFE's whole AVSS current
+    (21.5 mA at AFE_IBIAS 3) crosses the AVDD trunks on these two Metal4 jumpers, 87 % of the
+    PDK's current-density limit (0.67 mA/um); Metal3 of the same size below them (drawn after
+    the router's shapes) halves it. The router's vertical Metal3 wires along the AFE's east edge
+    (the chopper clocks and controls from the south band) cross the jumpers: each crossing drops
+    to Metal2 under them in its own column, so the routing is otherwise the one without the
+    Metal3. Runs between routing and drawing; returns the number of wires moved."""
+    js = I["avss_jumpers"]
+    lo, hi = min(j[1] for j in js) - 0.5, max(j[3] for j in js) + 0.5      # Metal3 0.5 um clear of them
+    xl, xh = min(j[0] for j in js) - 0.5, max(j[2] for j in js) + 0.5
+    h = route.PAD / 2
+    out, cols = [], {}
+    for s in r.shapes:
+        lay, x1, y1, x2, y2, net = s
+        if not (x2 > xl and x1 < xh and y2 > lo and y1 < hi):
+            out.append(s)
+            continue
+        assert lay == "metal3" and x2 - x1 < 0.4, f"router shape {s} under the AFE's AVSS jumpers"
+        cols.setdefault((net, x1, x2), []).append((y1, y2))
+        if y1 < lo:
+            out.append((lay, x1, y1, x2, lo, net))
+        if y2 > hi:
+            out.append((lay, x1, hi, x2, y2, net))
+    for (net, x1, x2), iv in cols.items():
+        iv.sort()
+        reach = iv[0][1]                        # the column's wire must run unbroken across
+        for a_, b_ in iv[1:]:
+            assert a_ <= reach, f"{net} at x {x1:.2f} has a gap under the AFE's AVSS jumpers"
+            reach = max(reach, b_)
+        assert iv[0][0] < lo - 2 * h and reach > hi + 2 * h, f"{net} at x {x1:.2f} ends under the AVSS jumpers"
+        x = (x1 + x2) / 2
+        out += [("via2", x - 0.13, lo - h - 0.13, x + 0.13, lo - h + 0.13, net),
+                ("via2", x - 0.13, hi + h - 0.13, x + 0.13, hi + h + 0.13, net),
+                ("metal2", x - h, lo - 2 * h, x + h, hi + 2 * h, net)]
+    r.shapes = out
+    return len(cols)
 
 
 TAPEOUT = os.path.dirname(HERE)
@@ -678,16 +743,17 @@ NETLISTS = [os.path.join(TAPEOUT, "chip", "eeg_core.spice"), os.path.join(TAPEOU
 TIES = [("AVSS_CLK", "AVSS"), ("DVSS", "AVSS")]          # nets the p-substrate joins
 
 
-def core_labels(a, I):
-    """Labels on the top cell for the LVS of the core (eeg_core's ports where the core
-    meets the pads) and the ADC's LVS hints (nets that only the deep matcher tells apart)."""
+def port_labels(I):
+    """[(layer, name, x, y)] where the core meets the pads (die um): eeg_core's ports, as
+    labels for the core LVS and as probes for connect_check()."""
     P = I["pads"]
+    out = []
     for k, n in (("analog[2]", "ELP"), ("analog[4]", "ELN")):
         bs = bars(P[k])
-        a.label("metal5", n, WG_AVDD[0][0], min(b[1] for b in bs) + 5.0)      # on the strap's first strip
+        out.append(("metal5", n, WG_AVDD[0][0], min(b[1] for b in bs) + 5.0))      # on the strap's first strip
     for k, n in (("analog[8]", "ATP"), ("analog[9]", "VCM"), ("analog[10]", "VREFP_PAD"), ("analog[11]", "VREFN_PAD")):
         bs = bars(P[k])
-        a.label("metal2", n, (min(b[0] for b in bs) + max(b[2] for b in bs)) / 2, PAD_IN[3] - 4.0)
+        out.append(("metal2", n, (min(b[0] for b in bs) + max(b[2] for b in bs)) / 2, PAD_IN[3] - 4.0))
     for k, (sig, sp, ties) in DPAD.items():
         for pn, rects in P[k]["core_pins"].items():
             n = sig if pn == sp else (ties.get(pn) if isinstance(ties.get(pn), str) else None)
@@ -695,14 +761,35 @@ def core_labels(a, I):
                 continue
             _, x1, y1, x2, y2 = rects[0]
             if P[k]["orient"] == "R90":
-                a.label("metal2", n, PAD_IN[2] - 3.0, (y1 + y2) / 2)
+                out.append(("metal2", n, PAD_IN[2] - 3.0, (y1 + y2) / 2))
             else:
-                a.label("metal2", n, (x1 + x2) / 2, PAD_IN[3] - 3.0)
-    a.label("metal5", "AVDD", sum(CA_AVDD[0]) / 2, 1500.0)
-    a.label("metal5", "AVSS", sum(CA_AVSS[0]) / 2, 1500.0)
-    a.label("metal5", "DVDD", sum(EG_DVDD[0]) / 2, 1500.0)
-    a.label("metal5", "DVSS", sum(IB_DVSS[0]) / 2, 1500.0)
+                out.append(("metal2", n, (x1 + x2) / 2, PAD_IN[3] - 3.0))
+    for n, strips in (("AVDD", CA_AVDD), ("AVSS", CA_AVSS), ("DVDD", EG_DVDD), ("DVSS", IB_DVSS)):
+        out.append(("metal5", n, sum(strips[0]) / 2, 1500.0))
+    return out
+
+
+def tie_points(I):
+    """[(layer, net, x, y)] on the Metal2 stubs of the digital pads' pins tied to DVDD (1) or
+    DVSS (0) (digital_pads()), where port_labels() puts the signal pins' labels."""
+    P = I["pads"]
+    out = []
+    for k, (sig, sp, ties) in DPAD.items():
+        for pn, rects in P[k]["core_pins"].items():
+            v = ties.get(pn) if pn != sp else None
+            if v not in (0, 1):
+                continue
+            _, x1, y1, x2, y2 = rects[0]
+            xy = (PAD_IN[2] - 3.0, (y1 + y2) / 2) if P[k]["orient"] == "R90" else ((x1 + x2) / 2, PAD_IN[3] - 3.0)
+            out.append(("metal2", "DVDD" if v else "DVSS") + xy)
+    return out
+
+
+def adc_hints(I):
+    """[(layer, name, x, y)]: the ADC's LVS hints (labels of nets that only the deep matcher
+    tells apart, named as in the flattened schematic), in die um."""
     adc = I["adc"]
+    out = []
     li = {k: adc.src.find_layer(*g.L[k + "_label"]) for k in ("metal3", "metal4", "metal5")}
     for lay, l_ in li.items():
         if l_ is None:
@@ -710,7 +797,15 @@ def core_labels(a, I):
         for sh in adc.srctop.shapes(l_).each():
             if sh.is_text() and "." in sh.text.string:
                 pt = adc.trans * A.pya.DPoint(sh.text.trans.disp.x / 1000, sh.text.trans.disp.y / 1000)
-                a.label(lay, sh.text.string, pt.x, pt.y)
+                out.append((lay, sh.text.string, pt.x, pt.y))
+    return out
+
+
+def core_labels(a, I):
+    """Labels on the top cell for the LVS of the core (port_labels()) and the ADC's LVS
+    hints (adc_hints())."""
+    for lay, n, x, y in port_labels(I) + adc_hints(I):
+        a.label(lay, n, x, y)
 
 
 NDMY, PMNDMY = (111, 5), (152, 5)        # no dummy COMP; no dummy poly / metal (PDK fill scripts)
@@ -851,6 +946,306 @@ def lvs_core(a, I, runs):
     return bl.check(a, "eeg_core", NETLISTS, runs, drc=False, lvs=True, ties=TIES)
 
 
+CONNECT = ("metal1", "via1", "metal2", "via2", "metal3", "via3", "metal4", "via4", "metal5")
+
+
+def connect_check(path, I):
+    """Where the core meets the pad ring, which the core LVS (padring pruned) cannot see:
+    the Metal1..5 / Via1..4 connectivity of the whole chip (hierarchical LayoutToNetlist).
+    Probes are port_labels(), the second strip of each supply trunk and the digital pads'
+    tie-offs (tie_points(): a tie to 1 must sit on the DVDD net, to 0 on DVSS). Each probe's
+    net must reach the padring and a block; probes of one name sit on one net, of different
+    names on different nets; no top-level net may reach the padring without a block, or the
+    decoupling without the padring. Returns the problems (empty: ok)."""
+    ly = A.pya.Layout()
+    ly.read(path)
+    top = ly.top_cell()
+    l2n = A.pya.LayoutToNetlist(A.pya.RecursiveShapeIterator(ly, top, []))
+    R = {k: l2n.make_layer(ly.find_layer(*g.L[k]), k) for k in CONNECT}
+    for k in CONNECT:
+        l2n.connect(R[k])
+    for lo, hi in zip(CONNECT, CONNECT[1:]):
+        l2n.connect(R[lo], R[hi])
+    l2n.extract_netlist()
+    reach = lambda net: Counter(sp.subcircuit().circuit_ref().name for sp in net.each_subcircuit_pin())  # noqa: E731
+
+    def top_net(lay, x, y):
+        path_ = []
+        net = l2n.probe_net(R[lay], A.pya.DPoint(x, y), path_)
+        while net is not None and path_:              # up through the subcircuit pins
+            sc = path_.pop()
+            pins = list(net.each_pin())
+            net = sc.net_for_pin(pins[0].pin_id()) if pins else None
+        return net
+    bad, on = [], {}
+    probes = port_labels(I) + [("metal5", n, sum(s[1]) / 2, 1500.0) for n, s in
+                               (("AVDD", CA_AVDD), ("AVSS", CA_AVSS), ("DVDD", EG_DVDD), ("DVSS", IB_DVSS))] + \
+        tie_points(I)
+    for lay, n, x, y in probes:
+        net = top_net(lay, x, y)
+        if net is None:
+            bad.append(f"{n}: no top-level net under ({x:.2f}, {y:.2f}) {lay}")
+            continue
+        c = reach(net)
+        if not c.get("padring") or not set(c) - {"padring"}:
+            bad.append(f"{n} at ({x:.2f}, {y:.2f}): net {net.expanded_name()} reaches {dict(c) or 'nothing'}")
+        on.setdefault(n, set()).add(net.expanded_name())
+    for n, ids in on.items():
+        if len(ids) > 1:
+            bad.append(f"{n} on {len(ids)} nets {sorted(ids)}")
+    owner = {}
+    for n, ids in on.items():
+        for i in ids:
+            owner.setdefault(i, set()).add(n)
+    bad += [f"{' / '.join(sorted(ns))} on one net {i}" for i, ns in owner.items() if len(ns) > 1]
+    for net in l2n.netlist().circuit_by_name(top.name).each_net():
+        c = reach(net)
+        if c.get("padring") and not set(c) - {"padring"}:
+            bad.append(f"net {net.expanded_name()} reaches {c['padring']} padring pins and no block")
+        if c.get("chip_decap") and not c.get("padring"):
+            bad.append(f"net {net.expanded_name()} reaches {c['chip_decap']} decoupling units and no pad")
+    return bad
+
+
+# the whole chip's LVS, pad ring included (lvs_chip(), since 10/29)
+IO_CDL = os.path.join(g.PDK, "libs.ref", "gf180mcu_fd_io", "cdl", "gf180mcu_fd_io.cdl")
+CHIP_NETLIST = os.path.join(TAPEOUT, "chip", "eeg_chip.spice")
+# nets of the used analog pads (the other asig_5p0 pads: NC_<pad>, their own nets)
+ANALOG_PADS = {"analog[0]": "AVDD", "analog[1]": "AVSS", "analog[2]": "ELP", "analog[3]": "ELP",
+               "analog[4]": "ELN", "analog[5]": "ELN", "analog[6]": "AVSS", "analog[7]": "AVDD",
+               "analog[8]": "ATP", "analog[9]": "VCM", "analog[10]": "VREFP_PAD", "analog[11]": "VREFN_PAD",
+               "analog[12]": "AVDD", "analog[13]": "AVSS"}
+# the IO cells' supply pins: one domain, as the template's pad ring has it (the dvdd cell
+# joins the ring's DVDD and VDD, the dvss cell its DVSS and VSS)
+IO_SUPPLY = {"DVDD": "DVDD", "VDD": "DVDD", "DVSS": "DVSS", "VSS": "DVSS"}
+
+
+def io_cdl(cells):
+    """The PDK's IO cells (gf180mcu_fd_io.cdl) in the netlist form the LVS deck reads: $[model]
+    -> model, $W / $L -> W / L, $SUB -> the resistor's bulk node, AREA / PJ -> A / P;
+    resistors, capacitors and diodes with m as m devices (the deck combines them back, as
+    for to_cdl()). The n+ / p-substrate ESD diodes (diode_nd2ps_06v0) are left out: the deck
+    does not extract n+ under ESD or SAB (diode_exclude in diode_extraction.lvs), where the IO
+    cells draw them, so the open-source deck cannot check them. Each cell matches its own
+    layout this way (MOS, ppolyf_u, cap_nmos_06v0, diode_pd2nw_06v0)."""
+    text = re.sub(r"\n\+", " ", open(IO_CDL).read())
+    out = []
+    for cell in cells:
+        m = re.search(rf"^\.SUBCKT {re.escape(cell)} (.*?)$(.*?)^\.ENDS", text, re.M | re.S)
+        out.append(f".subckt {cell} {m.group(1).strip()}")
+        for line in m.group(2).splitlines():
+            w = line.split()
+            if not w or w[0].startswith("*"):
+                continue
+            kind = w[0][0].upper()
+            if kind == "M":
+                out.append(line)
+                continue
+            kv = {t.split("=", 1)[0].lower(): t.split("=", 1)[1] for t in w[1:] if "=" in t}
+            pos = [t for t in w[1:] if "=" not in t]
+            if kind in "RC":
+                model = next(t[2:-1] for t in pos if t.startswith("$["))
+                nodes = [t for t in pos if not t.startswith("$[")][:2]
+                if kind == "R":
+                    dev = nodes + ([kv["$sub"]] if "$sub" in kv else []) + [model, f"W={kv['$w']}", f"L={kv['$l']}"]
+                else:
+                    dev = nodes + [model, f"W={kv['w']}", f"L={kv['l']}"]
+            elif kind == "D":
+                if pos[2] == "diode_nd2ps_06v0":
+                    out.append(f"* {w[0]}: n+ / p-substrate ESD diode, not extracted by the deck: {line}")
+                    continue
+                dev = pos[:3] + [f"A={kv['area']}", f"P={kv['pj']}"]
+            else:
+                raise ValueError(f"{cell}: unexpected device {line}")
+            mm = int(round(float(kv.get("m", "1"))))
+            for k in range(mm):
+                out.append(" ".join([f"{w[0]}_m{k}" if mm > 1 else w[0]] + dev))
+        out.append(f".ends {cell}")
+    return "\n".join(out) + "\n"
+
+
+def flat_name(n):
+    return re.sub(r"\W", "_", n).strip("_")
+
+
+def pad_bond_net(name, p):
+    """The net on a pad cell's bond pad (None for a corner)."""
+    cell = p["cell"].replace("gf180mcu_fd_io__", "")
+    if cell == "asig_5p0":
+        return ANALOG_PADS.get(name, f"NC_{flat_name(name)}")
+    if cell == "bi_24t":
+        return DPAD[name][0] + "_PAD"
+    return {"dvdd": "DVDD", "dvss": "DVSS"}.get(cell)
+
+
+def pad_pins(name, p):
+    """{pin: net} of a pad cell's signal pins (the supply pins: IO_SUPPLY)."""
+    cell = p["cell"].replace("gf180mcu_fd_io__", "")
+    if cell == "asig_5p0":
+        return {"ASIG5V": pad_bond_net(name, p)}
+    if cell == "bi_24t":
+        sig, sp, ties = DPAD[name]
+        out = {"PAD": pad_bond_net(name, p), sp: sig}
+        out.update({pn: {0: "DVSS", 1: "DVDD"}.get(v, v) for pn, v in ties.items()})
+        if sp != "Y":
+            out["Y"] = f"NC_{flat_name(name)}_Y"                 # output pads: Y unused
+        return out
+    return {}
+
+
+def chip_netlist(fills):
+    """Write CHIP_NETLIST, the whole chip for lvs_chip(): chip_top is eeg_core's body (from
+    eeg_core.spice, so the core's nets keep their names) and the pad ring's cells, the IO cells
+    as pad_geometry.json places them and the fillers {cell: count} as the chip's padring has
+    them. Returns (path, the IO cells used)."""
+    P = pads()
+    core = re.sub(r"\n\+", " ", open(NETLISTS[0]).read())
+    body = re.search(r"^\.subckt eeg_core .*?$(.*?)^\.ends eeg_core", core, re.M | re.S).group(1).strip("\n")
+    io = re.sub(r"\n\+", " ", open(IO_CDL).read())
+    pins = {c: p.split() for c, p in re.findall(r"^\.SUBCKT (\S+) (.*?)\s*$", io, re.M)}
+    ports, lines = ["AVDD", "AVSS", "DVDD", "DVSS"], []
+    for name in sorted(P, key=lambda k: (P[k]["side"], P[k]["bbox"][0], P[k]["bbox"][1])):
+        p = P[name]
+        sig = pad_pins(name, p)
+        conn = [sig.get(pn) or IO_SUPPLY[pn] for pn in pins[p["cell"]]]
+        lines.append(f"XPAD_{flat_name(name)} {' '.join(conn)} {p['cell']}")
+        b = pad_bond_net(name, p)
+        if b and b not in ports:
+            ports.append(b)
+    for cell, n in sorted(fills.items()):
+        lines += [f"X{cell.split('__')[1].upper()}_{k} DVDD DVSS DVDD DVSS {cell}" for k in range(n)]
+    head = ("* eeg_chip: the whole chip with its pad ring, for the full-chip LVS (written by\n"
+            "* chip_lay.chip_netlist(); do not edit): eeg_core's body (eeg_core.spice) and the pad\n"
+            f"* ring's {len(P)} IO cells and {sum(fills.values())} fillers (pad_geometry.json, the padring GDS).\n"
+            "* IO cells: the PDK's gf180mcu_fd_io.cdl (chip_lay.io_cdl()); their DVDD / VDD pins are\n"
+            "* the chip's DVDD, DVSS / VSS its DVSS. Unused analog pads keep their own nets (NC_*).\n")
+    txt = head + ".subckt chip_top " + " ".join(ports) + "\n" + body + "\n* pad ring\n" + "\n".join(lines) + \
+        "\n.ends chip_top\n"
+    open(CHIP_NETLIST, "w").write(txt)
+    return CHIP_NETLIST, sorted({P[k]["cell"] for k in P} | set(fills))
+
+
+def lvs_chip(path, I, runs):
+    """LVS of the whole chip with its pad ring (top cell chip_top) against chip_netlist() and
+    the PDK's IO cells (io_cdl()), flat. On a copy of chip_top.gds: every text below the top
+    cell deleted (the IO cells' own labels would name nets in the flat extraction), labels on
+    every bond pad (pad_bond_net()), the core's ports (port_labels()) and the ADC's hints
+    (adc_hints()), then flattened into one cell and written as OASIS (chip_top.oas; the 26 M
+    shapes take 4 MB). Flat, because the PDK deck reads isosub (23/5, drawn in the IO cells)
+    hierarchically even in flat mode (its workaround for KLayout issue 2345): with the hierarchy
+    the extracted netlist keeps the cells as empty circuits, and those with a schematic namesake
+    (the IO cells, eeg_bias ...) survive align as more top circuits, which stops
+    flag_missing_ports and keeps their schematic circuits unflattened. The p-substrate joins
+    DVSS and AVSS_CLK into AVSS (TIES), as in the core LVS. Returns True on a match."""
+    out = os.path.join(runs, "lvs_chip")
+    os.makedirs(out, exist_ok=True)
+    ren = dict(TIES)
+    ly = A.pya.Layout()
+    ly.read(path)
+    top = ly.top_cell()
+    fills = {}
+    for inst in ly.cell("padring").each_inst():
+        if "__fill" in inst.cell.name:
+            fills[inst.cell.name] = fills.get(inst.cell.name, 0) + inst.size()
+    for cell in ly.each_cell():
+        if cell.cell_index() == top.cell_index():
+            continue
+        for li in ly.layer_indexes():
+            shapes = cell.shapes(li)
+            for sh in list(shapes.each(A.pya.Shapes.STexts)):
+                shapes.erase(sh)
+    labels = [("metal5", pad_bond_net(k, p)) + tuple(p["bond_center"]) for k, p in I["pads"].items()
+              if pad_bond_net(k, p)] + port_labels(I) + adc_hints(I)
+    for lay, n, x, y in labels:
+        top.shapes(ly.layer(*g.L[lay + "_label"])).insert(A.pya.DText(ren.get(n, n), A.pya.DTrans(x, y)))
+    top.flatten(-1, True)
+    gds = os.path.join(out, "chip_top.oas")
+    ly.write(gds)
+    net, cells = chip_netlist(fills)
+    cdl = os.path.join(out, "chip_top.cdl")
+    open(cdl, "w").write(tie_top(g.to_cdl(NETLISTS + [net], "chip_top")) + io_cdl(cells))
+    ok, lines = g.lvs(gds, cdl, "chip_top", out)
+    print("chip_top LVS (with the pad ring):", "match" if ok else "MISMATCH", *([] if ok else lines),
+          sep="\n  " if not ok else " ")
+    return ok
+
+
+def tie_top(txt, top="chip_top"):
+    """txt (a CDL) with the TIES nets renamed into their substrate net in the subcircuit top
+    (its ports without the repeats), as the core LVS does (bl.check)."""
+    ren = dict(TIES)
+    head, rest = txt.split(f".subckt {top} ", 1)
+    ports_line, rest = rest.split("\n", 1)
+    body, tail = rest.split(f".ends {top}", 1)
+    ports = []
+    for p_ in ports_line.split():
+        if ren.get(p_, p_) not in ports:
+            ports.append(ren.get(p_, p_))
+    for a_, z in ren.items():
+        body = re.sub(rf"(?<=\s){re.escape(a_)}(?=\s|$)", z, body, flags=re.M)
+    return head + f".subckt {top} " + " ".join(ports) + "\n" + body + f".ends {top}" + tail
+
+
+# The PDK's ESD transistors carry their drain / source SAB lengths (d_sab, s_sab); Magic does
+# not extract them, so Netgen does not compare them.
+NETGEN_SETUP = """foreach dev {nfet_03v3_dss pfet_03v3_dss nfet_05v0_dss pfet_05v0_dss nfet_06v0_dss pfet_06v0_dss} {
+    if {[lsearch $cells1 $dev] >= 0} { property "-circuit1 $dev" delete d_sab s_sab }
+    if {[lsearch $cells2 $dev] >= 0} { property "-circuit2 $dev" delete d_sab s_sab }
+}
+"""
+
+
+def netgen_chip(path, I, runs):
+    """The whole chip with other tools (tracker E7, since 10/29): Magic extracts chip_top flat,
+    Netgen compares it with chip_netlist() and the PDK's IO cells as their SPICE has them
+    (gf180mcu_fd_io.spice, the ESD diodes too, which the KLayout deck cannot extract), under
+    the PDK's Netgen setup (g.netgen_lvs). The layout copy is lvs_chip()'s without the ADC's
+    hints (KLayout's) and kept hierarchical. Every cell inside the IO cells is flattened into
+    its IO cell on read: the corner cell's moscap_routing carries DVSS to 22 of its 70 decaps
+    through p+ diffusion whose PPLUS is mostly drawn in other cells, which Magic, typing layers
+    per cell, would not see. Takes about 75 minutes. Returns True on a match."""
+    out = os.path.join(runs, "lvs_netgen")
+    os.makedirs(out, exist_ok=True)
+    ren = dict(TIES)
+    ly = A.pya.Layout()
+    ly.read(path)
+    top = ly.top_cell()
+    fills, inner = {}, set()
+    for inst in ly.cell("padring").each_inst():
+        if "__fill" in inst.cell.name:
+            fills[inst.cell.name] = fills.get(inst.cell.name, 0) + inst.size()
+    for cell in ly.each_cell():
+        if cell.name.startswith("gf180mcu_fd_io__"):
+            inner |= {ly.cell(c).name for c in cell.called_cells()}
+        if cell.cell_index() == top.cell_index():
+            continue
+        for li in ly.layer_indexes():
+            shapes = cell.shapes(li)
+            for sh in list(shapes.each(A.pya.Shapes.STexts)):
+                shapes.erase(sh)
+    inner = sorted(n for n in inner if not n.startswith("gf180mcu_fd_io__"))
+    assert all(re.fullmatch(r"\w+", n) for n in inner), "a cell name Magic's flatglob would read as a pattern"
+    labels = [("metal5", pad_bond_net(k, p)) + tuple(p["bond_center"]) for k, p in I["pads"].items()
+              if pad_bond_net(k, p)] + port_labels(I)
+    for lay, n, x, y in labels:
+        top.shapes(ly.layer(*g.L[lay + "_label"])).insert(A.pya.DText(ren.get(n, n), A.pya.DTrans(x, y)))
+    gds = os.path.join(out, "chip_top.gds")
+    ly.write(gds)
+    net, cells = chip_netlist(fills)
+    io = open(os.path.join(g.PDK, "libs.ref", "gf180mcu_fd_io", "spice", "gf180mcu_fd_io.spice")).read()
+    io_sub = "".join(re.search(rf"^\.SUBCKT {re.escape(c)} .*?^\.ENDS[^\n]*", io, re.M | re.S).group(0) + "\n"
+                     for c in cells)
+    sch = os.path.join(out, "chip_top_netgen.spice")
+    txt = tie_top(g.to_cdl(NETLISTS + [net], "chip_top", form="netgen"))
+    open(sch, "w").write(txt + "\n" + io_sub)
+    # the chip's pins are the schematic's (the bond pads); the core-side labels only name nets
+    ports = re.search(r"^\.subckt chip_top (.*)$", txt, re.M).group(1).split()
+    ok, final, lost = g.netgen_lvs(gds, sch, "chip_top", out, flatglob=inner, setup_extra=NETGEN_SETUP, ports=ports)
+    print(f"chip_top LVS with Magic and Netgen ({len(inner)} cells inside the IO cells flattened):",
+          "match" if ok else "MISMATCH", f"| {final} | {lost} lost merges (no such node)")
+    return ok and lost == 0
+
+
 MFG_GRID = 5                                     # nm (dbu 1 nm)
 
 
@@ -921,11 +1316,30 @@ def main():
     ap.add_argument("--place", action="store_true", help="placement and power only, no routing")
     ap.add_argument("--fill", action="store_true",
                     help="dummy fill on the routed chip_top.gds, then DRC with density and antenna")
+    ap.add_argument("--connect", action="store_true",
+                    help="only the connectivity check with the pad ring (connect_check) of chip_top.gds")
+    ap.add_argument("--lvs-chip", action="store_true",
+                    help="only the full-chip LVS with the pad ring (lvs_chip) of chip_top.gds")
+    ap.add_argument("--netgen", action="store_true",
+                    help="only the full-chip LVS with Magic and Netgen (netgen_chip, about 75 min) of chip_top.gds")
     args = ap.parse_args()
     runs = os.path.join(HERE, "runs", TOP)
     os.makedirs(runs, exist_ok=True)
     os.chdir(runs)
     t0 = time.time()
+    if args.connect:
+        bad = connect_check(os.path.join(runs, "chip_top.gds"), {"pads": pads()})
+        print("chip_top connectivity with the pad ring:", "ok" if not bad else f"{len(bad)} problems")
+        for b in bad:
+            print("  " + b)
+        return
+    if args.lvs_chip:
+        a, I, nets = build()                      # for the ADC's hints (its placement and source)
+        lvs_chip(os.path.join(runs, "chip_top.gds"), I, runs)
+        return
+    if args.netgen:
+        netgen_chip(os.path.join(runs, "chip_top.gds"), {"pads": pads()}, runs)
+        return
     if args.fill:
         full = os.path.join(runs, "chip_top.gds")
         out = fill(full, os.path.join(runs, "chip_top_fill.gds"), runs)
@@ -945,9 +1359,22 @@ def main():
     print(f"wrote {full} ({time.time() - t0:.0f} s)")
     if failed:
         return
+    bad = connect_check(full, I)
+    print("chip_top connectivity with the pad ring:", "ok" if not bad else f"{len(bad)} problems")
+    for b in bad:
+        print("  " + b)
+    if bad:
+        return
+    # the supplies once more from the GDS alone (pads by their IO cell, macros' power pins by
+    # their LEF, no labels or netlists of ours): gf180/tapeout/pex/supply_check.py
+    sys.path.insert(0, os.path.join(TAPEOUT, "pex"))
+    import supply_check
+    if supply_check.main(full):
+        return
     if args.drc:
         print("chip_top DRC:", g.drc(full, TOP, os.path.join(runs, "drc")) or "clean")
     if args.lvs:
+        lvs_chip(full, I, runs)
         lvs_core(a, I, runs)
 
 

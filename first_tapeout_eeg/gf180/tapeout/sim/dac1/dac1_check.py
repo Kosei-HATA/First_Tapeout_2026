@@ -10,9 +10,10 @@ VCM +- 0.25 V.
          two runs with the same frames on and off but twice the toggles (pattern
          totals, so the break that every cell takes every frame drops out):
          one cell toggling (the others half on, half off), or all 31 toggling.
-         Requirement 0.016 fC per toggle for all elements erring alike
-         (gf180/sim/dac1_cell/run_cell.py; behavioral 107.5 dB at 1e-5 of the
-         element charge 2 Iu T)
+         Requirement 1e-5 of the element charge 2 Iu T per toggle for all
+         elements erring alike (behavioral 107.5 dB): 0.008 fC for the present
+         cell of two 300 kohm units per side (2 Iu T = 0.81 pC); the 0.016 fC of
+         gf180/sim/dac1_cell/run_cell.py was for one unit per side
   ref    reference charge per frame for steady codes and for toggling codes:
          VRP current over a frame minus its static value, per toggle
   brk    BRK width, BRK rise to D / DB fall of a cell (both directions)

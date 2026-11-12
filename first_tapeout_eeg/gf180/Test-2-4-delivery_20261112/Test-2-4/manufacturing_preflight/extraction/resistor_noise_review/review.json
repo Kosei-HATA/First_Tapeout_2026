@@ -1,0 +1,19 @@
+{
+  "returncode": 0,
+  "temperature_K": 300.15,
+  "frequency_Hz": 0.5,
+  "AC_real_R_ohm": 299777.458524329,
+  "AC_imag_Z_ohm": -0.003531200956703771,
+  "onoise_V_per_sqrtHz": 1.695144533869008e-09,
+  "inoise_A_per_sqrtHz": 5.654676446366082e-15,
+  "onoise_div_inoise_ohm": 299777.45852432895,
+  "full_thermal_expected_V_per_sqrtHz": 7.049207547448069e-08,
+  "PSD_ratio": 0.0005782729424770971,
+  "terminal_R_each_ohm": 86.67662664880463,
+  "terminal_pair_noise_expected_V_per_sqrtHz": 1.6951448285382474e-09,
+  "terminal_pair_PSD_ratio": 0.9999996523374184,
+  "body_R_ohm_from_model": 299604.1052710561,
+  "body_plus_terminals_R_ohm": 299777.45852435374,
+  "source_model_sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+  "frequency_independent_onoise_max_relative_range": 3.021025682469342e-12
+}

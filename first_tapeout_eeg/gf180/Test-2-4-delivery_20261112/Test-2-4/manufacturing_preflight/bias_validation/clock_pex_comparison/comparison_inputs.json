@@ -1,0 +1,42 @@
+{
+  "cases": [
+    {
+      "variant": "schematic",
+      "clock_file": "/work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_adc_clk.spice",
+      "clock_sha256": "cc9b50e60c2c0f762ef4297c5b969d51933018552e37d4342388b45ffeb2b2dc",
+      "deck_sha256": "7e8309c0f476e37db7d857d8362dd4ceb433efb0f0b1599d7b628215347d3093"
+    },
+    {
+      "variant": "cap",
+      "clock_file": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/flat/cap.spice",
+      "clock_sha256": "23694bacd4a6cbf1d3330646c62ce7e0dfdfeb8f9602b061f087fb3cfe0ae78d",
+      "deck_sha256": "d52dbae67062493378aa4d1e8f130387d6cc501cd6b0e69668594bb72e223ee3"
+    },
+    {
+      "variant": "rc",
+      "clock_file": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/flat/rc.spice",
+      "clock_sha256": "d3ee0aebd3a46f02487db8229a9ad1d4ad7a8ebbf5b0a29188c62d2d6f9cf33b",
+      "deck_sha256": "1abf76ccda580d4d89f871aeff928a1e493a9f0471d2b4d1d81a020337ae5298"
+    }
+  ],
+  "load_wave_nodes": [
+    "vcm",
+    "vbn1",
+    "vnc1",
+    "vpc1",
+    "vbcm1",
+    "xota1.cip",
+    "xota1.cin",
+    "xota1.xota.xcore.d1p",
+    "xota1.xota.xcore.d1n",
+    "xota1.xota.xcore.n1p",
+    "xota1.xota.xcore.n1n",
+    "xota1.xota.xcore.p1p",
+    "xota1.xota.xcore.p1n",
+    "xota1.xota.xcore.p2p",
+    "xota1.xota.xcore.p2n"
+  ],
+  "differences": "Only clock .include path differs among variants. Added output probes identical.",
+  "external_load_model": "Unmodified real-bias plus schematic OTA TGs, 24 gate-connected MOS instances. External diffusion geometry is schematic approximation, not extracted.",
+  "double_counting": "Schematic clock .include replaced, not appended. PEX parasitics included once inside chosen clock definition. External OTA unchanged."
+}

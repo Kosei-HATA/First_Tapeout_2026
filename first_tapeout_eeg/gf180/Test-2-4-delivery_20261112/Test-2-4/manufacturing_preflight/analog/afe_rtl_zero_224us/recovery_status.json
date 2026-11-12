@@ -1,0 +1,10 @@
+{
+  "recorded_utc": "2026-11-11T18:38:59.3689533Z",
+  "status": "interrupted_no_saved_waveform",
+  "completed": false,
+  "offset_comparison_available": false,
+  "observed": "After PC recovery, Docker Linux engine pipe unavailable. No ngspice/Docker process observed; steady contains only tb.spice and .spiceinit. No wave.csv, run.log or steady_summary.json. driver.log is empty.",
+  "cause": "Exact termination cause and simulated time not recoverable from saved files.",
+  "action": "No restart performed; awaiting bounded rerun decision.",
+  "scope": "Prior +100uV 224us result remains valid within documented diagnostic scope. Zero-input offset separation not completed."
+}

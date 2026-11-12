@@ -1,0 +1,10 @@
+ time 1ns
+ capacitance 1pF
+ resistance 1ohm
+ voltage 1v
+ current 1mA
+ power 1uW
+ distance 1um
+SUMMARY_SETUP 16.35755577288789
+SUMMARY_HOLD 0.5228762015805357
+tns max 0.00

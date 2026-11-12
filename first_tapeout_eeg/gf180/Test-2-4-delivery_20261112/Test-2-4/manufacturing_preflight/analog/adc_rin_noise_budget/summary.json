@@ -1,0 +1,41 @@
+{
+  "scope": "Isolated current ADC RIN resistor pair, VCM1.65V, zero differential DC, ideal low-noise signal source and ideal virtual-ground approximation via noiseless1ohm loads; thermal-only, not system/chopped/DEM noise",
+  "band_Hz": [
+    0.5,
+    100
+  ],
+  "results": [
+    {
+      "case": "m16_thermal",
+      "exitcode": 0,
+      "effective_R_per_leg_ohm": 18736.091157772105,
+      "gain_at_0p5Hz_V_per_V": 5.337007711494226e-05,
+      "input_density_V_per_sqrtHz": 6.2576413924875626e-09,
+      "input_rms_0p5_100Hz_V": 6.241977684815687e-08,
+      "noise_command_input_ref_max_relative_difference": 3.965618484699922e-16,
+      "expected_thermal_rms_V": 2.4860327434430514e-07
+    },
+    {
+      "case": "parallel16_thermal",
+      "exitcode": 0,
+      "effective_R_per_leg_ohm": 18736.091157772145,
+      "gain_at_0p5Hz_V_per_V": 5.337007711494215e-05,
+      "input_density_V_per_sqrtHz": 2.492270796161818e-08,
+      "input_rms_0p5_100Hz_V": 2.4860323112927376e-07,
+      "noise_command_input_ref_max_relative_difference": 5.310373905288852e-16,
+      "expected_thermal_rms_V": 2.4860327434430545e-07
+    },
+    {
+      "case": "m16_unflagged",
+      "exitcode": 0,
+      "effective_R_per_leg_ohm": 18736.091157772105,
+      "gain_at_0p5Hz_V_per_V": 5.337007711494226e-05,
+      "input_density_V_per_sqrtHz": 5.9932409771193e-10,
+      "input_rms_0p5_100Hz_V": 5.978239096724978e-09,
+      "noise_command_input_ref_max_relative_difference": 3.4504728577100046e-16,
+      "expected_thermal_rms_V": 2.4860327434430514e-07
+    }
+  ],
+  "electrode_target_rms_V": 5.876768442749352e-09,
+  "direct_target_comparison_valid": false
+}

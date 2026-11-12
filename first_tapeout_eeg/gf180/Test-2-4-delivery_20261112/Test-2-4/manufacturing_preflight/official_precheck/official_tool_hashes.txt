@@ -1,0 +1,3 @@
+ffdc8da31a2ec69eee95d18190a044957d148d7ed217ab553726e0c2825cc4d8  /workspace/precheck.py
+e521aa4cb47f0e26d1e72d3bbcb36a91705410bcb74e1e05e508320aa442983e  /workspace/scripts/klayout/check_mask.drc
+9506b25c42172a56ce299942f260709b24640562721931796d059e018f9ad963  /workspace/assets/golden_masks/mask_1x0p5.gds

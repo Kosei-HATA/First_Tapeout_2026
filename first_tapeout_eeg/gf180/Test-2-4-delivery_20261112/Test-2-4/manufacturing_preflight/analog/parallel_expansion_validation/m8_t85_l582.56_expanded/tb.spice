@@ -1,0 +1,26 @@
+* Analysis-only full-wrapper parallel expansion validation
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.temp 85
+ITEST 0 out DC 0 AC 1
+XR__noise_parallel_0 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_1 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_2 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_3 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_4 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_5 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_6 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+XR__noise_parallel_7 out 0 0 ppolyf_u_1k r_length=582.56u r_width=1u m=1
+
+.control
+set numdgt=15
+dc ITEST -1u 1u 1u
+wrdata dc.csv v(out)
+ac lin 3 0.5 100
+wrdata ac.csv real(v(out)) imag(v(out))
+noise v(out) ITEST lin 11 0.5 100
+setplot noise1
+wrdata noise.csv onoise_spectrum
+quit
+.endc
+.end

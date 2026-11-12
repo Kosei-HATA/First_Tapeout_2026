@@ -1,0 +1,151 @@
+{
+  "cell": "gf180mcu_fd_io__asig_5p0",
+  "all_polygon_layers_identical": false,
+  "layers": [
+    {
+      "layer": "34/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "31/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "22/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "33/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "42/0",
+      "xor_um2": 555.1416,
+      "equal": false
+    },
+    {
+      "layer": "0/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "42/10",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "46/0",
+      "xor_um2": 555.1416,
+      "equal": false
+    },
+    {
+      "layer": "40/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "36/0",
+      "xor_um2": 561.6,
+      "equal": false
+    },
+    {
+      "layer": "38/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "81/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "41/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "46/10",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "35/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "32/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "21/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "55/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "115/5",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "37/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "81/10",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "30/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "204/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "166/5",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "58/0",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "137/5",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "23/5",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "36/10",
+      "xor_um2": 0.0,
+      "equal": true
+    },
+    {
+      "layer": "63/63",
+      "xor_um2": 0.0,
+      "equal": true
+    }
+  ]
+}

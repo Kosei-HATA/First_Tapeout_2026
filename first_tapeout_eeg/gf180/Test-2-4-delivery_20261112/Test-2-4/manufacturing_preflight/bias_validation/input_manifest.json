@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "path": "/work/Test-2-4/functional/sim_work/gf180/tapeout/bias/eeg_bias.spice",
+      "sha256": "e15cdb934a62374909e4a9db5b6a48c88e55a229488786998de7aaf30170d5b3"
+    },
+    {
+      "path": "/work/gf180/tapeout/bias/eeg_bias.spice",
+      "sha256": "e15cdb934a62374909e4a9db5b6a48c88e55a229488786998de7aaf30170d5b3"
+    },
+    {
+      "path": "/work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_adc_clk.spice",
+      "sha256": "cc9b50e60c2c0f762ef4297c5b969d51933018552e37d4342388b45ffeb2b2dc"
+    },
+    {
+      "path": "/work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_adc_otas.spice",
+      "sha256": "7111e0cc51aefedd1fcf2a5202ea85ea5ac295613920188e1db5e1e84f7bd270"
+    },
+    {
+      "path": "/work/Test-2-4/functional/sim_work/gf180/tapeout/sim/moscap_lin.spice",
+      "sha256": "38e64a46427529434b7e0a94aef87fbf9ba1ce0edd07998611e919bcdd5a2db3"
+    }
+  ],
+  "bias_copy_matches_project": true
+}

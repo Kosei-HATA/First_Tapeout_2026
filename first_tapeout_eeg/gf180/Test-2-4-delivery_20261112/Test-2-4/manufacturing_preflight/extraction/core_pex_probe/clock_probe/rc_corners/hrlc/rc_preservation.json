@@ -1,0 +1,145 @@
+{
+  "disconnected_groups": {},
+  "cap_print_precision_violations": [],
+  "pass": true,
+  "ports_before": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_after": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_preserved": true,
+  "counts_before": {
+    "M": 486,
+    "C": 390
+  },
+  "counts_after": {
+    "M": 486,
+    "R": 7330,
+    "C": 4077
+  },
+  "ambiguous_or_missing_original_net_groups": {},
+  "collapsed_device_topology_parameters_match": true,
+  "max_cap_pair_error_fF": [
+    0.0021999999983108864,
+    [
+      "VDD",
+      "VSS"
+    ],
+    519.05,
+    519.0521999999983
+  ],
+  "largest_cap_pair_errors": [
+    [
+      0.0021999999983108864,
+      [
+        "VDD",
+        "VSS"
+      ],
+      519.05,
+      519.0521999999983
+    ],
+    [
+      0.00023999999999624322,
+      [
+        "NCIA",
+        "VSS"
+      ],
+      9.09922,
+      9.098980000000005
+    ],
+    [
+      0.00016000000000637726,
+      [
+        "NCDB",
+        "VSS"
+      ],
+      11.4235,
+      11.423339999999994
+    ],
+    [
+      0.00015999999999127823,
+      [
+        "CDB",
+        "VSS"
+      ],
+      7.5025,
+      7.502659999999992
+    ],
+    [
+      0.00015000000000586766,
+      [
+        "NCIB",
+        "VSS"
+      ],
+      7.66535,
+      7.665199999999994
+    ],
+    [
+      0.0001299999999986312,
+      [
+        "VSS",
+        "a_5676_4320#"
+      ],
+      11.964,
+      11.963870000000002
+    ],
+    [
+      0.00012000000001144429,
+      [
+        "VSS",
+        "a_21516_340#"
+      ],
+      11.9123,
+      11.912179999999989
+    ],
+    [
+      0.0001000000000139778,
+      [
+        "NCDA",
+        "VSS"
+      ],
+      11.8357,
+      11.835599999999985
+    ],
+    [
+      9.000000000725095e-05,
+      [
+        "VSS",
+        "a_1292_12000#"
+      ],
+      9.19335,
+      9.193440000000008
+    ],
+    [
+      8.999999999748098e-05,
+      [
+        "VSS",
+        "a_1036_6700#"
+      ],
+      5.5767,
+      5.576789999999997
+    ]
+  ],
+  "scope": "Resistive subdivisions collapsed for bookkeeping; no independent spatial RC accuracy claim"
+}

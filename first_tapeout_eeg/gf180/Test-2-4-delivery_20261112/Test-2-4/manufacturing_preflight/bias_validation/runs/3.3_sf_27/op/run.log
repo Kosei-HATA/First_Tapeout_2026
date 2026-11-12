@@ -1,0 +1,28 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_bias check
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+v(vbn) = 9.300855e-01
+v(vbcm) = 9.014249e-01
+v(bln) = 1.180926e+00
+v(blp) = 1.624998e+00
+v(vbn1) = 9.345467e-01
+v(vbcm1) = 9.014249e-01
+v(vnc1) = 2.002679e+00
+v(vpc1) = 1.697974e+00
+v(vbpc2) = 1.800606e+00
+v(vbnc2) = 1.495901e+00
+v(vcm) = 1.650000e+00
+i(vmbln) = 1.259730e-04
+i(vmblp) = 1.273744e-04
+i(vmiq) = 3.154271e-05
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

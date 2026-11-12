@@ -1,0 +1,1676 @@
+timestamp 1622965155
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use moscap_corner_3 moscap_corner_3_0 1 0 35370 0 1 16351
+use moscap_corner_2 moscap_corner_2_0 1 0 25298 0 1 28703
+use moscap_corner moscap_corner_4 1 0 35638 0 1 28703
+use moscap_corner moscap_corner_2 1 0 45978 0 1 28703
+use moscap_corner moscap_corner_1 1 0 45978 0 1 16351
+use moscap_corner moscap_corner_6 1 0 21210 0 1 43133
+use moscap_corner moscap_corner_5 1 0 31550 0 1 43133
+use moscap_corner moscap_corner_3 1 0 41890 0 1 43133
+use moscap_corner moscap_corner_0 1 0 59877 0 1 56727
+use moscap_corner_1 moscap_corner_1_0 1 0 10870 0 1 43133
+use ESD_CLAMP_COR ESD_CLAMP_COR_0 1 0 13500 0 1 13500
+use moscap_routing moscap_routing_0 1 0 60556 0 1 68904
+port "VSS_uq2" 52 49860 70220 49860 70220 m3
+port "VSS_uq1" 51 64336 70220 64336 70220 m3
+port "VSS_uq0" 50 70561 49976 70561 49976 m3
+port "DVSS_uq18" 49 15463 70198 15463 70198 m3
+port "DVSS_uq17" 48 18632 70151 18632 70151 m3
+port "DVSS_uq16" 47 21618 70220 21618 70220 m3
+port "DVSS_uq15" 46 25811 70220 25811 70220 m3
+port "DVSS_uq14" 45 40350 70220 40350 70220 m3
+port "DVSS_uq13" 44 47534 70220 47534 70220 m3
+port "DVSS_uq12" 43 57943 70220 57943 70220 m3
+port "DVSS_uq11" 42 61134 70220 61134 70220 m3
+port "DVSS_uq10" 41 65901 70220 65901 70220 m3
+port "DVSS_uq9" 40 69036 70220 69036 70220 m3
+port "DVSS_uq8" 39 70385 18874 70385 18874 m3
+port "DVSS_uq7" 38 70432 15703 70432 15703 m3
+port "DVSS_uq6" 37 70453 69002 70453 69002 m3
+port "DVSS_uq5" 36 70454 65976 70454 65976 m3
+port "DVSS_uq4" 35 70454 61011 70454 61011 m3
+port "DVSS_uq3" 34 70454 57811 70454 57811 m3
+port "DVSS_uq2" 33 70454 47548 70454 47548 m3
+port "DVSS_uq1" 32 70454 21860 70454 21860 m3
+port "DVSS_uq0" 31 70454 26053 70454 26053 m3
+port "VDD_uq2" 30 51508 70220 51508 70220 m3
+port "VDD_uq1" 29 62726 70220 62726 70220 m3
+port "VDD_uq0" 28 70560 51411 70560 51411 m3
+port "DVDD_uq22" 27 23995 70220 23995 70220 m3
+port "DVDD_uq21" 26 28105 70220 28105 70220 m3
+port "DVDD_uq20" 25 31320 70220 31320 70220 m3
+port "DVDD_uq19" 24 34434 70220 34434 70220 m3
+port "DVDD_uq18" 23 37670 70220 37670 70220 m3
+port "DVDD_uq17" 22 41892 70220 41892 70220 m3
+port "DVDD_uq16" 21 44307 70220 44307 70220 m3
+port "DVDD_uq15" 20 53080 70220 53080 70220 m3
+port "DVDD_uq14" 19 54701 70220 54701 70220 m3
+port "DVDD_uq13" 18 56336 70220 56336 70220 m3
+port "DVDD_uq12" 17 59520 70220 59520 70220 m3
+port "DVDD_uq11" 16 67492 70220 67492 70220 m3
+port "DVDD_uq10" 15 70454 67411 70454 67411 m3
+port "DVDD_uq9" 14 70454 59576 70454 59576 m3
+port "DVDD_uq8" 13 70454 56376 70454 56376 m3
+port "DVDD_uq7" 12 70454 54611 70454 54611 m3
+port "DVDD_uq6" 11 70454 53176 70454 53176 m3
+port "DVDD_uq5" 10 70454 44321 70454 44321 m3
+port "DVDD_uq4" 9 70454 37912 70454 37912 m3
+port "DVDD_uq3" 8 70454 41930 70454 41930 m3
+port "DVDD_uq2" 7 70454 24237 70454 24237 m3
+port "DVDD_uq1" 6 70454 28347 70454 28347 m3
+port "DVDD_uq0" 5 70454 34676 70454 34676 m3
+port "DVDD" 2 70454 31562 70454 31562 m3
+port "VDD" 4 70454 62776 70454 62776 m3
+port "DVSS" 1 70454 40295 70454 40295 m3
+port "VSS" 3 70455 64211 70455 64211 m3
+node "VSS_uq2" 0 0 49860 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VSS_uq1" 0 0 64336 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VSS_uq0" 0 0 70561 49976 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq18" 0 0 15463 70198 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq17" 0 0 18632 70151 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq16" 0 0 21618 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq15" 0 0 25811 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq14" 0 0 40350 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq13" 0 0 47534 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq12" 0 0 57943 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq11" 0 0 61134 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq10" 0 0 65901 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq9" 0 0 69036 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq8" 0 0 70385 18874 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq7" 0 0 70432 15703 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq6" 0 0 70453 69002 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq5" 0 0 70454 65976 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq4" 0 0 70454 61011 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq3" 0 0 70454 57811 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq2" 0 0 70454 47548 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq1" 0 0 70454 21860 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS_uq0" 0 0 70454 26053 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VDD_uq2" 0 0 51508 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VDD_uq1" 0 0 62726 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VDD_uq0" 0 0 70560 51411 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq22" 0 0 23995 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq21" 0 0 28105 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq20" 0 0 31320 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq19" 0 0 34434 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq18" 0 0 37670 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq17" 0 0 41892 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq16" 0 0 44307 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq15" 0 0 53080 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq14" 0 0 54701 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq13" 0 0 56336 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq12" 0 0 59520 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq11" 0 0 67492 70220 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq10" 0 0 70454 67411 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq9" 0 0 70454 59576 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq8" 0 0 70454 56376 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq7" 0 0 70454 54611 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq6" 0 0 70454 53176 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq5" 0 0 70454 44321 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq4" 0 0 70454 37912 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq3" 0 0 70454 41930 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq2" 0 0 70454 24237 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq1" 0 0 70454 28347 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD_uq0" 0 0 70454 34676 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVDD" 0 0 70454 31562 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VDD" 0 0 70454 62776 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "DVSS" 0 0 70454 40295 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VSS" 0 0 70455 64211 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "dw_13436_13361r#" 75270 14754 13436 13361 isosub 0 0 2021966817 451372 0 0 14657328 21792 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14418100 21704 0 0 0 0 0 0 0 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_582_632#" "dw_13436_13361r#" 0.119218
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 41.3396
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 372.88
+cap "moscap_routing_0/a_n20244_n50771#" "moscap_corner_1/a_647_529#" 7.5447
+cap "moscap_routing_0/m1_n21492_n40803#" "dw_13436_13361r#" 22.6854
+cap "moscap_routing_0/m1_n11878_n51467#" "dw_13436_13361r#" 6.13299
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 16.8672
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 20.3019
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n9452_n51467#" 2.4762
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 18.9824
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n9452_n51467#" 3.65678
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n7016_n51467#" 6.13299
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 16.6079
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 22.6854
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_582_632#" 1.04735e-17
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 7.96691
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 111.607
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 423.053
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 2.90538
+cap "moscap_routing_0/m1_n21492_n40803#" "dw_13436_13361r#" -4.32642
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n21492_n40803#" 491.778
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_routing_0/a_n20244_n50771#" 635.442
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/a_n20244_n50771#" 737.043
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n21492_n40803#" 639.403
+cap "moscap_routing_0/m1_n11878_n51467#" "dw_13436_13361r#" 3.34415
+cap "moscap_routing_0/m1_n11878_n51467#" "moscap_corner_1/a_647_529#" 115.74
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 457.023
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 52.0969
+cap "moscap_routing_0/m1_n9452_n51467#" "dw_13436_13361r#" 1.29832
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 570.203
+cap "moscap_routing_0/m1_n9452_n51467#" "dw_13436_13361r#" 2.04583
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 63.6427
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 526.223
+cap "moscap_routing_0/m1_n7016_n51467#" "moscap_corner_1/a_647_529#" 115.74
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 457.023
+cap "moscap_routing_0/m1_n7016_n51467#" "dw_13436_13361r#" 3.34415
+cap "moscap_corner_1/a_647_529#" "dw_13436_13361r#" 639.403
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 63.7386
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_529#" 21.6769
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 523.893
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 78.9289
+cap "moscap_corner_1/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 17.3073
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n11878_n51467#" 606.466
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 305.694
+cap "moscap_routing_0/m1_n9452_n51467#" "moscap_corner_1/a_647_529#" 300.771
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n7016_n51467#" 606.466
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "dw_13436_13361r#" "moscap_corner_1/a_647_529#" 566.737
+cap "moscap_corner_1/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 36.3269
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_529#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 82.1893
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n14844_n49493#" 21.9652
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n14844_n49493#" 60.9469
+cap "moscap_corner_3_0/a_7955_529#" "moscap_routing_0/m1_n14844_n49493#" 80.5399
+cap "moscap_corner_3_0/a_7955_529#" "moscap_routing_0/m1_n14844_n49493#" 35.077
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n11878_n51467#" 83.8986
+cap "moscap_routing_0/m1_n11878_n51467#" "moscap_corner_1/a_647_529#" 147.556
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n11878_n51467#" 145.432
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n11878_n51467#" 82.2944
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 83.8986
+cap "moscap_routing_0/m1_n9452_n51467#" "moscap_corner_1/a_647_529#" 147.556
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 145.432
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n9452_n51467#" 82.2944
+cap "moscap_routing_0/m1_n7016_n51467#" "moscap_corner_1/a_647_529#" 82.2944
+cap "moscap_routing_0/m1_n7016_n51467#" "moscap_corner_1/a_647_529#" 83.8986
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n7016_n51467#" 147.556
+cap "moscap_routing_0/m1_n7016_n51467#" "moscap_corner_1/a_647_529#" 145.432
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_529#" 7.67586
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n21492_n40803#" 36.3269
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n21492_n40803#" 566.737
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" 160.559
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" 53.5174
+cap "moscap_routing_0/m1_n21492_n40803#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 82.1893
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 1.4653
+cap "moscap_corner_3_0/a_7955_529#" "moscap_corner_3_0/VMINUS" 13.2232
+cap "moscap_corner_1/a_647_529#" "moscap_corner_3_0/VMINUS" 122.186
+cap "moscap_corner_3_0/a_7955_529#" "moscap_corner_3_0/VMINUS" 170.383
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 112.574
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 114.417
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_529#" 7.67586
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n21492_n40803#" 566.737
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" 214.077
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n21492_n40803#" 36.3269
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n21492_n40803#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 82.1893
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 1.4826
+cap "dw_13436_13361r#" "moscap_corner_3_0/a_3083_6541#" 115.773
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 726.018
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 255.205
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 327.693
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 730.358
+cap "moscap_corner_3_0/a_7955_529#" "moscap_corner_3_0/VMINUS" 4.32216
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 746.495
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 109.26
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_7955_529#" 694.048
+cap "moscap_corner_1/a_647_529#" "moscap_corner_3_0/a_7955_529#" 0.395743
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_1/a_647_6541#" 0.395743
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_7955_529#" 826.086
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 830.544
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_7955_529#" 28.4722
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_1/a_647_6541#" 0.395743
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_1/a_647_6541#" 224.582
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_1/a_647_529#" 245.042
+cap "moscap_corner_3_0/a_7955_529#" "moscap_corner_1/a_647_529#" 0.395743
+cap "moscap_corner_1/a_647_529#" "moscap_corner_3_0/VMINUS" 686.818
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 686.818
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 182.901
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 635.216
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 175.596
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 630.407
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 924.391
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 929.581
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 865.282
+cap "moscap_corner_1/a_647_529#" "moscap_corner_1/VMINUS" 860.525
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 657.431
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 95.0077
+cap "moscap_corner_1/a_647_529#" "moscap_corner_1/VMINUS" 654.074
+cap "moscap_corner_1/a_647_529#" "moscap_corner_1/VMINUS" 94.7307
+cap "moscap_corner_1/a_647_529#" "moscap_corner_1/VMINUS" 1036.08
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 1042.39
+cap "moscap_corner_1/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" 1.27748
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n21492_n40803#" 1.09107
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n21492_n40803#" 36.3269
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/VMINUS" 696.829
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_529#" 0.633264
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_6541#" 0.633264
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_529#" 334.385
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 335.281
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_529#" 61.1168
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_6541#" 55.9178
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 69.4815
+cap "moscap_routing_0/m1_n21492_n40803#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 29.8769
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 82.1893
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 2.42199
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 31.2529
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 31.5589
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 303.72
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 302.736
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 13.6238
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 16.4079
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 144.113
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 141.792
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n21492_n40803#" 7.67586
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/VMINUS" 566.737
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_6541#" 214.077
+cap "moscap_routing_0/m1_n21492_n40803#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 36.3269
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 82.1893
+cap "moscap_routing_0/m1_n21492_n40803#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "dw_13436_13361r#" "moscap_corner_3_0/a_3083_6541#" 70.924
+cap "dw_13436_13361r#" "moscap_corner_3_0/a_3083_6541#" 27.787
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 109.11
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 192.643
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 110.381
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 194.326
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 74.7158
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 131.793
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 75.0048
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 132.176
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 46.8679
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 111.553
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/a_3083_6541#" 95.4288
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 36.111
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n21492_n40803#" 7.67586
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/VMINUS" 566.737
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "moscap_routing_0/m1_n21492_n40803#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 36.3269
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_6541#" 160.559
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_6541#" 53.5174
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n21492_n40803#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 82.1893
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 1.93586
+cap "moscap_routing_0/m1_n21492_n40803#" "dw_13436_13361r#" 14.727
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_3_0/VMINUS" 1.03028
+cap "moscap_corner_3_0/VMINUS" "moscap_routing_0/m1_n21492_n40803#" 443.276
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 214.485
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 66.0504
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 566.737
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_6541#" 36.3269
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_6541#" 29.8769
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 82.1893
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 1.01205
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n29459_n39756#" -17.6325
+cap "moscap_routing_0/m1_n29459_n39756#" "dw_13436_13361r#" -43.1438
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_2_0/a_5519_529#" -32.1753
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n24920_n39073#" -6.19133
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" -29.1452
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_routing_0/m1_n21492_n40803#" 115.709
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n21492_n40803#" 0.351483
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_routing_0/m1_n21492_n40803#" 0.324766
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_routing_0/m1_n24920_n39073#" -11.4241
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_4/VMINUS" 0.128685
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_4/a_647_529#" -13.2523
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_3_0/VMINUS" 762.454
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_3_0/VMINUS" 587.226
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_3_0/VMINUS" 90.8794
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n21492_n40803#" 0.480169
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" -26.0433
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 763.219
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/a_3083_6541#" -22.2798
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 587.226
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_3_0/VMINUS" 100.35
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_4/VMINUS" 0.480169
+cap "moscap_corner_3_0/a_3083_6541#" "moscap_corner_4/a_647_529#" -26.0433
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_2/a_647_529#" -11.693
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/VMINUS" 723.601
+cap "moscap_corner_3_0/VMINUS" "moscap_corner_1/a_647_6541#" 955.968
+cap "moscap_corner_2/a_647_529#" "moscap_corner_1/a_647_6541#" 0.713325
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_routing_0/m1_n21492_n40803#" -22.2798
+cap "moscap_corner_3_0/VMINUS" "moscap_routing_0/m1_n21492_n40803#" 763.219
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_1/a_647_6541#" -24.9052
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 586.292
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 100.35
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n29459_n39756#" -23.3335
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 39.9006
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 696.208
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 653.303
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 60.4494
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n29459_n39756#" -23.8514
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n5958_n38612#" -24.9052
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 586.292
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 100.35
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_1/a_647_6541#" -22.2798
+cap "moscap_corner_1/a_647_6541#" "moscap_corner_1/VMINUS" 763.219
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 62.0874
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_1/a_647_6541#" -5.69739
+cap "moscap_corner_1/VMINUS" "moscap_corner_1/a_647_6541#" 578.333
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_6541#" 22.5592
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 77.0561
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/a_647_6541#" 18.0328
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n29459_n39756#" 481.429
+cap "moscap_corner_2_0/VMINUS" "moscap_routing_0/m1_n29459_n39756#" 50.4139
+cap "moscap_routing_0/m1_n29459_n39756#" "dw_13436_13361r#" 645.126
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 49.9361
+cap "moscap_corner_2_0/a_5519_529#" "moscap_routing_0/m1_n24920_n39073#" 648.96
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" 789.57
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" 770.343
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_routing_0/m1_n29459_n39756#" 2.86077
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_routing_0/m1_n29459_n39756#" 640.723
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_4/VMINUS" 81.954
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 776.547
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 18.396
+cap "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_4/a_647_529#" -14.4248
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n21492_n40803#" -25.5864
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 622.315
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 0.480169
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 100.35
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/a_3083_6541#" -21.8228
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 798.742
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 0.480169
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/a_3083_6541#" -25.5864
+cap "moscap_corner_4/a_647_529#" "moscap_corner_3_0/VMINUS" 622.315
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 100.35
+cap "moscap_corner_3_0/VMINUS" "moscap_routing_0/m1_n13355_n37761#" 875.341
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n13355_n37761#" -2.12636
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n13355_n37761#" -2.18835
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_3_0/VMINUS" 772.893
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_routing_0/m1_n21492_n40803#" -21.8228
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_3_0/VMINUS" 798.742
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_1/a_647_6541#" -22.8412
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_1/VMINUS" 629.596
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 141.099
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n8512_n38125#" 758.816
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8512_n38125#" 82.0058
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n8512_n38125#" -17.5439
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n8512_n38125#" 688.566
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8512_n38125#" 60.4494
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n8512_n38125#" -23.3944
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n5958_n38612#" -24.4482
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_2/VMINUS" 100.35
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 621.381
+cap "moscap_corner_1/a_647_6541#" "moscap_routing_0/m1_n5958_n38612#" -21.8228
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 798.742
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_1/a_647_6541#" -6.25167
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_1/VMINUS" 305.824
+cap "moscap_routing_0/m1_n5958_n38612#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 5.05639
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1/VMINUS" 66.0504
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 83.0428
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 13.9415
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_routing_0/a_n36513_n34394#" "moscap_routing_0/m1_n29459_n39756#" 13.4048
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" 171.594
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" 195.466
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 21.1144
+cap "moscap_corner_3_0/VMINUS" "moscap_routing_0/m1_n29459_n39756#" 31.4977
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 68.1576
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 70.4269
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 40.2452
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 37.2331
+cap "moscap_corner_1/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 75.944
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 51.7095
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_1/VMINUS" -5.68434e-14
+cap "moscap_corner_1/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 86.3776
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 16.5366
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.40642
+cap "moscap_corner_2_0/a_5519_529#" "dw_13436_13361r#" 56.6936
+cap "moscap_routing_0/m1_n27687_n36968#" "moscap_corner_2_0/a_5519_529#" 220.567
+cap "moscap_corner_2_0/a_5519_529#" "moscap_routing_0/m1_n24920_n39073#" 223.45
+cap "moscap_corner_2_0/a_5519_529#" "moscap_routing_0/m1_n24920_n39073#" 104.672
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n24920_n39073#" 119.234
+cap "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_4/a_647_529#" 220.567
+cap "moscap_routing_0/m1_n22219_n36968#" "moscap_corner_4/a_647_529#" 223.45
+cap "moscap_routing_0/m1_n13355_n37761#" "dw_13436_13361r#" -5.68434e-14
+cap "moscap_routing_0/m1_n13355_n37761#" "dw_13436_13361r#" 176.213
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_routing_0/m1_n29459_n39756#" 51.3423
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_routing_0/m1_n29459_n39756#" 7.53253
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n29459_n39756#" 15.092
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 15.5945
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_routing_0/m1_n8512_n38125#" 7.60717
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_corner_2/VMINUS" 72.0503
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n29459_n39756#" 52.0392
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_corner_2/VMINUS" 66.6578
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_routing_0/m1_n8512_n38125#" 52.5351
+cap "moscap_corner_2/a_647_529#" "moscap_routing_0/m1_n5958_n38612#" 33.3579
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n5958_n38612#" 102.589
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 66.0504
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 86.3776
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 16.5366
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.541488
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 16.2708
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 14.082
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_5519_529#" 124.725
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 0.288342
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 431.378
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_5519_529#" 435.591
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 92.7491
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_4/a_647_529#" 0.200893
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_4/a_647_529#" 106.473
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_4/a_647_529#" 0.200893
+cap "moscap_corner_4/a_647_529#" "moscap_corner_2_0/VMINUS" 417.865
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 449.103
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 36.7234
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 78.2855
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 143.318
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 73.986
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 41.0229
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n13355_n37761#" 0.200893
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 148.029
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/VMINUS" 51.193
+cap "moscap_corner_4/a_647_529#" "moscap_routing_0/m1_n13355_n37761#" 0.200893
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_routing_0/m1_n29459_n39756#" 55.5535
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/VMINUS" 319.211
+cap "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/VMINUS" 87.4988
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_2/VMINUS" 27.5101
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n29459_n39756#" 133.565
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_corner_2/VMINUS" 228.269
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n8475_n33619#" -7.29863
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n29459_n39756#" 43.0242
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8512_n38125#" 169.643
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n8512_n38125#" -3.90289
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 18.7063
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n5958_n38612#" 39.8516
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n38612#" 143.318
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_routing_0/m1_n5958_n38612#" 0.254682
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/VMINUS" 66.0504
+cap "moscap_routing_0/m1_n5958_n38612#" "moscap_corner_2/VMINUS" 59.7349
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 16.4564
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 86.3521
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n35009_n34189#" 188.285
+cap "moscap_routing_0/m1_n35009_n34189#" "moscap_corner_2_0/a_647_6541#" 1024.95
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n30132_n33522#" 352.539
+cap "moscap_routing_0/m1_n30132_n33522#" "moscap_corner_2_0/a_647_6541#" 392.073
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 0.0856767
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 793.939
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 503.507
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_5519_529#" 332.159
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 175.923
+cap "moscap_corner_2_0/a_5519_529#" "moscap_corner_2_0/VMINUS" 486.223
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 599.676
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_5519_529#" 487.399
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 600.657
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 423.467
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_5519_529#" 330.718
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/a_647_6541#" 0.499519
+cap "moscap_corner_4/a_647_529#" "moscap_corner_2_0/a_5519_529#" 0.298625
+cap "moscap_corner_4/a_647_529#" "moscap_corner_2_0/VMINUS" 382.748
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/VMINUS" 489.22
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/a_647_6541#" 0.499519
+cap "moscap_corner_4/a_647_529#" "moscap_corner_2_0/a_5519_529#" 0.298625
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/VMINUS" 534.919
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_4/a_647_529#" 434.978
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 538.644
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_6541#" 665.414
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 157.168
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 120.445
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 278.06
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_4/VMINUS" 356.346
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 686.818
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 543.501
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 177.773
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 261.755
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_4/VMINUS" 335.741
+cap "moscap_corner_4/a_647_529#" "moscap_corner_4/VMINUS" 136.75
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/a_647_6541#" 0.499519
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_529#" 540.354
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/a_647_529#" 0.298625
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_6541#" 688.383
+cap "moscap_corner_4/a_647_6541#" "moscap_routing_0/m1_n13355_n33287#" 0.499519
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 224.305
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/a_647_529#" 0.298625
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/VMINUS" 173.112
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_routing_0/m1_n13355_n33287#" -5.54239
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#" 5.72969
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_2/a_647_529#" 0.771396
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_4/VMINUS" 748.405
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 779.882
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#" 15.1128
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_corner_2/a_647_529#" 5.18525
+cap "moscap_routing_0/m1_n13355_n37761#" "moscap_corner_2/VMINUS" 85.5057
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_corner_2/VMINUS" 448.461
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 113.016
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_529#" 313
+cap "moscap_corner_2/a_647_529#" "moscap_routing_0/m1_n10866_n33584#" 20.9541
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_529#" 487.696
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n10866_n33584#" 756.542
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n10866_n33584#" 14.924
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n10866_n33584#" 17.6107
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n8512_n38125#" 5.31718
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_corner_2/VMINUS" 454.31
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/VMINUS" 725.193
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 536.615
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_529#" 52.1192
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_6541#" 70.8255
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n8475_n33619#" 4.07148
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/a_647_6541#" 18.9503
+cap "moscap_routing_0/m1_n8512_n38125#" "moscap_corner_2/VMINUS" 346.386
+cap "moscap_corner_2/a_647_6541#" "moscap_corner_2/VMINUS" 686.818
+cap "moscap_corner_2/a_647_529#" "moscap_corner_2/VMINUS" 543.501
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_529#" 206.109
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "moscap_corner_2/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 0.633264
+cap "moscap_corner_2/a_647_6541#" "moscap_corner_2/VMINUS" 265.844
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 0.378582
+cap "moscap_corner_2/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 5.74321
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 90.0198
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_529#" 0.366325
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n35009_n34189#" 304.707
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n30132_n33522#" 10.7513
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n30132_n33522#" 10.4756
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 300.771
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 305.694
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 10.5442
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 10.682
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 60.5741
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/a_647_6541#" 22.6105
+cap "moscap_corner_4/a_647_6541#" "moscap_routing_0/m1_n18853_n32300#" 20.8589
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" -5.68434e-14
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#" 55.7053
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 176.213
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#" 23.6801
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_corner_2/VMINUS" 30.1613
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n8475_n33619#" 23.3844
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_corner_2/VMINUS" 29.8134
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n10866_n33584#" 52.6422
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/VMINUS" 66.7922
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/VMINUS" 71.9005
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n5958_n31009#" 56.6042
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_6541#" 16.5366
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/VMINUS" 86.3776
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 2.42199
+cap "moscap_corner_2_0/a_647_6541#" "dw_13436_13361r#" 87.5951
+cap "moscap_corner_2_0/a_647_6541#" "dw_13436_13361r#" 154.211
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n32571_n31792#" 111.457
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n32571_n31792#" 195.722
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n32571_n31792#" 191.235
+cap "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n32571_n31792#" 108.067
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 63.7155
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 110.446
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 112.059
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 62.4972
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 108.9
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 192.362
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 110.595
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 194.605
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_routing_0/m1_n34518_n28463#" 3.48328
+cap "moscap_corner_4/a_647_6541#" "moscap_routing_0/m1_n18853_n32300#" 51.4287
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/a_647_6541#" 372.137
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 66.5238
+cap "moscap_corner_4/a_647_6541#" "moscap_routing_0/m1_n18853_n32300#" 48.9449
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_routing_0/m1_n34518_n28463#" 5.40193
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 72.2005
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 7.10543e-15
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_4/VMINUS" -2.84217e-14
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" 7.10543e-15
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" 105.495
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#" 4.9133
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/a_647_6541#" 50.792
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/VMINUS" 70.7181
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/a_647_6541#" 372.204
+cap "moscap_corner_2/a_647_6541#" "moscap_corner_2/VMINUS" 2.84217e-14
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/VMINUS" 7.10543e-15
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n10866_n33584#" 81.9451
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_routing_0/m1_n10866_n33584#" 0.724443
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n10866_n33584#" 22.0989
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n10866_n33584#" 29.0701
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n10866_n33584#" 28.7347
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n10866_n33584#" 21.9402
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n10866_n33584#" 0.598108
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n10866_n33584#" 81.3083
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n8475_n33619#" 47.9437
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 65.2655
+cap "moscap_corner_2/a_647_6541#" "moscap_corner_2/VMINUS" -2.84217e-14
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n8475_n33619#" 178.046
+cap "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n8475_n33619#" 3.49522
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/a_647_6541#" 50.1279
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/a_647_6541#" 185.602
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/VMINUS" 70.257
+cap "moscap_routing_0/m1_n5958_n31009#" "moscap_routing_0/m1_n8475_n33619#" 5.18248
+cap "moscap_corner_2/a_647_6541#" "moscap_corner_2/VMINUS" 2.84217e-14
+cap "moscap_corner_2/VMINUS" "moscap_corner_2/a_647_6541#" -2.84217e-14
+cap "moscap_corner_2/a_647_6541#" "moscap_routing_0/m1_n5958_n31009#" 163.237
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 37.8704
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 27.1383
+cap "moscap_routing_0/m1_n5958_n31009#" "moscap_corner_2/a_647_6541#" 21.1383
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 66.0504
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 86.3776
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_2/a_647_6541#" 16.5366
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.454988
+cap "moscap_routing_0/m1_n34518_n28463#" "dw_13436_13361r#" 0.712264
+cap "moscap_routing_0/m1_n34518_n28463#" "dw_13436_13361r#" 3.60895
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n32571_n31792#" 2.34539
+cap "moscap_routing_0/m1_n34518_n28463#" "moscap_routing_0/m1_n32571_n31792#" 481.379
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/VMINUS" 1.152
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 239.176
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 242.187
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/VMINUS" 1.19339
+cap "moscap_corner_4/VMINUS" "moscap_corner_4/a_647_6541#" 47.2467
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 47.5316
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 7.43056
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 61.1544
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 66.3729
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 47.1444
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" 73.4218
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" -5.68434e-14
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/VMINUS" 15.1539
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" 22.606
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/VMINUS" 61.1083
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 60.4033
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 2.27374e-13
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 57.0475
+cap "moscap_routing_0/m1_n5958_n31009#" "moscap_corner_2/VMINUS" 79.6075
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 7.31264
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 36.2499
+cap "moscap_corner_2/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 16.5366
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/a_582_632#" "moscap_corner_2/VMINUS" 7.55478
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 44.8641
+cap "moscap_routing_0/m1_n34518_n28463#" "dw_13436_13361r#" 72.9453
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n34518_n28463#" 674.185
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n34518_n28463#" 475.816
+cap "moscap_routing_0/m1_n32571_n31792#" "moscap_routing_0/m1_n34518_n28463#" 83.5134
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n32571_n31792#" 5.60395
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 678.327
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/VMINUS" 9.9092
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 488.518
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 100.35
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 558.2
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 42.1442
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_2_0/a_647_6541#" 41.3692
+cap "moscap_corner_2_0/a_647_6541#" "moscap_corner_2_0/VMINUS" 582.409
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/VMINUS" 705.911
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_2_0/VMINUS" 662.632
+cap "moscap_corner_2_0/VMINUS" "moscap_routing_0/m1_n34518_n28463#" 486.218
+cap "moscap_routing_0/m1_n34518_n28463#" "moscap_corner_4/VMINUS" 81.954
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_4/VMINUS" 635.671
+cap "moscap_corner_4/a_647_6541#" "moscap_corner_4/VMINUS" 38.1824
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 465.821
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 120.256
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n18853_n32300#" 643.835
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 464.861
+cap "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/VMINUS" 120.094
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 709.484
+cap "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_4/VMINUS" 668.294
+cap "moscap_corner_4/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 643.835
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 465.722
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n13355_n33287#" 111.437
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 584.69
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 50.8595
+cap "moscap_routing_0/m1_n8475_n33619#" "moscap_corner_2/VMINUS" 60.4494
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 546.449
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 17.6689
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 100.35
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n8475_n33619#" 568.149
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 22.5576
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 10.3501
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 771.131
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 18.6826
+cap "moscap_routing_0/m1_n5958_n31009#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 3.9532
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 17.8367
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2665_27517#" 2.74052
+cap "moscap_corner_2/VMINUS" "moscap_routing_0/m1_n5958_n31009#" 288.365
+cap "moscap_corner_2/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 8.48446
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/nmos_clamp_20_50_4_0/w_n51_n51#" 21.319
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2665_27517#" 3.36007
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/a_647_529#" 3.81732
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/a_647_529#" 1.48859
+cap "moscap_routing_0/m1_n34518_n28463#" "moscap_routing_0/m1_n34405_n25670#" 3.04746
+cap "moscap_corner_2_0/VMINUS" "moscap_routing_0/m1_n34405_n25670#" 2.66671
+cap "moscap_corner_2_0/VMINUS" "moscap_corner_5/a_647_529#" 5.97456
+cap "moscap_corner_5/a_647_529#" "moscap_corner_2_0/VMINUS" 6.13641
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_2/VMINUS" 20.1973
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2894_17198#" 4.32347
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 27.4563
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3454_17198#" 8.75205
+cap "moscap_corner_2/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 20.1059
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1774_17198#" "moscap_corner_2/VMINUS" 8.64693
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2894_17198#" "moscap_corner_2/VMINUS" 4.32347
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2334_17198#" "moscap_corner_2/VMINUS" 8.64693
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n654_17198#" "moscap_corner_2/VMINUS" 8.66723
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1214_17198#" "moscap_corner_2/VMINUS" 8.64693
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_2/VMINUS" 15.9342
+cap "moscap_routing_0/m1_n43528_n25670#" "moscap_routing_0/m1_n44059_n25319#" -4.38301
+cap "moscap_routing_0/m1_n43528_n25670#" "moscap_routing_0/m1_n44059_n25319#" 585.178
+cap "moscap_routing_0/m1_n44059_n25319#" "moscap_routing_0/m1_n43528_n25670#" 397.508
+cap "moscap_corner_1_0/a_4904_32#" "moscap_routing_0/m1_n43528_n25670#" 27.2916
+cap "moscap_routing_0/m1_n44059_n25319#" "moscap_corner_1_0/a_4904_32#" 100.35
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n38904_n25670#" 610.422
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n38904_n25670#" 671.106
+cap "moscap_routing_0/m1_n38904_n25670#" "moscap_corner_6/a_647_529#" 646.909
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_routing_0/m1_n44059_n25319#" 397.167
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n34405_n25670#" 27.2916
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n44059_n25319#" 100.35
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/a_647_529#" 642.007
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_529#" 100.35
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/a_647_529#" 400.21
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n34405_n25670#" 27.2916
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/VMINUS" 6.67101
+cap "moscap_corner_6/a_647_529#" "moscap_corner_6/VMINUS" 23.6526
+cap "moscap_routing_0/m1_n34405_n25670#" "moscap_corner_6/a_647_529#" 568.443
+cap "moscap_corner_6/a_647_529#" "dw_13436_13361r#" 461.671
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_529#" 76.6974
+cap "moscap_corner_6/VMINUS" "dw_13436_13361r#" 20.6205
+cap "moscap_routing_0/m1_n27768_n25670#" "moscap_routing_0/m1_n27860_n23300#" 667.1
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_routing_0/m1_n27768_n25670#" 685.123
+cap "moscap_routing_0/m1_n44059_n25319#" "moscap_corner_5/VMINUS" 55.1927
+cap "moscap_routing_0/m1_n44059_n25319#" "moscap_routing_0/m1_n27768_n25670#" 491.937
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n27768_n25670#" 14.9653
+cap "moscap_corner_5/a_647_529#" "moscap_corner_5/VMINUS" 45.1573
+cap "moscap_corner_5/a_647_529#" "dw_13436_13361r#" 565.319
+cap "dw_13436_13361r#" "moscap_corner_5/VMINUS" 10.75
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n23593#" 100.35
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n22977_n23593#" 458.734
+cap "moscap_routing_0/m1_n22977_n23593#" "dw_13436_13361r#" 642.167
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 100.35
+cap "moscap_routing_0/m1_n22977_n23593#" "dw_13436_13361r#" 458.734
+cap "dw_13436_13361r#" "moscap_corner_3/a_647_529#" 643.633
+cap "dw_13436_13361r#" "moscap_corner_3/a_647_529#" 707.089
+cap "moscap_corner_3/a_647_529#" "dw_13436_13361r#" 642.167
+cap "moscap_corner_3/VMINUS" "moscap_routing_0/m1_n44059_n25319#" 100.35
+cap "moscap_routing_0/m1_n44059_n25319#" "dw_13436_13361r#" 458.734
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 13.1393
+cap "moscap_corner_3/a_647_529#" "dw_13436_13361r#" 630.091
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 87.2107
+cap "dw_13436_13361r#" "moscap_corner_3/a_647_529#" 470.809
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 99.1565
+cap "moscap_corner_3/a_647_529#" "dw_13436_13361r#" 443.063
+cap "moscap_corner_3/a_647_529#" "dw_13436_13361r#" 657.838
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 1.19349
+cap "moscap_corner_3/a_647_529#" "dw_13436_13361r#" 311.578
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/a_647_529#" 2.86365
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "dw_13436_13361r#" 71.6375
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "dw_13436_13361r#" 57.6323
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3454_17198#" 3.46898
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n654_17198#" 0.669747
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n23593#" 14.1575
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n23593#" 13.9147
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 72.9263
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 58.5556
+cap "moscap_corner_1_0/a_5519_529#" "moscap_routing_0/a_n47022_n23957#" 87.1788
+cap "moscap_corner_1_0/a_5519_529#" "moscap_routing_0/a_n47022_n23957#" 43.8934
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n33321_n22202#" 36.7216
+cap "moscap_corner_6/a_647_529#" "moscap_corner_6/VMINUS" 2.84217e-14
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/a_647_529#" 10.0061
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/VMINUS" 14.5406
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/a_647_529#" 1.37256
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n33321_n22202#" 36.7216
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n33321_n22202#" 14.5406
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n33321_n22202#" 1.37256
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n33321_n22202#" 10.0061
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/a_647_529#" 4.59732
+cap "moscap_corner_5/a_647_529#" "dw_13436_13361r#" -0.128328
+cap "moscap_routing_0/m1_n27860_n23300#" "dw_13436_13361r#" 119.09
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 195.332
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 191.06
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/VMINUS" 75.0432
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 6.84194
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 51.9621
+cap "moscap_corner_5/a_647_529#" "moscap_routing_0/m1_n22977_n23593#" 7.21284
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/a_647_529#" 396.984
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 77.9223
+cap "moscap_corner_5/a_647_529#" "moscap_routing_0/m1_n22977_n23593#" 7.62666
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/a_647_529#" 54.363
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/a_647_529#" 53.813
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n23593#" 79.2818
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "dw_13436_13361r#" 72.9263
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "dw_13436_13361r#" 58.5556
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_529#" 232.28
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/VMINUS" 15.3266
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/a_647_529#" 11.9937
+cap "moscap_routing_0/m1_n33321_n22202#" "moscap_corner_6/a_647_529#" 11.9937
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n33321_n22202#" 15.3266
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/VMINUS" 122.731
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n27860_n23300#" 4.74299
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 60.6674
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/VMINUS" 77.4211
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n23593#" 5.68434e-14
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_routing_0/m1_n22977_n19047#" -6.38869
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 204.121
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/a_647_529#" 58.1817
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/a_647_529#" 57.2771
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 5.68434e-14
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 72.9263
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 58.5556
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_6541#" 15.4181
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_529#" 81.4519
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_6541#" 690.92
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_529#" 714.8
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_529#" 564.002
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n43259_n19921#" 165.633
+cap "moscap_corner_1_0/a_5519_529#" "moscap_routing_0/m1_n43259_n19921#" 171.755
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n43259_n19921#" 543.304
+cap "moscap_corner_1_0/a_5519_529#" "moscap_routing_0/m1_n39839_n19921#" 937.769
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n39839_n19921#" 902.94
+cap "moscap_corner_1_0/a_5519_529#" "moscap_corner_6/a_647_529#" 0.499519
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n39839_n19921#" 229.956
+cap "moscap_routing_0/m1_n39839_n19921#" "moscap_corner_1_0/a_5519_529#" 237.57
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_corner_6/a_647_6541#" 0.472371
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n39839_n19921#" 981.008
+cap "moscap_corner_6/a_647_529#" "moscap_routing_0/m1_n39839_n19921#" 1020.38
+cap "moscap_corner_1_0/a_5519_529#" "moscap_corner_6/a_647_529#" 0.499519
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_corner_6/a_647_6541#" 0.472371
+cap "moscap_corner_6/a_647_529#" "dw_13436_13361r#" 188.566
+cap "moscap_corner_6/a_647_529#" "dw_13436_13361r#" 393.206
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" 182.718
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" 379.767
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_529#" 686.818
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 667.451
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 141.717
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n33321_n22202#" 435.412
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/VMINUS" 418.322
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_529#" 146.376
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n33321_n22202#" 817.939
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/VMINUS" 777.714
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 529.792
+cap "moscap_corner_6/a_647_529#" "moscap_corner_6/VMINUS" 545.711
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n27848_n18817#" 0.472371
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 464.329
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_529#" 478.412
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/a_647_529#" 0.499519
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_routing_0/m1_n27848_n18817#" 1.94634
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 421.436
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/a_647_529#" 1.2008
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n27848_n18817#" 0.472371
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_6/VMINUS" 489.33
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_corner_5/a_647_529#" 8.9701
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/VMINUS" 572.7
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27860_n23300#" 671.655
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_routing_0/m1_n27860_n23300#" 3.32703
+cap "moscap_corner_5/a_647_529#" "moscap_corner_5/VMINUS" 610.469
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_5/VMINUS" 592.724
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 102.223
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n19047#" 98.8097
+cap "moscap_corner_5/VMINUS" "moscap_corner_5/a_647_529#" 411.291
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_5/VMINUS" 399.163
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 667.451
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 686.818
+cap "moscap_corner_5/a_647_529#" "moscap_corner_5/VMINUS" 280.796
+cap "moscap_routing_0/m1_n22977_n23593#" "moscap_corner_5/VMINUS" 232.718
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 225.625
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_5/VMINUS" 272.347
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_5/VMINUS" 667.451
+cap "moscap_corner_5/a_647_529#" "moscap_corner_5/VMINUS" 686.818
+cap "moscap_corner_3/a_647_529#" "moscap_corner_5/a_647_529#" 0.999037
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_5/VMINUS" 54.3236
+cap "moscap_corner_5/a_647_6541#" "moscap_routing_0/m1_n17509_n19180#" 0.944742
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_5/VMINUS" 163.991
+cap "moscap_corner_3/a_647_529#" "moscap_corner_5/VMINUS" 169.359
+cap "moscap_corner_5/VMINUS" "moscap_corner_5/a_647_529#" 56.5096
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_5/VMINUS" 885.588
+cap "moscap_corner_5/VMINUS" "moscap_corner_3/a_647_529#" 686.818
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_5/a_647_6541#" 0.0993042
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/a_647_6541#" 1.42832
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/a_647_529#" 37.3154
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 335.278
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/VMINUS" 162.694
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 167.961
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 345.553
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 656.608
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 676.207
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 508.815
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_529#" 524.126
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_529#" 497.634
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 483.071
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 682.353
+cap "moscap_corner_3/a_647_529#" "moscap_corner_3/VMINUS" 702.699
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/a_647_6541#" 0.488691
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 311.176
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 72.9263
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/a_647_529#" 0.516777
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_529#" 320.798
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 58.5556
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n43259_n19921#" 232.28
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n43259_n19921#" 18.5275
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_6541#" 11.5198
+cap "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_1_0/a_5519_6541#" 4.02193
+cap "moscap_routing_0/m1_n39839_n19921#" "moscap_corner_1_0/a_5519_6541#" 19.3673
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_corner_6/a_647_6541#" 0.0271477
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/m1_n39839_n19921#" 6.61281
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n39839_n19921#" 20.309
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_1_0/a_5519_6541#" 0.0271477
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" 5.84798
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" 9.69376
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 19.3673
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/VMINUS" 14.2692
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/a_647_6541#" 3.72118
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 4.65828
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/VMINUS" 17.2046
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n44059_n14023#" 3.76646
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 15.919
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 14.083
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/a_647_6541#" 0.0271477
+cap "moscap_routing_0/m1_n27860_n23300#" "moscap_routing_0/m1_n27848_n18817#" -0.70394
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 130.642
+cap "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n27848_n18817#" 3.01354
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_routing_0/m1_n27848_n18817#" 47.648
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/VMINUS" 130.222
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_routing_0/m1_n27860_n23300#" -1.22432
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n25421_n16653#" 17.745
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_corner_5/VMINUS" 12.1285
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 3.41324
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/a_647_6541#" 56.8412
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_routing_0/m1_n22977_n19047#" 57.739
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_routing_0/m1_n22977_n23593#" 13.6814
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 304.658
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 7.09302
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_corner_5/VMINUS" 8.44873
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_corner_5/VMINUS" 19.3673
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n17509_n19180#" 5.36859
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_routing_0/m1_n17509_n19180#" 0.0542955
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" 2.18601
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_5/a_647_6541#" 3.9633
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/a_647_6541#" 61.9897
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n17509_n19180#" 218.639
+cap "moscap_corner_3/VMINUS" "moscap_routing_0/m1_n17509_n19180#" 5.26696
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 10.2748
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 19.5987
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 15.3103
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 14.5632
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 20.3458
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/a_647_6541#" 0.0280857
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 72.9263
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 9.62215
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 58.5556
+cap "moscap_corner_1_0/a_5519_6541#" "moscap_routing_0/a_n47022_n23957#" 232.28
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/a_647_6541#" 54.2672
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n44059_n14023#" 68.8554
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/a_647_6541#" 54.9275
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n44059_n14023#" 69.7062
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/VMINUS" 119.807
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/a_647_6541#" 3.89288
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_routing_0/m1_n27848_n18817#" 56.0395
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 79.4541
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_corner_5/VMINUS" 17.5552
+cap "moscap_corner_5/a_647_6541#" "moscap_routing_0/m1_n25421_n16653#" 7.6548
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_routing_0/m1_n22977_n19047#" 7.68638
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n25421_n16653#" 17.2542
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_routing_0/m1_n20540_n16998#" 49.4671
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/a_647_6541#" 55.1993
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 157.204
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 5.68434e-14
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_routing_0/m1_n20540_n16998#" 15.9728
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_corner_5/VMINUS" 36.3781
+cap "moscap_corner_3/a_647_6541#" "moscap_routing_0/m1_n20540_n16998#" 2.1524
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" 57.1517
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n17509_n19180#" 5.68434e-14
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_5/VMINUS" 109.199
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/a_647_6541#" 33.9615
+cap "moscap_corner_5/a_647_6541#" "moscap_routing_0/m1_n17509_n19180#" 2.17132
+cap "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/VMINUS" -5.68434e-14
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 72.9263
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 58.5556
+cap "moscap_routing_0/a_n47022_n23957#" "moscap_routing_0/m1_n44059_n14023#" 232.28
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 68.8554
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 69.7062
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 41.9324
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_5/VMINUS" 27.8089
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n25421_n16653#" 79.2818
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n19047#" 77.9223
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 14.4713
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 14.7238
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n19047#" 77.7547
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" 122.156
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" "moscap_corner_3/VMINUS" 72.9263
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 58.5556
+cap "moscap_routing_0/a_n47022_n23957#" "moscap_routing_0/m1_n44059_n14023#" 135.551
+cap "moscap_corner_1_0/a_4904_32#" "moscap_routing_0/m1_n44059_n14023#" 650.139
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n44059_n14023#" 509.757
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_1_0/a_4904_32#" 100.35
+cap "dw_13436_13361r#" "moscap_corner_6/a_647_6541#" 692.776
+cap "dw_13436_13361r#" "moscap_corner_6/a_647_6541#" 673.687
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" 714.797
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_6/VMINUS" 152.289
+cap "moscap_routing_0/m1_n44059_n14023#" "dw_13436_13361r#" 536.595
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 699.689
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 522.294
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 138.127
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 61.899
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" 680.506
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 76.6974
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" 548.02
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_6/VMINUS" 686.391
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 708.981
+cap "moscap_routing_0/m1_n27848_n18817#" "moscap_corner_5/VMINUS" 55.1927
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n27848_n18817#" 593.96
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_corner_5/VMINUS" 624.612
+cap "moscap_routing_0/m1_n25421_n16653#" "moscap_corner_5/VMINUS" 81.7401
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 517.469
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n22977_n19047#" 136.306
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 695.661
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 133.951
+cap "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/VMINUS" 513.941
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" 760.969
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_corner_5/VMINUS" 696.811
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_5/VMINUS" 695.661
+cap "moscap_corner_3/VMINUS" "moscap_routing_0/m1_n44059_n14023#" 513.697
+cap "moscap_corner_3/VMINUS" "moscap_routing_0/m1_n44059_n14023#" 100.35
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 13.1393
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 683.798
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 525.56
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 87.2107
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 99.1565
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 497.996
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 711.363
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" 1.19349
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 72.9263
+cap "moscap_corner_3/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 2.86365
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" 330.669
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 58.5556
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_4460_37846#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" -0.526837
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 15.7344
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 19.7016
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_4460_37846#" -1.18375
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -0.22552
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 19.7016
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 19.7016
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" -0.798209
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 19.7016
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 19.7016
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" -0.920795
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" -0.476305
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 10.8359
+cap "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 88.1059
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "moscap_routing_0/a_n47022_n23957#" 0.226212
+cap "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.91378
+cap "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 167.252
+cap "moscap_corner_1_0/a_4904_32#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.00297275
+cap "moscap_corner_1_0/a_4904_32#" "moscap_routing_0/m1_n44059_n14023#" -41.2954
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_1_0/a_4904_32#" 31.9094
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 153.516
+cap "moscap_corner_1_0/a_4904_32#" "dw_13436_13361r#" 17.9296
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.0143019
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n44059_n14023#" -23.5401
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 112.396
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.010471
+cap "moscap_corner_6/a_647_6541#" "dw_13436_13361r#" -21.4579
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 144.744
+cap "dw_13436_13361r#" "moscap_corner_6/a_647_6541#" -10.797
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.0134847
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.0142611
+cap "dw_13436_13361r#" "moscap_corner_6/a_647_6541#" -0.756095
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 153.078
+cap "dw_13436_13361r#" "moscap_routing_0/m1_n44059_n14023#" -64.6933
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 47.002
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" -65.7814
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_6/VMINUS" 29.0678
+cap "moscap_corner_6/a_647_6541#" "moscap_corner_6/VMINUS" -65.3662
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" -64.6933
+cap "moscap_corner_6/VMINUS" "moscap_corner_6/a_647_6541#" -64.6933
+cap "moscap_corner_5/a_647_6541#" "moscap_corner_6/VMINUS" -43.6947
+cap "moscap_corner_6/VMINUS" "moscap_corner_5/a_647_6541#" -38.7084
+cap "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n25421_n16653#" -64.6933
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n25421_n16653#" -64.6933
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n25421_n16653#" -64.6933
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" -64.6933
+cap "moscap_routing_0/m1_n20540_n16998#" "moscap_corner_5/VMINUS" -64.6933
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" -64.1315
+cap "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n20540_n16998#" -20.0273
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_5/VMINUS" -64.6933
+cap "moscap_routing_0/m1_n44059_n14023#" "moscap_corner_3/VMINUS" -64.6933
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" -64.6933
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" -64.6933
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" -64.6933
+cap "moscap_corner_3/VMINUS" "moscap_corner_3/a_647_6541#" -64.6933
+cap "moscap_corner_3/a_647_6541#" "moscap_corner_3/VMINUS" -24.4099
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 41.1203
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VPLUS" 34.8658
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3174_4325#" 5.43951
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2054_4325#" "moscap_corner_3/VMINUS" 5.43951
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2614_4325#" "moscap_corner_3/VMINUS" 5.43951
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1494_4325#" 2.71976
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1494_4325#" "dw_13436_13361r#" 2.71976
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC" "dw_13436_13361r#" 3.4098
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n934_4325#" "dw_13436_13361r#" 5.43951
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 0.126677
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 3.14589
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 0.157412
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 0.0333884
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 0.0333884
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 0.0333884
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.0333884
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 0.0333884
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.0333884
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 2.09688
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 4.47214
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 0.740205
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 1.74134
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_9481_n11541#" 0.104675
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_routing_0/m1_9481_n11541#" 0.104675
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 1.15837
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 0.120476
+cap "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 322.887
+cap "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 361.132
+cap "moscap_corner_1_0/a_4904_32#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 354.725
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 363.389
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 360.459
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 362.764
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 363.358
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "dw_13436_13361r#" 439.069
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_6/VMINUS" 387.076
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 408.37
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 474.941
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_6/VMINUS" 451.143
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 474.941
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 468.991
+cap "moscap_corner_6/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 457.092
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_5/VMINUS" 474.941
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" "moscap_corner_5/VMINUS" 451.143
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 474.941
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 2.95295
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 256.694
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/w_n51_n51#" 147.885
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2665_27517#" 92.9683
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/w_2170_27627#" "moscap_corner_5/VMINUS" 207.492
+cap "moscap_corner_5/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" 264.544
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" "moscap_corner_5/VMINUS" 305.319
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/w_2170_27627#" "moscap_corner_5/VMINUS" 191.977
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/top_route_1_0/m1_124_3386#" 202.704
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" 340.557
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" 340.557
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1145_29732#" 202.704
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" "moscap_corner_3/VMINUS" 340.557
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1145_29732#" "moscap_corner_3/VMINUS" 153.917
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1145_29732#" "moscap_corner_3/VMINUS" 97.9464
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" 340.557
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/top_route_1_0/m1_124_3386#" "moscap_corner_3/VMINUS" 97.9464
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" "moscap_corner_3/VMINUS" 340.557
+cap "moscap_corner_3/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" 297.9
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/top_route_1_0/m1_124_3386#" "moscap_corner_3/VMINUS" 86.2725
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2829#" "dw_13436_13361r#" 0.507812
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC" "dw_13436_13361r#" 1.72872
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_3389#" "dw_13436_13361r#" 3.45744
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2829#" 1.73011
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 68.2625
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -8.99378
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 0.04199
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1094_43453#" 35.869
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 84.8232
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 17.8193
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 652.607
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 0.624304
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 591.439
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1094_43453#" 0.304074
+cap "moscap_corner_0/a_647_529#" "dw_13436_13361r#" 272.04
+cap "dw_13436_13361r#" "moscap_corner_0/a_647_529#" 683.887
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 52.4007
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "moscap_corner_0/a_647_529#" 77.1752
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 649.234
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 1995.29
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.0621892
+cap "moscap_corner_0/a_647_529#" "dw_13436_13361r#" 511.496
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 135.956
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 967.133
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 24.5999
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 565.679
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 476.462
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "moscap_corner_0/VMINUS" 674.055
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 310.143
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 442.72
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 17.7583
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 258.915
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_5414_n10067#" 1348.78
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 398.352
+cap "dw_13436_13361r#" "moscap_routing_0/m1_5414_n10067#" 569.359
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "moscap_routing_0/m1_5414_n10067#" 499.127
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "moscap_corner_0/VMINUS" 270.167
+cap "dw_13436_13361r#" "moscap_routing_0/m1_5414_n10067#" 626.024
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "dw_13436_13361r#" 283.299
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.0494061
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" 19.7016
+cap "moscap_routing_0/m1_5414_n10067#" "dw_13436_13361r#" 511.496
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 710.459
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 537.421
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 889.465
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_9481_n11541#" 286.827
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 908.62
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VMINUS" "moscap_routing_0/m1_9481_n11541#" 10.8653
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 310.404
+cap "moscap_routing_0/m1_9481_n11541#" "moscap_corner_0/a_647_529#" 683.887
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_529#" 1108.9
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 514.734
+cap "moscap_corner_0/a_647_529#" "moscap_routing_0/m1_9481_n11541#" 238.952
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.942798
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 328.712
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "moscap_routing_0/a_n47022_n23957#" 0.751746
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.874123
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.482016
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.581916
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.651846
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.412087
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.874123
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.821676
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.242257
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.874123
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 0.874123
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" "dw_13436_13361r#" 0.117382
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/nmos_clamp_20_50_4_0/a_1237_1481#" 2.87663
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 67.8514
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" -8.99592
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_1094_43453#" 1.47973
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 529.688
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 541.082
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 85.3107
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 2404.52
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 69.4419
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 42.3614
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 1126.42
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 610.919
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 760.955
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_5414_n10067#" 1607.58
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_routing_0/m1_5414_n10067#" 168.73
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 30.5801
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 663.838
+cap "moscap_corner_0/VMINUS" "moscap_routing_0/m1_5414_n10067#" 2.27374e-13
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" -11.7981
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 453.051
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 502.562
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_5414_n10067#" 2.93631
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -11.7981
+cap "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/VMINUS" 1.13687e-13
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 1189.11
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 753.106
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 1406.66
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 1052.76
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_9481_n11541#" 0.465492
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_routing_0/m1_9481_n11541#" 361.159
+cap "moscap_routing_0/m1_9481_n11541#" "moscap_corner_0/a_647_529#" 11.8601
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_529#" 241.763
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -8.99592
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 67.8514
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" -8.91253
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" 594.407
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" "moscap_corner_0/a_647_529#" -6.73476e-16
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 472.941
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 541.082
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 85.3107
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 69.4419
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 2404.52
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 701.625
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 59.33
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 610.919
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 42.3614
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 1126.42
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 663.838
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 30.5801
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_529#" 168.73
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 1607.58
+cap "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/VMINUS" 1.7053e-13
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 485.544
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 453.051
+cap "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/a_647_529#" 2.28066
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 2.40096
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" -9.64704
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" -9.64704
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 137.538
+cap "moscap_routing_0/m1_5414_n10067#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 595.671
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 1189.11
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 1052.76
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 1406.66
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 0.572799
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 241.763
+cap "moscap_routing_0/m1_9481_n11541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 371.568
+cap "moscap_routing_0/m1_9481_n11541#" "moscap_corner_0/a_647_529#" 13.6459
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 67.8514
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" -7.62449
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" -24.5415
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" 1.86069
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_corner_0/a_647_529#" 0.0882169
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" 11.5165
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 318.945
+cap "moscap_corner_0/a_647_529#" "dw_13436_13361r#" 21.5146
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 0.807223
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 488.484
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_4460_42346#" 1217.38
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 85.3107
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 69.4419
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 2425.63
+cap "dw_13436_13361r#" "moscap_corner_0/a_647_529#" 50.3549
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 4.41107
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_6541#" 0.229707
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 34.3756
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 701.644
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 1126.22
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 42.3614
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 6.03298
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 59.35
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 610.919
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 43.2956
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 663.738
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 30.5801
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 1607.58
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_529#" 168.75
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 452.95
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_routing_0/m1_5414_n10067#" 406.083
+cap "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/VMINUS" 47.4678
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/a_647_529#" 137.558
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 10.2052
+cap "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/VMINUS" 30.2033
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_routing_0/m1_5414_n10067#" 841.866
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/VMINUS" 1193.39
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/VMINUS" 2.39675
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/a_647_529#" 1075.16
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 50.3549
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 1406.66
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/VMINUS" 0.947861
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 241.763
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 39.8607
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 419.672
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 67.8514
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -0.0657074
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_6384_44992#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" -28.1197
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_6384_44992#" "moscap_corner_0/a_647_6541#" 221.462
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 85.3107
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 25.324
+cap "dw_13436_13361r#" "moscap_corner_0/a_647_6541#" 273.112
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_corner_0/a_647_6541#" 0.624304
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_6384_44992#" "moscap_corner_0/a_647_529#" 79.8425
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 4.38049
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_6384_44992#" "dw_13436_13361r#" 1958.79
+cap "dw_13436_13361r#" "moscap_corner_0/a_647_529#" 251.597
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_corner_0/a_647_529#" 0.536087
+cap "moscap_corner_0/a_647_6541#" "dw_13436_13361r#" 686.818
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 16.1128
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 1503.07
+cap "dw_13436_13361r#" "moscap_corner_0/a_647_529#" 636.464
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "dw_13436_13361r#" 96.6863
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 971.321
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 36.6478
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_529#" 244.668
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/top_route_1_0/m1_0_106#" "moscap_corner_0/VMINUS" 0.0195159
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_529#" 17.7649
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 19.1691
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 35.3296
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 57.4338
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 63.4668
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 151.606
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 359.106
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 415.672
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 450.047
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 223.867
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 1775.2
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_529#" 43.209
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/VMINUS" 329.248
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 48.031
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 0.101033
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 644.931
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 1027.38
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 528.417
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 97.9469
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 871.102
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_529#" 169.546
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_6541#" 571.712
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 581.152
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 850.172
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 210.39
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 628.62
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/VMINUS" 0.275904
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_529#" 87.9458
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 120.375
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 110.169
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/VMINUS" 2143.17
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 89.8017
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/a_647_529#" 51.8505
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 362.936
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_12842_49632#" "moscap_corner_0/VMINUS" 0.636179
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" "moscap_corner_0/a_647_529#" 192.292
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 393.14
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 388.503
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/VMINUS" 745.098
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 686.818
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 296.876
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_6541#" 1.26407
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_6541#" 567.64
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_529#" 636.464
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 139.366
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 747.23
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_529#" 113.803
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m1_14757_49610#" -1.34087
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_10638_47992#" 0.288968
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m1_14757_49610#" 28.3305
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/a_647_6541#" 181.497
+cap "moscap_corner_0/a_647_529#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 100.21
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/VMINUS" 755.712
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 215.76
+cap "moscap_corner_0/a_647_529#" "moscap_corner_0/VMINUS" 198.481
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -0.0657074
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_8741_43238#" 3.60528
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 67.8514
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 85.3107
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 34.033
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 2506.88
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 69.4419
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 2.16131
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 624.587
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 42.3614
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 1126.42
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 59.33
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 701.625
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 30.5801
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 8.65944
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 663.838
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 1614.72
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 168.73
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 416.494
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 453.051
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" "moscap_corner_0/VMINUS" 25.9606
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 1663.76
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 6.4414
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 335.176
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" 766.142
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m1_14757_49610#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_6892_106#" -11.524
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m1_14757_49610#" "moscap_corner_0/VMINUS" 243.484
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" -0.0657074
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 67.8514
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_8741_43238#" 13.7904
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "dw_13436_13361r#" 85.3107
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_6541#" 333.835
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 15.173
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 2173.05
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "dw_13436_13361r#" 34.033
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 54.2689
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 736.753
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 1.05173
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 42.3614
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 59.33
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 1126.42
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 340.985
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" 251.119
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 193.829
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/VMINUS" 9.93852
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 594.867
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 2.61864
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 85.6727
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 7.78261
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_50518#" "moscap_corner_0/a_647_6541#" 1.59517
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 741.232
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 663.838
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 57.7762
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_6541#" 80.9402
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 297.121
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 223.752
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 453.051
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 130.054
+cap "moscap_corner_0/VMINUS" "moscap_routing_0/m1_7909_n2036#" 65.0439
+cap "moscap_routing_0/m1_n54_0#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_8741_43238#" 0.512284
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_routing_0/m1_n54_0#" 67.8514
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -0.0657074
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_routing_0/m1_n54_0#" 85.3107
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 7.97046
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_6541#" 25.0467
+cap "moscap_routing_0/m1_n54_0#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 34.033
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" 2601.88
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/a_647_6541#" 1123.89
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 440.87
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/a_647_6541#" 218.493
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_corner_0/VMINUS" 727.641
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 76.1104
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" "moscap_corner_0/VMINUS" 100.282
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_0_106#" 1698.61
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/VMINUS" 224.115
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 142.325
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_routing_0/m1_6292_n415#" 156.662
+cap "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/VMINUS" 58.4988
+cap "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/VMINUS" 47.3402
+cap "moscap_corner_0/VMINUS" "moscap_routing_0/m1_7909_n2036#" -5.68434e-14
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_routing_0/m1_n54_0#" 62.0815
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_12842_43238#" "moscap_routing_0/m1_n54_0#" 1.70942
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_12842_43238#" 5.68434e-14
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" -0.0295214
+cap "moscap_routing_0/m1_n54_0#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 79.9439
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/top_route_0/m1_n384_16623#" "moscap_routing_0/m1_n54_0#" 0.0553043
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 0.624304
+cap "moscap_routing_0/m1_n54_0#" "moscap_corner_0/a_647_6541#" 363.93
+cap "moscap_routing_0/m1_n54_0#" "moscap_corner_0/a_647_6541#" 719.324
+cap "VDD_uq1" "moscap_corner_0/a_647_6541#" 1348.03
+cap "VDD_uq1" "moscap_routing_0/m1_n54_0#" 709.498
+cap "moscap_corner_0/a_647_6541#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_7640_52771#" 0.0820062
+cap "moscap_corner_0/a_647_6541#" "VDD_uq1" 514.056
+cap "moscap_corner_0/a_647_6541#" "moscap_corner_0/VMINUS" 532.661
+cap "moscap_corner_0/a_647_6541#" "VSS_uq1" 489.662
+cap "VDD_uq1" "moscap_corner_0/VMINUS" 759.442
+cap "VDD_uq1" "moscap_corner_0/VMINUS" 355.119
+cap "VSS_uq1" "moscap_corner_0/VMINUS" 437.47
+cap "VSS_uq1" "moscap_corner_0/VMINUS" 1.16071
+cap "VSS_uq1" "moscap_corner_0/a_647_6541#" 922.969
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/a_647_6541#" 594.037
+cap "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" "moscap_corner_0/a_647_6541#" 0.0462683
+cap "VSS_uq1" "moscap_corner_0/VMINUS" 842.905
+cap "moscap_corner_0/VMINUS" "VSS_uq1" 34.3354
+cap "moscap_routing_0/m1_6292_n415#" "moscap_corner_0/VMINUS" 817.613
+cap "moscap_routing_0/m1_6292_n415#" "VSS_uq1" 0.031087
+cap "VSS_uq1" "moscap_corner_0/VMINUS" 5.97131
+cap "moscap_corner_0/VMINUS" "moscap_corner_0/VMINUS" 10.028
+cap "moscap_routing_0/m1_6292_n415#" "ESD_CLAMP_COR_0/power_via_cor_3_0/m2_8733_41714#" 0.0824939
+cap "moscap_corner_0/VMINUS" "moscap_routing_0/m1_7909_n2036#" 715.059
+cap "moscap_corner_0/VMINUS" "moscap_routing_0/m1_7909_n2036#" 104.013
+cap "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/VMINUS" 811.935
+cap "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/VMINUS" 7.40638
+cap "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/VMINUS" 280.236
+cap "moscap_routing_0/m1_n54_0#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" 29.1158
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_869#" "moscap_routing_0/m1_n54_0#" 0.415389
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m2_12842_43238#" "moscap_routing_0/m1_n54_0#" 0.241591
+cap "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VPLUS" "moscap_routing_0/m1_n54_0#" 38.5514
+cap "VDD_uq1" "moscap_routing_0/m1_n54_0#" 1108.52
+cap "moscap_corner_0/VMINUS" "VSS_uq1" 889.428
+cap "moscap_corner_0/VMINUS" "VDD_uq1" 1542.65
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" 15.4399
+cap "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" 81.7323
+cap "VSS_uq1" "moscap_corner_0/VMINUS" 1713.52
+cap "dw_13436_13361r#" "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" 17.9811
+cap "VSS_uq1" "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" -8.6865
+cap "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" "dw_13436_13361r#" 148.522
+cap "VSS_uq1" "ESD_CLAMP_COR_0/power_via_cor_5_0/m1_14757_49610#" -30.9606
+merge "moscap_routing_0/m1_7901_0#" "moscap_routing_0/m1_4721_0#" -244102 0 0 -1580022802 -745701 0 0 -47452898 -600856 -35326624 -685692 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -113272382 -1398052 -192116884 -257446 -63206404 -217463 0 0 0 0
+merge "moscap_routing_0/m1_4721_0#" "moscap_routing_0/m1_n54_0#"
+merge "moscap_routing_0/m1_n54_0#" "moscap_routing_0/m1_9493_n3588#"
+merge "moscap_routing_0/m1_9493_n3588#" "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VMINUS"
+merge "ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VMINUS" "moscap_routing_0/m1_9473_n8392#"
+merge "moscap_routing_0/m1_9473_n8392#" "moscap_routing_0/m1_9481_n11541#"
+merge "moscap_routing_0/m1_9481_n11541#" "moscap_corner_0/VMINUS"
+merge "moscap_corner_0/VMINUS" "ESD_CLAMP_COR_0/dw_n42_43017#"
+merge "ESD_CLAMP_COR_0/dw_n42_43017#" "moscap_routing_0/m1_n33412_n19921#"
+merge "moscap_routing_0/m1_n33412_n19921#" "moscap_routing_0/m1_n39839_n19921#"
+merge "moscap_routing_0/m1_n39839_n19921#" "moscap_routing_0/m1_n43259_n19921#"
+merge "moscap_routing_0/m1_n43259_n19921#" "moscap_corner_3/VMINUS"
+merge "moscap_corner_3/VMINUS" "moscap_routing_0/m1_n27768_n25670#"
+merge "moscap_routing_0/m1_n27768_n25670#" "moscap_corner_5/VMINUS"
+merge "moscap_corner_5/VMINUS" "moscap_routing_0/m1_n34405_n25670#"
+merge "moscap_routing_0/m1_n34405_n25670#" "moscap_routing_0/m1_n38904_n25670#"
+merge "moscap_routing_0/m1_n38904_n25670#" "moscap_corner_6/VMINUS"
+merge "moscap_corner_6/VMINUS" "moscap_routing_0/m1_n43528_n25670#"
+merge "moscap_routing_0/m1_n43528_n25670#" "moscap_corner_1_0/a_4904_32#"
+merge "moscap_corner_1_0/a_4904_32#" "moscap_routing_0/m1_n27687_n31792#"
+merge "moscap_routing_0/m1_n27687_n31792#" "moscap_routing_0/m1_n32571_n31792#"
+merge "moscap_routing_0/m1_n32571_n31792#" "moscap_routing_0/m1_n30132_n33522#"
+merge "moscap_routing_0/m1_n30132_n33522#" "moscap_routing_0/m1_n35009_n34189#"
+merge "moscap_routing_0/m1_n35009_n34189#" "moscap_routing_0/m1_n35161_n34037#"
+merge "moscap_routing_0/m1_n35161_n34037#" "moscap_routing_0/a_n40901_n30121#"
+merge "moscap_routing_0/a_n40901_n30121#" "moscap_routing_0/a_n38704_n32263#"
+merge "moscap_routing_0/a_n38704_n32263#" "moscap_routing_0/m1_n22219_n36968#"
+merge "moscap_routing_0/m1_n22219_n36968#" "moscap_routing_0/m1_n27687_n36968#"
+merge "moscap_routing_0/m1_n27687_n36968#" "moscap_routing_0/a_n36513_n34394#"
+merge "moscap_routing_0/a_n36513_n34394#" "moscap_routing_0/m1_n24920_n39073#"
+merge "moscap_routing_0/m1_n24920_n39073#" "moscap_corner_2/VMINUS"
+merge "moscap_corner_2/VMINUS" "moscap_corner_4/VMINUS"
+merge "moscap_corner_4/VMINUS" "moscap_routing_0/a_n34409_n36435#"
+merge "moscap_routing_0/a_n34409_n36435#" "moscap_corner_2_0/VMINUS"
+merge "moscap_corner_2_0/VMINUS" "moscap_routing_0/a_n30340_n40567#"
+merge "moscap_routing_0/a_n30340_n40567#" "moscap_routing_0/m1_n14699_n44488#"
+merge "moscap_routing_0/m1_n14699_n44488#" "moscap_routing_0/m1_n20058_n44488#"
+merge "moscap_routing_0/m1_n20058_n44488#" "moscap_routing_0/a_n28236_n42608#"
+merge "moscap_routing_0/a_n28236_n42608#" "moscap_routing_0/m1_n11382_n46725#"
+merge "moscap_routing_0/m1_n11382_n46725#" "moscap_routing_0/m1_n17715_n46725#"
+merge "moscap_routing_0/m1_n17715_n46725#" "moscap_routing_0/m1_n17620_n45972#"
+merge "moscap_routing_0/m1_n17620_n45972#" "moscap_routing_0/a_n26393_n44622#"
+merge "moscap_routing_0/a_n26393_n44622#" "moscap_routing_0/m1_n11878_n47667#"
+merge "moscap_routing_0/m1_n11878_n47667#" "moscap_routing_0/m1_n14844_n49493#"
+merge "moscap_routing_0/m1_n14844_n49493#" "moscap_routing_0/a_n24191_n46716#"
+merge "moscap_routing_0/a_n24191_n46716#" "moscap_routing_0/m1_n7016_n51467#"
+merge "moscap_routing_0/m1_n7016_n51467#" "moscap_routing_0/m1_n9452_n51467#"
+merge "moscap_routing_0/m1_n9452_n51467#" "moscap_routing_0/m1_n11878_n51467#"
+merge "moscap_routing_0/m1_n11878_n51467#" "moscap_corner_1/VMINUS"
+merge "moscap_corner_1/VMINUS" "moscap_corner_3_0/VMINUS"
+merge "moscap_corner_3_0/VMINUS" "moscap_routing_0/a_n20244_n50771#"
+merge "moscap_routing_0/a_n20244_n50771#" "dw_13436_13361r#"
+merge "dw_13436_13361r#" "moscap_routing_0/a_n47022_n23957#"
+merge "moscap_routing_0/a_n47022_n23957#" "ESD_CLAMP_COR_0/VSUBS"
+merge "ESD_CLAMP_COR_0/VSUBS" "VSUBS"
+merge "moscap_routing_0/m1_n21492_n40803#" "moscap_corner_1/a_647_6541#" -11195.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -598880 -16216 0 0 0 0 0 0 0 0
+merge "moscap_corner_1/a_647_6541#" "moscap_corner_3_0/a_3083_6541#"
+merge "moscap_corner_3_0/a_3083_6541#" "moscap_corner_1/a_647_529#"
+merge "moscap_corner_1/a_647_529#" "moscap_corner_3_0/a_7955_529#"
+merge "moscap_routing_0/m1_n34518_n28463#" "moscap_corner_2_0/a_647_6541#" -48110.3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -12487423 -76923 0 0 0 0 0 0 0 0
+merge "moscap_corner_2_0/a_647_6541#" "moscap_routing_0/m1_n18853_n32300#"
+merge "moscap_routing_0/m1_n18853_n32300#" "moscap_corner_4/a_647_6541#"
+merge "moscap_corner_4/a_647_6541#" "moscap_routing_0/m1_n5958_n31009#"
+merge "moscap_routing_0/m1_n5958_n31009#" "moscap_routing_0/m1_n10866_n31009#"
+merge "moscap_routing_0/m1_n10866_n31009#" "moscap_routing_0/m1_n8475_n33619#"
+merge "moscap_routing_0/m1_n8475_n33619#" "moscap_routing_0/m1_n10866_n33584#"
+merge "moscap_routing_0/m1_n10866_n33584#" "moscap_routing_0/m1_n13355_n33287#"
+merge "moscap_routing_0/m1_n13355_n33287#" "moscap_corner_2/a_647_6541#"
+merge "moscap_routing_0/m1_5414_n10067#" "moscap_corner_0/a_647_529#" -4993.27 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1079120 -4272 0 0 0 0 0 0 0 0
+merge "ESD_CLAMP_COR_0/top_routing_cor_0/VSS" "VSS_uq1" -1608.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "ESD_CLAMP_COR_0/top_routing_cor_0/VDD" "VDD_uq1" -1878.39 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "moscap_routing_0/m1_n8512_n38125#" "moscap_routing_0/m1_n13355_n37761#" -40658.6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -10707728 -59544 0 0 0 0 0 0 0 0
+merge "moscap_routing_0/m1_n13355_n37761#" "moscap_routing_0/m1_n5958_n38612#"
+merge "moscap_routing_0/m1_n5958_n38612#" "moscap_routing_0/m1_n29459_n39756#"
+merge "moscap_routing_0/m1_n29459_n39756#" "moscap_corner_2/a_647_529#"
+merge "moscap_corner_2/a_647_529#" "moscap_corner_4/a_647_529#"
+merge "moscap_corner_4/a_647_529#" "moscap_corner_2_0/a_5519_529#"
+merge "moscap_routing_0/m1_n44059_n14023#" "moscap_routing_0/m1_n17509_n19180#" -44671.2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -12301968 -69516 0 0 0 0 0 0 0 0
+merge "moscap_routing_0/m1_n17509_n19180#" "moscap_corner_3/a_647_6541#"
+merge "moscap_corner_3/a_647_6541#" "moscap_corner_1_0/a_5519_6541#"
+merge "moscap_corner_1_0/a_5519_6541#" "moscap_corner_6/a_647_6541#"
+merge "moscap_corner_6/a_647_6541#" "moscap_routing_0/m1_n20540_n16998#"
+merge "moscap_routing_0/m1_n20540_n16998#" "moscap_routing_0/m1_n25421_n16653#"
+merge "moscap_routing_0/m1_n25421_n16653#" "moscap_routing_0/m1_n27848_n18817#"
+merge "moscap_routing_0/m1_n27848_n18817#" "moscap_routing_0/m1_n22977_n19047#"
+merge "moscap_routing_0/m1_n22977_n19047#" "moscap_corner_5/a_647_6541#"
+merge "moscap_routing_0/m1_n33321_n22202#" "moscap_routing_0/m1_n22977_n23593#" -36490.4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7762412 -55770 0 0 0 0 0 0 0 0
+merge "moscap_routing_0/m1_n22977_n23593#" "moscap_routing_0/m1_n27860_n23300#"
+merge "moscap_routing_0/m1_n27860_n23300#" "moscap_routing_0/m1_n44059_n25319#"
+merge "moscap_routing_0/m1_n44059_n25319#" "moscap_corner_3/a_647_529#"
+merge "moscap_corner_3/a_647_529#" "moscap_corner_5/a_647_529#"
+merge "moscap_corner_5/a_647_529#" "moscap_corner_6/a_647_529#"
+merge "moscap_corner_6/a_647_529#" "moscap_corner_1_0/a_5519_529#"
+merge "moscap_routing_0/m1_6292_n415#" "moscap_routing_0/m1_7909_n2036#" -5764.21 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1030320 -6784 0 0 0 0 0 0 0 0
+merge "moscap_routing_0/m1_7909_n2036#" "moscap_corner_0/a_647_6541#"

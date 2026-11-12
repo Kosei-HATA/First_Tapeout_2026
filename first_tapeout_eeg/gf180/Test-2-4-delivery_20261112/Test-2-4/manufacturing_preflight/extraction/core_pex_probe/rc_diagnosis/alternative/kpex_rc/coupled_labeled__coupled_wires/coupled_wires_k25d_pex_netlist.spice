@@ -1,0 +1,13 @@
+*********************************************************
+*** NGSPICE file created by KLayout-PEX 0.3.12
+*** -----------------------------------------------------
+***     Extraction Engine: KPEX/2.5D
+***     Technology: gf180mcud
+***     Date: 2026-11-11 09:46:48
+*********************************************************
+
+.SUBCKT coupled_wires
+Cext_1 A|B C|D 5.9027f
+Cext_2 A|B VSUBS 10.8955f
+Cext_3 C|D VSUBS 6.7262f
+.ENDS coupled_wires

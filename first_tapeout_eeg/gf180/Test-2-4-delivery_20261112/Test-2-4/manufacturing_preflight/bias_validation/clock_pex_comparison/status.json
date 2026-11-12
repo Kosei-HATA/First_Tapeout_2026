@@ -1,0 +1,27 @@
+[
+  {
+    "variant": "schematic",
+    "status": "finished",
+    "exitcode": 0,
+    "seconds": 12.97
+  },
+  {
+    "variant": "cap",
+    "status": "finished",
+    "exitcode": 0,
+    "seconds": 31.84
+  },
+  {
+    "variant": "rc",
+    "status": "finished",
+    "exitcode": "timeout_300s",
+    "seconds": 300.05
+  },
+  {
+    "variant": "rc_klu",
+    "status": "finished",
+    "exitcode": 0,
+    "seconds": 133.81,
+    "only_change": ".options sparse -> klu"
+  }
+]

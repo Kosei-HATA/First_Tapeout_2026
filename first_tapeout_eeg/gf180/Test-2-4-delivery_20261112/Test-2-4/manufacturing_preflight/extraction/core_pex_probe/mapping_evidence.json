@@ -1,0 +1,201 @@
+{
+  "probes": [
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[1]",
+      "node": "m4_200_80#",
+      "core_point_um": [
+        2601.402,
+        1342.402
+      ],
+      "hits": [
+        {
+          "layer": "l20",
+          "layout_net": "$969520",
+          "schematic_net": "ADC.I2P"
+        },
+        {
+          "layer": "l25",
+          "layout_net": "$969520",
+          "schematic_net": "ADC.I2P"
+        }
+      ]
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[1]",
+      "node": "m4_200_21366#",
+      "core_point_um": [
+        2601.402,
+        1448.8319999999999
+      ],
+      "hits": [
+        {
+          "layer": "l20",
+          "layout_net": "$1452491",
+          "schematic_net": "O2N"
+        },
+        {
+          "layer": "l25",
+          "layout_net": "$1452491",
+          "schematic_net": "O2N"
+        }
+      ]
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[1]",
+      "node": "mim_top_center",
+      "core_point_um": [
+        2650.4,
+        1395.0
+      ],
+      "hits": []
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[1]",
+      "node": "mim_bottom_center",
+      "core_point_um": [
+        2650.4,
+        1395.0
+      ],
+      "hits": [
+        {
+          "layer": "l25",
+          "layout_net": "$1452491",
+          "schematic_net": "O2N"
+        },
+        {
+          "layer": "l20",
+          "layout_net": "$1452491",
+          "schematic_net": "O2N"
+        }
+      ]
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[2]",
+      "node": "m4_200_80#",
+      "core_point_um": [
+        2708.402,
+        1342.402
+      ],
+      "hits": [
+        {
+          "layer": "l20",
+          "layout_net": "$964852",
+          "schematic_net": "ADC.I2N"
+        },
+        {
+          "layer": "l25",
+          "layout_net": "$964852",
+          "schematic_net": "ADC.I2N"
+        }
+      ]
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[2]",
+      "node": "m4_200_21366#",
+      "core_point_um": [
+        2708.402,
+        1448.8319999999999
+      ],
+      "hits": [
+        {
+          "layer": "l20",
+          "layout_net": "$1458322",
+          "schematic_net": "O2P"
+        },
+        {
+          "layer": "l25",
+          "layout_net": "$1458322",
+          "schematic_net": "O2P"
+        }
+      ]
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[2]",
+      "node": "mim_top_center",
+      "core_point_um": [
+        2757.4,
+        1395.0
+      ],
+      "hits": []
+    },
+    {
+      "placement": "chip_top/adc_top[2]/adc_c2[2]",
+      "node": "mim_bottom_center",
+      "core_point_um": [
+        2757.4,
+        1395.0
+      ],
+      "hits": [
+        {
+          "layer": "l25",
+          "layout_net": "$1458322",
+          "schematic_net": "O2P"
+        },
+        {
+          "layer": "l20",
+          "layout_net": "$1458322",
+          "schematic_net": "O2P"
+        }
+      ]
+    }
+  ],
+  "devices": [
+    {
+      "layout_name": "$88727",
+      "class": "cap_mim_2f0fF",
+      "nets": {
+        "A": "$1458322",
+        "B": "$1424822"
+      },
+      "params": {
+        "C": 9.982845e-12,
+        "A": 4991.422500000001,
+        "P": 282.6
+      },
+      "schematic_name": "ADC.OTA2.CCOMP_P"
+    },
+    {
+      "layout_name": "$88728",
+      "class": "cap_mim_2f0fF",
+      "nets": {
+        "A": "$1452491",
+        "B": "$1424822"
+      },
+      "params": {
+        "C": 9.982845e-12,
+        "A": 4991.422500000001,
+        "P": 282.6
+      },
+      "schematic_name": "ADC.OTA2.CCOMP_N"
+    },
+    {
+      "layout_name": "$88731",
+      "class": "cap_mim_2f0fF",
+      "nets": {
+        "A": "$1452491",
+        "B": "$969520"
+      },
+      "params": {
+        "C": 1.95347378e-11,
+        "A": 9767.368900000001,
+        "P": 395.32
+      },
+      "schematic_name": "ADC.C2P.C0"
+    },
+    {
+      "layout_name": "$88732",
+      "class": "cap_mim_2f0fF",
+      "nets": {
+        "A": "$1458322",
+        "B": "$964852"
+      },
+      "params": {
+        "C": 1.95347378e-11,
+        "A": 9767.368900000001,
+        "P": 395.32
+      },
+      "schematic_name": "ADC.C2N.C0"
+    }
+  ],
+  "maxrss_kb": 4882920
+}

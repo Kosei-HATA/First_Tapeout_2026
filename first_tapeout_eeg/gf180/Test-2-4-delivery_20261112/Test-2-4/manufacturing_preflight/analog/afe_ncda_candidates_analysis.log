@@ -1,0 +1,158 @@
+{
+  "baseline": {
+    "worst_gate": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.665122776544125,
+      "peak_time_s": 5.320827216331917e-07,
+      "exposure_3p63": {
+        "total_s": 3.2948879244419295e-09,
+        "duty_fraction_of_record": 0.0032948879244419295,
+        "longest_s": 3.2948879244419295e-09,
+        "interval_count": 1
+      }
+    },
+    "worst_vds": {
+      "instance": "xc.xcda3.xp",
+      "terminals": {
+        "d": "ncda",
+        "g": "xc.cdai",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vds",
+      "max_abs_V": 3.6623694797833357,
+      "peak_time_s": 5.318667796374525e-07,
+      "exposure_3p63": {
+        "total_s": 2.5072750122480986e-09,
+        "duty_fraction_of_record": 0.0025072750122480986,
+        "longest_s": 2.5072750122480986e-09,
+        "interval_count": 1
+      }
+    },
+    "gate_pair_exceedance_count": 10,
+    "NCDA_min_context": {
+      "time_s": 5.320827216331917e-07,
+      "volts": {
+        "ncda": -0.06512277654412525,
+        "xc.cdai": 3.597294920163352,
+        "vclk": 3.597224926127659,
+        "vdd": 3.6,
+        "xa.opi": 1.088094281186072,
+        "xa.oni": 1.088094283954808,
+        "outp": 1.27528911622234,
+        "outn": 1.275289118654925
+      }
+    }
+  },
+  "ncda_driver_2x": {
+    "worst_gate": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.6576930920668302,
+      "peak_time_s": 2.648230511882492e-07,
+      "exposure_3p63": {
+        "total_s": 8.581223714568089e-10,
+        "duty_fraction_of_record": 0.000858122371456809,
+        "longest_s": 6.084572947071324e-10,
+        "interval_count": 2
+      }
+    },
+    "worst_vds": {
+      "instance": "xc.xcda3.xp",
+      "terminals": {
+        "d": "ncda",
+        "g": "xc.cdai",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vds",
+      "max_abs_V": 3.642076384018677,
+      "peak_time_s": 2.648230511882492e-07,
+      "exposure_3p63": {
+        "total_s": 1.458187551646885e-10,
+        "duty_fraction_of_record": 0.00014581875516468852,
+        "longest_s": 1.458187551646885e-10,
+        "interval_count": 1
+      }
+    },
+    "gate_pair_exceedance_count": 2,
+    "NCDA_min_context": {
+      "time_s": 2.648230511882492e-07,
+      "volts": {
+        "ncda": -0.05769309206683032,
+        "xc.cdai": 3.502858204979639,
+        "vclk": 3.584383291951847,
+        "vdd": 3.6,
+        "xa.opi": 2.368188751122411,
+        "xa.oni": 2.368188749831258,
+        "outp": 1.59806553926547,
+        "outn": 1.598065538579409
+      }
+    }
+  },
+  "output_tg_half": {
+    "worst_gate": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.652567685739595,
+      "peak_time_s": 2.647472921913258e-07,
+      "exposure_3p63": {
+        "total_s": 3.5867593414647e-10,
+        "duty_fraction_of_record": 0.00035867593414647,
+        "longest_s": 3.5867593414647e-10,
+        "interval_count": 1
+      }
+    },
+    "worst_vds": {
+      "instance": "xc.xcda3.xp",
+      "terminals": {
+        "d": "ncda",
+        "g": "xc.cdai",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vds",
+      "max_abs_V": 3.6432659880702016,
+      "peak_time_s": 2.647472921913258e-07,
+      "exposure_3p63": {
+        "total_s": 2.493907496398579e-10,
+        "duty_fraction_of_record": 0.0002493907496398579,
+        "longest_s": 2.493907496398579e-10,
+        "interval_count": 1
+      }
+    },
+    "gate_pair_exceedance_count": 4,
+    "NCDA_min_context": {
+      "time_s": 2.647472921913258e-07,
+      "volts": {
+        "ncda": -0.05256768573959472,
+        "xc.cdai": 3.582229217073596,
+        "vclk": 3.590698302330607,
+        "vdd": 3.6,
+        "xa.opi": 2.507932524822435,
+        "xa.oni": 2.507932531018809,
+        "outp": 1.456230553877908,
+        "outn": 1.456230556135333
+      }
+    }
+  }
+}

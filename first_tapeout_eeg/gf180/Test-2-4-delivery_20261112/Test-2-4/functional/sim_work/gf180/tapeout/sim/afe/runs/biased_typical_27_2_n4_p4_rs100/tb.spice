@@ -1,0 +1,78 @@
+* AFE frozen-phase noise, core x1, input TG m=256, phase A
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice res_typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice mimcap_typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice cap_mim
+.param moscap_corner=1.0
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/sim/moscap_lin.spice
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/afe/eeg_afe.spice
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/bias/eeg_bias.spice
+.temp 27
+.options sparse reltol=1e-6 vntol=1e-10 abstol=3e-13 bypass=0
+VDD VDD 0 3.3
+VCM CM 0 1.65
+VSRC SRC 0 DC 0 AC 1
+EP SRC_P CM SRC 0 0.5
+EN SRC_N CM SRC 0 -0.5
+RSP SRC_P VINP 100 noisy=0
+RSN SRC_N VINN 100 noisy=0
+CINP WP INP 636p
+CINN WN INN 636p
+CFBP ONI INP 2p
+CFBN OPI INN 2p
+CPFP WP OPI 2.15p
+CPFN WN ONI 2.15p
+CLOADP OUTP 0 4p
+CLOADN OUTN 0 4p
+RLOADP OUTP CM 9375 noisy=0
+RLOADN OUTN CM 9375 noisy=0
+* DC path = reset state (INP=ONI at DC), open in band: 1e16 H in parallel with
+* Cf (2 pF) resonates at 1.1 mHz.
+LDCP INP ONI 1e16
+LDCN INN OPI 1e16
+XDUT VINP VINN WP WN INP INN OPI ONI OUTP OUTN CM VBN VBCM BLP BLN VBP CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD 0 eeg_afe_amp
+VRP VREFP 0 1.9
+VRN VREFN 0 1.4
+VITST ITST 0 1
+XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCMX VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias
+XDQ IQ IQ 0 0 nfet_03v3 W=4u L=2u nf=1 m=8
+VIB1 IB1 0 3.3
+VIB0 IB0 0 0.0
+VBP1 BP1 0 0.0
+VBP0 BP0 0 3.3
+VBN1 BN1 0 0.0
+VBN0 BN0 0 3.3
+VCIA CIA 0 3.3
+VNCIA NCIA 0 0
+VCIB CIB 0 0
+VNCIB NCIB 0 3.3
+VCDA CDA 0 3.3
+VNCDA NCDA 0 0
+VCDB CDB 0 0
+VNCDB NCDB 0 3.3
+* initial guess from the independent-environment reset-state operating point
+.nodeset v(inp)=1.65 v(inn)=1.65 v(opi)=1.64995 v(oni)=1.64995 v(outp)=1.64995 v(outn)=1.64995
++ v(wp)=1.65 v(wn)=1.65 v(vbp)=2.3312 v(xdut.xcmfb.nd)=2.3518 v(xdut.xcmfb.nta)=0.7027
++ v(xdut.xcmfb.ntb)=0.7027 v(xdut.xcore.dnn)=0.9626 v(xdut.xcore.dnp)=0.9626
++ v(xdut.xcore.dpn)=2.4364 v(xdut.xcore.dpp)=2.4364 v(xdut.xcore.sn)=0.6856 v(xdut.xcore.sp)=2.7712
+.nodeset v(xb.g1)=0.85 v(xb.gp)=2.2 v(vbn)=0.84 v(vbcm)=0.81 v(xb.nt)=0.84
++ v(xb.nc)=0.81 v(xb.nd)=0.8 v(xb.sb)=0 v(bln)=1.1 v(blp)=1.5 v(xb.s2)=0.05
+.control
+set noaskquit
+op
+print i(vdd) v(vbp) v(opi) v(oni) v(inp) v(vbn) v(vbcm) @m.xb.xmn1.m0[id]
+print @m.xdut.xcore.xnt.m0[vds] @m.xdut.xcore.xnt.m0[vdsat] @m.xdut.xcore.xpt.m0[vds] @m.xdut.xcore.xpt.m0[vdsat]
+print @m.xdut.xcore.xn_p.m0[vds] @m.xdut.xcore.xn_p.m0[vdsat] @m.xdut.xcore.xp_p.m0[vds] @m.xdut.xcore.xp_p.m0[vdsat]
+print @m.xdut.xcore.xnc_p.m0[vds] @m.xdut.xcore.xnc_p.m0[vdsat] @m.xdut.xcore.xpc_p.m0[vds] @m.xdut.xcore.xpc_p.m0[vdsat]
+ac dec 20 0.1 1e7
+let hr = real(v(outp) - v(outn))
+let hi = imag(v(outp) - v(outn))
+wrdata ac.csv hr hi
+noise v(outp, outn) VSRC dec 20 0.1 1e7 1
+setplot noise1
+set filetype=ascii
+write noise.raw
+quit
+.endc
+.end

@@ -1,0 +1,13 @@
+* NGSPICE file created from two_mim_internal.ext - technology: gf180mcuD
+
+.subckt two_mim_internal
+X0 m4_0_0# m4_n120_n120# cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+X1 m4_0_0# m4_23880_n120# cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+C0 m4_23880_n120# m4_0_0# 5.9473f
+C1 m4_0_0# m4_n120_n120# 5.9473f
+C2 m4_23880_n120# w_n120_n120# 13.0787f
+C3 m4_0_0# w_n120_n120# 0.17278p
+ ; **nodeattr m4_0_0# : res:force
+C4 m4_n120_n120# w_n120_n120# 13.0787f
+.ends
+

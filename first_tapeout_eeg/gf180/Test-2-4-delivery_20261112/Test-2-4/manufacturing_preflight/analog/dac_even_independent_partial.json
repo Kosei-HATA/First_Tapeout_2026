@@ -1,0 +1,61 @@
+{
+  "scope": "Only complete waveform pairs; no claim for pending patterns or corners. Same documented integration interval and toggle normalization as supplied bench.",
+  "results": [
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "pattern": "one",
+      "integrated_charge_C": [
+        -9.456405576092822e-11,
+        -9.456405236664489e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 1,
+      "even_charge_fC_per_toggle": -0.00010607135388867515,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "pattern": "all",
+      "integrated_charge_C": [
+        -4.375342845669003e-11,
+        -4.375343948136058e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 31,
+      "even_charge_fC_per_toggle": 1.1113579185279271e-05,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "pattern": "one",
+      "integrated_charge_C": [
+        -1.2931422882495315e-10,
+        -1.2931422562443414e-10
+      ],
+      "toggle_count_difference": 32,
+      "cells": 1,
+      "even_charge_fC_per_toggle": -0.00010001621893696366,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "pattern": "all",
+      "integrated_charge_C": [
+        -5.983198162047052e-11,
+        -5.983187918046648e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 31,
+      "even_charge_fC_per_toggle": -0.0001032661331034771,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    }
+  ]
+}

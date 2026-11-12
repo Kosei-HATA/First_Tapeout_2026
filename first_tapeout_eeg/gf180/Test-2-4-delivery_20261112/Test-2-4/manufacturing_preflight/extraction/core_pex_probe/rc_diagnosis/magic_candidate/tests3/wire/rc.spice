@@ -1,0 +1,8 @@
+* NGSPICE file created from wire.ext - technology: gf180mcuD
+
+.subckt wire A B
+R0 B A 8.8205
+C0 B w_0_0# 5.44775f
+C1 A w_0_0# 5.44775f
+.ends
+

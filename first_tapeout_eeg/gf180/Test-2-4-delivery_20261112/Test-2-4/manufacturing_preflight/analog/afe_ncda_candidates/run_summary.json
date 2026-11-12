@@ -1,0 +1,20 @@
+[
+  {
+    "case": "ncda_driver_2x",
+    "seconds": 18.826986074447632,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "last_time_s": 1e-06,
+    "finite": true
+  },
+  {
+    "case": "output_tg_half",
+    "seconds": 19.68771243095398,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "last_time_s": 1e-06,
+    "finite": true
+  }
+]

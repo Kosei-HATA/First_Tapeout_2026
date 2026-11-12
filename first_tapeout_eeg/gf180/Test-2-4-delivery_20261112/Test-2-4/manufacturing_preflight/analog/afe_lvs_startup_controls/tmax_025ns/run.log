@@ -1,0 +1,605 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * original model isolation
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                          0
+vrp                                        1.9
+vrn                                        1.4
+itst                                         1
+xb.g1                             -8.31937e-21
+xb.gp                             -5.99459e-10
+xb.s2                              1.34933e-16
+xb.xr0.11                          1.31654e-16
+xb.xr0.21                          3.27828e-18
+xb.xcgp.cq_int1                              0
+xb.sbm                            -9.31465e-68
+xb.sb                              8.71123e-72
+xb.nt                             -7.03836e-22
+xb.ta                             -7.48547e-24
+xb.tb                             -7.48547e-24
+xb.tc                               4.2466e-24
+xb.ga                              9.23173e-38
+xb.gb                             -1.24131e-41
+xb.gc                             -1.00033e-26
+xb.xla.m                          -2.08051e-38
+xb.xlc.m                           2.47985e-26
+xb.xrvbn.11                       -7.03836e-22
+xb.xrvbn.21                       -7.03836e-22
+vbn                               -7.03836e-22
+xb.xcvbn_0.cq_int1                           0
+xb.xcvbn_1.cq_int1                           0
+xb.xcvbn_2.cq_int1                           0
+xb.xcvbn_3.cq_int1                           0
+xb.nc                              8.26162e-29
+xb.xrvbcm.11                       8.26162e-29
+xb.xrvbcm.21                       8.26162e-29
+vbcm                               8.26162e-29
+xb.xcvbcm_0.cq_int1                          0
+xb.xcvbcm_1.cq_int1                          0
+bln                               -1.92432e-19
+xb.bna                              4.1611e-20
+xb.bnb                              4.1611e-20
+xb.bnc                              4.1611e-20
+xb.gpa                             9.23173e-38
+xb.gpb                            -1.24131e-41
+xb.gpc                            -1.00033e-26
+xb.xlpa.m                         -2.08051e-38
+xb.xlpc.m                          2.47985e-26
+xb.nd                              -2.6042e-26
+xb.nda                            -5.36276e-28
+xb.ndb                            -5.36276e-28
+xb.ndc                            -5.36276e-28
+xb.gna                             9.23173e-38
+xb.gnb                            -1.24131e-41
+xb.gnc                            -1.00033e-26
+xb.xlna.m                         -2.08051e-38
+xb.xlnc.m                          2.47985e-26
+blp                               -6.45653e-20
+xb.na1                             8.12031e-71
+xb.xrvbn1.11                       8.12031e-71
+xb.xrvbn1.21                       8.12031e-71
+vbn1                               8.12031e-71
+xb.xcvbn1_0.cq_int1                          0
+xb.xcvbn1_1.cq_int1                          0
+xb.xcvbn1_2.cq_int1                          0
+xb.xcvbn1_3.cq_int1                          0
+xb.na2                            6.80789e-119
+xb.xrvbcm1.11                     6.80789e-119
+xb.xrvbcm1.21                     6.80789e-119
+vbcm1                             6.80789e-119
+xb.xcvbcm1_0.cq_int1                         0
+xb.xcvbcm1_1.cq_int1                         0
+xb.xrc1.11                                   0
+xb.xrc1.21                                   0
+vnc1                                         0
+xb.xrc2.11                                   0
+xb.xrc2.21                                   0
+vbpc2                                        0
+xb.xrc2b.11                                  0
+xb.xrc2b.21                                  0
+vpc1                                         0
+xb.xrc3.11                                   0
+xb.xrc3.21                                   0
+vbnc2                                        0
+xb.xrc3b.11                                  0
+xb.xrc3b.21                                  0
+xb.xcvnc1_0.cq_int1                          0
+xb.xcvnc1_1.cq_int1                          0
+xb.xcvpc1_0.cq_int1                          0
+xb.xcvpc1_1.cq_int1                          0
+xb.xcvbpc2_0.cq_int1                         0
+xb.xcvbpc2_1.cq_int1                         0
+xb.xcvbnc2_0.cq_int1                         0
+xb.xcvbnc2_1.cq_int1                         0
+iq                                 1.42841e-56
+idn                                          0
+xb.nd2                            -4.78605e-78
+idp                                          0
+xb.xrv1.11                             1.89879
+xb.xrv1.21                            0.474641
+vcm                                   0.473435
+xb.xrv2.11                            0.474218
+xb.xrv2.21                             1.39922
+vclk                               -1.3276e-29
+xrckp.11                            -1.276e-29
+xrckp.21                          -5.15916e-31
+xdck0.cq_int1                                0
+xdck1.cq_int1                                0
+xdck2.cq_int1                                0
+xdck3.cq_int1                                0
+xdck4.cq_int1                                0
+xdck5.cq_int1                                0
+xdck6.cq_int1                                0
+xdck7.cq_int1                                0
+xdck8.cq_int1                                0
+xdck9.cq_int1                                0
+chop                                         0
+chop_out                                     0
+blank                                        0
+afe_rst                                    3.3
+xc.chopb                          -6.78847e-30
+xc.ph0                             8.53489e-24
+xc.xn0.m1                         -2.10189e-23
+xc.ph0b                           -6.79871e-30
+xc.xna.m1                         -1.21934e-29
+xc.an                             -4.49975e-30
+xc.bd                             -6.59575e-30
+xc.xnb.m1                         -1.23219e-29
+xc.bn                             -5.13152e-30
+xc.ad                             -6.59575e-30
+xc.ad1                            -6.59575e-30
+xc.ad2                            -6.59575e-30
+xc.ad3                            -6.59575e-30
+xc.bd1                            -6.59575e-30
+xc.bd2                            -6.59575e-30
+xc.bd3                            -6.59575e-30
+xc.anb                            -6.79113e-30
+xc.a1                             -3.80298e-27
+xc.a2                             -5.19878e-22
+xc.a3                              2.34545e-19
+cia                               -7.97906e-19
+xc.an1                            -3.79488e-27
+xc.an2                              -2.702e-21
+xc.an3                             3.12983e-19
+ncia                               4.69324e-19
+xc.bnb                            -6.78768e-30
+xc.b1                             -3.75806e-27
+xc.b2                              -7.6646e-22
+xc.b3                              1.47898e-19
+cib                                9.40375e-20
+xc.bn1                            -3.73208e-27
+xc.bn2                            -2.88704e-21
+xc.bn3                             1.88784e-19
+ncib                              -8.03996e-19
+xc.xol1.m1                        -1.23093e-29
+xc.ofphb                          -5.06994e-30
+xc.ofphi                          -5.16003e-30
+xc.xol2.m1                        -1.23277e-29
+xc.ofph1                          -6.78934e-30
+ofph                              -5.59117e-24
+xc.coutb                          -6.78847e-30
+xc.coe                            -7.15292e-24
+xc.xcn.m1                          1.76155e-23
+xc.coeb                            -6.7987e-30
+xc.xcda0.m1                       -1.21934e-29
+xc.cdai                           -4.49978e-30
+xc.xcdb0.m1                       -1.23324e-29
+xc.cdbi                           -5.18355e-30
+xc.cda1                           -3.77523e-27
+cda                               -5.44913e-22
+ncda                               -7.5419e-22
+xc.cdb1                           -2.88048e-27
+cdb                                5.86825e-22
+ncdb                              -6.61915e-22
+xc.rstb                            -2.9017e-38
+rst                               -3.65951e-27
+src                                          0
+elp                                   0.473435
+eln                                   0.473435
+xa.inp                                0.392981
+xa.wp                                 0.473415
+xa.inn                                0.392981
+xa.wn                                 0.473415
+xa.oni                                 0.43757
+xa.opi                                 0.43757
+xa.xcpf.bn0                       -7.91094e-40
+xa.xcpf.mp0                           0.442782
+xa.xcpf.xp0                           0.412149
+xa.xcpf.mn0                           0.442782
+xa.xcpf.xn0                           0.412149
+xa.xcpf.bn1                       -7.91094e-40
+xa.xcpf.xp1                           0.412149
+xa.xcpf.xn1                           0.412149
+xa.xcpf.bn2                       -7.91094e-40
+xa.xcpf.xp2                           0.412149
+xa.xcpf.xn2                           0.412149
+xa.xcpf.bn3                       -7.91094e-40
+xa.xcpf.xp3                           0.412149
+xa.xcpf.xn3                           0.412149
+xa.scp                               0.0160927
+xa.scp2                              0.0160927
+xa.scn                               0.0160927
+xa.scn2                              0.0160927
+xa.xoff.xop.sb                     4.39143e-31
+xa.xoff.xop.nph                    3.66898e-29
+xa.xoff.xop.xr                     -4.3467e-31
+xa.xoff.xop.xrb                    2.88823e-29
+xa.xoff.xop.x                      1.23699e-22
+xa.xoff.xop.xb                    -1.52162e-22
+xa.xoff.xop.enb0                  -7.91094e-40
+xa.xoff.xop.enb1                  -7.91094e-40
+xa.xoff.xop.enb2                  -7.91094e-40
+xa.xoff.xop.enb3                  -7.91094e-40
+xa.xoff.xop.tp0                        0.40146
+xa.xoff.xop.tp1                        0.40146
+xa.xoff.xop.tp2                       0.398989
+xa.xoff.xop.tp3                       0.396788
+xa.xoff.xop.np0                   -5.86234e-22
+xa.xoff.xop.xnp0.m1                2.98634e-21
+xa.xoff.xop.xnp0.m2               -2.71716e-21
+xa.xoff.xop.dp0                    3.50817e-06
+xa.xoff.xop.xrdp0.11               3.50817e-06
+xa.xoff.xop.xrdp0.21               3.50819e-06
+xa.xoff.xop.bp0                    3.50819e-06
+xa.xoff.xop.na0                    5.54426e-28
+xa.xoff.xop.xna0.m1               -1.36539e-27
+xa.xoff.xop.np1                   -5.86234e-22
+xa.xoff.xop.xnp1.m1                2.98634e-21
+xa.xoff.xop.xnp1.m2               -2.71716e-21
+xa.xoff.xop.dp1                    7.18955e-06
+xa.xoff.xop.xrdp1.11               7.18955e-06
+xa.xoff.xop.xrdp1.21               7.18956e-06
+xa.xoff.xop.bp1                    7.18956e-06
+xa.xoff.xop.na1                    5.54426e-28
+xa.xoff.xop.xna1.m1               -1.36539e-27
+xa.xoff.xop.np2                   -5.86234e-22
+xa.xoff.xop.xnp2.m1                2.98634e-21
+xa.xoff.xop.xnp2.m2               -2.71716e-21
+xa.xoff.xop.dp2                    1.40693e-05
+xa.xoff.xop.xrdp2.11               1.40693e-05
+xa.xoff.xop.xrdp2.21               1.40693e-05
+xa.xoff.xop.bp2                    1.40693e-05
+xa.xoff.xop.na2                    5.54426e-28
+xa.xoff.xop.xna2.m1               -1.36539e-27
+xa.xoff.xop.np3                   -5.86234e-22
+xa.xoff.xop.xnp3.m1                2.98634e-21
+xa.xoff.xop.xnp3.m2               -2.71716e-21
+xa.xoff.xop.dp3                    2.61879e-05
+xa.xoff.xop.xrdp3.11               2.61879e-05
+xa.xoff.xop.xrdp3.21               2.61879e-05
+xa.xoff.xop.bp3                    2.61879e-05
+xa.xoff.xop.na3                    5.54426e-28
+xa.xoff.xop.xna3.m1               -1.36539e-27
+xa.xoff.xop.np4                   -5.86234e-22
+xa.xoff.xop.xnp4.m1                2.98634e-21
+xa.xoff.xop.xnp4.m2               -2.71716e-21
+xa.xoff.xop.dp4                    3.99626e-05
+xa.xoff.xop.xrdp4.11               3.99626e-05
+xa.xoff.xop.xrdp4.21               3.99626e-05
+xa.xoff.xop.bp4                    3.99626e-05
+xa.xoff.xop.na4                    5.54426e-28
+xa.xoff.xop.xna4.m1               -1.36539e-27
+xa.xoff.xop.np5                   -5.86234e-22
+xa.xoff.xop.xnp5.m1                2.98634e-21
+xa.xoff.xop.xnp5.m2               -2.71716e-21
+xa.xoff.xop.dp5                    5.35815e-05
+xa.xoff.xop.xrdp5.11               5.35815e-05
+xa.xoff.xop.xrdp5.21               5.35815e-05
+xa.xoff.xop.bp5                    5.35815e-05
+xa.xoff.xop.na5                    5.54426e-28
+xa.xoff.xop.xna5.m1               -1.36539e-27
+xa.xoff.xop.np6                   -5.86234e-22
+xa.xoff.xop.xnp6.m1                2.98634e-21
+xa.xoff.xop.xnp6.m2               -2.71716e-21
+xa.xoff.xop.dp6                    6.17661e-05
+xa.xoff.xop.xrdp6.11               6.17661e-05
+xa.xoff.xop.xrdp6.21               6.17661e-05
+xa.xoff.xop.bp6                    6.17661e-05
+xa.xoff.xop.na6                    5.54426e-28
+xa.xoff.xop.xna6.m1               -1.36539e-27
+xa.xoff.xop.np7                   -5.86234e-22
+xa.xoff.xop.xnp7.m1                2.98634e-21
+xa.xoff.xop.xnp7.m2               -2.71716e-21
+xa.xoff.xop.dp7                    6.79318e-05
+xa.xoff.xop.xrdp7.11               6.79318e-05
+xa.xoff.xop.xrdp7.21               6.79318e-05
+xa.xoff.xop.bp7                    6.79318e-05
+xa.xoff.xop.na7                    5.54426e-28
+xa.xoff.xop.xna7.m1               -1.36539e-27
+xa.xoff.xop.np8                   -3.48513e-21
+xa.xoff.xop.xnp8.m1                1.73472e-20
+xa.xoff.xop.xnp8.m2                -1.5407e-20
+xa.xoff.xop.dp8                    7.11131e-05
+xa.xoff.xop.xrdp8.11               7.11131e-05
+xa.xoff.xop.xrdp8.21               7.11131e-05
+xa.xoff.xop.bp8                    7.11131e-05
+xa.xoff.xop.na8                    5.54426e-28
+xa.xoff.xop.xna8.m1               -1.36539e-27
+xa.xoff.xop.np9                    -3.7349e-20
+xa.xoff.xop.xnp9.m1                1.85143e-19
+xa.xoff.xop.xnp9.m2               -1.63699e-19
+xa.xoff.xop.dp9                     7.2578e-05
+xa.xoff.xop.xrdp9.11                7.2578e-05
+xa.xoff.xop.xrdp9.21                7.2578e-05
+xa.xoff.xop.bp9                     7.2578e-05
+xa.xoff.xop.na9                    5.54426e-28
+xa.xoff.xop.xna9.m1               -1.36539e-27
+xa.xoff.xon.sb                     4.84502e-31
+xa.xoff.xon.nph                    3.66898e-29
+xa.xoff.xon.xr                    -4.79566e-31
+xa.xoff.xon.xrb                    6.39907e-29
+xa.xoff.xon.x                      3.22285e-22
+xa.xoff.xon.enb0                  -7.91094e-40
+xa.xoff.xon.enb1                  -7.91094e-40
+xa.xoff.xon.enb2                  -7.91094e-40
+xa.xoff.xon.enb3                  -7.91094e-40
+xa.xoff.xon.tn0                        0.40146
+xa.xoff.xon.tn1                        0.40146
+xa.xoff.xon.tn2                       0.398989
+xa.xoff.xon.tn3                       0.396788
+xa.xoff.xon.nn0                    -8.1719e-23
+xa.xoff.xon.xnn0.m1                4.15183e-22
+xa.xoff.xon.xnn0.m2               -3.76752e-22
+xa.xoff.xon.dn0                    3.50817e-06
+xa.xoff.xon.xrdn0.11               3.50817e-06
+xa.xoff.xon.xrdn0.21               3.50819e-06
+xa.xoff.xon.bn0                    3.50819e-06
+xa.xoff.xon.na0                    5.54426e-28
+xa.xoff.xon.xna0.m1               -1.36539e-27
+xa.xoff.xon.nn1                    -8.1719e-23
+xa.xoff.xon.xnn1.m1                4.15183e-22
+xa.xoff.xon.xnn1.m2               -3.76752e-22
+xa.xoff.xon.dn1                    7.18955e-06
+xa.xoff.xon.xrdn1.11               7.18955e-06
+xa.xoff.xon.xrdn1.21               7.18956e-06
+xa.xoff.xon.bn1                    7.18956e-06
+xa.xoff.xon.na1                    5.54426e-28
+xa.xoff.xon.xna1.m1               -1.36539e-27
+xa.xoff.xon.nn2                    -8.1719e-23
+xa.xoff.xon.xnn2.m1                4.15183e-22
+xa.xoff.xon.xnn2.m2               -3.76752e-22
+xa.xoff.xon.dn2                    1.40693e-05
+xa.xoff.xon.xrdn2.11               1.40693e-05
+xa.xoff.xon.xrdn2.21               1.40693e-05
+xa.xoff.xon.bn2                    1.40693e-05
+xa.xoff.xon.na2                    5.54426e-28
+xa.xoff.xon.xna2.m1               -1.36539e-27
+xa.xoff.xon.nn3                    -8.1719e-23
+xa.xoff.xon.xnn3.m1                4.15183e-22
+xa.xoff.xon.xnn3.m2               -3.76752e-22
+xa.xoff.xon.dn3                    2.61879e-05
+xa.xoff.xon.xrdn3.11               2.61879e-05
+xa.xoff.xon.xrdn3.21               2.61879e-05
+xa.xoff.xon.bn3                    2.61879e-05
+xa.xoff.xon.na3                    5.54426e-28
+xa.xoff.xon.xna3.m1               -1.36539e-27
+xa.xoff.xon.nn4                    -8.1719e-23
+xa.xoff.xon.xnn4.m1                4.15183e-22
+xa.xoff.xon.xnn4.m2               -3.76752e-22
+xa.xoff.xon.dn4                    3.99626e-05
+xa.xoff.xon.xrdn4.11               3.99626e-05
+xa.xoff.xon.xrdn4.21               3.99626e-05
+xa.xoff.xon.bn4                    3.99626e-05
+xa.xoff.xon.na4                    5.54426e-28
+xa.xoff.xon.xna4.m1               -1.36539e-27
+xa.xoff.xon.nn5                    -8.1719e-23
+xa.xoff.xon.xnn5.m1                4.15183e-22
+xa.xoff.xon.xnn5.m2               -3.76752e-22
+xa.xoff.xon.dn5                    5.35815e-05
+xa.xoff.xon.xrdn5.11               5.35815e-05
+xa.xoff.xon.xrdn5.21               5.35815e-05
+xa.xoff.xon.bn5                    5.35815e-05
+xa.xoff.xon.na5                    5.54426e-28
+xa.xoff.xon.xna5.m1               -1.36539e-27
+xa.xoff.xon.nn6                    -1.6575e-22
+xa.xoff.xon.xnn6.m1                8.40685e-22
+xa.xoff.xon.xnn6.m2               -7.61558e-22
+xa.xoff.xon.dn6                    6.17661e-05
+xa.xoff.xon.xrdn6.11               6.17661e-05
+xa.xoff.xon.xrdn6.21               6.17661e-05
+xa.xoff.xon.bn6                    6.17661e-05
+xa.xoff.xon.na6                    5.54426e-28
+xa.xoff.xon.xna6.m1               -1.36539e-27
+xa.xoff.xon.nn7                    -1.6575e-22
+xa.xoff.xon.xnn7.m1                8.40685e-22
+xa.xoff.xon.xnn7.m2               -7.61558e-22
+xa.xoff.xon.dn7                    6.79318e-05
+xa.xoff.xon.xrdn7.11               6.79318e-05
+xa.xoff.xon.xrdn7.21               6.79318e-05
+xa.xoff.xon.bn7                    6.79318e-05
+xa.xoff.xon.na7                    5.54426e-28
+xa.xoff.xon.xna7.m1               -1.36539e-27
+xa.xoff.xon.nn8                    7.01738e-21
+xa.xoff.xon.xnn8.m1               -3.54392e-20
+xa.xoff.xon.xnn8.m2                3.19541e-20
+xa.xoff.xon.dn8                    7.11131e-05
+xa.xoff.xon.xrdn8.11               7.11131e-05
+xa.xoff.xon.xrdn8.21               7.11131e-05
+xa.xoff.xon.bn8                    7.11131e-05
+xa.xoff.xon.na8                    5.54426e-28
+xa.xoff.xon.xna8.m1               -1.36539e-27
+xa.xoff.xon.nn9                   -6.37787e-21
+xa.xoff.xon.xnn9.m1                4.51099e-20
+xa.xoff.xon.xnn9.m2               -5.25951e-20
+xa.xoff.xon.dn9                     7.2578e-05
+xa.xoff.xon.xrdn9.11                7.2578e-05
+xa.xoff.xon.xrdn9.21                7.2578e-05
+xa.xoff.xon.bn9                     7.2578e-05
+xa.xoff.xon.na9                    5.54426e-28
+xa.xoff.xon.xna9.m1               -1.36539e-27
+xa.xamp.xcore.dnp                   0.00339199
+xa.xamp.xcore.sn                    0.00339192
+xa.xamp.xcore.dnn                   0.00339199
+xa.xamp.xcore.dpp                      0.43737
+xa.xamp.xcore.sp                      0.279616
+xa.xamp.xcore.dpn                      0.43737
+xa.vbp                              0.00014247
+xa.xamp.xcore.gncp                           0
+xa.xamp.xcore.gncn                           0
+xa.xamp.xcore.gpcp                           0
+xa.xamp.xcore.gpcn                           0
+outp                                  0.441266
+outn                                  0.441266
+xa.xamp.xcmfb.nd                   0.000142468
+xa.xamp.xcmfb.nta                  0.000142469
+xa.xamp.xcmfb.ntb                  0.000142469
+xlp0.11                               0.441275
+xlp0.21                               0.473425
+xlp1.11                               0.441275
+xlp1.21                               0.473425
+xlp2.11                               0.441275
+xlp2.21                               0.473425
+xlp3.11                               0.441275
+xlp3.21                               0.473425
+xlp4.11                               0.441275
+xlp4.21                               0.473425
+xlp5.11                               0.441275
+xlp5.21                               0.473425
+xlp6.11                               0.441275
+xlp6.21                               0.473425
+xlp7.11                               0.441275
+xlp7.21                               0.473425
+xlp8.11                               0.441275
+xlp8.21                               0.473425
+xlp9.11                               0.441275
+xlp9.21                               0.473425
+xlp10.11                              0.441275
+xlp10.21                              0.473425
+xlp11.11                              0.441275
+xlp11.21                              0.473425
+xlp12.11                              0.441275
+xlp12.21                              0.473425
+xlp13.11                              0.441275
+xlp13.21                              0.473425
+xlp14.11                              0.441275
+xlp14.21                              0.473425
+xlp15.11                              0.441275
+xlp15.21                              0.473425
+xln0.11                               0.441275
+xln0.21                               0.473425
+xln1.11                               0.441275
+xln1.21                               0.473425
+xln2.11                               0.441275
+xln2.21                               0.473425
+xln3.11                               0.441275
+xln3.21                               0.473425
+xln4.11                               0.441275
+xln4.21                               0.473425
+xln5.11                               0.441275
+xln5.21                               0.473425
+xln6.11                               0.441275
+xln6.21                               0.473425
+xln7.11                               0.441275
+xln7.21                               0.473425
+xln8.11                               0.441275
+xln8.21                               0.473425
+xln9.11                               0.441275
+xln9.21                               0.473425
+xln10.11                              0.441275
+xln10.21                              0.473425
+xln11.11                              0.441275
+xln11.21                              0.473425
+xln12.11                              0.441275
+xln12.21                              0.473425
+xln13.11                              0.441275
+xln13.21                              0.473425
+xln14.11                              0.441275
+xln14.21                              0.473425
+xln15.11                              0.441275
+xln15.21                              0.473425
+l.xdck9.lcq#branch                -6.17627e-41
+l.xdck8.lcq#branch                -6.17627e-41
+l.xdck7.lcq#branch                -6.17627e-41
+l.xdck6.lcq#branch                -6.17627e-41
+l.xdck5.lcq#branch                -6.17627e-41
+l.xdck4.lcq#branch                -6.17627e-41
+l.xdck3.lcq#branch                -6.17627e-41
+l.xdck2.lcq#branch                -6.17627e-41
+l.xdck1.lcq#branch                -6.17627e-41
+l.xdck0.lcq#branch                -6.17627e-41
+l.xb.xcvbnc2_1.lcq#branch                    0
+l.xb.xcvbnc2_0.lcq#branch                    0
+l.xb.xcvbpc2_1.lcq#branch                    0
+l.xb.xcvbpc2_0.lcq#branch                    0
+l.xb.xcvpc1_1.lcq#branch                     0
+l.xb.xcvpc1_0.lcq#branch                     0
+l.xb.xcvnc1_1.lcq#branch                     0
+l.xb.xcvnc1_0.lcq#branch                     0
+l.xb.xcvbcm1_1.lcq#branch         4.79364e-129
+l.xb.xcvbcm1_0.lcq#branch         4.79364e-129
+l.xb.xcvbn1_3.lcq#branch           1.27465e-81
+l.xb.xcvbn1_2.lcq#branch           1.27465e-81
+l.xb.xcvbn1_1.lcq#branch           1.27465e-81
+l.xb.xcvbn1_0.lcq#branch           1.27465e-81
+l.xb.xcvbcm_1.lcq#branch           5.81725e-39
+l.xb.xcvbcm_0.lcq#branch           5.81725e-39
+l.xb.xcvbn_3.lcq#branch           -4.66799e-33
+l.xb.xcvbn_2.lcq#branch           -4.66799e-33
+l.xb.xcvbn_1.lcq#branch           -4.66799e-33
+l.xb.xcvbn_0.lcq#branch           -4.66799e-33
+l.xb.xcgp.lcq#branch              -2.87523e-23
+en#branch                         -1.52251e-06
+ep#branch                         -1.52251e-06
+eco#branch                                   0
+vs#branch                                    0
+vrs#branch                                   0
+vbl#branch                                   0
+vch#branch                                   0
+vit#branch                            -7.78403
+vrn#branch                         -9.0409e-06
+vrp#branch                        -1.39196e-05
+vdd#branch                             7.78405
+
+ Reference value :  0.00000e+00  [                        ]   0%
+ Reference value :  1.38811e-08  [                        ]   1%
+ Reference value :  2.28096e-08  [=                       ]   2%
+ Reference value :  3.21129e-08  [=                       ]   3%
+ Reference value :  3.86825e-08  [=                       ]   4%
+ Reference value :  4.12247e-08  [=                       ]   4%
+ Reference value :  4.34521e-08  [=                       ]   4%
+ Reference value :  5.06483e-08  [=                       ]   5%
+ Reference value :  5.57817e-08  [=                       ]   6%
+ Reference value :  5.67510e-08  [=                       ]   6%
+ Reference value :  6.77807e-08  [==                      ]   7%
+ Reference value :  8.22541e-08  [==                      ]   8%
+ Reference value :  9.72541e-08  [==                      ]  10%
+ Reference value :  1.15301e-07  [===                     ]  12%
+ Reference value :  1.27301e-07  [===                     ]  13%
+ Reference value :  1.48801e-07  [====                    ]  15%
+ Reference value :  1.70801e-07  [====                    ]  17%
+ Reference value :  1.93301e-07  [=====                   ]  19%
+ Reference value :  2.14551e-07  [=====                   ]  21%
+ Reference value :  2.35551e-07  [======                  ]  24%
+ Reference value :  2.57801e-07  [======                  ]  26%
+ Reference value :  2.64258e-07  [======                  ]  26%
+ Reference value :  2.73692e-07  [=======                 ]  27%
+ Reference value :  2.94192e-07  [=======                 ]  29%
+ Reference value :  3.14692e-07  [========                ]  31%
+ Reference value :  3.34192e-07  [========                ]  33%
+ Reference value :  3.50692e-07  [========                ]  35%
+ Reference value :  3.67192e-07  [=========               ]  37%
+ Reference value :  3.83442e-07  [=========               ]  38%
+ Reference value :  3.99692e-07  [==========              ]  40%
+ Reference value :  4.15442e-07  [==========              ]  42%
+ Reference value :  4.31192e-07  [==========              ]  43%
+ Reference value :  4.54192e-07  [===========             ]  45%
+ Reference value :  4.77942e-07  [===========             ]  48%
+ Reference value :  5.01192e-07  [============            ]  50%
+ Reference value :  5.20229e-07  [============            ]  52%
+ Reference value :  5.34561e-07  [=============           ]  53%
+ Reference value :  5.54811e-07  [=============           ]  55%
+ Reference value :  5.77311e-07  [==============          ]  58%
+ Reference value :  5.99561e-07  [==============          ]  60%
+ Reference value :  6.22061e-07  [===============         ]  62%
+ Reference value :  6.44561e-07  [===============         ]  64%
+ Reference value :  6.66811e-07  [================        ]  67%
+ Reference value :  6.88811e-07  [=================       ]  69%
+ Reference value :  7.11811e-07  [=================       ]  71%
+ Reference value :  7.34311e-07  [==================      ]  73%
+ Reference value :  7.57061e-07  [==================      ]  76%
+ Reference value :  7.80561e-07  [===================     ]  78%
+ Reference value :  8.04311e-07  [===================     ]  80%
+ Reference value :  8.27061e-07  [====================    ]  83%
+ Reference value :  8.49311e-07  [====================    ]  85%
+ Reference value :  8.71311e-07  [=====================   ]  87%
+ Reference value :  8.94811e-07  [=====================   ]  89%
+ Reference value :  9.16061e-07  [======================  ]  92%
+ Reference value :  9.29311e-07  [======================  ]  93%
+ Reference value :  9.51561e-07  [======================= ]  95%
+ Reference value :  9.74311e-07  [======================= ]  97%
+ Reference value :  9.96561e-07  [========================] 100%
+No. of Data Rows : 4290
+ngspice-47+ done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

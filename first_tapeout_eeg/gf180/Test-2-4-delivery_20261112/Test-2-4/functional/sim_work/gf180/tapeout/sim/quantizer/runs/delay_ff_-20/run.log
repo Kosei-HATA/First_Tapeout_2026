@@ -1,0 +1,91 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_qcmp check
+
+Doing analysis at TEMP = -20.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+avdd                                       3.3
+dvdd                                       3.3
+vbq                                    2.37598
+rp                                     1.65781
+rn                                     1.64219
+clk                                          0
+vd                                    0.025625
+inp                                    1.66281
+einp_int1                              1.66281
+inn                                    1.63719
+einn_int1                              1.63719
+xc.von                                  1.0191
+xc.sa                                  2.40494
+xc.vop                                 1.11314
+xc.sb                                  2.40564
+xc.xrlp.11                             1.11259
+xc.xrlp.21                         0.000549002
+xc.xrln.11                              1.0186
+xc.xrln.21                         0.000502624
+xc.tl                                 0.715877
+xc.x                                       3.3
+xc.y                                       3.3
+xc.oa                                      3.3
+xc.ob                                      3.3
+xc.setq                            2.38907e-09
+xc.rstq                            2.38907e-09
+xc.xq1.m                               3.11321
+xc.q                                   1.62649
+xc.qb                                  1.62649
+xc.xq2.m                               3.11321
+th                                    0.560537
+xc.qd                                 0.560537
+beinn#branch                                 0
+beinp#branch                                 0
+einn#branch                                  0
+einp#branch                                  0
+vd#branch                                    0
+vclk#branch                                  0
+vrn#branch                                   0
+vrp#branch                                   0
+vdvdd#branch                        -0.0010618
+vavdd#branch                      -4.14085e-05
+
+ Reference value :  1.05540e-07
+ Reference value :  4.18154e-07
+ Reference value :  7.05981e-07
+ Reference value :  1.01658e-06
+ Reference value :  1.27158e-06
+ Reference value :  1.51218e-06
+ Reference value :  1.77834e-06
+ Reference value :  2.01374e-06
+ Reference value :  2.31592e-06
+ Reference value :  2.64691e-06
+ Reference value :  2.96031e-06
+ Reference value :  3.21689e-06
+ Reference value :  3.53627e-06
+ Reference value :  3.83967e-06
+ Reference value :  4.12785e-06
+ Reference value :  4.39665e-06
+ Reference value :  4.66043e-06
+ Reference value :  4.98390e-06
+ Reference value :  5.31381e-06
+ Reference value :  5.64199e-06
+ Reference value :  5.96297e-06
+ Reference value :  6.30180e-06
+ Reference value :  6.65216e-06
+ Reference value :  6.90636e-06
+ Reference value :  7.21196e-06
+ Reference value :  7.56052e-06
+ Reference value :  7.85612e-06
+No. of Data Rows : 40303
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed

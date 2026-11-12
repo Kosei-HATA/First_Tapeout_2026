@@ -1,0 +1,203 @@
+{
+  "phases": [
+    {
+      "interval": [
+        0,
+        1e-06
+      ],
+      "gate_pairs": 10,
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665517019979512,
+        "peak_time_s": 5.320013084918583e-07,
+        "exposure_3p63": {
+          "total_s": 3.3139446028464853e-09,
+          "duty_fraction_of_record": 0.0033139446028464855,
+          "longest_s": 3.3139446028464853e-09,
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "interval": [
+        1e-06,
+        7.8125e-06
+      ],
+      "gate_pairs": 8,
+      "worst_gate": {
+        "instance": "xc.xcda3.xn",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "0",
+          "b": "0"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.644227526022119,
+        "peak_time_s": 3.925821242622825e-06,
+        "exposure_3p63": {
+          "total_s": 9.732987719002651e-11,
+          "duty_fraction_of_record": 1.4286954449912148e-05,
+          "longest_s": 9.732987719002651e-11,
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "interval": [
+        7.8125e-06,
+        1.5625e-05
+      ],
+      "gate_pairs": 28,
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.647154131619478,
+        "peak_time_s": 7.869921907064574e-06,
+        "exposure_3p63": {
+          "total_s": 3.581245847425864e-11,
+          "duty_fraction_of_record": 4.583994684705106e-06,
+          "longest_s": 3.581245847425864e-11,
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "interval": [
+        1.5625e-05,
+        2.34375e-05
+      ],
+      "gate_pairs": 28,
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.647179298942794,
+        "peak_time_s": 1.568243333844796e-05,
+        "exposure_3p63": {
+          "total_s": 3.61267085514992e-11,
+          "duty_fraction_of_record": 4.624218694591897e-06,
+          "longest_s": 3.61267085514992e-11,
+          "interval_count": 1
+        }
+      }
+    },
+    {
+      "interval": [
+        2.34375e-05,
+        3.125e-05
+      ],
+      "gate_pairs": 28,
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.646557161553325,
+        "peak_time_s": 2.349493664123251e-05,
+        "exposure_3p63": {
+          "total_s": 3.5614705717163745e-11,
+          "duty_fraction_of_record": 4.558682331796959e-06,
+          "longest_s": 3.5614705717163745e-11,
+          "interval_count": 1
+        }
+      }
+    }
+  ],
+  "startup": {
+    "baseline_1ns": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.665517019979512,
+      "peak_time_s": 5.320013084918583e-07,
+      "exposure_3p63": {
+        "total_s": 3.3139446028464853e-09,
+        "duty_fraction_of_record": 0.0033139446028464855,
+        "longest_s": 3.3139446028464853e-09,
+        "interval_count": 1
+      }
+    },
+    "tmax_025ns": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.665122776544125,
+      "peak_time_s": 5.320827216331917e-07,
+      "exposure_3p63": {
+        "total_s": 3.2948879244419295e-09,
+        "duty_fraction_of_record": 0.0032948879244419295,
+        "longest_s": 3.2948879244419295e-09,
+        "interval_count": 1
+      }
+    },
+    "regularized_1ns": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.665517105387455,
+      "peak_time_s": 5.32001292132783e-07,
+      "exposure_3p63": {
+        "total_s": 3.313944617262986e-09,
+        "duty_fraction_of_record": 0.003313944617262986,
+        "longest_s": 3.313944617262986e-09,
+        "interval_count": 1
+      }
+    },
+    "ramped_refs_reset": {
+      "instance": "xa.xamp.xop_a.xp",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "pair": "vgb",
+      "max_abs_V": 3.653432204273994,
+      "peak_time_s": 2.649398962167923e-07,
+      "exposure_3p63": {
+        "total_s": 3.631562225386456e-09,
+        "duty_fraction_of_record": 0.003631562225386456,
+        "longest_s": 3.319485559329833e-09,
+        "interval_count": 2
+      }
+    }
+  }
+}

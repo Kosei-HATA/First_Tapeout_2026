@@ -1,0 +1,64 @@
+{
+  "candidate": {
+    "matrix_fF": [
+      [
+        16.7982,
+        -5.9027
+      ],
+      [
+        -5.9027,
+        12.628900000000002
+      ]
+    ],
+    "max_error_fF": 0.0,
+    "common_mode_energy_fJ": 8.810850000000002,
+    "differential_energy_fJ": 20.61625,
+    "positive_semidefinite": true,
+    "matches_reference": true
+  },
+  "old": {
+    "matrix_fF": [
+      [
+        22.7009,
+        -5.9027
+      ],
+      [
+        -5.9027,
+        18.5316
+      ]
+    ],
+    "max_error_fF": 5.902699999999999,
+    "common_mode_energy_fJ": 14.713550000000001,
+    "differential_energy_fJ": 26.51895,
+    "positive_semidefinite": true,
+    "matches_reference": false
+  },
+  "duplicate_negative": {
+    "matrix_fF": [
+      [
+        22.7009,
+        -11.8054
+      ],
+      [
+        -11.8054,
+        18.5316
+      ]
+    ],
+    "max_error_fF": 5.9027,
+    "common_mode_energy_fJ": 8.81085,
+    "differential_energy_fJ": 32.42165,
+    "positive_semidefinite": true,
+    "matches_reference": false
+  },
+  "reference_matrix_fF": [
+    [
+      16.7982,
+      -5.9027
+    ],
+    [
+      -5.9027,
+      12.628900000000002
+    ]
+  ],
+  "meaning": "Lumped low-frequency matrix after collapsing each independently verified wire resistor path. Energy=0.5 V^T C V, units fJ for volts/fF. Does not establish distributed high-frequency coupling position."
+}

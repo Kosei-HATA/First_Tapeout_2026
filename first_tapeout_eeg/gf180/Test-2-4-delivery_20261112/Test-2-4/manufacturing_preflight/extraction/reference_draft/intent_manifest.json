@@ -1,0 +1,981 @@
+{
+  "status": "incomplete_independent_intent_draft_not_for_LVS_signoff",
+  "sources": [
+    {
+      "path": "/work/Test-2-4/source/layout/chip_lay.py",
+      "sha256": "1a69ecd98fc054c09346a6eaffe5d2cc15098b8984c927badc4b0b2273274986"
+    },
+    {
+      "path": "/work/Test-2-4/baseline/pad_geometry.json",
+      "sha256": "d44bb5dfa2928c56539417bb12b9b143bc0aa43ee754de97ac95e8872acb2986"
+    }
+  ],
+  "no_GDS_extracted_netlist_used": true,
+  "instances": [
+    {
+      "instance": "analog[0].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVDD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[10].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "VREFP_PAD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[11].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "VREFN_PAD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[12].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVDD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[13].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[14].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_14",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[15].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_15",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[16].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_16",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[17].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_17",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[18].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_18",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[19].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_19",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[1].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[20].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_20",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[21].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_21",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[22].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_22",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[23].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_23",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[24].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_24",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[25].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_25",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[26].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_26",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[27].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_27",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[28].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_28",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[29].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_29",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[2].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "ELP",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[30].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_30",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[31].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_31",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[32].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_32",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[33].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_33",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[34].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_34",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[35].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_35",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[36].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_36",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[37].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_37",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[38].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_38",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[39].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_39",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[3].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "ELP",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[40].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_40",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[41].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_41",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[42].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_42",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[43].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_43",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[44].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "UNUSED_ANALOG_44",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[4].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "ELN",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[5].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "ELN",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[6].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[7].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "AVDD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[8].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "ATP",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "analog[9].pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "VCM",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets plus analog routing intent for indices 0..13"
+    },
+    {
+      "instance": "bidir[0].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DVSS",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVDD",
+        "OE": "DVSS",
+        "PAD": "MCLK_PAD",
+        "PD": "DVSS",
+        "PU": "DVSS",
+        "SL": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "MCLK"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[1].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DVSS",
+        "CS": "DVDD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVDD",
+        "OE": "DVSS",
+        "PAD": "RESET_N_PAD",
+        "PD": "DVSS",
+        "PU": "DVDD",
+        "SL": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "RESET_N"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[2].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DVSS",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVDD",
+        "OE": "DVSS",
+        "PAD": "SCLK_PAD",
+        "PD": "DVDD",
+        "PU": "DVSS",
+        "SL": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "SCLK"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[3].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DVSS",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVDD",
+        "OE": "DVSS",
+        "PAD": "CS_N_PAD",
+        "PD": "DVSS",
+        "PU": "DVDD",
+        "SL": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "CS_N"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[4].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DVSS",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVDD",
+        "OE": "DVSS",
+        "PAD": "MOSI_PAD",
+        "PD": "DVDD",
+        "PU": "DVSS",
+        "SL": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "MOSI"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[5].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "MISO",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVSS",
+        "OE": "MISO_OE",
+        "PAD": "MISO_PAD",
+        "PD": "DVSS",
+        "PU": "DVSS",
+        "SL": "DVDD",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "bidir_PAD2CORE[5]"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[6].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "DRDY_N",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVSS",
+        "OE": "DVDD",
+        "PAD": "DRDY_N_PAD",
+        "PD": "DVSS",
+        "PU": "DVSS",
+        "SL": "DVDD",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "bidir_PAD2CORE[6]"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[7].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "RAW_DATA",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVSS",
+        "OE": "DVDD",
+        "PAD": "RAW_DATA_PAD",
+        "PD": "DVSS",
+        "PU": "DVSS",
+        "SL": "DVDD",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "bidir_PAD2CORE[7]"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "bidir[8].pad",
+      "cell": "gf180mcu_fd_io__bi_24t",
+      "pins": {
+        "A": "RAW_CLK",
+        "CS": "DVSS",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "IE": "DVSS",
+        "OE": "DVDD",
+        "PAD": "RAW_CLK_PAD",
+        "PD": "DVSS",
+        "PU": "DVSS",
+        "SL": "DVDD",
+        "VDD": "DVDD",
+        "VSS": "DVSS",
+        "Y": "bidir_PAD2CORE[8]"
+      },
+      "source": "ODB sidecar pin nets plus chip_lay.py DPAD intent"
+    },
+    {
+      "instance": "clk_pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "clk_PAD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[0].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[1].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[2].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[3].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[4].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[5].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvdd_pads[6].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[0].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[1].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[2].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[3].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[4].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[5].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "dvss_pads[6].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "rst_n_pad",
+      "cell": "gf180mcu_fd_io__asig_5p0",
+      "pins": {
+        "ASIG5V": "rst_n_PAD",
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "vdd_pads[0].pad",
+      "cell": "gf180mcu_fd_io__dvdd",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "vss_pads[0].pad",
+      "cell": "gf180mcu_fd_io__dvss",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "IO_CORNER_NORTH_WEST_INST",
+      "cell": "gf180mcu_fd_io__cor",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "IO_CORNER_NORTH_EAST_INST",
+      "cell": "gf180mcu_fd_io__cor",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "IO_CORNER_SOUTH_WEST_INST",
+      "cell": "gf180mcu_fd_io__cor",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    },
+    {
+      "instance": "IO_CORNER_SOUTH_EAST_INST",
+      "cell": "gf180mcu_fd_io__cor",
+      "pins": {
+        "DVDD": "DVDD",
+        "DVSS": "DVSS",
+        "VDD": "DVDD",
+        "VSS": "DVSS"
+      },
+      "source": "ODB sidecar pin nets"
+    }
+  ],
+  "counts_in_source": {
+    "CORE": 43,
+    "CORE_TIEHIGH": 9,
+    "CORE_TIELOW": 45,
+    "PAD_INOUT": 56,
+    "PAD_POWER": 16,
+    "BLOCK": 5,
+    "ENDCAP_BOTTOMLEFT": 4,
+    "PAD_SPACER": 682
+  },
+  "unresolved": [
+    "Original 43 CORE, 9 TIEHIGH,45 TIELOW cells and their connections not enumerated in sidecar.",
+    "682 spacer instances require independently sourced placement/connectivity (counts are insufficient).",
+    "Full intended relation between retained tie cell outputs and chip_lay direct ties needs original padring synthesis netlist/ODB.",
+    "Core subcircuit instantiation and AVSS_CLK/DVSS substrate mapping must be specified explicitly."
+  ],
+  "required_input": "Original LibreLane RUN_2026-10-23_13-27-25 final netlist (and preferably ODB/config) or equivalent independent schematic; not a netlist derived from the candidate GDS."
+}

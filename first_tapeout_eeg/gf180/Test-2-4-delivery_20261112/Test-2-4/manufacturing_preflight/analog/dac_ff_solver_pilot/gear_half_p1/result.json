@@ -1,0 +1,10 @@
+{
+  "setting": "gear_half",
+  "pattern": 1,
+  "seconds": 485.0643846988678,
+  "exitcode": 0,
+  "last_time_s": 1.5671875e-05,
+  "samples": 86933,
+  "charge_C": -1.5441593539731895e-11,
+  "deck_sha256": "b6e2294a902d166a5799fc85cf4b83b8fa3bfcedb2573c9e571f7b5c18ed838c"
+}

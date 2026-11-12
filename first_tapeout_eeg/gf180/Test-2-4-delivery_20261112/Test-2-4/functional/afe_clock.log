@@ -1,0 +1,13 @@
+| quantity | typical 27 C | ss 85 C | ff -20 C |
+|---|---|---|---|
+| dead A->B (ns) | 4.41 | 5.95 | 3.31 |
+| dead B->A (ns) | 4.41 | 5.95 | 3.31 |
+| CIA/NCIA skew at rise (ns) | 0.28 | 0.38 | 0.23 |
+| CIA rise 10-90 (ns) | 1.06 | 1.35 | 0.85 |
+| NCIA fall 90-10 (ns) | 1.33 | 1.73 | 1.07 |
+| CHOP edge -> CIA 50 % (ns) | 7.17 | 9.46 | 5.55 |
+| OFPH rise - CIA 50 % (ns) | 0.61 | 0.80 | 0.48 |
+| OFPH fall - CIB 50 % (ns) | 0.59 | 0.77 | 0.46 |
+| CDB rise - blank end (ns) | 0.52 | 0.67 | 0.41 |
+| CDA/CDB max in blanking (V) | 0.00 | 0.00 | 0.00 |
+| supply charge per edge (pC) | 178.46 | 179.13 | 174.25 |

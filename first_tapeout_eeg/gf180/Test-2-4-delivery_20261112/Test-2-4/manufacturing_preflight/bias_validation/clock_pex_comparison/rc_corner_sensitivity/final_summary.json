@@ -1,0 +1,63 @@
+{
+  "completed": 5,
+  "all_positive": true,
+  "worst": {
+    "rc_corner": "hrlc",
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "status": "finished",
+    "spice_sha256": "c4fff44712f33dde1ee4101056dcbfa9f997f0aff0e60373644121018cd1383e",
+    "exitcode": 0,
+    "error_lines": [],
+    "timing_ns": {
+      "dead A->B": 2.247463774423343,
+      "overlap A->B": 5.4194536679100755,
+      "margin1 A->B": 0.5570136212775477,
+      "margin2 A->B": 1.5271600003987365,
+      "delay A->B": 0.7010011542817486,
+      "dead B->A": 1.6533706769723033,
+      "overlap B->A": 5.005679578956296,
+      "margin1 B->A": 0.15631507667585368,
+      "margin2 B->A": 2.0452204032723005,
+      "delay B->A": 0.6832237159876546
+    },
+    "minimum_margin_ns": 0.15631507667585368,
+    "finite": true,
+    "positive_sequence_margins": true,
+    "driver_charge_pC_per_edge": 17.749124546395468,
+    "seconds": 154.78,
+    "delta_minimum_vs_nominal_ns": -0.12564423411563466
+  },
+  "inputs_unchanged": [
+    {
+      "corner": "hrhc",
+      "unchanged": true
+    },
+    {
+      "corner": "hrlc",
+      "unchanged": true
+    },
+    {
+      "corner": "lrhc",
+      "unchanged": true
+    },
+    {
+      "corner": "lrlc",
+      "unchanged": true
+    }
+  ],
+  "all_runs_exit0": true,
+  "limits": [
+    "Fixed device3.6V/ff/-20C only; not all15x4 combinations.",
+    "Only internal clock RC, external schematic diffusion geometry and common-mode input.",
+    "LowR zero contact resistance is official model bound, not physical zero resistance.",
+    "Positive sequence margin only; no minimum product guardband specification, not full-chip signoff."
+  ],
+  "model_scope": {
+    "MOSCAP_model": "Linear constant-C approximation in functional/sim_work/gf180/tapeout/sim/moscap_lin.spice, not official voltage-dependent MOSCAP.",
+    "affected_tests": "All 45 bias startup cases; actual-bias 15 schematic-clock cases; nominal/cap/RC comparisons; 75 clock device/RC cases and numerical controls.",
+    "limitation": "Circuit source matching and clock extraction audit do not validate nonlinear MOSCAP behavior, full-chip startup, accuracy, or manufacturing signoff.",
+    "formula": "NMOS: factor*L*W*3.983e-3 F/m2; PMOS: factor*L*W*3.958e-3 F/m2; factor typical=1, ff=.9, ss=1.1."
+  }
+}

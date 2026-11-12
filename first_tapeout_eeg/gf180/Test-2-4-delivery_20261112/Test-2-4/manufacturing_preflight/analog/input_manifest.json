@@ -1,0 +1,214 @@
+[
+  {
+    "path": "acceptance_source.json",
+    "sha256": "4946bfba84e6c7aa1f171de70494a1baaf3968db6241f75cca98a7550dd635f9"
+  },
+  {
+    "path": "models\\design.ngspice",
+    "sha256": "7e222f050318388f37543a64fbd0be55cc15e4b93f57501a09f7c159c4c9e561"
+  },
+  {
+    "path": "models\\design.spice",
+    "sha256": "7e222f050318388f37543a64fbd0be55cc15e4b93f57501a09f7c159c4c9e561"
+  },
+  {
+    "path": "models\\sm141064.ngspice",
+    "sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24"
+  },
+  {
+    "path": "models\\sm141064.spice",
+    "sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24"
+  },
+  {
+    "path": "models\\sm141064_mim.ngspice",
+    "sha256": "9b85cd009968d9aeb6b61046b24a63f39d6a463c4e4aee3949c8fd183c06666f"
+  },
+  {
+    "path": "models\\sm141064_mim.spice",
+    "sha256": "9b85cd009968d9aeb6b61046b24a63f39d6a463c4e4aee3949c8fd183c06666f"
+  },
+  {
+    "path": "models\\smbb000149.ngspice",
+    "sha256": "8a8d44d5f13d4a097e86fab598e97e82bb726af1cc01eb6d500739766dfd9363"
+  },
+  {
+    "path": "models\\smbb000149.spice",
+    "sha256": "8a8d44d5f13d4a097e86fab598e97e82bb726af1cc01eb6d500739766dfd9363"
+  },
+  {
+    "path": "sim_bin\\ngspice",
+    "sha256": "493be835423cef1d54a59a4834c588ca4c79c9ef473eed003fd5f9356c3114a3"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc.spice",
+    "sha256": "be1d443a9cec729236a35aa7d90e51ab0c062d88627ffa94a04af8e34bb2833b"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc_clk.spice",
+    "sha256": "cc9b50e60c2c0f762ef4297c5b969d51933018552e37d4342388b45ffeb2b2dc"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc_otas.spice",
+    "sha256": "7111e0cc51aefedd1fcf2a5202ea85ea5ac295613920188e1db5e1e84f7bd270"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_dac1.spice",
+    "sha256": "116c2f7a194d1683dad7bc9e72c7f9cfd396dafcb0c2f3f46ba18da172aa3cba"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_dac2.spice",
+    "sha256": "f46bf9fbcf875aeb2edcb94a2d202ebe0285266f7a81e873868f2d0f6c2a0602"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_quantizer.spice",
+    "sha256": "5ab22b3f2ca47701bfb4f5573d0a68e3f7fe3a7267d8135a1274b59096cec86d"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_ref.spice",
+    "sha256": "cfaed0a4fc3e22a2b2ce1337ee64867550042c2e2bcba06a706b0ad7cce8b9f2"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\eeg_afe.spice",
+    "sha256": "552f454eac2c33dcb4ae71d1b85da8539a308d96c3ad9168374a997bbee20278"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\eeg_afe_clk.spice",
+    "sha256": "fd77d7e6a5590f134909f6fe06446917803ab464dedc09e968c5a94e0393fdc0"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\make_afe_netlist.py",
+    "sha256": "0ff25cf565b835df8783e6cc39a6ca73f1048684fd16f954173e3a12d88b09f1"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\bias\\eeg_bias.spice",
+    "sha256": "e15cdb934a62374909e4a9db5b6a48c88e55a229488786998de7aaf30170d5b3"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\moscap_lin.spice",
+    "sha256": "38e64a46427529434b7e0a94aef87fbf9ba1ce0edd07998611e919bcdd5a2db3"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\test\\eeg_testmux.spice",
+    "sha256": "d698469421ff4ddb2e41fadb798b3572f5fa773f032c200b00b85020d073532b"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\aclk_check.py",
+    "sha256": "e81c5b11f9de49e51eb2bceb3dce2fe6ab8a2af0fa70003f1753b1ae1240a479"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\adc_deck.py",
+    "sha256": "3c708b5701a250e1bfce1bb0e0879ccd845abe2f4ed15f55a6c517313e5e646d"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\adc_headroom.py",
+    "sha256": "37d20e1195c8f439b604a21ed5c53cbf8efe799b0782f22d42efd45136f469ec"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\analyze_tone.py",
+    "sha256": "9fe9fc9b5cdc427e21e6f778b1a3f571d874627965bdb1ad199b23dc885d2936"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\chop1_fold.py",
+    "sha256": "60454d0b5fc7dadf0a3c93504f6184811fb2382d36768a7065078b6dee5f0dae"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\make_deck.py",
+    "sha256": "1b2478f4ae74cc5e72496a7ac94268d4945250917958e5dd5be010d121f646b0"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\ota1_edge.py",
+    "sha256": "2cdb8e3dc68e839a07d412a388d8ba7f9dbfe15dc37d97fa44356f317ad893bd"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\ota1_noise.py",
+    "sha256": "d215137185d4f9cd4f7555ba91a1afa4b8952ee13d9bf3afb263eefe2bb6e499"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\otas_ideal.spice",
+    "sha256": "8bc69d5fc016cd597b2fb09038dbc63203b044f6143f32cd23e02dc41a05a7e3"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\quantizer_ideal.spice",
+    "sha256": "7b015a086d8d89ab47e0648e4764a97a60d533870b3a18650f82e7bba65a6e4b"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_bias_noise.py",
+    "sha256": "95108ce1c8c85a7181226088b649eec1b6bd999f984d4f948455e3f3f0743b0a"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_blank_noise.py",
+    "sha256": "aa26b2a6f8992da3e5e95e29f953c74f681fccc2fb734204cc15f6b65b57b055"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_chop_distortion.py",
+    "sha256": "5de3f813fed14b80fafb8e8be8c805b749ed92b10109b5b79e86a5c8fef96962"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_chop_gain.py",
+    "sha256": "4fdf424f3130734cd1bba0d658a13d66083f19a4c3540ffedbd1ebd895be61ac"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_distortion.py",
+    "sha256": "0797db2364891ea005450d26eaaf11b111a9882b938130249c4e13c1da32a182"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_noise.py",
+    "sha256": "d7c1aebc0546273a63bb5026e982a48546c907136b40de6e49b3116e71862fe4"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_offset.py",
+    "sha256": "ba3ec360e511528d0da13e51a7829f85bbb8b15405b0a6a00db88514bf5369a1"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\clk_check.py",
+    "sha256": "0ff92d02238f8a98513823ef75e728688f4c8aad1063297cdf6f30a1e0d788c4"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\supply_check.py",
+    "sha256": "dcd4ec3706ae1912fb8a6caaf8872929c106075218675d5060a05a89ba696cf1"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\bias\\bias_check.py",
+    "sha256": "0fd5301bd6998fae50ecfcb46a75a3bf13e65b50ebc8bdeaa5d4b3169c15f84e"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\dac1\\dac1_check.py",
+    "sha256": "8431389c0b255020004195fca7cbfcc79ea3935bbd444cc39073463f0ac822ef"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\dac1\\eld_mixed.py",
+    "sha256": "a1c56b6250896153fc2f750278dabf808d7c8a17e6342068b307739eae7be1ff"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\e2e\\e2e_deck.py",
+    "sha256": "b4d455fe76568986906f397818a176327f56a644759f9532d19d3a7839674fe1"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\e2e\\tr_window.py",
+    "sha256": "55b0c8e29a6143042f66bcbf350f5eca0eefeb2aeeba9f55aa0da5a99c976c28"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\qcmp_check.py",
+    "sha256": "e1369170f8e5c91e44f02be189f8424ae308e5ef85d465163c18536c200d82e9"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\quantizer_check.py",
+    "sha256": "9f341bc515f3d9aafe3c8a36c463ae59a62422d0cdde14d8994f98f9647dc05f"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\quantizer_spec.py",
+    "sha256": "430c31b586d1d1dc11d18650a923efbf2214ae3a62ea089c8b13fad0a7f64fce"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\ref\\ref_behav.py",
+    "sha256": "f0ec5d1017ccb695983e3db09e289316dc79b2bb8976b7b064129159a9525f6f"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\ref\\ref_check.py",
+    "sha256": "df358ef28d7d8b96f1ff473ad2e022d85b42d0c8c59749dc69ace877c57ded0c"
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\test\\testmux_check.py",
+    "sha256": "97470716317917c801abfe2a9890b0b7c4fab3be5bcde32b5020561c8a1e26bf"
+  }
+]

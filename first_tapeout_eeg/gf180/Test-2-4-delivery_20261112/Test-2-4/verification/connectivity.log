@@ -1,0 +1,18 @@
+Loaded metal1
+Loaded via1
+Loaded metal2
+Loaded via2
+Loaded metal3
+Loaded via3
+Loaded metal4
+Loaded via4
+Loaded metal5
+{
+  "input_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "scope": "Metal1..5/Via1..4; 296 baseline probes, including supply pads, core rails, digital macro rails and selected signal/tie pins. Not device conduction or full-chip LVS.",
+  "point_count": 296,
+  "group_count": 20,
+  "opens": {},
+  "shorts": {},
+  "pass": true
+}

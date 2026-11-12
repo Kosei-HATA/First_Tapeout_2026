@@ -1,0 +1,67 @@
+{
+  "recorded_utc": "2026-11-11T16:05:19.453744+00:00",
+  "run": {
+    "seconds": 1035.004025220871,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "scope": "AFE-only current-LVS topology with RTL-derived controls; assumed board sequence and integral-Q model; not system or steady-state acceptance",
+    "last_time_s": 0.00016,
+    "finite": true,
+    "endpoints": {
+      "outn": 1.633047619728927,
+      "outp": 1.663191863551915,
+      "rtl_afe_rst": 0.0,
+      "src": 9.999999999999999e-05,
+      "vbcm": 0.8180702597630805,
+      "vbn": 0.846101469129412,
+      "vcm": 1.648532119426534
+    }
+  },
+  "periodicity_pass": false,
+  "fixed_window_s": [
+    9.6818117e-05,
+    0.000159318117
+  ],
+  "reason": "All seven VCM adjacent-cycle mean changes exceed the fixed 100 uV limit; differential mean and RMS changes meet their limits. No criteria relaxed.",
+  "vcm_drift_first_last_V": [
+    0.0015593802902942322,
+    0.00015919640857453565
+  ],
+  "median_cycle_decay_ratio": 0.6836434812909394,
+  "empirical_time_constant_s": 2.054198102470967e-05,
+  "predicted_additional_cycles_to_first_100uV_comparison": 2,
+  "tentative_end_for_eight_cycles_s": 0.000221818117,
+  "suggested_future_stop_s": 0.000224,
+  "suggested_future_controls_s": 0.000256,
+  "estimated_future_wall_seconds": 1449.0056353092193,
+  "forecast_limit": "Local exponential extrapolation only, not verified settling or permission to automatically extend. Long servo/electrode and other slower modes not excluded.",
+  "worst_gate_pair": {
+    "instance": "xc.xcda3.xn",
+    "pair": "vgs",
+    "max_abs_V": 3.34836141437881,
+    "peak_time_s": 1.475645878767807e-05
+  },
+  "worst_vds": {
+    "instance": "xa.xoff.xop.xnph.xn",
+    "pair": "vds",
+    "max_abs_V": 3.386043665024339,
+    "peak_time_s": 1.088877312765394e-05
+  },
+  "final_cycle_output_mean_V": 0.02989027160388363,
+  "not_a_gain_measurement": "Output includes offset and periodic response. No matched zero-input or opposite-sign settled control; do not divide 29.89 mV by 100 uV to claim gain.",
+  "scope": "Engineering periodicity test only. AFE-only, assumed external sequence, ideal common substrate, Q diagnostic, no full ADC loop or ENOB validation.",
+  "next_needed": [
+    "Board supply/reference timing, levels, electrode impedance/common-mode and reset software sequence",
+    "If approved: extend real RTL and PWL to 256 us, run a bounded 224 us diagnostic and retain the same periodicity thresholds",
+    "Only after periodicity and independently justified long time constants: matched input-sign/zero-input measurements for incremental gain, then band response/noise with the appropriate time-varying analysis"
+  ],
+  "files": {
+    "steady_summary.json": "e06f4141e0b2b5492411ceba0933feed2347c5370389703fe8e537c9a72b661d",
+    "steady_analysis.json": "9571689fc4de2d6503ecce4ee275235bccdb96650d2c5d3b9e8e002b03a536b6",
+    "steady_criteria.json": "23de6de602a4371424da5501ca6d3658ed89ef79cc8223c311cd0985cc1f8768",
+    "mapping_and_assumptions.json": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+    "controls.inc": "d82508991a1b953d5b6a076101ca6b30fb56986d3c98d7a1c81529bc9fe99ba0",
+    "controls.csv": "6813f3c49efe35aed6645ee4e261597db5148f6c11a0472fb3c98477422507ce"
+  }
+}

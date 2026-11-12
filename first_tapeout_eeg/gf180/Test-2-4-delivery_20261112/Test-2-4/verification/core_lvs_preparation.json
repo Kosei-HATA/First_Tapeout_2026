@@ -1,0 +1,231 @@
+{
+  "baseline_input_sha256": "1343e9cc55cb2020f6213937c4622f2a126db6381ae66615719398aa6a027529",
+  "matches_delivered_input": true,
+  "scope": "Core-only LVS on delivered GDS after removing padring; fill retained; no layout regeneration. Does not prove pad ring LVS.",
+  "transformations": [
+    "remove padring and unused children",
+    "remove text labels on label layers; keep polygon geometry",
+    "add core boundary labels using supplied core_labels",
+    "rename AVSS_CLK and DVSS to AVSS per supplied substrate convention"
+  ],
+  "ties": [
+    [
+      "AVSS_CLK",
+      "AVSS"
+    ],
+    [
+      "DVSS",
+      "AVSS"
+    ]
+  ],
+  "top_labels": [
+    {
+      "name": "ATP",
+      "layer": "36/10",
+      "x_um": 482.5,
+      "y_um": 2151.0
+    },
+    {
+      "name": "VCM",
+      "layer": "36/10",
+      "x_um": 611.5,
+      "y_um": 2151.0
+    },
+    {
+      "name": "VREFP_PAD",
+      "layer": "36/10",
+      "x_um": 740.5,
+      "y_um": 2151.0
+    },
+    {
+      "name": "VREFN_PAD",
+      "layer": "36/10",
+      "x_um": 869.5,
+      "y_um": 2151.0
+    },
+    {
+      "name": "MCLK",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 805.5500000000001
+    },
+    {
+      "name": "RESET_N",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 946.5500000000001
+    },
+    {
+      "name": "SCLK",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1087.55
+    },
+    {
+      "name": "CS_N",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1228.55
+    },
+    {
+      "name": "MOSI",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1369.55
+    },
+    {
+      "name": "MISO",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1509.09
+    },
+    {
+      "name": "MISO_OE",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1509.82
+    },
+    {
+      "name": "DRDY_N",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1650.0900000000001
+    },
+    {
+      "name": "RAW_DATA",
+      "layer": "36/10",
+      "x_um": 3553.0,
+      "y_um": 1791.0900000000001
+    },
+    {
+      "name": "RAW_CLK",
+      "layer": "36/10",
+      "x_um": 3481.59,
+      "y_um": 2152.0
+    },
+    {
+      "name": "ELP",
+      "layer": "81/10",
+      "x_um": 430.0,
+      "y_um": 1459.84
+    },
+    {
+      "name": "ELN",
+      "layer": "81/10",
+      "x_um": 430.0,
+      "y_um": 1177.84
+    },
+    {
+      "name": "AVDD",
+      "layer": "81/10",
+      "x_um": 1605.0,
+      "y_um": 1500.0
+    },
+    {
+      "name": "AVSS",
+      "layer": "81/10",
+      "x_um": 1663.0,
+      "y_um": 1500.0
+    },
+    {
+      "name": "DVDD",
+      "layer": "81/10",
+      "x_um": 3510.0,
+      "y_um": 1500.0
+    },
+    {
+      "name": "AVSS",
+      "layer": "81/10",
+      "x_um": 2960.0,
+      "y_um": 1500.0
+    }
+  ],
+  "reference_ports": [
+    "ELP",
+    "ELN",
+    "VCM",
+    "VREFP_PAD",
+    "VREFN_PAD",
+    "ATP",
+    "MCLK",
+    "RESET_N",
+    "SCLK",
+    "CS_N",
+    "MOSI",
+    "MISO",
+    "MISO_OE",
+    "DRDY_N",
+    "RAW_DATA",
+    "RAW_CLK",
+    "AVDD",
+    "AVSS",
+    "DVDD"
+  ],
+  "source_netlists": [
+    {
+      "path": "/work/gf180/tapeout/chip/eeg_core.spice",
+      "sha256": "a355d362dd0e235820cdbfc1d2c4f726d079b9314beb042b766c2e8758be351b"
+    },
+    {
+      "path": "/work/gf180/tapeout/afe/eeg_afe.spice",
+      "sha256": "552f454eac2c33dcb4ae71d1b85da8539a308d96c3ad9168374a997bbee20278"
+    },
+    {
+      "path": "/work/gf180/tapeout/afe/eeg_afe_clk.spice",
+      "sha256": "fd77d7e6a5590f134909f6fe06446917803ab464dedc09e968c5a94e0393fdc0"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_adc_otas.spice",
+      "sha256": "7111e0cc51aefedd1fcf2a5202ea85ea5ac295613920188e1db5e1e84f7bd270"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_adc_clk.spice",
+      "sha256": "cc9b50e60c2c0f762ef4297c5b969d51933018552e37d4342388b45ffeb2b2dc"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_dac1.spice",
+      "sha256": "116c2f7a194d1683dad7bc9e72c7f9cfd396dafcb0c2f3f46ba18da172aa3cba"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_dac2.spice",
+      "sha256": "f46bf9fbcf875aeb2edcb94a2d202ebe0285266f7a81e873868f2d0f6c2a0602"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_quantizer.spice",
+      "sha256": "5ab22b3f2ca47701bfb4f5573d0a68e3f7fe3a7267d8135a1274b59096cec86d"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_adc.spice",
+      "sha256": "be1d443a9cec729236a35aa7d90e51ab0c062d88627ffa94a04af8e34bb2833b"
+    },
+    {
+      "path": "/work/gf180/tapeout/adc/eeg_ref.spice",
+      "sha256": "cfaed0a4fc3e22a2b2ce1337ee64867550042c2e2bcba06a706b0ad7cce8b9f2"
+    },
+    {
+      "path": "/work/gf180/tapeout/bias/eeg_bias.spice",
+      "sha256": "e15cdb934a62374909e4a9db5b6a48c88e55a229488786998de7aaf30170d5b3"
+    },
+    {
+      "path": "/work/gf180/tapeout/test/eeg_testmux.spice",
+      "sha256": "d698469421ff4ddb2e41fadb798b3572f5fa773f032c200b00b85020d073532b"
+    },
+    {
+      "path": "/work/gf180/tapeout/layout/gds/eeg_adc_dig.cdl",
+      "sha256": "1e6e0cb2f941dd2d410e8996458cae518edb94251f567ae1949f3dc92fa0398f"
+    },
+    {
+      "path": "/work/gf180/tapeout/layout/gds/eeg_digital_top.cdl",
+      "sha256": "35bb22f7e7e80ce04cfc7749a275a4069623ae8be415901901aa9c285388a715"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/spice/gf180mcu_fd_sc_mcu7t5v0.spice",
+      "sha256": "0e126c5e10e45e705a83acfa47f6fd2c4ef0357e99c339dec43cdc16bfb13664"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/spice/gf180mcu_fd_sc_mcu9t5v0.spice",
+      "sha256": "415d693a8eb35efd744495484c162b8926e7f72c1d4995d7ce16952c8a58d658"
+    }
+  ],
+  "adc_match_hints": "No deep ADC hints added; delivered GDS has stripped block labels."
+}

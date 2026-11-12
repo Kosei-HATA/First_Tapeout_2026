@@ -1,0 +1,545 @@
+{
+  "audit_version": "independent_time_weighted_periodicity_224us_v1",
+  "created_utc": "2026-11-11T16:53:10.063999+00:00",
+  "status": "PASS_FIXED_8_CYCLE_AFE_Q_PERIODICITY_ONLY",
+  "fixed_window_s": [
+    0.000159318117,
+    0.000221818117
+  ],
+  "period_s": 7.8125e-06,
+  "evaluation_cycles_count": 8,
+  "adjacent_comparisons_count": 7,
+  "all_seven_pass_exact_piecewise_linear": true,
+  "all_seven_pass_worker_compatible_trapezoid_square": true,
+  "source_wave": {
+    "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\wave.csv",
+    "bytes": 651759420,
+    "rows": 252914,
+    "sha256_before": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+    "sha256_after": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+    "unchanged": true,
+    "start_s": 0.0,
+    "last_s": 0.000224,
+    "strictly_increasing_time": true,
+    "finite_only_selected_columns": true,
+    "zero_based_loaded_columns": {
+      "time": 0,
+      "outp": 29,
+      "outn": 27,
+      "vcm": 49,
+      "vdd": 51,
+      "src": 41,
+      "rtl_afe_rst": 33
+    },
+    "saved_order_verified_against_actual_deck": true
+  },
+  "input_hashes": {
+    "mapping_and_assumptions.json": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+    "steady_criteria.json": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+    "steady_analysis.json": "eacfc58f0363b62418c5ff9686321e6e2da00d33209ce98d10a96671d4f5c464",
+    "steady_summary.json": "5f02a6a8c77fcbb66073465e08333a1110aec054ab7f02885a29f1bcab0c72b9",
+    "steady/tb.spice": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3",
+    "independent_audit/summary.json": "9f00ec624e149d5ded3982fea7958c9a8ec04160fbbab41bad712cac71cc402c"
+  },
+  "method": {
+    "reader": "np.loadtxt(usecols=[0,29,27,49,51,41,33]); 7 of 112 numeric columns retained; all 252914 rows examined for selected-column finiteness and time monotonicity. Original CSV unchanged.",
+    "windowing": "Use exactly the predeclared 159.318117..221.818117 us interval. Split into eight consecutive 7.8125 us cycles; linearly interpolate each boundary, include every saved interior sample, omit no outlier. Compare all seven adjacent pairs, including pair4->5 across the two four-cycle windows.",
+    "mean_integral": "For each saved/interpolated segment of duration dt with endpoints y0,y1: integral y dt = dt*(y0+y1)/2; sum with math.fsum and divide by exact cycle duration.",
+    "exact_PL_RMS_integral": "Independently treat waveform as linear within each segment: integral y^2 dt = dt*(y0^2+y0*y1+y1^2)/3. Sum with math.fsum, divide by duration and square root.",
+    "compatibility_RMS": "Also compute trapezoid integral of squared endpoint samples: dt*(y0^2+y1^2)/2, to reconcile with worker reported RMS. Both methods give seven passes.",
+    "RMS_definition": "Total differential RMS including DC, as in the saved criterion and worker analysis. Not AC-ripple RMS and not point-by-point waveform residual.",
+    "output_clipping_screen": "Check OUTP and OUTN against 0 and contemporaneous VDD throughout the evaluation window; minimum rail headroom positive. This screens output-rail clipping only, not internal transistor saturation or all possible distortion."
+  },
+  "criteria": {
+    "purpose": "Engineering diagnostic convergence, not specification or ENOB acceptance",
+    "minimum_after_last_control_or_signal_step_s": 6.25e-05,
+    "two_successive_windows_cycles_each": 4,
+    "per_cycle_mean_change_V": {
+      "OUTP_minus_OUTN": 1e-06,
+      "VCM": 0.0001
+    },
+    "cycle_rms_change": "<= max(1 uV,0.1% of prior cycle RMS) for differential output",
+    "require_all": "Every adjacent cycle comparison across both four-cycle windows; no clipping/nonfinite or omitted outlier",
+    "steady_gain": "Not measured from initial step ratio; requires settled matched positive/negative input or sinusoidal transfer later",
+    "pilot_is_steady_test": false,
+    "clarification_before_steady_test": "Wait eight complete chop periods after the last control/input step, then evaluate two consecutive four-cycle windows aligned to rising CHOP. This is not overlapping the waiting and evaluation intervals.",
+    "earliest_phase_aligned_evaluation_start_s": 0.000159318117,
+    "earliest_phase_aligned_evaluation_end_s": 0.000221818117,
+    "original_160us_window_s": [
+      9.6818117e-05,
+      0.000159318117
+    ],
+    "window_predeclared": "Later fixed eight-cycle evaluation window declared before the sole 224 us run. Same thresholds; original 160 us failure retained."
+  },
+  "cycles": [
+    {
+      "cycle_index_1_based": 1,
+      "window_group_1_based": 1,
+      "start_s": 0.000159318117,
+      "end_s": 0.000167130617,
+      "interior_saved_samples": 8819,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.02989038175099066,
+      "differential_RMS_exact_piecewise_linear_V": 0.02993020745019436,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930207979893986,
+      "VCM_mean_V": 1.6484373706954083,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658509145861532,
+          "max_V": 1.666852286097164
+        },
+        "outn": {
+          "min_V": 1.632764026368831,
+          "max_V": 1.639978120697599
+        },
+        "vcm": {
+          "min_V": 1.612508604972964,
+          "max_V": 1.707149666645914
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632764026368831
+    },
+    {
+      "cycle_index_1_based": 2,
+      "window_group_1_based": 1,
+      "start_s": 0.000167130617,
+      "end_s": 0.00017494311700000002,
+      "interior_saved_samples": 8821,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.029890484604164092,
+      "differential_RMS_exact_piecewise_linear_V": 0.029930271700081588,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930272229206613,
+      "VCM_mean_V": 1.6485117574625971,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658586593709839,
+          "max_V": 1.66690972888869
+        },
+        "outn": {
+          "min_V": 1.632829320570614,
+          "max_V": 1.640050006593719
+        },
+        "vcm": {
+          "min_V": 1.612596704816407,
+          "max_V": 1.707241120669446
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632829320570614
+    },
+    {
+      "cycle_index_1_based": 3,
+      "window_group_1_based": 1,
+      "start_s": 0.00017494311700000002,
+      "end_s": 0.000182755617,
+      "interior_saved_samples": 8822,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.029890575675124303,
+      "differential_RMS_exact_piecewise_linear_V": 0.029930328243082272,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930328771879167,
+      "VCM_mean_V": 1.648562603573422,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658640145365996,
+          "max_V": 1.666947919078529
+        },
+        "outn": {
+          "min_V": 1.632875063038734,
+          "max_V": 1.640098334062175
+        },
+        "vcm": {
+          "min_V": 1.612656734035958,
+          "max_V": 1.707300682495946
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632875063038734
+    },
+    {
+      "cycle_index_1_based": 4,
+      "window_group_1_based": 1,
+      "start_s": 0.000182755617,
+      "end_s": 0.000190568117,
+      "interior_saved_samples": 8822,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.029890666309675514,
+      "differential_RMS_exact_piecewise_linear_V": 0.029930387820464314,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930388349274976,
+      "VCM_mean_V": 1.6485973601632353,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658677488479023,
+          "max_V": 1.666973002963852
+        },
+        "outn": {
+          "min_V": 1.63290729991772,
+          "max_V": 1.640130728695433
+        },
+        "vcm": {
+          "min_V": 1.612697927250638,
+          "max_V": 1.707342612953477
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.63290729991772
+    },
+    {
+      "cycle_index_1_based": 5,
+      "window_group_1_based": 2,
+      "start_s": 0.000190568117,
+      "end_s": 0.000198380617,
+      "interior_saved_samples": 8822,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.0298907498069613,
+      "differential_RMS_exact_piecewise_linear_V": 0.02993044343860833,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930443967474817,
+      "VCM_mean_V": 1.6486211166082072,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658703661045458,
+          "max_V": 1.666989180357367
+        },
+        "outn": {
+          "min_V": 1.632930312048794,
+          "max_V": 1.640152213574887
+        },
+        "vcm": {
+          "min_V": 1.612725748310526,
+          "max_V": 1.707369463905623
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632930312048794
+    },
+    {
+      "cycle_index_1_based": 6,
+      "window_group_1_based": 2,
+      "start_s": 0.000198380617,
+      "end_s": 0.000206193117,
+      "interior_saved_samples": 8823,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.029890832663102492,
+      "differential_RMS_exact_piecewise_linear_V": 0.029930501272132565,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.02993050180122614,
+      "VCM_mean_V": 1.6486373596523158,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.65872227291052,
+          "max_V": 1.666999336289538
+        },
+        "outn": {
+          "min_V": 1.632946944517485,
+          "max_V": 1.640166380495621
+        },
+        "vcm": {
+          "min_V": 1.612745033789442,
+          "max_V": 1.707391141003171
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632946944517485
+    },
+    {
+      "cycle_index_1_based": 7,
+      "window_group_1_based": 2,
+      "start_s": 0.000206193117,
+      "end_s": 0.000214005617,
+      "interior_saved_samples": 8819,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.02989090379412131,
+      "differential_RMS_exact_piecewise_linear_V": 0.02993054992063439,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.029930550449899295,
+      "VCM_mean_V": 1.648648456396333,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658735419390761,
+          "max_V": 1.667005393492608
+        },
+        "outn": {
+          "min_V": 1.632959162861296,
+          "max_V": 1.640175352078906
+        },
+        "vcm": {
+          "min_V": 1.612758725332739,
+          "max_V": 1.707402424931827
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632959162861296
+    },
+    {
+      "cycle_index_1_based": 8,
+      "window_group_1_based": 2,
+      "start_s": 0.000214005617,
+      "end_s": 0.000221818117,
+      "interior_saved_samples": 8818,
+      "boundary_samples_linearly_interpolated": true,
+      "differential_mean_V": 0.02989097899397556,
+      "differential_RMS_exact_piecewise_linear_V": 0.029930605058914875,
+      "differential_RMS_trapezoid_of_squared_samples_V": 0.02993060558917144,
+      "VCM_mean_V": 1.6486560410729492,
+      "voltage_ranges": {
+        "outp": {
+          "min_V": 1.658745102666098,
+          "max_V": 1.667008710118914
+        },
+        "outn": {
+          "min_V": 1.632968320619155,
+          "max_V": 1.640181049914987
+        },
+        "vcm": {
+          "min_V": 1.612767680223069,
+          "max_V": 1.707413670246287
+        },
+        "vdd": {
+          "min_V": 3.3,
+          "max_V": 3.3
+        },
+        "src": {
+          "min_V": 9.999999999999999e-05,
+          "max_V": 9.999999999999999e-05
+        },
+        "rtl_afe_rst": {
+          "min_V": 0.0,
+          "max_V": 0.0
+        }
+      },
+      "minimum_output_distance_from_0_or_VDD_V": 1.632968320619155
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_index_1_based": 1,
+      "cycle_pair": [
+        1,
+        2
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 1.028531734330318e-07,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 7.438676718884984e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 6.424988722650293e-08,
+      "RMS_limit_exact_PL_V": 2.9930207450194362e-05,
+      "differential_RMS_change_trapezoid_square_V": 6.424931262710709e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930207979893988e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 2,
+      "cycle_pair": [
+        2,
+        3
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 9.107096021060412e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 5.084611082484258e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 5.6543000684361466e-08,
+      "RMS_limit_exact_PL_V": 2.993027170008159e-05,
+      "differential_RMS_change_trapezoid_square_V": 5.654267255447709e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930272229206615e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 3,
+      "cycle_pair": [
+        3,
+        4
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 9.063455121138819e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 3.475658981333396e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 5.9577382041653415e-08,
+      "RMS_limit_exact_PL_V": 2.9930328243082274e-05,
+      "differential_RMS_change_trapezoid_square_V": 5.957739580841892e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930328771879167e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 4,
+      "cycle_pair": [
+        4,
+        5
+      ],
+      "crosses_four_cycle_window_boundary": true,
+      "differential_mean_change_V": 8.349728578688209e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 2.3756444971878565e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 5.561814401741638e-08,
+      "RMS_limit_exact_PL_V": 2.9930387820464314e-05,
+      "differential_RMS_change_trapezoid_square_V": 5.561819984081784e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930388349274975e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 5,
+      "cycle_pair": [
+        5,
+        6
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 8.285614119113438e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 1.624304410863253e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 5.783352423349708e-08,
+      "RMS_limit_exact_PL_V": 2.9930443438608332e-05,
+      "differential_RMS_change_trapezoid_square_V": 5.783375132267787e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930443967474817e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 6,
+      "cycle_pair": [
+        6,
+        7
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 7.113101881811579e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 1.1096744017224935e-05,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 4.864850182417779e-08,
+      "RMS_limit_exact_PL_V": 2.9930501272132567e-05,
+      "differential_RMS_change_trapezoid_square_V": 4.864867315587662e-08,
+      "RMS_limit_trapezoid_square_V": 2.993050180122614e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    },
+    {
+      "comparison_index_1_based": 7,
+      "cycle_pair": [
+        7,
+        8
+      ],
+      "crosses_four_cycle_window_boundary": false,
+      "differential_mean_change_V": 7.519985424989106e-08,
+      "differential_mean_limit_V": 1e-06,
+      "VCM_mean_change_V": 7.5846766161014045e-06,
+      "VCM_mean_limit_V": 0.0001,
+      "differential_RMS_change_exact_PL_V": 5.5138280486560776e-08,
+      "RMS_limit_exact_PL_V": 2.993054992063439e-05,
+      "differential_RMS_change_trapezoid_square_V": 5.5139272144705265e-08,
+      "RMS_limit_trapezoid_square_V": 2.9930550449899294e-05,
+      "pass_exact_PL": true,
+      "pass_trapezoid_square": true
+    }
+  ],
+  "worker_agreement": {
+    "max_differential_mean_difference_V": 3.469446951953614e-18,
+    "max_VCM_mean_difference_V": 2.220446049250313e-16,
+    "max_RMS_trapezoid_square_difference_V": 3.469446951953614e-18,
+    "max_exact_PL_vs_trapezoid_RMS_difference_V": 5.302565643516832e-10,
+    "same_eight_cycle_boundaries": true,
+    "worker_all_seven_pass": true
+  },
+  "headline": {
+    "VCM_first_change_uV": 74.38676718884984,
+    "VCM_last_change_uV": 7.5846766161014045,
+    "max_differential_mean_change_uV": 0.1028531734330318,
+    "max_differential_RMS_change_exact_PL_uV": 0.06424988722650293,
+    "minimum_output_rail_headroom_V": 1.632764026368831
+  },
+  "run_metadata_reported_by_worker": {
+    "seconds": 1991.311392068863,
+    "exitcode": 0,
+    "completed": true
+  },
+  "limits": [
+    "Only assumed-condition AFE/Q-model cycle-moment periodicity in the fixed late window is verified.",
+    "The original 160 us periodicity failure remains valid for its earlier window; this later-window result does not erase it.",
+    "No settled small-signal gain claim: offset and periodic response are present, and matched zero-input/opposite-sign transfer measurements are absent.",
+    "Finite 224 us observation and eight cycles do not exclude longer time constants or slow electrode/servo behavior.",
+    "No full ADC/DWA closed loop, system ENOB/noise/band response, PVT/mismatch population, 58-MOS stress re-audit, reliability lifetime or manufacturing certification.",
+    "Rail-headroom and nonfinite checks cover only the selected output, reference, supply and control columns, not all 56 saved analog nodes."
+  ],
+  "all_original_files_unchanged": true
+}

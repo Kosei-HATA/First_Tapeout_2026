@@ -1,0 +1,10 @@
+Netgen 1.5.321 compiled on Mon Jun 22 11:31:27 AM CEST 2026
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file actual.spice for actual.spice gf180mcu_fd_io__asig_5p0
+Call to undefined subcircuit cap_nmos_06v0
+Creating placeholder cell definition.
+Reading netlist file reference.spice for reference.spice gf180mcu_fd_io__asig_5p0
+Call to undefined subcircuit cap_nmos_06v0
+Creating placeholder cell definition.
+Cannot find cell gf180mcu_fd_io__asig_5p0 in file actual.spice

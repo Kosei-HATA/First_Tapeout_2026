@@ -1,0 +1,582 @@
+timestamp 1622965154
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use comp018green_out_drv_nleg_6T comp018green_out_drv_nleg_6T_3 1 0 597 0 1 680
+use comp018green_out_drv_nleg_6T comp018green_out_drv_nleg_6T_2 1 0 2805 0 1 680
+use comp018green_out_drv_nleg_6T comp018green_out_drv_nleg_6T_1 1 0 5013 0 1 680
+use nmos_metal_stack nmos_metal_stack_4 1 0 603 0 1 812
+use nmos_metal_stack nmos_metal_stack_3 1 0 2811 0 1 812
+use nmos_metal_stack nmos_metal_stack_2 1 0 5019 0 1 812
+use comp018green_out_drv_nleg_6T comp018green_out_drv_nleg_6T_0 1 0 7221 0 1 680
+use nmos_metal_stack nmos_metal_stack_1 1 0 7227 0 1 812
+use nmos_metal_stack nmos_metal_stack_0 -1 0 9591 0 1 812
+use GR_NMOS GR_NMOS_0 1 0 363 0 1 436
+node "m1_9391_812#" 1 5139.2 9391 812 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4368813 16850 0 0 0 0 0 0 0 0
+node "m1_302_363#" 3 3835.88 302 363 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2017193 16212 0 0 0 0 0 0 0 0
+node "a_9222_641#" 65 3011.5 9222 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 585954 19534 0 0 0 0 0 0 0 0
+node "a_7417_641#" 66 3899.39 7417 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 792274 23462 0 0 0 0 0 0 0 0
+node "a_7014_641#" 66 3783.3 7014 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 858594 24590 0 0 0 0 0 0 0 0
+node "a_5210_8312#" 67 5244.53 5210 8312 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1107250 28534 0 0 0 0 0 0 0 0
+node "a_4806_641#" 67 5225.15 4806 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1100230 28404 0 0 0 0 0 0 0 0
+node "a_3002_641#" 66 3775.74 3002 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 852094 24460 0 0 0 0 0 0 0 0
+node "a_2598_641#" 66 3891.83 2598 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 785774 23332 0 0 0 0 0 0 0 0
+node "a_794_641#" 65 3537.45 794 641 p 0 0 0 0 0 0 0 0 0 0 0 0 31824 1072 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 579454 19404 0 0 0 0 0 0 0 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "m1_302_363#" "a_794_641#" 1113.25
+cap "a_7014_641#" "a_9222_641#" 0.236837
+cap "a_2598_641#" "a_794_641#" 984.82
+cap "a_5210_8312#" "a_7417_641#" 0.184948
+cap "a_5210_8312#" "a_9222_641#" 0.184948
+cap "a_2598_641#" "a_3002_641#" 3563.77
+cap "a_3002_641#" "a_794_641#" 0.236837
+cap "a_9222_641#" "a_7417_641#" 1037.49
+cap "a_2598_641#" "a_4806_641#" 0.184948
+cap "a_794_641#" "a_4806_641#" 0.184948
+cap "a_5210_8312#" "a_7014_641#" 2826.32
+cap "a_9222_641#" "m1_9391_812#" 8383.48
+cap "a_3002_641#" "a_4806_641#" 2773.65
+cap "a_5210_8312#" "a_4806_641#" 1174.6
+cap "a_7014_641#" "a_7417_641#" 3616.51
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 5.74567
+cap "GR_NMOS_0/a_n528_n219#" "GR_NMOS_0/w_n1789_n834#" 18.1076
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_360_0#" 9.20233
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "GR_NMOS_0/a_n528_n219#" 229.93
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_4/m1_360_0#" -7.03178
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" 154.483
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 29.6661
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -8.88859
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_4/m1_360_0#" 153.391
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_360_0#" 27.607
+cap "nmos_metal_stack_3/m1_n44_0#" "GR_NMOS_0/a_n528_n219#" 0.722649
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 38.3603
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" -1.09215
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 4.21273
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 233.003
+cap "nmos_metal_stack_3/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 0.156731
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_4/m1_360_0#" 140.9
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 0.0478719
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -1.09215
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" -9.55954
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 22.4573
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_3/m1_n44_0#" -59.1646
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "GR_NMOS_0/a_n528_n219#" 29.7307
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 0.0646268
+cap "nmos_metal_stack_3/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 10.3034
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 117.791
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -3.92469
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -8.88859
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_1122_132#" 8.50195
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 153.391
+cap "nmos_metal_stack_3/m1_n44_0#" "GR_NMOS_0/a_n528_n219#" 31.0589
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 4.2606
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "nmos_metal_stack_3/m1_n44_0#" 223.444
+cap "nmos_metal_stack_2/m1_n44_0#" "GR_NMOS_0/a_n528_n219#" 31.8817
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -17.7772
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 4.2606
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_2/m1_n44_0#" 223.444
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 29.7307
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 14.3521
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" 50.7869
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 75.2419
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" 155.066
+cap "nmos_metal_stack_2/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 4.36607
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -55.2399
+cap "nmos_metal_stack_2/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 22.7197
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 154.483
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 4.2606
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_n44_0#" 222.862
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_2/m1_n44_0#" 10.4601
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/a_n528_n219#" 29.7307
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" -1.09215
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -3.92469
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_2/m1_360_0#" 164.554
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -3.92469
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_2/m1_360_0#" -1.09215
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_2/m1_360_0#" 31.3461
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_1/m1_n44_0#" 10.4601
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" 153.901
+cap "nmos_metal_stack_0/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 17.621
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -55.2399
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_2/m1_360_0#" 5.65926
+cap "GR_NMOS_0/a_n528_n219#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 29.7307
+cap "GR_NMOS_0/a_n528_n219#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 29.7307
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 154.483
+cap "nmos_metal_stack_2/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 1.09712
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_1/m1_n44_0#" 31.6814
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 50.7869
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_0/m1_360_0#" 92.5026
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -17.7772
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 4.2606
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 4.2606
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 223.444
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_1/m1_n44_0#" 224.026
+cap "nmos_metal_stack_0/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 41.4656
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 5.74567
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -3.92469
+cap "nmos_metal_stack_0/m1_360_0#" "GR_NMOS_0/w_n1789_n834#" 19.1883
+cap "GR_NMOS_0/a_n528_n219#" "GR_NMOS_0/w_n1789_n834#" 18.1076
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 153.391
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" -1.09215
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 40.8857
+cap "GR_NMOS_0/a_n528_n219#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 1443.16
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" 1126.87
+cap "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_4/m1_360_0#" -407.031
+cap "GR_NMOS_0/a_n528_n219#" "GR_NMOS_0/w_n1789_n834#" 69.8058
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 1118.83
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -86.989
+cap "nmos_metal_stack_4/m1_360_0#" "GR_NMOS_0/a_n528_n219#" -28.9187
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" -8.04741
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_3/m1_n44_0#" 282.655
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" 1707.23
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -61.511
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 105.944
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -28.9187
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 1645.72
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "nmos_metal_stack_3/m1_360_0#" 1118.83
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -86.989
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -8.04741
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -435.949
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" 1126.87
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 1126.87
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_n44_0#" 1645.72
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_2/m1_n44_0#" 1645.72
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -173.978
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" 417.517
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -407.031
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_2/m1_360_0#" -8.04741
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 1126.87
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 1645.72
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -173.978
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" 417.517
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -407.031
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" 1126.87
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 1645.72
+cap "GR_NMOS_0/w_n1789_n834#" "GR_NMOS_0/a_n528_n219#" 69.8058
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 70.2497
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -28.9187
+cap "nmos_metal_stack_0/m1_360_0#" "GR_NMOS_0/a_n528_n219#" -435.949
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 1118.83
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" -8.04741
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 104.356
+cap "nmos_metal_stack_4/m1_360_0#" "a_794_641#" 1022.52
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 2.49569
+cap "nmos_metal_stack_4/m1_n44_0#" "a_794_641#" 1433.68
+cap "a_794_641#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 201.174
+cap "nmos_metal_stack_4/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 61.0345
+cap "nmos_metal_stack_4/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" -407.031
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" -8.04741
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 282.655
+cap "nmos_metal_stack_4/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" -28.9187
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 82.5091
+cap "nmos_metal_stack_3/m1_n44_0#" "a_2598_641#" 1624.72
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 96.3086
+cap "a_3002_641#" "a_2598_641#" -86.989
+cap "nmos_metal_stack_4/m1_360_0#" "a_2598_641#" 1022.52
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "a_2598_641#" 201.174
+cap "a_3002_641#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 201.174
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -80.0134
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" -8.04741
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 2.49569
+cap "a_3002_641#" "nmos_metal_stack_3/m1_n44_0#" 1636.24
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -28.9187
+cap "a_3002_641#" "a_2598_641#" -86.989
+cap "a_3002_641#" "nmos_metal_stack_3/m1_360_0#" 1022.52
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 96.3086
+cap "comp018green_out_drv_nleg_6T_3/a_1122_132#" "nmos_metal_stack_3/m1_n44_0#" 77.7191
+cap "nmos_metal_stack_3/m1_n44_0#" "a_2598_641#" 11.5204
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -435.949
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -407.031
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 104.356
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 2.49569
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "a_4806_641#" 201.174
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" 389.292
+cap "nmos_metal_stack_2/m1_n44_0#" "a_4806_641#" 1636.24
+cap "a_4806_641#" "nmos_metal_stack_3/m1_360_0#" 1022.52
+cap "nmos_metal_stack_2/m1_360_0#" "a_5210_8312#" 1022.52
+cap "nmos_metal_stack_2/m1_n44_0#" "a_5210_8312#" 1636.24
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "a_5210_8312#" 201.174
+cap "a_5210_8312#" "a_4806_641#" -173.978
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 2.49569
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 104.356
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -28.9187
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -28.9187
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 389.292
+cap "nmos_metal_stack_1/m1_n44_0#" "a_7417_641#" 1636.24
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 104.356
+cap "nmos_metal_stack_1/m1_n44_0#" "a_7014_641#" 1636.24
+cap "nmos_metal_stack_2/m1_360_0#" "a_7014_641#" 1022.52
+cap "a_7417_641#" "a_7014_641#" -173.978
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 2.49569
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 2.49569
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 104.356
+cap "a_7417_641#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 201.174
+cap "a_7014_641#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 201.174
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -407.031
+cap "nmos_metal_stack_0/m1_360_0#" "a_7417_641#" 1022.52
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 2.49569
+cap "a_9222_641#" "nmos_metal_stack_0/m1_n44_0#" 60.772
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 96.3086
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" -8.04741
+cap "a_9222_641#" "nmos_metal_stack_0/m1_360_0#" 1022.52
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_0/m1_n44_0#" 61.0345
+cap "a_9222_641#" "comp018green_out_drv_nleg_6T_0/a_2010_44#" 201.174
+cap "nmos_metal_stack_0/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -435.949
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -28.9187
+cap "nmos_metal_stack_4/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" -407.031
+cap "a_794_641#" "nmos_metal_stack_4/m1_360_0#" 1022.52
+cap "a_794_641#" "nmos_metal_stack_4/m1_n44_0#" 1436.73
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 104.356
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 6.42853
+cap "a_794_641#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 201.174
+cap "nmos_metal_stack_4/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 69.8058
+cap "a_2598_641#" "nmos_metal_stack_3/m1_n44_0#" 1624.72
+cap "a_2598_641#" "a_3002_641#" -86.989
+cap "a_2598_641#" "nmos_metal_stack_4/m1_360_0#" 1022.52
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" 82.5091
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_4/m1_360_0#" 96.3086
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 282.655
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "a_2598_641#" 201.174
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_4/m1_n44_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" -8.04741
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_3/m1_n44_0#" -435.949
+cap "a_3002_641#" "nmos_metal_stack_3/m1_360_0#" 1022.52
+cap "a_3002_641#" "nmos_metal_stack_3/m1_n44_0#" 1639.29
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" -76.0806
+cap "a_2598_641#" "nmos_metal_stack_3/m1_n44_0#" 14.5696
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -8.04741
+cap "a_2598_641#" "a_3002_641#" -86.989
+cap "comp018green_out_drv_nleg_6T_3/a_1122_132#" "nmos_metal_stack_3/m1_n44_0#" 105.944
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "nmos_metal_stack_3/m1_360_0#" 96.3086
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "nmos_metal_stack_3/m1_n44_0#" 6.42853
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "a_3002_641#" 201.174
+cap "nmos_metal_stack_2/m1_n44_0#" "a_5210_8312#" 1639.29
+cap "nmos_metal_stack_2/m1_n44_0#" "a_4806_641#" 1639.29
+cap "nmos_metal_stack_3/m1_360_0#" "a_4806_641#" 1022.52
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" 104.356
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "a_4806_641#" 201.174
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" 417.517
+cap "a_5210_8312#" "nmos_metal_stack_2/m1_360_0#" 1022.52
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 6.42853
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 104.356
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "a_5210_8312#" 201.174
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -407.031
+cap "a_5210_8312#" "a_4806_641#" -173.978
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 6.42853
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_2/m1_360_0#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -28.9187
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -8.04741
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "a_7014_641#" 201.174
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 104.356
+cap "nmos_metal_stack_1/m1_n44_0#" "a_7014_641#" 1639.29
+cap "nmos_metal_stack_1/m1_n44_0#" "a_7417_641#" 1639.29
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 417.517
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_1/m1_n44_0#" 6.42853
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 6.42853
+cap "nmos_metal_stack_0/m1_360_0#" "a_7417_641#" 1022.52
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" 104.356
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -407.031
+cap "a_7014_641#" "a_7417_641#" -173.978
+cap "nmos_metal_stack_2/m1_360_0#" "a_7014_641#" 1022.52
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "a_7417_641#" 201.174
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" -8.04741
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_0/m1_n44_0#" -435.949
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 96.3086
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -28.9187
+cap "a_9222_641#" "nmos_metal_stack_0/m1_n44_0#" 63.8212
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "a_9222_641#" 201.174
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 6.42853
+cap "nmos_metal_stack_0/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 69.8058
+cap "nmos_metal_stack_0/m1_360_0#" "a_9222_641#" 1022.52
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_4/m1_n44_0#" -407.031
+cap "a_794_641#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 201.174
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 104.356
+cap "a_794_641#" "nmos_metal_stack_4/m1_360_0#" 1022.52
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_n44_0#" 61.2141
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 2.57622
+cap "a_794_641#" "nmos_metal_stack_4/m1_n44_0#" 1433.74
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_3/m1_n44_0#" 282.655
+cap "nmos_metal_stack_3/m1_n44_0#" "a_2598_641#" 1624.72
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 82.5091
+cap "nmos_metal_stack_4/m1_360_0#" "a_2598_641#" 1022.52
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 96.3086
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" -8.04741
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_4/m1_n44_0#" -28.9187
+cap "a_2598_641#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 201.174
+cap "a_3002_641#" "a_2598_641#" -86.989
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -8.04741
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_1122_132#" 78.2971
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -79.9329
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -435.949
+cap "nmos_metal_stack_3/m1_n44_0#" "a_2598_641#" 11.5829
+cap "nmos_metal_stack_3/m1_360_0#" "a_3002_641#" 1022.52
+cap "a_3002_641#" "a_2598_641#" -86.989
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 96.3086
+cap "nmos_metal_stack_3/m1_n44_0#" "a_3002_641#" 1636.3
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -28.9187
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 2.57622
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "a_3002_641#" 201.174
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 104.356
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" 104.356
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 2.57622
+cap "nmos_metal_stack_2/m1_n44_0#" "a_4806_641#" 1636.3
+cap "nmos_metal_stack_2/m1_360_0#" "a_5210_8312#" 1022.52
+cap "nmos_metal_stack_2/m1_n44_0#" "a_5210_8312#" 1636.3
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" 389.87
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 2.57622
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "a_5210_8312#" 201.174
+cap "a_4806_641#" "a_5210_8312#" -173.978
+cap "a_4806_641#" "nmos_metal_stack_3/m1_360_0#" 1022.52
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "a_4806_641#" 201.174
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -407.031
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -28.9187
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -28.9187
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -8.04741
+cap "a_7014_641#" "nmos_metal_stack_2/m1_360_0#" 1022.52
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_1/m1_n44_0#" 2.57622
+cap "a_7417_641#" "nmos_metal_stack_0/m1_360_0#" 1022.52
+cap "a_7417_641#" "nmos_metal_stack_1/m1_n44_0#" 1636.3
+cap "a_7014_641#" "a_7417_641#" -173.978
+cap "a_7417_641#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 201.174
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -407.031
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 104.356
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_1/m1_n44_0#" 2.57622
+cap "a_7014_641#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 201.174
+cap "a_7014_641#" "nmos_metal_stack_1/m1_n44_0#" 1636.3
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 104.356
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 389.87
+cap "a_9222_641#" "nmos_metal_stack_0/m1_n44_0#" 60.8344
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 2.57622
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_0/m1_n44_0#" -435.949
+cap "nmos_metal_stack_0/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 61.2141
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" -8.04741
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "a_9222_641#" 201.174
+cap "nmos_metal_stack_0/m1_360_0#" "a_9222_641#" 1022.52
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 96.3086
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 1443.16
+cap "nmos_metal_stack_4/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" -407.031
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 1126.87
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_n44_0#" 69.8058
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_4/m1_360_0#" 1118.83
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" 1707.23
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 282.655
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -86.989
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" -8.04741
+cap "nmos_metal_stack_4/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" -28.9187
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_1122_132#" 105.944
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 1645.72
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 1118.83
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -61.511
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" -8.04741
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -86.989
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -435.949
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" 417.517
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 1126.87
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -407.031
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_360_0#" 1126.87
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_2/m1_n44_0#" 1645.72
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "nmos_metal_stack_2/m1_n44_0#" 1645.72
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" -173.978
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -8.04741
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -8.04741
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -28.9187
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -28.9187
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" 1126.87
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "comp018green_out_drv_nleg_6T_0/a_206_44#" -173.978
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -407.031
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_2/m1_360_0#" 1126.87
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_1/m1_n44_0#" 1645.72
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_1/m1_n44_0#" 1645.72
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 417.517
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 70.2497
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" -8.04741
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_0/m1_n44_0#" 69.8058
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -28.9187
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_0/m1_n44_0#" -435.949
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_2010_44#" 1118.83
+cap "a_2598_641#" "GR_NMOS_0/w_n1789_n834#" 24.0871
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_n44_0#" -1.86833
+cap "nmos_metal_stack_4/m1_n44_0#" "a_3002_641#" 6.68487
+cap "nmos_metal_stack_4/m1_n44_0#" "a_4806_641#" 3.34243
+cap "GR_NMOS_0/w_n1789_n834#" "a_3002_641#" 24.0871
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 76.3548
+cap "GR_NMOS_0/w_n1789_n834#" "a_4806_641#" 1.61415
+cap "a_2598_641#" "nmos_metal_stack_4/m1_n44_0#" 6.68487
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_3/a_206_44#" 32.1294
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_4/m1_n44_0#" -21.2568
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_360_0#" 170.547
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 20.572
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_n44_0#" -0.780402
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 3.0439
+cap "a_3002_641#" "nmos_metal_stack_4/m1_n44_0#" 68.5081
+cap "a_3002_641#" "nmos_metal_stack_4/m1_360_0#" 0.887104
+cap "a_4806_641#" "nmos_metal_stack_4/m1_n44_0#" 34.6562
+cap "nmos_metal_stack_4/m1_360_0#" "a_4806_641#" 0.725915
+cap "comp018green_out_drv_nleg_6T_3/a_206_44#" "nmos_metal_stack_4/m1_n44_0#" 711.549
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" 111.19
+cap "nmos_metal_stack_4/m1_n44_0#" "a_4806_641#" 33.6648
+cap "nmos_metal_stack_3/m1_n44_0#" "a_4806_641#" 0.0123635
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_4/m1_n44_0#" 321.469
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" 257.375
+cap "nmos_metal_stack_4/m1_360_0#" "a_4806_641#" 2.17774
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "comp018green_out_drv_nleg_6T_2/a_206_44#" -10.0978
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "nmos_metal_stack_4/m1_360_0#" 231.153
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_n44_0#" 0.676402
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 0.0655549
+cap "nmos_metal_stack_4/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 68.0641
+cap "nmos_metal_stack_4/m1_360_0#" "nmos_metal_stack_4/m1_n44_0#" 115.209
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 0.253883
+cap "nmos_metal_stack_3/m1_n44_0#" "nmos_metal_stack_4/m1_360_0#" 42.3982
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_206_44#" -1.20711
+cap "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 2.66131
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 35.0237
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 0.0662998
+cap "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 169.349
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -10.9744
+cap "nmos_metal_stack_3/m1_n44_0#" "GR_NMOS_0/a_n528_n219#" 34.4205
+cap "nmos_metal_stack_3/m1_360_0#" "nmos_metal_stack_3/m1_n44_0#" -65.3924
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_n44_0#" 0.978998
+cap "comp018green_out_drv_nleg_6T_3/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 0.000744942
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_206_44#" 256.958
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "comp018green_out_drv_nleg_6T_3/a_2010_44#" -10.0978
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" -4.33781
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 120.838
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 169.209
+cap "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_3/a_1122_132#" 7.89616
+cap "comp018green_out_drv_nleg_6T_2/a_206_44#" "GR_NMOS_0/a_n528_n219#" 235.487
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/w_n1789_n834#" 0.0662998
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 312.238
+cap "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 246.408
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -61.0546
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 177.573
+cap "nmos_metal_stack_3/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 77.1835
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_3/m1_360_0#" 193.699
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 0.0662998
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "nmos_metal_stack_2/m1_n44_0#" 246.408
+cap "nmos_metal_stack_2/m1_n44_0#" "GR_NMOS_0/a_n528_n219#" 42.3564
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "comp018green_out_drv_nleg_6T_1/a_206_44#" -20.1955
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/a_n528_n219#" 241.181
+cap "nmos_metal_stack_2/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 23.4025
+cap "nmos_metal_stack_2/m1_n44_0#" "nmos_metal_stack_3/m1_360_0#" 54.6322
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" -1.20711
+cap "GR_NMOS_0/a_n528_n219#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 223.048
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 49.4123
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" -4.33781
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_2/m1_n44_0#" -4.33781
+cap "nmos_metal_stack_2/m1_360_0#" "GR_NMOS_0/a_n528_n219#" 168.819
+cap "nmos_metal_stack_2/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" 54.6322
+cap "nmos_metal_stack_0/m1_360_0#" "a_5210_8312#" 1.39001
+cap "a_5210_8312#" "nmos_metal_stack_1/m1_n44_0#" 0.991361
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 1.69866
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "nmos_metal_stack_1/m1_n44_0#" 257.212
+cap "nmos_metal_stack_0/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 253.998
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 209.985
+cap "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 246.401
+cap "nmos_metal_stack_2/m1_360_0#" "a_5210_8312#" 1.73729
+cap "nmos_metal_stack_0/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" 76.2744
+cap "nmos_metal_stack_0/m1_n44_0#" "nmos_metal_stack_1/m1_n44_0#" 35.0969
+cap "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 170.556
+cap "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_n44_0#" -61.0546
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 0.0662998
+cap "comp018green_out_drv_nleg_6T_1/a_2010_44#" "comp018green_out_drv_nleg_6T_0/a_206_44#" -20.1955
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 0.0662998
+cap "nmos_metal_stack_0/m1_n44_0#" "nmos_metal_stack_2/m1_360_0#" 5.79959
+cap "nmos_metal_stack_0/m1_n44_0#" "a_5210_8312#" 40.158
+cap "nmos_metal_stack_0/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 282.102
+cap "nmos_metal_stack_1/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" -4.33781
+cap "comp018green_out_drv_nleg_6T_0/a_206_44#" "nmos_metal_stack_0/m1_360_0#" 41.7399
+cap "nmos_metal_stack_0/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 68.4844
+cap "nmos_metal_stack_0/m1_n44_0#" "nmos_metal_stack_0/m1_360_0#" 17.6775
+cap "nmos_metal_stack_0/m1_360_0#" "a_5210_8312#" 1.51365
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 3.41977
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 193.732
+cap "nmos_metal_stack_0/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_2010_44#" 1.84975
+cap "nmos_metal_stack_0/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_206_44#" 157.067
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_360_0#" 169.34
+cap "nmos_metal_stack_0/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" 7.98616
+cap "nmos_metal_stack_0/m1_n44_0#" "a_5210_8312#" 34.6562
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "GR_NMOS_0/w_n1789_n834#" 62.4832
+cap "GR_NMOS_0/w_n1789_n834#" "a_7417_641#" 31.8453
+cap "GR_NMOS_0/w_n1789_n834#" "a_5210_8312#" 3.24174
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_0/m1_n44_0#" -7.57839
+cap "GR_NMOS_0/w_n1789_n834#" "a_7014_641#" 31.8453
+cap "comp018green_out_drv_nleg_6T_0/a_2010_44#" "nmos_metal_stack_0/m1_n44_0#" 223.539
+cap "a_7417_641#" "nmos_metal_stack_0/m1_n44_0#" 23.0762
+cap "a_5210_8312#" "nmos_metal_stack_0/m1_n44_0#" 14.0671
+cap "nmos_metal_stack_0/m1_n44_0#" "a_7014_641#" 27.3048
+cap "nmos_metal_stack_4/m1_n44_0#" "a_4806_641#" 15.543
+cap "nmos_metal_stack_4/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" -2.53797
+cap "GR_NMOS_0/w_n1789_n834#" "a_4806_641#" 43.6157
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_4/m1_n44_0#" -71.3169
+cap "nmos_metal_stack_4/m1_n44_0#" "a_4806_641#" 156.549
+cap "GR_NMOS_0/w_n1789_n834#" "a_4806_641#" 128.246
+cap "a_4806_641#" "nmos_metal_stack_4/m1_n44_0#" 156.549
+cap "a_4806_641#" "GR_NMOS_0/w_n1789_n834#" 128.246
+cap "nmos_metal_stack_4/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" -66.1309
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 156.549
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 128.246
+cap "GR_NMOS_0/w_n1789_n834#" "GR_NMOS_0/a_n528_n219#" -66.1309
+cap "GR_NMOS_0/w_n1789_n834#" "GR_NMOS_0/a_n528_n219#" -54.6997
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 32.6111
+cap "comp018green_out_drv_nleg_6T_2/a_2010_44#" "GR_NMOS_0/a_n528_n219#" 98.7138
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_2/a_2010_44#" 73.4666
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/a_n528_n219#" 48.8418
+cap "GR_NMOS_0/w_n1789_n834#" "GR_NMOS_0/a_n528_n219#" -66.1309
+cap "GR_NMOS_0/w_n1789_n834#" "comp018green_out_drv_nleg_6T_1/a_206_44#" 128.246
+cap "comp018green_out_drv_nleg_6T_1/a_206_44#" "GR_NMOS_0/a_n528_n219#" 156.549
+cap "nmos_metal_stack_0/m1_n44_0#" "a_5210_8312#" 156.549
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_0/m1_n44_0#" -66.1309
+cap "GR_NMOS_0/w_n1789_n834#" "a_5210_8312#" 128.246
+cap "a_5210_8312#" "GR_NMOS_0/w_n1789_n834#" 128.246
+cap "a_5210_8312#" "nmos_metal_stack_0/m1_n44_0#" 156.549
+cap "GR_NMOS_0/w_n1789_n834#" "nmos_metal_stack_0/m1_n44_0#" -66.0285
+cap "a_5210_8312#" "GR_NMOS_0/w_n1789_n834#" 102.261
+cap "nmos_metal_stack_0/m1_n44_0#" "GR_NMOS_0/w_n1789_n834#" -25.3262
+cap "a_5210_8312#" "nmos_metal_stack_0/m1_n44_0#" 65.415
+merge "nmos_metal_stack_0/VSUBS" "nmos_metal_stack_0/m1_n44_0#" -24726.6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3430556 -92256 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_0/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_2226_132#"
+merge "comp018green_out_drv_nleg_6T_0/a_2226_132#" "m1_9391_812#"
+merge "m1_9391_812#" "nmos_metal_stack_1/VSUBS"
+merge "nmos_metal_stack_1/VSUBS" "comp018green_out_drv_nleg_6T_0/VSUBS"
+merge "comp018green_out_drv_nleg_6T_0/VSUBS" "nmos_metal_stack_2/VSUBS"
+merge "nmos_metal_stack_2/VSUBS" "comp018green_out_drv_nleg_6T_1/VSUBS"
+merge "comp018green_out_drv_nleg_6T_1/VSUBS" "nmos_metal_stack_3/VSUBS"
+merge "nmos_metal_stack_3/VSUBS" "comp018green_out_drv_nleg_6T_2/VSUBS"
+merge "comp018green_out_drv_nleg_6T_2/VSUBS" "GR_NMOS_0/a_n528_n219#"
+merge "GR_NMOS_0/a_n528_n219#" "nmos_metal_stack_4/VSUBS"
+merge "nmos_metal_stack_4/VSUBS" "comp018green_out_drv_nleg_6T_3/VSUBS"
+merge "comp018green_out_drv_nleg_6T_3/VSUBS" "VSUBS"
+merge "VSUBS" "nmos_metal_stack_4/m1_n44_0#"
+merge "nmos_metal_stack_4/m1_n44_0#" "m1_302_363#"
+merge "m1_302_363#" "comp018green_out_drv_nleg_6T_3/a_48_132#"
+merge "nmos_metal_stack_2/m1_360_0#" "comp018green_out_drv_nleg_6T_1/a_1122_132#" -18857.8 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -340400 -14892 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_1/m1_n44_0#" "comp018green_out_drv_nleg_6T_0/a_48_132#" -10116.9 0 0 0 0 0 0 0 0 -532800 -14944 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -680800 -29784 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_0/a_48_132#" "comp018green_out_drv_nleg_6T_1/a_2226_132#"
+merge "comp018green_out_drv_nleg_6T_3/a_2010_44#" "a_2598_641#" -3205.47 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -215700 -8950 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_0/a_206_44#" "a_7417_641#" -3245.61 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -266800 -9972 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_2/a_2010_44#" "a_4806_641#" -4527.6 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -519900 -14558 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_1/a_2010_44#" "a_7014_641#" -3123.54 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -266800 -9972 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_1/a_206_44#" "a_5210_8312#" -4587.83 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -575088 -15580 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_0/m1_360_0#" "nmos_metal_stack_1/m1_360_0#" -32248.9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -12506000 -32980 -12165600 -18088 0 0 0 0 0 0
+merge "nmos_metal_stack_1/m1_360_0#" "comp018green_out_drv_nleg_6T_0/a_1122_132#"
+merge "nmos_metal_stack_3/m1_n44_0#" "comp018green_out_drv_nleg_6T_2/a_48_132#" -10116.8 0 0 0 0 0 0 0 0 -532800 -14944 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -680800 -29784 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_2/a_48_132#" "comp018green_out_drv_nleg_6T_3/a_2226_132#"
+merge "comp018green_out_drv_nleg_6T_0/a_2010_44#" "a_9222_641#" -2407.48 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -193200 -8400 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_2/m1_n44_0#" "comp018green_out_drv_nleg_6T_1/a_48_132#" -10110.3 0 0 0 0 0 0 0 0 -532800 -14944 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -680800 -29784 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_1/a_48_132#" "comp018green_out_drv_nleg_6T_2/a_2226_132#"
+merge "comp018green_out_drv_nleg_6T_3/a_206_44#" "a_794_641#" -2981.7 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -193200 -8400 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_4/m1_360_0#" "comp018green_out_drv_nleg_6T_3/a_1122_132#" -18857.7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -340400 -14892 0 0 0 0 0 0 0 0
+merge "comp018green_out_drv_nleg_6T_2/a_206_44#" "a_3002_641#" -3185.85 0 0 0 0 0 0 0 0 0 0 0 0 -2080 -666 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -355700 -11750 0 0 0 0 0 0 0 0
+merge "nmos_metal_stack_3/m1_360_0#" "comp018green_out_drv_nleg_6T_2/a_1122_132#" -18857.7 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -340400 -14892 0 0 0 0 0 0 0 0

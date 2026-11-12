@@ -1,0 +1,12 @@
+* NGSPICE file created from branch.ext - technology: gf180mcuD
+
+.subckt branch A B C
+R0 C C.n0 4.3205
+R1 C.n0 A 4.4105
+R2 C.n0 B 4.4105
+C0 C w_0_0# 2.7174f
+C1 B w_0_0# 2.77173f
+C2 A w_0_0# 2.77173f
+C3 C.n0 w_0_0# 7.93476f
+.ends
+

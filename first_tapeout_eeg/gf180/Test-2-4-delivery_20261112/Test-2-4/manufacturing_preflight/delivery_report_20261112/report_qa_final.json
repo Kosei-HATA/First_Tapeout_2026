@@ -1,0 +1,37 @@
+{
+  "status": "COMPLETE_LOCAL_FINAL_HASH_VERIFIED",
+  "report_pages": 10,
+  "visual_qa_all_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "render_directory": "render_final_audited_v2",
+  "visual_qa_result": "All pages inspected. Japanese readable, tables and chart intact, no overflow, clipping or orphaned text.",
+  "embedded_japanese_fonts": "NotoSansCJKjp-Regular and Bold embedded",
+  "replacement_characters": 0,
+  "zero_input_recovery": "completed; independent audit included",
+  "manufacturing_approval": "not granted",
+  "16_5_bit_or_ENOB_certification": "not claimed",
+  "files": [
+    {
+      "filename": "Test-2-4_verification_report_ja_20261112_final.pdf",
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\manufacturing_preflight\\delivery_report_20261112\\Test-2-4_verification_report_ja_20261112_final.pdf",
+      "bytes": 898323,
+      "sha256": "12b36e6f7028bcbdc334d8181a7cdaf941dcd69420f0205841f56e7018a6bce4"
+    },
+    {
+      "filename": "Test-2-4_verification_report_ja_20261112_final.docx",
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\manufacturing_preflight\\delivery_report_20261112\\Test-2-4_verification_report_ja_20261112_final.docx",
+      "bytes": 111178,
+      "sha256": "a5a027c380e9972b0881875d5a5ff787dc62ffb167000eaf48a3f39ebd0b84a1"
+    }
+  ]
+}

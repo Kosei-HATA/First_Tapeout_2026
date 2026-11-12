@@ -1,0 +1,12 @@
+{
+  "gf180mcu_fd_io__fill1": {
+    "polygon_geometry_identical_to_pdk": true,
+    "differences": [],
+    "device_lvs": "not_applicable_empty_reference; no connectivity signoff inferred"
+  },
+  "gf180mcu_fd_io__fillnc": {
+    "polygon_geometry_identical_to_pdk": true,
+    "differences": [],
+    "device_lvs": "not_applicable_empty_reference; no connectivity signoff inferred"
+  }
+}

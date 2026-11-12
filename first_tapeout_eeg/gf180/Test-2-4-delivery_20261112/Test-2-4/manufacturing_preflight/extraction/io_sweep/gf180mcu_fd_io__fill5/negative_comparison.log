@@ -1,0 +1,50 @@
+
+Circuit 1 cell cap_nmos_06v0 and Circuit 2 cell cap_nmos_06v0 are black boxes.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cap_nmos_06v0                   |Circuit 2: cap_nmos_06v0                   
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cap_nmos_06v0 and cap_nmos_06v0 are equivalent.
+
+Cell gf180mcu_fd_io__fill5 (0) disconnected node: DVSS
+Cell gf180mcu_fd_io__fill5 (0) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill5 (1) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill5 (1) disconnected node: DVSS
+Class gf180mcu_fd_io__fill5 (0):  Merged 69 parallel devices.
+Cell gf180mcu_fd_io__fill5 (0) disconnected node: DVSS
+Cell gf180mcu_fd_io__fill5 (0) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill5 (1) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill5 (1) disconnected node: DVSS
+Subcircuit summary:
+Circuit 1: gf180mcu_fd_io__fill5           |Circuit 2: gf180mcu_fd_io__fill5           
+-------------------------------------------|-------------------------------------------
+cap_nmos_06v0 (70->1)                      |cap_nmos_06v0 (70->1)                      
+Number of devices: 1                       |Number of devices: 1                       
+Number of nets: 2                          |Number of nets: 2                          
+---------------------------------------------------------------------------------------
+Netlists match uniquely with property errors.
+cap_nmos_06v0:0 vs. cap_nmos_06v0:0:
+ c_width circuit1: 1.5e-06   circuit2: 1.65e-06   (delta=9.52%, cutoff=1%)
+
+Subcircuit pins:
+Circuit 1: gf180mcu_fd_io__fill5           |Circuit 2: gf180mcu_fd_io__fill5           
+-------------------------------------------|-------------------------------------------
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+DVSS                                       |DVSS                                       
+DVDD                                       |DVDD                                       
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes gf180mcu_fd_io__fill5 and gf180mcu_fd_io__fill5 are equivalent.
+
+Final result: Circuits match uniquely.
+Property errors were found.
+
+The following cells had property errors:
+ gf180mcu_fd_io__fill5

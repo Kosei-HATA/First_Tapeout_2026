@@ -1,0 +1,22 @@
+== GF180 EEG ADC digital block: RTL tests ==
+iverilog: Icarus Verilog version 14.0 (devel) (s20260301-217-g8c7f8f3f-dirty)
+python:   Python 3.12.3
+
+PASS  golden_selfcheck    0s  cic_golden self checks passed
+PASS  gen_vectors        38s  top_stream: 60000 frames, codes 3..27, 56 valid outputs, wraps i3 80
+FAIL  therm2bin           0s  no result line, see build/logs/therm2bin.log
+FAIL  dwa                 0s  no result line, see build/logs/dwa.log
+FAIL  clkgen              0s  no result line, see build/logs/clkgen.log
+FAIL  chop1               0s  no result line, see build/logs/chop1.log
+FAIL  rnd_sat             0s  no result line, see build/logs/rnd_sat.log
+FAIL  cic_impulse         0s  no result line, see build/logs/cic_impulse.log
+FAIL  cic_step            0s  no result line, see build/logs/cic_step.log
+FAIL  cic_stream          0s  no result line, see build/logs/cic_stream.log
+FAIL  spi_fifo_regs       1s  no result line, see build/logs/spi_fifo_regs.log
+FAIL  top_dlc2            0s  no result line, see build/logs/top_dlc2.log
+FAIL  top_dlc5            0s  no result line, see build/logs/top_dlc5.log
+gate level: /work/Test-2-4/functional/netlists/eeg_digital_top.nl.v, /work/Test-2-4/functional/netlists/eeg_adc_dig.nl.v
+FAIL  spi_fifo_regs_gl    5s  no gate-level result, see build/logs/spi_fifo_regs_gl.log
+FAIL  top_dlc2_gl         4s  no gate-level result, see build/logs/top_dlc2_gl.log
+
+== summary: 2 passed, 13 failed ==

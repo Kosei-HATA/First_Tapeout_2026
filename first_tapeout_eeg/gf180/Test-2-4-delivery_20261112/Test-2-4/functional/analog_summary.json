@@ -1,0 +1,291 @@
+{
+  "scope": "Schematic-level supplied benches; 3.3V nominal supply; corrected hsa model selection. Not full-chip PEX/noise/ENOB signoff.",
+  "execution_results": [
+    {
+      "test": "bias_op",
+      "exitcode": 0,
+      "seconds": 4.2,
+      "log": "bias_op.log"
+    },
+    {
+      "test": "bias_start",
+      "exitcode": 0,
+      "seconds": 6.2,
+      "log": "bias_start.log"
+    },
+    {
+      "test": "reference",
+      "exitcode": 0,
+      "seconds": 3.6,
+      "log": "reference.log"
+    },
+    {
+      "test": "testmux_tt",
+      "exitcode": 0,
+      "seconds": 8.8,
+      "log": "testmux_tt.log"
+    },
+    {
+      "test": "testmux_ss",
+      "exitcode": 0,
+      "seconds": 9.7,
+      "log": "testmux_ss.log"
+    },
+    {
+      "test": "testmux_ff",
+      "exitcode": 0,
+      "seconds": 8.6,
+      "log": "testmux_ff.log"
+    },
+    {
+      "test": "afe_actual_bias",
+      "exitcode": 0,
+      "seconds": 3.5,
+      "log": "afe_actual_bias.log"
+    },
+    {
+      "test": "quantizer_op_typical",
+      "exitcode": 0,
+      "seconds": 0.8,
+      "log": "quantizer_op_typical.log"
+    },
+    {
+      "test": "quantizer_delay_typical",
+      "exitcode": 0,
+      "seconds": 7.9,
+      "log": "quantizer_delay_typical.log"
+    },
+    {
+      "test": "quantizer_op_ss",
+      "exitcode": 0,
+      "seconds": 1.3,
+      "log": "quantizer_op_ss.log"
+    },
+    {
+      "test": "quantizer_delay_ss",
+      "exitcode": 0,
+      "seconds": 8.8,
+      "log": "quantizer_delay_ss.log"
+    },
+    {
+      "test": "quantizer_op_ff",
+      "exitcode": 0,
+      "seconds": 1.6,
+      "log": "quantizer_op_ff.log"
+    },
+    {
+      "test": "quantizer_delay_ff",
+      "exitcode": 0,
+      "seconds": 10.7,
+      "log": "quantizer_delay_ff.log"
+    }
+  ],
+  "quantizer_delay": {
+    "typical": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 7,
+      "no_transition_cases": 1,
+      "max_measured_ns": 1.37,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": false
+    },
+    "ss": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 8,
+      "no_transition_cases": 0,
+      "max_measured_ns": 1.58,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": true
+    },
+    "ff": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 8,
+      "no_transition_cases": 0,
+      "max_measured_ns": 1.17,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": true
+    }
+  },
+  "clock_checks": {
+    "ADC": {
+      "exitcode": "0",
+      "values": {
+        "dead A->B (ns)": [
+          2.36,
+          3.23,
+          1.75,
+          2.3,
+          2.45
+        ],
+        "overlap A->B (ns)": [
+          5.77,
+          7.72,
+          4.37,
+          5.64,
+          5.96
+        ],
+        "margin 1 A->B (ns)": [
+          0.51,
+          0.72,
+          0.37,
+          0.48,
+          0.54
+        ],
+        "margin 2 A->B (ns)": [
+          2.05,
+          2.64,
+          1.59,
+          1.98,
+          2.13
+        ],
+        "delay A->B (ns)": [
+          0.66,
+          0.87,
+          0.52,
+          0.65,
+          0.68
+        ],
+        "dead B->A (ns)": [
+          1.93,
+          2.64,
+          1.42,
+          1.93,
+          1.94
+        ],
+        "overlap B->A (ns)": [
+          5.46,
+          7.29,
+          4.14,
+          5.38,
+          5.58
+        ],
+        "margin 1 B->A (ns)": [
+          0.23,
+          0.33,
+          0.16,
+          0.22,
+          0.25
+        ],
+        "margin 2 B->A (ns)": [
+          2.45,
+          3.21,
+          1.9,
+          2.37,
+          2.56
+        ],
+        "delay B->A (ns)": [
+          0.64,
+          0.85,
+          0.5,
+          0.66,
+          0.63
+        ],
+        "CIA rise 10-90 (ns)": [
+          0.19,
+          0.25,
+          0.14,
+          0.18,
+          0.2
+        ],
+        "NCIA fall 90-10 (ns)": [
+          0.17,
+          0.22,
+          0.14,
+          0.19,
+          0.16
+        ],
+        "CDA rise 10-90 (ns)": [
+          0.19,
+          0.26,
+          0.14,
+          0.19,
+          0.2
+        ],
+        "NCDA fall 90-10 (ns)": [
+          0.2,
+          0.27,
+          0.16,
+          0.21,
+          0.2
+        ],
+        "supply charge per edge (pC)": [
+          14.07,
+          14.42,
+          13.83,
+          14.08,
+          14.09
+        ]
+      }
+    },
+    "AFE": {
+      "exitcode": "0",
+      "values": {
+        "dead A->B (ns)": [
+          4.41,
+          5.95,
+          3.31
+        ],
+        "dead B->A (ns)": [
+          4.41,
+          5.95,
+          3.31
+        ],
+        "CIA/NCIA skew at rise (ns)": [
+          0.28,
+          0.38,
+          0.23
+        ],
+        "CIA rise 10-90 (ns)": [
+          1.06,
+          1.35,
+          0.85
+        ],
+        "NCIA fall 90-10 (ns)": [
+          1.33,
+          1.73,
+          1.07
+        ],
+        "CHOP edge -> CIA 50 % (ns)": [
+          7.17,
+          9.46,
+          5.55
+        ],
+        "OFPH rise - CIA 50 % (ns)": [
+          0.61,
+          0.8,
+          0.48
+        ],
+        "OFPH fall - CIB 50 % (ns)": [
+          0.59,
+          0.77,
+          0.46
+        ],
+        "CDB rise - blank end (ns)": [
+          0.52,
+          0.67,
+          0.41
+        ],
+        "CDA/CDB max in blanking (V)": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "supply charge per edge (pC)": [
+          178.46,
+          179.13,
+          174.25
+        ]
+      }
+    }
+  },
+  "dac_even": [],
+  "adc_clock_minimum_margin_ns": 0.16,
+  "primary_log_failures": {},
+  "dac_even_output": ""
+}

@@ -1,0 +1,2213 @@
+{
+  "scope": "Exact per-file exclusions outside pruned cache/source directories; original retained locally; final 0 and +100uV raw are included intact",
+  "source_root": "C:\\projects\\ft\\test1x\\Test-2-4",
+  "external_dependencies_not_bundled": [
+    "Full GF180 PDK and container images",
+    "Complete original gf180 project and tool installation"
+  ],
+  "excluded": [
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/chop1.vvp",
+      "bytes": 31701,
+      "sha256": "6489b26e4cf2232a0870b9d3d655d4a2d93d29b18906d0253c204b33e308877b",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_impulse.ops",
+      "bytes": 41984,
+      "sha256": "4a6d4ed7f0acdf72830a2c53777bcdeac2922621d561b03df3d996816704d640",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_impulse.vvp",
+      "bytes": 24975,
+      "sha256": "ae66f5b4ee53e9ab96000f25b9bb0cf4dc74d2bc095769d425843ebf1b9dd1ff",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_step.ops",
+      "bytes": 29749,
+      "sha256": "99ba56e578f29aceb146eb31028bb31b4deae173849842ea2db7291658b4b4b5",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_step.vvp",
+      "bytes": 24975,
+      "sha256": "a1addac69b542835e02769608e2152e5d4197ee1127d838d85670e09c856303b",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_stream.ops",
+      "bytes": 20600001,
+      "sha256": "c6dccaa5c19a59f9d5b54739be7c367c773d4f0e532cdfb8185e7f2f0b293e4a",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/cic_stream.vvp",
+      "bytes": 24975,
+      "sha256": "4c13fee419882b2963b0f9948dfd0f759301b7a3c6c1d36436ca57b065d33114",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/clkgen.vvp",
+      "bytes": 75967,
+      "sha256": "feb768af83ffd9aac11a9dec44718b842cb696e675aca4bf38d6234bebf4dfc2",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/dwa.vvp",
+      "bytes": 78608,
+      "sha256": "2de4bb7cbbf073f7ffc26eebeba14ae47091fb95aca576444c6baa8810002961",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/rnd_sat.vvp",
+      "bytes": 8032,
+      "sha256": "af7f953cc9d5629265224f251409e23559a1730726095df7b11c33da2f158098",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/spi_fifo_regs.vvp",
+      "bytes": 341630,
+      "sha256": "f837a4fb357fd5b45c2a96ec1fd4ffda3f23dcd2b64a38fff7dbe2e693a30066",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/spi_fifo_regs_gl.vvp",
+      "bytes": 15983773,
+      "sha256": "c1300eb2b58fe4d19a1a98c3264a2040274807b90e3816978bedab1f0160fcef",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/therm2bin.vvp",
+      "bytes": 43802,
+      "sha256": "adab9f44c7eb622be881da35cba62d6c66ba3d16ab259dd7f3910ccb97d1d176",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/top_dlc2.vvp",
+      "bytes": 282069,
+      "sha256": "2c499cc306874482d3232b6311a0bb18bedaae48605cb2d83d37543d6d9215b7",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/top_dlc2_gl.vvp",
+      "bytes": 15924180,
+      "sha256": "3a2c820ed44b94ca3a76e8afe8806bb1b9c6c6642ca11ed0bf030c0e55c2a793",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/rtl_tests/build/top_dlc5.vvp",
+      "bytes": 282066,
+      "sha256": "5d949616fcab2d0193f1f14afb3549387a09db11d48052868878a03e39ba8110",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/runs/aclk_ff_-20/out.csv",
+      "bytes": 3319140,
+      "sha256": "6ced1b853853b72f74cce368308273f42c16bf82a58fe9b85e79199e997cc806",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/runs/aclk_fs_27/out.csv",
+      "bytes": 3310152,
+      "sha256": "41bfb98f6ddcebec63d325c9d489d9353963f8b0aca75c132539d7d636d249d8",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/runs/aclk_sf_27/out.csv",
+      "bytes": 3307905,
+      "sha256": "280b02ef23726df4d39feb43978c85c14fa88e4ee729efc743f0da5798bd01b3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/runs/aclk_ss_85/out.csv",
+      "bytes": 3294423,
+      "sha256": "e5d13909b99b92c76e2a83ced974bca476e52b29c88eba9edec6b1be8326bf46",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/adc_loop/runs/aclk_typical_27/out.csv",
+      "bytes": 3309831,
+      "sha256": "da5dc8c86f23426b1bde9ab73495cdb8227357918b8e911a9480137d6697dd53",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/afe/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/afe/runs/clk_ff_-20/out.csv",
+      "bytes": 50484954,
+      "sha256": "756f547d011d71511ebffc3e385556c5479e2a326b9404ae27e574112412a673",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/afe/runs/clk_ss_85/out.csv",
+      "bytes": 50433273,
+      "sha256": "75d4551cc6d09db61bafcaa4b15ac834d86787db878c9eb22ee8e5a606cd4f8f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/afe/runs/clk_typical_27/out.csv",
+      "bytes": 50460558,
+      "sha256": "21fe5b938a29dadf74a0d87bbded9c57f2d7a816a0736f49a5a0dd508d5b9719",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/bias/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/quantizer/runs/delay_ff_-20/out.csv",
+      "bytes": 5199087,
+      "sha256": "c55780ec20b03c67ddcf68e6e3d22e649e08cf32be23775f173b132c35f3ee46",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/quantizer/runs/delay_ss_85/out.csv",
+      "bytes": 5199732,
+      "sha256": "83da15fd6d1d7a2fa9c79932ea6a40a976849ed64a95c6896f77ecea89cc6371",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/quantizer/runs/delay_typical_27/out.csv",
+      "bytes": 5198571,
+      "sha256": "d6ac405bd5fa603ce3daa47ae4d28804dc3fcb1bc1a36954a8551cf33ba9ac9b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/ref/runs/ref_ff_-20/tr.csv",
+      "bytes": 1628352,
+      "sha256": "84f9b8c1e8c20d4a5b7fcb36439e5ea45fce54d17954e91c2c0d1c9924f84f2a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/ref/runs/ref_ss_85/tr.csv",
+      "bytes": 1628352,
+      "sha256": "3cfb4bb99a3514e0005a0f07f830e3546c2c360661a6dbe6ca05ded429ed4451",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/functional/sim_work/gf180/tapeout/sim/ref/runs/ref_typical_27/tr.csv",
+      "bytes": 1628352,
+      "sha256": "82b461254a24694a2bf144586b5f020011e46b7a8489f8123cc0c8956f5b9563",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/report_history/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/ramped_refs_reset/wave.csv",
+      "bytes": 9098905,
+      "sha256": "6965cee285a66f0a3622d82b236c7e967c42a28481a58708cfb8adf4f901eeff",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/regularized_1ns/wave.csv",
+      "bytes": 3084469,
+      "sha256": "0b2a4c4c74a2ce39ea0695a3fa7dce42846b2530598cebacfac3bcfe3d0d00a2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/tmax_025ns/wave.csv",
+      "bytes": 9081930,
+      "sha256": "6734e740211e3421732cec863477dcb8bff3d422a33166bb42b8e0a97f195bfa",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_lvs_supply_3p3/wave.csv",
+      "bytes": 74634835,
+      "sha256": "150a0636b5e537c8cdea38db939ce1003f59d89c0cf4bdbdfbbd907def539b65",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_lvs_supply_3p6/wave.csv",
+      "bytes": 74916396,
+      "sha256": "6e0dba7f9af80bb9353ba13dedb2229924557bdd67f0c9eccdc2b3d523082a54",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_ncda_candidates/ncda_driver_2x/wave.csv",
+      "bytes": 9096749,
+      "sha256": "71ac2236fceda520daf02e6f11af83df363f3b42a356660921c9ae876c9b8671",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_ncda_candidates/output_tg_half/wave.csv",
+      "bytes": 9086164,
+      "sha256": "4cbc7de4b9805f144298ac3e07998bbb6adeb5262ac9722d73afb44d5025038e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_numeric_controls/reltol_1e5/wave.csv",
+      "bytes": 7495290,
+      "sha256": "15ce51cfafd6d352565a9eba9edb65acaac30c0882b18816906288aa98d26afd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_numeric_controls/tmax_025ns/wave.csv",
+      "bytes": 23558205,
+      "sha256": "959dd5c4641d14b583425d015753f09c79bcb798d79a3bbcecbaaddca5965fbd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_numeric_controls/trap/wave.csv",
+      "bytes": 6233546,
+      "sha256": "87479151874155916c6b405f172107a25032e03a88082f14a47c680fe906f0d6",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_q_stress_convergence/wave.csv",
+      "bytes": 71694798,
+      "sha256": "004314f0b773e9856cf4b6693f192d8fa1edfdf383d9d35c1c85c5b6260291e4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_q_terminal_stress/wave.csv",
+      "bytes": 76196001,
+      "sha256": "07166f4437a2aa7b14dea1623434a48aa9609a310433c497089472ad6e350fb3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_q_terminal_stress_3p6/wave.csv",
+      "bytes": 76513962,
+      "sha256": "c98b30b92d75592e9f34b5268f921b27ac1426a77f0220c5504fbbbd4780b29b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_ramp_fourcycle/ngspice46/wave.csv",
+      "bytes": 4851469,
+      "sha256": "4d11160c3250abdbf34cb132c0a2555fb46cd8b947856d231f047620bdf69249",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_ramp_fourcycle/ngspice47plus/wave.csv",
+      "bytes": 4846492,
+      "sha256": "3dfba30dd3f71782cdeb52b7ad01e9b2090154041186f9ec4e81cada328f7035",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_reset_isolation/delayed_10us/wave.csv",
+      "bytes": 9319200,
+      "sha256": "e93e445854f958cf0e11bc889b74c0845f979cc7af9ea2dfca4f08300ba263ae",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_reset_isolation/held/wave.csv",
+      "bytes": 9319200,
+      "sha256": "e93e445854f958cf0e11bc889b74c0845f979cc7af9ea2dfca4f08300ba263ae",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_reset_isolation/slew_100ns/wave.csv",
+      "bytes": 9402861,
+      "sha256": "3aacabbe165882973572442b93dccea80836bcde7f7641b0e96e2b24f45194f3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/pilot/wave.csv",
+      "bytes": 93189516,
+      "sha256": "2f6b6651d30fe1561799c0fb510ed48cea0ea11da7b4acfa5e263dd206a34fc3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/rtl/tb.vvp",
+      "bytes": 88223,
+      "sha256": "50913c56c61419e02b45c65f8a7537b204fb16afa5dfd2ce586c8d05a60fc4a4",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/steady/wave.csv",
+      "bytes": 466016991,
+      "sha256": "1d64321a40a4f8d8be100b8ed9be03a6edd88ffaa3e0b0b9d07b5c98d41b7aa2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/rtl/tb.vvp",
+      "bytes": 88223,
+      "sha256": "dcf3e6a37f29196eaedaf8e9b3da351eb0b2fd2a09610804622c32a1b4e22fbb",
+      "reason": "Redundant archive or compiled/rebuildable intermediate"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_convergence/3.3/runs/aclk_ff_-20/out.csv",
+      "bytes": 6687714,
+      "sha256": "310cb0a1a24b22168139334d18a18ae5b3f1ce41502200a6294c58faae9172f4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_convergence/3.6/runs/aclk_ff_-20/out.csv",
+      "bytes": 6697023,
+      "sha256": "653af1a21e0a028bb0115278964b201b8ec559d54bbba1bdc906037254b0576b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.0/runs/aclk_ff_-20/out.csv",
+      "bytes": 3314646,
+      "sha256": "c54cf7b781ae35d88b0159ecb9bcaedba0e3cedf41b587e9985613c1e19548c0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.0/runs/aclk_fs_27/out.csv",
+      "bytes": 3301806,
+      "sha256": "4d2e528e4bb8f89436e5fc7b8b19f481cc2ea37e73b5a8afc17a3b2788159f2b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.0/runs/aclk_sf_27/out.csv",
+      "bytes": 3302448,
+      "sha256": "35ff557bf04d9dc2f81d30b074d876c877e9db45874dc6adc6862bfb7151991a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.0/runs/aclk_ss_85/out.csv",
+      "bytes": 3288324,
+      "sha256": "8aa913e5ebe01f768891e04bc02ab2207df7f2089907c9deb7066b33a13516d7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.0/runs/aclk_typical_27/out.csv",
+      "bytes": 3302769,
+      "sha256": "804c431513a72eb57cb8224bb17650ffd86561a353812b050b8208656021d818",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.3/runs/aclk_ff_-20/out.csv",
+      "bytes": 3319140,
+      "sha256": "6ced1b853853b72f74cce368308273f42c16bf82a58fe9b85e79199e997cc806",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.3/runs/aclk_fs_27/out.csv",
+      "bytes": 3310152,
+      "sha256": "41bfb98f6ddcebec63d325c9d489d9353963f8b0aca75c132539d7d636d249d8",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.3/runs/aclk_sf_27/out.csv",
+      "bytes": 3307905,
+      "sha256": "280b02ef23726df4d39feb43978c85c14fa88e4ee729efc743f0da5798bd01b3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.3/runs/aclk_ss_85/out.csv",
+      "bytes": 3294423,
+      "sha256": "e5d13909b99b92c76e2a83ced974bca476e52b29c88eba9edec6b1be8326bf46",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.3/runs/aclk_typical_27/out.csv",
+      "bytes": 3309831,
+      "sha256": "da5dc8c86f23426b1bde9ab73495cdb8227357918b8e911a9480137d6697dd53",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.6/runs/aclk_ff_-20/out.csv",
+      "bytes": 3323634,
+      "sha256": "148aab69c2567bea943752e2a6ded7d3c85b33f641d787c70c52d0e1214ce2bd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.6/runs/aclk_fs_27/out.csv",
+      "bytes": 3315609,
+      "sha256": "8607d864ae8433121be646e8d1a5894fe9408160ffcbea82335a592326d54f5b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.6/runs/aclk_sf_27/out.csv",
+      "bytes": 3314646,
+      "sha256": "0ee031d6b2eccd0e686e743e81d68d43c69da69bd973e2ec078971c3232cb7a2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.6/runs/aclk_ss_85/out.csv",
+      "bytes": 3302127,
+      "sha256": "f420ba7ee6630943f80fd1d18b3a8d5637d961f053686b001401236296d39850",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/clock_sensitivity/3.6/runs/aclk_typical_27/out.csv",
+      "bytes": 3315288,
+      "sha256": "e387355733268ae829dc91664802ff9b03884a2056ccb773057d6c2b2437ef1b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_all0_ff-20_v0_s0/tr.csv",
+      "bytes": 26849115,
+      "sha256": "13c89b7f614555a2db39f985381d8f4c8697e6499425f39e1d74526400e02d6b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_all0_ss85_v0_s0/tr.csv",
+      "bytes": 26956300,
+      "sha256": "c17fe24dc52d856792964ce0a4c62742ccd5e2cb1ea81e6d58899672285a342c",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_all1_ff-20_v0_s0/tr.csv",
+      "bytes": 26285933,
+      "sha256": "e2eedaf7f9ebaafcc69077ac322a7ef11bb12e29b2643e3e388330a8743a1448",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_all1_ss85_v0_s0/tr.csv",
+      "bytes": 26379441,
+      "sha256": "d3edc363a84832eb151ef5a9081b93f592a2b70cf72bee1818580cde79e033aa",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_one0_ff-20_v0_s0/tr.csv",
+      "bytes": 27061060,
+      "sha256": "3f2ce54ead10df7bc49868b2a675b5607729ea7b47d05dbb7952162a0c8f20f7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_one0_ss85_v0_s0/tr.csv",
+      "bytes": 27136720,
+      "sha256": "d0ed4055f897b43e8bcb3c742367da3913afed76bb70e881d639315ead4376a4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_one1_ff-20_v0_s0/tr.csv",
+      "bytes": 26536775,
+      "sha256": "2cf3f7423fec8e6bb1d786e95676d9cc2a2c928916ab5b48e34de1ed5de9f374",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_even/runs/even_one1_ss85_v0_s0/tr.csv",
+      "bytes": 26620098,
+      "sha256": "4fc8a7837e50c99ea941915a4abd591768fb0a7c5eb54024eeee867e86db6ede",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/gear_base_p0/tr.csv",
+      "bytes": 7903818,
+      "sha256": "d4269510ec6307cdfb8f503a37e6bad829035c525bfa77879d7fdd49a5947440",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/gear_base_p1/tr.csv",
+      "bytes": 7789143,
+      "sha256": "f41987edfff819af11188b208d12cdadb008d158756585650114f128328b30ea",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/gear_half_p0/tr.csv",
+      "bytes": 12199752,
+      "sha256": "a1ccd013aeea093186ffaed5c48d3e9acdbc003403e0275f9229c5ad8f8f2100",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/gear_half_p1/tr.csv",
+      "bytes": 12083687,
+      "sha256": "032bb400c927985dcaeeae2282a83f59c9d695d17905b45273ddcb45e96c6f16",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/trap_base_p0/tr.csv",
+      "bytes": 6883419,
+      "sha256": "9714d4e1af2f22c7847110f5b156bacdbf4321a0d8c10670df0ea6401d43b43e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_ff_solver_pilot/trap_base_p1/tr.csv",
+      "bytes": 6801270,
+      "sha256": "4436b28dd87044396369f080d58691e2beb19797020cae00fcbf3afbc4d3121d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_00/tr.csv",
+      "bytes": 6671444,
+      "sha256": "d91f9dcb0def3779f9859ce653e30c9f9355c6a194df2e55cdc9143bdb39a3ad",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_01/tr.csv",
+      "bytes": 6728017,
+      "sha256": "e3721187768e9daf82d1f6ecd155f28fca2b9fa55aa96982025a2f47acfc0338",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_02/tr.csv",
+      "bytes": 6726210,
+      "sha256": "9ec3dbaa64b208f415bf6ca9db452978d161f7da6cf64783fc83ff5c2619e0f7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_03/tr.csv",
+      "bytes": 6728156,
+      "sha256": "169fd139c01261fa4cc6a3301e9ab12db2687b7de3ddd07a4da4b764b78a1fca",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_04/tr.csv",
+      "bytes": 6727600,
+      "sha256": "d397718857d3ce416d3251b36de68b47cb6db3dd4c4637ed8875df44cdd60371",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_05/tr.csv",
+      "bytes": 6729824,
+      "sha256": "486c76552697f9f5d42161896eb33f7635e76649d5c82914b3c4a8f0f052bdbe",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_06/tr.csv",
+      "bytes": 6729824,
+      "sha256": "088cc9102e9aacdb969c047ddc8ff16c79631920f474c3ad72eba459fbcdef88",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_07/tr.csv",
+      "bytes": 6726627,
+      "sha256": "307b83f11ade1263b791040928624298d54945e1befb8aa6bd9827dfb1d20fcf",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_08/tr.csv",
+      "bytes": 6723291,
+      "sha256": "e04b0964e55d6f51de5b0633d538f069a37b8bcd2cb838486b823f45a9ba2e20",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_09/tr.csv",
+      "bytes": 6720094,
+      "sha256": "a550653aa17ac51c47378bf4c9f1febbe1670de83ed7a3214a5a9f41396de3c2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_10/tr.csv",
+      "bytes": 6722874,
+      "sha256": "bce43f45d8fc7442277308dce19d2c35a45c35d10cf85289e4616f6f9e8aafa1",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_11/tr.csv",
+      "bytes": 6717870,
+      "sha256": "7eeb06d73348fb3faf296e9513cbd461e73d204d7f4d090b6ffb09d4378ad3f9",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_12/tr.csv",
+      "bytes": 6718148,
+      "sha256": "9393516b79e36bfb9662434544e587fd14a317d4c22fb0d2d80652feee65dd7e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_13/tr.csv",
+      "bytes": 6726349,
+      "sha256": "916fbb48cb25594c9ac416f15931c8e31ce1d87dea18722385bd37e2c4a9ea55",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_14/tr.csv",
+      "bytes": 6719816,
+      "sha256": "f4cc0222ebbfe7734d674d7c33d17e090083d7e3819ff9c6aa9715e9dc589cfd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_15/tr.csv",
+      "bytes": 6717314,
+      "sha256": "7c43e5491980cbf764d36da7866e66835adf6eee2112037654757c98eaa3d214",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_16/tr.csv",
+      "bytes": 6714673,
+      "sha256": "e31c6efaabdf250693b2e769e5ecd0d7c6e9795dff811c3b94f6f52281c9b8d0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_17/tr.csv",
+      "bytes": 6710781,
+      "sha256": "7c2fabcb8dc4d2b405feaa091b2c814c0b29660f30af2226745a73090ff85de3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_18/tr.csv",
+      "bytes": 6709669,
+      "sha256": "3bd10e01961832cd1e6c6e07a14ae0b906e33f3fbb63a00bd4f5d7403eab4bb7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_19/tr.csv",
+      "bytes": 6708418,
+      "sha256": "0e6b5e334572f9c464e7e91f521434eb32127483df001e9a3bdb18b0cfa0e895",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_20/tr.csv",
+      "bytes": 6710225,
+      "sha256": "3873bb9159295934fc4ce6d7629c6916b28239144e25475c25e8eff97e7a0879",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_21/tr.csv",
+      "bytes": 6709669,
+      "sha256": "faea25de8acd9c9f79b4deb8a5c0281187639bade4c47a5eb5cff0f2c77d2501",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_22/tr.csv",
+      "bytes": 6714673,
+      "sha256": "58ff493e95ae082a5c99efdb88014eab384b70e95916f279c92ae56fd0ce2e90",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_23/tr.csv",
+      "bytes": 6710920,
+      "sha256": "9c504d31298292be8a542a52dfb8e7143c34e85696e9849f0047691f86aa2a25",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_24/tr.csv",
+      "bytes": 6711059,
+      "sha256": "ad3eeb143624497c1522da7c2eeaec0c40345457aad6208ced9907db800f2d8c",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_25/tr.csv",
+      "bytes": 6707306,
+      "sha256": "d68e288af3dd041b022138f77ee725dd422e25d8e597314f26cb9313d7854fae",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_26/tr.csv",
+      "bytes": 6706194,
+      "sha256": "638b885113ccbb9874f7d987064e7e184014a42b358487396f9eb177630e487a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_27/tr.csv",
+      "bytes": 6710920,
+      "sha256": "ccef16e49c68e2e2488b1da7ef15fb0a4b2f32ea4e7e149ecdda2d7f637a4e43",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_28/tr.csv",
+      "bytes": 6710642,
+      "sha256": "99359a9900fdb0a831da04b95fe43596103b63f4f86b604eb020cb3c8db23c64",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_29/tr.csv",
+      "bytes": 6705082,
+      "sha256": "476fd5e9679f96bc3d2925fcde3be7eaa40744b95008555d5ccf03bda99ae0b3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_30/tr.csv",
+      "bytes": 6716758,
+      "sha256": "c0fec7ac6fb06432d79f21b3edf0900918c763e135bf15056231c5e999cc1dbb",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_static_typical/code_31/tr.csv",
+      "bytes": 6650594,
+      "sha256": "3aad8dc94cc92879eb80cc89d5b3219f6629f542110f7e9dfea521e6389ea4d5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_trace/runs/brk_ff-20/tr.csv",
+      "bytes": 5148854,
+      "sha256": "e3f12ff033f80aa918e3670684855af09ccefeec48ac1964c116e926907fd3ed",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_trace/runs/brk_ss85/tr.csv",
+      "bytes": 5166224,
+      "sha256": "ddae62daa5769bc55fdce44343ca144d4f63304c3ae3860a70ca6b1380a8f586",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/dac_trace/runs/brk_typical27/tr.csv",
+      "bytes": 5176260,
+      "sha256": "27fcc66879383ad167b8233f114fd8d50c605f7b9093689c38a530a62b194061",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/nmos_cumulative_charge.csv",
+      "bytes": 4462722,
+      "sha256": "6a87c5d4924b22a8963e602761345227beb068a8df8d2a8bb8e735587a5deff5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/pmos_cumulative_charge.csv",
+      "bytes": 4418836,
+      "sha256": "e4b1c498c19c89f6c46f5da9b76cd0da544c884f6f592c6a054b7aa9c8d57e84",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/full_afe_q_diagnostic/wave.csv",
+      "bytes": 19480531,
+      "sha256": "0483d85cfae1a62046a8d94f2b1b21b7cde53b60d1b46fc620f15706011c2ed4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/unit_equivalence/wave.csv",
+      "bytes": 10106481,
+      "sha256": "baa75dbe2130b12bebb2e8099a27d561aacc05fae38cbb548c569d4d3e1d39f5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_initialization_audit/single_gear_op/wave.csv",
+      "bytes": 1280280,
+      "sha256": "6e753fc090db1bd3b293f3eba51c1d253eb3047ba6072129111b760e0a2ffb86",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_saved_wave_replay/46_linear_diagnostic/wave.csv",
+      "bytes": 4076841,
+      "sha256": "20faba48194bb86896a6cbf73d50d6c3848164a58576a53fc633078f9f645736",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_saved_wave_replay/46_official/wave.csv",
+      "bytes": 4076841,
+      "sha256": "5c0387d11effa5c92efca49cc1789770028baef1d5e64e6e50da80aeadfe36f5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_saved_wave_replay/47plus_linear_diagnostic/wave.csv",
+      "bytes": 4068750,
+      "sha256": "c0a8580aa7cb404a3fb666c77c33c0e1b524388a48a2de7edd26579c80363d5e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/moscap_saved_wave_replay/47plus_official/wave.csv",
+      "bytes": 4068843,
+      "sha256": "3dd6a582e1a892cf890bcaa80401e80b5ed9e94cbadc0bee59713248541bf9c4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/source/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/tests/init_single_gear_op/wave.csv",
+      "bytes": 4063432,
+      "sha256": "372d403931fdfbf8b42195e0be1d1f459e2e3a6b306fe7258b7b4ced65aeb401",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/sim/adc_loop/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/sim/dac1/__pycache__/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.0/runs/aclk_ff_-20/out.csv",
+      "bytes": 3313041,
+      "sha256": "83306691989b4a548012661c92dd7ad797019a48ce0c15c1b39a7a3da450fdc0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.0/runs/aclk_fs_27/out.csv",
+      "bytes": 3302448,
+      "sha256": "604ff6b514cf46f20566e0ef85a11819d9a277ec8311dfe564dca41a46f14a8d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.0/runs/aclk_sf_27/out.csv",
+      "bytes": 3300522,
+      "sha256": "c182d81dade4ffa3c700d20ef564c65e317819878fddf2b21d9891faf2f30f8c",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.0/runs/aclk_ss_85/out.csv",
+      "bytes": 3288324,
+      "sha256": "2ec3a41859479c0ee99c9bbaf780da252ffdb48762bc0a550874b849435dde67",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.0/runs/aclk_typical_27/out.csv",
+      "bytes": 3302769,
+      "sha256": "3a9351585f41cba743b72ee0032088af665f95a7e62d7d12440b1acb4d5ace08",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.3/runs/aclk_ff_-20/out.csv",
+      "bytes": 3318819,
+      "sha256": "67241cd6a6d56b5d16c1e54f1511781066431214ab1cdf0152a050e8e891233b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.3/runs/aclk_fs_27/out.csv",
+      "bytes": 3310473,
+      "sha256": "d7a93cc99d94aad7bcf828ae048e9c8ed90b207671fca8b654868efd4859607f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.3/runs/aclk_sf_27/out.csv",
+      "bytes": 3307584,
+      "sha256": "387fa9ae7ad2ef14dca8579ccb7ae295b5ad930235ca2c1f8dc30f762cec51fc",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.3/runs/aclk_ss_85/out.csv",
+      "bytes": 3294744,
+      "sha256": "84998a334961b428d57fb152b92796effc9b004acf06fadb7b66d1c6abb96204",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.3/runs/aclk_typical_27/out.csv",
+      "bytes": 3309510,
+      "sha256": "f222557baf3a4e5ac9d2a9ff780567361c9506f75e1df8300bc7421d90620833",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.6/runs/aclk_ff_-20/out.csv",
+      "bytes": 3322350,
+      "sha256": "1a93eb8979ae3bf4b7c006d0d3c62f4a75e4007a0c38aa406d62cf2636a0ca08",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.6/runs/aclk_fs_27/out.csv",
+      "bytes": 3316572,
+      "sha256": "319c84aa39e421d289277c5196846350fa309b4d238795170f6395c9903fed63",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.6/runs/aclk_sf_27/out.csv",
+      "bytes": 3314004,
+      "sha256": "36416f3319c7dbefb8d927420c76624a55005c8f7cb3807cbd3d1a281b4002dd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.6/runs/aclk_ss_85/out.csv",
+      "bytes": 3302769,
+      "sha256": "8af49c6573b1a67b64e6cd1d1593c3a85debf5130b9eeeb49adf26bcc8b680a2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock/3.6/runs/aclk_typical_27/out.csv",
+      "bytes": 3315609,
+      "sha256": "c0dd8e54aa22eea71123e2aa9c53a78333c288258586570bac06d29c8ed381bf",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/cap/load_wave.csv",
+      "bytes": 4888884,
+      "sha256": "63524da78385ebf18225657f2b1bb6d624c3cb57797ec0f1b65e28a51bb93729",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/cap/out.csv",
+      "bytes": 3262644,
+      "sha256": "348b51a18fb953a9c676cb1200ad7abcae2f79b9c99b0f85dad81c9a7d87e665",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ff_-20/load_wave.csv",
+      "bytes": 4884074,
+      "sha256": "f43bed691533ab98ec724ef0b719dae412902e385b3ddacaf4941aa3f3017847",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ff_-20/out.csv",
+      "bytes": 3259434,
+      "sha256": "fbe92e389e63fabff411732e03053ad87c5655b9433bd58ab07516dba6b636a0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_fs_27/load_wave.csv",
+      "bytes": 4868201,
+      "sha256": "1b23c1f67512bfdc7934a9831e64de44ae3bf2b5c0948d682247fa42b5739573",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_fs_27/out.csv",
+      "bytes": 3248841,
+      "sha256": "fec7a18a7121fd88b85b7b659d028bf711c51bbfa2dfbe3b70d4df27363f2194",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_sf_27/load_wave.csv",
+      "bytes": 4868682,
+      "sha256": "eadb31474a3923f104cdfd347474f5252918ac90402751af22d074d609975532",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_sf_27/out.csv",
+      "bytes": 3249162,
+      "sha256": "979c5596ac632a26719f26f7ffa00ff146b8c7dd3554f523679362da7ffc9c53",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ss_85/load_wave.csv",
+      "bytes": 4849923,
+      "sha256": "76497e043b4b2dce3b27fe9ae0fc71e2bf16d04ee1873bfcbb7e67ee48f6f884",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ss_85/out.csv",
+      "bytes": 3236643,
+      "sha256": "181c8ccaabca27d1c2401b114520b3e075d7f11053f873a25d8f44b7a8df70e1",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_typical_27/load_wave.csv",
+      "bytes": 4868201,
+      "sha256": "9c6a19814fad9b6295c025372573292cc6a13c94a4c78c23d0b35a6188791f4b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_typical_27/out.csv",
+      "bytes": 3248841,
+      "sha256": "cef1f0ab75922fdf1a2f47f7fc39da7ba7731e01212d41e3fd264e970fc06c1b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ff_-20/load_wave.csv",
+      "bytes": 4890808,
+      "sha256": "4de55379f47c5ec6d04ec3791d9af73eda3a69a672bae5cc82b1965656ead40c",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ff_-20/out.csv",
+      "bytes": 3263928,
+      "sha256": "f9e36af2c31e6b251c2955d3945e835dc25e08692d80943edaf73a719a69b8b8",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_fs_27/load_wave.csv",
+      "bytes": 4877340,
+      "sha256": "57ac4edc92694b8aa2c7fc9a149ac42c74567aa2adc106cd4e9d2751a2b79ccd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_fs_27/out.csv",
+      "bytes": 3254940,
+      "sha256": "2036cfc9ead2a0f99a14a381eb384e432ea33c47baf46345dd6a76050df3c5a9",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_sf_27/load_wave.csv",
+      "bytes": 4875416,
+      "sha256": "968e5a6be35d894a03626418e5dbee9e3760231aeacaacc600162dec529e3f9b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_sf_27/out.csv",
+      "bytes": 3253656,
+      "sha256": "de94702a46e816d916cb2ed6bdff3317e938a5d23aee982f516360f02ad9265b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ss_85/load_wave.csv",
+      "bytes": 4855695,
+      "sha256": "bf452a8481797b035c483e963d1550e9f21adf0798f0e47ff673ebd2403bd7d3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ss_85/out.csv",
+      "bytes": 3240495,
+      "sha256": "7434d159436d798c0b704ced8b44e5dd5842eb9977a775f357af534f1b111bd3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ff_-20/load_wave.csv",
+      "bytes": 4896580,
+      "sha256": "7c5454ab8eac22bce843dae2528db917887436769ecd9f58c22338f73a169627",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ff_-20/out.csv",
+      "bytes": 3267780,
+      "sha256": "1bc627ed67af1b6873d0f1e6d2273c5daf18ccb74a8754aee072910fc4c07e9a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_fs_27/load_wave.csv",
+      "bytes": 4884074,
+      "sha256": "f53357c21d2cbfdf4ada9f2a226d167edcd179200a816f34d994223c05bb9524",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_fs_27/out.csv",
+      "bytes": 3259434,
+      "sha256": "61f3f11ffa671cfb300fcd38b02e58522a008bd89a1ea394a9a61c82ff5b9940",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_sf_27/load_wave.csv",
+      "bytes": 4884074,
+      "sha256": "9bfb1bd443b5ad99f38c2f755d64222b2d5375fb564ac1f5c1daeaeb17882221",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_sf_27/out.csv",
+      "bytes": 3259434,
+      "sha256": "cb37cf2a6b935bff0e0cbebc9eed33c4ba327c3467cc8fa8b033e42f89a67f1d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ss_85/load_wave.csv",
+      "bytes": 4865315,
+      "sha256": "f84f46d83c82d1579fccd5db6fce72858e79e24687347987670757af529bcafc",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ss_85/out.csv",
+      "bytes": 3246915,
+      "sha256": "9ab5cbdc9539e500bff9e4fcaf53205da40fb9b9921a806bb7aff71a0a65ee1a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_typical_27/load_wave.csv",
+      "bytes": 4883593,
+      "sha256": "ec23f047c4acd73653affdccf094f2d73b8c6433c9566228b6f23be4851d9526",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_typical_27/out.csv",
+      "bytes": 3259113,
+      "sha256": "b0fe9c6386c465ff5c3c284edc8f8a3e62b677481b1c2985e50bff83f67d8866",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_hrhc/load_wave.csv",
+      "bytes": 4879745,
+      "sha256": "fe81df356afae05ef6ce193d2405eed2a89b768dd904027ce97c4ae41a2d4dbc",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_hrhc/out.csv",
+      "bytes": 3256545,
+      "sha256": "90701f30e5fe7da8fdbf9eb3a0c60c2c5966b2808b54b7d25ede48a49182d87b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_hrlc/load_wave.csv",
+      "bytes": 4882631,
+      "sha256": "92b33d3fc3c678e2b861bf08bf14e143bf11fad96d91ee8f79465eaa9e096439",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_hrlc/out.csv",
+      "bytes": 3258471,
+      "sha256": "9f4585bbbb70aeb397bd378c39e2400e018997d0aa2544928f5843a6c0dd8e71",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_lrhc/load_wave.csv",
+      "bytes": 4886479,
+      "sha256": "7ecfe0a2b1331d2948aee9b29266a64e4ee834345a20a6d7a02ace3f7480cb8b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_lrhc/out.csv",
+      "bytes": 3261039,
+      "sha256": "91ddb20e5d6079f97ae168d1b6f845b9706a2c38ea905797856afe4e7a923d4f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_lrlc/load_wave.csv",
+      "bytes": 4888403,
+      "sha256": "2f96e22daefbace71ec5bedc17335183469b9936a49c9b5b8f7e5f3895e5c4ed",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ff_-20_lrlc/out.csv",
+      "bytes": 3262323,
+      "sha256": "fd9a5969c208909a1445f9afba36635d2e40fa4e6095111ebd760ba77bb4cd0b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_hrhc/load_wave.csv",
+      "bytes": 4863391,
+      "sha256": "da0a3ced8e56b93d16ed3ae028c5f79392cf3342c4a4e4fcf2ecd8953540d069",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_hrhc/out.csv",
+      "bytes": 3245631,
+      "sha256": "e680a285607e2383dcf53098cabec4a6c9384cd6df878d10eb48a8475297ea72",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_hrlc/load_wave.csv",
+      "bytes": 4865315,
+      "sha256": "65ca3840f5537d47eb40bb993b1c32e9d320ae0dac45e5901eb8ce90c32f5f1e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_hrlc/out.csv",
+      "bytes": 3246915,
+      "sha256": "a8fd45e900ec031209b4227dda84ac7414b4c77b3590c378392b0402736a9279",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_lrhc/load_wave.csv",
+      "bytes": 4869163,
+      "sha256": "b957af2db4bb37c7f97d18ab1e590cec129ca7fe56356306278a3421d2d87c41",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_lrhc/out.csv",
+      "bytes": 3249483,
+      "sha256": "fa4cc86d68974212613a134cf253287a5a75c1e7f165523b9fb9ce73ced11b56",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_lrlc/load_wave.csv",
+      "bytes": 4870606,
+      "sha256": "8fd389338125e61b24065ea0b43518a7f03b28b652c90550a7a75a431da5b28d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_fs_27_lrlc/out.csv",
+      "bytes": 3250446,
+      "sha256": "e4232702dead43a5f91f9ed63f75acc880d46329978e0f8e72e2cbaae34bff3a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_hrhc/load_wave.csv",
+      "bytes": 4863872,
+      "sha256": "6c739e98c1c33ae7fbae5f8404316b42429b03283dab837b0c4050935b9b3aee",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_hrhc/out.csv",
+      "bytes": 3245952,
+      "sha256": "9054ed89d0f7ac1e9c2c99084b49a2d67e7aeca5fd8abcf6314de2ddd72412c5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_hrlc/load_wave.csv",
+      "bytes": 4866758,
+      "sha256": "e10aa5ef3e2f57ed03818d503a278dc9da5fe8b98a88155de8cb405bd47228b2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_hrlc/out.csv",
+      "bytes": 3247878,
+      "sha256": "533e51b49280aff144780b2f19fc843925cbd2c2e32049bd4309e7044f4c5e27",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_lrhc/load_wave.csv",
+      "bytes": 4869163,
+      "sha256": "a5ecb4902b8953b2c7457e9daf7cd71bb5d9f7ad66e75229d5fe9e6f72c0134f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_lrhc/out.csv",
+      "bytes": 3249483,
+      "sha256": "f32de0d4e0ffbe5225177c68f67776cddaacaae4959412a585eaff7eacb56fa3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_lrlc/load_wave.csv",
+      "bytes": 4871087,
+      "sha256": "2672b2da79fc8800c72aa4904872747018c48b13aefe8195d3ee0800005e9f2f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_sf_27_lrlc/out.csv",
+      "bytes": 3250767,
+      "sha256": "e5d938cf993d9bd39de7600ef07865764eb48ee74726a6fd77622e611db7a6cd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_hrhc/load_wave.csv",
+      "bytes": 4846075,
+      "sha256": "9758002867fd4ef6383cd7a52deb6bd811279155306af864bfcfb5984afff1fa",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_hrhc/out.csv",
+      "bytes": 3234075,
+      "sha256": "c1e89241212577bf82a33e596db356f90622135acd5fc61e588303b61361245d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_hrlc/load_wave.csv",
+      "bytes": 4847037,
+      "sha256": "186c8dcbf742e7fb675079232ff99df01186ddb66ec025fa5d2f2b69c58b6792",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_hrlc/out.csv",
+      "bytes": 3234717,
+      "sha256": "c70f7e276b236aae8e6b4324779d89a8316467393f65334a6df9572f177d6c9d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_lrhc/load_wave.csv",
+      "bytes": 4849923,
+      "sha256": "04a9d07fee921c260ff945b8be6c26fb66f11fb3677ab570871261da6372d8ab",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_lrhc/out.csv",
+      "bytes": 3236643,
+      "sha256": "3af5d1d64f4787caa7441115766779797c5c15f3a004512b29f093a99719b78b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_lrlc/load_wave.csv",
+      "bytes": 4851366,
+      "sha256": "78032237eac67559f3a4146f34b75eedbf4d2a11c78c43d2353ca2f1decfb675",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_ss_85_lrlc/out.csv",
+      "bytes": 3237606,
+      "sha256": "d7201e6e5bd4dca33552a2082f4fcb50ac701d0a0e98d1f6357ef41a6abff5bc",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_hrhc/load_wave.csv",
+      "bytes": 4863872,
+      "sha256": "01a32da1425ca6683bfd82e41e5602ac08ba02701ac66eebaaf8274b5f3d3eb2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_hrhc/out.csv",
+      "bytes": 3245952,
+      "sha256": "a59f2ab7f3c03e79b235fb3bb8e598d4fb5719f8862f1d34dc1e5b865c34d92b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_hrlc/load_wave.csv",
+      "bytes": 4866277,
+      "sha256": "16319d9e69156d26a0d1c84cf6be171d92bf243a4a34129a91c33d72bf61c633",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_hrlc/out.csv",
+      "bytes": 3247557,
+      "sha256": "aac9e69b18a829cb3b632859a1563bb356244a261b3c61b194af550a4229ef24",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_lrhc/load_wave.csv",
+      "bytes": 4868682,
+      "sha256": "76a12924f298c106fa803b6b40c46fbc09842c4455d38dd1fed2a59f1d151fb4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_lrhc/out.csv",
+      "bytes": 3249162,
+      "sha256": "c3a06271de0a72f430e2c23cc5e04d2f87e94dc9afaea2c3c29b2ca8c4ab80de",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_lrlc/load_wave.csv",
+      "bytes": 4870606,
+      "sha256": "f6ef6ca12d31bfef73d2f830862a3c87a9a58b21d4891c8ba5abb528cae314a0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.0_typical_27_lrlc/out.csv",
+      "bytes": 3250446,
+      "sha256": "69fc02f2a2ed1bdab75ee1554f3629efdcbb7f68d47956d861a52d1656725863",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_hrhc/load_wave.csv",
+      "bytes": 4886479,
+      "sha256": "5cd823d4e5d87995f087dee769ed50941aef0fef54e1ca621c2491501c81b3c5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_hrhc/out.csv",
+      "bytes": 3261039,
+      "sha256": "b72b336cf0bb1b2618ae973265ba0780b0dbeced08e70ab1896c7b54decae4dd",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_hrlc/load_wave.csv",
+      "bytes": 4888884,
+      "sha256": "f624bbab4ed84b56048d4fc25fd324adb0403ae7421e797fc5937a281860192b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_hrlc/out.csv",
+      "bytes": 3262644,
+      "sha256": "7c272141e4dc5536f05738416cbf6dcd3d4c74cf104194f1a4b250aa17ce2988",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_lrhc/load_wave.csv",
+      "bytes": 4892732,
+      "sha256": "3a50c36bae31a0d0ddafe0b0bc3bc4dbf53c4cc98da8c49813b9e58055cf7d84",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_lrhc/out.csv",
+      "bytes": 3265212,
+      "sha256": "e53e538b750e850b913b9d435f282d863a1b0bf3f2d0b3ea5768d41c81b0e0c9",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_lrlc/load_wave.csv",
+      "bytes": 4895137,
+      "sha256": "8372a9471900cd352ab19722e635215491f3cfc506a129ec6bda55c5e74fbdf6",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ff_-20_lrlc/out.csv",
+      "bytes": 3266817,
+      "sha256": "3f7850b27299b912a39b65f2ffb0d094d3fba58fae9e65ac237faa278a647f22",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_hrhc/load_wave.csv",
+      "bytes": 4871568,
+      "sha256": "312d1762213e87f5e065ca58a79e2e05a5a8d08b50a85cb1e92286b5cd9199ad",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_hrhc/out.csv",
+      "bytes": 3251088,
+      "sha256": "25bc6396672a6da83937525241270400ccf092ffe848264d4541d2e8bab5a449",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_hrlc/load_wave.csv",
+      "bytes": 4873492,
+      "sha256": "700d72cabfc132617cc75ad36ab16b17740fa264d40d124444edf3951c77ae19",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_hrlc/out.csv",
+      "bytes": 3252372,
+      "sha256": "b7f4aae4dccd7ae374bd72b8f5772759bcf1dd29b173818ffda23fa863d3d350",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_lrhc/load_wave.csv",
+      "bytes": 4877340,
+      "sha256": "d84e5f023fed152e6fe6524c259371896decfeb97d28d60c1ce25d4605e9c996",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_lrhc/out.csv",
+      "bytes": 3254940,
+      "sha256": "3d9906ce70cda3b69fbf52b34b52bf6441e88f4514162779361e8665e8f37909",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_lrlc/load_wave.csv",
+      "bytes": 4878783,
+      "sha256": "8afd74d4926e49fd37e365cd6b6ef4cccc8e6af718bfa0105edf9e3ac769f65f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_fs_27_lrlc/out.csv",
+      "bytes": 3255903,
+      "sha256": "00dac343d3ab81e4cefaf87381a39f78acc4792863f07a2bdf919a38efb37f8e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_hrhc/load_wave.csv",
+      "bytes": 4871568,
+      "sha256": "78b08e4324ec640bfc193689cf1c36ab97c0e3e0f7d48b4c52c93e676d780b50",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_hrhc/out.csv",
+      "bytes": 3251088,
+      "sha256": "143e52a0794fb3eb869329cd2efb965e144fe436f7403cdd76aafa2928670c23",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_hrlc/load_wave.csv",
+      "bytes": 4873973,
+      "sha256": "ec48b0d309a976ecce9c5c3cb39e8f405c3b5a9655d38f193c5e7aa4609929e5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_hrlc/out.csv",
+      "bytes": 3252693,
+      "sha256": "acd37e6b6ccf316b8bc1252875f646d32b008ee4ec41ddd4039d24eaaf881c67",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_lrhc/load_wave.csv",
+      "bytes": 4877340,
+      "sha256": "3583ec208d45c3bd415cd1aca22e7b75238965154235bfea7075cfaf828a3594",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_lrhc/out.csv",
+      "bytes": 3254940,
+      "sha256": "64147edec5cf88b2c96028c19ee46f7aebaf7e34f71d831bfdb93d7aaf7cf6ff",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_lrlc/load_wave.csv",
+      "bytes": 4877821,
+      "sha256": "caea7153fbb15e6e984221d564f153b750fd2069d0395739adc8dc2664cbedae",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_sf_27_lrlc/out.csv",
+      "bytes": 3255261,
+      "sha256": "b98b3ced252a87b7538bd6a01436955243391951d4aff8272a14a04e3f7c7875",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_hrhc/load_wave.csv",
+      "bytes": 4852809,
+      "sha256": "0db8b53caf42cb049a8024680c8bec4660c9b6096a5dcc22eacd079dd7c90f80",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_hrhc/out.csv",
+      "bytes": 3238569,
+      "sha256": "d1c34f5c7932dd3f019423c6e4ef21e1ec8bb93525ab9389c275bbecbddff4ff",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_hrlc/load_wave.csv",
+      "bytes": 4855214,
+      "sha256": "efd04bf505d16ec1388b2a5eb762764d52d2eb6a05865c901f398cee0b42ae52",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_hrlc/out.csv",
+      "bytes": 3240174,
+      "sha256": "a709447b7a20ddc25d0e63fb6cd2761f1488d3b134e4b5e7aab71b92445f9642",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_lrhc/load_wave.csv",
+      "bytes": 4857138,
+      "sha256": "5c8379f8e7c1a1d53b73630db4f273872a367acb191bda12a67c75aebf64c215",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_lrhc/out.csv",
+      "bytes": 3241458,
+      "sha256": "308f4b5453ff2712d88d2d011e4a7c99c0ac9d2a75862fd21ec14c11f5a581a3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_lrlc/load_wave.csv",
+      "bytes": 4859543,
+      "sha256": "f95e998f14286501092c0aaace2255b4945ed3c52c0a24d65b0f8326769778d3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_ss_85_lrlc/out.csv",
+      "bytes": 3243063,
+      "sha256": "b2977fe62ca96bb8ff70a918d39857e729e37acab8dd9fbeb978c44e200d043a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_hrhc/load_wave.csv",
+      "bytes": 4871087,
+      "sha256": "661c202a365a433cf1752da4d7f0e017726c0594f9b4369c0c9b3c8e8e838f7b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_hrhc/out.csv",
+      "bytes": 3250767,
+      "sha256": "854fbb7c1d4a07b61c99f0d26432edf8c367903960a2d950c4f287047b4d02ca",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_hrlc/load_wave.csv",
+      "bytes": 4873492,
+      "sha256": "3c49680c24c91e47782c6d24a00ae6e651096a6d4f80bb049ea94e6a130f5370",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_hrlc/out.csv",
+      "bytes": 3252372,
+      "sha256": "e517c747bfdcb6b47f778f9bc9b4a91a86ae9b8dabce8c2d85185730a88776d3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_lrhc/load_wave.csv",
+      "bytes": 4876378,
+      "sha256": "f3a47b5c3b6a86673efb4309fab43b36b85977a3b7d14839351cccf801099161",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_lrhc/out.csv",
+      "bytes": 3254298,
+      "sha256": "5de84d38716ac2490e5d013fb62a628e9c367b72cf26fdf526a3e136000c76e8",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_lrlc/load_wave.csv",
+      "bytes": 4878302,
+      "sha256": "521628e78f730187ebffd634833bf71090859d9cb78faa83185d03f3ff64d60b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.3_typical_27_lrlc/out.csv",
+      "bytes": 3255582,
+      "sha256": "484920fa1fe78d08c65df0fa44653e8411169409bb48616a345fb930a77794aa",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_hrhc/load_wave.csv",
+      "bytes": 4879745,
+      "sha256": "e06d457bd50a6364bf39ddba76dd229c0d6aa0655c8a0eabf7f142d83fdc7143",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_hrhc/out.csv",
+      "bytes": 3256545,
+      "sha256": "7f0d3b1d8708eab513df5b39301d72f66b003c4ad9003830845ec7f57ca360f3",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_hrlc/load_wave.csv",
+      "bytes": 4881188,
+      "sha256": "c43c63151760f05906e6b3d891113c744ea0be8fcdef21f12f1d5235e1fa071e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_hrlc/out.csv",
+      "bytes": 3257508,
+      "sha256": "cdfb778114daf35b1834c4a4602a799f15a274ccf1f737e545c980e0d1403ecf",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_lrhc/load_wave.csv",
+      "bytes": 4883593,
+      "sha256": "6226d282f1d139e416f7d1446729f53b5531883c4e91bb853796495ee783bb38",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_lrhc/out.csv",
+      "bytes": 3259113,
+      "sha256": "c87802a9a6436c0a0c98be166882fc5cf38564b38dc6ca58f0885161470ff4f2",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_lrlc/load_wave.csv",
+      "bytes": 4885517,
+      "sha256": "53c460c25580ff4804006bf4f34e59ec272123c3236f1d749a1cc507ab2ce239",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_fs_27_lrlc/out.csv",
+      "bytes": 3260397,
+      "sha256": "285501b2805e1af9c23dc44d39ac4f8b89570ab6f9525707079bedf793314104",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_hrhc/load_wave.csv",
+      "bytes": 4878783,
+      "sha256": "0f494bbc68235c00a62d7a81e2e3f6d297f6a3dbe84f6c889549c6c6daebb48f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_hrhc/out.csv",
+      "bytes": 3255903,
+      "sha256": "d339fcff746cff094ad7b1b6d59ec7c93bd4e7adbee5580b043a97d27d61ad8e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_hrlc/load_wave.csv",
+      "bytes": 4880707,
+      "sha256": "dc28037ad0e3dd50112f16ecf3cd5564a9cf5b53eb0dad62b79a875ebe675bc0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_hrlc/out.csv",
+      "bytes": 3257187,
+      "sha256": "734fe5bdcb86178bc26b1a22399610c60745e15cbae390351af1fc589427a55f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_lrhc/load_wave.csv",
+      "bytes": 4885036,
+      "sha256": "30b8d05f0901df4eab3d6208b2342633d86acca53706c0e5f2b9e32e6fef288b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_lrhc/out.csv",
+      "bytes": 3260076,
+      "sha256": "753831ebc37c93d2411a402920f1c4975afc9d50d1fe14940abba1fe8f4f7736",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_lrlc/load_wave.csv",
+      "bytes": 4885036,
+      "sha256": "d873f1719e6d18893cae3da668de22e0bc1d740c2d1b6ff337a11c49f73dcf58",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_sf_27_lrlc/out.csv",
+      "bytes": 3260076,
+      "sha256": "29f2d089366d425429677dbf7a7919ad3a7b91bf17c5b9a6d89de8bf7255a37d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_hrhc/load_wave.csv",
+      "bytes": 4858581,
+      "sha256": "1836d6aa2c0f28d3aee656ac575de1a7e254646ef3a2f065c90c3d0d9ed463c7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_hrhc/out.csv",
+      "bytes": 3242421,
+      "sha256": "8bdd993e0533282b6438a86a1935919df67fd54a0a3f3d6db833046897b785b7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_hrlc/load_wave.csv",
+      "bytes": 4861948,
+      "sha256": "2d8c45b9bcf0ff39b4b00be779d868cd0e9e6dc4a4808e90f45063fc2d259c27",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_hrlc/out.csv",
+      "bytes": 3244668,
+      "sha256": "d2d389d421e59ac6b3a2ce02b13c9a6ac623e8b390b40ec465cbe52b0618321f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_lrhc/load_wave.csv",
+      "bytes": 4864353,
+      "sha256": "d34d22b1ecac3fe19c8c99b0d153dc4bfbc98c580e1ce06b72cf9c18dcb3ca47",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_lrhc/out.csv",
+      "bytes": 3246273,
+      "sha256": "0d7505446e1634a73ade5b996c4c3aebc572f712a38d3bc3e57ea2bfd2dc513b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_lrlc/load_wave.csv",
+      "bytes": 4867720,
+      "sha256": "a1cc24a0157e15ce84b4a8815a85e75a6aba3b9ed2c2cf4146102e0e6b04e562",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_ss_85_lrlc/out.csv",
+      "bytes": 3248520,
+      "sha256": "e08979089f8164e471732d60b567f9e10a9ad1ce901321e3a238d43f099768d0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_hrhc/load_wave.csv",
+      "bytes": 4879264,
+      "sha256": "9140c20840ef7efb3674953f4969b5f7e0cc3ca372faf8ac645492e62fc35e47",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_hrhc/out.csv",
+      "bytes": 3256224,
+      "sha256": "2f8b55d2904a484090777d4642a41d4e52b30bfb8921392728f23550832a2f48",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_hrlc/load_wave.csv",
+      "bytes": 4879745,
+      "sha256": "f739211fdcad1a729ecee5b84031c7cac7e5c6956d8d3c88deb1c5b8535da360",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_hrlc/out.csv",
+      "bytes": 3256545,
+      "sha256": "fe0b9ae3e4f5af25558d7501f0fd0ebd80dfa15f94a75504231e62019b0b268d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_lrhc/load_wave.csv",
+      "bytes": 4884074,
+      "sha256": "4c1c5398cd914bbc125568f2dbd42820749dbbfe250377d6db30fe5c96213ab5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_lrhc/out.csv",
+      "bytes": 3259434,
+      "sha256": "e3c6d880aac19d0b415726a2521231fbef7ec8e2f06bc745e0cd825f3ec6ed11",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_lrlc/load_wave.csv",
+      "bytes": 4885036,
+      "sha256": "f992bbcdc3c3f84173ebc56f42f923f4252eb3979d88fcecae7b43c46f4741a4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/3.6_typical_27_lrlc/out.csv",
+      "bytes": 3260076,
+      "sha256": "eda05e39f46a0982c6a7a500c08373c7ef570e012e2219477dc0cc1583b0e3cb",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/convergence_controls/half_maxstep/load_wave.csv",
+      "bytes": 9656075,
+      "sha256": "bcd63171166dbe8ad5f5442b4dcea67bfccec423f1d9fe59c99386f815a7250e",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/convergence_controls/half_maxstep/out.csv",
+      "bytes": 6444075,
+      "sha256": "5172832386563669785d11fa05de0115187813660b2d5c64797f255427418b86",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/convergence_controls/tight_reltol/load_wave.csv",
+      "bytes": 5116397,
+      "sha256": "0c970350d46c7b05bbd918bf5285cf631a6d7ebc03b534067ff6b88aeafc7ecb",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/full_rc_pvt_matrix/convergence_controls/tight_reltol/out.csv",
+      "bytes": 3414477,
+      "sha256": "512e3a1fab14e635b2c03e19192b84600054c9b6471cb3b5068e95d16e0a3613",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrhc/load_wave.csv",
+      "bytes": 4892732,
+      "sha256": "b7b230fb34ea7cad5141f3bd3005d9a2920ba0c774f4f6c98204cdbb3344d2cf",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrhc/out.csv",
+      "bytes": 3265212,
+      "sha256": "df6a41bb6973f03d2dd5f7dc77f2c8157886f2b7408c07b54c9c4188660a227b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrlc/load_wave.csv",
+      "bytes": 4894175,
+      "sha256": "8ae176de9fb3a6cc1910930899e286cf33a4e6b3634ea4b311ed54a51abd9958",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrlc/out.csv",
+      "bytes": 3266175,
+      "sha256": "f609aa8d734f803a0cf1be46972f27f05535c42d4e2ed8bf44b75e74f26d8d88",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrhc/load_wave.csv",
+      "bytes": 4898985,
+      "sha256": "1a23f5d9c03e54ac7e20ffa76f48db4e9a5f1bcb11e45ac4bad1c39b145924ab",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrhc/out.csv",
+      "bytes": 3269385,
+      "sha256": "8b2210451820861d7d8ec1520d68a12718bf63c5ae2973fa9b5465edc036c281",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrlc/load_wave.csv",
+      "bytes": 4900428,
+      "sha256": "86d6dfba4334638e4273bcf892c6ab05c50f2e3ca96019a9604f2de22a3422b6",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrlc/out.csv",
+      "bytes": 3270348,
+      "sha256": "50f4403d1405ff0a797e706e4fc485866bfdb3b598694c8af0d1f1521409a4fb",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_klu/load_wave.csv",
+      "bytes": 4876378,
+      "sha256": "0cac1dfe2f45d60817d2c09d4c1b88267a294a596709c0153a5d2dfe81da8ecf",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_klu/out.csv",
+      "bytes": 3254298,
+      "sha256": "c62d7d50eb2d64dd38f742d0162af327a4479f8f84a0ab0b47402dd577d79471",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/schematic/load_wave.csv",
+      "bytes": 4959110,
+      "sha256": "22f6f25fce3a1614e6f095885399cb1fcba658724a6eb6de219b62044a6e7382",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/schematic/out.csv",
+      "bytes": 3309510,
+      "sha256": "f222557baf3a4e5ac9d2a9ff780567361c9506f75e1df8300bc7421d90620833",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/sparse160/load_wave.csv",
+      "bytes": 1574313,
+      "sha256": "f28b74293a6dcfd9551a4679b5520d16bbcc771ae38d3809b7cbb84c9bcc689c",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/sparse160/out.csv",
+      "bytes": 1050633,
+      "sha256": "d47e2e80ad4efd4c8796d6b88538e45ab5a0df9994a8eeec44142a96bcabe591",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_ff_-20/ramp_100us/wave.csv",
+      "bytes": 1839104,
+      "sha256": "ab2282fb4ab259de0ae68d84c199e7bcb51de2d0ff90f04f5fa0f3fec6cd9103",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_ff_-20/ramp_10us/wave.csv",
+      "bytes": 1054252,
+      "sha256": "2dbacbc39d88c7b8ee56005773cac2ce912145d9f4c67ff5bbd29f9ad287d9e9",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_fs_27/ramp_100us/wave.csv",
+      "bytes": 1841349,
+      "sha256": "72c7c8aa92e377dc0fae1afaaff36340840ad4778f1d4f09efb48217f768224d",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_fs_27/ramp_10us/wave.csv",
+      "bytes": 1054701,
+      "sha256": "5b0ab7578f86ac1e898427f70afbc1c2dae531186da4a6fa2e0f1e5a4200d66b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_sf_27/ramp_100us/wave.csv",
+      "bytes": 1830124,
+      "sha256": "405c40beb6368bd8f8c849dc51cb741c67df32ff045c62fe8967ff0a6cdd700a",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_sf_27/ramp_10us/wave.csv",
+      "bytes": 1049313,
+      "sha256": "9ccdbab916d1017c53d8f7425ccd5548e2316a7df8f03562485d2fe14c4c4fe6",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_ss_85/ramp_100us/wave.csv",
+      "bytes": 1833716,
+      "sha256": "f6eb1a34e6c4a0fa2c7e80016605a443a232d4f6a40397a4acbbaa84e38f7c42",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_typical_27/ramp_100us/wave.csv",
+      "bytes": 1836410,
+      "sha256": "c24dee14cd9bcab7265a51b831ec19553fe50071a301ff210a067980d26a47d1",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.0_typical_27/ramp_10us/wave.csv",
+      "bytes": 1052007,
+      "sha256": "d42738a93463c63a9443d64167137d20a78f569e6c5964b38ee3fc3d1256ede7",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_ff_-20/ramp_100us/wave.csv",
+      "bytes": 1840002,
+      "sha256": "c4254577311443f59cd3a1d1d8f0eaeb2767acee2e3769c5d19caa66e3cd07fe",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_ff_-20/ramp_10us/wave.csv",
+      "bytes": 1056048,
+      "sha256": "eed7641f056d51543a4e1e23680cb890083a9ba50bbbdb1e4db3c4cb87b76d89",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_fs_27/ramp_100us/wave.csv",
+      "bytes": 1841798,
+      "sha256": "750018ce5ef0d11bbd7fd52a9b8c49a82920fa795d563ac6d9838f44fa0d73ee",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_fs_27/ramp_10us/wave.csv",
+      "bytes": 1055599,
+      "sha256": "3d001d91206a2d7b2e68f63191b839ee26881fddaddadf64bd8f3b135216fc5f",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_sf_27/ramp_100us/wave.csv",
+      "bytes": 1831471,
+      "sha256": "7e8477f54e06035d68180c9b471fadb9ead5bfde3e2625c5f9e6576fcd9c83a4",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_sf_27/ramp_10us/wave.csv",
+      "bytes": 1050660,
+      "sha256": "139fec472401ca92fb0f829699e62b2751b8ed9c7e754e6ca508675538e3f638",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_ss_85/ramp_100us/wave.csv",
+      "bytes": 1834165,
+      "sha256": "7d438f67e91691ebbed179e1c751d1266f55db82f09fb6c19345ece84f4306a8",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_ss_85/ramp_10us/wave.csv",
+      "bytes": 1049762,
+      "sha256": "8faddae961d2f31cbb9b56a3d1a589a40eaa3cc1f0f7da4fb92e9f253884a2d9",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_typical_27/ramp_100us/wave.csv",
+      "bytes": 1837757,
+      "sha256": "8fe084dd0a78ec47313c2b9b7af4544f4553b97b4d7ac36dde4dbd340acb03ef",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.3_typical_27/ramp_10us/wave.csv",
+      "bytes": 1053803,
+      "sha256": "5f2e6f96b900abc0c55816daac02474669a6a83c95ffb2c4465443c354f1cdd1",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_ff_-20/ramp_100us/wave.csv",
+      "bytes": 1840900,
+      "sha256": "50919369e4f5c5d423c26af92e52253db9b7a16e5b40f2af6fea7408262919f1",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_ff_-20/ramp_10us/wave.csv",
+      "bytes": 1056946,
+      "sha256": "2b0334b82136aab44af8a6d58f6e815b49baf31dbcbf62e1cb7c15e4fce58459",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_fs_27/ramp_100us/wave.csv",
+      "bytes": 1842247,
+      "sha256": "165144a3f239c553cbd6e1879878a37967947b86235341be9bf2ae6c4db2ae2b",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_fs_27/ramp_10us/wave.csv",
+      "bytes": 1056946,
+      "sha256": "e436377f6b610730056548f19d133ce10be6a4073d819425940db2880672f4a0",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_sf_27/ramp_100us/wave.csv",
+      "bytes": 1831920,
+      "sha256": "aac518b9582237361cf0aa43e9ecbbcf708dd9e3d0876d2414c277a7f4c6c0e5",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_sf_27/ramp_10us/wave.csv",
+      "bytes": 1052456,
+      "sha256": "43a1e9ed34674ce35fdf1d694fbff83b7bd1343fda7460d774a1896ee5e3be16",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_ss_85/ramp_100us/wave.csv",
+      "bytes": 1834165,
+      "sha256": "2cf7f5d6d8ec2bae0b0b9f3f3832924be0dc4f46730bb8ec5c3b5c183de43897",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_ss_85/ramp_10us/wave.csv",
+      "bytes": 1050660,
+      "sha256": "af30690a7afcd809f21bc733c2433e8cc3bef492202b20069d889de7f4def369",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_typical_27/ramp_100us/wave.csv",
+      "bytes": 1838655,
+      "sha256": "606a844303f90ab7c84185396e3bab6043389c6a31054df46b07437807c34d65",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/bias_validation/runs/3.6_typical_27/ramp_10us/wave.csv",
+      "bytes": 1055599,
+      "sha256": "e0792a0ea668e35356e57a0f4f2b4a74f11c4c93f237bf2e2618bdf354b63912",
+      "reason": "Other large raw waveform; final 0/+100uV raw fully included, this original retained locally; corresponding small results, input decks, logs and scripts included"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/delivery_report_20261112/Test-2-4_verification_report_ja_20261112.docx",
+      "bytes": 110760,
+      "sha256": "5af6a64b7152b47c329ffbec3bc8d9ee417e304747642940de15c30392ad9788",
+      "reason": "Old report, editable report, or environment-specific PDF build helper; final PDF and QA retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/delivery_report_20261112/Test-2-4_verification_report_ja_20261112.pdf",
+      "bytes": 882683,
+      "sha256": "f5d2a7518ec022aeaa1f2b73892048e1235b182b9d203c9379316c1671467648",
+      "reason": "Old report, editable report, or environment-specific PDF build helper; final PDF and QA retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/delivery_report_20261112/Test-2-4_verification_report_ja_20261112_final.docx",
+      "bytes": 111178,
+      "sha256": "a5a027c380e9972b0881875d5a5ff787dc62ffb167000eaf48a3f39ebd0b84a1",
+      "reason": "Old report, editable report, or environment-specific PDF build helper; final PDF and QA retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/delivery_report_20261112/build_report_final.py",
+      "bytes": 29906,
+      "sha256": "05389b7f2c48f708aa5e4b1b7c5819c816dcc44599084b9b9c9eaf382b839f67",
+      "reason": "Old report, editable report, or environment-specific PDF build helper; final PDF and QA retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/delivery_report_20261112/report_qa.json",
+      "bytes": 796,
+      "sha256": "9d42ffe264df4fd95edbb9ab49052ff65591ec6f18693f20ae7c20c53db8d836",
+      "reason": "Old report, editable report, or environment-specific PDF build helper; final PDF and QA retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/clock.lvsdb",
+      "bytes": 552756,
+      "sha256": "11aa08df66487c56d10ecf861cef0804bb6ccb4e83d694e100e5ee2b29009a36",
+      "reason": "Intermediate LVS database; final core LVS database and summaries retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/alternative/kpex_rc/.kpex_cache/gf180mcuD/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/alternative/coupled_labeled.gds/coupled_wires.lvsdb.gz",
+      "kind": "unreadable",
+      "reason": "[WinError 3] 指定されたパスが見つかりません。: 'C:\\\\projects\\\\ft\\\\test1x\\\\Test-2-4\\\\manufacturing_preflight\\\\extraction\\\\core_pex_probe\\\\rc_diagnosis\\\\alternative\\\\kpex_rc\\\\.kpex_cache\\\\gf180mcuD\\\\work\\\\Test-2-4\\\\manufacturing_preflight\\\\extraction\\\\core_pex_probe\\\\rc_diagnosis\\\\alternative\\\\coupled_labeled.gds\\\\coupled_wires.lvsdb.gz'"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/dependencies/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/deps/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install_tcl/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source_tcl/",
+      "kind": "directory",
+      "reason": "Tool source/build/install/dependency cache, VCS/cache, or superseded report history; local original retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/io_asig_control/control.lvsdb",
+      "bytes": 6692442,
+      "sha256": "7375d03b2bd04d174615f3a3185675aa8d831bf89490188752ff450f81d8b1e1",
+      "reason": "Intermediate LVS database; final core LVS database and summaries retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/io_asig_lvs/actual.lvsdb",
+      "bytes": 6696409,
+      "sha256": "095c587299fa4e72e6a5f3430bb28902c856aa0ef051394c1cd0c99934ec2b2c",
+      "reason": "Intermediate LVS database; final core LVS database and summaries retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/io_sweep/gf180mcu_fd_io__bi_24t/flat_control/actual.gds",
+      "bytes": 9069684,
+      "sha256": "9fe860feaec75909c8421e049e0bc9681747083eedba10a1e885d1702f8b9e80",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/extraction/io_sweep/gf180mcu_fd_io__cor/actual.gds",
+      "bytes": 12955106,
+      "sha256": "8d84bb2346a9dff9eee07eabccf968f8020a84b864ffc5e4470afd6e0dbcc92f",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/official_precheck/Test-2-4_prechecked.gds",
+      "bytes": 224949132,
+      "sha256": "0a69571e330022c3b7af9288ae05eb2363ffea393babe3b7e12eaffdb6039f44",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/official_precheck/runs/verify_test24_20261111/01-klayout-readlayout/chip_top.gds",
+      "bytes": 224953330,
+      "sha256": "36f31365e321faaa6bd8957787c1f93c3aaebd7be5027570c4eb7eb772bcd6ad",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/official_precheck/runs/verify_test24_20261111/04-klayout-generateid/chip_top.gds",
+      "bytes": 224949132,
+      "sha256": "efaf148c03b5aa76698ce32f7c9b0960d12699951a00ac3184b921115bcf3c62",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/official_precheck/runs/verify_test24_20261111/12-magic-drc/views/chip_top.drc.mag",
+      "bytes": 11181717,
+      "sha256": "7f1a1c4cc6ab19644364d8ba094248614aed62fbced67d685e6a3586f0935a8e",
+      "reason": "Large rebuildable Magic intermediate; result and logs retained"
+    },
+    {
+      "path": "Test-2-4/manufacturing_preflight/official_precheck/runs/verify_test24_20261111/final/gds/chip_top.gds",
+      "bytes": 224949132,
+      "sha256": "efaf148c03b5aa76698ce32f7c9b0960d12699951a00ac3184b921115bcf3c62",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/verification/eeg_core_from_delivered.gds",
+      "bytes": 179579576,
+      "sha256": "17c3b2b6f505ad446f0ce885453cb3a17c509965c6c0afe2fced86537d2a93e4",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    },
+    {
+      "path": "Test-2-4/verification/core_with_hints/eeg_core_from_delivered.gds",
+      "bytes": 179579904,
+      "sha256": "98245c33dfcde083c6983ed55e2c9921f5f291204b6c12d033a2ab4054292dc4",
+      "reason": "Duplicate or rebuildable large derived GDS; delivered final GDS included, original retained locally"
+    }
+  ],
+  "png_regeneration_inputs": {
+    "original_gds": {
+      "source_path": "C:\\projects\\ft\\test1x\\chip_top_fill_r6_20261026.gds",
+      "expected_uncompressed_sha256": "1343e9cc55cb2020f6213937c4622f2a126db6381ae66615719398aa6a027529",
+      "included_gzip": "dependency_sources/gf180/tapeout/chip/gds/chip_top_fill_r6_20261026.gds.gz",
+      "required_relative_path": "chip_top_fill_r6_20261026.gds"
+    },
+    "final_gds": {
+      "included_path": "Test-2-4/gds/Test-2-4.gds",
+      "expected_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755"
+    },
+    "geometry_only_helper": {
+      "script": "changes/refresh_bridge_png_from_geometry.py",
+      "scope": "Figure 02 only; no GDS inputs needed; KLayout/NumPy/Matplotlib still required",
+      "full_four_figure_geometry_only_rerun_validated": false
+    },
+    "reference_Test2_3": {
+      "source_path": "C:\\projects\\ft\\test1x\\Test2-3\\gds\\Test2-3.gds",
+      "expected_sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c",
+      "required_relative_path": "Test2-3/gds/Test2-3.gds",
+      "reason": "Included for comparison and ECO regeneration only; manufacturing candidate remains Test-2-4/gds/Test-2-4.gds",
+      "included_path": "reference/Test2-3/gds/Test2-3.gds"
+    }
+  }
+}

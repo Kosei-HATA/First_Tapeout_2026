@@ -1,0 +1,84 @@
+{
+  "scope": "14frame pilot only; first14 frames of original stimulus; interpolated frame4..12 window, toggle count difference4; not full72frame qualification",
+  "stage": "finished",
+  "results": [
+    {
+      "setting": "gear_base",
+      "pattern": 0,
+      "seconds": 328.0987982749939,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 56862,
+      "charge_C": -1.5441591469822033e-11,
+      "deck_sha256": "d9592a8379fd2b1901f071f445faa916c86e603164c4cc23bd2a987212b9e448"
+    },
+    {
+      "setting": "gear_base",
+      "pattern": 1,
+      "seconds": 323.32725620269775,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 56037,
+      "charge_C": -1.5441591638963982e-11,
+      "deck_sha256": "126ad7ebf196886475784d7f5087b66d5271fb38c5b1b5fc59e592fbfce8864a"
+    },
+    {
+      "setting": "gear_half",
+      "pattern": 0,
+      "seconds": 492.8155779838562,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 87768,
+      "charge_C": -1.5441593438502727e-11,
+      "deck_sha256": "fea70e75aeaa0f93bc8b2aefa6a16573def31a5258071bee1f45bf9ede2454a5"
+    },
+    {
+      "setting": "gear_half",
+      "pattern": 1,
+      "seconds": 485.0643846988678,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 86933,
+      "charge_C": -1.5441593539731895e-11,
+      "deck_sha256": "b6e2294a902d166a5799fc85cf4b83b8fa3bfcedb2573c9e571f7b5c18ed838c"
+    },
+    {
+      "setting": "trap_base",
+      "pattern": 0,
+      "seconds": 280.34280037879944,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 49521,
+      "charge_C": -1.544159321060724e-11,
+      "deck_sha256": "5aea2e60c3d6b0335e574e3145da667e8898944e1cd1b1e7eb016ec01411ebed"
+    },
+    {
+      "setting": "trap_base",
+      "pattern": 1,
+      "seconds": 280.92406129837036,
+      "exitcode": 0,
+      "last_time_s": 1.5671875e-05,
+      "samples": 48930,
+      "charge_C": -1.544159332925142e-11,
+      "deck_sha256": "44a6895254c781f61bb7375132b08b7b13fd6a0aa08e586c345f8303ebe7677a"
+    }
+  ],
+  "comparison": [
+    {
+      "setting": "gear_base",
+      "even_fC_per_toggle": 4.228548745399498e-05
+    },
+    {
+      "setting": "gear_half",
+      "even_fC_per_toggle": 2.530729195744011e-05
+    },
+    {
+      "setting": "trap_base",
+      "even_fC_per_toggle": 2.9661044828307166e-05
+    },
+    {
+      "setting": "saved72frame_same_8frame_window",
+      "even_fC_per_toggle": -1.219485558340506e-06
+    }
+  ]
+}

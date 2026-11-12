@@ -1,0 +1,56 @@
+{
+  "cell": "gf180mcu_fd_io__asig_5p0",
+  "klayout_actual_lvs_pass": false,
+  "klayout_standard_pdk_control_lvs_pass": false,
+  "klayout_extracted_device_netlists_identical": true,
+  "actual_vs_pdk_nonzero_polygon_xor": [
+    {
+      "layer": "42/0",
+      "xor_um2": 555.1416,
+      "equal": false
+    },
+    {
+      "layer": "46/0",
+      "xor_um2": 555.1416,
+      "equal": false
+    },
+    {
+      "layer": "36/0",
+      "xor_um2": 561.6,
+      "equal": false
+    }
+  ],
+  "magic_netgen_topology_match": true,
+  "magic_netgen_device_classes_after_parallel_combination": {
+    "diode_nd2ps_06v0": 2,
+    "diode_pd2nw_06v0": 1,
+    "cap_nmos_06v0": 1
+  },
+  "nets": 3,
+  "ports": [
+    "ASIG5V",
+    "DVDD",
+    "DVSS",
+    "VDD",
+    "VSS"
+  ],
+  "unused_ports_in_both": [
+    "VDD",
+    "VSS"
+  ],
+  "qualified_device_lvs_pass": false,
+  "blockers": [
+    "KLayout extraction omits two N-diode groups for both actual and stock PDK cells; investigate extraction rule applicability.",
+    "Netgen treats cap_nmos_06v0 as undefined placeholder/black box; physical parameter checking is not established.",
+    "Magic diode pj values use e.g. 0.106n while reference uses106e-6; unit normalization/comparison behavior must be validated.",
+    "No independently assembled whole-chip pad-ring reference CDL found in supplied project."
+  ],
+  "next_step": "Validate IO primitive models, unit conventions and checked properties using stock PDK control; then build independent intended pad-ring/top netlist and run complete LVS. Do not generate reference from extracted connectivity and call that independent verification.",
+  "later_validation": "io_strict_validation.json",
+  "later_scoped_topology_and_parameter_pass": true,
+  "remaining_blockers": [
+    "Full pad-ring/top independent reference CDL not assembled.",
+    "KLayout IO extraction incompatibility remains, but Magic/Netgen scoped alternative validated.",
+    "No ESD current/breakdown/mechanical or full-chip RC guarantee."
+  ]
+}

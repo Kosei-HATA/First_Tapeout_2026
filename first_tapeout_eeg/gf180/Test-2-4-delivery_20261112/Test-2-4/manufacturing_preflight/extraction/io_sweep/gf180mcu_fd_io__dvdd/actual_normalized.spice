@@ -1,0 +1,156 @@
+* NGSPICE file created from gf180mcu_fd_io__dvdd.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__dvdd VSS DVDD VSS_uq3 DVSS
+X0 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_2269# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_1989# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X1 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X2 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_3389# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_3109# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X3 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_2829# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_3109# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X4 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X5 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_1709# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_1989# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X6 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_1709# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_1429# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X7 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_2829# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_2549# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X8 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X9 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X10 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_3669# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X11 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X12 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_1149# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_1429# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X13 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_869# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X14 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_2269# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_2549# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X15 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X16 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_3389# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_3669# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X17 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X18 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS cap_nmos_06v0 c_width=25u c_length=10u
+X19 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_353_1149# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/a_13226_869# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X20 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X21 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X22 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X23 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X24 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X25 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X26 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X27 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X28 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X29 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X30 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X31 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X32 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X33 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X34 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X35 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X36 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X37 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X38 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X39 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X40 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X41 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X42 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X43 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X44 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X45 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X46 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X47 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X48 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X49 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X50 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X51 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X52 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X53 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X54 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X55 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X56 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X57 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X58 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X59 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X60 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X61 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X62 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X63 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X64 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X65 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X66 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X67 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X68 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X69 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X70 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X71 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X72 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X73 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X74 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X75 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X76 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X77 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X78 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X79 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X80 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X81 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X82 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X83 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X84 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X85 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X86 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X87 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X88 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X89 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X90 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X91 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X92 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X93 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X94 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X95 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X96 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X97 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X98 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X99 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD DVSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X100 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X101 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X102 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X103 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X104 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X105 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X106 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X107 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X108 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X109 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X110 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X111 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X112 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X113 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X114 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X115 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X116 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X117 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X118 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X119 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X120 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X121 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X122 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X123 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X124 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVSS DVSS nfet_06v0 ad=2.2p pd=10.88u as=2.2p ps=10.88u w=5u l=0.7u
+X125 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X126 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X127 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X128 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X129 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X130 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X131 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X132 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X133 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X134 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X135 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVDD DVDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X136 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X137 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X138 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# DVSS nfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X139 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/comp018green_esd_rc_v5p0_0/VRC DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X140 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# DVSS DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X141 DVSS GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X142 DVDD GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_2805_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X143 GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_4685_27917# GF_NI_DVDD_BASE_0/comp018green_esd_clamp_v5p0_DVDD_0/a_3781_27917# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+D0 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+X144 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+D1 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+D2 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+D3 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+X145 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X146 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X147 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+.ends

@@ -1,0 +1,221 @@
+{
+  "ports_before": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_after": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_preserved": true,
+  "counts_before": {
+    "M": 474,
+    "C": 627
+  },
+  "counts_after": {
+    "M": 474,
+    "R": 9787,
+    "C": 5216
+  },
+  "ambiguous_or_missing_original_net_groups": {
+    "Xeeg_aclk_inv_s24_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s24_0/a_236_340.t23": [],
+    "Xeeg_aclk_inv_s24_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s24_1/a_236_340.t23": [],
+    "Xeeg_aclk_inv_s24_2/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s24_2/a_236_340.t23": [],
+    "Xeeg_aclk_inv_s24_3/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s24_3/a_236_340.t23": [],
+    "Xeeg_aclk_slow_0/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_0/a_180_208.t1": [],
+    "Xeeg_aclk_slow_1/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_1/a_180_208.t1": [],
+    "Xeeg_aclk_slow_2/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_2/a_180_208.t1": [],
+    "Xeeg_aclk_slow_3/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_3/a_180_208.t1": [],
+    "Xeeg_aclk_inv_s1_0/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_1/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_1/a_172_2100.t0": [],
+    "Xeeg_aclk_slow_5/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_5/a_180_208.t1": [],
+    "Xeeg_aclk_slow_4/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_4/a_180_208.t1": [],
+    "Xeeg_aclk_slow_6/a_580_1540.t1": [],
+    "Xeeg_aclk_slow_6/a_180_208.t1": [],
+    "Xeeg_aclk_inv_s1_2/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_2/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_3/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_3/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_4/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_4/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_5/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_5/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_6/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_6/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s8_0/a_236_340.t9": [],
+    "Xeeg_aclk_inv_s8_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s1_7/a_236_340.t1": [],
+    "Xeeg_aclk_inv_s1_7/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s8_2/a_236_340.t9": [],
+    "Xeeg_aclk_inv_s8_2/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s8_1/a_236_340.t9": [],
+    "Xeeg_aclk_inv_s8_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s8_3/a_236_340.t9": [],
+    "Xeeg_aclk_inv_s8_3/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s6_0/a_236_340.t5": [],
+    "Xeeg_aclk_inv_s6_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s48_0/a_492_2060.t1": [],
+    "Xeeg_aclk_inv_s48_1/a_492_2060.t1": [],
+    "Xeeg_aclk_inv_s6_1/a_236_340.t5": [],
+    "Xeeg_aclk_inv_s6_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_0/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_1/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_2/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_2/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s12_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s12_0/a_236_340.t17": [],
+    "Xeeg_aclk_inv_s12_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s12_1/a_236_340.t17": [],
+    "Xeeg_aclk_inv_s2_3/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_3/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_4/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_4/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_5/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_5/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s10_0/a_236_340.t13": [],
+    "Xeeg_aclk_inv_s10_0/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_6/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_6/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s10_1/a_236_340.t13": [],
+    "Xeeg_aclk_inv_s10_1/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_7/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_7/a_172_2100.t0": [],
+    "Xeeg_aclk_inv_s2_8/a_236_340.t3": [],
+    "Xeeg_aclk_inv_s2_8/a_172_2100.t0": []
+  },
+  "collapsed_device_topology_parameters_match": false,
+  "max_cap_pair_error_fF": [
+    13.005749999999997,
+    [
+      "VSS",
+      "m2_22100_1182#"
+    ],
+    13.076109999999998,
+    0.07035999999999999
+  ],
+  "largest_cap_pair_errors": [
+    [
+      13.005749999999997,
+      [
+        "VSS",
+        "m2_22100_1182#"
+      ],
+      13.076109999999998,
+      0.07035999999999999
+    ],
+    [
+      12.8302,
+      [
+        "VSS",
+        "m2_22100_5122#"
+      ],
+      13.101239999999999,
+      0.27104
+    ],
+    [
+      12.774029999999998,
+      [
+        "VSS",
+        "m2_12660_5122#"
+      ],
+      13.141979999999998,
+      0.36795
+    ],
+    [
+      12.744939999999998,
+      [
+        "VSS",
+        "m2_6260_5122#"
+      ],
+      13.129689999999998,
+      0.38475000000000004
+    ],
+    [
+      9.26278,
+      [
+        "VDD",
+        "m2_6260_5122#"
+      ],
+      9.26278,
+      0.0
+    ],
+    [
+      9.2472,
+      [
+        "VDD",
+        "m2_12660_5122#"
+      ],
+      9.2472,
+      0.0
+    ],
+    [
+      9.20913,
+      [
+        "VDD",
+        "m2_22100_5122#"
+      ],
+      9.20913,
+      0.0
+    ],
+    [
+      9.17746,
+      [
+        "VDD",
+        "m2_22100_1182#"
+      ],
+      9.17746,
+      0.0
+    ],
+    [
+      9.13904,
+      [
+        "NCIA",
+        "VDD"
+      ],
+      9.13904,
+      0.0
+    ],
+    [
+      8.30872,
+      [
+        "NCIB",
+        "VDD"
+      ],
+      8.30872,
+      0.0
+    ]
+  ],
+  "scope": "Resistive subdivisions collapsed for bookkeeping; no independent spatial RC accuracy claim"
+}

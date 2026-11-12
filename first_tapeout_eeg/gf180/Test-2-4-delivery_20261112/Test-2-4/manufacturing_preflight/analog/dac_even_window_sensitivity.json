@@ -1,0 +1,161 @@
+{
+  "scope": "Saved waveform time-window sensitivity; not solver convergence. Endpoint-interpolated integration. Balanced 32/64-frame windows, toggle-count difference 16/32.",
+  "results": [
+    {
+      "corner": "ss85",
+      "pattern": "one",
+      "windows": [
+        {
+          "frames": [
+            4,
+            36
+          ],
+          "difference_fC_per_toggle": -0.00010511952547808414,
+          "charges_C": [
+            -4.5166114439644877e-11,
+            -4.516611275773247e-11
+          ]
+        },
+        {
+          "frames": [
+            36,
+            68
+          ],
+          "difference_fC_per_toggle": -0.00012465706100683389,
+          "charges_C": [
+            -4.51649225557457e-11,
+            -4.5164920561232726e-11
+          ]
+        },
+        {
+          "frames": [
+            4,
+            68
+          ],
+          "difference_fC_per_toggle": -0.00011488829304051063,
+          "charges_C": [
+            -9.033103699539057e-11,
+            -9.03310333189652e-11
+          ]
+        }
+      ]
+    },
+    {
+      "corner": "ss85",
+      "pattern": "all",
+      "windows": [
+        {
+          "frames": [
+            4,
+            36
+          ],
+          "difference_fC_per_toggle": 2.49527820049472e-05,
+          "charges_C": [
+            -3.694454451990526e-14,
+            -3.6956921099779715e-14
+          ]
+        },
+        {
+          "frames": [
+            36,
+            68
+          ],
+          "difference_fC_per_toggle": -3.420818523800652e-06,
+          "charges_C": [
+            3.5495949181323924e-17,
+            3.719267516912905e-17
+          ]
+        },
+        {
+          "frames": [
+            4,
+            68
+          ],
+          "difference_fC_per_toggle": 1.0765981740573275e-05,
+          "charges_C": [
+            -3.690904857070455e-14,
+            -3.69197284245912e-14
+          ]
+        }
+      ]
+    },
+    {
+      "corner": "ff-20",
+      "pattern": "one",
+      "windows": [
+        {
+          "frames": [
+            4,
+            36
+          ],
+          "difference_fC_per_toggle": 9.828775396120022e-05,
+          "charges_C": [
+            -6.176310532879954e-11,
+            -6.17631069014036e-11
+          ]
+        },
+        {
+          "frames": [
+            36,
+            68
+          ],
+          "difference_fC_per_toggle": -0.00027856259516338634,
+          "charges_C": [
+            -6.176202112375295e-11,
+            -6.176201666675143e-11
+          ]
+        },
+        {
+          "frames": [
+            4,
+            68
+          ],
+          "difference_fC_per_toggle": -9.013742060109307e-05,
+          "charges_C": [
+            -1.235251264525525e-10,
+            -1.2352512356815505e-10
+          ]
+        }
+      ]
+    },
+    {
+      "corner": "ff-20",
+      "pattern": "all",
+      "windows": [
+        {
+          "frames": [
+            4,
+            36
+          ],
+          "difference_fC_per_toggle": -0.0001595142426449375,
+          "charges_C": [
+            -3.373631870862876e-14,
+            -3.3657199644276874e-14
+          ]
+        },
+        {
+          "frames": [
+            36,
+            68
+          ],
+          "difference_fC_per_toggle": -6.755430923300784e-05,
+          "charges_C": [
+            -1.689423747863665e-17,
+            1.6612699900935237e-17
+          ]
+        },
+        {
+          "frames": [
+            4,
+            68
+          ],
+          "difference_fC_per_toggle": -0.000113534275971545,
+          "charges_C": [
+            -3.3753212946152636e-14,
+            -3.364058694438886e-14
+          ]
+        }
+      ]
+    }
+  ]
+}

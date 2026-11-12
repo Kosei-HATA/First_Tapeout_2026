@@ -1,0 +1,2 @@
+PASS: tb_cic impulse (41984 operations, 41 output strobes bit-exact, 39 valid)
+tb/tb_cic.sv:144: $finish called at 446390000 (1ps)

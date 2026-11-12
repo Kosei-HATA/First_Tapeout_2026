@@ -1,0 +1,29 @@
+* eeg_afe_clk check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice ff
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/afe/eeg_afe_clk.spice
+.temp -20
+.options sparse reltol=1e-4
+VDD VDD 0 3.3
+VCHOP CHOP 0 PULSE(0 3.3 50n 0.5n 0.5n 3.905750e-06 7.812500e-06)
+VCO CHOP_OUT 0 PULSE(0 3.3 50n 0.5n 0.5n 3.905750e-06 7.812500e-06)
+VBL CHOP_BLANK 0 PWL(0.000000e+00 0 1.948242e-08 0 1.998242e-08 3.3 2.636230e-07 3.3 2.641230e-07 0 3.925732e-06 0 3.926232e-06 3.3 4.169873e-06 3.3 4.170373e-06 0 7.831982e-06 0 7.832482e-06 3.3 8.076123e-06 3.3 8.076623e-06 0 1.173823e-05 0 1.173873e-05 3.3 1.198237e-05 3.3 1.198287e-05 0 1.564448e-05 0 1.564498e-05 3.3 1.588862e-05 3.3 1.588912e-05 0)
+VEN CHOP_EN 0 3.3
+VRS AFE_RST 0 0
+XC CHOP CHOP_OUT CHOP_BLANK CHOP_EN AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB OFPH RST VDD 0 eeg_afe_clk
+CL1 CIA 0 16.6p
+CL2 NCIA 0 33p
+CL3 CIB 0 16.6p
+CL4 NCIB 0 33p
+CL5 CDA 0 0.3p
+CL6 NCDA 0 0.6p
+CL7 CDB 0 0.3p
+CL8 NCDB 0 0.6p
+CL9 OFPH 0 0.2p
+.control
+set noaskquit
+tran 0.02n 1.562500e-05 0 0.1n
+wrdata out.csv v(chop) v(cia) v(ncia) v(cib) v(ncib) v(ofph) v(cda) v(cdb) v(chop_blank) i(vdd)
+quit
+.endc
+.end

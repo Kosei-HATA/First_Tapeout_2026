@@ -1,0 +1,74 @@
+{
+  "scope": "Single analog IO cell topology and primitive geometric parameters; not full ring, ESD behavior, parasitic RC or foundry signoff.",
+  "cell": "gf180mcu_fd_io__asig_5p0",
+  "topology_pass": true,
+  "strict_property_pass": true,
+  "independent_numeric_comparison_pass": true,
+  "dimension_groups": [
+    {
+      "group": "diode_nd2ps_06v0 DVSS ASIG5V",
+      "extracted": {
+        "area_m2": 6e-10,
+        "perimeter_m": 0.000424
+      },
+      "reference": {
+        "area_m2": 6e-10,
+        "perimeter_m": 0.000424
+      },
+      "extracted_multiplicity": 4.0,
+      "reference_multiplicity": 4.0,
+      "pass": true
+    },
+    {
+      "group": "diode_pd2nw_06v0 ASIG5V DVDD",
+      "extracted": {
+        "area_m2": 6e-10,
+        "perimeter_m": 0.000424
+      },
+      "reference": {
+        "area_m2": 6e-10,
+        "perimeter_m": 0.000424
+      },
+      "extracted_multiplicity": 4.0,
+      "reference_multiplicity": 4.0,
+      "pass": true
+    },
+    {
+      "group": "cap_nmos_06v0 DVDD DVSS 1.5e-05",
+      "extracted": {
+        "total_width_m": 0.0005399999999999998,
+        "length_m": 1.4999999999999999e-05
+      },
+      "reference": {
+        "total_width_m": 0.00054,
+        "length_m": 1.5e-05
+      },
+      "extracted_multiplicity": 36.0,
+      "reference_multiplicity": 36.0,
+      "pass": true
+    },
+    {
+      "group": "diode_nd2ps_06v0 DVSS DVDD",
+      "extracted": {
+        "area_m2": 1.6e-10,
+        "perimeter_m": 0.000328
+      },
+      "reference": {
+        "area_m2": 1.6e-10,
+        "perimeter_m": 0.000328
+      },
+      "extracted_multiplicity": 4.0,
+      "reference_multiplicity": 4.0,
+      "pass": true
+    }
+  ],
+  "negative_controls": {
+    "moscap_width_10pct_detected": true,
+    "diode_perimeter_10pct_detected": true
+  },
+  "normalization_evidence": "io_asig_magic/normalization_evidence.json",
+  "model_basis": "Official Magic device subcircuit cap_nmos_06v0 declares l=c_length,w=c_width; official ngspice MOSCAP model uses c_length*c_width; official Netgen setup compares c_length/c_width with 1% tolerance. Primitive abstraction has no transistor interior in the model.",
+  "warning_resolution": "Netgen cap_nmos_06v0 placeholder is primitive abstraction. Negative width control plus independent numeric comparison establish geometric-parameter checks despite placeholder warning.",
+  "pdks_modified": false,
+  "gds_modified": false
+}

@@ -1,0 +1,28 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * saved converged voltage replay, not surrounding-circuit equivalence
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+node                                         0
+xc.c_moscap_int1                             0
+xc.c_moscap_int2                             0
+v.xc.vcurrmeasc_moscap#branch                0
+vreplay#branch                               0
+
+ Reference value :  0.00000e+00  [                        ]   0%
+ Reference value :  3.96355e-06  [============            ]  50%
+ Reference value :  7.02079e-06  [=====================   ]  89%
+No. of Data Rows : 43751
+ngspice-47+ done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

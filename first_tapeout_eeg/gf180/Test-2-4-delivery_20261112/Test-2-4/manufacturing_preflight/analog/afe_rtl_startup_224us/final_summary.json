@@ -1,0 +1,88 @@
+{
+  "recorded_utc": "2026-11-11T16:49:55.766264+00:00",
+  "run": {
+    "seconds": 1991.311392068863,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "scope": "AFE-only current-LVS topology with RTL-derived controls; assumed board sequence and integral-Q model; not system or steady-state acceptance",
+    "last_time_s": 0.000224,
+    "finite": true,
+    "endpoints": {
+      "outn": 1.633201701377739,
+      "outp": 1.663409046524862,
+      "rtl_afe_rst": 0.0,
+      "src": 9.999999999999999e-05,
+      "vbcm": 0.8180702594490317,
+      "vbn": 0.846101456583546,
+      "vcm": 1.648717400873928
+    }
+  },
+  "periodicity_pass": true,
+  "evaluation_window_s": [
+    0.000159318117,
+    0.000221818117
+  ],
+  "all_seven_comparisons_pass": true,
+  "max_changes_V": {
+    "differential_mean_change_V": 1.0285317343650124e-07,
+    "vcm_mean_change_V": 7.43867671886278e-05,
+    "rms_change_V": 6.424931262363764e-08
+  },
+  "evaluation_ranges": {
+    "outp": {
+      "min_V": 1.658509145861532,
+      "max_V": 1.667008710118914
+    },
+    "outn": {
+      "min_V": 1.632764026368831,
+      "max_V": 1.640181049914987
+    },
+    "vcm": {
+      "min_V": 1.612508604972964,
+      "max_V": 1.707413670246287
+    },
+    "vbn": {
+      "min_V": 0.8452232523288035,
+      "max_V": 0.8466266770764879
+    },
+    "vbcm": {
+      "min_V": 0.81805617589339,
+      "max_V": 0.8180839061779399
+    },
+    "vclk": {
+      "min_V": 2.805755967876085,
+      "max_V": 3.300068689352002
+    },
+    "vdd": {
+      "min_V": 3.3,
+      "max_V": 3.3
+    }
+  },
+  "output_rail_clipping_screen": "Evaluation OUTP/OUTN remain away from 0 and 3.3 V rails; this is not a linearity test.",
+  "worst_gate_pair": {
+    "instance": "xc.xcda3.xn",
+    "pair": "vgs",
+    "max_abs_V": 3.34836141437881,
+    "peak_time_s": 1.475645878767807e-05
+  },
+  "worst_vds": {
+    "instance": "xa.xoff.xop.xnph.xn",
+    "pair": "vds",
+    "max_abs_V": 3.386043665024339,
+    "peak_time_s": 1.088877312765394e-05
+  },
+  "prior_result": "afe_rtl_startup: 160 us earlier fixed window failed VCM criterion; unchanged and preserved.",
+  "scope": "Engineering periodicity test only. AFE-only, assumed external sequence, ideal common substrate, Q diagnostic, no full ADC loop or ENOB validation.",
+  "not_established": [
+    "Settled incremental gain, slow servo/electrode behavior and 0.5-100 Hz response",
+    "Noise/ENOB and full ADC/DWA closed-loop behavior",
+    "Board startup requirements, finite PDN/substrate and pad models",
+    "Foundry qualification of Q diagnostic or reliability signoff"
+  ],
+  "next_steps": [
+    "Matched zero-input/opposite-sign trials needed to distinguish offset and incremental gain; plan runtime before execution",
+    "Do not automatically extend time further; use actual board requirements when supplied"
+  ],
+  "postprocessing_note": "First JSON export hit numpy.bool_ serialization; explicit bool conversion only, preserved error log. Reanalyzed saved wave, no simulation rerun."
+}

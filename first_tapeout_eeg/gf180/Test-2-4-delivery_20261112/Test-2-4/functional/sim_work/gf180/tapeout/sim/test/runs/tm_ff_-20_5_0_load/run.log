@@ -1,0 +1,29 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_testmux check
+
+Doing analysis at TEMP = -20.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+v(atp) = 6.888295e-05
+i(vvcm) = -2.63416e-13
+i(vvrefp) = -8.46036e-13
+i(vvrefn) = 3.006908e-13
+i(vvbn) = 1.509076e-12
+i(vvbcm) = 1.575896e-12
+i(vvbn1) = 1.506855e-12
+i(vvnc1) = -1.08544e-12
+i(vvpc1) = -3.78302e-13
+i(vvbpc2) = -6.10447e-13
+i(vvbnc2) = 7.695850e-14
+i(vaop) = -1.72798e-13
+i(vaon) = -3.56089e-13
+i(vo2p) = -2.18444e-13
+i(vo2n) = -3.10087e-13
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

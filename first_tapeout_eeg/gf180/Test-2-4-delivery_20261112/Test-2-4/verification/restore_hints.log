@@ -1,0 +1,44 @@
+{
+  "reason": "Restore six internal net-name hints explicitly used by supplied adc_lay.py and chip_lay.py; delivered file has stripped these labels.",
+  "geometry_xor_um2": {},
+  "source_sha256": "b266b06d45a301a474755787706808e451f5858db634274912380e7588f52436",
+  "labels": [
+    {
+      "name": "ADC.OTA1.CIP",
+      "layer": "36/10",
+      "x_um": 2172.71,
+      "y_um": 1042.02
+    },
+    {
+      "name": "ADC.OTA1.CIN",
+      "layer": "36/10",
+      "x_um": 2172.71,
+      "y_um": 1043.6200000000001
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.P1P",
+      "layer": "42/10",
+      "x_um": 2371.58,
+      "y_um": 1221.355
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.P1N",
+      "layer": "42/10",
+      "x_um": 2387.6,
+      "y_um": 1228.655
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.D1P",
+      "layer": "42/10",
+      "x_um": 2167.2,
+      "y_um": 1269.13
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.D1N",
+      "layer": "42/10",
+      "x_um": 2183.2200000000003,
+      "y_um": 1276.43
+    }
+  ],
+  "changes": "text labels only; no topology or device changes; no forced net matches"
+}

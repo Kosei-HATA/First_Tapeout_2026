@@ -1,0 +1,20 @@
+* NGSPICE file created from adc_c2.ext - technology: gf180mcuD
+
+.subckt cap_mim$5$3 w_n120_n120# m4_n120_n120# m4_0_0#
+X0 m4_0_0.t0 m4_n120_n120.t0 cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+R0 m4_n120_n120# m4_n120_n120.t0 0.193943
+R1 m4_0_0# m4_0_0.t0 0.0207747
+C0 m4_n120_n120# m4_0_0# 5.85015f
+C1 m4_0_0# w_n120_n120# 11.1521f
+C2 m4_n120_n120# w_n120_n120# 1.6348f
+C3 m4_0_0.t0 w_n120_n120# 74.5804f
+C4 m4_n120_n120.t0 w_n120_n120# 11.4439f
+.ends
+
+.subckt adc_c2
+Xcap_mim$5$3_0 w_80_80# m4_200_21366# m4_200_80# cap_mim$5$3
+C0 m4_200_21366# m4_200_80# 11.54623f
+C1 m4_200_80# w_80_80# 4.53961f
+C2 m4_200_21366# w_80_80# 0.529f
+.ends
+

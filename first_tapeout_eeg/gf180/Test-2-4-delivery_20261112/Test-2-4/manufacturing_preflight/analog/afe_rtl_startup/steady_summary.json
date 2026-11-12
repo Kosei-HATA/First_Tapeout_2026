@@ -1,0 +1,18 @@
+{
+  "seconds": 1035.004025220871,
+  "exitcode": 0,
+  "diagnostics": [],
+  "completed": true,
+  "scope": "AFE-only current-LVS topology with RTL-derived controls; assumed board sequence and integral-Q model; not system or steady-state acceptance",
+  "last_time_s": 0.00016,
+  "finite": true,
+  "endpoints": {
+    "outn": 1.633047619728927,
+    "outp": 1.663191863551915,
+    "rtl_afe_rst": 0.0,
+    "src": 9.999999999999999e-05,
+    "vbcm": 0.8180702597630805,
+    "vbn": 0.846101469129412,
+    "vcm": 1.648532119426534
+  }
+}

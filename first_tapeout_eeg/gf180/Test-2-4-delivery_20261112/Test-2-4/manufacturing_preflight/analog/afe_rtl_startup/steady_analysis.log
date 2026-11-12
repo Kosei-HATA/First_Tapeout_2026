@@ -1,0 +1,137 @@
+{
+  "mode": "steady",
+  "last_time_s": 0.00016,
+  "finite": true,
+  "steady_criteria_met": false,
+  "steady_evaluation_available": true,
+  "evaluation_cycles": [
+    {
+      "start_s": 9.6818117e-05,
+      "end_s": 0.00010463061700000001,
+      "differential_mean_V": 0.029889038106337886,
+      "differential_rms_V": 0.029929381514722762,
+      "vcm_mean_V": 1.6437433800697372,
+      "vcm_rms_V": 1.6437448124174683
+    },
+    {
+      "start_s": 0.00010463061700000001,
+      "end_s": 0.000112443117,
+      "differential_mean_V": 0.029889307345504493,
+      "differential_rms_V": 0.02992955932875605,
+      "vcm_mean_V": 1.6453027603600314,
+      "vcm_rms_V": 1.645304156176745
+    },
+    {
+      "start_s": 0.000112443117,
+      "end_s": 0.000120255617,
+      "differential_mean_V": 0.029889525161478026,
+      "differential_rms_V": 0.029929695105488367,
+      "vcm_mean_V": 1.646368833121317,
+      "vcm_rms_V": 1.6463702148347463
+    },
+    {
+      "start_s": 0.000120255617,
+      "end_s": 0.000128068117,
+      "differential_mean_V": 0.029889717040914216,
+      "differential_rms_V": 0.029929813281619255,
+      "vcm_mean_V": 1.6470976383087315,
+      "vcm_rms_V": 1.6470990149388667
+    },
+    {
+      "start_s": 0.000128068117,
+      "end_s": 0.000135880617,
+      "differential_mean_V": 0.02988987942683174,
+      "differential_rms_V": 0.029929909254205012,
+      "vcm_mean_V": 1.6475958870395293,
+      "vcm_rms_V": 1.6475972621758008
+    },
+    {
+      "start_s": 0.000135880617,
+      "end_s": 0.000143693117,
+      "differential_mean_V": 0.029890023931485484,
+      "differential_rms_V": 0.02992999445592492,
+      "vcm_mean_V": 1.6479365053192168,
+      "vcm_rms_V": 1.6479378810449776
+    },
+    {
+      "start_s": 0.000143693117,
+      "end_s": 0.000151505617,
+      "differential_mean_V": 0.029890150058891646,
+      "differential_rms_V": 0.029930067237404295,
+      "vcm_mean_V": 1.6481693515714726,
+      "vcm_rms_V": 1.648170727773719
+    },
+    {
+      "start_s": 0.000151505617,
+      "end_s": 0.000159318117,
+      "differential_mean_V": 0.02989027160388363,
+      "differential_rms_V": 0.029930140714701868,
+      "vcm_mean_V": 1.6483285479800471,
+      "vcm_rms_V": 1.6483299247043417
+    }
+  ],
+  "adjacent_checks": [
+    {
+      "differential_mean_change_V": 2.6923916660731573e-07,
+      "vcm_mean_change_V": 0.0015593802902942322,
+      "rms_change_V": 1.778140332892031e-07,
+      "rms_limit_V": 2.9929381514722762e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 2.178159735320706e-07,
+      "vcm_mean_change_V": 0.0010660727612856746,
+      "rms_change_V": 1.3577673231568443e-07,
+      "rms_limit_V": 2.9929559328756052e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 1.9187943619061731e-07,
+      "vcm_mean_change_V": 0.0007288051874143608,
+      "rms_change_V": 1.181761308879925e-07,
+      "rms_limit_V": 2.9929695105488367e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 1.6238591752509857e-07,
+      "vcm_mean_change_V": 0.0004982487307978456,
+      "rms_change_V": 9.597258575702594e-08,
+      "rms_limit_V": 2.9929813281619256e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 1.4450465374293842e-07,
+      "vcm_mean_change_V": 0.0003406182796874546,
+      "rms_change_V": 8.52017199085009e-08,
+      "rms_limit_V": 2.9929909254205014e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 1.26127406161608e-07,
+      "vcm_mean_change_V": 0.0002328462522558361,
+      "rms_change_V": 7.278147937453405e-08,
+      "rms_limit_V": 2.992999445592492e-05,
+      "pass": false
+    },
+    {
+      "differential_mean_change_V": 1.2154499198432922e-07,
+      "vcm_mean_change_V": 0.00015919640857453565,
+      "rms_change_V": 7.347729757273269e-08,
+      "rms_limit_V": 2.9930067237404297e-05,
+      "pass": false
+    }
+  ],
+  "worst_gate_pair": {
+    "instance": "xc.xcda3.xn",
+    "pair": "vgs",
+    "max_abs_V": 3.34836141437881,
+    "peak_time_s": 1.475645878767807e-05
+  },
+  "worst_vds": {
+    "instance": "xa.xoff.xop.xnph.xn",
+    "pair": "vds",
+    "max_abs_V": 3.386043665024339,
+    "peak_time_s": 1.088877312765394e-05
+  },
+  "scope": "Engineering periodicity test only. AFE-only, assumed external sequence, ideal common substrate, Q diagnostic, no full ADC loop or ENOB validation."
+}

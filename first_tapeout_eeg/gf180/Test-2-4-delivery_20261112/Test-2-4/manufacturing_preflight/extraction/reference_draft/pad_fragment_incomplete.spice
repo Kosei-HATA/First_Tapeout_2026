@@ -1,0 +1,80 @@
+* INCOMPLETE PAD FRAGMENT ONLY. NOT a full-chip LVS reference or signoff.
+* Excludes original core/tie cells, spacers, and analog/digital core.
+.subckt pad_fragment_only ATP AVDD AVSS CS_N CS_N_PAD DRDY_N DRDY_N_PAD DVDD DVSS ELN ELP MCLK MCLK_PAD MISO MISO_OE MISO_PAD MOSI MOSI_PAD RAW_CLK RAW_CLK_PAD RAW_DATA RAW_DATA_PAD RESET_N RESET_N_PAD SCLK SCLK_PAD UNUSED_ANALOG_14 UNUSED_ANALOG_15 UNUSED_ANALOG_16 UNUSED_ANALOG_17 UNUSED_ANALOG_18 UNUSED_ANALOG_19 UNUSED_ANALOG_20 UNUSED_ANALOG_21 UNUSED_ANALOG_22 UNUSED_ANALOG_23 UNUSED_ANALOG_24 UNUSED_ANALOG_25 UNUSED_ANALOG_26 UNUSED_ANALOG_27 UNUSED_ANALOG_28 UNUSED_ANALOG_29 UNUSED_ANALOG_30 UNUSED_ANALOG_31 UNUSED_ANALOG_32 UNUSED_ANALOG_33 UNUSED_ANALOG_34 UNUSED_ANALOG_35 UNUSED_ANALOG_36 UNUSED_ANALOG_37 UNUSED_ANALOG_38 UNUSED_ANALOG_39 UNUSED_ANALOG_40 UNUSED_ANALOG_41 UNUSED_ANALOG_42 UNUSED_ANALOG_43 UNUSED_ANALOG_44 VCM VREFN_PAD VREFP_PAD
+Xanalog_0__pad AVDD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_10__pad VREFP_PAD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_11__pad VREFN_PAD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_12__pad AVDD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_13__pad AVSS DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_14__pad UNUSED_ANALOG_14 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_15__pad UNUSED_ANALOG_15 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_16__pad UNUSED_ANALOG_16 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_17__pad UNUSED_ANALOG_17 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_18__pad UNUSED_ANALOG_18 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_19__pad UNUSED_ANALOG_19 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_1__pad AVSS DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_20__pad UNUSED_ANALOG_20 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_21__pad UNUSED_ANALOG_21 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_22__pad UNUSED_ANALOG_22 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_23__pad UNUSED_ANALOG_23 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_24__pad UNUSED_ANALOG_24 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_25__pad UNUSED_ANALOG_25 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_26__pad UNUSED_ANALOG_26 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_27__pad UNUSED_ANALOG_27 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_28__pad UNUSED_ANALOG_28 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_29__pad UNUSED_ANALOG_29 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_2__pad ELP DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_30__pad UNUSED_ANALOG_30 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_31__pad UNUSED_ANALOG_31 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_32__pad UNUSED_ANALOG_32 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_33__pad UNUSED_ANALOG_33 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_34__pad UNUSED_ANALOG_34 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_35__pad UNUSED_ANALOG_35 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_36__pad UNUSED_ANALOG_36 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_37__pad UNUSED_ANALOG_37 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_38__pad UNUSED_ANALOG_38 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_39__pad UNUSED_ANALOG_39 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_3__pad ELP DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_40__pad UNUSED_ANALOG_40 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_41__pad UNUSED_ANALOG_41 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_42__pad UNUSED_ANALOG_42 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_43__pad UNUSED_ANALOG_43 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_44__pad UNUSED_ANALOG_44 DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_4__pad ELN DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_5__pad ELN DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_6__pad AVSS DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_7__pad AVDD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_8__pad ATP DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xanalog_9__pad VCM DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xbidir_0__pad DVSS DVSS DVDD DVSS DVDD DVSS MCLK_PAD DVSS DVSS DVSS DVDD DVSS MCLK gf180mcu_fd_io__bi_24t
+Xbidir_1__pad DVSS DVDD DVDD DVSS DVDD DVSS RESET_N_PAD DVSS DVDD DVSS DVDD DVSS RESET_N gf180mcu_fd_io__bi_24t
+Xbidir_2__pad DVSS DVSS DVDD DVSS DVDD DVSS SCLK_PAD DVDD DVSS DVSS DVDD DVSS SCLK gf180mcu_fd_io__bi_24t
+Xbidir_3__pad DVSS DVSS DVDD DVSS DVDD DVSS CS_N_PAD DVSS DVDD DVSS DVDD DVSS CS_N gf180mcu_fd_io__bi_24t
+Xbidir_4__pad DVSS DVSS DVDD DVSS DVDD DVSS MOSI_PAD DVDD DVSS DVSS DVDD DVSS MOSI gf180mcu_fd_io__bi_24t
+Xbidir_5__pad MISO DVSS DVDD DVSS DVSS MISO_OE MISO_PAD DVSS DVSS DVDD DVDD DVSS bidir_PAD2CORE_5_ gf180mcu_fd_io__bi_24t
+Xbidir_6__pad DRDY_N DVSS DVDD DVSS DVSS DVDD DRDY_N_PAD DVSS DVSS DVDD DVDD DVSS bidir_PAD2CORE_6_ gf180mcu_fd_io__bi_24t
+Xbidir_7__pad RAW_DATA DVSS DVDD DVSS DVSS DVDD RAW_DATA_PAD DVSS DVSS DVDD DVDD DVSS bidir_PAD2CORE_7_ gf180mcu_fd_io__bi_24t
+Xbidir_8__pad RAW_CLK DVSS DVDD DVSS DVSS DVDD RAW_CLK_PAD DVSS DVSS DVDD DVDD DVSS bidir_PAD2CORE_8_ gf180mcu_fd_io__bi_24t
+Xclk_pad clk_PAD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xdvdd_pads_0__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_1__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_2__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_3__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_4__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_5__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvdd_pads_6__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xdvss_pads_0__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_1__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_2__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_3__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_4__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_5__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xdvss_pads_6__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+Xrst_n_pad rst_n_PAD DVDD DVSS DVDD DVSS gf180mcu_fd_io__asig_5p0
+Xvdd_pads_0__pad DVDD DVSS DVSS gf180mcu_fd_io__dvdd
+Xvss_pads_0__pad DVDD DVSS DVDD gf180mcu_fd_io__dvss
+XIO_CORNER_NORTH_WEST_INST DVDD DVSS DVDD DVSS gf180mcu_fd_io__cor
+XIO_CORNER_NORTH_EAST_INST DVDD DVSS DVDD DVSS gf180mcu_fd_io__cor
+XIO_CORNER_SOUTH_WEST_INST DVDD DVSS DVDD DVSS gf180mcu_fd_io__cor
+XIO_CORNER_SOUTH_EAST_INST DVDD DVSS DVDD DVSS gf180mcu_fd_io__cor
+.ends pad_fragment_only

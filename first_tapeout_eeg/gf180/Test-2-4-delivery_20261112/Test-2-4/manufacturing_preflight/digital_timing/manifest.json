@@ -1,0 +1,103 @@
+{
+  "scope": "Post-layout netlist, cell delays only. No SPEF or SDF available. Not routed timing signoff.",
+  "clock_hz": 32768000,
+  "assumptions": {
+    "CLOCK_PERIOD": 30.517578125,
+    "IO_DELAY_CONSTRAINT": 20,
+    "MAX_FANOUT_CONSTRAINT": 10,
+    "MAX_TRANSITION_CONSTRAINT": 1.5,
+    "MAX_CAPACITANCE_CONSTRAINT": 0.5,
+    "OUTPUT_CAP_LOAD": 20,
+    "CLOCK_UNCERTAINTY_CONSTRAINT": 0.25,
+    "CLOCK_TRANSITION_CONSTRAINT": 0.15,
+    "TIME_DERATING_CONSTRAINT": 5
+  },
+  "io_warning": "20% I/O delay, 20fF load, buf_4 driving cell and 0.15ns clock transition are explicit screening assumptions, not recovered final constraints.",
+  "exceptions": "Source SDC TH and CODE multicycle setup retained; CODE hold false path retained.",
+  "inputs": [
+    {
+      "path": "/work/gf180/tapeout/layout/gds/eeg_digital_top.nl.v",
+      "sha256": "6ae8f6c75b8e8bf8ff2b5990ecbaadf82fd0092691ba60cb4aeb814f59c63cf7"
+    },
+    {
+      "path": "/work/gf180/tapeout/digital/eeg_digital_top/eeg_digital_top.sdc",
+      "sha256": "f53a0a80f6f748ffa916cbcd74723baeb9bae29834556c39f0eb9d96efe428a3"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_3v30.lib",
+      "sha256": "1157d0aa147dba75a214708197d7a046f970175d723cdec108025f6f06727c12"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ss_125C_3v00.lib",
+      "sha256": "d83917f827021eadb159f6011905bf20de632533b2953abba89266a88c2b24af"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ff_n40C_3v60.lib",
+      "sha256": "0b48b93d6800da325a2613ff6c0b998b230a1bbd28031f6da592e9ff30066602"
+    },
+    {
+      "path": "/work/gf180/tapeout/layout/gds/eeg_adc_dig.nl.v",
+      "sha256": "c39fe2cf4e05b693c5d910edd81bd9692db386048de8b5e18996b0c7fa63260d"
+    },
+    {
+      "path": "/work/gf180/tapeout/digital/eeg_adc_dig/eeg_adc_dig.sdc",
+      "sha256": "537c5644b305abc7ebf9c61e1793b17ca240d4db35ccf984f9a9e2bf82895477"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib",
+      "sha256": "f9dee07cf158324934b0c59144d970a2e8313f43533ede6283ec3c136f82fe53"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ss_125C_3v00.lib",
+      "sha256": "5d2f37ba6f43e33aeba26dc1da55c96394a862eeec4148043f1d48bdf65ccea6"
+    },
+    {
+      "path": "/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__ff_n40C_3v60.lib",
+      "sha256": "a222740b574d0699c8a416400bd9746ecb8556bc87a515ab7fb80f911e2cd74b"
+    }
+  ],
+  "jobs": [
+    {
+      "module": "eeg_digital_top",
+      "corner": "tt_025C_3v30",
+      "exitcode": 0,
+      "seconds": 1.4930222034454346,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_digital_top/tt_025C_3v30/sta.log"
+    },
+    {
+      "module": "eeg_digital_top",
+      "corner": "ss_125C_3v00",
+      "exitcode": 0,
+      "seconds": 1.3562290668487549,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_digital_top/ss_125C_3v00/sta.log"
+    },
+    {
+      "module": "eeg_digital_top",
+      "corner": "ff_n40C_3v60",
+      "exitcode": 0,
+      "seconds": 1.3523356914520264,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_digital_top/ff_n40C_3v60/sta.log"
+    },
+    {
+      "module": "eeg_adc_dig",
+      "corner": "tt_025C_3v30",
+      "exitcode": 0,
+      "seconds": 1.1311113834381104,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_adc_dig/tt_025C_3v30/sta.log"
+    },
+    {
+      "module": "eeg_adc_dig",
+      "corner": "ss_125C_3v00",
+      "exitcode": 0,
+      "seconds": 1.1739912033081055,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_adc_dig/ss_125C_3v00/sta.log"
+    },
+    {
+      "module": "eeg_adc_dig",
+      "corner": "ff_n40C_3v60",
+      "exitcode": 0,
+      "seconds": 1.0080668926239014,
+      "log": "/work/Test-2-4/manufacturing_preflight/digital_timing/eeg_adc_dig/ff_n40C_3v60/sta.log"
+    }
+  ]
+}

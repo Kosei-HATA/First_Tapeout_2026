@@ -1,0 +1,12 @@
+* NGSPICE file created from coupled_wires.ext - technology: gf180mcuD
+
+.subckt coupled_wires A B C D
+R0 C D 8.8205
+R1 A B 8.8205
+C0 B D 5.9027f
+C1 D w_0_0# 9.67755f
+C2 C w_0_0# 2.95135f
+C3 B w_0_0# 13.84685f
+C4 A w_0_0# 2.95135f
+.ends
+

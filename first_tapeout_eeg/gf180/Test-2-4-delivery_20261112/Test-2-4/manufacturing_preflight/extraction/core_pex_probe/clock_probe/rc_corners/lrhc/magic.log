@@ -1,0 +1,78 @@
+
+Magic 8.3 revision 697 - Compiled on Wed Nov 11 10:04:37 AM CET 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology gf180mcuD ...
+10 Magic internal units = 1 Lambda
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Scaled tech values by 10 / 1 to match internal grid scaling
+Loading gf180mcuD Device Generator Menu ...
+Loading "run.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "eeg_adc_clk".
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Extraction style is now "ngspice(lrhc)"
+Extracting eeg_adc_clk into eeg_adc_clk.ext:
+Processing eeg_adc_clk
+Processing cell eeg_adc_clk for resistance extraction.
+Extracting CDA
+Extracting CDB
+Extracting CHOP1
+Extracting CIA
+Extracting CIB
+Extracting NCDA
+Extracting NCDB
+Extracting NCIA
+Extracting NCIB
+Extracting VDD
+Extracting VSS
+Extracting a_1036_340#
+Extracting a_1036_4320#
+Extracting a_1036_6700#
+Extracting a_11116_340#
+Extracting a_11436_4320#
+Extracting a_12076_4320#
+Extracting a_1292_12000#
+Extracting a_14476_1540#
+Extracting a_14476_340#
+Extracting a_15116_1540#
+Extracting a_15116_340#
+Extracting a_1516_340#
+Extracting a_16236_340#
+Extracting a_16876_340#
+Extracting a_17836_4320#
+Extracting a_18316_4320#
+Extracting a_20396_340#
+Extracting a_20876_340#
+Extracting a_20876_4320#
+Extracting a_21516_340#
+Extracting a_21516_4320#
+Extracting a_27276_4320#
+Extracting a_4492_4188#
+Extracting a_4556_4320#
+Extracting a_5036_4320#
+Extracting a_5676_4320#
+Extracting a_7916_1540#
+Extracting a_7916_340#
+Extracting a_8556_1540#
+Extracting a_8556_340#
+Extracting a_9196_340#
+Extracting a_972_4188#
+Extracting a_972_8460#
+Total Nets: 51
+Nets extracted: 44 (0.862745)
+Nets output: 44 (0.862745)
+exttospice finished.
+exttospice finished.

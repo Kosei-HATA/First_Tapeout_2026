@@ -1,0 +1,87 @@
+{
+  "style": "ngspice() nominal",
+  "coeff_units": [
+    "aF/um2",
+    "aF/um"
+  ],
+  "extresist_performed": false,
+  "note": "Area/perimeter diagnostic only. Products below omit shielding/overlap corrections and must not be summed as extracted total capacitance.",
+  "cases": {
+    "test23": [
+      {
+        "layer": 36,
+        "area_um2": 3800.1,
+        "perimeter_um": 3888.05,
+        "area_coefficient": 15.016,
+        "perimeter_coefficient": 33.298,
+        "unshielded_area_term_fF": 57.0623016,
+        "unshielded_perimeter_term_fF": 129.4642889
+      },
+      {
+        "layer": 42,
+        "area_um2": 3807.483,
+        "perimeter_um": 3846.65,
+        "area_coefficient": 10.094,
+        "perimeter_coefficient": 30.021,
+        "unshielded_area_term_fF": 38.432733402,
+        "unshielded_perimeter_term_fF": 115.48027965000001
+      },
+      {
+        "layer": 46,
+        "area_um2": 3807.483,
+        "perimeter_um": 3846.65,
+        "area_coefficient": 7.602,
+        "perimeter_coefficient": 28.153,
+        "unshielded_area_term_fF": 28.944485766000003,
+        "unshielded_perimeter_term_fF": 108.29473745
+      },
+      {
+        "layer": 81,
+        "area_um2": 4442.1,
+        "perimeter_um": 266.65,
+        "area_coefficient": 5.798,
+        "perimeter_coefficient": 30.386,
+        "unshielded_area_term_fF": 25.755295800000003,
+        "unshielded_perimeter_term_fF": 8.1024269
+      }
+    ],
+    "test24": [
+      {
+        "layer": 36,
+        "area_um2": 4361.7,
+        "perimeter_um": 389.33,
+        "area_coefficient": 15.016,
+        "perimeter_coefficient": 33.298,
+        "unshielded_area_term_fF": 65.49528719999999,
+        "unshielded_perimeter_term_fF": 12.96391034
+      },
+      {
+        "layer": 42,
+        "area_um2": 4362.6246,
+        "perimeter_um": 387.95,
+        "area_coefficient": 10.094,
+        "perimeter_coefficient": 30.021,
+        "unshielded_area_term_fF": 44.0363327124,
+        "unshielded_perimeter_term_fF": 11.646646950000001
+      },
+      {
+        "layer": 46,
+        "area_um2": 4362.6246,
+        "perimeter_um": 387.95,
+        "area_coefficient": 7.602,
+        "perimeter_coefficient": 28.153,
+        "unshielded_area_term_fF": 33.164672209200006,
+        "unshielded_perimeter_term_fF": 10.921956349999999
+      },
+      {
+        "layer": 81,
+        "area_um2": 4442.1,
+        "perimeter_um": 266.65,
+        "area_coefficient": 5.798,
+        "perimeter_coefficient": 30.386,
+        "unshielded_area_term_fF": 25.755295800000003,
+        "unshielded_perimeter_term_fF": 8.1024269
+      }
+    ]
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "scope": "Isolated adc_c2 cell from actual Test-2-4, not in-context whole-block PEX",
+  "mapping": {
+    "probes": [
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[1]",
+        "node": "m4_200_80#",
+        "core_point_um": [
+          2601.402,
+          1342.402
+        ],
+        "hits": [
+          {
+            "layer": "l20",
+            "layout_net": "$969520",
+            "schematic_net": "ADC.I2P"
+          },
+          {
+            "layer": "l25",
+            "layout_net": "$969520",
+            "schematic_net": "ADC.I2P"
+          }
+        ]
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[1]",
+        "node": "m4_200_21366#",
+        "core_point_um": [
+          2601.402,
+          1448.8319999999999
+        ],
+        "hits": [
+          {
+            "layer": "l20",
+            "layout_net": "$1452491",
+            "schematic_net": "O2N"
+          },
+          {
+            "layer": "l25",
+            "layout_net": "$1452491",
+            "schematic_net": "O2N"
+          }
+        ]
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[1]",
+        "node": "mim_top_center",
+        "core_point_um": [
+          2650.4,
+          1395.0
+        ],
+        "hits": []
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[1]",
+        "node": "mim_bottom_center",
+        "core_point_um": [
+          2650.4,
+          1395.0
+        ],
+        "hits": [
+          {
+            "layer": "l25",
+            "layout_net": "$1452491",
+            "schematic_net": "O2N"
+          },
+          {
+            "layer": "l20",
+            "layout_net": "$1452491",
+            "schematic_net": "O2N"
+          }
+        ]
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[2]",
+        "node": "m4_200_80#",
+        "core_point_um": [
+          2708.402,
+          1342.402
+        ],
+        "hits": [
+          {
+            "layer": "l20",
+            "layout_net": "$964852",
+            "schematic_net": "ADC.I2N"
+          },
+          {
+            "layer": "l25",
+            "layout_net": "$964852",
+            "schematic_net": "ADC.I2N"
+          }
+        ]
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[2]",
+        "node": "m4_200_21366#",
+        "core_point_um": [
+          2708.402,
+          1448.8319999999999
+        ],
+        "hits": [
+          {
+            "layer": "l20",
+            "layout_net": "$1458322",
+            "schematic_net": "O2P"
+          },
+          {
+            "layer": "l25",
+            "layout_net": "$1458322",
+            "schematic_net": "O2P"
+          }
+        ]
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[2]",
+        "node": "mim_top_center",
+        "core_point_um": [
+          2757.4,
+          1395.0
+        ],
+        "hits": []
+      },
+      {
+        "placement": "chip_top/adc_top[2]/adc_c2[2]",
+        "node": "mim_bottom_center",
+        "core_point_um": [
+          2757.4,
+          1395.0
+        ],
+        "hits": [
+          {
+            "layer": "l25",
+            "layout_net": "$1458322",
+            "schematic_net": "O2P"
+          },
+          {
+            "layer": "l20",
+            "layout_net": "$1458322",
+            "schematic_net": "O2P"
+          }
+        ]
+      }
+    ],
+    "devices": [
+      {
+        "layout_name": "$88727",
+        "class": "cap_mim_2f0fF",
+        "nets": {
+          "A": "$1458322",
+          "B": "$1424822"
+        },
+        "params": {
+          "C": 9.982845e-12,
+          "A": 4991.422500000001,
+          "P": 282.6
+        },
+        "schematic_name": "ADC.OTA2.CCOMP_P"
+      },
+      {
+        "layout_name": "$88728",
+        "class": "cap_mim_2f0fF",
+        "nets": {
+          "A": "$1452491",
+          "B": "$1424822"
+        },
+        "params": {
+          "C": 9.982845e-12,
+          "A": 4991.422500000001,
+          "P": 282.6
+        },
+        "schematic_name": "ADC.OTA2.CCOMP_N"
+      },
+      {
+        "layout_name": "$88731",
+        "class": "cap_mim_2f0fF",
+        "nets": {
+          "A": "$1452491",
+          "B": "$969520"
+        },
+        "params": {
+          "C": 1.95347378e-11,
+          "A": 9767.368900000001,
+          "P": 395.32
+        },
+        "schematic_name": "ADC.C2P.C0"
+      },
+      {
+        "layout_name": "$88732",
+        "class": "cap_mim_2f0fF",
+        "nets": {
+          "A": "$1458322",
+          "B": "$964852"
+        },
+        "params": {
+          "C": 1.95347378e-11,
+          "A": 9767.368900000001,
+          "P": 395.32
+        },
+        "schematic_name": "ADC.C2N.C0"
+      }
+    ],
+    "maxrss_kb": 4882920
+  },
+  "schematic_dimension_um": 98.83,
+  "extracted_dimension_um": 98.82999,
+  "schematic_physical_cap_F": 1.9531268867e-11,
+  "extracted_physical_cap_F": 1.9531264924034197e-11,
+  "dimension_relative_cap_error": -2.0187965410478625e-07,
+  "klayout_lvs_cap_F": 1.95347378e-11,
+  "lvs_C_usage": "Device recognition value is 2 fF/um2 times area, not the simulation model (1.99 fF/um2 plus 0.2383 fF/um perimeter). Do not add this LVS C to the physical model.",
+  "raw_parasitics_fF": {
+    "TOP_BOT": 17.52885,
+    "TOP_SUB": 90.27211,
+    "BOT_SUB": 13.6077
+  },
+  "dominant_device_double_count_check": "One physical MIM X device only; no additional 19.53 pF lumped capacitor. Intentional duplicate X negative control doubles AC capacitance. Residual parasitic/fringe attribution still requires validation.",
+  "rc_trial": {
+    "completed": true,
+    "resistor_ohm": 0.193943,
+    "ground_cap_without_R_fF": 103.87980999999999,
+    "ground_cap_with_R_fF": 128.2612,
+    "usable_for_performance": false,
+    "reason": "Capacitance sum differs when ext2spice extresist is enabled, and substrate anchor naming changes; no convergence/conservation qualification."
+  },
+  "simulation_readiness": {
+    "device_only": true,
+    "raw_capacitance_debug_only": true,
+    "qualified_post_layout_RC": false
+  },
+  "source_sha256": {
+    "/work/Test-2-4/gds/Test-2-4.gds": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+    "/work/gf180/tapeout/adc/eeg_adc.spice": "be1d443a9cec729236a35aa7d90e51ab0c062d88627ffa94a04af8e34bb2833b",
+    "/work/gf180/tapeout/layout/adc_lay.py": "585f06293ab8defd5afe20514fe079088336334ccc56cec36f46e4b337e826f0",
+    "/foss/pdks/gf180mcuD/libs.tech/magic/gf180mcuD.tech": "2662e35e3dc94c88d55fc795e30ac22378561be4556bb3b5f248a1daa2ac1cd8",
+    "/foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+    "/foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064_mim.spice": "9b85cd009968d9aeb6b61046b24a63f39d6a463c4e4aee3949c8fd183c06666f"
+  }
+}

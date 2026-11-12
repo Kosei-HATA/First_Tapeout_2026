@@ -1,0 +1,6 @@
+| quantity | typical 27 C | ss 85 C | ff -20 C |
+|---|---|---|---|
+| VREFP - VREFN (V) | 0.4929 | 0.4918 | 0.494 |
+| break ripple peak (uV) | 277 | 255.7 | 300.9 |
+| at the next strobe (uV) | 0 | 0 | 0 |
+| filter noise 0.5-100 Hz (nVrms) | 10.02 | 9.942 | 10.06 |

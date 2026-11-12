@@ -1,0 +1,946 @@
+Making install in src
+make[1]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+Making install in include/ngspice
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/include/ngspice'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/include/ngspice'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/include/ngspice'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/include/ngspice'
+Making install in misc
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/misc'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/misc'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/misc'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/misc'
+Making install in maths
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+Making install in cmaths
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/cmaths'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/cmaths'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/cmaths'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/cmaths'
+Making install in ni
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/ni'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/ni'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/ni'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/ni'
+Making install in sparse
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/sparse'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/sparse'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/sparse'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/sparse'
+Making install in poly
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/poly'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/poly'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/poly'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/poly'
+Making install in deriv
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/deriv'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/deriv'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/deriv'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/deriv'
+Making install in misc
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/misc'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/misc'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/misc'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/misc'
+Making install in fft
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/fft'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/fft'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/fft'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/fft'
+Making install in dense
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/dense'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/dense'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/dense'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/dense'
+Making install in KLU
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+Making install in SuiteSparse
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU/SuiteSparse'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU/SuiteSparse'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU/SuiteSparse'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU/SuiteSparse'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths/KLU'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/maths'
+Making install in frontend
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make  install-recursive
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+Making install in plotting
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/plotting'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/plotting'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/plotting'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/plotting'
+Making install in help
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/help'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/help'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/help'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/help'
+Making install in parser
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/parser'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/parser'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/parser'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/parser'
+Making install in wdisp
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/wdisp'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/wdisp'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/wdisp'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/wdisp'
+Making install in numparam
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/numparam'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/numparam'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/numparam'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/numparam'
+Making install in trannoise
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/trannoise'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/trannoise'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/trannoise'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend/trannoise'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/frontend'
+Making install in spicelib
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+Making install in analysis
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/analysis'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/analysis'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/analysis'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/analysis'
+Making install in parser
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+make  install-am
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/parser'
+Making install in devices
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+Making install in asrc
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/asrc'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/asrc'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/asrc'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/asrc'
+Making install in bjt
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bjt'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bjt'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bjt'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bjt'
+Making install in bsim1
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim1'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim1'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim1'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim1'
+Making install in bsim2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim2'
+Making install in bsim3
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3'
+Making install in bsimsoi
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsimsoi'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsimsoi'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsimsoi'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsimsoi'
+Making install in bsim4
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4'
+Making install in bsim4v5
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v5'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v5'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v5'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v5'
+Making install in bsim4v6
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v6'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v6'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v6'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v6'
+Making install in bsim4v7
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v7'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v7'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v7'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim4v7'
+Making install in bsim3v0
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v0'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v0'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v0'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v0'
+Making install in bsim3v1
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v1'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v1'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v1'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v1'
+Making install in bsim3v32
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v32'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v32'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v32'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3v32'
+Making install in bsim3soi_pd
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_pd'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_pd'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_pd'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_pd'
+Making install in bsim3soi_fd
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_fd'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_fd'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_fd'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_fd'
+Making install in bsim3soi_dd
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_dd'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_dd'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_dd'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/bsim3soi_dd'
+Making install in cap
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cap'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cap'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cap'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cap'
+Making install in cccs
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cccs'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cccs'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cccs'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cccs'
+Making install in ccvs
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ccvs'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ccvs'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ccvs'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ccvs'
+Making install in cpl
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cpl'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cpl'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cpl'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/cpl'
+Making install in csw
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/csw'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/csw'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/csw'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/csw'
+Making install in dio
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/dio'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/dio'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/dio'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/dio'
+Making install in ind
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ind'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ind'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ind'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ind'
+Making install in isrc
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/isrc'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/isrc'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/isrc'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/isrc'
+Making install in hfet1
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet1'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet1'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet1'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet1'
+Making install in hfet2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hfet2'
+Making install in hisim2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisim2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisim2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisim2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisim2'
+Making install in hisimhv1
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv1'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv1'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv1'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv1'
+Making install in hisimhv2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/hisimhv2'
+Making install in jfet
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet'
+Making install in jfet2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/jfet2'
+Making install in ltra
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ltra'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ltra'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ltra'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/ltra'
+Making install in mes
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mes'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mes'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mes'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mes'
+Making install in mesa
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mesa'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mesa'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mesa'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mesa'
+Making install in mos1
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos1'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos1'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos1'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos1'
+Making install in mos2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos2'
+Making install in mos3
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos3'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos3'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos3'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos3'
+Making install in mos6
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos6'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos6'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos6'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos6'
+Making install in mos9
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos9'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos9'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos9'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/mos9'
+Making install in res
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/res'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/res'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/res'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/res'
+Making install in nport
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nport'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nport'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nport'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nport'
+Making install in soi3
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/soi3'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/soi3'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/soi3'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/soi3'
+Making install in sw
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/sw'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/sw'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/sw'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/sw'
+Making install in tra
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/tra'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/tra'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/tra'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/tra'
+Making install in txl
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/txl'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/txl'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/txl'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/txl'
+Making install in urc
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/urc'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/urc'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/urc'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/urc'
+Making install in vbic
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vbic'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vbic'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vbic'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vbic'
+Making install in vccs
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vccs'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vccs'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vccs'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vccs'
+Making install in vcvs
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vcvs'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vcvs'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vcvs'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vcvs'
+Making install in vdmos
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vdmos'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vdmos'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vdmos'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vdmos'
+Making install in vsrc
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vsrc'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vsrc'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vsrc'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/vsrc'
+Making install in nbjt
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt'
+Making install in nbjt2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/nbjt2'
+Making install in numd
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd'
+Making install in numd2
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd2'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd2'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd2'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numd2'
+Making install in numos
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numos'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numos'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numos'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices/numos'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib/devices'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/spicelib'
+Making install in xspice
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+Making install in mif
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/mif'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/mif'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/mif'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/mif'
+Making install in cm
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cm'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cm'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cm'
+Making install in enh
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/enh'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/enh'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/enh'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/enh'
+Making install in evt
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/evt'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/evt'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/evt'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/evt'
+Making install in idn
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/idn'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/idn'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/idn'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/idn'
+Making install in cmpp
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+make  install-am
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+make[5]: Nothing to be done for 'install-exec-am'.
+make[5]: Nothing to be done for 'install-data-am'.
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/cmpp'
+Making install in icm
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+for cm in spice2poly digital analog xtradev xtraevt table tlines ; do \
+	make cm=$cm $cm/$cm.cm \
+	|| exit 1; \
+done
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'spice2poly/spice2poly.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'digital/digital.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'analog/analog.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'xtradev/xtradev.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'xtraevt/xtraevt.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'table/table.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+make[4]: 'tlines/tlines.cm' is up to date.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+/usr/bin/mkdir -p "/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice"
+/usr/bin/mkdir -p "/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice"
+for cm in spice2poly digital analog xtradev xtraevt table tlines ; do \
+	/usr/bin/install -c $cm/$cm.cm "/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice" \
+	|| exit 1; \
+done
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/icm'
+Making install in verilog
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice'
+ /bin/bash ../../../libtool   --mode=install /usr/bin/install -c   ivlng.la ivlngvpi.la '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice'
+libtool: install: /usr/bin/install -c .libs/ivlng.so /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice/ivlng.so
+libtool: install: /usr/bin/install -c .libs/ivlng.lai /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice/ivlng.la
+libtool: install: /usr/bin/install -c .libs/ivlngvpi.so /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice/ivlngvpi.so
+libtool: install: /usr/bin/install -c .libs/ivlngvpi.lai /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice/ivlngvpi.la
+libtool: finish: PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/sbin" ldconfig -n /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the '-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the 'LD_RUN_PATH' environment variable
+     during linking
+   - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+make  install-exec-hook
+make[5]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+cd /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/lib/ngspice; \
+rm -f ivlng*a libvvp* ; \
+mv ivlngvpi.* ivlng.vpi
+make[5]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src'
+ /usr/bin/install -c -m 644 ../../../../source/src/xspice/verilog/verilator_shim.cpp ../../../../source/src/xspice/verilog/verilator_main.cpp '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src/ngspice'
+ /usr/bin/install -c -m 644 ../../../../source/src/xspice/verilog/../../include/ngspice/cosim.h ../../../../source/src/xspice/verilog/../../include/ngspice/miftypes.h ../../../../source/src/xspice/verilog/../../include/ngspice/cmtypes.h ../../../../source/src/xspice/verilog/./coroutine.h ../../../../source/src/xspice/verilog/./coroutine_cosim.h ../../../../source/src/xspice/verilog/./coroutine_shim.h '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src/ngspice'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+ /usr/bin/install -c -m 644 ../../../../source/src/xspice/verilog/vlnggen '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/verilog'
+Making install in vhdl
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/vhdl'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/vhdl'
+make[4]: Nothing to be done for 'install-exec-am'.
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src'
+ /usr/bin/install -c -m 644 ../../../../source/src/xspice/vhdl/ghdl_shim.h ../../../../source/src/xspice/vhdl/ghdl_shim.c ../../../../source/src/xspice/vhdl/ghdl_vpi.c '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts/src'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+ /usr/bin/install -c -m 644 ../../../../source/src/xspice/vhdl/ghnggen '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/vhdl'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice/vhdl'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/xspice'
+Making install in osdi
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/osdi'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/osdi'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/osdi'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/osdi'
+Making install in ciderlib
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+Making install in input
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/input'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/input'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/input'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/input'
+Making install in support
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/support'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/support'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/support'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/support'
+Making install in oned
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/oned'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/oned'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/oned'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/oned'
+Making install in twod
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/twod'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/twod'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/twod'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib/twod'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src/ciderlib'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/bin'
+  /bin/bash ../libtool   --mode=install /usr/bin/install -c ngspice '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/bin'
+libtool: install: /usr/bin/install -c ngspice /work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/bin/ngspice
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+ /usr/bin/install -c -m 644 spinit ../../source/src/setplot ../../source/src/spectrum ../../source/src/devload ../../source/src/devaxis ../../source/src/ciderinit '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/ngspice/scripts'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+make[1]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/src'
+Making install in man
+make[1]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+Making install in man1
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man/man1'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man/man1'
+make[3]: Nothing to be done for 'install-exec-am'.
+ /usr/bin/mkdir -p '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/man/man1'
+ /usr/bin/install -c -m 644 ../../../source/man/man1/ngspice.1 '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/install/share/man/man1'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man/man1'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man/man1'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+make[1]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/man'
+Making install in tests
+make[1]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+Making install in regression
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+Making install in lib-processing
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/lib-processing'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/lib-processing'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/lib-processing'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/lib-processing'
+Making install in parser
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/parser'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/parser'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/parser'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/parser'
+Making install in subckt-processing
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/subckt-processing'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/subckt-processing'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/subckt-processing'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/subckt-processing'
+Making install in func
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/func'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/func'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/func'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/func'
+Making install in model
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/model'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/model'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/model'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/model'
+Making install in misc
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/misc'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/misc'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/misc'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/misc'
+Making install in sens
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/sens'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/sens'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/sens'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/sens'
+Making install in temper
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/temper'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/temper'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/temper'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/temper'
+Making install in pipe
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pipe'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pipe'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pipe'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pipe'
+Making install in pz
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pz'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pz'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pz'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression/pz'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/regression'
+Making install in xspice
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+Making install in analog
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/analog'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/analog'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/analog'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/analog'
+Making install in digital
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/digital'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/digital'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/digital'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice/digital'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+make[4]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+make[4]: Nothing to be done for 'install-exec-am'.
+make[4]: Nothing to be done for 'install-data-am'.
+make[4]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/xspice'
+Making install in bsim3
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim3'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim3'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim3'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim3'
+Making install in bsim4
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim4'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim4'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim4'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsim4'
+Making install in bsimsoi
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsimsoi'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsimsoi'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsimsoi'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/bsimsoi'
+Making install in hisim
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisim'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisim'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisim'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisim'
+Making install in hisimhv1
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv1'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv1'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv1'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv1'
+Making install in hisimhv2
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv2'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv2'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv2'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests/hisimhv2'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+make[3]: Nothing to be done for 'install-exec-am'.
+make[3]: Nothing to be done for 'install-data-am'.
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+make[1]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build/tests'
+make[1]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build'
+make[2]: Nothing to be done for 'install-exec-am'.
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build'
+make[1]: Leaving directory '/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/build'

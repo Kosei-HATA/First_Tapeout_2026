@@ -1,0 +1,26 @@
+{
+  "matches_input": true,
+  "labels": 20,
+  "ports": [
+    "ELP",
+    "ELN",
+    "VCM",
+    "VREFP_PAD",
+    "VREFN_PAD",
+    "ATP",
+    "MCLK",
+    "RESET_N",
+    "SCLK",
+    "CS_N",
+    "MOSI",
+    "MISO",
+    "MISO_OE",
+    "DRDY_N",
+    "RAW_DATA",
+    "RAW_CLK",
+    "AVDD",
+    "AVSS",
+    "DVDD"
+  ],
+  "sources": 16
+}

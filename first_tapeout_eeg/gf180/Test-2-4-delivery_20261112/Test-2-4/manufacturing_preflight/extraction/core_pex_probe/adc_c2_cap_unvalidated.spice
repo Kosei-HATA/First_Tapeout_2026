@@ -1,0 +1,9 @@
+* DEBUG ONLY: MIM shielding/fringe and in-context substrate attribution are not qualified.
+* NGSPICE file created from adc_c2.ext - technology: gf180mcuD
+
+.subckt adc_c2_cap_debug TOP BOT SUB
+X0 TOP BOT cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+C0 TOP BOT 17.52885f
+C1 TOP SUB 90.27211f ; **FLOATING
+C2 BOT SUB 13.6077f ; **FLOATING
+.ends

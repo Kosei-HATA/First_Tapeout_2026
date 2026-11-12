@@ -1,0 +1,14 @@
+from pathlib import Path
+import subprocess,os,json,hashlib,shutil,time,re,collections
+p=Path('/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe');q=p/'clock_probe';out=q/'rc_corners';out.mkdir(exist_ok=True);base=p/'rc_diagnosis/magic_candidate';env=os.environ.copy();env['LD_LIBRARY_PATH']=str(base/'deps/lib')+':'+env.get('LD_LIBRARY_PATH','');summary={}
+for corner in ['hrhc','hrlc','lrhc','lrlc']:
+ d=out/corner;d.mkdir(exist_ok=True);shutil.copy2(q/'flat/labeled.gds',d/'labeled.gds');s=(q/'flat/run.tcl').read_text();assert 'extract style ngspice()' in s;s=s.replace('extract style ngspice()','extract style ngspice('+corner+')');(d/'run.tcl').write_text(s);start=time.time()
+ with (d/'magic.log').open('w') as f:r=subprocess.run([str(base/'install_tcl/bin/magic'),'-dnull','-noconsole','-rcfile','/foss/pdks/gf180mcuD/libs.tech/magic/gf180mcuD.magicrc','run.tcl'],cwd=d,env=env,stdout=f,stderr=subprocess.STDOUT,timeout=120)
+ assert r.returncode==0
+ script=(p/'validate_clock_flat_rc.py').read_text().replace("clock_probe/flat')","clock_probe/rc_corners/"+corner+"')");(d/'validate.py').write_text(script);v=subprocess.run(['python3',str(d/'validate.py')],capture_output=True,text=True);(d/'validation.log').write_text(v.stdout+v.stderr);assert v.returncode==0
+ vr=json.loads((d/'rc_preservation.json').read_text());raw=(d/'eeg_adc_clk.ext').read_text();style=next(x for x in raw.splitlines() if x.startswith('style '));assert style=='style ngspice('+corner+')'
+ cs=(d/'cap.spice').read_text();cs=re.sub(r'^C\d+[^\n]*\n','',cs,flags=re.M);cs=re.sub(r'^X(\d+)',r'M\1',cs,flags=re.M);(d/'mos_only.cir').write_text(cs)
+ n=subprocess.run(['/foss/tools/netgen/bin/netgen','-batch','lvs',str(d/'mos_only.cir')+' eeg_adc_clk',str(q/'reference.cdl')+' eeg_adc_clk','/foss/pdks/gf180mcuD/libs.tech/netgen/gf180mcuD_setup.tcl',str(d/'netgen_comparison.log')],cwd=d,capture_output=True,text=True);(d/'netgen_run.log').write_text(n.stdout+n.stderr);log=(d/'netgen_comparison.log').read_text();match='Final result: Circuits match uniquely.' in log and 'Property errors were found' not in log
+ rs=[float(x.split()[3]) for x in (d/'rc.spice').read_text().splitlines() if re.match(r'^R\d',x)];summary[corner]={'style':style,'extraction_seconds':time.time()-start,'rc_preservation_pass':vr['pass'],'independent_MOS_LVS_pass':match,'resistclasses':next(x for x in raw.splitlines() if x.startswith('resistclasses ')),'R_count':len(rs),'R_min_ohm':min(rs),'R_max_ohm':max(rs),'all_R_positive':all(x>0 for x in rs),'counts':vr['counts_after'],'sha256':{x:hashlib.sha256((d/x).read_bytes()).hexdigest() for x in ['labeled.gds','cap.spice','rc.spice','run.tcl']},'pass':vr['pass'] and match and all(x>0 for x in rs)}
+ print(corner,json.dumps(summary[corner]),flush=True)
+(out/'summary.json').write_text(json.dumps(summary,indent=2));print('ALL',all(x['pass'] for x in summary.values()))

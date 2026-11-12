@@ -1,0 +1,23 @@
+{
+  "R": {
+    "count": 7330,
+    "minimum_SI": 0.001625,
+    "maximum_SI": 34260.4,
+    "zeros": 0,
+    "negatives": 0
+  },
+  "C": {
+    "count": 4077,
+    "minimum_SI": 0.0,
+    "maximum_SI": 7.889621e-14,
+    "zeros": 39,
+    "negatives": 0
+  },
+  "solver": "SPARSE1.3 pilot, KLU alternative same circuit",
+  "maxstep_s": 5e-11,
+  "reltol": 0.0001,
+  "pilot_time_s": 300,
+  "achieved_time_s": 2.67001e-07,
+  "projected_500ns_s": 561.7956487054355,
+  "diagnosis": "No singular matrix/timestep-too-small failure. gmin stepping completed. Integration cap maxstep plus large sparse system likely dominant; minimum R/C alone cannot establish stiffness without topology."
+}

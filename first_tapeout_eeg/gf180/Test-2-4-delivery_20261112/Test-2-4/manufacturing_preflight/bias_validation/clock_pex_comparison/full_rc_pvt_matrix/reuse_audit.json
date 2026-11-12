@@ -1,0 +1,69 @@
+{
+  "reused": 19,
+  "deck_regeneration_exact": true,
+  "measurements_recomputed_exact": true,
+  "corners": [
+    {
+      "name": "nominal",
+      "spice": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/flat/rc.spice",
+      "sha256": "d3ee0aebd3a46f02487db8229a9ad1d4ad7a8ebbf5b0a29188c62d2d6f9cf33b"
+    },
+    {
+      "name": "hrhc",
+      "spice": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/hrhc/rc.spice",
+      "sha256": "392f8d47c92b55fa3b62bbb862f3985de55dc97113b480c05fdf37d01294e0f2",
+      "audit_pass": true,
+      "MOS_parameters_match_nominal": true,
+      "source_audit": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/summary.json",
+      "official_style": "style ngspice(hrhc)"
+    },
+    {
+      "name": "hrlc",
+      "spice": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/hrlc/rc.spice",
+      "sha256": "c4fff44712f33dde1ee4101056dcbfa9f997f0aff0e60373644121018cd1383e",
+      "audit_pass": true,
+      "MOS_parameters_match_nominal": true,
+      "source_audit": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/summary.json",
+      "official_style": "style ngspice(hrlc)"
+    },
+    {
+      "name": "lrhc",
+      "spice": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrhc/rc.spice",
+      "sha256": "9c8d31eca57ce43ab232f54997eefa2987d9581f3c96c12ee42d8ce48db40cfa",
+      "audit_pass": true,
+      "MOS_parameters_match_nominal": true,
+      "source_audit": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/summary.json",
+      "official_style": "style ngspice(lrhc)"
+    },
+    {
+      "name": "lrlc",
+      "spice": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/rc.spice",
+      "sha256": "6d3cd1ec3135371ff57276a300955990b6aa0983f263fb70ec5fe83edc1d632f",
+      "audit_pass": true,
+      "MOS_parameters_match_nominal": true,
+      "source_audit": "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/summary.json",
+      "official_style": "style ngspice(lrlc)"
+    }
+  ],
+  "sources": [
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_klu",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_typical_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ss_85",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_ff_-20",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_sf_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.0_fs_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ss_85",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_ff_-20",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_sf_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.3_fs_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_typical_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ss_85",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_ff_-20",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_sf_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/fixed_nominal_rc_pvt/3.6_fs_27",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrhc",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrlc",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrhc",
+    "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/lrlc"
+  ]
+}

@@ -1,0 +1,6 @@
+max fanout
+
+Pin                                   Limit Fanout  Slack
+---------------------------------------------------------
+clkbuf_0_MCLK/Z                          10     16     -6 (VIOLATED)
+

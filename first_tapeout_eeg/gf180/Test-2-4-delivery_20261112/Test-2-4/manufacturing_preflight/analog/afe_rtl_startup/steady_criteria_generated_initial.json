@@ -1,0 +1,13 @@
+{
+  "purpose": "Engineering diagnostic convergence, not specification or ENOB acceptance",
+  "minimum_after_last_control_or_signal_step_s": 6.25e-05,
+  "two_successive_windows_cycles_each": 4,
+  "per_cycle_mean_change_V": {
+    "OUTP_minus_OUTN": 1e-06,
+    "VCM": 0.0001
+  },
+  "cycle_rms_change": "<= max(1 uV,0.1% of prior cycle RMS) for differential output",
+  "require_all": "Every adjacent cycle comparison across both four-cycle windows; no clipping/nonfinite or omitted outlier",
+  "steady_gain": "Not measured from initial step ratio; requires settled matched positive/negative input or sinusoidal transfer later",
+  "pilot_is_steady_test": false
+}

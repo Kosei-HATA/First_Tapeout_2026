@@ -1,0 +1,659 @@
+{
+  "pass": true,
+  "count": 24,
+  "devices": [
+    {
+      "name": "ADC.OTA1.IP_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.I1P",
+        "G": "ADC.CIA",
+        "S": "ADC.OTA1.CIP",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IP_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.I1P",
+        "G": "ADC.NCIA",
+        "S": "ADC.OTA1.CIP",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IN_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.I1N",
+        "G": "ADC.CIA",
+        "S": "ADC.OTA1.CIN",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IN_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.I1N",
+        "G": "ADC.NCIA",
+        "S": "ADC.OTA1.CIN",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IP_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.I1P",
+        "G": "ADC.CIB",
+        "S": "ADC.OTA1.CIN",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IP_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.I1P",
+        "G": "ADC.NCIB",
+        "S": "ADC.OTA1.CIN",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IN_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.I1N",
+        "G": "ADC.CIB",
+        "S": "ADC.OTA1.CIP",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.IN_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.I1N",
+        "G": "ADC.NCIB",
+        "S": "ADC.OTA1.CIP",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DP_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1P",
+        "G": "ADC.CDA",
+        "S": "ADC.OTA1.OTA.CORE.N1P",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DP_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1P",
+        "G": "ADC.NCDA",
+        "S": "ADC.OTA1.OTA.CORE.N1P",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DN_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1N",
+        "G": "ADC.CDA",
+        "S": "ADC.OTA1.OTA.CORE.N1N",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DN_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1N",
+        "G": "ADC.NCDA",
+        "S": "ADC.OTA1.OTA.CORE.N1N",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DP_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1P",
+        "G": "ADC.CDB",
+        "S": "ADC.OTA1.OTA.CORE.N1N",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DP_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1P",
+        "G": "ADC.NCDB",
+        "S": "ADC.OTA1.OTA.CORE.N1N",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DN_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1N",
+        "G": "ADC.CDB",
+        "S": "ADC.OTA1.OTA.CORE.N1P",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.DN_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.D1N",
+        "G": "ADC.NCDB",
+        "S": "ADC.OTA1.OTA.CORE.N1P",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PP_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1P",
+        "G": "ADC.CDA",
+        "S": "ADC.OTA1.OTA.CORE.P2P",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PP_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1P",
+        "G": "ADC.NCDA",
+        "S": "ADC.OTA1.OTA.CORE.P2P",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PN_A.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1N",
+        "G": "ADC.CDA",
+        "S": "ADC.OTA1.OTA.CORE.P2N",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PN_A.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1N",
+        "G": "ADC.NCDA",
+        "S": "ADC.OTA1.OTA.CORE.P2N",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PP_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1P",
+        "G": "ADC.CDB",
+        "S": "ADC.OTA1.OTA.CORE.P2N",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PP_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1P",
+        "G": "ADC.NCDB",
+        "S": "ADC.OTA1.OTA.CORE.P2N",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PN_B.N",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "nfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1N",
+        "G": "ADC.CDB",
+        "S": "ADC.OTA1.OTA.CORE.P2P",
+        "B": "AVSS",
+        "parameters": {
+          "w": "20u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "10p",
+          "as": "10p",
+          "pd": "41u",
+          "ps": "41u",
+          "nrd": ".025",
+          "nrs": ".025"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 160.0
+      }
+    },
+    {
+      "name": "ADC.OTA1.OTA.CORE.PN_B.P",
+      "same_terminals_model_W_L": true,
+      "schematic": {
+        "model": "pfet_03v3",
+        "D": "ADC.OTA1.OTA.CORE.P1N",
+        "G": "ADC.NCDB",
+        "S": "ADC.OTA1.OTA.CORE.P2P",
+        "B": "AVDD",
+        "parameters": {
+          "w": "40u",
+          "l": ".28u",
+          "nf": "1",
+          "m": "8",
+          "ad": "20p",
+          "as": "20p",
+          "pd": "81u",
+          "ps": "81u",
+          "nrd": ".0125",
+          "nrs": ".0125"
+        }
+      },
+      "layout_W_L_um": {
+        "L": 0.28,
+        "W": 320.0
+      }
+    }
+  ],
+  "binding_notes": [
+    "ADC.I1P/I1N both bound to VCM in this nominal common-mode benchmark. This is not complete closed-loop ADC trajectory.",
+    "Internal OTA nodes remain dynamic with transistor models and real bias.",
+    "External TG AD/AS/PD/PS/NRD/NRS remain source schematic assumptions and are not taken from extracted load devices."
+  ]
+}

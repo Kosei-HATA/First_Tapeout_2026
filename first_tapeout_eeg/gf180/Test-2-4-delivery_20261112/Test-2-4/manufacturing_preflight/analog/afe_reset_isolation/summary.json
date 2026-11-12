@@ -1,0 +1,447 @@
+{
+  "scope": "Reset stimulus changes only, unchanged solver and full original MOSCAP circuit",
+  "results": [
+    {
+      "case": "held",
+      "reset_definition": "VRS AFE_RST 0 3.3",
+      "seconds": 37.9619460105896,
+      "exitcode": 0,
+      "input_sha256": "d20ba249b76029e0587e1d89980b4f8ac3905a9c353a1bbdae4edfa4f32d3f00",
+      "diagnostics": [
+        "doAnalyses: TRAN:  Timestep too small; time = 7.83248e-06, timestep = 1.25e-21: trouble with node \"v.xb.xcvbcm_1.vcurrmeasc_moscap#branch\""
+      ],
+      "completed": false,
+      "last_time_s": 7.832482490343594e-06,
+      "finite": true,
+      "rows": 8800,
+      "vectors": {
+        "v(outp)": {
+          "min": 0.0004812224641456251,
+          "max": 2.646195923808139,
+          "last": 1.395978308464449
+        },
+        "v(outn)": {
+          "min": 0.0004812224637903732,
+          "max": 2.646195923131545,
+          "last": 1.395978308340711
+        },
+        "v(vbn)": {
+          "min": 0.0,
+          "max": 0.9832715675155672,
+          "last": 0.8461915318467856
+        },
+        "v(vbcm)": {
+          "min": 0.0,
+          "max": 0.9778701496402038,
+          "last": 0.818071675177448
+        },
+        "v(vcm)": {
+          "min": 0.4734346871172442,
+          "max": 1.976472283582219,
+          "last": 1.399416000886945
+        },
+        "v(blp)": {
+          "min": 0.0,
+          "max": 3.260622046066015,
+          "last": 1.512381002522818
+        },
+        "v(bln)": {
+          "min": 0.0,
+          "max": 1.539414746044623,
+          "last": 1.09114383547055
+        },
+        "v(vdd)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 3.3
+        },
+        "v(rst)": {
+          "min": 0.0,
+          "max": 3.466217132668817,
+          "last": 3.297987993486105
+        },
+        "v(afe_rst)": {
+          "min": 3.3,
+          "max": 3.3,
+          "last": 3.3
+        },
+        "v(chop)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 0.0
+        },
+        "v(cia)": {
+          "min": 0.0,
+          "max": 3.305011035166141,
+          "last": 0.0002136147028157059
+        },
+        "v(cda)": {
+          "min": -0.2332371119437722,
+          "max": 3.338523208828054,
+          "last": -0.0002284131310902969
+        },
+        "v(src)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        },
+        "v(vbn1)": {
+          "min": 0.0,
+          "max": 1.02753521104585,
+          "last": 0.8504652736274679
+        },
+        "v(vbcm1)": {
+          "min": 0.0,
+          "max": 0.979104938051319,
+          "last": 0.8180704119586368
+        },
+        "v(vnc1)": {
+          "min": 0.0,
+          "max": 1.926182697149192,
+          "last": 1.926182697149192
+        },
+        "v(vpc1)": {
+          "min": 0.0,
+          "max": 1.61454096950463,
+          "last": 1.61454096950463
+        },
+        "v(vbpc2)": {
+          "min": 0.0,
+          "max": 1.71755169404499,
+          "last": 1.71755169404483
+        },
+        "v(vbnc2)": {
+          "min": 0.0,
+          "max": 1.417563657497305,
+          "last": 1.417563657497305
+        },
+        "v(xb.gp)": {
+          "min": 0.0,
+          "max": 3.135204346839785,
+          "last": 2.200235734191287
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int1)": {
+          "min": 0.0,
+          "max": 0.9791049380526068,
+          "last": 0.8180704119586034
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int2)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        }
+      },
+      "pmos_gp_minus_vdd_range_V": [
+        -1.4536242798063428,
+        0.0
+      ],
+      "nmoscap_terminal_voltage_range_V": [
+        0.0,
+        1.926182697149192
+      ],
+      "target_moscap_C_range_F": [
+        3.083676315292036e-14,
+        4.949568755364505e-12
+      ],
+      "target_internal_voltage_error_max_V": 7.328566070836928e-09,
+      "target_internal_voltage_error_last_V": -3.341771304121721e-14,
+      "target_internal_ground_max_V": 0.0
+    },
+    {
+      "case": "delayed_10us",
+      "reset_definition": "VRS AFE_RST 0 PWL(0 3.3 10u 3.3 10.001u 0)",
+      "seconds": 37.09651517868042,
+      "exitcode": 0,
+      "input_sha256": "ca518495939ff2ba1db3623e0d09a2bdf3a60d9728d21a49a9aa2ca2389bd0e2",
+      "diagnostics": [
+        "doAnalyses: TRAN:  Timestep too small; time = 7.83248e-06, timestep = 1.25e-21: trouble with node \"v.xb.xcvbcm_1.vcurrmeasc_moscap#branch\""
+      ],
+      "completed": false,
+      "last_time_s": 7.832482490343594e-06,
+      "finite": true,
+      "rows": 8800,
+      "vectors": {
+        "v(outp)": {
+          "min": 0.0004812224641456251,
+          "max": 2.646195923808139,
+          "last": 1.395978308464449
+        },
+        "v(outn)": {
+          "min": 0.0004812224637903732,
+          "max": 2.646195923131545,
+          "last": 1.395978308340711
+        },
+        "v(vbn)": {
+          "min": 0.0,
+          "max": 0.9832715675155672,
+          "last": 0.8461915318467856
+        },
+        "v(vbcm)": {
+          "min": 0.0,
+          "max": 0.9778701496402038,
+          "last": 0.818071675177448
+        },
+        "v(vcm)": {
+          "min": 0.4734346871172442,
+          "max": 1.976472283582219,
+          "last": 1.399416000886945
+        },
+        "v(blp)": {
+          "min": 0.0,
+          "max": 3.260622046066015,
+          "last": 1.512381002522818
+        },
+        "v(bln)": {
+          "min": 0.0,
+          "max": 1.539414746044623,
+          "last": 1.09114383547055
+        },
+        "v(vdd)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 3.3
+        },
+        "v(rst)": {
+          "min": 0.0,
+          "max": 3.466217132668817,
+          "last": 3.297987993486105
+        },
+        "v(afe_rst)": {
+          "min": 3.3,
+          "max": 3.3,
+          "last": 3.3
+        },
+        "v(chop)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 0.0
+        },
+        "v(cia)": {
+          "min": 0.0,
+          "max": 3.305011035166141,
+          "last": 0.0002136147028157059
+        },
+        "v(cda)": {
+          "min": -0.2332371119437722,
+          "max": 3.338523208828054,
+          "last": -0.0002284131310902969
+        },
+        "v(src)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        },
+        "v(vbn1)": {
+          "min": 0.0,
+          "max": 1.02753521104585,
+          "last": 0.8504652736274679
+        },
+        "v(vbcm1)": {
+          "min": 0.0,
+          "max": 0.979104938051319,
+          "last": 0.8180704119586368
+        },
+        "v(vnc1)": {
+          "min": 0.0,
+          "max": 1.926182697149192,
+          "last": 1.926182697149192
+        },
+        "v(vpc1)": {
+          "min": 0.0,
+          "max": 1.61454096950463,
+          "last": 1.61454096950463
+        },
+        "v(vbpc2)": {
+          "min": 0.0,
+          "max": 1.71755169404499,
+          "last": 1.71755169404483
+        },
+        "v(vbnc2)": {
+          "min": 0.0,
+          "max": 1.417563657497305,
+          "last": 1.417563657497305
+        },
+        "v(xb.gp)": {
+          "min": 0.0,
+          "max": 3.135204346839785,
+          "last": 2.200235734191287
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int1)": {
+          "min": 0.0,
+          "max": 0.9791049380526068,
+          "last": 0.8180704119586034
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int2)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        }
+      },
+      "pmos_gp_minus_vdd_range_V": [
+        -1.4536242798063428,
+        0.0
+      ],
+      "nmoscap_terminal_voltage_range_V": [
+        0.0,
+        1.926182697149192
+      ],
+      "target_moscap_C_range_F": [
+        3.083676315292036e-14,
+        4.949568755364505e-12
+      ],
+      "target_internal_voltage_error_max_V": 7.328566070836928e-09,
+      "target_internal_voltage_error_last_V": -3.341771304121721e-14,
+      "target_internal_ground_max_V": 0.0
+    },
+    {
+      "case": "slew_100ns",
+      "reset_definition": "VRS AFE_RST 0 PWL(0 3.3 7.8125u 3.3 7.9125u 0)",
+      "seconds": 33.23490238189697,
+      "exitcode": 0,
+      "input_sha256": "c7afef051eee970f07064351dbec40a6b1a372a0e666f752381c6a8766cbcfa3",
+      "diagnostics": [
+        "doAnalyses: TRAN:  Timestep too small; time = 7.86286e-06, timestep = 1.25e-21: trouble with node \"v.xb.xcvbcm_1.vcurrmeasc_moscap#branch\""
+      ],
+      "completed": false,
+      "last_time_s": 7.862855897798335e-06,
+      "finite": true,
+      "rows": 8879,
+      "vectors": {
+        "v(outp)": {
+          "min": 0.0004812224641456251,
+          "max": 2.646195923808139,
+          "last": 1.395602234204408
+        },
+        "v(outn)": {
+          "min": 0.0004812224637903732,
+          "max": 2.646195923131545,
+          "last": 1.395602234082272
+        },
+        "v(vbn)": {
+          "min": 0.0,
+          "max": 0.9832715675155672,
+          "last": 0.8461957727711198
+        },
+        "v(vbcm)": {
+          "min": 0.0,
+          "max": 0.9778701496402038,
+          "last": 0.8180716767307976
+        },
+        "v(vcm)": {
+          "min": 0.4734346871172442,
+          "max": 1.976472283582219,
+          "last": 1.401088214374783
+        },
+        "v(blp)": {
+          "min": 0.0,
+          "max": 3.260622046066015,
+          "last": 1.512381091916088
+        },
+        "v(bln)": {
+          "min": 0.0,
+          "max": 1.539414746044623,
+          "last": 1.091143880473375
+        },
+        "v(vdd)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 3.3
+        },
+        "v(rst)": {
+          "min": 0.0,
+          "max": 3.466217132668817,
+          "last": 3.241623995238101
+        },
+        "v(afe_rst)": {
+          "min": 1.638255372654975,
+          "max": 3.3,
+          "last": 1.638255372654975
+        },
+        "v(chop)": {
+          "min": 0.0,
+          "max": 3.3,
+          "last": 2.348925469010575
+        },
+        "v(cia)": {
+          "min": -0.006348048332959381,
+          "max": 3.305011035166141,
+          "last": 0.006371161872167451
+        },
+        "v(cda)": {
+          "min": -0.2332371119437722,
+          "max": 3.338523208828054,
+          "last": 0.006521428328784358
+        },
+        "v(src)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        },
+        "v(vbn1)": {
+          "min": 0.0,
+          "max": 1.02753521104585,
+          "last": 0.8504652646681365
+        },
+        "v(vbcm1)": {
+          "min": 0.0,
+          "max": 0.979104938051319,
+          "last": 0.8180704035103623
+        },
+        "v(vnc1)": {
+          "min": 0.0,
+          "max": 1.92696107775538,
+          "last": 1.926961077755274
+        },
+        "v(vpc1)": {
+          "min": 0.0,
+          "max": 1.615389924162429,
+          "last": 1.615389924162402
+        },
+        "v(vbpc2)": {
+          "min": 0.0,
+          "max": 1.718396802962304,
+          "last": 1.718396802962304
+        },
+        "v(vbnc2)": {
+          "min": 0.0,
+          "max": 1.418360758959308,
+          "last": 1.418360758959308
+        },
+        "v(xb.gp)": {
+          "min": 0.0,
+          "max": 3.135204346839785,
+          "last": 2.200235749310766
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int1)": {
+          "min": 0.0,
+          "max": 0.9791049380526068,
+          "last": 0.8180704035103641
+        },
+        "v(xb.xcvbcm1_1.c_moscap_int2)": {
+          "min": 0.0,
+          "max": 0.0,
+          "last": 0.0
+        }
+      },
+      "pmos_gp_minus_vdd_range_V": [
+        -1.4536242798063428,
+        0.0
+      ],
+      "nmoscap_terminal_voltage_range_V": [
+        0.0,
+        1.92696107775538
+      ],
+      "target_moscap_C_range_F": [
+        3.083676315292036e-14,
+        4.949568755364505e-12
+      ],
+      "target_internal_voltage_error_max_V": 7.328566070836928e-09,
+      "target_internal_voltage_error_last_V": 1.7763568394002505e-15,
+      "target_internal_ground_max_V": 0.0
+    }
+  ],
+  "held_vs_delayed_saved_waves_exactly_equal": true,
+  "model_limitations_source": "https://gf180mcu-pdk.readthedocs.io/en/latest/analog/model_parameters/LV/LV_6.html",
+  "model_limitations_note": "Official model limitations/restrictions section says To be added. Voltage nominality is not proof of characterized model validity.",
+  "conclusion": "Reset release is not the sole trigger. Held/delayed reset fails at the next BLANK transition; slower reset reaches the next CHOP transition. Finite saved terminals and smooth positive C(V) do not identify the internal solver root cause."
+}

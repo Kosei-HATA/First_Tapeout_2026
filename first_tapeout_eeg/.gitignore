@@ -22,3 +22,10 @@ gf180/tapeout/layout/gds/adc_top.gds
 gf180/tapeout/layout/gds/afe_top.gds
 gf180/tapeout/layout/gds/eeg_afe_core.gds
 gf180/tapeout/layout/gds/eeg_core.gds
+# 後輩の Test-2-4（11/12 に受け取った ZIP と、それを展開したもの）。GitHub の 1 ファイル 100 MB の上限を超えるものは入れない
+# （GDS 2 つは .gds.gz にして入れた。LVS の DB は上の *.lvsdb で外れる。説明は gf180/Test-2-4-delivery_20261112.md）
+gf180/Test-2-4.zip
+gf180/Test-2-4-delivery_20261112/Test-2-4/gds/Test-2-4.gds
+gf180/Test-2-4-delivery_20261112/reference/Test2-3/gds/Test2-3.gds
+gf180/Test-2-4-delivery_20261112/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady/wave.csv
+gf180/Test-2-4-delivery_20261112/Test-2-4/manufacturing_preflight/analog/afe_rtl_zero_224us/recovery_run/steady/wave.csv

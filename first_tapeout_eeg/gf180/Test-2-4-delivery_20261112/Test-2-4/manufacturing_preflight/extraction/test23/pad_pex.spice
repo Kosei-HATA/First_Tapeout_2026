@@ -1,0 +1,5 @@
+* NGSPICE file created from pad_dut.ext - technology: gf180mcuD
+
+.subckt pad_dut PAD
+C0 PAD VSUBS 0.11168p
+.ends

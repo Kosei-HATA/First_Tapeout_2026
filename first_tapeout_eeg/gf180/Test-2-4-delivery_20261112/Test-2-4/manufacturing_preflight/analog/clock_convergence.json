@@ -1,0 +1,51 @@
+{
+  "conditions": "reltol1e-5, output step5ps, maximum step25ps; original reltol1e-4/10ps/50ps. No circuit/model changes.",
+  "cases": [
+    {
+      "vdd": 3.3,
+      "corner": "ff",
+      "temperature_C": -20,
+      "measurements": {
+        "dead A->B (ns)": 1.7495138608714864,
+        "overlap A->B (ns)": 4.375284954982832,
+        "margin 1 A->B (ns)": 0.3729643052516039,
+        "margin 2 A->B (ns)": 1.5916385270874163,
+        "delay A->B (ns)": 0.5224980725506115,
+        "dead B->A (ns)": 1.420438467792232,
+        "overlap B->A (ns)": 4.137254254396632,
+        "margin 1 B->A (ns)": 0.16346637923708104,
+        "margin 2 B->A (ns)": 1.8966041065990964,
+        "delay B->A (ns)": 0.5040264167541637,
+        "CIA rise 10-90 (ns)": 0.14417427216148015,
+        "NCIA fall 90-10 (ns)": 0.1352107643093687,
+        "CDA rise 10-90 (ns)": 0.14329344445759717,
+        "NCDA fall 90-10 (ns)": 0.158309042399746,
+        "supply charge per edge (pC)": 13.824850871452096
+      },
+      "minimum_margin_ns": 0.16346637923708104
+    },
+    {
+      "vdd": 3.6,
+      "corner": "ff",
+      "temperature_C": -20,
+      "measurements": {
+        "dead A->B (ns)": 1.579610841624966,
+        "overlap A->B (ns)": 3.9960049794255,
+        "margin 1 A->B (ns)": 0.3369763384816885,
+        "margin 2 A->B (ns)": 1.4428806711967919,
+        "delay A->B (ns)": 0.500346395248902,
+        "dead B->A (ns)": 1.2966495406407608,
+        "overlap B->A (ns)": 3.80025117081656,
+        "margin 1 B->A (ns)": 0.14644093280044765,
+        "margin 2 B->A (ns)": 1.724840927935472,
+        "delay B->A (ns)": 0.48507704934677176,
+        "CIA rise 10-90 (ns)": 0.14483846994899366,
+        "NCIA fall 90-10 (ns)": 0.12384727124886383,
+        "CDA rise 10-90 (ns)": 0.13885438496575284,
+        "NCDA fall 90-10 (ns)": 0.14978473587646482,
+        "supply charge per edge (pC)": 15.176316549198392
+      },
+      "minimum_margin_ns": 0.14644093280044765
+    }
+  ]
+}

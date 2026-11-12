@@ -1,0 +1,1646 @@
+{
+  "scope": "Independent mathematical derivative check, not new SPICE runs or foundry qualification",
+  "voltage_interval_V": [
+    -3.3,
+    3.3
+  ],
+  "voltage_points": 1321,
+  "cases": [
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 5.241569835752694e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 5.269223661004687e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "nmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 5.247419313982148e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 1.43e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 2.86e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 2.2e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 1,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 2,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 4,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 8,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 0.9,
+      "max_relative_derivative_error": 3.994497287006047e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1,
+      "max_relative_derivative_error": 3.994974592680892e-09,
+      "Q_at_zero_C": 0.0
+    },
+    {
+      "kind": "pmos",
+      "L_m": 5.72e-05,
+      "W_m": 4.4e-05,
+      "m": 16,
+      "corner": 1.1,
+      "max_relative_derivative_error": 4.0013734081462745e-09,
+      "Q_at_zero_C": 0.0
+    }
+  ],
+  "max_relative_derivative_error": 5.269223661004687e-09,
+  "cumulative_charge": {
+    "nmos": {
+      "max_cumulative_charge_difference_C": 6.625511329377246e-17,
+      "max_reference_charge_C": 1.7674010241217197e-12,
+      "relative_to_max_reference_charge": 3.7487311815210034e-05
+    },
+    "pmos": {
+      "max_cumulative_charge_difference_C": 5.243325299344251e-17,
+      "max_reference_charge_C": 1.0099165346344644e-12,
+      "relative_to_max_reference_charge": 5.191840235829046e-05
+    }
+  },
+  "definition_evidence": "Pinned ngspice inpcom.c capacitance formulation: internal measured capacitor current times C(V). This implements differential C, not Q/V. Q-form uses the charge formulation branch.",
+  "Q_units": "Coulombs: geometry[m^2] times coefficient[F/m^2] times voltage[V]. Q(0)=0 by subtracting logcosh(c4).",
+  "stable_evaluation": "Independent audit uses logaddexp. SPICE ln(cosh()) argument magnitude <=25.5625 over the tested interval, far below overflow. This does not authorize extrapolation to arbitrary voltages."
+}

@@ -1,0 +1,6 @@
+{'test': 'bias_op', 'exitcode': 0, 'seconds': 4.2, 'log': 'bias_op.log'}
+{'test': 'bias_start', 'exitcode': 0, 'seconds': 6.2, 'log': 'bias_start.log'}
+{'test': 'reference', 'exitcode': 0, 'seconds': 3.6, 'log': 'reference.log'}
+{'test': 'testmux_tt', 'exitcode': 0, 'seconds': 8.8, 'log': 'testmux_tt.log'}
+{'test': 'testmux_ss', 'exitcode': 0, 'seconds': 9.7, 'log': 'testmux_ss.log'}
+{'test': 'testmux_ff', 'exitcode': 0, 'seconds': 8.6, 'log': 'testmux_ff.log'}

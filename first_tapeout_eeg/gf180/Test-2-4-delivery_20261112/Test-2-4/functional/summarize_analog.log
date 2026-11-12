@@ -1,0 +1,39 @@
+{
+  "scope": "Schematic-level supplied benches; 3.3V nominal supply; corrected hsa model selection. Not full-chip PEX/noise/ENOB signoff.",
+  "quantizer_delay": {
+    "typical": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 7,
+      "no_transition_cases": 1,
+      "max_measured_ns": 1.37,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": false
+    },
+    "ss": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 8,
+      "no_transition_cases": 0,
+      "max_measured_ns": 1.58,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": true
+    },
+    "ff": {
+      "correct_decisions": 8,
+      "wrong_decisions": 0,
+      "timing_measurements": 8,
+      "no_transition_cases": 0,
+      "max_measured_ns": 1.17,
+      "expected_decisions": 8,
+      "observed_decisions_pass": true,
+      "all_delays_measured_and_under_61ns": true
+    }
+  },
+  "dac_even": [],
+  "adc_clock_minimum_margin_ns": 0.16,
+  "primary_log_failures": {},
+  "dac_even_output": ""
+}

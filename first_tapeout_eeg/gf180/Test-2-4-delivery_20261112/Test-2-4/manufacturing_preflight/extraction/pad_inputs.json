@@ -1,0 +1,34 @@
+[
+  {
+    "tag": "test23",
+    "input_gds": "/work/Test2-3/gds/Test2-3.gds",
+    "input_sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c",
+    "cell": "Bondpad_5LM",
+    "merged_shape_counts": {
+      "36/0": 1,
+      "42/0": 1,
+      "38/0": 6464,
+      "46/0": 1,
+      "40/0": 6464,
+      "81/0": 1,
+      "41/0": 6464,
+      "37/0": 72
+    }
+  },
+  {
+    "tag": "test24",
+    "input_gds": "/work/Test-2-4/gds/Test-2-4.gds",
+    "input_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+    "cell": "Bondpad_5LM",
+    "merged_shape_counts": {
+      "36/0": 1,
+      "42/0": 1,
+      "38/0": 6464,
+      "46/0": 1,
+      "40/0": 6464,
+      "81/0": 1,
+      "41/0": 6464,
+      "37/0": 72
+    }
+  }
+]

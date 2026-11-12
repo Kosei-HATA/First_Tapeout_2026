@@ -1,0 +1,704 @@
+{
+  "flattened_mos_count": 615,
+  "target_nodes": [
+    "cda",
+    "cdb",
+    "cia",
+    "cib",
+    "ncda",
+    "ncdb",
+    "ncia",
+    "ncib",
+    "ofph",
+    "rst"
+  ],
+  "selected_devices": [
+    {
+      "instance": "xc.xa4.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "cia",
+        "g": "xc.a3",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xa4.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "cia",
+        "g": "xc.a3",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xan4.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "ncia",
+        "g": "xc.an3",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xan4.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "ncia",
+        "g": "xc.an3",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xb4.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "cib",
+        "g": "xc.b3",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xb4.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "cib",
+        "g": "xc.b3",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xbn4.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "ncib",
+        "g": "xc.bn3",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xbn4.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "ncib",
+        "g": "xc.bn3",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xol1.xpa",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xc.xol1.m1",
+        "g": "cia",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xpa m1 a vdd vdd pfet_03v3 w={5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xol1.xna",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xc.ofphb",
+        "g": "cia",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xna y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xol2.xpa",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xc.xol2.m1",
+        "g": "cib",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xpa m1 a vdd vdd pfet_03v3 w={5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xol2.xna",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xc.ofphi",
+        "g": "cib",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xna y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xob2.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "ofph",
+        "g": "xc.ofph1",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xob2.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "ofph",
+        "g": "xc.ofph1",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcda2.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "cda",
+        "g": "xc.cda1",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcda2.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "cda",
+        "g": "xc.cda1",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcda3.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "ncda",
+        "g": "xc.cdai",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcda3.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "ncda",
+        "g": "xc.cdai",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcdb2.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "cdb",
+        "g": "xc.cdb1",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcdb2.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "cdb",
+        "g": "xc.cdb1",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcdb3.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "ncdb",
+        "g": "xc.cdbi",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xcdb3.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "ncdb",
+        "g": "xc.cdbi",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xr2.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "rst",
+        "g": "xc.rstb",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xc.xr2.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "rst",
+        "g": "xc.rstb",
+        "s": "gclk",
+        "b": "gclk"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xa.xrstp",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "rst",
+        "s": "xa.oni",
+        "b": "0"
+      },
+      "source_line": "xrstp inp rst oni vss nfet_03v3 w=1u l=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5"
+    },
+    {
+      "instance": "xa.xrstn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inn",
+        "g": "rst",
+        "s": "xa.opi",
+        "b": "0"
+      },
+      "source_line": "xrstn inn rst opi vss nfet_03v3 w=1u l=1u nf=1 m=1 ad=.5p as=.5p pd=3u ps=3u nrd=.5 nrs=.5"
+    },
+    {
+      "instance": "xa.xscp1",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "cda",
+        "s": "xa.scp",
+        "b": "0"
+      },
+      "source_line": "xscp1 inp cda scp vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscp2",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.scp",
+        "g": "cdb",
+        "s": "xa.oni",
+        "b": "0"
+      },
+      "source_line": "xscp2 scp cdb oni vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscp3",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "cdb",
+        "s": "xa.scp2",
+        "b": "0"
+      },
+      "source_line": "xscp3 inp cdb scp2 vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscp4",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.scp2",
+        "g": "cda",
+        "s": "xa.oni",
+        "b": "0"
+      },
+      "source_line": "xscp4 scp2 cda oni vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscn1",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inn",
+        "g": "cda",
+        "s": "xa.scn",
+        "b": "0"
+      },
+      "source_line": "xscn1 inn cda scn vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscn2",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.scn",
+        "g": "cdb",
+        "s": "xa.opi",
+        "b": "0"
+      },
+      "source_line": "xscn2 scn cdb opi vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscn3",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.inn",
+        "g": "cdb",
+        "s": "xa.scn2",
+        "b": "0"
+      },
+      "source_line": "xscn3 inn cdb scn2 vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xscn4",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.scn2",
+        "g": "cda",
+        "s": "xa.opi",
+        "b": "0"
+      },
+      "source_line": "xscn4 scn2 cda opi vss nfet_03v3 w=0.5u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xoff.xop.xnph.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xop.nph",
+        "g": "ofph",
+        "s": "vdd",
+        "b": "vdd"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xa.xoff.xop.xnph.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xop.nph",
+        "g": "ofph",
+        "s": "0",
+        "b": "0"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xa.xoff.xop.xmxa.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "0",
+        "g": "ofph",
+        "s": "xa.xoff.xop.xr",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn y vdd pfet_03v3 w=2u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xoff.xop.xmxb.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xop.sb",
+        "g": "ofph",
+        "s": "xa.xoff.xop.xr",
+        "b": "0"
+      },
+      "source_line": "xn a g y vss nfet_03v3 w=1u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xoff.xon.xnph.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xon.nph",
+        "g": "ofph",
+        "s": "vdd",
+        "b": "vdd"
+      },
+      "source_line": "xp y a vdd vdd pfet_03v3 w={2.5u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xa.xoff.xon.xnph.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xon.nph",
+        "g": "ofph",
+        "s": "0",
+        "b": "0"
+      },
+      "source_line": "xn y a vss vss nfet_03v3 w={1u*s} l=0.28u nf={s} m=1"
+    },
+    {
+      "instance": "xa.xoff.xon.xmxa.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "0",
+        "g": "ofph",
+        "s": "xa.xoff.xon.xr",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn y vdd pfet_03v3 w=2u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xoff.xon.xmxb.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.xoff.xon.sb",
+        "g": "ofph",
+        "s": "xa.xoff.xon.xr",
+        "b": "0"
+      },
+      "source_line": "xn a g y vss nfet_03v3 w=1u l=0.28u nf=1 m=1"
+    },
+    {
+      "instance": "xa.xamp.xip_a.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "elp",
+        "g": "cia",
+        "s": "xa.wp",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=256 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xip_a.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "elp",
+        "g": "ncia",
+        "s": "xa.wp",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=256 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xin_a.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "eln",
+        "g": "cia",
+        "s": "xa.wn",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=256 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xin_a.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "eln",
+        "g": "ncia",
+        "s": "xa.wn",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=256 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xip_b.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "elp",
+        "g": "cib",
+        "s": "xa.wn",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=256 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xip_b.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "elp",
+        "g": "ncib",
+        "s": "xa.wn",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=256 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xin_b.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "eln",
+        "g": "cib",
+        "s": "xa.wp",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=256 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xin_b.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "eln",
+        "g": "ncib",
+        "s": "xa.wp",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=256 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xop_a.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "cda",
+        "s": "outp",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xop_a.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncda",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xon_a.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.oni",
+        "g": "cda",
+        "s": "outn",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xon_a.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.oni",
+        "g": "ncda",
+        "s": "outn",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xop_b.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "cdb",
+        "s": "outn",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xop_b.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.opi",
+        "g": "ncdb",
+        "s": "outn",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    },
+    {
+      "instance": "xa.xamp.xon_b.xn",
+      "model": "nfet_03v3",
+      "terminals": {
+        "d": "xa.oni",
+        "g": "cdb",
+        "s": "outp",
+        "b": "0"
+      },
+      "source_line": "xn a g b vss nfet_03v3 w=20u l=.28u nf=1 m=8 ad=10p as=10p pd=41u ps=41u nrd=.025 nrs=.025"
+    },
+    {
+      "instance": "xa.xamp.xon_b.xp",
+      "model": "pfet_03v3",
+      "terminals": {
+        "d": "xa.oni",
+        "g": "ncdb",
+        "s": "outp",
+        "b": "vdd"
+      },
+      "source_line": "xp a gn b vdd pfet_03v3 w=40u l=.28u nf=1 m=8 ad=20p as=20p pd=81u ps=81u nrd=.0125 nrs=.0125"
+    }
+  ],
+  "saved_nodes": [
+    "cda",
+    "cdb",
+    "cia",
+    "cib",
+    "eln",
+    "elp",
+    "gclk",
+    "ncda",
+    "ncdb",
+    "ncia",
+    "ncib",
+    "ofph",
+    "outn",
+    "outp",
+    "rst",
+    "vclk",
+    "vdd",
+    "xa.inn",
+    "xa.inp",
+    "xa.oni",
+    "xa.opi",
+    "xa.scn",
+    "xa.scn2",
+    "xa.scp",
+    "xa.scp2",
+    "xa.wn",
+    "xa.wp",
+    "xa.xoff.xon.nph",
+    "xa.xoff.xon.sb",
+    "xa.xoff.xon.xr",
+    "xa.xoff.xop.nph",
+    "xa.xoff.xop.sb",
+    "xa.xoff.xop.xr",
+    "xc.a3",
+    "xc.an3",
+    "xc.b3",
+    "xc.bn3",
+    "xc.cda1",
+    "xc.cdai",
+    "xc.cdb1",
+    "xc.cdbi",
+    "xc.ofph1",
+    "xc.ofphb",
+    "xc.ofphi",
+    "xc.rstb",
+    "xc.xol1.m1",
+    "xc.xol2.m1"
+  ]
+}

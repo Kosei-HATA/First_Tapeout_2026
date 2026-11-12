@@ -1,0 +1,1 @@
+Zero-input diagnostic was interrupted before a waveform or final run log was saved. Recovery found Docker engine unavailable and no saved result. Do not infer an offset, gain or pass from this attempt. No rerun has been started. See recovery_status.json and input_manifest.json. Original +100uV evidence remains preserved.

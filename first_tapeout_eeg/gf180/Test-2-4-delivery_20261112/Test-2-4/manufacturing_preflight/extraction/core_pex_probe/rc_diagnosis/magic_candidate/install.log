@@ -1,0 +1,177 @@
+--- installing executable to /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin
+--- installing runtime files to /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib
+make[1]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source'
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin \
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys \
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/scm
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/scm
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc'
+for dir in latexfiles man tutcells html; do \
+	make -C $dir install; done
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/latexfiles'
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut1.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut1.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut2.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut2.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut3.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut3.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut4.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut4.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut5.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut5.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut6.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut6.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut7.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut7.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut8.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut8.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut9.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut9.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut10.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut10.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tut11.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tut11.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/maint1.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/maint1.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/maint2.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/maint2.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/maint3.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/maint3.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/maint4.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/maint4.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/introduction.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/introduction.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/copyright.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/copyright.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/addendum6_5.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/addendum6_5.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tutscm1.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tutscm1.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tutscm2.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tutscm2.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tutscm3.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tutscm3.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tutscm4.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tutscm4.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tuttcl1.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tuttcl1.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tuttcl2.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tuttcl2.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tuttcl3.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tuttcl3.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tuttcl4.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tuttcl4.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tuttcl5.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tuttcl5.ps
+cp /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/psfiles/tutwrl1.ps /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/tutwrl1.ps
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/latexfiles'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/man'
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1
+cp ext2spice.1 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1/ext2spice.1
+cp extcheck.1 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1/extcheck.1
+cp ext2sim.1 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1/ext2sim.1
+cp magic.1 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man1/magic.1
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5
+cp cmap.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/cmap.5
+cp displays.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/displays.5
+cp dlys.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/dlys.5
+cp dstyle.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/dstyle.5
+cp ext.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/ext.5
+cp glyphs.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/glyphs.5
+cp mag.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/mag.5
+cp net.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/net.5
+cp sim.5 /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/share/man/man5/sim.5
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/man'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/tutcells'
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial
+cp m3a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/m3a.mag
+cp maint2a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/maint2a.mag
+cp tut1.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut1.mag
+cp tut2a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut2a.mag
+cp tut2b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut2b.mag
+cp tut2c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut2c.mag
+cp tut2d.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut2d.mag
+cp tut3a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3a.mag
+cp tut3b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3b.mag
+cp tut3c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3c.mag
+cp tut3d.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3d.mag
+cp tut3e.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3e.mag
+cp tut3f.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3f.mag
+cp tut3g.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3g.mag
+cp tut3h.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut3h.mag
+cp tut4a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut4a.mag
+cp tut4x.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut4x.mag
+cp tut4y.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut4y.mag
+cp tut4z.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut4z.mag
+cp tut5a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut5a.mag
+cp tut5b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut5b.mag
+cp tut6a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut6a.mag
+cp tut6b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut6b.mag
+cp tut6c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut6c.mag
+cp tut6x.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut6x.mag
+cp tut6y.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut6y.mag
+cp tut7a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7a.mag
+cp tut7b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7b.mag
+cp tut7b.net /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7b.net
+cp tut7c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7c.mag
+cp tut7d.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7d.mag
+cp tut7d.net /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut7d.net
+cp tut8a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8a.mag
+cp tut8b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8b.mag
+cp tut8c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8c.mag
+cp tut8d.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8d.mag
+cp tut8e.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8e.mag
+cp tut8f.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8f.mag
+cp tut8g.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8g.mag
+cp tut8h.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8h.mag
+cp tut8i.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8i.mag
+cp tut8j.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8j.mag
+cp tut8k.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8k.mag
+cp tut8l.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8l.mag
+cp tut8m.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8m.mag
+cp tut8n.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8n.mag
+cp tut8r.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut8r.mag
+cp tut9a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut9a.mag
+cp tut9b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut9b.mag
+cp tut9x.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut9x.mag
+cp tut9y.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut9y.mag
+cp tut11a.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.mag
+cp tut11b.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11b.mag
+cp tut11c.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11c.mag
+cp tut11d.mag /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11d.mag
+cp tut11a.al /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.al
+cp tut11a.cmd /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.cmd
+cp tut11a.ext /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.ext
+cp tut11a.nodes /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.nodes
+cp tut11a.sim /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11a.sim
+cp tut11b.ext /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11b.ext
+cp tut11c.ext /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11c.ext
+cp tut11d.ext /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/tutorial/tut11d.ext
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/tutcells'
+make[3]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/html'
+/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scripts/mkdirs /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/html
+mkdir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/html
+# Ship only the HTML content, not the build files.  . holds
+# Makefile.in (always) and, for an in-tree build, the config.status-generated
+# Makefile; excluding both keeps the install identical in-tree vs out-of-tree.
+tar -C . --exclude=./Makefile --exclude=./Makefile.in -cf - . \
+    | (cd /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/doc/html; tar xf - )
+make[3]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc/html'
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/doc'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/graphics'
+for i in bw.glyphs color.glyphs; do \
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/$i; \
+cp ./$i /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys; done
+for i in FreeSerif.pt3 FreeSans.pt3 FreeMono.pt3; do \
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/$i; \
+cp ./$i /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys; done
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/graphics'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/magic'
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin/magic
+cp magic /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/.magicrc
+cp proto.magicrc /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/.magicrc
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/magicps.pro
+cp magicps.pro /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys/magicps.pro
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/magic'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/net2ir'
+rm -f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin/net2ir
+cp net2ir /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/bin
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/net2ir'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scmos'
+for i in mos.7bit.dstyle mos.7bit.std.cmap mos.24bit.dstyle mos.24bit.std.cmap mos.7bit.mraster_dstyle mos.7bit.mraster.cmap mos.OpenGL.dstyle mos.OpenGL.std.cmap minimum.tech gdsquery.tech scmos.tech scmos-tm.tech scmos-sub.tech scmosWR.tech nmos.tech; do \
+	f=$i; test -f $f || f=./$i; \
+	cp $f /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys; done
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/scmos'
+make[2]: Entering directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/windows'
+--- installing glyphs to /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys
+for i in windows7.glyphs windows11.glyphs windows14.glyphs windows22.glyphs vfont.B.12 vfont.I.12 vfont.R.8; do \
+	(cd /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys && rm -f $i); \
+	cp ./$i /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/install/lib/magic/sys; done
+make[2]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source/windows'
+make[1]: Leaving directory '/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis/magic_candidate/source'

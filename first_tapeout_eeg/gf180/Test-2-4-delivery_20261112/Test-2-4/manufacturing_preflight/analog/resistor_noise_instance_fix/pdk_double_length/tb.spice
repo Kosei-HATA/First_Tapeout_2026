@@ -1,0 +1,18 @@
+* independent resistor zero-bias thermal noise sanity
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.include /work/Test-2-4/manufacturing_preflight/analog/resistor_noise_instance_fix/audit_model.spice
+.temp 27
+ITEST 0 out DC 0 AC 1
+XR out 0 0 audit_ppolyf_u_1k r_length=582.56u r_width=1u
+.control
+set noaskquit
+set numdgt=15
+ac lin 2 0.5 100
+wrdata ac.csv real(v(out)) imag(v(out))
+noise v(out) ITEST dec 10 0.5 100
+setplot noise1
+wrdata noise.csv onoise_spectrum inoise_spectrum
+quit
+.endc
+.end

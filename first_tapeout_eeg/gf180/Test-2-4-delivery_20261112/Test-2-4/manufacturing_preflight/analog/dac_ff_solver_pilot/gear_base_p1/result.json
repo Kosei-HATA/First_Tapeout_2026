@@ -1,0 +1,10 @@
+{
+  "setting": "gear_base",
+  "pattern": 1,
+  "seconds": 323.32725620269775,
+  "exitcode": 0,
+  "last_time_s": 1.5671875e-05,
+  "samples": 56037,
+  "charge_C": -1.5441591638963982e-11,
+  "deck_sha256": "126ad7ebf196886475784d7f5087b66d5271fb38c5b1b5fc59e592fbfce8864a"
+}

@@ -1,0 +1,28 @@
+* eeg_adc_clk timing with OTA1 as load
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice ss
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice mimcap_ss
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice cap_mim
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/adc/eeg_adc_otas.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/adc/eeg_adc_clk.spice
+.temp 85
+.options sparse reltol=1e-4
+VDD VDD 0 3.6
+VCM CM 0 1.65
+VBN1 VBN1 0 .85
+VNC1 VNC1 0 2
+VPC1 VPC1 0 1.7
+VBCM1 VBCM1 0 .82
+VCH CHOP1 0 PULSE(3.6 0 9.975000e-08 0.5n 0.5n 1.995000e-07 1u)
+VCLK VCLK 0 3.6
+XC CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB VCLK 0 eeg_adc_clk
+XOTA1 CM CM O1P O1N CM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD 0 gf180_inside_cascode_ota
+C1P O1P 0 684.5p
+C1N O1N 0 684.5p
+.control
+set noaskquit
+tran 0.01n 500n 0 0.05n
+wrdata out.csv v(chop1) v(cia) v(ncia) v(cib) v(ncib) v(cda) v(ncda) v(cdb) v(ncdb) i(vclk)
+quit
+.endc
+.end

@@ -1,0 +1,76 @@
+* original model isolation
+* Current full AFE initialization and speed pilot; NOT settled gain
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice mimcap_typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice cap_mim
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice moscap_typical
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/afe/eeg_afe.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/afe/eeg_afe_clk.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/bias_q_diagnostic.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/moscap_charge_equivalent/q_models.spice
+.temp 27
+
+VDD VDD 0 PWL(0 0 100n 3.3)
+VRP VRP 0 1.9
+VRN VRN 0 1.4
+VIT ITST 0 1
+XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VRP VRN VDD 0 0 VDD 0 VDD VDD 0 eeg_bias
+XDQ IQ IQ 0 0 nfet_03v3 W=4u L=2u nf=1 m=8
+RCLKP VDD VCLK 100
+RCLKN GCLK 0 100
+CCLK VCLK GCLK 150p
+VCH CHOP 0 PULSE(0 3.3 50n .5n .5n 3.90575e-06 7.8125e-06)
+ECO CHOP_OUT 0 CHOP 0 1
+VBL BLANK 0 PWL(0 0 1.9482421875e-08 0 1.9982421875e-08 3.3 2.63623046875e-07 3.3 2.64123046875e-07 0 3.92573242188e-06 0 3.92623242188e-06 3.3 4.16987304688e-06 3.3 4.17037304688e-06 0 7.83198242187e-06 0 7.83248242187e-06 3.3 8.07612304687e-06 3.3 8.07662304687e-06 0 1.17382324219e-05 0 1.17387324219e-05 3.3 1.19823730469e-05 3.3 1.19828730469e-05 0 1.56444824219e-05 0 1.56449824219e-05 3.3 1.58886230469e-05 3.3 1.58891230469e-05 0 1.95507324219e-05 0 1.95512324219e-05 3.3 1.97948730469e-05 3.3 1.97953730469e-05 0 2.34569824219e-05 0 2.34574824219e-05 3.3 2.37011230469e-05 3.3 2.37016230469e-05 0 2.73632324219e-05 0 2.73637324219e-05 3.3 2.76073730469e-05 3.3 2.76078730469e-05 0 3.12694824219e-05 0 3.12699824219e-05 3.3 3.15136230469e-05 3.3 3.15141230469e-05 0 3.51757324219e-05 0 3.51762324219e-05 3.3 3.54198730469e-05 3.3 3.54203730469e-05 0)
+VRS AFE_RST 0 PWL(0 3.3 7.8125e-06 3.3 7.8135e-06 0)
+XC CHOP CHOP_OUT BLANK VDD AFE_RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB OFPH RST VCLK GCLK eeg_afe_clk
+VS SRC 0 PWL(0 0 7.9125e-06 0 7.9135e-06 0.0001)
+EP ELP VCM SRC 0 0.5
+EN ELN VCM SRC 0 -0.5
+XA ELP ELN OUTP OUTN VCM VBN VBCM BLP BLN RST CIA NCIA CIB NCIB CDA NCDA CDB NCDB OFPH 0
++ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 VDD 0 eeg_afe
+XLP0 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP1 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP2 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP3 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP4 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP5 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP6 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP7 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP8 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP9 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP10 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP11 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP12 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP13 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP14 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLP15 OUTP VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN0 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN1 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN2 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN3 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN4 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN5 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN6 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN7 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN8 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN9 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN10 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN11 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN12 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN13 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN14 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XLN15 OUTN VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u
+.nodeset v(xb.g1)=.85 v(xb.gp)=2.2 v(vbn)=.84 v(vbcm)=.81 v(xb.nt)=.84
++ v(xb.nc)=.81 v(xb.nd)=.8 v(xb.sb)=0 v(bln)=1.1 v(blp)=1.5 v(xb.s2)=.05
+
+.options method=gear reltol=1e-4 abstol=1e-12 vntol=1e-7
+.control
+set numdgt=15
+tran 1n 31.25u 0 1n 
+wrdata wave.csv v(outp) v(outn) v(vbn) v(vbcm) v(vcm) v(blp) v(bln) v(vdd) v(rst) v(cia) v(cda) v(src)
+quit
+.endc
+.end

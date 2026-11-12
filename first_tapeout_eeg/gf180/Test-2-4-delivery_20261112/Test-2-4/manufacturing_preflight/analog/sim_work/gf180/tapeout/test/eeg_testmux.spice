@@ -1,0 +1,125 @@
+* eeg_testmux: analog test multiplexer to the ATP pad (tracker A5), GF180, this rev
+*
+* TEST_CFG[4] (TC4) = 1 connects the node selected by TEST_CFG[3:0] to ATP; TC4 = 0
+* (reset) opens every switch. TEST_CFG[7:5] are not used here.
+*   code  node                      code  node
+*   0     AVSS (path check)          8     VPC1 (ADC PMOS cascode gate)
+*   1     VCM                        9     VBPC2 (DAC2 PMOS cascode gate)
+*   2     VREFP (after eeg_ref)      10    VBNC2 (DAC2 NMOS cascode gate)
+*   3     VREFN (after eeg_ref)      11    ITST: one unit of the reference current,
+*   4     VBN (AFE tail gate)              sourced into ATP (hold ATP near 1 V)
+*   5     VBCM (AFE CMFB tail gate)  12/13 AFE OUTP/OUTN (debug)
+*   6     VBN1 (ADC OTA tail gate)   14/15 ADC O2P/O2N (debug)
+*   7     VNC1 (ADC NMOS cascode gate)
+* Bias and reference nodes are decoupled and of low impedance; the pad (ESD, about
+* 2-3 pF) only loads them while selected. The dynamic nodes 12-15 go through T-switches
+* (two TGs, the middle grounded while off), so the ATP bus does not couple into them
+* when deselected; selected, the pad capacitance changes their dynamics (debug only).
+* ITST is steered to AVSS when not selected, so the mirror never saturates.
+* The electrode inputs are never connected.
+
+.subckt eeg_testmux ATP TC0 TC1 TC2 TC3 TC4 VCM VREFP VREFN VBN VBCM VBN1 VNC1 VPC1 VBPC2 VBNC2 ITST AOP AON O2P O2N AVDD AVSS
+XIC0 TCB0 TC0 AVDD AVSS eeg_tm_inv
+XIC1 TCB1 TC1 AVDD AVSS eeg_tm_inv
+XIC2 TCB2 TC2 AVDD AVSS eeg_tm_inv
+XIC3 TCB3 TC3 AVDD AVSS eeg_tm_inv
+XIC4 TCB4 TC4 AVDD AVSS eeg_tm_inv
+* 0: AVSS
+XD0 S0 TC0 TC1 TC2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB0 SB0 S0 AVDD AVSS eeg_tm_inv
+XT0 AVSS ATP S0 SB0 AVDD AVSS eeg_tm_tg
+* 1: VCM
+XD1 S1 TCB0 TC1 TC2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB1 SB1 S1 AVDD AVSS eeg_tm_inv
+XT1 VCM ATP S1 SB1 AVDD AVSS eeg_tm_tg
+* 2: VREFP
+XD2 S2 TC0 TCB1 TC2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB2 SB2 S2 AVDD AVSS eeg_tm_inv
+XT2 VREFP ATP S2 SB2 AVDD AVSS eeg_tm_tg
+* 3: VREFN
+XD3 S3 TCB0 TCB1 TC2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB3 SB3 S3 AVDD AVSS eeg_tm_inv
+XT3 VREFN ATP S3 SB3 AVDD AVSS eeg_tm_tg
+* 4: VBN
+XD4 S4 TC0 TC1 TCB2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB4 SB4 S4 AVDD AVSS eeg_tm_inv
+XT4 VBN ATP S4 SB4 AVDD AVSS eeg_tm_tg
+* 5: VBCM
+XD5 S5 TCB0 TC1 TCB2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB5 SB5 S5 AVDD AVSS eeg_tm_inv
+XT5 VBCM ATP S5 SB5 AVDD AVSS eeg_tm_tg
+* 6: VBN1
+XD6 S6 TC0 TCB1 TCB2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB6 SB6 S6 AVDD AVSS eeg_tm_inv
+XT6 VBN1 ATP S6 SB6 AVDD AVSS eeg_tm_tg
+* 7: VNC1
+XD7 S7 TCB0 TCB1 TCB2 TC3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB7 SB7 S7 AVDD AVSS eeg_tm_inv
+XT7 VNC1 ATP S7 SB7 AVDD AVSS eeg_tm_tg
+* 8: VPC1
+XD8 S8 TC0 TC1 TC2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB8 SB8 S8 AVDD AVSS eeg_tm_inv
+XT8 VPC1 ATP S8 SB8 AVDD AVSS eeg_tm_tg
+* 9: VBPC2
+XD9 S9 TCB0 TC1 TC2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB9 SB9 S9 AVDD AVSS eeg_tm_inv
+XT9 VBPC2 ATP S9 SB9 AVDD AVSS eeg_tm_tg
+* 10: VBNC2
+XD10 S10 TC0 TCB1 TC2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB10 SB10 S10 AVDD AVSS eeg_tm_inv
+XT10 VBNC2 ATP S10 SB10 AVDD AVSS eeg_tm_tg
+* 11: ITST
+XD11 S11 TCB0 TCB1 TC2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB11 SB11 S11 AVDD AVSS eeg_tm_inv
+XT11 ITST ATP S11 SB11 AVDD AVSS eeg_tm_tg
+XT11D ITST AVSS SB11 S11 AVDD AVSS eeg_tm_tg
+* 12: AOP
+XD12 S12 TC0 TC1 TCB2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB12 SB12 S12 AVDD AVSS eeg_tm_inv
+XT12A AOP M12 S12 SB12 AVDD AVSS eeg_tm_tg
+XT12B M12 ATP S12 SB12 AVDD AVSS eeg_tm_tg
+XT12G M12 SB12 AVSS AVSS nfet_03v3 W=1u L=0.28u nf=1
+* 13: AON
+XD13 S13 TCB0 TC1 TCB2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB13 SB13 S13 AVDD AVSS eeg_tm_inv
+XT13A AON M13 S13 SB13 AVDD AVSS eeg_tm_tg
+XT13B M13 ATP S13 SB13 AVDD AVSS eeg_tm_tg
+XT13G M13 SB13 AVSS AVSS nfet_03v3 W=1u L=0.28u nf=1
+* 14: O2P
+XD14 S14 TC0 TCB1 TCB2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB14 SB14 S14 AVDD AVSS eeg_tm_inv
+XT14A O2P M14 S14 SB14 AVDD AVSS eeg_tm_tg
+XT14B M14 ATP S14 SB14 AVDD AVSS eeg_tm_tg
+XT14G M14 SB14 AVSS AVSS nfet_03v3 W=1u L=0.28u nf=1
+* 15: O2N
+XD15 S15 TCB0 TCB1 TCB2 TCB3 TCB4 AVDD AVSS eeg_tm_nor5
+XDB15 SB15 S15 AVDD AVSS eeg_tm_inv
+XT15A O2N M15 S15 SB15 AVDD AVSS eeg_tm_tg
+XT15B M15 ATP S15 SB15 AVDD AVSS eeg_tm_tg
+XT15G M15 SB15 AVSS AVSS nfet_03v3 W=1u L=0.28u nf=1
+.ends eeg_testmux
+
+* TG, A-B conducting while G = 1
+.subckt eeg_tm_tg A B G GN VDD VSS
+XN A G B VSS nfet_03v3 W=4u L=0.28u nf=1
+XP A GN B VDD pfet_03v3 W=8u L=0.28u nf=1
+.ends eeg_tm_tg
+
+.subckt eeg_tm_inv Y A VDD VSS
+XP Y A VDD VDD pfet_03v3 W=2u L=0.28u nf=1
+XN Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+.ends eeg_tm_inv
+
+* Y = not (A or B or C or D or E): the select line of one code
+.subckt eeg_tm_nor5 Y A B C D E VDD VSS
+XPA M1 A VDD VDD pfet_03v3 W=4u L=0.28u nf=1
+XPB M2 B M1 VDD pfet_03v3 W=4u L=0.28u nf=1
+XPC M3 C M2 VDD pfet_03v3 W=4u L=0.28u nf=1
+XPD M4 D M3 VDD pfet_03v3 W=4u L=0.28u nf=1
+XPE Y E M4 VDD pfet_03v3 W=4u L=0.28u nf=1
+XNA Y A VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+XNB Y B VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+XNC Y C VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+XND Y D VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+XNE Y E VSS VSS nfet_03v3 W=1u L=0.28u nf=1
+.ends eeg_tm_nor5

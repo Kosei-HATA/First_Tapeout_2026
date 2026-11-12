@@ -1,0 +1,95 @@
+{
+  "rst": {
+    "device_count": 4,
+    "worst_gate_pair": {
+      "instance": "xa.xrstp",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "rst",
+        "s": "xa.oni",
+        "b": "0"
+      },
+      "pair": "vgb",
+      "min_V": -0.3595965255310156,
+      "max_V": 3.773481823569747,
+      "max_abs_V": 3.773481823569747,
+      "peak_time_s": 3.957243622580689e-06,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 7.689041951513766e-06,
+          "duty_fraction_of_record": 0.2460493424484405,
+          "longest_s": 3.8500888957996896e-06,
+          "interval_count": 3
+        },
+        "3.63": {
+          "total_s": 2.5453271231113376e-10,
+          "duty_fraction_of_record": 8.14504679395628e-06,
+          "longest_s": 1.3053727440768306e-10,
+          "interval_count": 2
+        }
+      }
+    }
+  },
+  "cia": {
+    "device_count": 6,
+    "worst_gate_pair": {
+      "instance": "xc.xol1.xpa",
+      "terminals": {
+        "d": "xc.xol1.m1",
+        "g": "cia",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vgs",
+      "min_V": -3.724168657134995,
+      "max_V": 0.02066356861637031,
+      "max_abs_V": 3.724168657134995,
+      "peak_time_s": 2.348848276342946e-05,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 1.550284093236707e-05,
+          "duty_fraction_of_record": 0.4960909098357463,
+          "longest_s": 3.880677258308668e-06,
+          "interval_count": 15
+        },
+        "3.63": {
+          "total_s": 2.9159719306563e-10,
+          "duty_fraction_of_record": 9.33111017810016e-06,
+          "longest_s": 9.725618298241632e-11,
+          "interval_count": 3
+        }
+      }
+    }
+  },
+  "cda": {
+    "device_count": 8,
+    "worst_gate_pair": {
+      "instance": "xc.xcda2.xp",
+      "terminals": {
+        "d": "cda",
+        "g": "xc.cda1",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vgd",
+      "min_V": -3.6260077700954603,
+      "max_V": 3.6708222192794864,
+      "max_abs_V": 3.6708222192794864,
+      "peak_time_s": 3.957222584857765e-06,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 3.095168208924491e-05,
+          "duty_fraction_of_record": 0.9904538268558372,
+          "longest_s": 3.881680896547189e-06,
+          "interval_count": 29
+        },
+        "3.63": {
+          "total_s": 4.790566129838524e-10,
+          "duty_fraction_of_record": 1.5329811615483278e-05,
+          "longest_s": 6.899117421018536e-11,
+          "interval_count": 7
+        }
+      }
+    }
+  }
+}

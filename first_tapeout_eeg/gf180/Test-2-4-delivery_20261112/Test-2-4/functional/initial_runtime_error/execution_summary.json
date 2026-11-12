@@ -1,0 +1,24 @@
+{
+  "digital": {
+    "name": "digital_tests",
+    "exitcode": 1,
+    "seconds": 48.47
+  },
+  "analog": [
+    {
+      "name": "analog_checks",
+      "exitcode": 0,
+      "seconds": 41.55
+    },
+    {
+      "name": "extended_analog",
+      "exitcode": 0,
+      "seconds": 34.85
+    },
+    {
+      "name": "adc_clock",
+      "exitcode": 0,
+      "seconds": 10.56
+    }
+  ]
+}

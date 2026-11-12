@@ -1,0 +1,34 @@
+{
+  "local_same_seed_equal": true,
+  "local_different_seed_differs": true,
+  "local_unique_delvto": 659,
+  "off_unique_delvto": [
+    -0.0
+  ],
+  "global_same_seed_equal": true,
+  "global_different_seed_differs": true,
+  "stat_s1a": {
+    "term_models": 124,
+    "unique_rsh": [
+      78.78881575563523
+    ],
+    "body_instances": 31,
+    "unique_normalized_body_expressions": 1
+  },
+  "stat_s1b": {
+    "term_models": 124,
+    "unique_rsh": [
+      78.78881575563523
+    ],
+    "body_instances": 31,
+    "unique_normalized_body_expressions": 1
+  },
+  "stat_s2": {
+    "term_models": 124,
+    "unique_rsh": [
+      79.73533712708662
+    ],
+    "body_instances": 31,
+    "unique_normalized_body_expressions": 1
+  }
+}

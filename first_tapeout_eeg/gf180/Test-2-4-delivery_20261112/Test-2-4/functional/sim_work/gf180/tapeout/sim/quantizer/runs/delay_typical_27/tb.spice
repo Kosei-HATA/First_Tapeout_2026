@@ -1,0 +1,28 @@
+* eeg_qcmp check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice res_typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice mimcap_typical
+.lib /work/Test-2-4/functional/models/sm141064.ngspice cap_mim
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_quantizer.spice
+.temp 27
+.options sparse reltol=1e-4 abstol=1e-12 vntol=1e-7
+VAVDD AVDD 0 3.3
+VDVDD DVDD 0 3.3
+IQ VBQ 0 3.14e-05
+XQP VBQ VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=8
+CVBQ VBQ 0 2p
+VRP RP 0 {1.65+THR/2}
+VRN RN 0 {1.65-THR/2}
+.param THR=0.015625
+VCLK CLK 0 PULSE(0 3.3 1e-07 0.2n 0.2n 3.031758e-08 9.7656250000e-07)
+VD VD 0 PWL(0.0000000000e+00 2.56250000e-02 5.8728125000e-07 2.56250000e-02 5.8828125000e-07 5.62500000e-03 1.5638437500e-06 5.62500000e-03 1.5648437500e-06 1.66250000e-02 2.5404062500e-06 1.66250000e-02 2.5414062500e-06 1.46250000e-02 3.5169687500e-06 1.46250000e-02 3.5179687500e-06 1.57250000e-02 4.4935312500e-06 1.57250000e-02 4.4945312500e-06 1.55250000e-02 5.4700937500e-06 1.55250000e-02 5.4710937500e-06 1.56350000e-02 6.4466562500e-06 1.56350000e-02 6.4476562500e-06 1.56150000e-02 7.4232187500e-06 1.56150000e-02)
+EINP INP 0 VALUE={1.65+V(VD)/2}
+EINN INN 0 VALUE={1.65-V(VD)/2}
+XC INP INN RP RN CLK TH VBQ AVDD 0 DVDD 0 eeg_qcmp
+.control
+tran 0.02n 7.912500000000001e-06 0 0.2n
+wrdata out.csv v(clk) v(th) v(xc.oa) v(xc.ob)
+quit
+.endc
+.end

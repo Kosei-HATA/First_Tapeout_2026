@@ -1,0 +1,6 @@
+* NGSPICE file created from via1.ext - technology: gf180mcuD
+
+.subckt via1 B
+C0 B w_0_0# 1.99741f
+.ends
+

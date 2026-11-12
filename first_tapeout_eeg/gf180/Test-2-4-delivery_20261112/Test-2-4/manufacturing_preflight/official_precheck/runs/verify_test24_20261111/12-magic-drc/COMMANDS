@@ -1,0 +1,1 @@
+magic -dnull -noconsole -rcfile /workspace/gf180mcu/gf180mcuD/libs.tech/magic/gf180mcuD.magicrc /nix/store/4bdi5583zmh9v5y85sscqkkn2bsqxdag-python3-3.13.9-env/lib/python3.13/site-packages/librelane/scripts/magic/wrapper.tcl

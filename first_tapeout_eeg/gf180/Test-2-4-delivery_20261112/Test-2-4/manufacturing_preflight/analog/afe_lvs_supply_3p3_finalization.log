@@ -1,0 +1,95 @@
+{
+  "rst": {
+    "device_count": 4,
+    "worst_gate_pair": {
+      "instance": "xa.xrstp",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "rst",
+        "s": "xa.oni",
+        "b": "0"
+      },
+      "pair": "vgb",
+      "min_V": -0.002341611406345367,
+      "max_V": 3.31923766339506,
+      "max_abs_V": 3.31923766339506,
+      "peak_time_s": 7.813043673208062e-06,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 6.375211477648457e-06,
+          "duty_fraction_of_record": 0.20400676728475062,
+          "longest_s": 3.578813454723756e-06,
+          "interval_count": 5
+        },
+        "3.63": {
+          "total_s": 0.0,
+          "duty_fraction_of_record": 0.0,
+          "longest_s": 0.0,
+          "interval_count": 0
+        }
+      }
+    }
+  },
+  "cia": {
+    "device_count": 6,
+    "worst_gate_pair": {
+      "instance": "xc.xa4.xp",
+      "terminals": {
+        "d": "cia",
+        "g": "xc.a3",
+        "s": "vclk",
+        "b": "vclk"
+      },
+      "pair": "vgd",
+      "min_V": -3.329760172149875,
+      "max_V": 3.300159259347369,
+      "max_abs_V": 3.329760172149875,
+      "peak_time_s": 3.957097499751528e-06,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 2.7981855738741622e-05,
+          "duty_fraction_of_record": 0.8954193836397318,
+          "longest_s": 3.5786114572407592e-06,
+          "interval_count": 20
+        },
+        "3.63": {
+          "total_s": 0.0,
+          "duty_fraction_of_record": 0.0,
+          "longest_s": 0.0,
+          "interval_count": 0
+        }
+      }
+    }
+  },
+  "cda": {
+    "device_count": 8,
+    "worst_gate_pair": {
+      "instance": "xa.xscp1",
+      "terminals": {
+        "d": "xa.inp",
+        "g": "cda",
+        "s": "xa.scp",
+        "b": "0"
+      },
+      "pair": "vgb",
+      "min_V": -0.0174442097383963,
+      "max_V": 3.333538288902544,
+      "max_abs_V": 3.333538288902544,
+      "peak_time_s": 2.649044638946146e-07,
+      "absolute_threshold_exposure": {
+        "3.3": {
+          "total_s": 1.3460175494527567e-05,
+          "duty_fraction_of_record": 0.43072561582488217,
+          "longest_s": 3.5702021889741777e-06,
+          "interval_count": 11
+        },
+        "3.63": {
+          "total_s": 0.0,
+          "duty_fraction_of_record": 0.0,
+          "longest_s": 0.0,
+          "interval_count": 0
+        }
+      }
+    }
+  }
+}

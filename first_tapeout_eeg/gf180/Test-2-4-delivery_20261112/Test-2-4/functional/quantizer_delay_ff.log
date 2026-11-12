@@ -1,0 +1,9 @@
+ff -20 C: CLK rise -> TH at 50 % (ns); TH is read at e2 = +61 ns
+  overdrive  +10.000 mV: TH 1 (ok), 0.67 ns
+  overdrive  -10.000 mV: TH 0 (ok), 0.74 ns
+  overdrive   +1.000 mV: TH 1 (ok), 0.82 ns
+  overdrive   -1.000 mV: TH 0 (ok), 0.89 ns
+  overdrive   +0.100 mV: TH 1 (ok), 0.97 ns
+  overdrive   -0.100 mV: TH 0 (ok), 1.04 ns
+  overdrive   +0.010 mV: TH 1 (ok), 1.09 ns
+  overdrive   -0.010 mV: TH 0 (ok), 1.17 ns

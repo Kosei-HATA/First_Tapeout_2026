@@ -1,0 +1,11 @@
+source('/work/Test-2-4/gds/Test-2-4.gds', 'chip_top')
+report('Test-2-4 CUP checks without waivers', '/work/Test-2-4/verification/cup.lyrdb')
+deep
+threads(2)
+pad=polygons(37,0)
+guard=polygons(167,5)
+[[1,34],[2,36],[3,42],[4,46],[5,81]].each do |n,gds|
+ m=polygons(gds,0)
+ m.interacting(pad).not_interacting(guard).notch(1.um).interacting(pad).output("CUP3_M#{n}","CUP.3 actual 1um threshold")
+ m.interacting(pad).not_interacting(guard).width(1.um).interacting(pad).output("CUP2_M#{n}","CUP.2 actual 1um threshold")
+end

@@ -1,0 +1,425 @@
+{
+  "scope": "thermal-only explicit full-wrapper parallel equivalence, no local mismatch/flicker certification",
+  "pairs": [
+    {
+      "m": 1,
+      "temperature_C": 27,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 0.0,
+      "DC_max_voltage_difference_V": 0.0,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 299777.4585242594,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523371004,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 299777.4585242594,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523371004,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 1,
+      "temperature_C": 27,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 0.0,
+      "DC_max_voltage_difference_V": 0.0,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 599381.6429958704,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523373486,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 599381.6429958704,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523373486,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 1,
+      "temperature_C": 85,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 0.0,
+      "DC_max_voltage_difference_V": 0.0,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 286085.174713824,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523370075,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 286085.174713824,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523370075,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 1,
+      "temperature_C": 85,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 0.0,
+      "DC_max_voltage_difference_V": 0.0,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 572051.0556698907,
+          "noise_PSD_ratio_to_4kTR": 0.999999652336793,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 572051.0556698907,
+          "noise_PSD_ratio_to_4kTR": 0.999999652336793,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 2,
+      "temperature_C": 27,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.254335437200893e-13,
+      "DC_max_voltage_difference_V": 1.8596235662471372e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 149888.7292621297,
+          "noise_PSD_ratio_to_4kTR": 0.5002889626397888,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 149888.7292621112,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523369764,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 2,
+      "temperature_C": 27,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 7.9671383952841e-13,
+      "DC_max_voltage_difference_V": 2.3869795029440866e-13,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 299690.8214979352,
+          "noise_PSD_ratio_to_4kTR": 0.5001444361972387,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 299690.821498174,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523381449,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 2,
+      "temperature_C": 85,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 5.371415172606234e-14,
+      "DC_max_voltage_difference_V": 7.605027718682322e-15,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 143042.587356912,
+          "noise_PSD_ratio_to_4kTR": 0.5002084516442267,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 143042.5873569044,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523369549,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 2,
+      "temperature_C": 85,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 1.430641031655782e-13,
+      "DC_max_voltage_difference_V": 3.83026943495679e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 286025.5278349454,
+          "noise_PSD_ratio_to_4kTR": 0.5001041606593138,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 286025.527834907,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523366598,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "temperature_C": 27,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.36307039770128e-13,
+      "DC_max_voltage_difference_V": 1.021405182655144e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 74944.36463106485,
+          "noise_PSD_ratio_to_4kTR": 0.25043361779113305,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 74944.36463107506,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523372371,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "temperature_C": 27,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 1.3166560502591641e-12,
+      "DC_max_voltage_difference_V": 1.971756091734278e-13,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 149845.4107489676,
+          "noise_PSD_ratio_to_4kTR": 0.25021682812718377,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 149845.4107491649,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523386646,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "temperature_C": 85,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 5.4121077117926447e-14,
+      "DC_max_voltage_difference_V": 3.788636071533347e-15,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 71521.293678456,
+          "noise_PSD_ratio_to_4kTR": 0.2503128512978363,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 71521.29367845222,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523369545,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "temperature_C": 85,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 8.579776087426424e-13,
+      "DC_max_voltage_difference_V": 1.2270739979669543e-13,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 143012.7639174727,
+          "noise_PSD_ratio_to_4kTR": 0.250156414820574,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 143012.7639175954,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523376518,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 8,
+      "temperature_C": 27,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.073951904513644e-12,
+      "DC_max_voltage_difference_V": 3.9843128796235305e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 37472.18231553242,
+          "noise_PSD_ratio_to_4kTR": 0.12550594536680504,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 37472.18231557225,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523381632,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 8,
+      "temperature_C": 27,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 2.9734013089567106e-12,
+      "DC_max_voltage_difference_V": 2.2104540420286867e-13,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 74922.7053744838,
+          "noise_PSD_ratio_to_4kTR": 0.12525302409215638,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 74922.70537470488,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523402993,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 8,
+      "temperature_C": 85,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.1027678119517344e-13,
+      "DC_max_voltage_difference_V": 3.948230631323213e-15,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 35760.646839228,
+          "noise_PSD_ratio_to_4kTR": 0.125365051124641,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 35760.64683922406,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523368981,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 8,
+      "temperature_C": 85,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 1.348017950737966e-12,
+      "DC_max_voltage_difference_V": 9.220402219511925e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 71506.38195873634,
+          "noise_PSD_ratio_to_4kTR": 0.125182541901204,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 71506.38195882854,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523380833,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 16,
+      "temperature_C": 27,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.1005531359217743e-12,
+      "DC_max_voltage_difference_V": 2.058075931898884e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 18736.09115776621,
+          "noise_PSD_ratio_to_4kTR": 0.06304210915464109,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 18736.09115774562,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523360023,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 16,
+      "temperature_C": 27,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 1.4463988208113283e-12,
+      "DC_max_voltage_difference_V": 5.417888360170764e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 37461.3526872419,
+          "noise_PSD_ratio_to_4kTR": 0.06277112207464262,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 37461.35268729609,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523387953,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 16,
+      "temperature_C": 85,
+      "length_um": 291.28,
+      "AC_max_relative_difference": 1.0464086451785553e-12,
+      "DC_max_voltage_difference_V": 1.868991073017412e-14,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 17880.323419614,
+          "noise_PSD_ratio_to_4kTR": 0.06289115103804344,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 17880.32341959531,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523359621,
+          "exitcode": 0
+        }
+      ]
+    },
+    {
+      "m": 16,
+      "temperature_C": 85,
+      "length_um": 582.56,
+      "AC_max_relative_difference": 4.360300817106229e-12,
+      "DC_max_voltage_difference_V": 1.5559081800731178e-13,
+      "results": [
+        {
+          "mode": "original",
+          "R_ohm": 35753.19097936817,
+          "noise_PSD_ratio_to_4kTR": 0.06269560544151909,
+          "exitcode": 0
+        },
+        {
+          "mode": "expanded",
+          "R_ohm": 35753.19097921258,
+          "noise_PSD_ratio_to_4kTR": 0.9999996523324425,
+          "exitcode": 0
+        }
+      ]
+    }
+  ]
+}

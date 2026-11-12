@@ -1,0 +1,10 @@
+[
+  {
+    "instance": "XR",
+    "multiplier": 2,
+    "generated": [
+      "XR__noise_parallel_0",
+      "XR__noise_parallel_1"
+    ]
+  }
+]

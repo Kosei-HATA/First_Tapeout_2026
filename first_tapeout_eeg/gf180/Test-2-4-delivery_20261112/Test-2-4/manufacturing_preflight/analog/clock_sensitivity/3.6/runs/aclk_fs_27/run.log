@@ -1,0 +1,126 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_adc_clk timing with ota1 as load
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                        3.6
+cm                                        1.65
+vbn1                                      0.85
+vnc1                                         2
+vpc1                                       1.7
+vbcm1                                     0.82
+chop1                                      3.6
+vclk                                       3.6
+xc.xb                              5.63021e-09
+xc.x                                       3.6
+xc.xd1                             4.92289e-08
+xc.xd2                                     3.6
+xc.xd3                             4.92289e-08
+xc.xd                                      3.6
+xc.xgda.m1                             3.59877
+xc.dan                             3.04287e-09
+xc.xgdb.yb                         1.13313e-08
+xc.xgdb.xg.m1                      5.66564e-09
+xc.dbn                                     3.6
+xc.xmb                             4.92289e-08
+xc.xm                                      3.6
+xc.xmd1                            4.92289e-08
+xc.xmd                                     3.6
+xc.ian                             1.13313e-08
+xc.xgia.m1                         5.66564e-09
+xc.xgib.xg.m1                          3.59877
+xc.xgib.yb                         3.04287e-09
+xc.ibn                                     3.6
+xc.a1                                      3.6
+xc.a2                              1.31809e-09
+cia                                        3.6
+xc.ia                                      3.6
+xc.an1                             3.04294e-09
+xc.an2                                     3.6
+ncia                               6.71274e-10
+xc.b1                              3.04294e-09
+xc.b2                                      3.6
+cib                                 8.8688e-10
+xc.ib                              5.63021e-09
+xc.bn1                                     3.6
+xc.bn2                             1.10249e-09
+ncib                                       3.6
+xc.da1                                     3.6
+xc.da2                             1.10249e-09
+cda                                        3.6
+xc.da                                      3.6
+xc.dan1                            3.04294e-09
+xc.dan2                                    3.6
+ncda                               5.63471e-10
+xc.db1                             3.04294e-09
+xc.db2                                     3.6
+cdb                                6.71274e-10
+xc.db                              5.63021e-09
+xc.dbn1                                    3.6
+xc.dbn2                            9.73122e-10
+ncdb                                       3.6
+xota1.cip                                 1.65
+xota1.cin                                 1.65
+xota1.xota.xcore.d1p                  0.956816
+xota1.xota.xcore.tail                 0.786597
+xota1.xota.xcore.d1n                  0.956816
+o1n                                    1.64962
+xota1.xota.xcore.n1p                  0.993705
+o1p                                    1.64962
+xota1.xota.xcore.n1n                  0.993705
+xota1.xota.xcore.p1p                   3.06581
+xota1.xota.vbp                         2.29593
+xota1.xota.xcore.p1n                   3.06581
+xota1.xota.xcore.p2p                   3.00802
+xota1.xota.xcore.p2n                   3.00802
+xota1.xota.xcmfb.nd                    2.46677
+xota1.xota.xcmfb.nta                  0.731536
+xota1.xota.xcmfb.ntb                  0.731536
+vclk#branch                       -1.47935e-09
+vch#branch                                   0
+vbcm1#branch                                 0
+vpc1#branch                                  0
+vnc1#branch                                  0
+vbn1#branch                                  0
+vcm#branch                         2.02931e-11
+vdd#branch                         -0.00664984
+
+ Reference value :  0.00000e+00
+ Reference value :  2.31012e-08
+ Reference value :  4.87512e-08
+ Reference value :  7.39512e-08
+ Reference value :  9.70512e-08
+ Reference value :  1.04557e-07
+ Reference value :  1.23791e-07
+ Reference value :  1.48641e-07
+ Reference value :  1.75641e-07
+ Reference value :  1.94291e-07
+ Reference value :  2.21591e-07
+ Reference value :  2.47341e-07
+ Reference value :  2.72141e-07
+ Reference value :  2.94641e-07
+ Reference value :  3.03463e-07
+ Reference value :  3.23166e-07
+ Reference value :  3.48116e-07
+ Reference value :  3.73166e-07
+ Reference value :  4.00966e-07
+ Reference value :  4.26816e-07
+ Reference value :  4.51066e-07
+ Reference value :  4.74166e-07
+ Reference value :  4.99366e-07
+No. of Data Rows : 10329
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed

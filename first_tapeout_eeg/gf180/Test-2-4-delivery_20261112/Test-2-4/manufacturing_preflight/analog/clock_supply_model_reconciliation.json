@@ -1,0 +1,45 @@
+{
+  "sources": [
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\source\\layout\\afe_lay.py",
+      "sha256": "315b6c6313bfcef5f333efb2aa6a018fc4eee015be645427f50b350eee152654"
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\source\\layout\\offdac_lay.py",
+      "sha256": "54a1db32047740c9d6a8406ac114b2f1832b81e799a8f9baec25bcc50793af64"
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\source\\layout\\chip_lay.py",
+      "sha256": "1a69ecd98fc054c09346a6eaffe5d2cc15098b8984c927badc4b0b2273274986"
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\verification\\prepare_core_lvs.py",
+      "sha256": "ac8f7ee5a3872beed50eebc468ae588a53f5738e649a71bc38b8ea62be0819a4"
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\verification\\eeg_core_reference.cdl",
+      "sha256": "a876dd8e19f0c19b0d4a9749ae6dea6ac449fc6167b03ed401a6f526fb782141"
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test-2-4\\verification\\core_with_hints\\core_lvs_summary.json",
+      "sha256": "34ce2cf2b494c6b65b0380aa9b3fd4754495ec5cd8bc6fd9af45114011d27c9b"
+    }
+  ],
+  "ties": [
+    [
+      "AVSS_CLK",
+      "AVSS"
+    ],
+    [
+      "DVSS",
+      "AVSS"
+    ]
+  ],
+  "current_LVS_clock_return": "AVSS",
+  "current_LVS_RCKN": "Both resistor endpoints and substrate AVSS; no isolated return",
+  "current_RCKP": "ppolyf_u_1k L=2um W=20um substrate AVSS",
+  "current_decap": "10 cap_nmos_03v3,28.6um x92um each,AVDD_CLK-AVSS",
+  "diagnostic_mapping": "clock local VSS=0,official positive-feed wrapper,10 exact-size integral-Q diagnostic caps",
+  "unresolved": "Finite substrate/rail/package impedance not extracted; isolated-return design intent differs from substrate-tied LVS convention",
+  "prior_screen_correction": "Earlier independent GCLK/100 ohm return and ideal150pF screen does not match current Test-2-4 core LVS reference, which joins AVSS_CLK to AVSS and uses ten28.6x92um MOSCAPs. Reported stress is a diagnostic-bench result, not confirmed GDS terminal stress. See afe_q_stress_convergence/README.md and the separate afe_lvs_supply_3p3/3p6 diagnostics."
+}

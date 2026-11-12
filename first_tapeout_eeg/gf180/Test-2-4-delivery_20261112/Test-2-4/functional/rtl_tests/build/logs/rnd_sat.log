@@ -1,0 +1,2 @@
+PASS: tb_rnd_sat (25156 vectors)
+tb/tb_rnd_sat.sv:45: $finish called at 25156000 (1ps)

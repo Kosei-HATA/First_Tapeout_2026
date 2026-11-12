@@ -1,0 +1,76 @@
+{
+  "completed": 75,
+  "total": 75,
+  "reused": 19,
+  "new_completed": 56,
+  "running": 0,
+  "elapsed_s": 1704.5,
+  "failures": [
+    {
+      "vdd": 3.3,
+      "corner": "ff",
+      "temperature_C": -20,
+      "rc_corner": "lrhc",
+      "status": "finished",
+      "deck_sha256": "c86beab81ee50a025ba17814338a045ce6abc58fde5b292e431f6b0bd5f5cec8",
+      "spice_sha256": "9c8d31eca57ce43ab232f54997eefa2987d9581f3c96c12ee42d8ce48db40cfa",
+      "exitcode": 0,
+      "error_lines": [
+        "Warning: Dynamic gmin stepping failed",
+        "Warning: Dynamic gmin stepping failed"
+      ],
+      "seconds": 96.71
+    },
+    {
+      "vdd": 3.3,
+      "corner": "ff",
+      "temperature_C": -20,
+      "rc_corner": "lrlc",
+      "status": "finished",
+      "deck_sha256": "d25ebe63c0ea68effcc16105ef2bc46d2f0b81ed9e09222ef4f3a37458ab8a85",
+      "spice_sha256": "6d3cd1ec3135371ff57276a300955990b6aa0983f263fb70ec5fe83edc1d632f",
+      "exitcode": 0,
+      "error_lines": [
+        "Warning: Dynamic gmin stepping failed",
+        "Warning: Dynamic gmin stepping failed"
+      ],
+      "seconds": 99.45
+    }
+  ],
+  "worst": {
+    "rc_corner": "hrlc",
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "status": "finished",
+    "spice_sha256": "c4fff44712f33dde1ee4101056dcbfa9f997f0aff0e60373644121018cd1383e",
+    "exitcode": 0,
+    "error_lines": [],
+    "timing_ns": {
+      "dead A->B": 2.247463774423343,
+      "overlap A->B": 5.4194536679100755,
+      "margin1 A->B": 0.5570136212775477,
+      "margin2 A->B": 1.5271600003987365,
+      "delay A->B": 0.7010011542817486,
+      "dead B->A": 1.6533706769723033,
+      "overlap B->A": 5.005679578956296,
+      "margin1 B->A": 0.15631507667585368,
+      "margin2 B->A": 2.0452204032723005,
+      "delay B->A": 0.6832237159876546
+    },
+    "minimum_margin_ns": 0.15631507667585368,
+    "finite": true,
+    "positive_sequence_margins": true,
+    "driver_charge_pC_per_edge": 17.749124546395468,
+    "seconds": 154.78,
+    "delta_minimum_vs_nominal_ns": -0.12564423411563466,
+    "reused_from": "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrlc",
+    "deck_sha256": "86623e68a6aed36637ac9047a64304ee8e7056572545db8de9c6f162bb0637f5"
+  },
+  "model_scope": {
+    "MOSCAP_model": "Linear constant-C approximation in functional/sim_work/gf180/tapeout/sim/moscap_lin.spice, not official voltage-dependent MOSCAP.",
+    "affected_tests": "All 45 bias startup cases; actual-bias 15 schematic-clock cases; nominal/cap/RC comparisons; 75 clock device/RC cases and numerical controls.",
+    "limitation": "Circuit source matching and clock extraction audit do not validate nonlinear MOSCAP behavior, full-chip startup, accuracy, or manufacturing signoff.",
+    "formula": "NMOS: factor*L*W*3.983e-3 F/m2; PMOS: factor*L*W*3.958e-3 F/m2; factor typical=1, ff=.9, ss=1.1."
+  }
+}

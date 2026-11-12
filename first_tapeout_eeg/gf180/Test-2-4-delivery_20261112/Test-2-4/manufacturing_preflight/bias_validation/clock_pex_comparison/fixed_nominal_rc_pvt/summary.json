@@ -1,0 +1,37 @@
+{
+  "completed": 15,
+  "all_positive": true,
+  "worst": {
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "status": "finished",
+    "deck_sha256": "2f4a0cf0f80bc9af31c4129bca92e0a069c2925016d85dece13de79a4bd7019a",
+    "exitcode": 0,
+    "error_lines": [],
+    "timing_ns": {
+      "dead A->B": 2.312630949277312,
+      "overlap A->B": 5.470646291039379,
+      "margin1 A->B": 0.6282648322069876,
+      "margin2 A->B": 1.5881724685828114,
+      "delay A->B": 0.6942905705010415,
+      "dead B->A": 1.7090763310231394,
+      "overlap B->A": 5.060154901087251,
+      "margin1 B->A": 0.28195931079148834,
+      "margin2 B->A": 2.120011397962716,
+      "delay B->A": 0.670732034264786
+    },
+    "minimum_margin_ns": 0.28195931079148834,
+    "finite": true,
+    "positive_sequence_margins": true,
+    "driver_charge_pC_per_edge": 17.71361062835526,
+    "seconds": 143.5
+  },
+  "rc_unchanged": true,
+  "model_scope": {
+    "MOSCAP_model": "Linear constant-C approximation in functional/sim_work/gf180/tapeout/sim/moscap_lin.spice, not official voltage-dependent MOSCAP.",
+    "affected_tests": "All 45 bias startup cases; actual-bias 15 schematic-clock cases; nominal/cap/RC comparisons; 75 clock device/RC cases and numerical controls.",
+    "limitation": "Circuit source matching and clock extraction audit do not validate nonlinear MOSCAP behavior, full-chip startup, accuracy, or manufacturing signoff.",
+    "formula": "NMOS: factor*L*W*3.983e-3 F/m2; PMOS: factor*L*W*3.958e-3 F/m2; factor typical=1, ff=.9, ss=1.1."
+  }
+}

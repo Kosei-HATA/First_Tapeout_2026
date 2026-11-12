@@ -1,0 +1,11 @@
+from pathlib import Path
+import json,math,re
+p=Path(__file__).resolve().parent
+b=json.loads((p/'bias_results.json').read_text());c=json.loads((p/'actual_bias_clock.json').read_text());s=[x for row in b for x in row.get('startup',[])]
+worst=max(((x['max_relative_dc_error'],row['vdd'],row['corner'],row['temperature_C'],x['ramp_us']) for row in b for x in row.get('startup',[])),default=None)
+w=min(c,key=lambda x:x.get('minimum_margin_ns',float('inf')))
+errors=[]
+for f in p.rglob('run.log'):
+ if re.search(r'Error:|stepping failed|Transient op|aborted',f.read_text(errors='replace')):errors.append(str(f.relative_to(p)))
+r={'bias_dc_cases':len(b),'startup_cases':len(s),'startup_screen_pass':len(s)==45 and all(x['finite'] and x['within_2percent_dc_screen'] for x in s),'maximum_relative_dc_error':worst,'startup_criterion':'Final outputs 100us after ramp within 2% of corresponding DC point; engineering diagnostic, not a product spec.','real_bias_clock_cases':len(c),'real_bias_clock_positive_margin_pass':len(c)==15 and all(x.get('finite') and x.get('positive_sequence_margins') for x in c),'worst_clock_margin_case':{k:w[k] for k in ['vdd','corner','temperature_C','minimum_margin_ns']},'run_errors':errors,'dc_ranges':{n:[min(row['dc'][n] for row in b),max(row['dc'][n] for row in b)] for n in b[0]['dc']},'bias_matches_project':json.loads((p/'input_manifest.json').read_text())['bias_copy_matches_project'],'scope':'3.0/3.3/3.6V x typical27/ss85/ff-20/sf27/fs27; real bias schematic and loaded ADC OTA clock, code2 and reset booster trim.','limits':['Reference rails remain ideal fixed 1.9/1.4V and ITST load at1V; no complete reference startup or arbitrary supply ordering.','Startup uses representative mirror loads; ADC clock simulation starts from DC operating point, not integrated power-up.','Linear MOSCAP approximation, no extracted parasitics or package, no noise/mismatch/Monte Carlo.','No brownout, power cycling, all trim codes, or ADC/DAC closed-loop behavior.','Positive clock margin is a sequence screen, not minimum guardband product acceptance.','Current source netlist identity is verified; physical GDS correspondence relies on parent core LVS.']}
+(p/'summary.json').write_text(json.dumps(r,indent=2));print(json.dumps(r,indent=2))

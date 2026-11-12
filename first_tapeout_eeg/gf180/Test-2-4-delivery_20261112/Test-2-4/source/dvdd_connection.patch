@@ -1,0 +1,12 @@
+--- original/chip_lay.py
++++ Test2-3/chip_lay.py
+@@ -299,6 +299,9 @@
+         a.box("metal2", PAD_IN[2] - 7.0, y1, PAD_IN[2] - 1.0, y2)
+         a.via_stack("metal2", "metal5", PAD_IN[2] - 7.0, y1, PAD_IN[2] - 1.0, y2, "DVDD")
+         m5(EG_DVDD[1][1] - 1.0, y1, PAD_IN[2] - 1.0, y2)
++        # Test2-3: connect pad-fed and core-fed DVDD trunks; preserve the slot.
++        for ya, yb in ((y1 + 2.0, y1 + 12.0), (y2 - 12.0, y2 - 2.0)):
++            m5(EG_DVDD[0][1] - 1.0, ya, EG_DVDD[1][0] + 1.0, yb)
+     # south / north dvss pads beside the isolation band: Metal5 into the DVSS trunk
+     for k, side in (("dvss_pads[1]", "south"), ("dvss_pads[4]", "north")):
+         rs = cell_power_pad(P[k], "DVSS")

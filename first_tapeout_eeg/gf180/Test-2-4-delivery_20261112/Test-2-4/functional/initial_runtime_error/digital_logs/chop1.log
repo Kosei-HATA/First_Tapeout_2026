@@ -1,0 +1,6 @@
+eeg_chop1.sv:58: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:59: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:60: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:61: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:62: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+vvp: error while loading shared libraries: libvvp.so.1: cannot open shared object file: No such file or directory

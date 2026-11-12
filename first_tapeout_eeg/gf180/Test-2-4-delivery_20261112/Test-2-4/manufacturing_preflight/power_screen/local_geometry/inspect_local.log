@@ -1,0 +1,465 @@
+{
+  "input_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "scope": "Local geometry only; no current sharing assumption or full-chip extraction",
+  "feeds": [
+    {
+      "stack_box_um": [
+        3549,
+        594.86,
+        3555,
+        667.14
+      ],
+      "via_layers": {
+        "v2": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,595.22;3554.92,666.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        },
+        "v3": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,595.22;3554.92,666.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        },
+        "v4": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,595.22;3554.92,666.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        }
+      },
+      "missing_metal_in_stack_area_um2": {
+        "m2": 0.0,
+        "m3": 0.0,
+        "m4": 0.0,
+        "m5": 0.0
+      },
+      "m2_pad_finger_cross_section_at_x3555p25_um": [
+        [
+          594.86,
+          604.36
+        ],
+        [
+          607.26,
+          617.51
+        ],
+        [
+          619.11,
+          629.36
+        ],
+        [
+          632.64,
+          642.89
+        ],
+        [
+          644.49,
+          654.74
+        ],
+        [
+          657.64,
+          667.14
+        ]
+      ]
+    },
+    {
+      "stack_box_um": [
+        3549,
+        2004.86,
+        3555,
+        2077.14
+      ],
+      "via_layers": {
+        "v2": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,2005.22;3554.92,2076.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        },
+        "v3": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,2005.22;3554.92,2076.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        },
+        "v4": {
+          "raw_overlapping_occurrences": 1160,
+          "unique_fully_contained_cuts": 1160,
+          "sizes_um": [
+            "0.26x0.26"
+          ],
+          "bbox_um": "(3549.08,2005.22;3554.92,2076.78)",
+          "distinct_center_x_count": 10,
+          "distinct_center_y_count": 116,
+          "all_cuts_0p26_square": true
+        }
+      },
+      "missing_metal_in_stack_area_um2": {
+        "m2": 0.0,
+        "m3": 0.0,
+        "m4": 0.0,
+        "m5": 0.0
+      },
+      "m2_pad_finger_cross_section_at_x3555p25_um": [
+        [
+          2004.8600000000001,
+          2014.3600000000001
+        ],
+        [
+          2017.26,
+          2027.51
+        ],
+        [
+          2029.1100000000001,
+          2039.3600000000001
+        ],
+        [
+          2042.64,
+          2052.89
+        ],
+        [
+          2054.4900000000002,
+          2064.7400000000002
+        ],
+        [
+          2067.64,
+          2077.14
+        ]
+      ]
+    }
+  ],
+  "bridges": [
+    {
+      "box_um": [
+        3519,
+        596.86,
+        3523,
+        606.86
+      ],
+      "missing_m5_um2": 0.0,
+      "v4_in_gap": {
+        "raw_overlapping_occurrences": 0,
+        "unique_fully_contained_cuts": 0,
+        "sizes_um": [],
+        "bbox_um": "()",
+        "distinct_center_x_count": 0,
+        "distinct_center_y_count": 0,
+        "all_cuts_0p26_square": false
+      }
+    },
+    {
+      "box_um": [
+        3519,
+        655.14,
+        3523,
+        665.14
+      ],
+      "missing_m5_um2": 0.0,
+      "v4_in_gap": {
+        "raw_overlapping_occurrences": 0,
+        "unique_fully_contained_cuts": 0,
+        "sizes_um": [],
+        "bbox_um": "()",
+        "distinct_center_x_count": 0,
+        "distinct_center_y_count": 0,
+        "all_cuts_0p26_square": false
+      }
+    },
+    {
+      "box_um": [
+        3519,
+        2006.86,
+        3523,
+        2016.86
+      ],
+      "missing_m5_um2": 0.0,
+      "v4_in_gap": {
+        "raw_overlapping_occurrences": 0,
+        "unique_fully_contained_cuts": 0,
+        "sizes_um": [],
+        "bbox_um": "()",
+        "distinct_center_x_count": 0,
+        "distinct_center_y_count": 0,
+        "all_cuts_0p26_square": false
+      }
+    },
+    {
+      "box_um": [
+        3519,
+        2065.14,
+        3523,
+        2075.14
+      ],
+      "missing_m5_um2": 0.0,
+      "v4_in_gap": {
+        "raw_overlapping_occurrences": 0,
+        "unique_fully_contained_cuts": 0,
+        "sizes_um": [],
+        "bbox_um": "()",
+        "distinct_center_x_count": 0,
+        "distinct_center_y_count": 0,
+        "all_cuts_0p26_square": false
+      }
+    }
+  ],
+  "tie_anchors": [
+    {
+      "instance": "bidir\\[0\\].pad",
+      "box_um": [
+        3522,
+        764.5,
+        3526,
+        768.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,764.82;3525.68,768.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[1\\].pad",
+      "box_um": [
+        3522,
+        905.5,
+        3526,
+        909.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,905.82;3525.68,909.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[2\\].pad",
+      "box_um": [
+        3522,
+        1046.5,
+        3526,
+        1050.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1046.82;3525.68,1050.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[3\\].pad",
+      "box_um": [
+        3522,
+        1187.5,
+        3526,
+        1191.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1187.82;3525.68,1191.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[4\\].pad",
+      "box_um": [
+        3522,
+        1328.5,
+        3526,
+        1332.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1328.82;3525.68,1332.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[5\\].pad",
+      "box_um": [
+        3522,
+        1469.5,
+        3526,
+        1473.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1469.82;3525.68,1473.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[6\\].pad",
+      "box_um": [
+        3522,
+        1610.5,
+        3526,
+        1614.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1610.82;3525.68,1614.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    },
+    {
+      "instance": "bidir\\[7\\].pad",
+      "box_um": [
+        3522,
+        1751.5,
+        3526,
+        1755.5
+      ],
+      "v4": {
+        "raw_overlapping_occurrences": 36,
+        "unique_fully_contained_cuts": 36,
+        "sizes_um": [
+          "0.26x0.26"
+        ],
+        "bbox_um": "(3522.32,1751.82;3525.68,1755.18)",
+        "distinct_center_x_count": 6,
+        "distinct_center_y_count": 6,
+        "all_cuts_0p26_square": true
+      },
+      "missing_m4_um2": 0.0,
+      "missing_m5_um2": 0.0
+    }
+  ],
+  "m5_left_of_inner_trunk_sections_at_x3499p5_um": [
+    [
+      642.0,
+      648.0
+    ],
+    [
+      760.0,
+      770.0
+    ],
+    [
+      900.0,
+      910.0
+    ],
+    [
+      1040.0,
+      1050.0
+    ],
+    [
+      1180.0,
+      1190.0
+    ],
+    [
+      1296.33,
+      1302.83
+    ],
+    [
+      1348.95,
+      1355.45
+    ],
+    [
+      1401.57,
+      1408.07
+    ],
+    [
+      1454.19,
+      1460.69
+    ]
+  ],
+  "m5_gap_sections_at_x3521_um": [
+    [
+      596.86,
+      606.86
+    ],
+    [
+      655.14,
+      665.14
+    ],
+    [
+      2006.8600000000001,
+      2016.8600000000001
+    ],
+    [
+      2065.14,
+      2075.14
+    ]
+  ],
+  "seconds": 10.99
+}

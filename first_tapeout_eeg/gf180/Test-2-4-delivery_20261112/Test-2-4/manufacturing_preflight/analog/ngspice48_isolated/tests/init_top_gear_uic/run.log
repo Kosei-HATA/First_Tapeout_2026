@@ -1,0 +1,40 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * original model isolation
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Operating point simulation skipped by 'uic',
+  now using transient initial conditions.
+ Reference value :  1.00000e-11  [                        ]   0%
+ Reference value :  1.39724e-10  [                        ]   0%
+ Reference value :  8.00456e-09  [                        ]   2%
+ Reference value :  1.28875e-08  [=                       ]   3%
+ Reference value :  1.99970e-08  [=                       ]   4%
+ Reference value :  2.31780e-08  [=                       ]   5%
+ Reference value :  2.40304e-08  [=                       ]   5%
+ Reference value :  2.54849e-08  [=                       ]   5%
+ Reference value :  2.58513e-08  [=                       ]   5%
+ Reference value :  4.58614e-08  [==                      ]   9%
+ Reference value :  5.07109e-08  [==                      ]  10%
+ Reference value :  5.11464e-08  [==                      ]  10%
+ Reference value :  5.31196e-08  [===                     ]  11%
+ Reference value :  5.92164e-08  [===                     ]  12%
+ Reference value :  5.96314e-08  [===                     ]  12%
+ Reference value :  6.04205e-08  [===                     ]  12%
+ Reference value :  6.07975e-08  [===                     ]  12%
+ Reference value :  6.24273e-08  [===                     ]  12%
+ Reference value :  9.72095e-08  [=====                   ]  19%
+ Reference value :  1.89209e-07  [=========               ]  38%
+ Reference value :  2.63784e-07  [=============           ]  53%
+ Reference value :  2.64919e-07  [=============           ]  53%
+ Reference value :  3.42169e-07  [================        ]  68%
+ Reference value :  4.09169e-07  [====================    ]  82%
+ Reference value :  4.66977e-07  [======================  ]  93%
+No. of Data Rows : 1293
+ngspice-47+ done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

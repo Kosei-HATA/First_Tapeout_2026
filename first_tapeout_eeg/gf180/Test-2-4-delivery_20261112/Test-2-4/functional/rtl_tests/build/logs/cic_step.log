@@ -1,0 +1,2 @@
+PASS: tb_cic step (29749 operations, 29 output strobes bit-exact, 27 valid)
+tb/tb_cic.sv:144: $finish called at 316360000 (1ps)

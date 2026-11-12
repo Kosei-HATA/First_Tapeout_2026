@@ -1,0 +1,100 @@
+{
+  "tool": "OpenSTA 3.1.0",
+  "scope": "Cell-delay timing screening of actual macro netlists, no routed SPEF/SDF. Not chip timing signoff.",
+  "mclk_hz": 32768000,
+  "period_ns": 30.517578125,
+  "corners": [
+    {
+      "module": "eeg_adc_dig",
+      "corner": "ff_n40C_3v60",
+      "setup_slack_ns": 17.963963269824504,
+      "hold_slack_ns": 0.18048296701338562,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    },
+    {
+      "module": "eeg_adc_dig",
+      "corner": "ss_125C_3v00",
+      "setup_slack_ns": 8.650620020718982,
+      "hold_slack_ns": 0.9080572106822554,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    },
+    {
+      "module": "eeg_adc_dig",
+      "corner": "tt_025C_3v30",
+      "setup_slack_ns": 16.35755577288789,
+      "hold_slack_ns": 0.5228762015805357,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    },
+    {
+      "module": "eeg_digital_top",
+      "corner": "ff_n40C_3v60",
+      "setup_slack_ns": 17.465755558414997,
+      "hold_slack_ns": 0.1589168841501115,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    },
+    {
+      "module": "eeg_digital_top",
+      "corner": "ss_125C_3v00",
+      "setup_slack_ns": 4.526981584397102,
+      "hold_slack_ns": 1.195756194572808,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    },
+    {
+      "module": "eeg_digital_top",
+      "corner": "tt_025C_3v30",
+      "setup_slack_ns": 17.051637029447225,
+      "hold_slack_ns": 0.46133187464826747,
+      "liberty_constraint_violation_lines": 0,
+      "tool_errors": [],
+      "explicit_unconstrained_path_reports": 0
+    }
+  ],
+  "worst_setup_slack_ns": 4.526981584397102,
+  "worst_hold_slack_ns": 0.1589168841501115,
+  "all_screen_slacks_positive": true,
+  "negative_control": {
+    "period_ns": 10.0,
+    "setup_slack_ns": -15.990597742983141,
+    "violation_detected": true
+  },
+  "netlist_gds_cell_count_check": [
+    {
+      "module": "eeg_digital_top",
+      "netlist_cells": 13446,
+      "gds_cells": 13446,
+      "netlist_cells_missing_from_gds": {},
+      "extra_gds_cell_types": {},
+      "counts_match_for_every_netlist_cell_type": true,
+      "warning": "Cell-type counts are supplemental correspondence evidence, not connectivity equivalence. Core LVS and macro geometry checks remain separate evidence."
+    },
+    {
+      "module": "eeg_adc_dig",
+      "netlist_cells": 4791,
+      "gds_cells": 4791,
+      "netlist_cells_missing_from_gds": {},
+      "extra_gds_cell_types": {},
+      "counts_match_for_every_netlist_cell_type": true,
+      "warning": "Cell-type counts are supplemental correspondence evidence, not connectivity equivalence. Core LVS and macro geometry checks remain separate evidence."
+    }
+  ],
+  "assumptions": "20% I/O delays where source SDC uses environment variable,20fF output load,buf_4 driving cell,0.15ns clock transition. Source explicit TH/CODE/control delays and timing exceptions retained.",
+  "initial_screen": "Initial arbitrary 1.5ns global transition threshold flagged slew violations. Saved separately; not a qualified source constraint or established design failure. Library-only screen does not override a real final constraint set.",
+  "missing_for_signoff": [
+    "Original routed macro SPEF and final SDC/config/environment",
+    "Qualified macro timing models for chip interface",
+    "Validated chip interconnect parasitics",
+    "Board/oscillator/SPI and analog load constraints",
+    "Confirmation of multicycle and false-hold assumptions at every mode and reset transition"
+  ],
+  "originals_modified": false
+}

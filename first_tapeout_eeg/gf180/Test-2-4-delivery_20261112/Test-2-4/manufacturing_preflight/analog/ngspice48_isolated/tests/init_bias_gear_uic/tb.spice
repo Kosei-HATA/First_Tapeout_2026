@@ -1,0 +1,30 @@
+* original model isolation
+* Current full AFE initialization and speed pilot; NOT settled gain
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice mimcap_typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice cap_mim
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice moscap_typical
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/afe/eeg_afe.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/afe/eeg_afe_clk.spice
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/bias/eeg_bias.spice
+.temp 27
+
+VDD VDD 0 3.3
+VRP VRP 0 1.9
+VRN VRN 0 1.4
+VIT ITST 0 1
+XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VRP VRN VDD 0 0 VDD 0 VDD VDD 0 eeg_bias
+XDQ IQ IQ 0 0 nfet_03v3 W=4u L=2u nf=1 m=8
+.nodeset v(xb.g1)=.85 v(xb.gp)=2.2 v(vbn)=.84 v(vbcm)=.81 v(xb.nt)=.84
++ v(xb.nc)=.81 v(xb.nd)=.8 v(xb.sb)=0 v(bln)=1.1 v(blp)=1.5 v(xb.s2)=.05
+
+.options method=gear reltol=1e-4 abstol=1e-12 vntol=1e-7
+.control
+set numdgt=15
+tran 1n 2e-06 0 1n uic
+wrdata wave.csv v(vbn) v(vcm)
+quit
+.endc
+.end

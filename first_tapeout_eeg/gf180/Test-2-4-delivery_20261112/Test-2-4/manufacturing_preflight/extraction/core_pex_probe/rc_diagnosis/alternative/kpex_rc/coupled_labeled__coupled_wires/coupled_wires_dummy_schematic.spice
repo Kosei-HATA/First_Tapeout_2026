@@ -1,0 +1,3 @@
+.subckt coupled_wires VDD VSS
+.ends
+.end

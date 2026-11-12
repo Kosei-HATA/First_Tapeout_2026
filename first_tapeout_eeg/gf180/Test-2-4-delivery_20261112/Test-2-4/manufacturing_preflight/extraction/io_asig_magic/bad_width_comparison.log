@@ -1,0 +1,53 @@
+
+Circuit 1 cell cap_nmos_06v0 and Circuit 2 cell cap_nmos_06v0 are black boxes.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cap_nmos_06v0                   |Circuit 2: cap_nmos_06v0                   
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cap_nmos_06v0 and cap_nmos_06v0 are equivalent.
+
+Cell gf180mcu_fd_io__asig_5p0 (0) disconnected node: VDD
+Cell gf180mcu_fd_io__asig_5p0 (0) disconnected node: VSS
+Cell gf180mcu_fd_io__asig_5p0 (1) disconnected node: VDD
+Cell gf180mcu_fd_io__asig_5p0 (1) disconnected node: VSS
+Class gf180mcu_fd_io__asig_5p0 (0):  Merged 44 parallel devices.
+Cell gf180mcu_fd_io__asig_5p0 (0) disconnected node: VDD
+Cell gf180mcu_fd_io__asig_5p0 (0) disconnected node: VSS
+Cell gf180mcu_fd_io__asig_5p0 (1) disconnected node: VDD
+Cell gf180mcu_fd_io__asig_5p0 (1) disconnected node: VSS
+Subcircuit summary:
+Circuit 1: gf180mcu_fd_io__asig_5p0        |Circuit 2: gf180mcu_fd_io__asig_5p0        
+-------------------------------------------|-------------------------------------------
+diode_nd2ps_06v0 (8->2)                    |diode_nd2ps_06v0 (8->2)                    
+diode_pd2nw_06v0 (4->1)                    |diode_pd2nw_06v0 (4->1)                    
+cap_nmos_06v0 (36->1)                      |cap_nmos_06v0 (36->1)                      
+Number of devices: 4                       |Number of devices: 4                       
+Number of nets: 3                          |Number of nets: 3                          
+---------------------------------------------------------------------------------------
+Netlists match uniquely with property errors.
+cap_nmos_06v0:0 vs. cap_nmos_06v0:1:
+ c_width circuit1: 1.5e-05   circuit2: 1.65e-05   (delta=9.52%, cutoff=1%)
+
+Subcircuit pins:
+Circuit 1: gf180mcu_fd_io__asig_5p0        |Circuit 2: gf180mcu_fd_io__asig_5p0        
+-------------------------------------------|-------------------------------------------
+ASIG5V                                     |ASIG5V                                     
+DVSS                                       |DVSS                                       
+DVDD                                       |DVDD                                       
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes gf180mcu_fd_io__asig_5p0 and gf180mcu_fd_io__asig_5p0 are equivalent.
+
+Final result: Circuits match uniquely.
+Property errors were found.
+
+The following cells had property errors:
+ gf180mcu_fd_io__asig_5p0

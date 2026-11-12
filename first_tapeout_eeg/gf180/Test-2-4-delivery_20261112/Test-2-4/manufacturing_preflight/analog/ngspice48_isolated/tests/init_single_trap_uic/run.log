@@ -1,0 +1,16 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * original model isolation
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+Operating point simulation skipped by 'uic',
+  now using transient initial conditions.
+ Reference value :  1.00000e-11  [                        ]   0%
+No. of Data Rows : 1026
+ngspice-47+ done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

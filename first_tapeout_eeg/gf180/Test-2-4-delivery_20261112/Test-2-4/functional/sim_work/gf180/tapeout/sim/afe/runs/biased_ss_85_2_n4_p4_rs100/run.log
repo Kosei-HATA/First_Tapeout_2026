@@ -1,0 +1,47 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * afe frozen-phase noise, core x1, input tg m=256, phase a
+
+Doing analysis at TEMP = 85.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+i(vdd) = -2.34151e-02
+v(vbp) = 2.056568e+00
+v(opi) = 1.649517e+00
+v(oni) = 1.649517e+00
+v(inp) = 1.649517e+00
+v(vbn) = 9.282527e-01
+v(vbcm) = 8.978893e-01
+@m.xb.xmn1.m0[id] = 3.148680e-05
+@m.xdut.xcore.xnt.m0[vds] = 6.260647e-01
+@m.xdut.xcore.xnt.m0[vdsat] = 2.172421e-01
+@m.xdut.xcore.xpt.m0[vds] = 6.704205e-01
+@m.xdut.xcore.xpt.m0[vdsat] = 3.158036e-01
+@m.xdut.xcore.xn_p.m0[vds] = 5.958633e-01
+@m.xdut.xcore.xn_p.m0[vdsat] = 1.327112e-01
+@m.xdut.xcore.xp_p.m0[vds] = 4.480816e-01
+@m.xdut.xcore.xp_p.m0[vdsat] = 9.545414e-02
+@m.xdut.xcore.xnc_p.m0[vds] = 4.275549e-01
+@m.xdut.xcore.xnc_p.m0[vdsat] = 2.088377e-01
+@m.xdut.xcore.xpc_p.m0[vds] = 5.319665e-01
+@m.xdut.xcore.xpc_p.m0[vdsat] = 2.645988e-01
+Doing analysis at TEMP = 85.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 161
+Doing analysis at TEMP = 85.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+ Reference value :  5.01187e+02
+No. of Data Rows : 161
+
+No. of Data Rows : 1
+ASCII raw file "noise.raw"
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

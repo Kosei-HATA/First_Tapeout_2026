@@ -1,0 +1,9 @@
+from pathlib import Path
+import json
+p=Path(__file__).resolve().parent/'fixed_nominal_rc_pvt';r=json.loads((p/'results.json').read_text());a=json.loads((p.parents[1]/'actual_bias_clock.json').read_text());base={(x['vdd'],x['corner'],x['temperature_C']):x for x in a};rows=[]
+for x in r['cases']:
+ if x['status']!='finished':raise RuntimeError('PVT still running')
+ row={k:x.get(k) for k in ['vdd','corner','temperature_C','exitcode','minimum_margin_ns','positive_sequence_margins','seconds']};b=base[(x['vdd'],x['corner'],x['temperature_C'])];row['schematic_min_margin_ns']=b['minimum_margin_ns'];row['delta_min_margin_ns']=row['minimum_margin_ns']-b['minimum_margin_ns'] if row['minimum_margin_ns'] is not None else None;rows.append(row)
+rows.sort(key=lambda x:(x['vdd'],x['corner']));w=min(rows,key=lambda x:x['minimum_margin_ns'] if x['minimum_margin_ns'] is not None else float('inf'))
+summary={'completed_cases':len(rows),'all_cases_exit0':all(x['exitcode']==0 for x in rows),'all_positive_sequence_margins':len(rows)==15 and all(x['positive_sequence_margins'] for x in rows),'minimum_case':w,'rc_corner':'fixed nominal; no low/high or R/C temperature variation','process_temperature_pairs':['typical/27C','ss/85C','ff/-20C','sf/27C','fs/27C'],'supply_V':[3.0,3.3,3.6],'cases':rows,'limits':['Only internal clock flat RC; external OTA TG diffusion parameters schematic, parent routes/coupling/power/package excluded.','Common-mode input and specified bias code2; not full ADC signal activity/startup.','Positive sequencing is diagnostic; no product minimum guardband or full-chip PVT signoff.','Exploratory3.0/3.6V supply bounds, not independently confirmed analog operating specification.','No change to original GDS/PDK/circuit netlists; fixed nominal RC hash checked after execution.']}
+(p/'final_summary.json').write_text(json.dumps(summary,indent=2));print(json.dumps(summary,indent=2))

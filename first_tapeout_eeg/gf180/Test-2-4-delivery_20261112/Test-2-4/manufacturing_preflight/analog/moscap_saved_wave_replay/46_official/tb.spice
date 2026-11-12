@@ -1,0 +1,15 @@
+* saved converged voltage replay, not surrounding-circuit equivalence
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice moscap_typical
+.include /work/Test-2-4/manufacturing_preflight/analog/moscap_saved_wave_replay/stimulus.inc
+XC node 0 cap_nmos_03v3 c_length=28.6u c_width=44u m=1
+.temp 27
+.options method=gear reltol=1e-4 abstol=1e-12 vntol=1e-7
+.control
+set numdgt=15
+tran 1n 7.9324824903435952e-06 0 1n
+wrdata wave.csv v(node) i(vreplay)
+quit
+.endc
+.end

@@ -1,0 +1,5 @@
+.SUBCKT gf180mcu_fd_io__fill5 DVDD DVSS VDD VSS
+X0 VDD VSS cap_nmos_06v0 m=70.0 c_length=1.5e-6 c_width=1.650000000000e-06
+.ENDS
+
+

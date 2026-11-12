@@ -1,0 +1,2 @@
+PASS: tb_therm2bin (101024 patterns)
+tb/tb_therm2bin.sv:55: $finish called at 101024000 (1ps)

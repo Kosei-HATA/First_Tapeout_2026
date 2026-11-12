@@ -1,0 +1,79 @@
+{
+  "source_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "pin_geometry": [
+    {
+      "name": "CHOP1",
+      "x": 12.24,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CIA",
+      "x": 27.44,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCIA",
+      "x": 42.64000000000001,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CIB",
+      "x": 57.84,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCIB",
+      "x": 73.03999999999999,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CDA",
+      "x": 88.24,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCDA",
+      "x": 103.44,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CDB",
+      "x": 118.64,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCDB",
+      "x": 133.84,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "VDD",
+      "x": 144.20000000000002,
+      "y": 2,
+      "on_metal3": true
+    },
+    {
+      "name": "VSS",
+      "x": 1.6,
+      "y": 2,
+      "on_metal3": true
+    }
+  ],
+  "placements": [
+    {
+      "path": "chip_top/adc_top[2]/eeg_adc_clk[12]",
+      "transform": "r0 *1 2612400,1467000"
+    }
+  ],
+  "probes": [],
+  "connected_devices": []
+}

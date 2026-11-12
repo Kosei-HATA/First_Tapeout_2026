@@ -1,0 +1,116 @@
+{
+  "scope": "8.3.697 non-Tcl extractor plus installed 8.3.664 converter; limited mixed-version validation, not full-flow qualification",
+  "positive": {
+    "wire": {
+      "ground_before_fF": 10.8955,
+      "ground_after_fF": 10.8955,
+      "coupling_before_fF": 0.0,
+      "coupling_after_fF": 0.0,
+      "cap_conserved": true,
+      "R_count": 1,
+      "pass": true
+    },
+    "coupled_wires": {
+      "ground_before_fF": 17.6217,
+      "ground_after_fF": 17.6217,
+      "coupling_before_fF": 5.902700000000001,
+      "coupling_after_fF": 5.902700000000001,
+      "cap_conserved": true,
+      "R_count": 2,
+      "wire_R_valid": true,
+      "all_four_ports": true,
+      "pass": true
+    },
+    "mim_only": {
+      "ground_before_fF": 98.81120000000001,
+      "ground_after_fF": 98.81120000000003,
+      "coupling_before_fF": 5.85015,
+      "coupling_after_fF": 5.85015,
+      "cap_conserved": true,
+      "R_count": 2,
+      "pass": true
+    },
+    "adc_flat": {
+      "ground_before_fF": 107.0973,
+      "ground_after_fF": 107.09729000000002,
+      "coupling_before_fF": 17.3964,
+      "coupling_after_fF": 17.3964,
+      "cap_conserved": true,
+      "R_count": 14,
+      "pass": true
+    },
+    "adc_hierarchy": {
+      "ground_before_fF": 103.87981,
+      "ground_after_fF": 103.87981,
+      "coupling_before_fF": 17.39638,
+      "coupling_after_fF": 17.39638,
+      "cap_conserved": true,
+      "R_count": 2,
+      "pass": true
+    }
+  },
+  "negative": {
+    "duplicate_coupling": {
+      "ground_before_fF": 17.6217,
+      "ground_after_fF": 17.6217,
+      "coupling_before_fF": 5.902700000000001,
+      "coupling_after_fF": 11.805400000000002,
+      "cap_conserved": false,
+      "R_count": 2,
+      "wire_R_valid": true,
+      "all_four_ports": true,
+      "pass": false
+    },
+    "lost_resistor": {
+      "ground_before_fF": 17.6217,
+      "ground_after_fF": 17.6217,
+      "coupling_before_fF": 5.902700000000001,
+      "coupling_after_fF": 5.902700000000001,
+      "cap_conserved": true,
+      "R_count": 1,
+      "wire_R_valid": false,
+      "all_four_ports": true,
+      "pass": false
+    },
+    "wrong_resistance": {
+      "ground_before_fF": 17.6217,
+      "ground_after_fF": 17.6217,
+      "coupling_before_fF": 5.902700000000001,
+      "coupling_after_fF": 5.902700000000001,
+      "cap_conserved": true,
+      "R_count": 2,
+      "wire_R_valid": false,
+      "all_four_ports": true,
+      "pass": false
+    },
+    "lost_port": {
+      "ground_before_fF": 17.6217,
+      "ground_after_fF": 17.6217,
+      "coupling_before_fF": 5.902700000000001,
+      "coupling_after_fF": 5.902700000000001,
+      "cap_conserved": true,
+      "R_count": 2,
+      "wire_R_valid": true,
+      "all_four_ports": false,
+      "pass": false
+    }
+  },
+  "old_version_coupled_wires": {
+    "ground_before_fF": 17.6217,
+    "ground_after_fF": 29.427100000000006,
+    "coupling_before_fF": 5.902700000000001,
+    "coupling_after_fF": 5.902700000000001,
+    "cap_conserved": false,
+    "R_count": 2,
+    "wire_R_valid": true,
+    "all_four_ports": true,
+    "pass": false
+  },
+  "all_negative_controls_detected": true,
+  "uncovered": [
+    "Actual killnode/reconnected coupling case not exercised",
+    "Complete Tcl 8.3.697 conversion not tested",
+    "Spatial RC accuracy/contact mesh convergence",
+    "ADC coupling changed about 0.1325 fF across versions and needs independent validation"
+  ]
+}

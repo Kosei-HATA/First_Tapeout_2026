@@ -1,0 +1,400 @@
+{
+  "source_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "pin_geometry": [
+    {
+      "name": "CHOP1",
+      "x": 12.24,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CIA",
+      "x": 27.44,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCIA",
+      "x": 42.64000000000001,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CIB",
+      "x": 57.84,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCIB",
+      "x": 73.03999999999999,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CDA",
+      "x": 88.24,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCDA",
+      "x": 103.44,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "CDB",
+      "x": 118.64,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "NCDB",
+      "x": 133.84,
+      "y": 83.2,
+      "on_metal3": true
+    },
+    {
+      "name": "VDD",
+      "x": 144.20000000000002,
+      "y": 2,
+      "on_metal3": true
+    },
+    {
+      "name": "VSS",
+      "x": 1.6,
+      "y": 2,
+      "on_metal3": true
+    }
+  ],
+  "placements": [
+    {
+      "path": "chip_top/adc_top[2]/eeg_adc_clk[12]",
+      "transform": "r0 *1 2612400,1467000"
+    }
+  ],
+  "probes": [
+    {
+      "port": "CHOP1",
+      "point_um": [
+        2624.64,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$252769",
+          "schematic": "CHOP1"
+        },
+        {
+          "layer": "l17",
+          "layout": "$252769",
+          "schematic": "CHOP1"
+        },
+        {
+          "layer": "l18",
+          "layout": "$252769",
+          "schematic": "CHOP1"
+        },
+        {
+          "layer": "l19",
+          "layout": "$252769",
+          "schematic": "CHOP1"
+        }
+      ]
+    },
+    {
+      "port": "CIA",
+      "point_um": [
+        2639.84,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1370349",
+          "schematic": "ADC.CIA"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1370349",
+          "schematic": "ADC.CIA"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1370349",
+          "schematic": "ADC.CIA"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1370349",
+          "schematic": "ADC.CIA"
+        }
+      ]
+    },
+    {
+      "port": "NCIA",
+      "point_um": [
+        2655.04,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1370832",
+          "schematic": "ADC.NCIA"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1370832",
+          "schematic": "ADC.NCIA"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1370832",
+          "schematic": "ADC.NCIA"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1370832",
+          "schematic": "ADC.NCIA"
+        }
+      ]
+    },
+    {
+      "port": "CIB",
+      "point_um": [
+        2670.2400000000002,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1370831",
+          "schematic": "ADC.CIB"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1370831",
+          "schematic": "ADC.CIB"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1370831",
+          "schematic": "ADC.CIB"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1370831",
+          "schematic": "ADC.CIB"
+        }
+      ]
+    },
+    {
+      "port": "NCIB",
+      "point_um": [
+        2685.44,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1370833",
+          "schematic": "ADC.NCIB"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1370833",
+          "schematic": "ADC.NCIB"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1370833",
+          "schematic": "ADC.NCIB"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1370833",
+          "schematic": "ADC.NCIB"
+        }
+      ]
+    },
+    {
+      "port": "CDA",
+      "point_um": [
+        2700.64,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1581304",
+          "schematic": "ADC.CDA"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1581304",
+          "schematic": "ADC.CDA"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1581304",
+          "schematic": "ADC.CDA"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1581304",
+          "schematic": "ADC.CDA"
+        }
+      ]
+    },
+    {
+      "port": "NCDA",
+      "point_um": [
+        2715.84,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1582925",
+          "schematic": "ADC.NCDA"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1582925",
+          "schematic": "ADC.NCDA"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1582925",
+          "schematic": "ADC.NCDA"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1582925",
+          "schematic": "ADC.NCDA"
+        }
+      ]
+    },
+    {
+      "port": "CDB",
+      "point_um": [
+        2731.04,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1583831",
+          "schematic": "ADC.CDB"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1583831",
+          "schematic": "ADC.CDB"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1583831",
+          "schematic": "ADC.CDB"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1583831",
+          "schematic": "ADC.CDB"
+        }
+      ]
+    },
+    {
+      "port": "NCDB",
+      "point_um": [
+        2746.2400000000002,
+        1550.2
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "$1583832",
+          "schematic": "ADC.NCDB"
+        },
+        {
+          "layer": "l17",
+          "layout": "$1583832",
+          "schematic": "ADC.NCDB"
+        },
+        {
+          "layer": "l18",
+          "layout": "$1583832",
+          "schematic": "ADC.NCDB"
+        },
+        {
+          "layer": "l19",
+          "layout": "$1583832",
+          "schematic": "ADC.NCDB"
+        }
+      ]
+    },
+    {
+      "port": "VDD",
+      "point_um": [
+        2756.6,
+        1469.0
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "AVDD",
+          "schematic": "AVDD"
+        },
+        {
+          "layer": "l17",
+          "layout": "AVDD",
+          "schematic": "AVDD"
+        },
+        {
+          "layer": "l18",
+          "layout": "AVDD",
+          "schematic": "AVDD"
+        },
+        {
+          "layer": "l19",
+          "layout": "AVDD",
+          "schematic": "AVDD"
+        }
+      ]
+    },
+    {
+      "port": "VSS",
+      "point_um": [
+        2614.0,
+        1469.0
+      ],
+      "hits": [
+        {
+          "layer": "l16",
+          "layout": "AVSS",
+          "schematic": "AVSS"
+        },
+        {
+          "layer": "l17",
+          "layout": "AVSS",
+          "schematic": "AVSS"
+        },
+        {
+          "layer": "l18",
+          "layout": "AVSS",
+          "schematic": "AVSS"
+        },
+        {
+          "layer": "l19",
+          "layout": "AVSS",
+          "schematic": "AVSS"
+        }
+      ]
+    }
+  ],
+  "elapsed_seconds": 62.18217468261719,
+  "maxrss_kb": 5069080
+}

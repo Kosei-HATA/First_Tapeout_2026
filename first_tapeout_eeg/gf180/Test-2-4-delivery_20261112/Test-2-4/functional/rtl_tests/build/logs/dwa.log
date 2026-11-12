@@ -1,0 +1,2 @@
+PASS: tb_dwa (160913 loads, every k 0..31 >= 100 times, 50641 usage-spread checks)
+tb/tb_dwa.sv:193: $finish called at 10454380000 (1ps)

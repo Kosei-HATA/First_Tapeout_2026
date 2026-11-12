@@ -1,0 +1,11 @@
+ Resistor: Simple linear resistor
+     device              r.xr.rt2              r.xr.rt1
+      model      xr:ppolyf_u_1k_t      xr:ppolyf_u_1k_t
+ resistance               88.0565               88.0565
+         ac               88.0565               88.0565
+      dtemp                     0                     0
+     bv_max                 1e+99                 1e+99
+      noisy                     1                     1
+          i                     0                     0
+          p                     0                     0
+

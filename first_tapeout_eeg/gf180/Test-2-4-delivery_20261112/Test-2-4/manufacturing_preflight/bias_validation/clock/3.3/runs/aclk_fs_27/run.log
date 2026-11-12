@@ -1,0 +1,247 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_adc_clk timing with ota1 as load
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                        3.3
+chop1                                      3.3
+vclk                                       3.3
+xc.xb                               5.0943e-09
+xc.x                                       3.3
+xc.xd1                             4.62831e-08
+xc.xd2                                     3.3
+xc.xd3                             4.62831e-08
+xc.xd                                      3.3
+xc.xgda.m1                             3.29891
+xc.dan                             2.63164e-09
+xc.xgdb.yb                         1.02079e-08
+xc.xgdb.xg.m1                      5.10397e-09
+xc.dbn                                     3.3
+xc.xmb                             4.62831e-08
+xc.xm                                      3.3
+xc.xmd1                            4.62831e-08
+xc.xmd                                     3.3
+xc.ian                             1.02079e-08
+xc.xgia.m1                         5.10397e-09
+xc.xgib.xg.m1                          3.29891
+xc.xgib.yb                         2.63164e-09
+xc.ibn                                     3.3
+xc.a1                                      3.3
+xc.a2                              9.90363e-10
+cia                                        3.3
+xc.ia                                      3.3
+xc.an1                             2.63194e-09
+xc.an2                                     3.3
+ncia                               3.74771e-10
+xc.b1                              2.63194e-09
+xc.b2                                      3.3
+cib                                5.79969e-10
+xc.ib                               5.0943e-09
+xc.bn1                                     3.3
+xc.bn2                             7.85166e-10
+ncib                                       3.3
+xc.da1                                     3.3
+xc.da2                             7.85166e-10
+cda                                        3.3
+xc.da                                      3.3
+xc.dan1                            2.63194e-09
+xc.dan2                                    3.3
+ncda                               2.72173e-10
+xc.db1                             2.63194e-09
+xc.db2                                     3.3
+cdb                                3.74771e-10
+xc.db                               5.0943e-09
+xc.dbn1                                    3.3
+xc.dbn2                            6.62047e-10
+ncdb                                       3.3
+vcm                                       1.65
+xota1.cip                                 1.65
+xota1.cin                                 1.65
+xota1.xota.xcore.d1p                   1.01385
+xota1.xota.xcore.tail                 0.814227
+xota1.xota.xcore.d1n                   1.01385
+o1n                                    1.64972
+vnc1                                   2.00268
+xota1.xota.xcore.n1p                   1.03434
+o1p                                    1.64972
+xota1.xota.xcore.n1n                   1.03434
+xota1.xota.xcore.p1p                   2.90547
+xota1.xota.vbp                         2.13268
+xota1.xota.xcore.p1n                   2.90547
+vpc1                                   1.69797
+xota1.xota.xcore.p2p                   2.87571
+xota1.xota.xcore.p2n                   2.87571
+vbn1                                  0.766717
+xota1.xota.xcmfb.nd                     2.2604
+xota1.xota.xcmfb.nta                  0.771039
+xota1.xota.xcmfb.ntb                  0.771039
+vbcm1                                 0.734963
+ib1                                        3.3
+ib0                                          0
+bp1                                          0
+bp0                                        3.3
+bn1                                          0
+bn0                                        3.3
+bln                                    1.00189
+blnl                                   1.00189
+blpl                                   1.39954
+blp                                    1.39954
+vrefp                                      1.9
+vrefn                                      1.4
+idn                                   0.612912
+idnl                                  0.612912
+idpl                                   2.26167
+idp                                    2.26167
+iq                                     0.73109
+iql                                    0.73109
+itst                                         1
+xb.g1                                 0.601833
+xb.gp                                   2.1032
+xb.s2                                0.0546382
+xb.xr0.11                            0.0533108
+xb.xr0.21                           0.00132747
+xb.sbm                                  2.7718
+xb.sb                                0.0107732
+xb.nt                                 0.762443
+xb.ta                                  1.68948
+xb.tb                                  1.68948
+xb.tc                                      3.3
+xb.ga                              1.22089e-08
+xb.gb                              5.06048e-09
+xb.gc                                      3.3
+xb.xla.m                              0.864069
+xb.xlc.m                               2.83909
+xb.xrvbn.11                           0.762443
+xb.xrvbn.21                           0.762443
+vbn                                   0.762443
+xb.nc                                 0.734963
+xb.xrvbcm.11                          0.734963
+xb.xrvbcm.21                          0.734963
+vbcm                                  0.734963
+xb.bna                                 1.79899
+xb.bnb                                     3.3
+xb.bnc                                     3.3
+xb.gpa                              5.1958e-09
+xb.gpb                                     3.3
+xb.gpc                                     3.3
+xb.xlpa.m                                  3.3
+xb.xlpc.m                          9.83283e-09
+xb.nd                                 0.777757
+xb.nda                                 1.79652
+xb.ndb                                     3.3
+xb.ndc                                     3.3
+xb.gna                              5.1958e-09
+xb.gnb                                     3.3
+xb.gnc                                     3.3
+xb.xlna.m                                  3.3
+xb.xlnc.m                          9.83283e-09
+xb.na1                                0.766717
+xb.xrvbn1.11                          0.766717
+xb.xrvbn1.21                          0.766717
+xb.na2                                0.734963
+xb.xrvbcm1.11                         0.734963
+xb.xrvbcm1.21                         0.734963
+xb.xrc1.11                             3.29916
+xb.xrc1.21                             2.00352
+xb.xrc2.11                             2.00183
+xb.xrc2.21                             1.80145
+vbpc2                                  1.80061
+xb.xrc2b.11                            1.79976
+xb.xrc2b.21                            1.69882
+xb.xrc3.11                             1.69713
+xb.xrc3.21                             1.49675
+vbnc2                                   1.4959
+xb.xrc3b.11                            1.49506
+xb.xrc3b.21                        0.000844726
+xb.nd2                                  0.8419
+xb.xrv1.11                             1.89979
+xb.xrv1.21                             1.65021
+xb.xrv2.11                             1.64979
+xb.xrv2.21                             1.40021
+evbn0#branch                                 0
+evbp0#branch                                 0
+evib1#branch                                 0
+vmitst#branch                       3.1231e-05
+vmiq#branch                        3.12548e-05
+vmidp#branch                       2.36351e-07
+vmidn#branch                       2.34601e-07
+vrn#branch                         2.43936e-06
+vrp#branch                        -2.43936e-06
+vmblp#branch                       0.000126128
+vmbln#branch                       0.000124756
+vbn1#branch                                  0
+vbp1#branch                                  0
+vib0#branch                                  0
+vclk#branch                       -1.11018e-09
+vch#branch                                   0
+vdd#branch                         -0.00433914
+
+ Reference value :  0.00000e+00
+ Reference value :  1.20012e-08
+ Reference value :  2.42012e-08
+ Reference value :  3.50012e-08
+ Reference value :  4.76512e-08
+ Reference value :  6.01012e-08
+ Reference value :  7.19512e-08
+ Reference value :  8.30012e-08
+ Reference value :  9.40012e-08
+ Reference value :  1.00737e-07
+ Reference value :  1.04136e-07
+ Reference value :  1.07511e-07
+ Reference value :  1.16111e-07
+ Reference value :  1.27361e-07
+ Reference value :  1.39411e-07
+ Reference value :  1.51161e-07
+ Reference value :  1.61511e-07
+ Reference value :  1.68311e-07
+ Reference value :  1.75961e-07
+ Reference value :  1.84411e-07
+ Reference value :  1.93061e-07
+ Reference value :  2.03311e-07
+ Reference value :  2.07061e-07
+ Reference value :  2.09911e-07
+ Reference value :  2.16111e-07
+ Reference value :  2.24461e-07
+ Reference value :  2.32961e-07
+ Reference value :  2.42411e-07
+ Reference value :  2.52261e-07
+ Reference value :  2.62261e-07
+ Reference value :  2.69711e-07
+ Reference value :  2.80311e-07
+ Reference value :  2.92061e-07
+ Reference value :  3.00544e-07
+ Reference value :  3.03282e-07
+ Reference value :  3.07933e-07
+ Reference value :  3.21033e-07
+ Reference value :  3.33033e-07
+ Reference value :  3.44783e-07
+ Reference value :  3.56533e-07
+ Reference value :  3.68083e-07
+ Reference value :  3.80233e-07
+ Reference value :  3.91033e-07
+ Reference value :  4.03283e-07
+ Reference value :  4.14633e-07
+ Reference value :  4.25583e-07
+ Reference value :  4.35933e-07
+ Reference value :  4.48033e-07
+ Reference value :  4.60233e-07
+ Reference value :  4.70283e-07
+ Reference value :  4.80633e-07
+ Reference value :  4.89233e-07
+ Reference value :  4.96433e-07
+No. of Data Rows : 10313
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed

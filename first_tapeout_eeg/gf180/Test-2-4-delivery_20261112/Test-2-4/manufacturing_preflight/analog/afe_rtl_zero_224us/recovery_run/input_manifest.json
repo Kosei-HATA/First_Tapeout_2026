@@ -1,0 +1,28 @@
+{
+  "reference_files": [
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady/tb.spice",
+      "sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3"
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady/.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    }
+  ],
+  "diagnostic_change": "VS final amplitude 100u -> 0; include points to byte-identical copied controls. No other circuit/source/solver changes.",
+  "note": "Copied mapping preserves reference assumptions; for this zero control actual input differential step is 0 V, explicitly overriding reference metadata input_differential_step_V.",
+  "external_VCM_cap": "None. Historical 100nF example is not board specification and is not included.",
+  "scope": "Same ideal EP/EN return to VCM; zero input offset comparison only, no board or system/ENOB signoff."
+}

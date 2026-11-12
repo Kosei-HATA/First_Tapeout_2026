@@ -1,0 +1,28 @@
+{
+  "qualified_for_full_chip": false,
+  "isolated_clock_geometry_lvs_pass": true,
+  "eleven_ports_core_xref_match": true,
+  "external_gate_loads": 24,
+  "independent_external_DGSB_complete": true,
+  "hierarchical_magic_rc_usable": false,
+  "hierarchical_reason": "Killed child boundary names retained in subcircuit declarations without connection to internal resistor networks",
+  "flat_magic_mos_reference_lvs_pass": true,
+  "flat_rc_preservation_pass": true,
+  "negative_controls_detected": [
+    "Independent reference slow NMOS length +10%",
+    "Missing RC resistor",
+    "Extra CHOP1-VSS capacitor"
+  ],
+  "flat_counts": {
+    "MOS": 486,
+    "R": 7330,
+    "C": 4077
+  },
+  "uncovered": [
+    "External TG loads not in isolated PEX",
+    "Actual TG analog operating trajectories",
+    "Parent routing and neighboring coupling",
+    "Supply grid",
+    "Distributed RC convergence and absolute field calibration"
+  ]
+}

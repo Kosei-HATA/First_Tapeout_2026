@@ -1,0 +1,16 @@
+{
+  "purpose": "Engineering diagnostic convergence, not specification or ENOB acceptance",
+  "minimum_after_last_control_or_signal_step_s": 6.25E-05,
+  "two_successive_windows_cycles_each": 4,
+  "per_cycle_mean_change_V": {
+    "OUTP_minus_OUTN": 1E-06,
+    "VCM": 0.0001
+  },
+  "cycle_rms_change": "<= max(1 uV,0.1% of prior cycle RMS) for differential output",
+  "require_all": "Every adjacent cycle comparison across both four-cycle windows; no clipping/nonfinite or omitted outlier",
+  "steady_gain": "Not measured from initial step ratio; requires settled matched positive/negative input or sinusoidal transfer later",
+  "pilot_is_steady_test": false,
+  "clarification_before_steady_test": "Wait eight complete chop periods after the last control/input step, then evaluate two consecutive four-cycle windows aligned to rising CHOP. This is not overlapping the waiting and evaluation intervals.",
+  "earliest_phase_aligned_evaluation_start_s": 9.6818117E-05,
+  "earliest_phase_aligned_evaluation_end_s": 0.000159318117
+}

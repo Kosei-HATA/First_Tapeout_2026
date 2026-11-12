@@ -1,0 +1,20 @@
+ss 85 C
+| code | node | expected | ATP | error |
+|---|---|---|---|---|
+| 0 | AVSS | 0.000 | 0.0000 | +0.000 mV |
+| 1 | VCM | 1.650 | 1.6486 | -1.434 mV |
+| 2 | VREFP | 1.900 | 1.8982 | -1.787 mV |
+| 3 | VREFN | 1.400 | 1.3988 | -1.179 mV |
+| 4 | VBN | 0.850 | 0.8494 | -0.564 mV |
+| 5 | VBCM | 0.820 | 0.8195 | -0.537 mV |
+| 6 | VBN1 | 0.851 | 0.8504 | -0.565 mV |
+| 7 | VNC1 | 2.000 | 1.9980 | -1.975 mV |
+| 8 | VPC1 | 1.700 | 1.6985 | -1.494 mV |
+| 9 | VBPC2 | 1.800 | 1.7984 | -1.629 mV |
+| 10 | VBNC2 | 1.500 | 1.4987 | -1.275 mV |
+| 11 | ITST | 31.4 uA into ATP | 31.40 uA | +0.0 nA |
+| 12 | AOP | 1.610 | 1.6072 | -2.774 mV |
+| 13 | AON | 1.690 | 1.6870 | -2.960 mV |
+| 14 | O2P | 1.630 | 1.6272 | -2.819 mV |
+| 15 | O2N | 1.670 | 1.6671 | -2.912 mV |
+TC4 = 0: ATP 0.093 mV with 1 Mohm to ground; ATP driven to 3.3 V: largest current into AOP/AON/O2P/O2N 4.06 pA, into the bias/reference nodes 1.96 pA; worst selected-voltage error 2.960 mV

@@ -1,0 +1,51 @@
+Using NULL graphics device.
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Using technology "gf180mcuD", version 1.0.599-0-gb344c97.
+Global Foundries 180mcu: open PDK rules and DRC
+:drc off
+:scalegrid 1 10
+10 Magic internal units = 1 Lambda
+:gds read input.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "inverter_link".
+Error while reading cell "inverter_link" (byte position 3216): Warning:  Cell inverter_link boundary was redefined.
+:load inverter_link
+:select top cell
+Selected cell is inverter_link (Topmost cell in the window)
+:box values 0.87um 1.7um 0.87um 1.7um
+:label IN center metal1
+Moving label "IN" from metal1 to polycontact in cell inverter_link.
+:port make 1
+:box values 101.43um 1.7um 101.43um 1.7um
+:label OUT center metal1
+:port make 2
+:box values 10.1um 1.7um 10.1um 1.7um
+:label AG1 center metal2
+:port make 3
+:box values 89.9um 1.7um 89.9um 1.7um
+:label AG2 center metal2
+:port make 4
+:extresist threshold 0
+:extresist minres 0.1
+:extresist mindelay 0
+:extresist simplify off
+:extract do local
+:extract do resistance
+:extract all
+Extracting inverter_link into inverter_link.ext:
+Processing inverter_link
+Processing cell inverter_link for resistance extraction.
+Extracting AG2
+Extracting IN
+Extracting OUT
+Extracting a_20056_472#
+Extracting a_244_68#
+Extracting a_56_472#
+Total Nets: 11
+Nets extracted: 6 (0.545455)
+Nets output: 6 (0.545455)
+:quit -noprompt

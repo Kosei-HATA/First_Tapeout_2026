@@ -1,0 +1,299 @@
+{
+  "title": "Exact GDS ECO comparison images",
+  "created_utc": "2026-11-11T22:36:00Z",
+  "method": "KLayout Region Boolean geometry and matplotlib paths; input GDS read only; no generative image synthesis",
+  "versions": {
+    "python": "3.12.3",
+    "klayout": "0.30.9",
+    "matplotlib": "3.11.0"
+  },
+  "input_files": {
+    "original": {
+      "relative_path": "chip_top_fill_r6_20261026.gds",
+      "bytes": 224947506,
+      "sha256": "1343e9cc55cb2020f6213937c4622f2a126db6381ae66615719398aa6a027529"
+    },
+    "Test2-3": {
+      "relative_path": "Test2-3/gds/Test2-3.gds",
+      "bytes": 224947762,
+      "sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c"
+    },
+    "Test-2-4": {
+      "relative_path": "Test-2-4/gds/Test-2-4.gds",
+      "bytes": 224953330,
+      "sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755"
+    }
+  },
+  "units": "um; areas um^2",
+  "dbu_um": 0.001,
+  "top_cell": "chip_top",
+  "top_bbox_um": [
+    0.0,
+    0.0,
+    3932.0,
+    2531.0
+  ],
+  "pad_cell": "Bondpad_5LM",
+  "pad_instance_count": 72,
+  "bridge_change": {
+    "from": "original",
+    "to": "Test2-3",
+    "layer": "81/0",
+    "inserted_boxes_um": [
+      [
+        3519,
+        596.86,
+        3523,
+        606.86
+      ],
+      [
+        3519,
+        655.14,
+        3523,
+        665.14
+      ],
+      [
+        3519,
+        2006.86,
+        3523,
+        2016.86
+      ],
+      [
+        3519,
+        2065.14,
+        3523,
+        2075.14
+      ]
+    ],
+    "actual_added_polygons_um": [
+      {
+        "hull": [
+          [
+            3520.0,
+            596.86
+          ],
+          [
+            3520.0,
+            606.86
+          ],
+          [
+            3522.0,
+            606.86
+          ],
+          [
+            3522.0,
+            596.86
+          ]
+        ],
+        "holes": []
+      },
+      {
+        "hull": [
+          [
+            3520.0,
+            655.14
+          ],
+          [
+            3520.0,
+            665.14
+          ],
+          [
+            3522.0,
+            665.14
+          ],
+          [
+            3522.0,
+            655.14
+          ]
+        ],
+        "holes": []
+      },
+      {
+        "hull": [
+          [
+            3520.0,
+            2006.86
+          ],
+          [
+            3520.0,
+            2016.86
+          ],
+          [
+            3522.0,
+            2016.86
+          ],
+          [
+            3522.0,
+            2006.86
+          ]
+        ],
+        "holes": []
+      },
+      {
+        "hull": [
+          [
+            3520.0,
+            2065.14
+          ],
+          [
+            3520.0,
+            2075.14
+          ],
+          [
+            3522.0,
+            2075.14
+          ],
+          [
+            3522.0,
+            2065.14
+          ]
+        ],
+        "holes": []
+      }
+    ],
+    "added_area_um2": 80.0,
+    "removed_area_um2": 0.0,
+    "unchanged_Test2_3_to_Test_2_4": true
+  },
+  "pad_change": {
+    "from": "Test2-3",
+    "to": "Test-2-4",
+    "layers": [
+      {
+        "name": "M2",
+        "gds_layer": "36/0",
+        "local_before_area_um2": 3800.1,
+        "local_after_area_um2": 4361.7,
+        "local_added_area_um2": 561.6,
+        "local_removed_area_um2": 0.0,
+        "local_added_bbox_um": [
+          5.04,
+          2.0,
+          62.0,
+          62.0
+        ],
+        "added_polygon_count_local": 29,
+        "top_added_area_um2": 40435.2,
+        "top_removed_area_um2": 0.0,
+        "instance_count": 72,
+        "full_chip_delta_matches_transformed_local_delta": true,
+        "original_equals_Test2_3_local": true
+      },
+      {
+        "name": "M3",
+        "gds_layer": "42/0",
+        "local_before_area_um2": 3807.483,
+        "local_after_area_um2": 4362.6246,
+        "local_added_area_um2": 555.1416,
+        "local_removed_area_um2": 0.0,
+        "local_added_bbox_um": [
+          5.04,
+          2.29,
+          62.0,
+          61.6
+        ],
+        "added_polygon_count_local": 29,
+        "top_added_area_um2": 39970.1952,
+        "top_removed_area_um2": 0.0,
+        "instance_count": 72,
+        "full_chip_delta_matches_transformed_local_delta": true,
+        "original_equals_Test2_3_local": true
+      },
+      {
+        "name": "M4",
+        "gds_layer": "46/0",
+        "local_before_area_um2": 3807.483,
+        "local_after_area_um2": 4362.6246,
+        "local_added_area_um2": 555.1416,
+        "local_removed_area_um2": 0.0,
+        "local_added_bbox_um": [
+          5.04,
+          2.29,
+          62.0,
+          61.6
+        ],
+        "added_polygon_count_local": 29,
+        "top_added_area_um2": 39970.1952,
+        "top_removed_area_um2": 0.0,
+        "instance_count": 72,
+        "full_chip_delta_matches_transformed_local_delta": true,
+        "original_equals_Test2_3_local": true
+      }
+    ]
+  },
+  "checks": {
+    "all_three_hashes_match_expected": true,
+    "non_bridge_geometry_hierarchy_and_properties_unchanged": true,
+    "non_pad_geometry_hierarchy_and_properties_unchanged": true,
+    "M5_exact_expected_union": true,
+    "M5_unchanged_in_pad_ECO": true,
+    "pad_additions_match_full_chip_geometry": true,
+    "no_metal_removal_on_changed_layers": true,
+    "input_hashes_unchanged_after_rendering": true
+  },
+  "limitations": [
+    "Visualization and change verification are not fabrication or mechanical bonding approval.",
+    "Overview shows M5 and pad context, not every GDS layer.",
+    "Inserted bridge rectangle area (40 um2 each) includes overlaps; actual new union area is 20 um2 each.",
+    "Pad additions are shown in local coordinates; expanded pad instances are separately enumerated."
+  ],
+  "outputs": [
+    {
+      "name": "01_change_locations.png",
+      "bytes": 457489,
+      "sha256": "1c267d3efbd3e3df217e9827b4b46ca5fd21a1f6ecaaab258c355ab02ca0a3cf"
+    },
+    {
+      "name": "02_dvdd_bridges_before_after_diff.png",
+      "bytes": 415263,
+      "sha256": "ed59ae24ef845a24bf33c69ed6b8429cc4832638752917690f395a3d8326f7a0"
+    },
+    {
+      "name": "03_pad_layers_before_after_diff.png",
+      "bytes": 383227,
+      "sha256": "5f7e71078d2e1411699e15336cf690f7d178098994b2c87d36491f211ad62bac"
+    },
+    {
+      "name": "04_pad_notch_detail.png",
+      "bytes": 295172,
+      "sha256": "241d94baff611bbebdeff53eab026207db826018a0283de73531fa94d2dbebac"
+    },
+    {
+      "name": "README_ja.md",
+      "bytes": 4587,
+      "sha256": "524112b594315773969bcd7e9ce4b83b013decf0f17a290a93624be92cee9c9b"
+    },
+    {
+      "name": "changed_areas.csv",
+      "bytes": 243,
+      "sha256": "6013b23adbcf34cc2105543bd9046cc643169f5b5635425c23618158a4496ce8"
+    },
+    {
+      "name": "finalize_visual_manifest.py",
+      "bytes": 1951,
+      "sha256": "7f6ebe1c6e26ba40a5bea11738c75305b3bd5d25e79ae3265666a45ea9c3d0ef"
+    },
+    {
+      "name": "geometry_extract.json",
+      "bytes": 122832,
+      "sha256": "8fa8bd7b98547fed5b495826fe16d6e968b335f1998dc04d2ce9373e76b14988"
+    },
+    {
+      "name": "refresh_bridge_png_from_geometry.py",
+      "bytes": 1337,
+      "sha256": "1ba73ff9cf625a0e9aa68e2ff20079f02f7e585f563fd03d5928e95f8d6882f7"
+    },
+    {
+      "name": "render_gds_comparisons.py",
+      "bytes": 18821,
+      "sha256": "6f7de44e9eacecb04076de5ec6e14a127b7a551d2a4cb379458e4c5ac882c632"
+    },
+    {
+      "name": "visual_qa.json",
+      "bytes": 2041,
+      "sha256": "e5b78f2e59bfa0e4a4b1b850e6aef5c3c1d0cb483444939e00c82c5ee1b246bb"
+    }
+  ],
+  "presentation_update": "Bridge PNG axis labels were adjusted using verified geometry_extract.json; no data change. Full renderer source has the same layout adjustment.",
+  "artifact_manifest_updated_utc": "2026-11-11T22:37:16Z"
+}

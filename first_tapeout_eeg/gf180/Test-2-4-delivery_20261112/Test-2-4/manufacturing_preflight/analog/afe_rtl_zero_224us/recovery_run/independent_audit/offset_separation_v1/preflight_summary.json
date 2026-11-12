@@ -1,0 +1,186 @@
+{
+  "audit_version": "independent_offset_separation_recovery_v1",
+  "stage": "preflight_inputs_verified_waiting_for_completed_waveform",
+  "recorded_utc": "2026-11-11T18:43:21.418933+00:00",
+  "input_checks": {
+    "identical_sha256_across_positive_interrupted_zero_recovery_zero": {
+      "controls.inc": true,
+      "mapping_and_assumptions.json": true,
+      "steady_criteria.json": true,
+      "steady/.spiceinit": true
+    },
+    "recovery_deck_byte_identical_to_interrupted_zero": true,
+    "recovery_deck_manifest_hash_matches": true,
+    "positive_vs_zero_only_expected_SRC_amplitude_and_controls_include_changes": true,
+    "actual_controls_include": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_zero_224us/controls.inc",
+    "actual_include_matches_identical_copies": true
+  },
+  "input_hashes": {
+    "positive/controls.inc": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    "positive/mapping_and_assumptions.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    },
+    "positive/steady_criteria.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    "positive/steady/tb.spice": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\tb.spice",
+      "sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3"
+    },
+    "positive/steady/.spiceinit": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    "zero_interrupted/controls.inc": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    "zero_interrupted/mapping_and_assumptions.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    },
+    "zero_interrupted/steady_criteria.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    "zero_interrupted/steady/tb.spice": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady\\tb.spice",
+      "sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e"
+    },
+    "zero_interrupted/steady/.spiceinit": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    "zero_recovery/controls.inc": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    "zero_recovery/mapping_and_assumptions.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    },
+    "zero_recovery/steady_criteria.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    "zero_recovery/steady/tb.spice": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\tb.spice",
+      "sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e"
+    },
+    "zero_recovery/steady/.spiceinit": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    "zero_recovery/input_manifest.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\input_manifest.json",
+      "sha256": "1cdf02abdd0afa41c63b1dddf8184f6508a0394f03a8ee294f945726480dfbcc"
+    },
+    "zero_recovery/recovery_manifest.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\recovery_manifest.json",
+      "sha256": "2a1d0fe6a5f04b0e5fbc0a8ce714191c94b9c727f9ed05172f992dcdd375c365"
+    },
+    "positive/prior_numerical_audit.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\independent_audit\\periodicity_224us_v1\\summary.json",
+      "sha256": "0b8e06ead06689532631a614c045b106e7f32c16e640dabef548de4236e0077a"
+    },
+    "positive/prior_stimulus_audit.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\independent_audit\\summary.json",
+      "sha256": "9f00ec624e149d5ded3982fea7958c9a8ec04160fbbab41bad712cac71cc402c"
+    }
+  },
+  "reference_manifest_checks": [
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\tb.spice",
+      "sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "pass": true
+    }
+  ],
+  "analog_subcircuit_hashes_still_match_prior_stimulus_audit": [
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\sim_work\\gf180\\tapeout\\afe\\eeg_afe.spice",
+      "sha256": "552f454eac2c33dcb4ae71d1b85da8539a308d96c3ad9168374a997bbee20278",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\moscap_charge_equivalent\\bias_q_diagnostic.spice",
+      "sha256": "2f5e881a3880d2244f8c87c18b2fb59b4b98a27123692257177db60b0550e28b",
+      "pass": true
+    },
+    {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\sim_work\\gf180\\tapeout\\afe\\eeg_afe_clk.spice",
+      "sha256": "fd77d7e6a5590f134909f6fe06446917803ab464dedc09e968c5a94e0393fdc0",
+      "pass": true
+    }
+  ],
+  "fixed_window_s": [
+    0.000159318117,
+    0.000221818117
+  ],
+  "planned_cycle_count": 8,
+  "planned_adjacent_comparisons_per_case": 7,
+  "criterion_source": "steady_criteria.json, identical to +100 uV case",
+  "planned_formula": {
+    "per_case_cycle_mean": "d(t)=OUTP(t)-OUTN(t). Linearly interpolate exact cycle endpoints; integrate every saved interior segment with dt*(d0+d1)/2 and math.fsum; divide by exact period.",
+    "zero_baseline": "Time-weighted mean differential output for the zero-input case over the same fixed eight cycles. Report per-cycle values and the eight-cycle mean.",
+    "conditional_finite_difference_sensitivity": "[mean(d_positive)-mean(d_zero)]/[mean(ELP-ELN)_positive-mean(ELP-ELN)_zero], paired per cycle and over the whole fixed window. Verify denominator is 100 uV and cross-check SRC. Unit V/V.",
+    "periodicity": "Independently evaluate both cases: all seven adjacent mean differences and total differential RMS changes, using exact piecewise-linear second moment dt*(d0^2+d0*d1+d1^2)/3. Also compute worker-compatible trapezoid of squared samples. Same saved thresholds, no relaxed exclusions.",
+    "sanity": "Verify both full saved traces reach 224 us, selected columns finite, time strictly increasing, fixed window contained, AFE reset released, inputs constant in window, output rail headroom. SHA256 waveform files before/after. Read only required columns."
+  },
+  "metadata_caution": "Copied mapping_and_assumptions retains positive case input_differential_step_V=100e-6; actual zero deck and input_manifest explicitly override to 0 V. Use actual deck and measured input, never copied value, for denominator.",
+  "known_prior_positive_wave": {
+    "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\wave.csv",
+    "bytes": 651759420,
+    "rows": 252914,
+    "sha256_before": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+    "sha256_after": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+    "unchanged": true,
+    "start_s": 0.0,
+    "last_s": 0.000224,
+    "strictly_increasing_time": true,
+    "finite_only_selected_columns": true,
+    "zero_based_loaded_columns": {
+      "time": 0,
+      "outp": 29,
+      "outn": 27,
+      "vcm": 49,
+      "vdd": 51,
+      "src": 41,
+      "rtl_afe_rst": 33
+    },
+    "saved_order_verified_against_actual_deck": true
+  },
+  "limits": [
+    "Pending zero result: no baseline, sensitivity or zero periodicity result is claimed at preflight.",
+    "Conditional finite-difference sensitivity for +100 uV versus 0 under the same assumed startup and fixed late window; not a small-signal derivative, formal frequency-dependent gain, or ENOB.",
+    "Both cases must independently satisfy fixed-window stability for the comparison to be described as locally periodic; otherwise report instability without extending or weakening criteria.",
+    "Finite 224 us observation does not rule out slow electrode/servo or other long time constants.",
+    "Ideal electrode common-mode return to generated VCM, assumed board timing, same Q diagnostic MOSCAP model and ideal common substrate remain. No external VCM capacitor is added.",
+    "No full ADC/DWA feedback, PVT/mismatch population, all-MOS stress re-audit, lifetime or manufacturing certification."
+  ],
+  "original_inputs_unchanged": true
+}

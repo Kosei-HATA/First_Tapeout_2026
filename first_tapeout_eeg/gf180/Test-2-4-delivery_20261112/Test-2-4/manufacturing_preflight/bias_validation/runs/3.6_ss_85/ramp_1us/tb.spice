@@ -1,0 +1,39 @@
+* eeg_bias check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice res_ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice mimcap_ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice cap_mim
+.param moscap_corner=1.1
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/sim/moscap_lin.spice
+.include bias.spice
+.temp 85
+.options sparse reltol=1e-5
+VDD VDD 0 PWL(0 0 1u 3.6)
+EVIB1 IB1 0 VDD 0 1
+VIB0 IB0 0 0.0
+VBP1 BP1 0 0
+EVBP0 BP0 0 VDD 0 1
+VBN1 BN1 0 0
+EVBN0 BN0 0 VDD 0 1
+VMBLN BLN BLNL 0
+XLN BLNL BLNL 0 0 nfet_03v3 W=20u L=8u nf=1 m=4
+VMBLP BLPL BLP 0
+XLP BLPL BLPL VDD VDD pfet_03v3 W=20u L=8u nf=1 m=4
+VRP VREFP 0 1.9
+VRN VREFN 0 1.4
+VMIDN IDN IDNL 0
+XDLN IDNL IDNL 0 0 nfet_03v3 W=1u L=20u nf=1 m=10
+VMIDP IDPL IDP 0
+XDLP IDPL IDPL VDD VDD pfet_03v3 W=1u L=20u nf=1 m=10
+VMIQ IQ IQL 0
+VMITST ITST 0 1
+XDQ IQL IQL 0 0 nfet_03v3 W=4u L=2u nf=1 m=8
+XB VBN VBCM BLP BLN VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM VREFP VREFN IB1 IB0 BP1 BP0 BN1 BN0 VDD 0 eeg_bias
+.control
+set noaskquit
+tran 50n 101u 0 50n
+wrdata wave.csv v(vbn) v(vbcm) v(bln) v(blp) v(vbn1) v(vbcm1) v(vnc1) v(vpc1) v(vbpc2) v(vbnc2) v(vcm) i(vmbln) i(vmblp) i(vmiq)
+quit
+.endc
+.end

@@ -1,0 +1,7 @@
+{
+  "circuit_and_settings_byte_identical_to_interrupted": true,
+  "controls_include": "Original immutable zero-case controls.inc; identical copy also retained here",
+  "deck_sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e",
+  "bound_s": 2700,
+  "scope": "Same assumptions; no external VCM capacitor added. Original interrupted artifacts preserved."
+}

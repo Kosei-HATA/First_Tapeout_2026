@@ -1,0 +1,125 @@
+[
+  {
+    "tag": "single_gear_op",
+    "seconds": 2.953834295272827,
+    "exitcode": 0,
+    "aborted": false,
+    "last_time_s": 1e-06,
+    "requested_time_s": 1e-06,
+    "reached_stop": true,
+    "diagnostic": []
+  },
+  {
+    "tag": "bias_gear_op",
+    "seconds": 0.5885586738586426,
+    "exitcode": 0,
+    "aborted": true,
+    "last_time_s": 0.0,
+    "requested_time_s": 2e-06,
+    "reached_stop": false,
+    "diagnostic": [
+      "doAnalyses: TRAN:  Timestep too small; initial timepoint: trouble with node \"e.xb.xcvbn1_3.ec_moscap#branch\""
+    ]
+  },
+  {
+    "tag": "single_gear_uic",
+    "seconds": 30.00455117225647,
+    "timeout_s": 30
+  },
+  {
+    "tag": "bias_gear_uic",
+    "seconds": 1.4131035804748535,
+    "exitcode": 0,
+    "aborted": false,
+    "last_time_s": 2e-06,
+    "requested_time_s": 2e-06,
+    "reached_stop": true,
+    "diagnostic": []
+  },
+  {
+    "tag": "single_gear_ramp",
+    "seconds": 30.00483250617981,
+    "timeout_s": 30
+  },
+  {
+    "tag": "bias_gear_ramp",
+    "seconds": 1.4610834121704102,
+    "exitcode": 0,
+    "aborted": false,
+    "last_time_s": 2e-06,
+    "requested_time_s": 2e-06,
+    "reached_stop": true,
+    "diagnostic": []
+  },
+  {
+    "tag": "single_trap_op",
+    "seconds": 30.005613327026367,
+    "timeout_s": 30
+  },
+  {
+    "tag": "bias_trap_op",
+    "seconds": 0.5892939567565918,
+    "exitcode": 0,
+    "aborted": true,
+    "last_time_s": 0.0,
+    "requested_time_s": 2e-06,
+    "reached_stop": false,
+    "diagnostic": [
+      "doAnalyses: TRAN:  Timestep too small; initial timepoint: trouble with node \"e.xb.xcvbn1_3.ec_moscap#branch\""
+    ]
+  },
+  {
+    "tag": "single_trap_uic",
+    "seconds": 30.003886938095093,
+    "timeout_s": 30
+  },
+  {
+    "tag": "bias_trap_uic",
+    "seconds": 1.5105836391448975,
+    "exitcode": 0,
+    "aborted": false,
+    "last_time_s": 2e-06,
+    "requested_time_s": 2e-06,
+    "reached_stop": true,
+    "diagnostic": []
+  },
+  {
+    "tag": "single_trap_ramp",
+    "seconds": 30.005574941635132,
+    "timeout_s": 30
+  },
+  {
+    "tag": "bias_trap_ramp",
+    "seconds": 1.4365534782409668,
+    "exitcode": 0,
+    "aborted": false,
+    "last_time_s": 2e-06,
+    "requested_time_s": 2e-06,
+    "reached_stop": true,
+    "diagnostic": []
+  },
+  {
+    "tag": "top_gear_op",
+    "seconds": 3.8530640602111816,
+    "exitcode": 0,
+    "aborted": true,
+    "last_time_s": 1.562881469726563e-13,
+    "requested_time_s": 5e-07,
+    "reached_stop": false,
+    "diagnostic": [
+      "doAnalyses: TRAN:  Timestep too small; time = 1.56288e-13, timestep = 1.25e-21: trouble with node \"e.xb.xcvbcm1_1.ec_moscap#branch\""
+    ]
+  },
+  {
+    "tag": "top_trap_op",
+    "seconds": 3.5918407440185547,
+    "exitcode": 0,
+    "aborted": true,
+    "last_time_s": 1.562881469726563e-13,
+    "requested_time_s": 5e-07,
+    "reached_stop": false,
+    "diagnostic": [
+      "doAnalyses: TRAN:  Timestep too small; time = 1.56288e-13, timestep = 1.25e-21: trouble with node \"e.xb.xcvbcm1_1.ec_moscap#branch\""
+    ]
+  }
+]

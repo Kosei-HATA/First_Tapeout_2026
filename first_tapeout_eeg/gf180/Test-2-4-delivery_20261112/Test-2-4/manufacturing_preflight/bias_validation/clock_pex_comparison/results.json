@@ -1,0 +1,382 @@
+{
+  "scope": "Nominal typical27C/3.3V comparison; same real bias and schematic OTA 24MOS loads; isolated clock internal parasitics only.",
+  "cases": [
+    {
+      "variant": "schematic",
+      "status": "finished",
+      "exitcode": 0,
+      "seconds": 12.97,
+      "error_lines": [],
+      "timing_ns": {
+        "dead A->B": 2.363149040345467,
+        "overlap A->B": 5.768963102775856,
+        "margin1 A->B": 0.5067896724739438,
+        "margin2 A->B": 2.0557394594137777,
+        "delay A->B": 0.6631637376783663,
+        "dead B->A": 1.9326692237809284,
+        "overlap B->A": 5.457027211895045,
+        "margin1 B->A": 0.22848237995065276,
+        "margin2 B->A": 2.4573186884156475,
+        "delay B->A": 0.6421555303367712,
+        "cia edge10_90": 0.1938041344262847,
+        "ncia edge10_90": 0.16600862606847364,
+        "cda edge10_90": 0.1915597184686398,
+        "ncda edge10_90": 0.20315898334948918
+      },
+      "finite": true,
+      "positive_sequence_margins": true,
+      "supply_charge_per_edge_pC": 14.055209299338415,
+      "load_dc_V": {
+        "vcm": 1.65000003,
+        "vbn1": 0.850465114,
+        "vnc1": 2.00267942,
+        "vpc1": 1.69797367,
+        "vbcm1": 0.818070261,
+        "xota1.cip": 1.65000003,
+        "xota1.cin": 1.65000003,
+        "xota1.xota.xcore.d1p": 0.942076666,
+        "xota1.xota.xcore.d1n": 0.94207667,
+        "xota1.xota.xcore.n1p": 0.963629818,
+        "xota1.xota.xcore.n1n": 0.963629822,
+        "xota1.xota.xcore.p1p": 2.83348943,
+        "xota1.xota.xcore.p1n": 2.83348942,
+        "xota1.xota.xcore.p2p": 2.80549051,
+        "xota1.xota.xcore.p2n": 2.80549051
+      },
+      "load_ranges_V": {
+        "vcm": [
+          1.61625098,
+          1.87096465
+        ],
+        "vbn1": [
+          0.850434833,
+          0.850535088
+        ],
+        "vnc1": [
+          1.99662738,
+          2.00791039
+        ],
+        "vpc1": [
+          1.67851105,
+          1.71711247
+        ],
+        "vbcm1": [
+          0.818066988,
+          0.818107938
+        ],
+        "xota1.cip": [
+          1.64141524,
+          1.66389202
+        ],
+        "xota1.cin": [
+          1.64141524,
+          1.66389202
+        ],
+        "xota1.xota.xcore.d1p": [
+          0.932050728,
+          0.960438952
+        ],
+        "xota1.xota.xcore.d1n": [
+          0.932050729,
+          0.960438954
+        ],
+        "xota1.xota.xcore.n1p": [
+          0.947967887,
+          0.977890525
+        ],
+        "xota1.xota.xcore.n1n": [
+          0.947967888,
+          0.977890528
+        ],
+        "xota1.xota.xcore.p1p": [
+          2.78558182,
+          2.86933939
+        ],
+        "xota1.xota.xcore.p1n": [
+          2.78558182,
+          2.86933939
+        ],
+        "xota1.xota.xcore.p2p": [
+          2.77366753,
+          2.83643248
+        ],
+        "xota1.xota.xcore.p2n": [
+          2.77366753,
+          2.83643248
+        ]
+      },
+      "delta_vs_schematic_ns": {
+        "dead A->B": 0.0,
+        "overlap A->B": 0.0,
+        "margin1 A->B": 0.0,
+        "margin2 A->B": 0.0,
+        "delay A->B": 0.0,
+        "dead B->A": 0.0,
+        "overlap B->A": 0.0,
+        "margin1 B->A": 0.0,
+        "margin2 B->A": 0.0,
+        "delay B->A": 0.0,
+        "cia edge10_90": 0.0,
+        "ncia edge10_90": 0.0,
+        "cda edge10_90": 0.0,
+        "ncda edge10_90": 0.0
+      }
+    },
+    {
+      "variant": "cap",
+      "status": "finished",
+      "exitcode": 0,
+      "seconds": 31.84,
+      "error_lines": [],
+      "timing_ns": {
+        "dead A->B": 3.4470835928779198,
+        "overlap A->B": 7.889296006724913,
+        "margin1 A->B": 1.0319463748695399,
+        "margin2 A->B": 2.4293600949878997,
+        "delay A->B": 0.9089795568391038,
+        "dead B->A": 2.583639632550314,
+        "overlap B->A": 7.27896135414732,
+        "margin1 B->A": 0.573464682974395,
+        "margin2 B->A": 3.168286283262982,
+        "delay B->A": 0.8712656459263252,
+        "cia edge10_90": 0.21431718284700677,
+        "ncia edge10_90": 0.18813048221431816,
+        "cda edge10_90": 0.20925156333499392,
+        "ncda edge10_90": 0.22076437383582406
+      },
+      "finite": true,
+      "positive_sequence_margins": true,
+      "supply_charge_per_edge_pC": 15.988220359039174,
+      "load_dc_V": {
+        "vcm": 1.65000005,
+        "vbn1": 0.850465114,
+        "vnc1": 2.00267942,
+        "vpc1": 1.69797367,
+        "vbcm1": 0.818070261,
+        "xota1.cip": 1.65000005,
+        "xota1.cin": 1.65000005,
+        "xota1.xota.xcore.d1p": 0.942076669,
+        "xota1.xota.xcore.d1n": 0.942076668,
+        "xota1.xota.xcore.n1p": 0.96362982,
+        "xota1.xota.xcore.n1n": 0.963629819,
+        "xota1.xota.xcore.p1p": 2.83348943,
+        "xota1.xota.xcore.p1n": 2.83348943,
+        "xota1.xota.xcore.p2p": 2.80549051,
+        "xota1.xota.xcore.p2n": 2.80549051
+      },
+      "load_ranges_V": {
+        "vcm": [
+          1.61021863,
+          1.87938845
+        ],
+        "vbn1": [
+          0.850423435,
+          0.85055469
+        ],
+        "vnc1": [
+          1.9963269,
+          2.00820281
+        ],
+        "vpc1": [
+          1.67840263,
+          1.71744601
+        ],
+        "vbcm1": [
+          0.818066338,
+          0.81811056
+        ],
+        "xota1.cip": [
+          1.63902606,
+          1.66697735
+        ],
+        "xota1.cin": [
+          1.63902606,
+          1.66697735
+        ],
+        "xota1.xota.xcore.d1p": [
+          0.930164552,
+          0.962672855
+        ],
+        "xota1.xota.xcore.d1n": [
+          0.930164552,
+          0.962672855
+        ],
+        "xota1.xota.xcore.n1p": [
+          0.947166988,
+          0.97871065
+        ],
+        "xota1.xota.xcore.n1n": [
+          0.947166988,
+          0.978710649
+        ],
+        "xota1.xota.xcore.p1p": [
+          2.78541278,
+          2.87005321
+        ],
+        "xota1.xota.xcore.p1n": [
+          2.78541278,
+          2.87005321
+        ],
+        "xota1.xota.xcore.p2p": [
+          2.77348836,
+          2.83697939
+        ],
+        "xota1.xota.xcore.p2n": [
+          2.77348836,
+          2.83697939
+        ]
+      },
+      "delta_vs_schematic_ns": {
+        "dead A->B": 1.0839345525324529,
+        "overlap A->B": 2.1203329039490573,
+        "margin1 A->B": 0.5251567023955961,
+        "margin2 A->B": 0.37362063557412206,
+        "delay A->B": 0.24581581916073747,
+        "dead B->A": 0.6509704087693857,
+        "overlap B->A": 1.8219341422522755,
+        "margin1 B->A": 0.3449823030237422,
+        "margin2 B->A": 0.7109675948473346,
+        "delay B->A": 0.22911011558955396,
+        "cia edge10_90": 0.020513048420722074,
+        "ncia edge10_90": 0.022121856145844526,
+        "cda edge10_90": 0.01769184486635411,
+        "ncda edge10_90": 0.017605390486334888
+      }
+    },
+    {
+      "variant": "rc",
+      "status": "finished",
+      "exitcode": "timeout_300s",
+      "seconds": 300.05,
+      "error_lines": []
+    },
+    {
+      "variant": "rc_klu",
+      "status": "finished",
+      "exitcode": 0,
+      "seconds": 133.81,
+      "only_change": ".options sparse -> klu",
+      "error_lines": [],
+      "timing_ns": {
+        "dead A->B": 3.409014969606303,
+        "overlap A->B": 7.9139653481716286,
+        "margin1 A->B": 0.9441525236119523,
+        "margin2 A->B": 2.3894127396669633,
+        "delay A->B": 0.9269850545507523,
+        "dead B->A": 2.5489126129188677,
+        "overlap B->A": 7.304720329541068,
+        "margin1 B->A": 0.4736425632570376,
+        "margin2 B->A": 3.113849166273751,
+        "delay B->A": 0.8933099851026423,
+        "cia edge10_90": 0.2539003594478326,
+        "ncia edge10_90": 0.24495551095413176,
+        "cda edge10_90": 0.25419145537330484,
+        "ncda edge10_90": 0.3077642760086201
+      },
+      "finite": true,
+      "positive_sequence_margins": true,
+      "supply_charge_per_edge_pC": 16.1003159032965,
+      "load_dc_V": {
+        "vcm": 1.65000005,
+        "vbn1": 0.850465114,
+        "vnc1": 2.00267942,
+        "vpc1": 1.69797367,
+        "vbcm1": 0.818070261,
+        "xota1.cip": 1.65000005,
+        "xota1.cin": 1.65000005,
+        "xota1.xota.xcore.d1p": 0.942076663,
+        "xota1.xota.xcore.d1n": 0.942076674,
+        "xota1.xota.xcore.n1p": 0.963629814,
+        "xota1.xota.xcore.n1n": 0.963629825,
+        "xota1.xota.xcore.p1p": 2.83348943,
+        "xota1.xota.xcore.p1n": 2.83348942,
+        "xota1.xota.xcore.p2p": 2.80549052,
+        "xota1.xota.xcore.p2n": 2.80549051
+      },
+      "load_ranges_V": {
+        "vcm": [
+          1.61082022,
+          1.87130229
+        ],
+        "vbn1": [
+          0.850425747,
+          0.850550686
+        ],
+        "vnc1": [
+          1.99641275,
+          2.00794651
+        ],
+        "vpc1": [
+          1.67989925,
+          1.71666289
+        ],
+        "vbcm1": [
+          0.818066397,
+          0.818108958
+        ],
+        "xota1.cip": [
+          1.63957588,
+          1.66597626
+        ],
+        "xota1.cin": [
+          1.63957588,
+          1.66597626
+        ],
+        "xota1.xota.xcore.d1p": [
+          0.929969023,
+          0.962213341
+        ],
+        "xota1.xota.xcore.d1n": [
+          0.929969025,
+          0.962213345
+        ],
+        "xota1.xota.xcore.n1p": [
+          0.947386364,
+          0.977991592
+        ],
+        "xota1.xota.xcore.n1n": [
+          0.947386367,
+          0.977991601
+        ],
+        "xota1.xota.xcore.p1p": [
+          2.78847816,
+          2.86821189
+        ],
+        "xota1.xota.xcore.p1n": [
+          2.78847816,
+          2.86821189
+        ],
+        "xota1.xota.xcore.p2p": [
+          2.77593945,
+          2.83571489
+        ],
+        "xota1.xota.xcore.p2n": [
+          2.77593945,
+          2.83571488
+        ]
+      },
+      "delta_vs_schematic_ns": {
+        "dead A->B": 1.0458659292608359,
+        "overlap A->B": 2.145002245395773,
+        "margin1 A->B": 0.43736285113800855,
+        "margin2 A->B": 0.33367328025318566,
+        "delay A->B": 0.26382131687238597,
+        "dead B->A": 0.6162433891379393,
+        "overlap B->A": 1.8476931176460232,
+        "margin1 B->A": 0.2451601833063848,
+        "margin2 B->A": 0.6565304778581034,
+        "delay B->A": 0.25115445476587106,
+        "cia edge10_90": 0.06009622502154793,
+        "ncia edge10_90": 0.07894688488565813,
+        "cda edge10_90": 0.06263173690466503,
+        "ncda edge10_90": 0.10460529265913093
+      }
+    }
+  ],
+  "limits": [
+    "External TG diffusion and resistance parameters are schematic approximations.",
+    "ADC input pair held at common mode, not closed-loop signal trajectories.",
+    "Upper-level output routes, coupling and supply distribution excluded.",
+    "No minimum guardband specification or full-chip timing signoff."
+  ]
+}

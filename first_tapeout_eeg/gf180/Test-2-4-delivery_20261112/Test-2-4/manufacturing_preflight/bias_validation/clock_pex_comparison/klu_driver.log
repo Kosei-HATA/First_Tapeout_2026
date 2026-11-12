@@ -1,0 +1,1 @@
+{'variant': 'rc_klu', 'status': 'finished', 'exitcode': 0, 'seconds': 133.81, 'only_change': '.options sparse -> klu'}

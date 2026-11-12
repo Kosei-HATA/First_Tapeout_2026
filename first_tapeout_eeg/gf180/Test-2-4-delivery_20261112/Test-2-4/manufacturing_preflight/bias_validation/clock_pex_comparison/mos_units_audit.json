@@ -1,0 +1,79 @@
+{
+  "cap": {
+    "count": 486,
+    "ranges_SI": {
+      "w": [
+        1e-06,
+        9.999999999999999e-06
+      ],
+      "l": [
+        2.8e-07,
+        4e-06
+      ],
+      "ad": [
+        2.6e-13,
+        4.5e-12
+      ],
+      "as": [
+        2.6e-13,
+        4.5e-12
+      ],
+      "pd": [
+        1.5199999999999998e-06,
+        2.0899999999999996e-05
+      ],
+      "ps": [
+        1.5199999999999998e-06,
+        2.0899999999999996e-05
+      ],
+      "m": [
+        1,
+        1
+      ],
+      "nf": [
+        1,
+        1
+      ]
+    }
+  },
+  "rc": {
+    "count": 486,
+    "ranges_SI": {
+      "w": [
+        1e-06,
+        9.999999999999999e-06
+      ],
+      "l": [
+        2.8e-07,
+        4e-06
+      ],
+      "ad": [
+        2.6e-13,
+        4.5e-12
+      ],
+      "as": [
+        2.6e-13,
+        4.5e-12
+      ],
+      "pd": [
+        1.5199999999999998e-06,
+        2.0899999999999996e-05
+      ],
+      "ps": [
+        1.5199999999999998e-06,
+        2.0899999999999996e-05
+      ],
+      "m": [
+        1,
+        1
+      ],
+      "nf": [
+        1,
+        1
+      ]
+    }
+  },
+  "parameter_identity": true,
+  "all_dimension_bounds_sane": true,
+  "note": "Ranges checked against emitted physical finger sizes. No unit scaling/conversion of extracted model parameters. Wrapper defaults nf=m=1. This is sanity, not foundry capacitance accuracy qualification."
+}

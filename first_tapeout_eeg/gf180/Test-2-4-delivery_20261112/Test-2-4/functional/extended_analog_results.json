@@ -1,0 +1,44 @@
+[
+  {
+    "test": "afe_actual_bias",
+    "exitcode": 0,
+    "seconds": 3.5,
+    "log": "afe_actual_bias.log"
+  },
+  {
+    "test": "quantizer_op_typical",
+    "exitcode": 0,
+    "seconds": 0.8,
+    "log": "quantizer_op_typical.log"
+  },
+  {
+    "test": "quantizer_delay_typical",
+    "exitcode": 0,
+    "seconds": 7.9,
+    "log": "quantizer_delay_typical.log"
+  },
+  {
+    "test": "quantizer_op_ss",
+    "exitcode": 0,
+    "seconds": 1.3,
+    "log": "quantizer_op_ss.log"
+  },
+  {
+    "test": "quantizer_delay_ss",
+    "exitcode": 0,
+    "seconds": 8.8,
+    "log": "quantizer_delay_ss.log"
+  },
+  {
+    "test": "quantizer_op_ff",
+    "exitcode": 0,
+    "seconds": 1.6,
+    "log": "quantizer_op_ff.log"
+  },
+  {
+    "test": "quantizer_delay_ff",
+    "exitcode": 0,
+    "seconds": 10.7,
+    "log": "quantizer_delay_ff.log"
+  }
+]

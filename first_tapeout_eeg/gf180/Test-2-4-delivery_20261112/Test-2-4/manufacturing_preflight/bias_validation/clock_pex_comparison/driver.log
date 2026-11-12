@@ -1,0 +1,3 @@
+{'variant': 'schematic', 'status': 'finished', 'exitcode': 0, 'seconds': 12.97}
+{'variant': 'cap', 'status': 'finished', 'exitcode': 0, 'seconds': 31.84}
+{'variant': 'rc', 'status': 'finished', 'exitcode': 'timeout_300s', 'seconds': 300.05}

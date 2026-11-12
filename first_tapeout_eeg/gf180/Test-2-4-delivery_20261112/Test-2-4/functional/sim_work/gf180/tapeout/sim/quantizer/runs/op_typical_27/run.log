@@ -1,0 +1,44 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_qcmp check
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+v(vbq) = 2.277808e+00
+v(xc.vop) = 1.200827e+00
+v(xc.von) = 1.200827e+00
+v(xc.sa) = 2.479290e+00
+@m.xc.xta.m0[id] = 3.915712e-06
+@m.xc.xa1.m0[gm] = 2.820833e-05
+@m.xc.xa1.m0[cgg] = 7.448956e-14
+i(vavdd) = -3.92314e-05
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 121
+gdc                 =  1.93456e+01
+f3db                =  1.43675e+07
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 121
+
+No. of Data Rows : 1
+inoise_total = 7.517643e-04
+onoise_total = 1.988744e-03
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed

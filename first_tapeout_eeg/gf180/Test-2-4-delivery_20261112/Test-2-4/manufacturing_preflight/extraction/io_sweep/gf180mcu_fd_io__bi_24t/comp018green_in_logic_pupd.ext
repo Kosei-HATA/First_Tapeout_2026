@@ -1,0 +1,139 @@
+timestamp 1622965154
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use comp018green_std_nand2 comp018green_std_nand2_0 1 0 2168 0 -1 2153
+use comp018green_std_nand2 comp018green_std_nand2_1 1 0 1202 0 -1 2153
+use comp018green_std_xor2 comp018green_std_xor2_0 1 0 511 0 1 -3277
+port "PD_IN" 5 2185 -2041 2185 -2041 m2
+port "VSS" 4 755 -3232 755 -3232 m1
+port "VDD" 3 781 -825 781 -825 m1
+port "PDB_OUT" 2 2840 1095 2840 1095 m1
+port "PUB_OUT" 1 1861 1095 1861 1095 m1
+node "PD_IN" 0 0 2185 -2041 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VSS" 0 0 755 -3232 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VDD" 0 0 781 -825 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "PDB_OUT" 0 0 2840 1095 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "PUB_OUT" 0 0 1861 1095 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "m1_2282_n2083#" 5 1652.36 2282 -2083 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 182704 5112 133304 3660 0 0 0 0 0 0
+node "m1_1818_791#" 5 1468.11 1818 791 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 129348 1940 301977 8126 0 0 0 0 0 0
+node "m1_1299_n1325#" 4 722.981 1299 -1325 m1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 27360 1024 198512 5376 0 0 0 0 0 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "m1_2282_n2083#" "m1_1299_n1325#" 59.6386
+cap "m1_2282_n2083#" "m1_1818_791#" 63.7333
+cap "m1_1299_n1325#" "m1_1818_791#" 547.096
+cap "PD_IN" "comp018green_std_xor2_0/Z" 0.0312815
+cap "comp018green_std_xor2_0/A" "comp018green_std_xor2_0/a_878_310#" 0.0713328
+cap "PD_IN" "comp018green_std_xor2_0/A" 0.159743
+cap "PD_IN" "comp018green_std_nand2_0/VDD" 0.394325
+cap "comp018green_std_xor2_0/A" "comp018green_std_xor2_0/Z" 0.51153
+cap "VSS" "PD_IN" 36.5009
+cap "comp018green_std_xor2_0/a_878_310#" "PD_IN" 4.68587
+cap "VSS" "VDD" -10.6155
+cap "PD_IN" "comp018green_std_nand2_0/VDD" 1.00436
+cap "PD_IN" "VDD" 101.725
+cap "comp018green_std_xor2_0/Z" "comp018green_std_nand2_0/VDD" 3.75535
+cap "comp018green_std_xor2_0/a_602_354#" "comp018green_std_xor2_0/a_878_310#" -0.367069
+cap "PD_IN" "comp018green_std_nand2_0/VDD" 2.13512
+cap "comp018green_std_nand2_0/VDD" "VDD" 43.1465
+cap "comp018green_std_xor2_0/Z" "PD_IN" 8.85353
+cap "comp018green_std_nand2_1/A" "comp018green_std_nand2_0/VDD" 6.56552
+cap "comp018green_std_xor2_0/Z" "VDD" 157.546
+cap "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/Z" 83.144
+cap "comp018green_std_nand2_1/A" "PD_IN" 23.2644
+cap "comp018green_std_xor2_0/a_602_354#" "comp018green_std_nand2_0/VDD" 0.267361
+cap "comp018green_std_nand2_1/A" "VDD" 132.012
+cap "comp018green_std_xor2_0/Z" "comp018green_std_xor2_0/a_602_354#" 114.494
+cap "comp018green_std_xor2_0/a_602_354#" "PD_IN" -1.76445
+cap "comp018green_std_xor2_0/a_602_354#" "VDD" -5.45419
+cap "comp018green_std_xor2_0/Z" "comp018green_std_xor2_0/a_878_310#" 4.95145
+cap "comp018green_std_xor2_0/a_878_310#" "comp018green_std_nand2_0/VDD" 0.163596
+cap "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/a_602_354#" 120.723
+cap "comp018green_std_xor2_0/a_878_310#" "comp018green_std_nand2_0/A" 0.125989
+cap "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/a_878_310#" 4.7223
+cap "comp018green_std_nand2_0/VDD" "VDD" 56.6612
+cap "comp018green_std_nand2_1/A" "VDD" 0.273718
+cap "comp018green_std_nand2_0/VDD" "PD_IN" 1.8567
+cap "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/a_602_354#" 2.61097
+cap "PD_IN" "comp018green_std_xor2_0/a_878_310#" 4.32998
+cap "comp018green_std_nand2_1/A" "PD_IN" -2.78126
+cap "comp018green_std_nand2_0/A" "comp018green_std_xor2_0/a_878_310#" 0.514912
+cap "VDD" "comp018green_std_xor2_0/a_602_354#" -0.605117
+cap "VDD" "comp018green_std_xor2_0/Z" 0.184687
+cap "PD_IN" "VDD" 450.382
+cap "comp018green_std_xor2_0/Z" "comp018green_std_xor2_0/a_602_354#" 0.0335362
+cap "comp018green_std_nand2_0/VDD" "comp018green_std_xor2_0/a_878_310#" 0.999968
+cap "PD_IN" "comp018green_std_xor2_0/a_602_354#" 8.88178e-16
+cap "PD_IN" "comp018green_std_xor2_0/Z" -0.0493557
+cap "VSS" "VDD" -5.13443
+cap "VDD" "comp018green_std_nand2_0/A" 0.704703
+cap "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/a_602_354#" 0.131373
+cap "VDD" "comp018green_std_nand2_1/A" 2.44217
+cap "PUB_OUT" "comp018green_std_nand2_0/VDD" 0.281132
+cap "PUB_OUT" "PDB_OUT" 2.80822
+cap "comp018green_std_nand2_0/A" "comp018green_std_nand2_1/A" 28.3588
+cap "VDD" "comp018green_std_nand2_0/VDD" 36.6807
+cap "PD_IN" "comp018green_std_nand2_1/A" 1.17142
+cap "comp018green_std_nand2_0/A" "comp018green_std_nand2_0/VDD" 215.484
+cap "comp018green_std_xor2_0/a_878_310#" "comp018green_std_nand2_0/A" 0.125989
+cap "PUB_OUT" "comp018green_std_nand2_0/A" 25.6978
+cap "comp018green_std_nand2_1/A" "comp018green_std_nand2_0/VDD" 303.966
+cap "PDB_OUT" "comp018green_std_nand2_1/A" 2.01852
+cap "comp018green_std_nand2_0/VSS" "comp018green_std_nand2_0/VDD" -2.08582
+cap "comp018green_std_nand2_0/A" "comp018green_std_xor2_0/a_602_354#" 0.0431653
+cap "PUB_OUT" "comp018green_std_nand2_1/A" 59.9708
+cap "comp018green_std_nand2_0/VDD" "PDB_OUT" 1.08034
+cap "comp018green_std_nand2_0/A" "PDB_OUT" 2.09797
+cap "comp018green_std_nand2_0/A" "comp018green_std_nand2_0/VDD" 157.5
+cap "comp018green_std_nand2_0/A" "comp018green_std_xor2_0/a_602_354#" 0.0882073
+cap "PUB_OUT" "comp018green_std_nand2_0/VDD" -3.64129
+cap "comp018green_std_nand2_0/VDD" "VDD" 63.127
+cap "PUB_OUT" "PDB_OUT" 2.80822
+cap "comp018green_std_nand2_1/A" "comp018green_std_nand2_0/VDD" 1.01071
+cap "comp018green_std_nand2_0/A" "VDD" 3.7399
+cap "PD_IN" "comp018green_std_nand2_0/VDD" 300.902
+cap "PD_IN" "PDB_OUT" 96.8788
+cap "comp018green_std_nand2_0/A" "PD_IN" 4.47168
+cap "comp018green_std_nand2_0/VDD" "comp018green_std_nand2_0/VSS" -8.60905
+cap "comp018green_std_nand2_0/A" "comp018green_std_xor2_0/a_878_310#" 0.514912
+cap "PUB_OUT" "PD_IN" 2.24717
+cap "PD_IN" "VDD" 2.25046
+cap "comp018green_std_nand2_1/A" "PD_IN" 3.40954
+cap "comp018green_std_nand2_1/a_476_281#" "comp018green_std_nand2_0/A" 14.0727
+cap "comp018green_std_nand2_1/A" "comp018green_std_nand2_0/VSS" 14.8175
+cap "comp018green_std_nand2_1/A" "comp018green_std_nand2_0/A" 41.8014
+cap "PUB_OUT" "comp018green_std_nand2_0/A" 48.5652
+cap "PUB_OUT" "PDB_OUT" 2.16371
+cap "comp018green_std_nand2_0/VDD" "comp018green_std_nand2_0/VSS" -5.15294
+cap "comp018green_std_nand2_0/VSS" "comp018green_std_nand2_0/A" 65.6097
+cap "comp018green_std_nand2_0/VDD" "comp018green_std_nand2_0/A" 12.2757
+cap "PUB_OUT" "comp018green_std_nand2_1/A" 2.38988
+cap "comp018green_std_nand2_0/B" "PDB_OUT" 21.8213
+cap "comp018green_std_nand2_0/B" "comp018green_std_nand2_0/VSS" 0.178104
+cap "PDB_OUT" "comp018green_std_nand2_0/VDD" -0.151867
+cap "comp018green_std_nand2_0/VDD" "comp018green_std_nand2_0/VSS" -18.3844
+cap "comp018green_std_nand2_0/A" "PDB_OUT" 2.03387
+cap "comp018green_std_nand2_0/A" "comp018green_std_nand2_0/VSS" 50.5399
+cap "comp018green_std_nand2_0/B" "comp018green_std_nand2_1/A" -0.00750602
+cap "PUB_OUT" "comp018green_std_nand2_0/VDD" -9.6045
+cap "comp018green_std_nand2_0/A" "PUB_OUT" 91.5791
+cap "PUB_OUT" "PDB_OUT" 5.8582
+cap "comp018green_std_nand2_0/A" "comp018green_std_nand2_0/B" -9.69335
+merge "comp018green_std_nand2_1/B" "comp018green_std_nand2_0/A" -916.705 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -22032 -920 0 -152 0 0 0 0 0 0
+merge "comp018green_std_nand2_0/A" "comp018green_std_xor2_0/Z"
+merge "comp018green_std_xor2_0/Z" "m1_1818_791#"
+merge "comp018green_std_xor2_0/VSS" "VSS" -487.818 0 0 0 0 0 0 -92700 -2240 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -68544 -2152 0 0 0 0 0 0 0 0
+merge "VSS" "comp018green_std_nand2_1/VSS"
+merge "comp018green_std_nand2_1/VSS" "comp018green_std_nand2_0/VSS"
+merge "comp018green_std_nand2_0/VSS" "VSUBS"
+merge "comp018green_std_nand2_0/B" "comp018green_std_xor2_0/B" -803.78 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -14892 -714 0 0 0 0 0 0 0 0
+merge "comp018green_std_xor2_0/B" "PD_IN"
+merge "PD_IN" "m1_2282_n2083#"
+merge "comp018green_std_nand2_1/Z" "PUB_OUT" -21.8973 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "comp018green_std_nand2_0/Z" "PDB_OUT" -19.9393 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "comp018green_std_nand2_1/A" "comp018green_std_xor2_0/A" -595.939 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -10488 -580 0 0 0 0 0 0 0 0
+merge "comp018green_std_xor2_0/A" "m1_1299_n1325#"
+merge "comp018green_std_xor2_0/VDD" "VDD" -329.681 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "comp018green_std_nand2_1/VDD" "comp018green_std_nand2_0/VDD" -1523.82 -331264 -3100 0 0 -92700 -2240 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -68544 -2152 0 0 0 0 0 0 0 0

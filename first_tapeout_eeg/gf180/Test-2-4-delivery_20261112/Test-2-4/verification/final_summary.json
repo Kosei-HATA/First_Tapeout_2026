@@ -1,0 +1,85 @@
+{
+  "name": "Test-2-4",
+  "completed_utc": "2026-11-11T01:35:15.715642+00:00",
+  "gds_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "input_files": [
+    {
+      "path": "C:\\projects\\ft\\test1x\\chip_top_fill_r6_20261026.gds",
+      "sha256": "1343e9cc55cb2020f6213937c4622f2a126db6381ae66615719398aa6a027529",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\gf180\\tapeout\\layout\\chip_lay.py",
+      "sha256": "f249ca7427153ae5d5ab46027f890dc1c99c5d81a86a5ede4049cbed7a8a5ad0",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\projects\\ft\\test1x\\Test2-3\\gds\\Test2-3.gds",
+      "sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c",
+      "unchanged": true
+    }
+  ],
+  "full_drc_pass": true,
+  "drc_marker_count": 0,
+  "completed_decks": 177,
+  "missing_baseline_decks": [],
+  "extra_decks": [],
+  "rules_waived": false,
+  "core_lvs_pass": true,
+  "probe_connectivity_pass": true,
+  "probe_count": 296,
+  "net_count": 20,
+  "pad_audit": {
+    "input": "Test2-3",
+    "candidate": "Test-2-4",
+    "checks": {
+      "all_other_geometry_hierarchy_and_properties_unchanged": true,
+      "comp_overlap_bond_opening_um2": 0.0,
+      "poly2_overlap_bond_opening_um2": 0.0,
+      "top_metal_2um_enclosure_uncovered_area_um2": 0.0,
+      "focused_CUP_marker_count": 0
+    },
+    "addition_by_layer": [
+      {
+        "layer": 36,
+        "area_um2": 561.6,
+        "single_component_before": true,
+        "single_component_after": true
+      },
+      {
+        "layer": 42,
+        "area_um2": 555.1416,
+        "single_component_before": true,
+        "single_component_after": true
+      },
+      {
+        "layer": 46,
+        "area_um2": 555.1416,
+        "single_component_before": true,
+        "single_component_after": true
+      }
+    ],
+    "bond_opening_count": 72,
+    "bond_opening_area_um2": 259200.0,
+    "limits": "No mechanical bonding, ESD, electromigration/current, parasitic or foundry signoff. CUP applicability depends on assembly conditions."
+  },
+  "digital_pass_count": 15,
+  "digital_fail_count": 0,
+  "analog_process_success_count": 13,
+  "adc_clock_minimum_margin_ns": 0.16,
+  "functional_report": "functional/functional_summary.json",
+  "release_status": "Public DRC clean candidate; NOT foundry/assembly or full-chip analog performance signoff. Custom non-CUP bondpad metal requires approval.",
+  "unverified": [
+    "full-chip PEX",
+    "supply variation",
+    "mismatch/Monte Carlo",
+    "end-to-end ADC ENOB/noise",
+    "pad parasitics and package",
+    "EM/IR",
+    "full pad-ring device LVS",
+    "assembly/bonding mechanical qualification",
+    "ESD robustness",
+    "CUP applicability and manufacturer approval",
+    "specified analog accuracy and timing guardbands"
+  ]
+}

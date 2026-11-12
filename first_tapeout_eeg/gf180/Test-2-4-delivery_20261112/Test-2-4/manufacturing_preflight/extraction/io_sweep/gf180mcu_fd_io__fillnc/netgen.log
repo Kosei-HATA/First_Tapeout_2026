@@ -1,0 +1,24 @@
+Netgen 1.5.321 compiled on Mon Jun 22 11:31:27 AM CEST 2026
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file actual_normalized.spice for actual_normalized.spice gf180mcu_fd_io__fillnc
+Reading netlist file reference.spice for reference.spice gf180mcu_fd_io__fillnc
+
+Reading setup file /work/Test-2-4/manufacturing_preflight/extraction/io_asig_magic/strict_setup.tcl
+
+Comparison output logged to file comparison.log
+Logging to file "comparison.log" enabled
+
+Contents of circuit 1:  Circuit: 'gf180mcu_fd_io__fillnc'
+Circuit gf180mcu_fd_io__fillnc contains 0 device instances.
+Circuit contains 0 nets, and 78 disconnected pins.
+Contents of circuit 2:  Circuit: 'gf180mcu_fd_io__fillnc'
+Circuit gf180mcu_fd_io__fillnc contains 0 device instances.
+Circuit contains 0 nets, and 4 disconnected pins.
+
+Circuit gf180mcu_fd_io__fillnc contains no devices.
+
+Final result: 
+Verify:  cell reference.spice has no elements and/or nodes.  Not checked.
+Logging to file "comparison.log" disabled
+LVS Done.

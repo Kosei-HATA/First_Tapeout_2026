@@ -1,0 +1,35 @@
+* eeg_qcmp check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice ff
+.lib /work/Test-2-4/functional/models/sm141064.ngspice res_ff
+.lib /work/Test-2-4/functional/models/sm141064.ngspice mimcap_ff
+.lib /work/Test-2-4/functional/models/sm141064.ngspice cap_mim
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_quantizer.spice
+.temp -20
+.options sparse reltol=1e-4 abstol=1e-12 vntol=1e-7
+VAVDD AVDD 0 3.3
+VDVDD DVDD 0 3.3
+IQ VBQ 0 3.31291847133758e-05
+XQP VBQ VBQ AVDD AVDD pfet_03v3 W=8u L=2u nf=1 m=8
+CVBQ VBQ 0 2p
+VRP RP 0 {1.65+THR/2}
+VRN RN 0 {1.65-THR/2}
+.param THR=0.015625
+VCLK CLK 0 0
+VINP INP 0 DC {1.65+THR/2} AC 0.5
+VINN INN 0 DC {1.65-THR/2} AC -0.5
+XC INP INN RP RN CLK TH VBQ AVDD 0 DVDD 0 eeg_qcmp
+.control
+op
+print v(vbq) v(xc.vop) v(xc.von) v(xc.sa) @m.xc.xta.m0[id] @m.xc.xa1.m0[gm] @m.xc.xa1.m0[cgg] i(vavdd)
+ac dec 20 1k 1g
+let g = vdb(xc.vop, xc.von)
+meas ac gdc find g at=1k
+let g3 = gdc - 3
+meas ac f3db when g=g3
+noise v(xc.vop, xc.von) vinp dec 20 1k 1g 1
+setplot noise2
+print inoise_total onoise_total
+quit
+.endc
+.end

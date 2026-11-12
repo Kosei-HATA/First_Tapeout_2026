@@ -1,0 +1,234 @@
+{
+  "assumptions": {
+    "AVDD_DVDD_V": 3.3,
+    "ramp_s": 1e-06,
+    "references_V": [
+      1.9,
+      1.4
+    ],
+    "MCLK_start_s": 2e-06,
+    "RESET_N_release_s": 3e-06,
+    "SPI_Hz": 2000000.0,
+    "CONTROL_write": "0x20 0x02 0x64; only AFE_RST bit4 cleared from reset0x74",
+    "analog_logic_slew_s": 5e-10,
+    "AFE_reset_observed_release_s": 2.1104006000000003e-05,
+    "input_differential_step_s": 2.8916506000000003e-05,
+    "input_differential_step_V": 0.0001,
+    "electrode_common_mode": "Internally generated VCM; no independent external electrode model",
+    "VIT_V": 1
+  },
+  "mapping": {
+    "XB": {
+      "VBN": "VBN",
+      "VBCM": "VBCM",
+      "BLP": "BLP",
+      "BLN": "BLN",
+      "VBN1": "VBN1",
+      "VBCM1": "VBCM1",
+      "VNC1": "VNC1",
+      "VPC1": "VPC1",
+      "VBPC2": "VBPC2",
+      "VBNC2": "VBNC2",
+      "IDP": "IDP",
+      "IDN": "IDN",
+      "IQ": "IQ",
+      "ITST": "ITST",
+      "VCM": "VCM",
+      "VREFP": "VRP",
+      "VREFN": "VRN",
+      "IB1": "RTL_IB1",
+      "IB0": "RTL_IB0",
+      "BP1": "RTL_BP1",
+      "BP0": "RTL_BP0",
+      "BN1": "RTL_BN1",
+      "BN0": "RTL_BN0",
+      "VDD": "VDD",
+      "VSS": "0"
+    },
+    "XA": {
+      "ELP": "ELP",
+      "ELN": "ELN",
+      "OUTP": "OUTP",
+      "OUTN": "OUTN",
+      "VCM": "VCM",
+      "VBN": "VBN",
+      "VBCM": "VBCM",
+      "BLP": "BLP",
+      "BLN": "BLN",
+      "RST": "RST",
+      "CIA": "CIA",
+      "NCIA": "NCIA",
+      "CIB": "CIB",
+      "NCIB": "NCIB",
+      "CDA": "CDA",
+      "NCDA": "NCDA",
+      "CDB": "CDB",
+      "NCDB": "NCDB",
+      "OFPH": "OFPH",
+      "OFS": "RTL_OFS",
+      "OFM0": "RTL_OFM0",
+      "OFM1": "RTL_OFM1",
+      "OFM2": "RTL_OFM2",
+      "OFM3": "RTL_OFM3",
+      "OFM4": "RTL_OFM4",
+      "OFM5": "RTL_OFM5",
+      "OFM6": "RTL_OFM6",
+      "OFM7": "RTL_OFM7",
+      "OFM8": "RTL_OFM8",
+      "OFM9": "RTL_OFM9",
+      "OFEN0": "RTL_OFEN0",
+      "OFEN1": "RTL_OFEN1",
+      "OFEN2": "RTL_OFEN2",
+      "OFEN3": "RTL_OFEN3",
+      "CPF0": "RTL_CPF0",
+      "CPF1": "RTL_CPF1",
+      "CPF2": "RTL_CPF2",
+      "CPF3": "RTL_CPF3",
+      "VDD": "VDD",
+      "VSS": "0"
+    }
+  },
+  "saved_nodes": [
+    "bln",
+    "blp",
+    "cda",
+    "cdb",
+    "cia",
+    "cib",
+    "eln",
+    "elp",
+    "ncda",
+    "ncdb",
+    "ncia",
+    "ncib",
+    "ofph",
+    "outn",
+    "outp",
+    "rst",
+    "rtl_afe_rst",
+    "rtl_blank",
+    "rtl_chop",
+    "rtl_chop_out",
+    "src",
+    "vbcm",
+    "vbn",
+    "vclk",
+    "vcm",
+    "vdd",
+    "xa.inn",
+    "xa.inp",
+    "xa.oni",
+    "xa.opi",
+    "xa.scn",
+    "xa.scn2",
+    "xa.scp",
+    "xa.scp2",
+    "xa.wn",
+    "xa.wp",
+    "xa.xoff.xon.nph",
+    "xa.xoff.xon.sb",
+    "xa.xoff.xon.xr",
+    "xa.xoff.xop.nph",
+    "xa.xoff.xop.sb",
+    "xa.xoff.xop.xr",
+    "xc.a3",
+    "xc.an3",
+    "xc.b3",
+    "xc.bn3",
+    "xc.cda1",
+    "xc.cdai",
+    "xc.cdb1",
+    "xc.cdbi",
+    "xc.ofph1",
+    "xc.ofphb",
+    "xc.ofphi",
+    "xc.rstb",
+    "xc.xol1.m1",
+    "xc.xol2.m1"
+  ],
+  "connected_RTL": [
+    "CHOP",
+    "CHOP_OUT",
+    "CHOP_BLANK",
+    "AFE_RST",
+    "CHOP_EN",
+    "CPF_TRIM",
+    "AFE_IBIAS",
+    "BTRIM_P",
+    "BTRIM_N",
+    "OFM",
+    "OFS",
+    "OFEN"
+  ],
+  "unused_RTL": [
+    "ADC_RST_N observed only",
+    "TH_CAPTURE",
+    "DAC_LOAD",
+    "DWA_EN",
+    "CMP_STROBE",
+    "DAC_CLK",
+    "CHOP1",
+    "TEST_CFG",
+    "RAW outputs",
+    "MISO and FIFO outputs"
+  ],
+  "fixed_or_omitted": [
+    "CODE=16 for RTL input; no ADC/DWA analog loop",
+    "No pad/board or finite substrate/package model",
+    "No system decimation/ENOB test"
+  ],
+  "sources": [
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_adc_dig.sv",
+      "sha256": "82fc82b46e1bb335a2f73ea5aee91d4258a6aa71d2cf4b816c26e2786c2b2570"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_chop1.sv",
+      "sha256": "c8f36674bc055ae40e9bd722495510ead92ea1fba16b2427a26d02fc50b77b2b"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_cic3.sv",
+      "sha256": "67ffc1ccaffe6c2e741be3e9057eaee402a0d8047290f04e35b9b8f65cda2a31"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_clkgen.sv",
+      "sha256": "51c4e81eda444c8f6edae0ea88244da8ebae5a6c6267ab45629fef54e5af2a9f"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_sys.sv",
+      "sha256": "a717c68a4f231838bae71b9a5fec6f846e1d19309498c1ea69f9fb3d97b152d1"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_top.sv",
+      "sha256": "f8a990052d635acd4fc7fa5b06fdd3002886e683bcf1b8540cc51554446e3d0b"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_dwa.sv",
+      "sha256": "58031599995b3c5e0bdc85cfa682d4d4819c03490991ae9da4bf853d0ab33547"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_fifo.sv",
+      "sha256": "ec39e2c5dc82339f2002c1d94497849e34383fec7fecb9fda6ab358480d23450"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_raw.sv",
+      "sha256": "a0322a1165b03e9008c02e0a723b4c7c3064091958f5f6b43d05a3b9bbba6547"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_regs.sv",
+      "sha256": "cc3c9a7ed429278d117f8aaff7d55458e92ba17037f4e280b312feb65152042c"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_rnd_sat.sv",
+      "sha256": "9de2c72fb5d192a4efbbf8ee3ee57e4ed6bfe8c159afb06a3d0b0a61bea22ff8"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_spi_slave.sv",
+      "sha256": "29ac6140efa4b63ca2a4988d972ba82bba758564ef7cef22256ecd041df0ead3"
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_therm2bin.sv",
+      "sha256": "c3759076a8be80346be089ad90de70371a9beda922e95e44998b7e68ce70cb31"
+    }
+  ]
+}

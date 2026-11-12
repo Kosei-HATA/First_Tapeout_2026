@@ -1,0 +1,64 @@
+
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: VSS
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: VDD
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq8
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq9
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq5
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq3
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq2
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq1
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq0
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq7
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVSS_uq6
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: VDD_uq2
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq0
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq1
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq2
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq3
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq4
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq5
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq6
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq7
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq8
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq9
+Cell gf180mcu_fd_io__fill1 (0) disconnected node: DVDD_uq15
+Cell gf180mcu_fd_io__fill1 (1) disconnected node: DVDD
+Cell gf180mcu_fd_io__fill1 (1) disconnected node: DVSS
+Cell gf180mcu_fd_io__fill1 (1) disconnected node: VDD
+Cell gf180mcu_fd_io__fill1 (1) disconnected node: VSS
+
+Subcircuit pins:
+Circuit 1: gf180mcu_fd_io__fill1           |Circuit 2: gf180mcu_fd_io__fill1           
+-------------------------------------------|-------------------------------------------
+DVDD                                       |DVDD                                       
+DVSS                                       |DVSS                                       
+VSS                                        |VSS                                        
+VDD                                        |VDD                                        
+DVSS_uq8                                   |(no matching pin)                          
+DVSS_uq9                                   |(no matching pin)                          
+DVSS_uq5                                   |(no matching pin)                          
+DVSS_uq3                                   |(no matching pin)                          
+DVSS_uq2                                   |(no matching pin)                          
+DVSS_uq1                                   |(no matching pin)                          
+DVSS_uq0                                   |(no matching pin)                          
+DVSS_uq7                                   |(no matching pin)                          
+DVSS_uq6                                   |(no matching pin)                          
+VDD_uq2                                    |(no matching pin)                          
+DVDD_uq0                                   |(no matching pin)                          
+DVDD_uq1                                   |(no matching pin)                          
+DVDD_uq2                                   |(no matching pin)                          
+DVDD_uq3                                   |(no matching pin)                          
+DVDD_uq4                                   |(no matching pin)                          
+DVDD_uq5                                   |(no matching pin)                          
+DVDD_uq6                                   |(no matching pin)                          
+DVDD_uq7                                   |(no matching pin)                          
+DVDD_uq8                                   |(no matching pin)                          
+DVDD_uq9                                   |(no matching pin)                          
+DVDD_uq15                                  |(no matching pin)                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes gf180mcu_fd_io__fill1 and gf180mcu_fd_io__fill1 are equivalent.
+
+Final result: Verify:  cell reference.spice has no elements and/or nodes.  Not checked.

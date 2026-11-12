@@ -1,0 +1,2383 @@
+{
+  "scope": "Metal1..5 and Via1..4 only; original delivered GDS. No device/diffusion conduction inferred. Analog bondpads, all supply bondpads, 9 used digital core signal pins and tie controls tested. Digital bond-to-core paths pass through devices and are outside this check.",
+  "point_count": 296,
+  "group_count": 20,
+  "opens": {
+    "DVDD": [
+      12,
+      858
+    ]
+  },
+  "shorts": {},
+  "pass_metal_connectivity": false,
+  "points": [
+    {
+      "expected": "ELP",
+      "point": "core.ELP",
+      "layer": "metal5",
+      "x_um": 430.0,
+      "y_um": 1459.84,
+      "net": 28180
+    },
+    {
+      "expected": "ELN",
+      "point": "core.ELN",
+      "layer": "metal5",
+      "x_um": 430.0,
+      "y_um": 1177.84,
+      "net": 27951
+    },
+    {
+      "expected": "ATP",
+      "point": "core.ATP",
+      "layer": "metal2",
+      "x_um": 482.5,
+      "y_um": 2151.0,
+      "net": 38335
+    },
+    {
+      "expected": "VCM",
+      "point": "core.VCM",
+      "layer": "metal2",
+      "x_um": 611.5,
+      "y_um": 2151.0,
+      "net": 526
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "core.VREFP_PAD",
+      "layer": "metal2",
+      "x_um": 740.5,
+      "y_um": 2151.0,
+      "net": 38355
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "core.VREFN_PAD",
+      "layer": "metal2",
+      "x_um": 869.5,
+      "y_um": 2151.0,
+      "net": 38348
+    },
+    {
+      "expected": "MCLK",
+      "point": "core.MCLK",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 805.55,
+      "net": 550
+    },
+    {
+      "expected": "RESET_N",
+      "point": "core.RESET_N",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 946.55,
+      "net": 24601
+    },
+    {
+      "expected": "SCLK",
+      "point": "core.SCLK",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1087.55,
+      "net": 29809
+    },
+    {
+      "expected": "CS_N",
+      "point": "core.CS_N",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1228.55,
+      "net": 26686
+    },
+    {
+      "expected": "MOSI",
+      "point": "core.MOSI",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1369.55,
+      "net": 24164
+    },
+    {
+      "expected": "MISO",
+      "point": "core.MISO",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1509.0900000000001,
+      "net": 22737
+    },
+    {
+      "expected": "MISO_OE",
+      "point": "core.MISO_OE",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1509.8200000000002,
+      "net": 18234
+    },
+    {
+      "expected": "DRDY_N",
+      "point": "core.DRDY_N",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1650.0900000000001,
+      "net": 12582
+    },
+    {
+      "expected": "RAW_DATA",
+      "point": "core.RAW_DATA",
+      "layer": "metal2",
+      "x_um": 3553.0,
+      "y_um": 1791.0900000000001,
+      "net": 7620
+    },
+    {
+      "expected": "RAW_CLK",
+      "point": "core.RAW_CLK",
+      "layer": "metal2",
+      "x_um": 3481.59,
+      "y_um": 2152.0,
+      "net": 2263
+    },
+    {
+      "expected": "AVDD",
+      "point": "core.AVDD",
+      "layer": "metal5",
+      "x_um": 1605.0,
+      "y_um": 1500.0,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "core.AVSS",
+      "layer": "metal5",
+      "x_um": 1663.0,
+      "y_um": 1500.0,
+      "net": 423
+    },
+    {
+      "expected": "DVDD",
+      "point": "core.DVDD",
+      "layer": "metal5",
+      "x_um": 3510.0,
+      "y_um": 1500.0,
+      "net": 858
+    },
+    {
+      "expected": "DVSS",
+      "point": "core.DVSS",
+      "layer": "metal5",
+      "x_um": 2960.0,
+      "y_um": 1500.0,
+      "net": 11
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1759.0,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1738.1100000000001,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1743.79,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1749.47,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1755.15,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1762.85,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1768.53,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1774.21,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[0].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1779.8899999999999,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1618.0,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1597.1100000000001,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1602.79,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1608.47,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1614.15,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1621.85,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1627.53,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1633.21,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[1].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1638.8899999999999,
+      "net": 423
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1477.0,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1456.1100000000001,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1461.79,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1467.47,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1473.15,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1480.85,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1486.53,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1492.21,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[2].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1497.8899999999999,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1336.0,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1315.1100000000001,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1320.79,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1326.47,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1332.15,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1339.85,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1345.53,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1351.21,
+      "net": 28180
+    },
+    {
+      "expected": "ELP",
+      "point": "analog[3].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1356.8899999999999,
+      "net": 28180
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1195.0,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1174.1100000000001,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1179.79,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1185.47,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1191.15,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1198.85,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1204.53,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1210.21,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[4].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1215.8899999999999,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1054.0,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1033.1100000000001,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1038.79,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1044.47,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1050.15,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1057.85,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1063.53,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1069.21,
+      "net": 27951
+    },
+    {
+      "expected": "ELN",
+      "point": "analog[5].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 1074.8899999999999,
+      "net": 27951
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 913.0,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 892.11,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 897.79,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 903.47,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 909.15,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 916.85,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 922.53,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 928.21,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[6].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 933.89,
+      "net": 423
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 772.0,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar0",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 751.11,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar1",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 756.79,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar2",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 762.47,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar3",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 768.15,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar4",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 775.85,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar5",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 781.53,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar6",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 787.21,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[7].bar7",
+      "layer": "metal2",
+      "x_um": 268.185,
+      "y_um": 792.89,
+      "net": 502
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bond",
+      "layer": "metal5",
+      "x_um": 482.5,
+      "y_um": 2473.0,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar0",
+      "layer": "metal2",
+      "x_um": 461.61,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar1",
+      "layer": "metal2",
+      "x_um": 467.28999999999996,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar2",
+      "layer": "metal2",
+      "x_um": 472.97,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar3",
+      "layer": "metal2",
+      "x_um": 478.65,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar4",
+      "layer": "metal2",
+      "x_um": 486.35,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar5",
+      "layer": "metal2",
+      "x_um": 492.03,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar6",
+      "layer": "metal2",
+      "x_um": 497.71000000000004,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "ATP",
+      "point": "analog[8].bar7",
+      "layer": "metal2",
+      "x_um": 503.39,
+      "y_um": 2262.815,
+      "net": 38335
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bond",
+      "layer": "metal5",
+      "x_um": 611.5,
+      "y_um": 2473.0,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar0",
+      "layer": "metal2",
+      "x_um": 590.61,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar1",
+      "layer": "metal2",
+      "x_um": 596.29,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar2",
+      "layer": "metal2",
+      "x_um": 601.97,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar3",
+      "layer": "metal2",
+      "x_um": 607.65,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar4",
+      "layer": "metal2",
+      "x_um": 615.35,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar5",
+      "layer": "metal2",
+      "x_um": 621.03,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar6",
+      "layer": "metal2",
+      "x_um": 626.71,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VCM",
+      "point": "analog[9].bar7",
+      "layer": "metal2",
+      "x_um": 632.39,
+      "y_um": 2262.815,
+      "net": 526
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bond",
+      "layer": "metal5",
+      "x_um": 740.5,
+      "y_um": 2473.0,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar0",
+      "layer": "metal2",
+      "x_um": 719.61,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar1",
+      "layer": "metal2",
+      "x_um": 725.29,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar2",
+      "layer": "metal2",
+      "x_um": 730.97,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar3",
+      "layer": "metal2",
+      "x_um": 736.65,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar4",
+      "layer": "metal2",
+      "x_um": 744.35,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar5",
+      "layer": "metal2",
+      "x_um": 750.03,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar6",
+      "layer": "metal2",
+      "x_um": 755.71,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFP_PAD",
+      "point": "analog[10].bar7",
+      "layer": "metal2",
+      "x_um": 761.39,
+      "y_um": 2262.815,
+      "net": 38355
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bond",
+      "layer": "metal5",
+      "x_um": 869.5,
+      "y_um": 2473.0,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar0",
+      "layer": "metal2",
+      "x_um": 848.61,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar1",
+      "layer": "metal2",
+      "x_um": 854.29,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar2",
+      "layer": "metal2",
+      "x_um": 859.97,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar3",
+      "layer": "metal2",
+      "x_um": 865.65,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar4",
+      "layer": "metal2",
+      "x_um": 873.35,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar5",
+      "layer": "metal2",
+      "x_um": 879.03,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar6",
+      "layer": "metal2",
+      "x_um": 884.71,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "VREFN_PAD",
+      "point": "analog[11].bar7",
+      "layer": "metal2",
+      "x_um": 890.39,
+      "y_um": 2262.815,
+      "net": 38348
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bond",
+      "layer": "metal5",
+      "x_um": 1256.5,
+      "y_um": 2473.0,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar0",
+      "layer": "metal2",
+      "x_um": 1235.6100000000001,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar1",
+      "layer": "metal2",
+      "x_um": 1241.29,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar2",
+      "layer": "metal2",
+      "x_um": 1246.97,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar3",
+      "layer": "metal2",
+      "x_um": 1252.65,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar4",
+      "layer": "metal2",
+      "x_um": 1260.35,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar5",
+      "layer": "metal2",
+      "x_um": 1266.03,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar6",
+      "layer": "metal2",
+      "x_um": 1271.71,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "analog[12].bar7",
+      "layer": "metal2",
+      "x_um": 1277.3899999999999,
+      "y_um": 2262.815,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bond",
+      "layer": "metal5",
+      "x_um": 1385.5,
+      "y_um": 2473.0,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar0",
+      "layer": "metal2",
+      "x_um": 1364.6100000000001,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar1",
+      "layer": "metal2",
+      "x_um": 1370.29,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar2",
+      "layer": "metal2",
+      "x_um": 1375.97,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar3",
+      "layer": "metal2",
+      "x_um": 1381.65,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar4",
+      "layer": "metal2",
+      "x_um": 1389.35,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar5",
+      "layer": "metal2",
+      "x_um": 1395.03,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar6",
+      "layer": "metal2",
+      "x_um": 1400.71,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "analog[13].bar7",
+      "layer": "metal2",
+      "x_um": 1406.3899999999999,
+      "y_um": 2262.815,
+      "net": 423
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 804.0899999999999,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 738.05,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[0].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 746.075,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 804.8199999999999,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 745.02,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 740.655,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[0].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 803.3599999999999,
+      "net": 11
+    },
+    {
+      "expected": "MCLK",
+      "point": "bidir[0].Y.0",
+      "layer": "metal2",
+      "x_um": 3571.125,
+      "y_um": 805.55,
+      "net": 550
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[1].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 945.0899999999999,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[1].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 879.05,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[1].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 887.075,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[1].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 945.8199999999999,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[1].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 886.02,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[1].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 881.655,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[1].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 944.3599999999999,
+      "net": 11
+    },
+    {
+      "expected": "RESET_N",
+      "point": "bidir[1].Y.0",
+      "layer": "metal2",
+      "x_um": 3571.125,
+      "y_um": 946.55,
+      "net": 24601
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[2].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1086.0900000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[2].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1020.05,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[2].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1028.075,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[2].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1086.8200000000002,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[2].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1027.02,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[2].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1022.655,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[2].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1085.3600000000001,
+      "net": 11
+    },
+    {
+      "expected": "SCLK",
+      "point": "bidir[2].Y.0",
+      "layer": "metal2",
+      "x_um": 3571.125,
+      "y_um": 1087.55,
+      "net": 29809
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[3].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1227.0900000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[3].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1161.05,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[3].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1169.075,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[3].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1227.8200000000002,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[3].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1168.02,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[3].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1163.655,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[3].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1226.3600000000001,
+      "net": 11
+    },
+    {
+      "expected": "CS_N",
+      "point": "bidir[3].Y.0",
+      "layer": "metal2",
+      "x_um": 3571.125,
+      "y_um": 1228.55,
+      "net": 26686
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[4].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1368.0900000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[4].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1302.05,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[4].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1310.075,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[4].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1368.8200000000002,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[4].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1309.02,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[4].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1304.655,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[4].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1367.3600000000001,
+      "net": 11
+    },
+    {
+      "expected": "MOSI",
+      "point": "bidir[4].Y.0",
+      "layer": "metal2",
+      "x_um": 3571.125,
+      "y_um": 1369.55,
+      "net": 24164
+    },
+    {
+      "expected": "MISO",
+      "point": "bidir[5].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1509.0900000000001,
+      "net": 22737
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[5].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1443.05,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[5].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1451.075,
+      "net": 11
+    },
+    {
+      "expected": "MISO_OE",
+      "point": "bidir[5].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1509.8200000000002,
+      "net": 18234
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[5].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1450.02,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[5].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1445.655,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[5].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1508.3600000000001,
+      "net": 12
+    },
+    {
+      "expected": "DRDY_N",
+      "point": "bidir[6].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1650.0900000000001,
+      "net": 12582
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[6].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1584.05,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[6].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1592.075,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[6].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1650.8200000000002,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[6].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1591.02,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[6].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1586.655,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[6].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1649.3600000000001,
+      "net": 12
+    },
+    {
+      "expected": "RAW_DATA",
+      "point": "bidir[7].A.0",
+      "layer": "metal2",
+      "x_um": 3598.8450000000003,
+      "y_um": 1791.0900000000001,
+      "net": 7620
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[7].CS.0",
+      "layer": "metal2",
+      "x_um": 3566.8025,
+      "y_um": 1725.05,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[7].IE.0",
+      "layer": "metal2",
+      "x_um": 3563.615,
+      "y_um": 1733.075,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[7].OE.0",
+      "layer": "metal2",
+      "x_um": 3597.9049999999997,
+      "y_um": 1791.8200000000002,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[7].PD.0",
+      "layer": "metal2",
+      "x_um": 3566.025,
+      "y_um": 1732.02,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[7].PU.0",
+      "layer": "metal2",
+      "x_um": 3565.865,
+      "y_um": 1727.655,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[7].SL.0",
+      "layer": "metal2",
+      "x_um": 3598.505,
+      "y_um": 1790.3600000000001,
+      "net": 12
+    },
+    {
+      "expected": "RAW_CLK",
+      "point": "bidir[8].A.0",
+      "layer": "metal2",
+      "x_um": 3481.59,
+      "y_um": 2197.8450000000003,
+      "net": 2263
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[8].CS.0",
+      "layer": "metal2",
+      "x_um": 3415.55,
+      "y_um": 2165.8025,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[8].IE.0",
+      "layer": "metal2",
+      "x_um": 3423.575,
+      "y_um": 2162.615,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[8].OE.0",
+      "layer": "metal2",
+      "x_um": 3482.32,
+      "y_um": 2196.9049999999997,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[8].PD.0",
+      "layer": "metal2",
+      "x_um": 3422.52,
+      "y_um": 2165.025,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "bidir[8].PU.0",
+      "layer": "metal2",
+      "x_um": 3418.1549999999997,
+      "y_um": 2164.865,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "bidir[8].SL.0",
+      "layer": "metal2",
+      "x_um": 3480.86,
+      "y_um": 2197.505,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[0].bond",
+      "layer": "metal5",
+      "x_um": 1127.5,
+      "y_um": 58.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[1].bond",
+      "layer": "metal5",
+      "x_um": 2933.5,
+      "y_um": 58.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[2].bond",
+      "layer": "metal5",
+      "x_um": 3874.0,
+      "y_um": 631.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[3].bond",
+      "layer": "metal5",
+      "x_um": 3874.0,
+      "y_um": 2041.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[4].bond",
+      "layer": "metal5",
+      "x_um": 2933.5,
+      "y_um": 2473.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[5].bond",
+      "layer": "metal5",
+      "x_um": 1127.5,
+      "y_um": 2473.0,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "dvdd_pads[6].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 2041.0,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[0].bond",
+      "layer": "metal5",
+      "x_um": 998.5,
+      "y_um": 58.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[1].bond",
+      "layer": "metal5",
+      "x_um": 2804.5,
+      "y_um": 58.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[2].bond",
+      "layer": "metal5",
+      "x_um": 3874.0,
+      "y_um": 490.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[3].bond",
+      "layer": "metal5",
+      "x_um": 3874.0,
+      "y_um": 1900.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[4].bond",
+      "layer": "metal5",
+      "x_um": 2804.5,
+      "y_um": 2473.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[5].bond",
+      "layer": "metal5",
+      "x_um": 998.5,
+      "y_um": 2473.0,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "dvss_pads[6].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 1900.0,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "vdd_pads[0].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 631.0,
+      "net": 12
+    },
+    {
+      "expected": "DVSS",
+      "point": "vss_pads[0].bond",
+      "layer": "metal5",
+      "x_um": 58.0,
+      "y_um": 490.0,
+      "net": 11
+    },
+    {
+      "expected": "AVDD",
+      "point": "CA_AVDD[0]",
+      "layer": "metal5",
+      "x_um": 1605.0,
+      "y_um": 1500,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "CA_AVDD[1]",
+      "layer": "metal5",
+      "x_um": 1633.0,
+      "y_um": 1500,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "CA_AVSS[0]",
+      "layer": "metal5",
+      "x_um": 1663.0,
+      "y_um": 1500,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "CA_AVSS[1]",
+      "layer": "metal5",
+      "x_um": 1691.0,
+      "y_um": 1500,
+      "net": 423
+    },
+    {
+      "expected": "AVDD",
+      "point": "WG_AVDD[0].y600",
+      "layer": "metal5",
+      "x_um": 439.5,
+      "y_um": 600,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "WG_AVDD[0].y2000",
+      "layer": "metal5",
+      "x_um": 439.5,
+      "y_um": 2000,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "WG_AVDD[1].y600",
+      "layer": "metal5",
+      "x_um": 460.5,
+      "y_um": 600,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "WG_AVDD[1].y2000",
+      "layer": "metal5",
+      "x_um": 460.5,
+      "y_um": 2000,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "WG_AVSS[0].y600",
+      "layer": "metal5",
+      "x_um": 393.5,
+      "y_um": 600,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "WG_AVSS[0].y2000",
+      "layer": "metal5",
+      "x_um": 393.5,
+      "y_um": 2000,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "WG_AVSS[1].y600",
+      "layer": "metal5",
+      "x_um": 414.5,
+      "y_um": 600,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "WG_AVSS[1].y2000",
+      "layer": "metal5",
+      "x_um": 414.5,
+      "y_um": 2000,
+      "net": 423
+    },
+    {
+      "expected": "AVDD",
+      "point": "SB_AVDD[0]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 494.0,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "SB_AVDD[1]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 522.0,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "SB_AVSS[0]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 425.0,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "SB_AVSS[1]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 453.0,
+      "net": 423
+    },
+    {
+      "expected": "AVDD",
+      "point": "NB_AVDD[0]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 2069.5,
+      "net": 502
+    },
+    {
+      "expected": "AVDD",
+      "point": "NB_AVDD[1]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 2090.5,
+      "net": 502
+    },
+    {
+      "expected": "AVSS",
+      "point": "NB_AVSS[0]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 2115.5,
+      "net": 423
+    },
+    {
+      "expected": "AVSS",
+      "point": "NB_AVSS[1]",
+      "layer": "metal5",
+      "x_um": 1000,
+      "y_um": 2136.5,
+      "net": 423
+    },
+    {
+      "expected": "DVSS",
+      "point": "IB_DVSS[0]",
+      "layer": "metal5",
+      "x_um": 2960.0,
+      "y_um": 1500,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "IB_DVSS[1]",
+      "layer": "metal5",
+      "x_um": 2982.0,
+      "y_um": 1500,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "EG_DVDD[0]",
+      "layer": "metal5",
+      "x_um": 3510.0,
+      "y_um": 1500,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "EG_DVDD[1]",
+      "layer": "metal5",
+      "x_um": 3532.0,
+      "y_um": 1500,
+      "net": 12
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3225.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3025.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3065.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3105.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3145.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3185.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3265.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3305.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3345.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3385.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_digital_top.VDD",
+      "layer": "metal4",
+      "x_um": 3425.04,
+      "y_um": 894.24,
+      "net": 858
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3349.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3029.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3069.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3109.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3149.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3189.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3429.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3229.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3269.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3309.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_digital_top.VSS",
+      "layer": "metal4",
+      "x_um": 3389.7400000000002,
+      "y_um": 894.24,
+      "net": 11
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2641.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2321.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2361.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2401.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2441.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2481.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2521.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2561.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2601.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVDD",
+      "point": "eeg_adc_dig.VDD",
+      "layer": "metal4",
+      "x_um": 2681.44,
+      "y_um": 661.5600000000001,
+      "net": 858
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2646.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2326.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2366.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2406.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2446.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2486.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2526.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2566.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2606.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    },
+    {
+      "expected": "DVSS",
+      "point": "eeg_adc_dig.VSS",
+      "layer": "metal4",
+      "x_um": 2686.14,
+      "y_um": 661.5600000000001,
+      "net": 11
+    }
+  ]
+}

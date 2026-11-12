@@ -1,0 +1,141 @@
+Netgen 1.5.321 compiled on Mon Jun 22 11:31:27 AM CEST 2026
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file actual_normalized.spice for actual_normalized.spice gf180mcu_fd_io__dvdd
+Call to undefined subcircuit ppolyf_u
+Creating placeholder cell definition.
+Call to undefined subcircuit cap_nmos_06v0
+Creating placeholder cell definition.
+Call to undefined subcircuit nfet_06v0
+Creating placeholder cell definition.
+Call to undefined subcircuit pfet_06v0
+Creating placeholder cell definition.
+Reading netlist file reference.spice for reference.spice gf180mcu_fd_io__dvdd
+Call to undefined subcircuit pfet_06v0
+Creating placeholder cell definition.
+Call to undefined subcircuit cap_nmos_06v0
+Creating placeholder cell definition.
+Call to undefined subcircuit ppolyf_u
+Creating placeholder cell definition.
+Call to undefined subcircuit nfet_06v0
+Creating placeholder cell definition.
+
+Reading setup file /work/Test-2-4/manufacturing_preflight/extraction/io_asig_magic/strict_setup.tcl
+
+Model ppolyf_u pin 1 == 2
+No property par1 found for device ppolyf_u
+No property pm found for device ppolyf_u
+No property par found for device ppolyf_u
+No property r found for device ppolyf_u
+Model ppolyf_u pin 1 == 2
+No property par1 found for device ppolyf_u
+No property pm found for device ppolyf_u
+Model nfet_06v0 pin 1 == 3
+No property par1 found for device nfet_06v0
+No property NRD found for device nfet_06v0
+No property NRS found for device nfet_06v0
+No property par found for device nfet_06v0
+No property sa found for device nfet_06v0
+No property sb found for device nfet_06v0
+No property sd found for device nfet_06v0
+No property par found for device nfet_06v0
+No property dtemp found for device nfet_06v0
+No property nf found for device nfet_06v0
+No property $D found for device nfet_06v0
+No property $X found for device nfet_06v0
+No property $Y found for device nfet_06v0
+Model nfet_06v0 pin 1 == 3
+No property par1 found for device nfet_06v0
+No property par found for device nfet_06v0
+No property $D found for device nfet_06v0
+No property $X found for device nfet_06v0
+No property $Y found for device nfet_06v0
+Model pfet_06v0 pin 1 == 3
+No property par1 found for device pfet_06v0
+No property NRD found for device pfet_06v0
+No property NRS found for device pfet_06v0
+No property par found for device pfet_06v0
+No property sa found for device pfet_06v0
+No property sb found for device pfet_06v0
+No property sd found for device pfet_06v0
+No property par found for device pfet_06v0
+No property dtemp found for device pfet_06v0
+No property nf found for device pfet_06v0
+No property $D found for device pfet_06v0
+No property $X found for device pfet_06v0
+No property $Y found for device pfet_06v0
+Model pfet_06v0 pin 1 == 3
+No property par1 found for device pfet_06v0
+No property par found for device pfet_06v0
+No property $D found for device pfet_06v0
+No property $X found for device pfet_06v0
+No property $Y found for device pfet_06v0
+No property par1 found for device cap_nmos_06v0
+No property NRD found for device cap_nmos_06v0
+No property NRS found for device cap_nmos_06v0
+No property as found for device cap_nmos_06v0
+No property ad found for device cap_nmos_06v0
+No property ps found for device cap_nmos_06v0
+No property pd found for device cap_nmos_06v0
+No property par1 found for device cap_nmos_06v0
+No property NRD found for device cap_nmos_06v0
+No property NRS found for device cap_nmos_06v0
+No property as found for device cap_nmos_06v0
+No property ad found for device cap_nmos_06v0
+No property ps found for device cap_nmos_06v0
+No property pd found for device cap_nmos_06v0
+No property par1 found for device diode_nd2ps_06v0
+No property par1 found for device diode_nd2ps_06v0
+Comparison output logged to file comparison.log
+Logging to file "comparison.log" enabled
+Circuit ppolyf_u contains no devices.
+Circuit cap_nmos_06v0 contains no devices.
+Circuit nfet_06v0 contains no devices.
+Circuit pfet_06v0 contains no devices.
+
+Contents of circuit 1:  Circuit: 'gf180mcu_fd_io__dvdd'
+Circuit gf180mcu_fd_io__dvdd contains 152 device instances.
+  Class: cap_nmos_06v0         instances:  12
+  Class: ppolyf_u              instances:  12
+  Class: pfet_06v0             instances:  31
+  Class: diode_nd2ps_06v0      instances:   4
+  Class: nfet_06v0             instances:  93
+Circuit contains 17 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'gf180mcu_fd_io__dvdd'
+Circuit gf180mcu_fd_io__dvdd contains 22 device instances.
+  Class: cap_nmos_06v0         instances:   2
+  Class: ppolyf_u              instances:  12
+  Class: pfet_06v0             instances:   3
+  Class: diode_nd2ps_06v0      instances:   1
+  Class: nfet_06v0             instances:   4
+Circuit contains 17 nets, and 1 disconnected pin.
+
+Circuit was modified by parallel/series device merging.
+New circuit summary:
+
+Contents of circuit 1:  Circuit: 'gf180mcu_fd_io__dvdd'
+Circuit gf180mcu_fd_io__dvdd contains 11 device instances.
+  Class: cap_nmos_06v0         instances:   2
+  Class: ppolyf_u              instances:   1
+  Class: pfet_06v0             instances:   3
+  Class: diode_nd2ps_06v0      instances:   1
+  Class: nfet_06v0             instances:   4
+Circuit contains 6 nets, and 2 disconnected pins.
+Contents of circuit 2:  Circuit: 'gf180mcu_fd_io__dvdd'
+Circuit gf180mcu_fd_io__dvdd contains 11 device instances.
+  Class: cap_nmos_06v0         instances:   2
+  Class: ppolyf_u              instances:   1
+  Class: pfet_06v0             instances:   3
+  Class: diode_nd2ps_06v0      instances:   1
+  Class: nfet_06v0             instances:   4
+Circuit contains 6 nets, and 1 disconnected pin.
+
+Circuit 1 contains 11 devices, Circuit 2 contains 11 devices.
+Circuit 1 contains 6 nets,    Circuit 2 contains 6 nets.
+
+
+Final result: 
+Circuits match uniquely.
+.
+Logging to file "comparison.log" disabled
+LVS Done.

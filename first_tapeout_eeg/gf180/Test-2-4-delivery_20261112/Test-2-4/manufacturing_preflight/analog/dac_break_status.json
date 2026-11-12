@@ -1,0 +1,23 @@
+{
+  "stage": "finished",
+  "completed": [
+    {
+      "test": "dac_brk_typical",
+      "exitcode": 0,
+      "seconds": 136.38,
+      "log": "dac_brk_typical.log"
+    },
+    {
+      "test": "dac_brk_ss",
+      "exitcode": 0,
+      "seconds": 144.24,
+      "log": "dac_brk_ss.log"
+    },
+    {
+      "test": "dac_brk_ff",
+      "exitcode": 0,
+      "seconds": 129.83,
+      "log": "dac_brk_ff.log"
+    }
+  ]
+}

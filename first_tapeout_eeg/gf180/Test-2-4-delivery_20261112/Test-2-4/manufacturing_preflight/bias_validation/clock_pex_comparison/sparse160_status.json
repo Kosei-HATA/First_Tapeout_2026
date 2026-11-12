@@ -1,0 +1,7 @@
+{
+  "variant": "sparse160",
+  "status": "finished",
+  "exitcode": 0,
+  "seconds": 196.14,
+  "only_change": "Original SPARSE full circuit, tstop160ns; all other stimulus and step parameters unchanged"
+}

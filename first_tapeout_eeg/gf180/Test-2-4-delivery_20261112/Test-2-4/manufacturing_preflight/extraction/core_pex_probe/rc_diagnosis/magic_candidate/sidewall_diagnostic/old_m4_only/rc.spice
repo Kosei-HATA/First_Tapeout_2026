@@ -1,0 +1,11 @@
+* NGSPICE file created from adc_flat.ext - technology: gf180mcuD
+
+.subckt adc_flat TOP BOT
+X0 TOP BOT.t0 cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+R0 BOT BOT.t0 3.74784
+C0 TOP BOT 10.3689f
+C1 TOP w_80_80# 88.4691f
+C2 BOT w_80_80# 19.01372f
+C3 BOT.t0 w_80_80# 9.98338f
+.ends
+

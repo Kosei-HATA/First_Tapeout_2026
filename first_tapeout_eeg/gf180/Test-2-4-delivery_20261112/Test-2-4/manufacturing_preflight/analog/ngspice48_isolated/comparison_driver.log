@@ -1,0 +1,24 @@
+{'case': 'init_bias_gear_op', 'seconds': 1.9987332820892334, 'exitcode': 0, 'input_sha256': 'cc91fe544caf963c751a2affefd0468129a84797f6d258d183b00aef699d6fcd', 'aborted': True, 'last_time_s': 1.563084325518799e-13}
+{'case': 'init_bias_gear_ramp', 'seconds': 2.5992555618286133, 'exitcode': 0, 'input_sha256': '090c69ec5c7f5ee1233d520afab8da6a61dd5484b206a23d1ff6761df88a750e', 'aborted': False, 'last_time_s': 2e-06}
+{'case': 'init_bias_gear_uic', 'seconds': 2.6566014289855957, 'exitcode': 0, 'input_sha256': '94feed55743cb293ac0d7df8286e6d8c5e467b8ad520e892f83b4778bc726b44', 'aborted': False, 'last_time_s': 2e-06}
+{'case': 'init_bias_trap_op', 'seconds': 2.0281293392181396, 'exitcode': 0, 'input_sha256': '2dce48576c0ef0d1824d4fa2bada7e40a897ce68fb7df5b83af8281537aa3d06', 'aborted': True, 'last_time_s': 1.562657262192536e-13}
+{'case': 'init_bias_trap_ramp', 'seconds': 2.5000030994415283, 'exitcode': 0, 'input_sha256': '0e5efbf7c6f662556adbedf220c5dd9e3bc8bb5b7868e9f588bd8d95de5231aa', 'aborted': False, 'last_time_s': 2e-06}
+{'case': 'init_bias_trap_uic', 'seconds': 2.663323402404785, 'exitcode': 0, 'input_sha256': '4278f00bbabf9066a37bf0dc72d84e6b2f5abd42d6031e6f2e614c7d901c9908', 'aborted': False, 'last_time_s': 2e-06}
+{'case': 'init_single_gear_op', 'seconds': 6.671303987503052, 'exitcode': 0, 'input_sha256': '9011f98db5d60e7f751d4d84ab32af44ab52887be810bf6a7cd4edc69b11887b', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_single_gear_ramp', 'seconds': 1.0496044158935547, 'exitcode': 0, 'input_sha256': '5b3df9c506c6e4005ca3a130ee55ef879c3bd88bd799262e50d98b905522672a', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_single_gear_uic', 'seconds': 1.071009874343872, 'exitcode': 0, 'input_sha256': 'c8680a1fe22c598efc6ecc9a3f5064e6e0a7e96fb22a65daa2a4d442148b3a56', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_single_trap_op', 'seconds': 2.51530122756958, 'exitcode': 0, 'input_sha256': '914671aecb6b55a4336d72bec659f9d4a7d25bf56b8d5f6fff7fa7d147404980', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_single_trap_ramp', 'seconds': 1.0533182621002197, 'exitcode': 0, 'input_sha256': '24ef48550d1193276d64cd991949216b7ab5763f915d8b4bf4994335a7d42847', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_single_trap_uic', 'seconds': 1.0568106174468994, 'exitcode': 0, 'input_sha256': '6873092f39be45fd46046d29ec2071dc2f24987a8fcbff16748f068a6b3cdce3', 'aborted': False, 'last_time_s': 1e-06}
+{'case': 'init_top_gear_op', 'seconds': 4.189017295837402, 'exitcode': 0, 'input_sha256': 'd4486969b55552175db8ddf1f5e5bdab85d12e936e50f67a112024ed82e6873a', 'aborted': True, 'last_time_s': 1.2744140625e-12}
+{'case': 'init_top_gear_ramp', 'seconds': 6.360153913497925, 'exitcode': 0, 'input_sha256': '465e5a445b49601e6d3045a89beb4c0b0a8c9fa1b701d9d46d666268dcaad5c9', 'aborted': False, 'last_time_s': 5e-07}
+{'case': 'init_top_gear_uic', 'seconds': 8.269875049591064, 'exitcode': 0, 'input_sha256': 'deebce60b0170453927ede329f31a52b576c90d768d614553889113143a9187e', 'aborted': False, 'last_time_s': 5e-07}
+{'case': 'init_top_trap_op', 'seconds': 5.418741941452026, 'exitcode': 0, 'input_sha256': 'bcca8bb83b14d93ced5de0a488763793887abca008699b992c127c3751cb1402', 'aborted': True, 'last_time_s': 1.2744140625e-12}
+{'case': 'rin_m16_thermal', 'seconds': 0.5182833671569824, 'exitcode': 0, 'input_sha256': '6ee4759742c7012ac1728554727fc6fa7f94185fa6f53155047d05f3d2c8d6f0', 'aborted': False}
+Traceback (most recent call last):
+  File "/work/Test-2-4/manufacturing_preflight/analog/ngspice48_isolated/run_comparison.py", line 28, in <module>
+    a=np.atleast_2d(np.loadtxt(nd/'noise.csv'));z['input_rms_V']=float(np.sqrt(np.trapz(a[:,3]**2,a[:,0])));z['density_V_sqrtHz']=float(a[0,3]);noise.append(z)
+                                                                               ^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/numpy/__init__.py", line 769, in __getattr__
+    raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
+AttributeError: module 'numpy' has no attribute 'trapz'. Did you mean: 'trace'?

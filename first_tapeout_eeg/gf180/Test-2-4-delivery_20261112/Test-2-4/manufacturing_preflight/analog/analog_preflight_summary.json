@@ -1,0 +1,255 @@
+{
+  "clock_cases": 15,
+  "positive_clock_sequences_all": true,
+  "minimum_clock_case": {
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "measurements": {
+      "dead A->B (ns)": 1.579218387964225,
+      "overlap A->B (ns)": 3.995849888783836,
+      "margin 1 A->B (ns)": 0.33620114826243525,
+      "margin 2 A->B (ns)": 1.4423223843169377,
+      "delay A->B (ns)": 0.5001756177729161,
+      "dead B->A (ns)": 1.2951493435596046,
+      "overlap B->A (ns)": 3.7998828813869787,
+      "margin 1 B->A (ns)": 0.14600900009866577,
+      "margin 2 B->A (ns)": 1.7246235674269805,
+      "delay B->A (ns)": 0.4852416200032571,
+      "CIA rise 10-90 (ns)": 0.14522717291739068,
+      "NCIA fall 90-10 (ns)": 0.12416585259832229,
+      "CDA rise 10-90 (ns)": 0.13926603246416316,
+      "NCDA fall 90-10 (ns)": 0.15005002454620162,
+      "supply charge per edge (pC)": 15.187624641879813
+    },
+    "minimum_margin_ns": 0.14600900009866577,
+    "finite": true,
+    "positive_sequence_margins": true,
+    "seconds": 6.93
+  },
+  "clock_convergence": [
+    {
+      "vdd": 3.3,
+      "baseline_margin_ns": 0.16349924304102614,
+      "fine_margin_ns": 0.16346637923708104,
+      "delta_ps": -0.032863803945099024
+    },
+    {
+      "vdd": 3.6,
+      "baseline_margin_ns": 0.14600900009866577,
+      "fine_margin_ns": 0.14644093280044765,
+      "delta_ps": 0.4319327017818786
+    }
+  ],
+  "DAC_break_execution": [
+    {
+      "test": "dac_brk_typical",
+      "exitcode": 0,
+      "seconds": 136.38,
+      "log": "dac_brk_typical.log"
+    },
+    {
+      "test": "dac_brk_ss",
+      "exitcode": 0,
+      "seconds": 144.24,
+      "log": "dac_brk_ss.log"
+    },
+    {
+      "test": "dac_brk_ff",
+      "exitcode": 0,
+      "seconds": 129.83,
+      "log": "dac_brk_ff.log"
+    }
+  ],
+  "DAC_gate_nonoverlap": [
+    {
+      "corner": "typical",
+      "temp": 27,
+      "max_time_s": 7.859375e-06,
+      "samples": 26820,
+      "both_D_DB_above_0p7_samples_after_first_frame": 0,
+      "max_simultaneous_min_D_DB_V": 0.0613002974,
+      "wave_sha256": "27fcc66879383ad167b8233f114fd8d50c605f7b9093689c38a530a62b194061",
+      "qualification": "Threshold-based nonoverlap observation for cell0 only; not device-current or all31-cell mismatch signoff."
+    },
+    {
+      "corner": "ss",
+      "temp": 85,
+      "max_time_s": 7.859375e-06,
+      "samples": 26768,
+      "both_D_DB_above_0p7_samples_after_first_frame": 0,
+      "max_simultaneous_min_D_DB_V": 0.0615044986,
+      "wave_sha256": "ddae62daa5769bc55fdce44343ca144d4f63304c3ae3860a70ca6b1380a8f586",
+      "qualification": "Threshold-based nonoverlap observation for cell0 only; not device-current or all31-cell mismatch signoff."
+    },
+    {
+      "corner": "ff",
+      "temp": -20,
+      "max_time_s": 7.859375e-06,
+      "samples": 26678,
+      "both_D_DB_above_0p7_samples_after_first_frame": 0,
+      "max_simultaneous_min_D_DB_V": 0.0598429285,
+      "wave_sha256": "e3f12ff033f80aa918e3670684855af09ccefeec48ac1964c116e926907fd3ed",
+      "qualification": "Threshold-based nonoverlap observation for cell0 only; not device-current or all31-cell mismatch signoff."
+    }
+  ],
+  "input_files_changed": [],
+  "ENOB_qualified": false,
+  "scope": "Completed added schematic clock sensitivity/convergence, DAC break/gate nonoverlap and SS/FF even-charge checks. Fixed ideal sources; no extracted parasitics, full supply-tracking bias, device noise/mismatch or package effects.",
+  "next_steps": [
+    "Extracted-clock/load timing and full bias tracking PVT",
+    "DAC even-charge numerical convergence across alternate solver settings and mismatch",
+    "Model-validated noise and mismatch budget",
+    "Continuous in-band chip-input-to-actual-decimator verification against16.5bit acceptance"
+  ],
+  "report_updated_utc": "2026-11-11T08:42:47.718501+00:00",
+  "report_state": "Completed assigned additional clock sensitivity, DAC break/nonoverlap and SS/FF even-charge checks; overall manufacturing/ENOB qualification incomplete.",
+  "supersedes": "Prior partial analog_preflight_summary.json, preserved in report_history/20261111T084247Z",
+  "DAC_even_charge_results": [
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "tolerance": "A",
+      "even_charge_fC_per_toggle": {
+        "one": -0.00010607135388867515,
+        "all": 1.1113579185279271e-05
+      },
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true,
+      "seconds": 5450.24
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "tolerance": "A",
+      "even_charge_fC_per_toggle": {
+        "one": -0.00010001621893696366,
+        "all": -0.0001032661331034771
+      },
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true,
+      "seconds": 8156.98
+    }
+  ],
+  "DAC_even_independent_audit": [
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "pattern": "one",
+      "integrated_charge_C": [
+        -9.456405576092822e-11,
+        -9.456405236664489e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 1,
+      "even_charge_fC_per_toggle": -0.00010607135388867515,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "pattern": "all",
+      "integrated_charge_C": [
+        -4.375342845669003e-11,
+        -4.375343948136058e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 31,
+      "even_charge_fC_per_toggle": 1.1113579185279271e-05,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "pattern": "one",
+      "integrated_charge_C": [
+        -1.2931422882495315e-10,
+        -1.2931422562443414e-10
+      ],
+      "toggle_count_difference": 32,
+      "cells": 1,
+      "even_charge_fC_per_toggle": -0.00010001621893696366,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "pattern": "all",
+      "integrated_charge_C": [
+        -5.983198162047052e-11,
+        -5.983187918046648e-11
+      ],
+      "toggle_count_difference": 32,
+      "cells": 31,
+      "even_charge_fC_per_toggle": -0.0001032661331034771,
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true
+    }
+  ],
+  "DAC_even_waveforms": [
+    {
+      "tag": "even_one0_ss85_v0_s0",
+      "sha256": "d0ed4055f897b43e8bcb3c742367da3913afed76bb70e881d639315ead4376a4",
+      "bytes": 27136720,
+      "last_time_s": 7.23125e-05,
+      "samples": 279760
+    },
+    {
+      "tag": "even_one1_ss85_v0_s0",
+      "sha256": "4fc8a7837e50c99ea941915a4abd591768fb0a7c5eb54024eeee867e86db6ede",
+      "bytes": 26620098,
+      "last_time_s": 7.23125e-05,
+      "samples": 274434
+    },
+    {
+      "tag": "even_all0_ss85_v0_s0",
+      "sha256": "c17fe24dc52d856792964ce0a4c62742ccd5e2cb1ea81e6d58899672285a342c",
+      "bytes": 26956300,
+      "last_time_s": 7.23125e-05,
+      "samples": 277900
+    },
+    {
+      "tag": "even_all1_ss85_v0_s0",
+      "sha256": "d3edc363a84832eb151ef5a9081b93f592a2b70cf72bee1818580cde79e033aa",
+      "bytes": 26379441,
+      "last_time_s": 7.23125e-05,
+      "samples": 271953
+    },
+    {
+      "tag": "even_one0_ff-20_v0_s0",
+      "sha256": "3f2ce54ead10df7bc49868b2a675b5607729ea7b47d05dbb7952162a0c8f20f7",
+      "bytes": 27061060,
+      "last_time_s": 7.23125e-05,
+      "samples": 278980
+    },
+    {
+      "tag": "even_one1_ff-20_v0_s0",
+      "sha256": "2cf3f7423fec8e6bb1d786e95676d9cc2a2c928916ab5b48e34de1ed5de9f374",
+      "bytes": 26536775,
+      "last_time_s": 7.23125e-05,
+      "samples": 273575
+    },
+    {
+      "tag": "even_all0_ff-20_v0_s0",
+      "sha256": "13c89b7f614555a2db39f985381d8f4c8697e6499425f39e1d74526400e02d6b",
+      "bytes": 26849115,
+      "last_time_s": 7.23125e-05,
+      "samples": 276795
+    },
+    {
+      "tag": "even_all1_ff-20_v0_s0",
+      "sha256": "e2eedaf7f9ebaafcc69077ac322a7ef11bb12e29b2643e3e388330a8743a1448",
+      "bytes": 26285933,
+      "last_time_s": 7.23125e-05,
+      "samples": 270989
+    }
+  ],
+  "DAC_even_completed_subruns": 8,
+  "DAC_even_all_measured_patterns_within_limit": true,
+  "simulation_inputs_hash_verified": true,
+  "GDS_unchanged_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "DAC_even_scope": "3.3V, ideal virtual-ground outputs and references, supplied tolerance A, nominal device geometry without mismatch and no extracted parasitics; SS85C and FF-20C, 72-frame patterns. Independent integration reuses documented window and toggle normalization. Does not qualify full DAC linearity, INL/DNL, noise, long-term settling or system ENOB."
+}

@@ -1,0 +1,36 @@
+* NGSPICE file created from gf180mcu_fd_io__fill10.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__fill10 VDD VSS DVSS DVDD
+X0 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X1 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X2 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X3 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X4 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X5 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X6 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X7 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X8 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X9 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X10 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X11 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X12 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X13 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X14 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X15 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X16 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X17 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X18 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X19 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X20 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X21 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X22 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X23 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X24 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X25 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X26 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X27 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X28 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X29 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X30 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+X31 VDD VSS cap_nmos_06v0 c_width=7u c_length=6u
+.ends

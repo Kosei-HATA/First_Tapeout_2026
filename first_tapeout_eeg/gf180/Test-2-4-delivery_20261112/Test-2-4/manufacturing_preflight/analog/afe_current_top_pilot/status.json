@@ -1,0 +1,9 @@
+{
+  "exitcode": 0,
+  "seconds": 4.584664344787598,
+  "requested_time_s": 3.125e-05,
+  "valid_transient": false,
+  "reason": "TRAN timestep too small at2.54028ps in e.xb.xcvbn_3.ec_moscap#branch; exitcode0 is not success",
+  "completed_chopper_cycles": 0,
+  "settled_gain_available": false
+}

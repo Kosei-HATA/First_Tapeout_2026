@@ -1,0 +1,20 @@
+[
+  {
+    "module": "eeg_digital_top",
+    "netlist_cells": 13446,
+    "gds_cells": 13446,
+    "netlist_cells_missing_from_gds": {},
+    "extra_gds_cell_types": {},
+    "counts_match_for_every_netlist_cell_type": true,
+    "warning": "Cell-type counts are supplemental correspondence evidence, not connectivity equivalence. Core LVS and macro geometry checks remain separate evidence."
+  },
+  {
+    "module": "eeg_adc_dig",
+    "netlist_cells": 4791,
+    "gds_cells": 4791,
+    "netlist_cells_missing_from_gds": {},
+    "extra_gds_cell_types": {},
+    "counts_match_for_every_netlist_cell_type": true,
+    "warning": "Cell-type counts are supplemental correspondence evidence, not connectivity equivalence. Core LVS and macro geometry checks remain separate evidence."
+  }
+]

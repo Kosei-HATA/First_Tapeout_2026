@@ -1,0 +1,57 @@
+
+Magic 8.3 revision 664 - Compiled on Mon Jun 15 08:31:32 AM CEST 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology gf180mcuD ...
+10 Magic internal units = 1 Lambda
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Scaled tech values by 10 / 1 to match internal grid scaling
+Loading gf180mcuD Device Generator Menu ...
+Loading "extract.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "M2_M1_CDNS_4066195314518".
+Saving contents of cell M2_M1_CDNS_4066195314518
+Reading "M1_PSUB_CDNS_4066195314516".
+Saving contents of cell M1_PSUB_CDNS_4066195314516
+Reading "M3_M2_CDNS_4066195314510".
+Saving contents of cell M3_M2_CDNS_4066195314510
+Reading "M3_M2_CDNS_406619531459".
+Saving contents of cell M3_M2_CDNS_406619531459
+Reading "POLY_SUB_FILL".
+Reading "M2_M1_CDNS_4066195314515".
+Saving contents of cell M2_M1_CDNS_4066195314515
+Reading "M3_M2_CDNS_4066195314517".
+Saving contents of cell M3_M2_CDNS_4066195314517
+Reading "M1_PSUB_CDNS_406619531455".
+Saving contents of cell M1_PSUB_CDNS_406619531455
+Reading "M4_M3_CDNS_4066195314512".
+Saving contents of cell M4_M3_CDNS_4066195314512
+Reading "M4_M3_CDNS_4066195314514".
+Saving contents of cell M4_M3_CDNS_4066195314514
+Reading "GF_NI_FILL5_1".
+Reading "M5_M4_CDNS_4066195314511".
+Saving contents of cell M5_M4_CDNS_4066195314511
+Reading "M5_M4_CDNS_4066195314513".
+Saving contents of cell M5_M4_CDNS_4066195314513
+Reading "GF_NI_FILL5_0".
+Reading "gf180mcu_fd_io__fill5".
+Extracting POLY_SUB_FILL into POLY_SUB_FILL.ext:
+Processing POLY_SUB_FILL
+Extracting GF_NI_FILL5_1 into GF_NI_FILL5_1.ext:
+Processing GF_NI_FILL5_1
+Extracting GF_NI_FILL5_0 into GF_NI_FILL5_0.ext:
+Processing GF_NI_FILL5_0
+Extracting gf180mcu_fd_io__fill5 into gf180mcu_fd_io__fill5.ext:
+Processing gf180mcu_fd_io__fill5
+exttospice finished.

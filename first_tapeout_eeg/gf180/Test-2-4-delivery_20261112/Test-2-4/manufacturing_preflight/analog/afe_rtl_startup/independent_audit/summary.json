@@ -1,0 +1,677 @@
+{
+  "audit_version": "initial_128us_and_extension_192us_v1",
+  "created_utc": "2026-11-11T15:48:33.706589+00:00",
+  "status": "PASS_SCOPED_STIMULUS_AUDIT_WITH_LIMITATIONS",
+  "worker_inputs_unchanged_during_successful_audit": true,
+  "input_hashes": {
+    "rtl/tb.sv": "4148c4ed7b04f3b3d489df222df693aef21207f254f4d85310e16193b2eae52e",
+    "rtl/tb.sv.128us": "63cd382a86878e55a36c4a81c93974e6980d6a69c3a60a2615b22eccf33e7953",
+    "rtl/controls.csv": "6813f3c49efe35aed6645ee4e261597db5148f6c11a0472fb3c98477422507ce",
+    "rtl/controls.csv.128us": "eaef98ebcd5cd9de5421bc315848c049a0b6db3ff42bf9307ece13f665ac4f10",
+    "rtl/compile.log": "f636bb1e4de1088dd6880815caaf1e70cb6c14c1f81432bb477d255773e28683",
+    "rtl/run.log": "3e823618859d8ceef8020f80fe7072653d0dbb29f023752291ec84f9f7a45d69",
+    "controls.inc": "d82508991a1b953d5b6a076101ca6b30fb56986d3c98d7a1c81529bc9fe99ba0",
+    "controls_128us.inc": "fa61f8d52474b50e467b8de85e7f2b9508d29cc4d7d715187e14f51790a38edc",
+    "pilot/tb.spice": "60a1f041b07deced4fdc371634971c9c54f8068ff85d11cc0db35d8133e7b33c",
+    "mapping_and_assumptions.json": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+    "steady_criteria.json": "23de6de602a4371424da5501ca6d3658ed89ef79cc8223c311cd0985cc1f8768"
+  },
+  "method": {
+    "clock_edges": "Independently calculate rising MCLK = 2000+n*(1000/32.768) ns, rounded to 1 ps RTL precision.",
+    "reset": "First rising edge after 3000 ns RESET_N release enters first FF; second releases synchronized reset; third starts frame0 and CHOP.",
+    "spi": "Mode0 MSB-first 0x20 0x02 0x64, 24 bits at 250 ns high/low. CS low at 8000 ns, high at 21000 ns; propagate through CS synchronizer, edge detector, reg_we and register application.",
+    "blank": "Initial CHOP/CHOP_OUT rise is unblanked; all later edges every 128 MCLK have blank from 1 MCLK before until 7 MCLK after.",
+    "pwl": "Parse every PWL source and compare every pair to independently reconstructed bit extraction, 1 us initial ramp, CSV event and 0.5 ns slew.",
+    "ports": "Independently pair actual included .subckt port declarations with positional pilot XA/XB/XC connections.",
+    "tolerances": {
+      "rtl_csv_time_ps": 1.01,
+      "pwl_time_s": 1e-16,
+      "pwl_voltage_V": 1e-12
+    }
+  },
+  "initial_128us": {
+    "end_s": 0.000128,
+    "last_recorded_event_s": 0.00012437549000000002,
+    "csv_rows": 98,
+    "rtl_timing_checks": {
+      "adc_rst_n": {
+        "pass": true,
+        "actual_count": 1,
+        "expected_count": 1,
+        "max_time_error_ps": 0.0
+      },
+      "chop": {
+        "pass": true,
+        "actual_count": 32,
+        "expected_count": 32,
+        "max_time_error_ps": 3.637978807091713e-09
+      },
+      "chop_out": {
+        "pass": true,
+        "actual_count": 32,
+        "expected_count": 32,
+        "max_time_error_ps": 3.637978807091713e-09
+      },
+      "blank": {
+        "pass": true,
+        "actual_count": 62,
+        "expected_count": 62,
+        "max_time_error_ps": 1.4551915228366852e-08
+      },
+      "afe_rst": {
+        "pass": true,
+        "actual_count": 1,
+        "expected_count": 1,
+        "max_time_error_ps": 0.0
+      }
+    },
+    "pwl_signal_count": 30,
+    "pwl_checks": {
+      "CHOP": {
+        "pass": true,
+        "point_count": 67,
+        "strictly_increasing_time": true
+      },
+      "CHOP_OUT": {
+        "pass": true,
+        "point_count": 67,
+        "strictly_increasing_time": true
+      },
+      "BLANK": {
+        "pass": true,
+        "point_count": 127,
+        "strictly_increasing_time": true
+      },
+      "AFE_RST": {
+        "pass": true,
+        "point_count": 5,
+        "strictly_increasing_time": true
+      },
+      "CHOP_EN": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFS": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "IB0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "IB1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BP0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BP1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BN0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BN1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM4": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM5": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM6": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM7": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM8": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM9": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      }
+    },
+    "static_codes": {
+      "chop_en": [
+        1
+      ],
+      "cpf": [
+        8
+      ],
+      "ibias": [
+        2
+      ],
+      "bp": [
+        1
+      ],
+      "bn": [
+        1
+      ],
+      "ofm": [
+        0
+      ],
+      "ofs": [
+        0
+      ],
+      "ofen": [
+        0
+      ]
+    },
+    "pass": true
+  },
+  "extended_192us": {
+    "end_s": 0.000192,
+    "last_recorded_event_s": 0.00019078174,
+    "csv_rows": 149,
+    "rtl_timing_checks": {
+      "adc_rst_n": {
+        "pass": true,
+        "actual_count": 1,
+        "expected_count": 1,
+        "max_time_error_ps": 0.0
+      },
+      "chop": {
+        "pass": true,
+        "actual_count": 49,
+        "expected_count": 49,
+        "max_time_error_ps": 3.637978807091713e-09
+      },
+      "chop_out": {
+        "pass": true,
+        "actual_count": 49,
+        "expected_count": 49,
+        "max_time_error_ps": 3.637978807091713e-09
+      },
+      "blank": {
+        "pass": true,
+        "actual_count": 96,
+        "expected_count": 96,
+        "max_time_error_ps": 2.9103830456733704e-08
+      },
+      "afe_rst": {
+        "pass": true,
+        "actual_count": 1,
+        "expected_count": 1,
+        "max_time_error_ps": 0.0
+      }
+    },
+    "pwl_signal_count": 30,
+    "pwl_checks": {
+      "CHOP": {
+        "pass": true,
+        "point_count": 101,
+        "strictly_increasing_time": true
+      },
+      "CHOP_OUT": {
+        "pass": true,
+        "point_count": 101,
+        "strictly_increasing_time": true
+      },
+      "BLANK": {
+        "pass": true,
+        "point_count": 195,
+        "strictly_increasing_time": true
+      },
+      "AFE_RST": {
+        "pass": true,
+        "point_count": 5,
+        "strictly_increasing_time": true
+      },
+      "CHOP_EN": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFS": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "CPF3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "IB0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "IB1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BP0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BP1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BN0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "BN1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM4": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM5": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM6": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM7": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM8": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFM9": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN0": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN1": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN2": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      },
+      "OFEN3": {
+        "pass": true,
+        "point_count": 3,
+        "strictly_increasing_time": true
+      }
+    },
+    "static_codes": {
+      "chop_en": [
+        1
+      ],
+      "cpf": [
+        8
+      ],
+      "ibias": [
+        2
+      ],
+      "bp": [
+        1
+      ],
+      "bn": [
+        1
+      ],
+      "ofm": [
+        0
+      ],
+      "ofs": [
+        0
+      ],
+      "ofen": [
+        0
+      ]
+    },
+    "pass": true
+  },
+  "extension_checks": {
+    "csv_old_bytes_are_exact_prefix": true,
+    "pwl_old_interior_point_prefix": {
+      "CHOP": true,
+      "CHOP_OUT": true,
+      "BLANK": true,
+      "AFE_RST": true,
+      "CHOP_EN": true,
+      "OFS": true,
+      "CPF0": true,
+      "CPF1": true,
+      "CPF2": true,
+      "CPF3": true,
+      "IB0": true,
+      "IB1": true,
+      "BP0": true,
+      "BP1": true,
+      "BN0": true,
+      "BN1": true,
+      "OFM0": true,
+      "OFM1": true,
+      "OFM2": true,
+      "OFM3": true,
+      "OFM4": true,
+      "OFM5": true,
+      "OFM6": true,
+      "OFM7": true,
+      "OFM8": true,
+      "OFM9": true,
+      "OFEN0": true,
+      "OFEN1": true,
+      "OFEN2": true,
+      "OFEN3": true
+    },
+    "all_30_final_pwl_times_are_192us": true,
+    "evaluation_end_is_before_stimulus_end": true
+  },
+  "rtl_source_hash_checks": [
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_adc_dig.sv",
+      "sha256": "82fc82b46e1bb335a2f73ea5aee91d4258a6aa71d2cf4b816c26e2786c2b2570",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_chop1.sv",
+      "sha256": "c8f36674bc055ae40e9bd722495510ead92ea1fba16b2427a26d02fc50b77b2b",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_cic3.sv",
+      "sha256": "67ffc1ccaffe6c2e741be3e9057eaee402a0d8047290f04e35b9b8f65cda2a31",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_clkgen.sv",
+      "sha256": "51c4e81eda444c8f6edae0ea88244da8ebae5a6c6267ab45629fef54e5af2a9f",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_digital_sys.sv",
+      "sha256": "a717c68a4f231838bae71b9a5fec6f846e1d19309498c1ea69f9fb3d97b152d1",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_digital_top.sv",
+      "sha256": "f8a990052d635acd4fc7fa5b06fdd3002886e683bcf1b8540cc51554446e3d0b",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_dwa.sv",
+      "sha256": "58031599995b3c5e0bdc85cfa682d4d4819c03490991ae9da4bf853d0ab33547",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_fifo.sv",
+      "sha256": "ec39e2c5dc82339f2002c1d94497849e34383fec7fecb9fda6ab358480d23450",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_raw.sv",
+      "sha256": "a0322a1165b03e9008c02e0a723b4c7c3064091958f5f6b43d05a3b9bbba6547",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_regs.sv",
+      "sha256": "cc3c9a7ed429278d117f8aaff7d55458e92ba17037f4e280b312feb65152042c",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_rnd_sat.sv",
+      "sha256": "9de2c72fb5d192a4efbbf8ee3ee57e4ed6bfe8c159afb06a3d0b0a61bea22ff8",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_spi_slave.sv",
+      "sha256": "29ac6140efa4b63ca2a4988d972ba82bba758564ef7cef22256ecd041df0ead3",
+      "pass": true
+    },
+    {
+      "path": "gf180\\tapeout\\rtl\\eeg_therm2bin.sv",
+      "sha256": "c3759076a8be80346be089ad90de70371a9beda922e95e44998b7e68ce70cb31",
+      "pass": true
+    }
+  ],
+  "analog_port_checks": {
+    "XA": {
+      "subcircuit": "eeg_afe",
+      "port_count": 40,
+      "controls": {
+        "OFS": "RTL_OFS",
+        "OFM0": "RTL_OFM0",
+        "OFM1": "RTL_OFM1",
+        "OFM2": "RTL_OFM2",
+        "OFM3": "RTL_OFM3",
+        "OFM4": "RTL_OFM4",
+        "OFM5": "RTL_OFM5",
+        "OFM6": "RTL_OFM6",
+        "OFM7": "RTL_OFM7",
+        "OFM8": "RTL_OFM8",
+        "OFM9": "RTL_OFM9",
+        "OFEN0": "RTL_OFEN0",
+        "OFEN1": "RTL_OFEN1",
+        "OFEN2": "RTL_OFEN2",
+        "OFEN3": "RTL_OFEN3",
+        "CPF0": "RTL_CPF0",
+        "CPF1": "RTL_CPF1",
+        "CPF2": "RTL_CPF2",
+        "CPF3": "RTL_CPF3"
+      },
+      "pass": true,
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\sim_work\\gf180\\tapeout\\afe\\eeg_afe.spice",
+      "source_sha256": "552f454eac2c33dcb4ae71d1b85da8539a308d96c3ad9168374a997bbee20278"
+    },
+    "XB": {
+      "subcircuit": "eeg_bias",
+      "port_count": 25,
+      "controls": {
+        "IB1": "RTL_IB1",
+        "IB0": "RTL_IB0",
+        "BP1": "RTL_BP1",
+        "BP0": "RTL_BP0",
+        "BN1": "RTL_BN1",
+        "BN0": "RTL_BN0"
+      },
+      "pass": true,
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\moscap_charge_equivalent\\bias_q_diagnostic.spice",
+      "source_sha256": "2f5e881a3880d2244f8c87c18b2fb59b4b98a27123692257177db60b0550e28b"
+    },
+    "XC": {
+      "subcircuit": "eeg_afe_clk",
+      "port_count": 17,
+      "controls": {
+        "CHOP": "RTL_CHOP",
+        "CHOP_OUT": "RTL_CHOP_OUT",
+        "CHOP_BLANK": "RTL_BLANK",
+        "CHOP_EN": "RTL_CHOP_EN",
+        "AFE_RST": "RTL_AFE_RST"
+      },
+      "pass": true,
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\sim_work\\gf180\\tapeout\\afe\\eeg_afe_clk.spice",
+      "source_sha256": "fd77d7e6a5590f134909f6fe06446917803ab464dedc09e968c5a94e0393fdc0"
+    }
+  },
+  "all_30_exported_controls_connected_once": true,
+  "key_times_ns": {
+    "RESET_N_external_release": 3000,
+    "first_MCLK_after_RESET": 3007.08,
+    "ADC_RST_N_csv_rise": 3037.6,
+    "first_CHOP_csv_rise": 3068.1169999999997,
+    "first_BLANK_csv_rise": 6943.85,
+    "first_CHOP_csv_fall": 6974.367,
+    "first_BLANK_csv_fall": 7187.99,
+    "CS_N_commit_edge": 21000,
+    "AFE_RST_csv_fall": 21104.006
+  },
+  "time_conversion_assumptions": {
+    "csv_logging_delay_s": 2e-12,
+    "pwl_slew_s": 5e-10,
+    "slew_placement": "starts at CSV time, not centered at RTL event",
+    "fifty_percent_crossing_delay_from_RTL_s": 2.52e-10,
+    "initial_high": "0..3.3 V over 0..1 us assuming a simultaneous DVDD ramp; physical power-aware digital output behavior is not modeled"
+  },
+  "steady_window": {
+    "input_step_start_s": 2.8916506000000003e-05,
+    "wait_s": 6.25e-05,
+    "evaluation_length_s": 6.25e-05,
+    "earliest_unaligned_end_s": 0.00015391650600000002,
+    "phase_aligned_start_s": 9.6818117e-05,
+    "phase_aligned_end_s": 0.000159318117,
+    "planned_transient_end_s": 0.00016,
+    "stimulus_end_s": 0.000192,
+    "warning": "Initial 128 us PWL would freeze too early. Current 192 us PWL fixes that duration risk and includes the full 96.818117..159.318117 us evaluation window. Actual long analog result is not audited here; confirm it completes and uses this exact controls.inc. All future analog extensions must remain within regenerated stimulus duration. Measuring wait from completion of the 1 ns input slew moves the unaligned bound 1 ns later but does not change the aligned window."
+  },
+  "limits": [
+    "Scope is RTL replay and analog control wiring, not numerical convergence, settling, gain, ENOB, stress lifetime or fabrication certification.",
+    "Real eeg_digital_top with CODE=16 fixed; eeg_adc_dig and ADC/DWA analog closed loop omitted.",
+    "CMP_STROBE, DAC_CLK, CHOP1, TEST_CFG, FIFO/raw and system decimation are not connected into this AFE-only analog deck.",
+    "Charge-equivalent diagnostic MOSCAP model is used; this is not an unchanged foundry transient model claim.",
+    "ITST remains an ideal fixed 1 V source during supply ramp; electrode common-mode follows generated VCM, without an independent electrode model.",
+    "Ideal AVDD/DVDD ramp and control voltages; no physical digital buffer, independent DVDD network, pad/package/board impedance, brownout, or finite substrate model."
+  ],
+  "source_references": [
+    "gf180/tapeout/rtl/eeg_digital_top.sv:67-80,127-129,209-243",
+    "gf180/tapeout/rtl/eeg_spi_slave.sv:1-28,65-89,171-205",
+    "gf180/tapeout/rtl/eeg_regs.sv:104-148",
+    "gf180/tapeout/rtl/eeg_clkgen.sv:40-63,160-203",
+    "gf180/tapeout/afe/eeg_afe.spice:302-335,376-384",
+    "gf180/tapeout/afe/eeg_afe_clk.spice:22-79",
+    "gf180/tapeout/bias/eeg_bias.spice:8-17,58-59",
+    "Test-2-4/source/layout/chip_lay.py:565-573"
+  ]
+}

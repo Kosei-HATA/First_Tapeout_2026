@@ -1,0 +1,35 @@
+{
+  "scope": "Development build diagnostics only; no qualification of steady-state gain or physical ENOB",
+  "commit": "8e03f9570eae8bb11dac18873587f052e7c8d02e",
+  "rin_noise": [
+    {
+      "case": "rin_m16_thermal",
+      "seconds": 0.5182833671569824,
+      "exitcode": 0,
+      "input_sha256": "6ee4759742c7012ac1728554727fc6fa7f94185fa6f53155047d05f3d2c8d6f0",
+      "aborted": false,
+      "input_rms_V": 6.241977684815687e-08,
+      "density_V_sqrtHz": 6.257641392487564e-09
+    },
+    {
+      "case": "rin_m16_unflagged",
+      "seconds": 0.5261499881744385,
+      "exitcode": 0,
+      "input_sha256": "6ee4759742c7012ac1728554727fc6fa7f94185fa6f53155047d05f3d2c8d6f0",
+      "aborted": false,
+      "input_rms_V": 5.9782390967249785e-09,
+      "density_V_sqrtHz": 5.9932409771193e-10
+    },
+    {
+      "case": "rin_parallel16_thermal",
+      "seconds": 0.557905912399292,
+      "exitcode": 0,
+      "input_sha256": "b31dbb66e650710844b366b58ab9153e47682055e3aada51d78f5878c78a02fd",
+      "aborted": false,
+      "input_rms_V": 2.4860323112927376e-07,
+      "density_V_sqrtHz": 2.492270796161819e-08
+    }
+  ],
+  "cv_max_abs_analytical_relative_error": 6.661338147750939e-16,
+  "cv_max_abs_change_from46": 0.0
+}

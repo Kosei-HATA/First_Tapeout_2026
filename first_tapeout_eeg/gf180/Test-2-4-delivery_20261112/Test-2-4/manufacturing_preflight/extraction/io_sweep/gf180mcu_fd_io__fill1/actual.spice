@@ -1,0 +1,6 @@
+* NGSPICE file created from gf180mcu_fd_io__fill1.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__fill1 DVDD DVSS VSS VDD DVSS_uq8 DVSS_uq9 DVSS_uq5 DVSS_uq3
++ DVSS_uq2 DVSS_uq1 DVSS_uq0 DVSS_uq7 DVSS_uq6 VDD_uq2 DVDD_uq0 DVDD_uq1 DVDD_uq2
++ DVDD_uq3 DVDD_uq4 DVDD_uq5 DVDD_uq6 DVDD_uq7 DVDD_uq8 DVDD_uq9 DVDD_uq15
+.ends

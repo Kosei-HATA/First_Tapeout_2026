@@ -1,0 +1,10 @@
+eeg_regs.sv:190: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'off_mag[9:0]').
+eeg_regs.sv:191: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'off_mag[9:0]').
+eeg_chop1.sv:58: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:59: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:60: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:61: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:62: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+INFO: first SEQ after the overrun = 13 (samples 10..12 dropped)
+PASS: tb_spi (163 SPI transfers at 2 and 1 MHz, 25 READ_SAMPLE frames, 994059 DRDY_N checks, 7 CHOP/CHOP_OUT and 14 CHOP_BLANK pin checks at 128 and 64 kHz, 11400 DBG_SEL pin checks, max MISO latency 91.5 ns, max MISO_OE latency 60.8 ns)
+tb/tb_spi.sv:554: $finish called at 30336963836 (1ps)

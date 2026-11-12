@@ -1,0 +1,28 @@
+{
+  "positive": {
+    "pass": true,
+    "disconnected": {},
+    "C_violations": []
+  },
+  "missing_R": {
+    "pass": false,
+    "disconnected": {
+      "a_972_8460#": 2
+    },
+    "C_violations": []
+  },
+  "extra_C": {
+    "pass": false,
+    "disconnected": {},
+    "C_violations": [
+      {
+        "pair": [
+          "CHOP1",
+          "VSS"
+        ],
+        "delta_fF": 1.0000000000000004,
+        "rounding_bound_fF": 0.500065
+      }
+    ]
+  }
+}

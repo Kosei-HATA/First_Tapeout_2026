@@ -1,0 +1,26 @@
+* Current design ADC RIN pair; thermal-only isolated budget
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.temp 27
+VCM CM 0 1.65
+VSRC SRC 0 DC 0 AC 1
+EP INP CM SRC 0 0.5
+EN INN CM SRC 0 -0.5
+XRINP INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u m=16
+XRINN INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u m=16
+RSP SP CM 1 noisy=0
+RSN SN CM 1 noisy=0
+.control
+set numdgt=15
+op
+print v(inp) v(inn) v(sp) v(sn)
+ac lin 501 0.5 100
+let hr=real(v(sp)-v(sn))
+let hi=imag(v(sp)-v(sn))
+wrdata gain.csv hr hi
+noise v(sp,sn) VSRC lin 501 0.5 100
+setplot noise1
+wrdata noise.csv onoise_spectrum inoise_spectrum
+quit
+.endc
+.end

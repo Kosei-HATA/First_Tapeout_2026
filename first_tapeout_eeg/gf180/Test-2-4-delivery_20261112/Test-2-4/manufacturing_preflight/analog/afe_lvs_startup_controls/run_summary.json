@@ -1,0 +1,20 @@
+[
+  {
+    "case": "tmax_025ns",
+    "seconds": 17.954220056533813,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "last_time_s": 1e-06,
+    "finite": true
+  },
+  {
+    "case": "regularized_1ns",
+    "seconds": 8.911101818084717,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "last_time_s": 1e-06,
+    "finite": true
+  }
+]

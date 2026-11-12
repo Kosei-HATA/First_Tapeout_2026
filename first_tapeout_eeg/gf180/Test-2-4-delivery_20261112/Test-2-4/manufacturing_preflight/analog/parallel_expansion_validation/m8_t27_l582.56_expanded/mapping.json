@@ -1,0 +1,16 @@
+[
+  {
+    "instance": "XR",
+    "multiplier": 8,
+    "generated": [
+      "XR__noise_parallel_0",
+      "XR__noise_parallel_1",
+      "XR__noise_parallel_2",
+      "XR__noise_parallel_3",
+      "XR__noise_parallel_4",
+      "XR__noise_parallel_5",
+      "XR__noise_parallel_6",
+      "XR__noise_parallel_7"
+    ]
+  }
+]

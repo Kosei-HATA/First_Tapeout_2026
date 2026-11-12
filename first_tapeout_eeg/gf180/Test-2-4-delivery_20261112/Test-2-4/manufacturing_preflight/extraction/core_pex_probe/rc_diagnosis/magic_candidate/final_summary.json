@@ -1,0 +1,21 @@
+{
+  "six_structures_completed": true,
+  "five_basic_cap_resistance_checks_pass": true,
+  "actual_killnode_check_pass": true,
+  "negative_controls_detected": 7,
+  "sidewall_coupling_fF": {
+    "old_original": 17.5289,
+    "new_original": 17.3964,
+    "old_zero_sidewall": 6.54472,
+    "new_zero_sidewall": 6.54472,
+    "new_legacy_offset": 17.5289,
+    "new_double_coefficient": 28.248
+  },
+  "diagnosis": "Old integer/grid quantization of sidewall offset; new floating offset. Halving is moved from final scaling to parser, not a net factor-of-two correction.",
+  "qualified_for_full_chip": false,
+  "limitations": [
+    "Absolute C and spatial RC accuracy uncalibrated",
+    "Contact/via resistance and mesh convergence not tested",
+    "No full-chip RC or complete independent pad-ring LVS approval"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "scope": "Conditional IO comparison for documented common-ground usage; not unconstrained standalone IO equivalence",
+  "source": "/work/Test-2-4/baseline/pad_geometry.json",
+  "sha256": "d44bb5dfa2928c56539417bb12b9b143bc0aa43ee754de97ac95e8872acb2986",
+  "mapping": "DVSS -> VSS; remove duplicate external port",
+  "instances": [
+    {
+      "name": "bidir\\[0\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[1\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[2\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[3\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[4\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[5\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[6\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[7\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "bidir\\[8\\].pad",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    }
+  ],
+  "reason": "All 9 independently recorded original pad instances connect DVSS and VSS to VSS. Magic extracts the common p-substrate connection."
+}

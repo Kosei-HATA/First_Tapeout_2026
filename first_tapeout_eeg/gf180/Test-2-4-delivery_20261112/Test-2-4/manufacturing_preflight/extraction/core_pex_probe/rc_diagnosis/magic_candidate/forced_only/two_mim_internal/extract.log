@@ -1,0 +1,35 @@
+Using NULL graphics device.
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Using technology "gf180mcuD", version 1.0.599-0-gb344c97.
+Global Foundries 180mcu: open PDK rules and DRC
+:drc off
+:scalegrid 1 10
+10 Magic internal units = 1 Lambda
+:gds read input.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "two_mim_internal".
+:load two_mim_internal
+:select top cell
+Selected cell is two_mim_internal (Topmost cell in the window)
+:box values 50um 49.5um 50um 49.5um
+:label res:force@ center metal5
+Moving label "res:force@" from metal5 to mimcapcontact in cell two_mim_internal.
+:extresist threshold 0
+:extresist minres 0.1
+:extresist mindelay 0
+:extresist simplify off
+:extract do local
+:extract do resistance
+:extract all
+Extracting two_mim_internal into two_mim_internal.ext:
+Processing two_mim_internal
+Processing cell two_mim_internal for resistance extraction.
+Node m4_0_0# has force label but no drive point or driving device
+Total Nets: 4
+Nets extracted: 0 (0.000000)
+Nets output: 0 (0.000000)
+:quit -noprompt

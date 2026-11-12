@@ -1,0 +1,83 @@
+{
+  "scope": "Per-feature screening thresholds from observed geometry; no current split assumed. Summed via capacities are necessary-condition ceilings, not demonstrated deliverable current.",
+  "feed_vias_each_layer_each_feed": 1160,
+  "feed_via_grid": [
+    10,
+    116
+  ],
+  "feed_stack_um": [
+    6,
+    72.28
+  ],
+  "tie_vias_each_anchor": 36,
+  "tie_grid": [
+    6,
+    6
+  ],
+  "bridge_gap_vias": 0,
+  "m5_width_scaled_mA_by_temperature": {
+    "85": {
+      "bridge_10um": 45.0,
+      "trunk_20um_source_geometry": 90.0,
+      "digital_6um_strap": 27.0,
+      "digital_10um_strap": 45.0,
+      "decap_6p5um_strap": 29.25
+    },
+    "110": {
+      "bridge_10um": 22.0,
+      "trunk_20um_source_geometry": 44.0,
+      "digital_6um_strap": 13.200000000000001,
+      "digital_10um_strap": 22.0,
+      "decap_6p5um_strap": 14.3
+    },
+    "125": {
+      "bridge_10um": 15.0,
+      "trunk_20um_source_geometry": 30.0,
+      "digital_6um_strap": 9.0,
+      "digital_10um_strap": 15.0,
+      "decap_6p5um_strap": 9.75
+    }
+  },
+  "via_sum_ceiling_mA_each_layer_each_feed": {
+    "85": 672.8,
+    "110": 324.8,
+    "125": 208.79999999999998
+  },
+  "tie_via_sum_ceiling_mA_each_anchor": {
+    "85": 20.88,
+    "110": 10.080000000000002,
+    "125": 6.4799999999999995
+  },
+  "metal2_finger_widths_um": [
+    9.5,
+    10.25,
+    10.25,
+    10.25,
+    10.25,
+    9.5
+  ],
+  "metal2_finger_width_sum_um": 60,
+  "m2_single_finger_width_scaled_mA": {
+    "85": {
+      "9p5um": 19.854999999999997,
+      "10p25um": 21.4225
+    },
+    "110": {
+      "9p5um": 9.5,
+      "10p25um": 10.25
+    },
+    "125": {
+      "9p5um": 6.365,
+      "10p25um": 6.867500000000001
+    }
+  },
+  "interpretation": [
+    "The 6um stack dimension is along x, not necessarily the current-crossing width. It must not be treated as a uniform 6um lateral bottleneck.",
+    "A 6um M5 horizontal strap has a lower width-scaled per-feature threshold than one 10um bridge, but it serves a different load branch.",
+    "1160 cuts per layer do not guarantee equal sharing. Per-cut EM still applies.",
+    "The four M5 crossings at x3521 are geometric observations, not a proof that every alternative multilayer current path is absent.",
+    "No full-ring/pad-internal via audit, weighted graph flow solve, dynamic load extraction or IR simulation was run."
+  ],
+  "prior_connectivity_reference": "../../../verification/connectivity.json",
+  "pass_claim": false
+}

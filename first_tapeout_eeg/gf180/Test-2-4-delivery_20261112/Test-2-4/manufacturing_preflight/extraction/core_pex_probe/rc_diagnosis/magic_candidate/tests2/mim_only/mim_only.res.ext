@@ -1,0 +1,8 @@
+scale 1000 1 1
+rnode "BOT" 0 -11452.2 -50 -50 0
+rnode "BOT.t0" 0 11452.2 4941 0 0
+resist "BOT" "BOT.t0" 3.74697
+rnode "TOP" 0 -74995.3 10 10 0
+rnode "TOP.t0" 0 74995.3 4941 4941 0
+resist "TOP" "TOP.t0" 0.0449044
+device csubckt cap_mim_2f0_m4m5_noshield 0 0 1 1  "None" "TOP.t0" 78556 0 "BOT.t0" -29459 2386320,79544

@@ -1,0 +1,154 @@
+{
+  "disconnected_groups": {},
+  "cap_print_precision_violations": [
+    {
+      "pair": [
+        "CHOP1",
+        "VSS"
+      ],
+      "delta_fF": 0.9999999999999996,
+      "rounding_bound_fF": 0.50011
+    }
+  ],
+  "pass": false,
+  "ports_before": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_after": [
+    "CHOP1",
+    "CIA",
+    "NCIA",
+    "CIB",
+    "NCIB",
+    "CDA",
+    "NCDA",
+    "CDB",
+    "NCDB",
+    "VDD",
+    "VSS"
+  ],
+  "ports_preserved": true,
+  "counts_before": {
+    "M": 486,
+    "C": 390
+  },
+  "counts_after": {
+    "M": 486,
+    "R": 3295,
+    "C": 2642
+  },
+  "collapsed_device_topology_parameters_match": true,
+  "max_cap_pair_error_fF": [
+    0.9999999999999996,
+    [
+      "CHOP1",
+      "VSS"
+    ],
+    2.71266,
+    3.7126599999999996
+  ],
+  "largest_cap_pair_errors": [
+    [
+      0.9999999999999996,
+      [
+        "CHOP1",
+        "VSS"
+      ],
+      2.71266,
+      3.7126599999999996
+    ],
+    [
+      0.0018299999994724203,
+      [
+        "VDD",
+        "VSS"
+      ],
+      519.05,
+      519.0518299999994
+    ],
+    [
+      0.00014999999999787406,
+      [
+        "VSS",
+        "a_1292_12000#"
+      ],
+      9.19335,
+      9.193499999999998
+    ],
+    [
+      0.0001400000000035817,
+      [
+        "NCIA",
+        "VSS"
+      ],
+      9.09922,
+      9.099079999999997
+    ],
+    [
+      0.0001299999999950785,
+      [
+        "VSS",
+        "a_5676_4320#"
+      ],
+      11.964,
+      11.964129999999995
+    ],
+    [
+      8.99999999965928e-05,
+      [
+        "VSS",
+        "a_12076_4320#"
+      ],
+      11.9636,
+      11.963510000000003
+    ],
+    [
+      7.999999999164231e-05,
+      [
+        "NCDA",
+        "VSS"
+      ],
+      11.8357,
+      11.83577999999999
+    ],
+    [
+      6.999999999823814e-05,
+      [
+        "CDB",
+        "VSS"
+      ],
+      7.5025,
+      7.502569999999999
+    ],
+    [
+      6.999999999024453e-05,
+      [
+        "VSS",
+        "a_21516_340#"
+      ],
+      11.9123,
+      11.91236999999999
+    ],
+    [
+      6.000000000128125e-05,
+      [
+        "NCIB",
+        "VSS"
+      ],
+      7.66535,
+      7.665289999999999
+    ]
+  ],
+  "scope": "Resistive subdivisions collapsed for bookkeeping; no independent spatial RC accuracy claim"
+}
+unresolved groups 0

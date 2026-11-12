@@ -1,0 +1,251 @@
+{
+  "scope": "Local output normalization, not original GDS or PDK change",
+  "ext_length_unit": "scale lscale is centimicrons; SI multiplier lscale*1e-8",
+  "normalization_basis": "Physical perimeter derived from raw .ext p values and per-file scale. Each emitted diode area independently matched raw .ext area before accepting mapping.",
+  "raw_diodes": [
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 7773 49406 7774 49407 a=9216 p=384 \"OE\" \"VSS\" 184 0 \"OE\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 6895 49406 6896 49407 a=9216 p=384 \"VDD\" \"VSS\" 184 0 \"VDD\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 5119 49406 5120 49407 a=9216 p=384 \"w_4903_49190#\" \"VSS\" 184 0 \"w_4903_49190#\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 4241 49406 4242 49407 a=9216 p=384 \"OE\" \"VSS\" 184 0 \"OE\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 2529 49406 2530 49407 a=9216 p=384 \"OE\" \"VSS\" 184 0 \"OE\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1651 49406 1652 49407 a=9216 p=384 \"w_1435_49190#\" \"VSS\" 184 0 \"w_1435_49190#\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 11426 53563 11427 53564 a=40000 p=800 \"VDD\" \"A\" 736 0 \"VDD\" 0 692672,3456"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 11426 54027 11427 54028 a=40000 p=800 \"VDD\" \"A_uq1\" 736 0 \"VDD\" 0 692672,3456"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 5500 56510 5501 56511 a=800000 p=8400 \"DVDD\" \"A_uq4\" 16080 0 \"DVDD\" 0 10598760,14228"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 5500 57444 5501 57445 a=800000 p=8400 \"DVDD\" \"A_uq4\" 16080 0 \"DVDD\" 0 10598760,14228"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device ndiode diode_nd2ps_06v0 5500 59747 5501 59748 a=800000 p=8400 \"DVSS\" \"A_uq4\" 16080 0 \"DVSS\" 0 10617088,14192"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device ndiode diode_nd2ps_06v0 5500 60681 5501 60682 a=800000 p=8400 \"DVSS\" \"A_uq4\" 16080 0 \"DVSS\" 0 10617088,14192"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 2306 65928 2307 65929 a=40000 p=800 \"VDD\" \"PD\" 736 0 \"VDD\" 0 4657258,9732"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1057 65928 1058 65929 a=40000 p=800 \"VDD\" \"A_uq7\" 736 0 \"VDD\" 0 4657258,9732"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 2306 66828 2307 66829 a=40000 p=800 \"VDD\" \"A_uq9\" 736 0 \"VDD\" 0 4657258,9732"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "gf180mcu_fd_io__bi_24t.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1057 66828 1058 66829 a=40000 p=800 \"VDD\" \"A_uq8\" 736 0 \"VDD\" 0 4657258,9732"
+    }
+  ],
+  "changes": [
+    {
+      "device": "D0",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D1",
+      "old_pj": "42p",
+      "new_pj_m": 4.2e-05,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D2",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D3",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D4",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D5",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D6",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D7",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D8",
+      "old_pj": "42p",
+      "new_pj_m": 4.2e-05,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D9",
+      "old_pj": "42p",
+      "new_pj_m": 4.2e-05,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D10",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D11",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D12",
+      "old_pj": "1.92p",
+      "new_pj_m": 1.92e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D13",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D14",
+      "old_pj": "42p",
+      "new_pj_m": 4.2e-05,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    },
+    {
+      "device": "D15",
+      "old_pj": "4p",
+      "new_pj_m": 4e-06,
+      "factor": 1000000.0,
+      "derived_from": "gf180mcu_fd_io__bi_24t.ext"
+    }
+  ],
+  "strict_setup": "Copied official setup, preserve PJ instead of deleting it, add 2% PJ tolerance and additive parallel perimeter. No parameter exclusions added.",
+  "official_setup_sha256": "eb6217e33acb2c81680351745bc184a2ee37b31a25d37f4dce423f61ba466fe4"
+}

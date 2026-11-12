@@ -1,0 +1,6 @@
+{
+  "negative_length_detected": true,
+  "reference_change": "First slow NMOS L 4u -> 4.4u, all other reference unchanged",
+  "positive_log": "flat/netgen_comparison.log",
+  "negative_log": "flat/netgen_bad_L.log"
+}

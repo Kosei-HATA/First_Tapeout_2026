@@ -1,0 +1,8 @@
+* NGSPICE file created from missing_via1.ext - technology: gf180mcuD
+
+.subckt missing_via1 A B
+C0 A B 0.13329f
+C1 B w_0_0# 0.92438f
+C2 A w_0_0# 1.16052f
+.ends
+

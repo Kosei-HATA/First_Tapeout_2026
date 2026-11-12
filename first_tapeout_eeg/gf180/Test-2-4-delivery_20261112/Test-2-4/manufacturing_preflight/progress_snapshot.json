@@ -1,0 +1,43 @@
+{
+  "updated_utc": "2026-11-11T12:53:06.2699726Z",
+  "state": "current_additional_campaign_completed_manufacturing_signoff_incomplete",
+  "gds_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "completed": [
+    "Full public 177-deck DRC: zero markers",
+    "Actual GDS 296-probe/20-net connectivity: zero opens/shorts",
+    "Core-only LVS pass; full pad-ring LVS not complete",
+    "Pinned official wafer.space precheck: 16 stages complete, all five error metrics zero",
+    "DAC SS/FF 8 waveforms independently integrated; 4 values within 0.016 fC/toggle",
+    "Clock 15 fixed-bias conditions positive; two tighter-tolerance checks",
+    "Two digital macros x three corners ideal-wire STA screen positive",
+    "Real bias 45 startup and 15 loaded clock cases screened",
+    "Local actual GDS DVDD via/metal geometry audited",
+    "Isolated Magic 8.3.697 six structures and seven negative controls completed",
+    "Sidewall offset quantization explains ADC extraction version difference",
+    "Via/contact and branched resistance controls match declared PDK corners",
+    "DAC FF solver/timestep pilot six runs completed; fine residual signs not stable",
+    "DAC hierarchy multiplier audit: 659 MOS effective m=1",
+    "All 32 typical DAC codes completed and monotonic; no mismatch/PEX/noise qualification",
+    "Clock flat PEX fixed-nominal-RC 15 PVT conditions positive",
+    "Selected 3.6V FF -20C clock RC four-corner sensitivity positive; min 0.156315 ns"
+  ],
+  "active": [],
+  "not_qualified": [
+    "Full-chip coupled RC / PEX",
+    "Full-chip independent LVS",
+    "Routed full-chip STA",
+    "16.5-bit system ENOB, noise and mismatch",
+    "Full power-grid EM/IR",
+    "Package, bondpad mechanical and ESD qualification",
+    "Final manufacturing provider acceptance and die ID"
+  ],
+  "evidence": [
+    "official_precheck/official_summary.json",
+    "analog/analog_preflight_summary.json",
+    "analog/dac_even_independent_final.json",
+    "digital_timing/summary.json",
+    "extraction/io_strict_validation.json",
+    "power_screen/power_screen.json"
+  ],
+  "warning": "This is a progress snapshot, not permission to manufacture. Original delivered GDS and ZIP preserved."
+}

@@ -1,0 +1,6 @@
+{
+  "model_revision": "f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7",
+  "model_source": "existing local PDK staging copy; copied into container /work/Test-2-4/functional/models",
+  "path_only_changes": [],
+  "scope": "Schematic-level supplied testbenches; includes supplied linear MOSCAP approximation; not extracted-chip validation."
+}

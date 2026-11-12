@@ -1,0 +1,1055 @@
+{
+  "source": "/work/Test-2-4/verification/eeg_core_reference.cdl",
+  "source_sha256": "a876dd8e19f0c19b0d4a9749ae6dea6ac449fc6167b03ed401a6f526fb782141",
+  "note": "D/G/S/B are resolved from independent reference hierarchy; layout gate/bulk and L/W already cross-referenced in core LVS. No extraction netlist used as reference.",
+  "devices": {
+    "ADC.OTA1.IP_A.N": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IP_A",
+          "model": "CHOP_TG",
+          "source_line": "XIP_A INP CIP CIA NCIA VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1P",
+      "G": "ADC.CIA",
+      "S": "ADC.OTA1.CIP",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45150"
+    },
+    "ADC.OTA1.IP_A.P": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IP_A",
+          "model": "CHOP_TG",
+          "source_line": "XIP_A INP CIP CIA NCIA VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1P",
+      "G": "ADC.NCIA",
+      "S": "ADC.OTA1.CIP",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$378"
+    },
+    "ADC.OTA1.IN_A.N": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IN_A",
+          "model": "CHOP_TG",
+          "source_line": "XIN_A INN CIN CIA NCIA VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1N",
+      "G": "ADC.CIA",
+      "S": "ADC.OTA1.CIN",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45154"
+    },
+    "ADC.OTA1.IN_A.P": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IN_A",
+          "model": "CHOP_TG",
+          "source_line": "XIN_A INN CIN CIA NCIA VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1N",
+      "G": "ADC.NCIA",
+      "S": "ADC.OTA1.CIN",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$383"
+    },
+    "ADC.OTA1.IP_B.N": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IP_B",
+          "model": "CHOP_TG",
+          "source_line": "XIP_B INP CIN CIB NCIB VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1P",
+      "G": "ADC.CIB",
+      "S": "ADC.OTA1.CIN",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45151"
+    },
+    "ADC.OTA1.IP_B.P": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IP_B",
+          "model": "CHOP_TG",
+          "source_line": "XIP_B INP CIN CIB NCIB VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1P",
+      "G": "ADC.NCIB",
+      "S": "ADC.OTA1.CIN",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$379"
+    },
+    "ADC.OTA1.IN_B.N": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IN_B",
+          "model": "CHOP_TG",
+          "source_line": "XIN_B INN CIP CIB NCIB VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1N",
+      "G": "ADC.CIB",
+      "S": "ADC.OTA1.CIP",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45155"
+    },
+    "ADC.OTA1.IN_B.P": {
+      "source_subckt": "CHOP_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.IN_B",
+          "model": "CHOP_TG",
+          "source_line": "XIN_B INN CIP CIB NCIB VDD VSS chop_tg"
+        }
+      ],
+      "D": "ADC.I1N",
+      "G": "ADC.NCIB",
+      "S": "ADC.OTA1.CIP",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$384"
+    },
+    "ADC.OTA1.OTA.CORE.DP_A.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DP_A",
+          "model": "DRAIN_TG",
+          "source_line": "XDP_A d1p n1p CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1P",
+      "G": "ADC.CDA",
+      "S": "ADC.OTA1.OTA.CORE.N1P",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45606"
+    },
+    "ADC.OTA1.OTA.CORE.DP_A.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DP_A",
+          "model": "DRAIN_TG",
+          "source_line": "XDP_A d1p n1p CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1P",
+      "G": "ADC.NCDA",
+      "S": "ADC.OTA1.OTA.CORE.N1P",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$691"
+    },
+    "ADC.OTA1.OTA.CORE.DN_A.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DN_A",
+          "model": "DRAIN_TG",
+          "source_line": "XDN_A d1n n1n CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1N",
+      "G": "ADC.CDA",
+      "S": "ADC.OTA1.OTA.CORE.N1N",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45604"
+    },
+    "ADC.OTA1.OTA.CORE.DN_A.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DN_A",
+          "model": "DRAIN_TG",
+          "source_line": "XDN_A d1n n1n CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1N",
+      "G": "ADC.NCDA",
+      "S": "ADC.OTA1.OTA.CORE.N1N",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$696"
+    },
+    "ADC.OTA1.OTA.CORE.DP_B.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DP_B",
+          "model": "DRAIN_TG",
+          "source_line": "XDP_B d1p n1n CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1P",
+      "G": "ADC.CDB",
+      "S": "ADC.OTA1.OTA.CORE.N1N",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45607"
+    },
+    "ADC.OTA1.OTA.CORE.DP_B.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DP_B",
+          "model": "DRAIN_TG",
+          "source_line": "XDP_B d1p n1n CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1P",
+      "G": "ADC.NCDB",
+      "S": "ADC.OTA1.OTA.CORE.N1N",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$692"
+    },
+    "ADC.OTA1.OTA.CORE.DN_B.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DN_B",
+          "model": "DRAIN_TG",
+          "source_line": "XDN_B d1n n1p CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1N",
+      "G": "ADC.CDB",
+      "S": "ADC.OTA1.OTA.CORE.N1P",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45605"
+    },
+    "ADC.OTA1.OTA.CORE.DN_B.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.DN_B",
+          "model": "DRAIN_TG",
+          "source_line": "XDN_B d1n n1p CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.D1N",
+      "G": "ADC.NCDB",
+      "S": "ADC.OTA1.OTA.CORE.N1P",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$697"
+    },
+    "ADC.OTA1.OTA.CORE.PP_A.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PP_A",
+          "model": "DRAIN_TG",
+          "source_line": "XPP_A p1p p2p CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1P",
+      "G": "ADC.CDA",
+      "S": "ADC.OTA1.OTA.CORE.P2P",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45562"
+    },
+    "ADC.OTA1.OTA.CORE.PP_A.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PP_A",
+          "model": "DRAIN_TG",
+          "source_line": "XPP_A p1p p2p CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1P",
+      "G": "ADC.NCDA",
+      "S": "ADC.OTA1.OTA.CORE.P2P",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$665"
+    },
+    "ADC.OTA1.OTA.CORE.PN_A.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PN_A",
+          "model": "DRAIN_TG",
+          "source_line": "XPN_A p1n p2n CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1N",
+      "G": "ADC.CDA",
+      "S": "ADC.OTA1.OTA.CORE.P2N",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45608"
+    },
+    "ADC.OTA1.OTA.CORE.PN_A.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PN_A",
+          "model": "DRAIN_TG",
+          "source_line": "XPN_A p1n p2n CDA NCDA VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1N",
+      "G": "ADC.NCDA",
+      "S": "ADC.OTA1.OTA.CORE.P2N",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$694"
+    },
+    "ADC.OTA1.OTA.CORE.PP_B.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PP_B",
+          "model": "DRAIN_TG",
+          "source_line": "XPP_B p1p p2n CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1P",
+      "G": "ADC.CDB",
+      "S": "ADC.OTA1.OTA.CORE.P2N",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45563"
+    },
+    "ADC.OTA1.OTA.CORE.PP_B.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PP_B",
+          "model": "DRAIN_TG",
+          "source_line": "XPP_B p1p p2n CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1P",
+      "G": "ADC.NCDB",
+      "S": "ADC.OTA1.OTA.CORE.P2N",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$666"
+    },
+    "ADC.OTA1.OTA.CORE.PN_B.N": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MN A G B VSS nfet_03v3 w=20u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PN_B",
+          "model": "DRAIN_TG",
+          "source_line": "XPN_B p1n p2p CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1N",
+      "G": "ADC.CDB",
+      "S": "ADC.OTA1.OTA.CORE.P2P",
+      "B": "AVSS",
+      "model": "nfet_03v3",
+      "parameters": [
+        "w=20u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 160.0
+      },
+      "lvs_device": "$45609"
+    },
+    "ADC.OTA1.OTA.CORE.PN_B.P": {
+      "source_subckt": "DRAIN_TG",
+      "source_line": "MP A GN B VDD pfet_03v3 w=40u l=.28u nf=1 m=8",
+      "hierarchy": [
+        {
+          "instance": "ADC",
+          "model": "EEG_ADC",
+          "source_line": "XADC OUTP OUTN CHOP1 DAC_CLK CMP_STROBE AFE_RST ADC_ZERO SEL1_0 SEL1_1 SEL1_2 SEL1_3 SEL1_4 SEL1_5 SEL1_6 SEL1_7 SEL1_8 SEL1_9 SEL1_10 SEL1_11 SEL1_12 SEL1_13 SEL1_14 SEL1_15 SEL1_16 SEL1_17 SEL1_18 SEL1_19 SEL1_20 SEL1_21 SEL1_22 SEL1_23 SEL1_24 SEL1_25 SEL1_26 SEL1_27 SEL1_28 SEL1_29 SEL1_30 SEL2_0 SEL2_1 SEL2_2 SEL2_3 SEL2_4 SEL2_5 SEL2_6 SEL2_7 SEL2_8 SEL2_9 SEL2_10 SEL2_11 SEL2_12 SEL2_13 SEL2_14 SEL2_15 SEL2_16 SEL2_17 SEL2_18 SEL2_19 SEL2_20 SEL2_21 SEL2_22 SEL2_23 SEL2_24 SEL2_25 SEL2_26 SEL2_27 SEL2_28 SEL2_29 SEL2_30 TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 VREFP VREFN VCM VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2 IDP IDN IQ O2P O2N AVDD AVSS DVDD AVSS eeg_adc"
+        },
+        {
+          "instance": "ADC.OTA1",
+          "model": "GF180_INSIDE_CASCODE_OTA",
+          "source_line": "XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS gf180_inside_cascode_ota"
+        },
+        {
+          "instance": "ADC.OTA1.OTA",
+          "model": "GF180_CT_OTA_M4_CURRENTCHOP",
+          "source_line": "XOTA CIP CIN OUTP OUTN VCMREF VBN VNC VPC VBCM CDA NCDA CDB NCDB VDD VSS gf180_ct_ota_m4_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE",
+          "model": "GF180_CT_CORE_CURRENTCHOP",
+          "source_line": "XCORE INP INN OUTP OUTN VBN VNC VPC VBP CDA NCDA CDB NCDB VDD VSS gf180_ct_core_currentchop"
+        },
+        {
+          "instance": "ADC.OTA1.OTA.CORE.PN_B",
+          "model": "DRAIN_TG",
+          "source_line": "XPN_B p1n p2p CDB NCDB VDD VSS drain_tg"
+        }
+      ],
+      "D": "ADC.OTA1.OTA.CORE.P1N",
+      "G": "ADC.NCDB",
+      "S": "ADC.OTA1.OTA.CORE.P2P",
+      "B": "AVDD",
+      "model": "pfet_03v3",
+      "parameters": [
+        "w=40u",
+        "l=.28u",
+        "nf=1",
+        "m=8"
+      ],
+      "layout_L_W_um": {
+        "L": 0.28,
+        "W": 320.0
+      },
+      "lvs_device": "$695"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "checked_utc": "2026-11-11T03:27:51.358706+00:00",
+  "strict_pass": true,
+  "flow_success_message": true,
+  "container_state": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2026-11-11T01:58:54.085489179Z",
+    "FinishedAt": "2026-11-11T03:26:44.504725764Z"
+  },
+  "magic_completed": true,
+  "magic_duplicate_instance_warnings": 16175,
+  "metrics": {
+    "klayout__density_error__count": 0,
+    "klayout__zero_area_polygons__count": 0,
+    "klayout__antenna_error__count": 0,
+    "magic__drc_error__count": 0,
+    "klayout__drc_error__count": 0
+  },
+  "completed_steps": [
+    "01-klayout-readlayout",
+    "02-klayout-checktoplevel",
+    "03-klayout-checksize",
+    "04-klayout-generateid",
+    "05-klayout-render",
+    "06-klayout-density",
+    "07-checker-klayoutdensity",
+    "08-klayout-zeroareapolygons",
+    "09-checker-klayoutzeroareapolygons",
+    "10-klayout-antenna",
+    "11-checker-klayoutantenna",
+    "12-magic-drc",
+    "13-checker-magicdrc",
+    "14-klayout-drc",
+    "15-checker-klayoutdrc",
+    "16-klayout-writelayout"
+  ],
+  "required_zero_metrics": [
+    "klayout__density_error__count",
+    "klayout__zero_area_polygons__count",
+    "klayout__antenna_error__count",
+    "klayout__drc_error__count",
+    "magic__drc_error__count"
+  ],
+  "input_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+  "input_unchanged": true,
+  "resolved_options": {
+    "PDK": "gf180mcuD",
+    "WS_ID": "FFFFFFFF",
+    "WS_SLOT": "1x0p5",
+    "WS_COB": false,
+    "KLAYOUT_DRC_OPTIONS": {
+      "decks": "all,-antenna,-density,-cup",
+      "variant": "gf180mcuD",
+      "workers": 2
+    },
+    "ERROR_ON_MAGIC_DRC": false
+  },
+  "cob_mask_geometry_pass": true,
+  "cob_qualification": "Separate geometric mask inclusion only; does not choose or qualify CoB bonding.",
+  "scope": "Pinned official local manufacturing precheck. Its KLayout DRC excludes CUP; the prior full-public 177-deck run includes CUP and is separately archived. Not foundry acceptance or electrical/performance signoff.",
+  "derived_output": "Test-2-4_prechecked.gds contains flow ID/dummy normalization; source delivery GDS is untouched."
+}

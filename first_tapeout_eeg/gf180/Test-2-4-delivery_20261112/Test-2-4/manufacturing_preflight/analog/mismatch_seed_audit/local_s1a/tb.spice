@@ -1,0 +1,51 @@
+* eeg_dac1 check
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.param sw_stat_global=0 sw_stat_mismatch=1
+.include /work/Test-2-4/manufacturing_preflight/analog/sim_work/gf180/tapeout/adc/eeg_dac1.spice
+.temp 27
+.options sparse method=gear maxord=2 reltol=1e-5 abstol=1e-13 vntol=1e-7 chgtol=1e-17 seed=1
+VDD VDD 0 3.3
+VRP VRP 0 1.9
+VRN VRN 0 1.4
+VOP OUTP 0 1.65
+VON OUTN 0 1.65
+VDCLK DAC_CLK 0 PULSE(0 3.3 2.1220703125e-06 0.3n 0.3n 3.0217578125e-08 9.7656250000e-07)
+VS0 SEL0 0 3.3
+VS1 SEL1 0 3.3
+VS2 SEL2 0 3.3
+VS3 SEL3 0 3.3
+VS4 SEL4 0 3.3
+VS5 SEL5 0 3.3
+VS6 SEL6 0 3.3
+VS7 SEL7 0 3.3
+VS8 SEL8 0 3.3
+VS9 SEL9 0 3.3
+VS10 SEL10 0 3.3
+VS11 SEL11 0 3.3
+VS12 SEL12 0 3.3
+VS13 SEL13 0 3.3
+VS14 SEL14 0 3.3
+VS15 SEL15 0 0
+VS16 SEL16 0 0
+VS17 SEL17 0 0
+VS18 SEL18 0 0
+VS19 SEL19 0 0
+VS20 SEL20 0 0
+VS21 SEL21 0 0
+VS22 SEL22 0 0
+VS23 SEL23 0 0
+VS24 SEL24 0 0
+VS25 SEL25 0 0
+VS26 SEL26 0 0
+VS27 SEL27 0 0
+VS28 SEL28 0 0
+VS29 SEL29 0 0
+VS30 SEL30 0 0
+XD OUTP OUTN VRP VRN SEL0 SEL1 SEL2 SEL3 SEL4 SEL5 SEL6 SEL7 SEL8 SEL9 SEL10 SEL11 SEL12 SEL13 SEL14 SEL15 SEL16 SEL17 SEL18 SEL19 SEL20 SEL21 SEL22 SEL23 SEL24 SEL25 SEL26 SEL27 SEL28 SEL29 SEL30 DAC_CLK VDD 0 eeg_dac1
+.control
+listing e
+quit
+.endc
+.end

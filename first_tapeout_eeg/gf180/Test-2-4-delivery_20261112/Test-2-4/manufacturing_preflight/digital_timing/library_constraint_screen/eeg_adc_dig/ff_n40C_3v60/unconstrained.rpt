@@ -1,0 +1,769 @@
+Startpoint: RST_N (input port clocked by MCLK)
+Endpoint: _3144_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 ^ input external delay
+   0.01   10.01 ^ RST_N (in)
+   0.16   10.17 ^ hold364/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.17   10.34 ^ hold362/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.16   10.50 ^ hold365/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.17   10.67 ^ input3/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27   10.94 ^ hold363/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.00   10.94 ^ _3144_/RN (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+          10.94   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.17   31.16   library recovery time
+          31.16   data required time
+---------------------------------------------------------
+          31.16   data required time
+         -10.94   data arrival time
+---------------------------------------------------------
+          20.22   slack (MET)
+
+
+Startpoint: RST_N (input port clocked by MCLK)
+Endpoint: _3143_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 ^ input external delay
+   0.01   10.01 ^ RST_N (in)
+   0.16   10.17 ^ hold364/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.17   10.34 ^ hold362/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.16   10.50 ^ hold365/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.17   10.67 ^ input3/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27   10.94 ^ hold363/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.00   10.94 ^ _3143_/RN (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          10.94   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3143_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+   0.18   31.17   library recovery time
+          31.17   data required time
+---------------------------------------------------------
+          31.17   data required time
+         -10.94   data arrival time
+---------------------------------------------------------
+          20.23   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3024_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    4.82 ^ wire284/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.28    5.10 ^ load_slew283/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.00    5.10 ^ _3024_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           5.10   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3024_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.02   31.03   library recovery time
+          31.03   data required time
+---------------------------------------------------------
+          31.03   data required time
+          -5.10   data arrival time
+---------------------------------------------------------
+          25.93   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3039_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    4.82 ^ wire284/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.28    5.10 ^ load_slew283/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_1)
+   0.00    5.10 ^ _3039_/RN (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+           5.10   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3039_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+   0.18   31.20   library recovery time
+          31.20   data required time
+---------------------------------------------------------
+          31.20   data required time
+          -5.10   data arrival time
+---------------------------------------------------------
+          26.10   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3015_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    4.82 ^ wire284/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.82 ^ _3015_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           4.82   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3015_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.02   31.04   library recovery time
+          31.04   data required time
+---------------------------------------------------------
+          31.04   data required time
+          -4.82   data arrival time
+---------------------------------------------------------
+          26.22   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3016_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    4.82 ^ wire284/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.82 ^ _3016_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           4.82   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.72   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.02   clock reconvergence pessimism
+          31.02 ^ _3016_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.02   31.04   library recovery time
+          31.04   data required time
+---------------------------------------------------------
+          31.04   data required time
+          -4.82   data arrival time
+---------------------------------------------------------
+          26.22   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3031_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    4.82 ^ wire284/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.82 ^ _3031_/RN (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+           4.82   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.72   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.02   clock reconvergence pessimism
+          31.02 ^ _3031_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+   0.19   31.20   library recovery time
+          31.20   data required time
+---------------------------------------------------------
+          31.20   data required time
+          -4.82   data arrival time
+---------------------------------------------------------
+          26.39   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3017_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.52 ^ _3017_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           4.52   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3017_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.03   31.05   library recovery time
+          31.05   data required time
+---------------------------------------------------------
+          31.05   data required time
+          -4.52   data arrival time
+---------------------------------------------------------
+          26.52   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3021_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.32    2.06 ^ fanout291/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    2.31 ^ load_slew295/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.29    2.60 ^ wire294/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.16    2.76 ^ load_slew293/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    3.00 ^ fanout287/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.25 ^ load_slew290/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.27    3.53 ^ load_slew289/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.22    3.75 ^ wire288/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.24    3.99 ^ fanout282/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.27    4.26 ^ load_slew286/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.26    4.52 ^ load_slew285/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.52 ^ _3021_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           4.52   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3021_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.03   31.05   library recovery time
+          31.05   data required time
+---------------------------------------------------------
+          31.05   data required time
+          -4.52   data arrival time
+---------------------------------------------------------
+          26.52   slack (MET)
+
+
+Startpoint: _3144_ (rising edge-triggered flip-flop clocked by MCLK)
+Endpoint: _3113_ (recovery check against rising-edge clock MCLK)
+Path Group: asynchronous
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.79    0.79   clock network delay (propagated)
+   0.00    0.79 ^ _3144_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.75    1.53 ^ _3144_/Q (gf180mcu_fd_sc_mcu7t5v0__dffrnq_2)
+   0.21    1.74 ^ wire354/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.24    1.98 ^ fanout330/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.19    2.17 ^ load_slew332/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.23    2.41 ^ wire331/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.24    2.65 ^ fanout309/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.29    2.94 ^ wire313/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.29    3.23 ^ wire311/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.32    3.54 ^ fanout305/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.25    3.79 ^ load_slew308/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.26    4.04 ^ load_slew307/Z (gf180mcu_fd_sc_mcu7t5v0__buf_2)
+   0.28    4.33 ^ load_slew306/Z (gf180mcu_fd_sc_mcu7t5v0__clkbuf_2)
+   0.00    4.33 ^ _3113_/SETN (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+           4.33   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.03   31.01   clock reconvergence pessimism
+          31.01 ^ _3113_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+   0.03   31.04   library recovery time
+          31.04   data required time
+---------------------------------------------------------
+          31.04   data required time
+          -4.33   data arrival time
+---------------------------------------------------------
+          26.71   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3111_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.22   12.30 ^ load_slew215/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.19   12.49 v _2561_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.22   12.71 ^ _2562_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai221_4)
+   0.00   12.71 ^ _3111_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.71   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3111_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.31   30.67   library setup time
+          30.67   data required time
+---------------------------------------------------------
+          30.67   data required time
+         -12.71   data arrival time
+---------------------------------------------------------
+          17.96   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3105_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.22   12.30 ^ load_slew215/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.20   12.50 v _2544_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.21   12.71 ^ _2547_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai211_4)
+   0.00   12.71 ^ _3105_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.71   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3105_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.28   30.70   library setup time
+          30.70   data required time
+---------------------------------------------------------
+          30.70   data required time
+         -12.71   data arrival time
+---------------------------------------------------------
+          18.00   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3106_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.22   12.30 ^ load_slew215/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.20   12.50 v _2548_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.21   12.71 ^ _2550_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai211_4)
+   0.00   12.71 ^ _3106_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.71   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3106_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.27   30.71   library setup time
+          30.71   data required time
+---------------------------------------------------------
+          30.71   data required time
+         -12.71   data arrival time
+---------------------------------------------------------
+          18.00   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3103_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.22   12.30 ^ load_slew215/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.20   12.50 v _2537_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.21   12.71 ^ _2539_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai211_4)
+   0.00   12.71 ^ _3103_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.71   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3103_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.27   30.71   library setup time
+          30.71   data required time
+---------------------------------------------------------
+          30.71   data required time
+         -12.71   data arrival time
+---------------------------------------------------------
+          18.00   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3082_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.32   12.12 ^ _2274_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.26   12.37 ^ load_slew207/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.15   12.53 v _2308_/ZN (gf180mcu_fd_sc_mcu7t5v0__aoi22_1)
+   0.14   12.67 ^ _2309_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_2)
+   0.00   12.67 ^ _3082_/D (gf180mcu_fd_sc_mcu7t5v0__dffsnq_2)
+          12.67   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3082_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_2)
+  -0.23   30.76   library setup time
+          30.76   data required time
+---------------------------------------------------------
+          30.76   data required time
+         -12.67   data arrival time
+---------------------------------------------------------
+          18.09   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3001_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.32   12.12 ^ _2274_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.26   12.37 ^ load_slew207/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.11   12.48 v _2639_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.17   12.65 ^ _2640_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai21_1)
+   0.00   12.65 ^ _3001_/D (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+          12.65   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3001_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+  -0.23   30.75   library setup time
+          30.75   data required time
+---------------------------------------------------------
+          30.75   data required time
+         -12.65   data arrival time
+---------------------------------------------------------
+          18.11   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _2999_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.32   12.12 ^ _2274_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.26   12.37 ^ load_slew207/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.11   12.48 v _2635_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.17   12.65 ^ _2636_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai21_1)
+   0.00   12.65 ^ _2999_/D (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+          12.65   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _2999_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffsnq_1)
+  -0.23   30.75   library setup time
+          30.75   data required time
+---------------------------------------------------------
+          30.75   data required time
+         -12.65   data arrival time
+---------------------------------------------------------
+          18.11   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3043_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.19   12.27 v _1548_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.22   12.49 ^ _1549_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai221_4)
+   0.00   12.49 ^ _3043_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.49   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3043_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.31   30.67   library setup time
+          30.67   data required time
+---------------------------------------------------------
+          30.67   data required time
+         -12.49   data arrival time
+---------------------------------------------------------
+          18.18   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3036_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.20   12.28 v _1531_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.21   12.49 ^ _1533_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai211_4)
+   0.00   12.49 ^ _3036_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.49   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.71   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3036_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.28   30.71   library setup time
+          30.71   data required time
+---------------------------------------------------------
+          30.71   data required time
+         -12.49   data arrival time
+---------------------------------------------------------
+          18.22   slack (MET)
+
+
+Startpoint: TH_CAPTURE (input port clocked by MCLK)
+Endpoint: _3032_ (rising edge-triggered flip-flop clocked by MCLK)
+Path Group: MCLK
+Path Type: max
+
+  Delay    Time   Description
+---------------------------------------------------------
+   0.00    0.00   clock MCLK (rise edge)
+   0.00    0.00   clock network delay (propagated)
+  10.00   10.00 v input external delay
+   0.01   10.01 v TH_CAPTURE (in)
+   0.26   10.27 v input32/Z (gf180mcu_fd_sc_mcu7t5v0__buf_1)
+   0.31   10.58 v _1767_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.25   10.83 v wire356/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.40   11.24 ^ _1768_/ZN (gf180mcu_fd_sc_mcu7t5v0__inv_2)
+   0.29   11.53 ^ _1769_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.27   11.79 ^ wire246/Z (gf180mcu_fd_sc_mcu7t5v0__buf_4)
+   0.28   12.08 ^ _1770_/Z (gf180mcu_fd_sc_mcu7t5v0__buf_3)
+   0.20   12.28 v _1521_/ZN (gf180mcu_fd_sc_mcu7t5v0__nand2_1)
+   0.21   12.49 ^ _1524_/ZN (gf180mcu_fd_sc_mcu7t5v0__oai211_4)
+   0.00   12.49 ^ _3032_/D (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+          12.49   data arrival time
+
+  30.52   30.52   clock MCLK (rise edge)
+   0.72   31.23   clock network delay (propagated)
+  -0.25   30.98   clock uncertainty
+   0.00   30.98   clock reconvergence pessimism
+          30.98 ^ _3032_/CLK (gf180mcu_fd_sc_mcu7t5v0__dffrnq_1)
+  -0.28   30.71   library setup time
+          30.71   data required time
+---------------------------------------------------------
+          30.71   data required time
+         -12.49   data arrival time
+---------------------------------------------------------
+          18.22   slack (MET)
+
+

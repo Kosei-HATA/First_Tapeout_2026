@@ -1,0 +1,56 @@
+[
+  {
+    "cell": "gf180mcu_fd_io__dvss",
+    "has_pdk_reference": true,
+    "direct_reference_count": 8,
+    "bbox_um": "(-0.16,0;75.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__dvdd",
+    "has_pdk_reference": true,
+    "direct_reference_count": 8,
+    "bbox_um": "(-0.16,0;75.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__bi_24t",
+    "has_pdk_reference": true,
+    "direct_reference_count": 9,
+    "bbox_um": "(-0.16,0;75.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__asig_5p0",
+    "has_pdk_reference": true,
+    "direct_reference_count": 47,
+    "bbox_um": "(-0.16,0;75.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__fill5",
+    "has_pdk_reference": true,
+    "direct_reference_count": 22,
+    "bbox_um": "(-0.16,0;5.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__fillnc",
+    "has_pdk_reference": true,
+    "direct_reference_count": 20,
+    "bbox_um": "(-0.16,0;0.26,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__fill1",
+    "has_pdk_reference": true,
+    "direct_reference_count": 226,
+    "bbox_um": "(-0.16,0;1.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__fill10",
+    "has_pdk_reference": true,
+    "direct_reference_count": 414,
+    "bbox_um": "(-0.16,0;10.16,350)"
+  },
+  {
+    "cell": "gf180mcu_fd_io__cor",
+    "has_pdk_reference": true,
+    "direct_reference_count": 4,
+    "bbox_um": "(0,0;355.16,355.16)"
+  }
+]

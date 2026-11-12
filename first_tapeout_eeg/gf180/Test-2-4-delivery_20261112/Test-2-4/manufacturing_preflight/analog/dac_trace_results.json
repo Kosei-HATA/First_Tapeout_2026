@@ -1,0 +1,20 @@
+[
+  {
+    "test": "dac_trace_typical",
+    "exitcode": 0,
+    "seconds": 138.56,
+    "log": "dac_trace_typical.log"
+  },
+  {
+    "test": "dac_trace_ss",
+    "exitcode": 0,
+    "seconds": 138.77,
+    "log": "dac_trace_ss.log"
+  },
+  {
+    "test": "dac_trace_ff",
+    "exitcode": 0,
+    "seconds": 139.77,
+    "log": "dac_trace_ff.log"
+  }
+]

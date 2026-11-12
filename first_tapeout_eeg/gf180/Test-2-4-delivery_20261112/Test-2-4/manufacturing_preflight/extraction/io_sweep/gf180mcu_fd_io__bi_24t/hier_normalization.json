@@ -1,0 +1,186 @@
+{
+  "raw": [
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "comp018green_esd_cdm.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device ndiode diode_nd2ps_06v0 949 978 950 979 a=800000 p=8400 \"DVSS\" \"IP_IN\" 16080 0 \"DVSS\" 0 10617088,14192"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "comp018green_esd_cdm.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device ndiode diode_nd2ps_06v0 949 1912 950 1913 a=800000 p=8400 \"DVSS\" \"IP_IN\" 16080 0 \"DVSS\" 0 10617088,14192"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "comp018green_esd_cdm.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 949 4215 950 4216 a=800000 p=8400 \"w_454_3720#\" \"IP_IN\" 16080 0 \"w_454_3720#\" 0 10598760,14228"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.0000000000000002e-11,
+      "perimeter_m": 4.2e-05,
+      "ext_file": "comp018green_esd_cdm.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 949 5149 950 5150 a=800000 p=8400 \"w_454_3720#\" \"IP_IN\" 16080 0 \"w_454_3720#\" 0 10598760,14228"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "comp018green_inpath_cms_smt.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1490 1224 1491 1225 a=40000 p=800 \"w_25_1008#\" \"IE\" 736 0 \"w_25_1008#\" 0 399424,2528"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "comp018green_inpath_cms_smt.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 241 1224 242 1225 a=40000 p=800 \"w_25_1008#\" \"CS\" 736 0 \"w_25_1008#\" 0 399424,2528"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "comp018green_inpath_cms_smt.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1490 2124 1491 2125 a=40000 p=800 \"w_25_1008#\" \"PD\" 736 0 \"w_25_1008#\" 0 399424,2528"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "comp018green_inpath_cms_smt.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 241 2124 242 2125 a=40000 p=800 \"w_25_1008#\" \"PU\" 736 0 \"w_25_1008#\" 0 399424,2528"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "comp018green_out_sigbuf_oe.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 1763 -495 1764 -494 a=9216 p=384 \"OE\" \"VSS\" 184 0 \"OE\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 2.304e-13,
+      "perimeter_m": 1.9200000000000003e-06,
+      "ext_file": "comp018green_out_sigbuf_oe.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 885 -495 886 -494 a=9216 p=384 \"PDRV\" \"VSS\" 184 0 \"PDRV\" 0 278784,2112"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "GF_NI_BI_24T_BASE.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 11458 40793 11459 40794 a=40000 p=800 \"w_11242_40577#\" \"A\" 736 0 \"w_11242_40577#\" 0 692672,3456"
+    },
+    {
+      "model": "diode_pd2nw_06v0",
+      "area_m2": 1.0000000000000002e-12,
+      "perimeter_m": 4e-06,
+      "ext_file": "GF_NI_BI_24T_BASE.ext",
+      "linear_scale_m": 5e-09,
+      "raw_line": "device pdiode diode_pd2nw_06v0 11458 41257 11459 41258 a=40000 p=800 \"w_11242_40577#\" \"SL\" 736 0 \"w_11242_40577#\" 0 692672,3456"
+    }
+  ],
+  "changes": [
+    {
+      "device": "D0",
+      "old_pj": "1.92u",
+      "new_pj_m": 1.92e-06,
+      "factor": 1,
+      "derived_from": "comp018green_out_sigbuf_oe.ext"
+    },
+    {
+      "device": "D1",
+      "old_pj": "1.92u",
+      "new_pj_m": 1.92e-06,
+      "factor": 1,
+      "derived_from": "comp018green_out_sigbuf_oe.ext"
+    },
+    {
+      "device": "D0",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    },
+    {
+      "device": "D1",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    },
+    {
+      "device": "D2",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    },
+    {
+      "device": "D3",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    },
+    {
+      "device": "D0",
+      "old_pj": "42u",
+      "new_pj_m": 4.2e-05,
+      "factor": 1,
+      "derived_from": "comp018green_esd_cdm.ext"
+    },
+    {
+      "device": "D1",
+      "old_pj": "42u",
+      "new_pj_m": 4.2e-05,
+      "factor": 1,
+      "derived_from": "comp018green_esd_cdm.ext"
+    },
+    {
+      "device": "D2",
+      "old_pj": "42u",
+      "new_pj_m": 4.2e-05,
+      "factor": 1,
+      "derived_from": "comp018green_esd_cdm.ext"
+    },
+    {
+      "device": "D3",
+      "old_pj": "42u",
+      "new_pj_m": 4.2e-05,
+      "factor": 1,
+      "derived_from": "comp018green_esd_cdm.ext"
+    },
+    {
+      "device": "D0",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    },
+    {
+      "device": "D1",
+      "old_pj": "4u",
+      "new_pj_m": 4e-06,
+      "factor": 1,
+      "derived_from": "comp018green_inpath_cms_smt.ext"
+    }
+  ]
+}

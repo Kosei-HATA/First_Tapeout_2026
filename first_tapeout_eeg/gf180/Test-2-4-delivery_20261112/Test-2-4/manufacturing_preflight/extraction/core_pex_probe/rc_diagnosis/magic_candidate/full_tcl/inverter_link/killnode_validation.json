@@ -1,0 +1,41 @@
+{
+  "killed_nodes": [
+    "a_20056_472#",
+    "a_244_68#",
+    "a_56_472#"
+  ],
+  "positive": {
+    "matrix_max_error_fF": 2.000000000279556e-05,
+    "all_device_terminals_connected_per_original_net": true,
+    "collapsed_device_topology_and_parameters_match": true,
+    "stale_killed_endpoints": [],
+    "pass": true
+  },
+  "negative": {
+    "missing_reconnected_cap": {
+      "matrix_max_error_fF": 1.4432799999999997,
+      "all_device_terminals_connected_per_original_net": true,
+      "collapsed_device_topology_and_parameters_match": true,
+      "stale_killed_endpoints": [],
+      "pass": false
+    },
+    "stale_killed_endpoint": {
+      "matrix_max_error_fF": 2.000000000279556e-05,
+      "all_device_terminals_connected_per_original_net": true,
+      "collapsed_device_topology_and_parameters_match": true,
+      "stale_killed_endpoints": [
+        "a_244_68#"
+      ],
+      "pass": false
+    },
+    "broken_internal_resistor": {
+      "matrix_max_error_fF": 2.000000000279556e-05,
+      "all_device_terminals_connected_per_original_net": false,
+      "collapsed_device_topology_and_parameters_match": true,
+      "stale_killed_endpoints": [],
+      "pass": false
+    }
+  },
+  "all_negative_detected": true,
+  "scope": "Complete new Tcl build; actual GDS-extracted killnode and remapped cap records. Matrix comparison is after collapsing resistive subdivisions; not distributed-frequency accuracy."
+}

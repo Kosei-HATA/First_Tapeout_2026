@@ -1,0 +1,12 @@
+* Extracted by KLayout with GF180MCU LVS runset on : 11/11/2026 03:04
+
+* cell gf180mcu_fd_io__asig_5p0
+* pin ASIG5V
+* pin DVDD
+* pin DVSS
+.SUBCKT gf180mcu_fd_io__asig_5p0 ASIG5V DVDD DVSS
+* device instance $1 r0 *1 37.5,74.905 diode_pd2nw_06v0
+D$1 ASIG5V DVDD diode_pd2nw_06v0 A=600P P=424U
+* device instance $5 r0 *1 28.91,317.515 cap_nmos_06v0
+C$5 DVDD DVSS 1.863e-11 cap_nmos_06v0 A=8100P P=2160U
+.ENDS gf180mcu_fd_io__asig_5p0

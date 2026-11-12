@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<report-database>
+ <description>Test-2-4 CUP checks without waivers</description>
+ <original-file/>
+ <generator>drc: script='/work/Test-2-4/verification/cup.drc'</generator>
+ <top-cell>chip_top</top-cell>
+ <tags>
+ </tags>
+ <categories>
+  <category>
+   <name>CUP3_M1</name>
+   <description>CUP.3 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP2_M1</name>
+   <description>CUP.2 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP3_M2</name>
+   <description>CUP.3 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP2_M2</name>
+   <description>CUP.2 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP3_M3</name>
+   <description>CUP.3 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP2_M3</name>
+   <description>CUP.2 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP3_M4</name>
+   <description>CUP.3 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP2_M4</name>
+   <description>CUP.2 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP3_M5</name>
+   <description>CUP.3 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+  <category>
+   <name>CUP2_M5</name>
+   <description>CUP.2 actual 1um threshold</description>
+   <categories>
+   </categories>
+  </category>
+ </categories>
+ <cells>
+  <cell>
+   <name>chip_top</name>
+   <variant/>
+   <layout-name/>
+   <references>
+   </references>
+  </cell>
+ </cells>
+ <items>
+ </items>
+</report-database>

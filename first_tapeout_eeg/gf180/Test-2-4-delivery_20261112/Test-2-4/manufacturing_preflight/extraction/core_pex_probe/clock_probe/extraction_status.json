@@ -1,0 +1,21 @@
+{
+  "returncode": 0,
+  "elapsed_seconds": 4.68434476852417,
+  "style": "ngspice()",
+  "reference_subckts": [
+    "eeg_adc_clk",
+    "eeg_aclk_inv_s48",
+    "eeg_aclk_inv_s10",
+    "eeg_aclk_inv_s2",
+    "eeg_aclk_inv_s1",
+    "eeg_aclk_inv_s24",
+    "eeg_aclk_inv_s8",
+    "eeg_aclk_inv_s12",
+    "eeg_aclk_inv_s6",
+    "eeg_aclk_or2n_s1",
+    "eeg_aclk_nor2_s1",
+    "eeg_aclk_nand2_s1",
+    "eeg_aclk_slow",
+    "eeg_aclk_and2n_s1"
+  ]
+}

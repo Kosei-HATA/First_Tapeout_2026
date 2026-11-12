@@ -1,0 +1,96 @@
+{
+  "bias_dc_cases": 15,
+  "startup_cases": 45,
+  "startup_screen_pass": true,
+  "maximum_relative_dc_error": [
+    0.0004273043908855019,
+    3.3,
+    "ff",
+    -20,
+    1
+  ],
+  "startup_criterion": "Final outputs 100us after ramp within 2% of corresponding DC point; engineering diagnostic, not a product spec.",
+  "real_bias_clock_cases": 15,
+  "real_bias_clock_positive_margin_pass": true,
+  "worst_clock_margin_case": {
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "minimum_margin_ns": 0.14351257904435655
+  },
+  "run_errors": [],
+  "dc_ranges": {
+    "v(vbn)": [
+      0.7615453,
+      0.9314626
+    ],
+    "v(vbcm)": [
+      0.7341064,
+      0.9027329
+    ],
+    "v(bln)": [
+      0.9678794,
+      1.231932
+    ],
+    "v(blp)": [
+      1.008049,
+      1.981955
+    ],
+    "v(vbn1)": [
+      0.7658064,
+      0.9359495
+    ],
+    "v(vbcm1)": [
+      0.7341064,
+      0.9027329
+    ],
+    "v(vnc1)": [
+      1.820026,
+      2.186066
+    ],
+    "v(vpc1)": [
+      1.542958,
+      1.852756
+    ],
+    "v(vbpc2)": [
+      1.636748,
+      1.964671
+    ],
+    "v(vbnc2)": [
+      1.358462,
+      1.632823
+    ],
+    "v(vcm)": [
+      1.65,
+      1.65
+    ],
+    "i(vmbln)": [
+      0.0001236513,
+      0.0001333516
+    ],
+    "i(vmblp)": [
+      0.0001244277,
+      0.000136292
+    ],
+    "i(vmiq)": [
+      3.09814e-05,
+      3.339656e-05
+    ]
+  },
+  "bias_matches_project": true,
+  "scope": "3.0/3.3/3.6V x typical27/ss85/ff-20/sf27/fs27; real bias schematic and loaded ADC OTA clock, code2 and reset booster trim.",
+  "limits": [
+    "Reference rails remain ideal fixed 1.9/1.4V and ITST load at1V; no complete reference startup or arbitrary supply ordering.",
+    "Startup uses representative mirror loads; ADC clock simulation starts from DC operating point, not integrated power-up.",
+    "Linear MOSCAP approximation, no extracted parasitics or package, no noise/mismatch/Monte Carlo.",
+    "No brownout, power cycling, all trim codes, or ADC/DAC closed-loop behavior.",
+    "Positive clock margin is a sequence screen, not minimum guardband product acceptance.",
+    "Current source netlist identity is verified; physical GDS correspondence relies on parent core LVS."
+  ],
+  "model_scope": {
+    "MOSCAP_model": "Linear constant-C approximation in functional/sim_work/gf180/tapeout/sim/moscap_lin.spice, not official voltage-dependent MOSCAP.",
+    "affected_tests": "All 45 bias startup cases; actual-bias 15 schematic-clock cases; nominal/cap/RC comparisons; 75 clock device/RC cases and numerical controls.",
+    "limitation": "Circuit source matching and clock extraction audit do not validate nonlinear MOSCAP behavior, full-chip startup, accuracy, or manufacturing signoff.",
+    "formula": "NMOS: factor*L*W*3.983e-3 F/m2; PMOS: factor*L*W*3.958e-3 F/m2; factor typical=1, ff=.9, ss=1.1."
+  }
+}

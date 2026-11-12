@@ -1,0 +1,42 @@
+{
+  "wire": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "84e20d86c402e279316a9fd3c23352e054d7c744a02c16367e97e3e4633d6f9d",
+    "killnodes": []
+  },
+  "coupled_wires": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "46ace1bed782d3a0ccee3e4a329e85bb98f7fef2adff4f50385133ea68c5d7a3",
+    "killnodes": []
+  },
+  "mim_only": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "4bddbe09e471e1d59f4b8c7fd564adc9d665029620885a32bcf4737bc7950cf5",
+    "killnodes": []
+  },
+  "adc_flat": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "5acf68b636d6e12f78afcdeb37fb656eb51691802d7d2c4005bbdaa1d5212ced",
+    "killnodes": []
+  },
+  "inverter_link": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "897e2988e58e18b9aa2d8c74d4eea2a1130ec4111a689a0bc0acedaec6bad126",
+    "killnodes": [
+      "killnode \"a_20056_472#\"",
+      "killnode \"a_244_68#\"",
+      "killnode \"a_56_472#\""
+    ]
+  },
+  "adc_hierarchy": {
+    "returncode": 0,
+    "has_rc": true,
+    "input_sha256": "364c525495e210620440b53c89f8ac747418aaf51849b213f9981afdc4d775ea",
+    "killnodes": []
+  }
+}

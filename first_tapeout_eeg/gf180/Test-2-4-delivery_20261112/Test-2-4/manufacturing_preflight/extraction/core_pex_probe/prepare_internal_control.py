@@ -1,0 +1,3 @@
+from pathlib import Path
+import klayout.db as k
+p=Path('/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/rc_diagnosis');d=p/'two_mim_internal';d.mkdir(exist_ok=True);l=k.Layout();l.read(str(p/'mim_only/input.gds'));base=l.top_cell();top=l.create_cell('two_mim_internal');top.insert(k.CellInstArray(base.cell_index(),k.Trans()));top.insert(k.CellInstArray(base.cell_index(),k.Trans(120000,0)));top.flatten(True);top.shapes(l.layer(81,0)).insert(k.Box(49000,49000,171000,50000));l.write(str(d/'input.gds'));s=(p/'mim_only/hier.tcl').read_text().replace('load mim_only','load two_mim_internal');(d/'hier.tcl').write_text(s)

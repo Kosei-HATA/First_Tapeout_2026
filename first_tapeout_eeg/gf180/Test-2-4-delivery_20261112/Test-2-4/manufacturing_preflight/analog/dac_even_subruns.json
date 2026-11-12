@@ -1,0 +1,50 @@
+[
+  {
+    "tag": "even_one0_ss85_v0_s0",
+    "seconds": 1529.53,
+    "last_time_s": 7.23125e-05,
+    "samples": 279760
+  },
+  {
+    "tag": "even_one1_ss85_v0_s0",
+    "seconds": 1460.89,
+    "last_time_s": 7.23125e-05,
+    "samples": 274434
+  },
+  {
+    "tag": "even_all0_ss85_v0_s0",
+    "seconds": 1357.02,
+    "last_time_s": 7.23125e-05,
+    "samples": 277900
+  },
+  {
+    "tag": "even_all1_ss85_v0_s0",
+    "seconds": 1102.75,
+    "last_time_s": 7.23125e-05,
+    "samples": 271953
+  },
+  {
+    "tag": "even_one0_ff-20_v0_s0",
+    "seconds": 1111.13,
+    "last_time_s": 7.23125e-05,
+    "samples": 278980
+  },
+  {
+    "tag": "even_one1_ff-20_v0_s0",
+    "seconds": 4820.17,
+    "last_time_s": 7.23125e-05,
+    "samples": 273575
+  },
+  {
+    "tag": "even_all0_ff-20_v0_s0",
+    "seconds": 1126.38,
+    "last_time_s": 7.23125e-05,
+    "samples": 276795
+  },
+  {
+    "tag": "even_all1_ff-20_v0_s0",
+    "seconds": 1099.23,
+    "last_time_s": 7.23125e-05,
+    "samples": 270989
+  }
+]

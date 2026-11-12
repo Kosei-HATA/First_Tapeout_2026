@@ -1,0 +1,6 @@
+{
+  "name": "digital_tests",
+  "exitcode": 0,
+  "seconds": 1454.25,
+  "environment_fix": "LD_LIBRARY_PATH includes /foss/tools/iverilog/lib"
+}

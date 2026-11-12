@@ -1,0 +1,24 @@
+[
+  {
+    "instance": "XR",
+    "multiplier": 16,
+    "generated": [
+      "XR__noise_parallel_0",
+      "XR__noise_parallel_1",
+      "XR__noise_parallel_2",
+      "XR__noise_parallel_3",
+      "XR__noise_parallel_4",
+      "XR__noise_parallel_5",
+      "XR__noise_parallel_6",
+      "XR__noise_parallel_7",
+      "XR__noise_parallel_8",
+      "XR__noise_parallel_9",
+      "XR__noise_parallel_10",
+      "XR__noise_parallel_11",
+      "XR__noise_parallel_12",
+      "XR__noise_parallel_13",
+      "XR__noise_parallel_14",
+      "XR__noise_parallel_15"
+    ]
+  }
+]

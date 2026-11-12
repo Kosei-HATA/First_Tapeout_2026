@@ -1,0 +1,40 @@
+Using NULL graphics device.
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Using technology "gf180mcuD", version 1.0.599-0-gb344c97.
+Global Foundries 180mcu: open PDK rules and DRC
+:drc off
+:crashbackups stop
+Unknown command: 'crashbackups' 'stop' at (100, 100)
+:gds read input.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "mim_only".
+CIF file read warning: Input off lambda grid by 3/5; grid redefined.
+:load mim_only
+:select top cell
+Selected cell is mim_only (Topmost cell in the window)
+:box values 0.1um 0.1um 0.1um 0.1um
+:label TOP center mimcap
+:port make 1
+:box values -0.5um -0.5um -0.5um -0.5um
+:label BOT center metal4
+:port make 2
+:extresist threshold 0
+:extresist minres 0.1
+:extresist mindelay 0
+:extresist simplify off
+:extract do local
+:extract do resistance
+:extract all
+Extracting mim_only into mim_only.ext:
+Processing mim_only
+Processing cell mim_only for resistance extraction.
+Extracting BOT
+Extracting TOP
+Total Nets: 3
+Nets extracted: 2 (0.666667)
+Nets output: 2 (0.666667)
+:quit -noprompt

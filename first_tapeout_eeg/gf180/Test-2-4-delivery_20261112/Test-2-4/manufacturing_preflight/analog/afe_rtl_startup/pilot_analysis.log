@@ -1,0 +1,20 @@
+{
+  "mode": "pilot",
+  "last_time_s": 3.2e-05,
+  "finite": true,
+  "steady_criteria_met": false,
+  "steady_evaluation_available": false,
+  "worst_gate_pair": {
+    "instance": "xc.xcda3.xn",
+    "pair": "vgs",
+    "max_abs_V": 3.34836141437881,
+    "peak_time_s": 1.475645878767807e-05
+  },
+  "worst_vds": {
+    "instance": "xa.xoff.xop.xnph.xn",
+    "pair": "vds",
+    "max_abs_V": 3.386043665024339,
+    "peak_time_s": 1.088877312765394e-05
+  },
+  "scope": "Engineering periodicity test only. AFE-only, assumed external sequence, ideal common substrate, Q diagnostic, no full ADC loop or ENOB validation."
+}

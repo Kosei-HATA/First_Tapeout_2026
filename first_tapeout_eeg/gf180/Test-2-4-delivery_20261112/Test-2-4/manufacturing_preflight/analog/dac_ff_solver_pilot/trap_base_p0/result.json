@@ -1,0 +1,10 @@
+{
+  "setting": "trap_base",
+  "pattern": 0,
+  "seconds": 280.34280037879944,
+  "exitcode": 0,
+  "last_time_s": 1.5671875e-05,
+  "samples": 49521,
+  "charge_C": -1.544159321060724e-11,
+  "deck_sha256": "5aea2e60c3d6b0335e574e3145da667e8898944e1cd1b1e7eb016ec01411ebed"
+}

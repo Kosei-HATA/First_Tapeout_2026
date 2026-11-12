@@ -1,0 +1,1 @@
+/nix/store/5pg1p37fxc5pyi40lfgay9s953yp3qdh-devshell-dir/bin/python /workspace/scripts/klayout/check_size.py /data/runs/verify_test24_20261111/01-klayout-readlayout/chip_top.gds --slot 1x0p5

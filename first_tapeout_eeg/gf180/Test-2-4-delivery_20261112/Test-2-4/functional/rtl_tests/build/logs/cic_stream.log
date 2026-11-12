@@ -1,0 +1,2 @@
+PASS: tb_cic stream (20600001 operations, 20116 output strobes bit-exact, 20110 valid)
+tb/tb_cic.sv:144: $finish called at 218864730000 (1ps)

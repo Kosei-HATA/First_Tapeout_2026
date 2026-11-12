@@ -1,0 +1,7 @@
+* Diagnostic exact integral of official C(V), not PDK qualification
+.subckt audit_q_nmos 1 2 c_length=28.6u c_width=44u dtemp=0
+CQ 1 2 q='cap_nmos_03v3_corner*c_length*c_width*(0.002003*v(1,2)+(0.00198/6.25)*ln(cosh(6.25*v(1,2)+(-3.9375))/cosh(-3.9375)))' dtemp=dtemp
+.ends
+.subckt audit_q_pmos 1 2 c_length=28.6u c_width=44u dtemp=0
+CQ 1 2 q='cap_pmos_03v3_corner*c_length*c_width*(0.001998*v(1,2)+(0.00196/-6.25)*ln(cosh(-6.25*v(1,2)+(-4.9375))/cosh(-4.9375)))' dtemp=dtemp
+.ends

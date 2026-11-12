@@ -1,0 +1,737 @@
+{
+  "scope": "Two diagnostic sizing/load candidates; same current-LVS TT27 3.6 V startup, 0-1 us, 0.25 ns, original unregularized Q; no layout changes",
+  "cases": {
+    "baseline": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665122776544125,
+        "peak_time_s": 5.320827216331917E-07,
+        "exposure_3p63": {
+          "total_s": 3.2948879244419295E-09,
+          "duty_fraction_of_record": 0.0032948879244419295,
+          "longest_s": 3.2948879244419295E-09,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.6623694797833357,
+        "peak_time_s": 5.318667796374525E-07,
+        "exposure_3p63": {
+          "total_s": 2.5072750122480986E-09,
+          "duty_fraction_of_record": 0.0025072750122480986,
+          "longest_s": 2.5072750122480986E-09,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda2.xn",
+          "terminals": {
+            "d": "cda",
+            "g": "xc.cda1",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6623694797833357,
+          "peak_time_s": 5.318667796374525E-07,
+          "exposure_3p63": {
+            "total_s": 2.5072750122480986E-09,
+            "duty_fraction_of_record": 0.0025072750122480986,
+            "longest_s": 2.5072750122480986E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp1",
+          "terminals": {
+            "d": "xa.inp",
+            "g": "cda",
+            "s": "xa.scp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp4",
+          "terminals": {
+            "d": "xa.scp2",
+            "g": "cda",
+            "s": "xa.oni",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn1",
+          "terminals": {
+            "d": "xa.inn",
+            "g": "cda",
+            "s": "xa.scn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn4",
+          "terminals": {
+            "d": "xa.scn2",
+            "g": "cda",
+            "s": "xa.opi",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xn",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "cda",
+            "s": "outp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665122776544125,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 3.2948879244419295E-09,
+            "duty_fraction_of_record": 0.0032948879244419295,
+            "longest_s": 3.2948879244419295E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xn",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "cda",
+            "s": "outn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665122776544125,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 3.2948879244419295E-09,
+            "duty_fraction_of_record": 0.0032948879244419295,
+            "longest_s": 3.2948879244419295E-09,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 10,
+      "gate_device_exceedance_count": 10,
+      "NCDA_min_context": {
+        "time_s": 5.320827216331917E-07,
+        "volts": {
+          "ncda": -0.06512277654412525,
+          "xc.cdai": 3.597294920163352,
+          "vclk": 3.597224926127659,
+          "vdd": 3.6,
+          "xa.opi": 1.088094281186072,
+          "xa.oni": 1.088094283954808,
+          "outp": 1.27528911622234,
+          "outn": 1.275289118654925
+        }
+      },
+      "end_voltages": {
+        "ncda": 1.260664908414588E-05,
+        "xc.cdai": 3.598843722077913,
+        "vclk": 3.598843793409237,
+        "xa.opi": 0.08126691036518133,
+        "xa.oni": 0.08126691036382075,
+        "outp": 0.08170557913457957,
+        "outn": 0.08170557913327743
+      },
+      "peak_driver_gate_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6623694797833357,
+          "peak_time_s": 5.318667796374525E-07,
+          "exposure_3p63": {
+            "total_s": 2.5072750122480986E-09,
+            "duty_fraction_of_record": 0.0025072750122480986,
+            "longest_s": 2.5072750122480986E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        }
+      ]
+    },
+    "ncda_driver_2x": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.6576930920668302,
+        "peak_time_s": 2.648230511882492E-07,
+        "exposure_3p63": {
+          "total_s": 8.581223714568089E-10,
+          "duty_fraction_of_record": 0.000858122371456809,
+          "longest_s": 6.084572947071324E-10,
+          "interval_count": 2
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.642076384018677,
+        "peak_time_s": 2.648230511882492E-07,
+        "exposure_3p63": {
+          "total_s": 1.458187551646885E-10,
+          "duty_fraction_of_record": 0.00014581875516468852,
+          "longest_s": 1.458187551646885E-10,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.642076384018677,
+          "peak_time_s": 2.648230511882492E-07,
+          "exposure_3p63": {
+            "total_s": 1.458187551646885E-10,
+            "duty_fraction_of_record": 0.00014581875516468852,
+            "longest_s": 1.458187551646885E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.6576930920668302,
+          "peak_time_s": 2.648230511882492E-07,
+          "exposure_3p63": {
+            "total_s": 8.581223714568089E-10,
+            "duty_fraction_of_record": 0.000858122371456809,
+            "longest_s": 6.084572947071324E-10,
+            "interval_count": 2
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.6576930920668302,
+          "peak_time_s": 2.648230511882492E-07,
+          "exposure_3p63": {
+            "total_s": 8.581223714568089E-10,
+            "duty_fraction_of_record": 0.000858122371456809,
+            "longest_s": 6.084572947071324E-10,
+            "interval_count": 2
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 2,
+      "gate_device_exceedance_count": 2,
+      "NCDA_min_context": {
+        "time_s": 2.648230511882492E-07,
+        "volts": {
+          "ncda": -0.05769309206683032,
+          "xc.cdai": 3.502858204979639,
+          "vclk": 3.584383291951847,
+          "vdd": 3.6,
+          "xa.opi": 2.368188751122411,
+          "xa.oni": 2.368188749831258,
+          "outp": 1.59806553926547,
+          "outn": 1.598065538579409
+        }
+      },
+      "end_voltages": {
+        "ncda": 6.306243715649418E-06,
+        "xc.cdai": 3.598843690331291,
+        "vclk": 3.598843792799983,
+        "xa.opi": 0.08126750243632619,
+        "xa.oni": 0.0812675024372962,
+        "outp": 0.0817061699731792,
+        "outn": 0.0817061699742051
+      },
+      "peak_driver_gate_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.642076384018677,
+          "peak_time_s": 2.648230511882492E-07,
+          "exposure_3p63": {
+            "total_s": 1.458187551646885E-10,
+            "duty_fraction_of_record": 0.00014581875516468852,
+            "longest_s": 1.458187551646885E-10,
+            "interval_count": 1
+          }
+        }
+      ]
+    },
+    "output_tg_half": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.652567685739595,
+        "peak_time_s": 2.647472921913258E-07,
+        "exposure_3p63": {
+          "total_s": 3.5867593414647E-10,
+          "duty_fraction_of_record": 0.00035867593414647,
+          "longest_s": 3.5867593414647E-10,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.6432659880702016,
+        "peak_time_s": 2.647472921913258E-07,
+        "exposure_3p63": {
+          "total_s": 2.493907496398579E-10,
+          "duty_fraction_of_record": 0.0002493907496398579,
+          "longest_s": 2.493907496398579E-10,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.638121594752267,
+          "peak_time_s": 2.647978173953728E-07,
+          "exposure_3p63": {
+            "total_s": 1.962707997696046E-10,
+            "duty_fraction_of_record": 0.0001962707997696046,
+            "longest_s": 1.962707997696046E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6432659880702016,
+          "peak_time_s": 2.647472921913258E-07,
+          "exposure_3p63": {
+            "total_s": 2.493907496398579E-10,
+            "duty_fraction_of_record": 0.0002493907496398579,
+            "longest_s": 2.493907496398579E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.638121594752267,
+          "peak_time_s": 2.647978173953728E-07,
+          "exposure_3p63": {
+            "total_s": 1.962707997696046E-10,
+            "duty_fraction_of_record": 0.0001962707997696046,
+            "longest_s": 1.962707997696046E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.652567685739595,
+          "peak_time_s": 2.647472921913258E-07,
+          "exposure_3p63": {
+            "total_s": 3.5867593414647E-10,
+            "duty_fraction_of_record": 0.00035867593414647,
+            "longest_s": 3.5867593414647E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.652567685739595,
+          "peak_time_s": 2.647472921913258E-07,
+          "exposure_3p63": {
+            "total_s": 3.5867593414647E-10,
+            "duty_fraction_of_record": 0.00035867593414647,
+            "longest_s": 3.5867593414647E-10,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 4,
+      "gate_device_exceedance_count": 4,
+      "NCDA_min_context": {
+        "time_s": 2.647472921913258E-07,
+        "volts": {
+          "ncda": -0.05256768573959472,
+          "xc.cdai": 3.582229217073596,
+          "vclk": 3.590698302330607,
+          "vdd": 3.6,
+          "xa.opi": 2.507932524822435,
+          "xa.oni": 2.507932531018809,
+          "outp": 1.456230553877908,
+          "outn": 1.456230556135333
+        }
+      },
+      "end_voltages": {
+        "ncda": 6.311817981108359E-06,
+        "xc.cdai": 3.598834498786488,
+        "vclk": 3.598834568815261,
+        "xa.opi": 0.08135457690716656,
+        "xa.oni": 0.08135457690441843,
+        "outp": 0.08223395322105673,
+        "outn": 0.08223395321836469
+      },
+      "peak_driver_gate_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.638121594752267,
+          "peak_time_s": 2.647978173953728E-07,
+          "exposure_3p63": {
+            "total_s": 1.962707997696046E-10,
+            "duty_fraction_of_record": 0.0001962707997696046,
+            "longest_s": 1.962707997696046E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6432659880702016,
+          "peak_time_s": 2.647472921913258E-07,
+          "exposure_3p63": {
+            "total_s": 2.493907496398579E-10,
+            "duty_fraction_of_record": 0.0002493907496398579,
+            "longest_s": 2.493907496398579E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.638121594752267,
+          "peak_time_s": 2.647978173953728E-07,
+          "exposure_3p63": {
+            "total_s": 1.962707997696046E-10,
+            "duty_fraction_of_record": 0.0001962707997696046,
+            "longest_s": 1.962707997696046E-10,
+            "interval_count": 1
+          }
+        }
+      ]
+    }
+  },
+  "original_peak_window_comparison": {
+    "baseline": {
+      "NCDA_min_500_560ns_V": -0.06512277654412525,
+      "max_VGB_500_560ns_V": 3.665122776544125
+    },
+    "ncda_driver_2x": {
+      "NCDA_min_500_560ns_V": -0.03250089084754557,
+      "max_VGB_500_560ns_V": 3.632500890847546
+    },
+    "output_tg_half": {
+      "NCDA_min_500_560ns_V": -0.0288832683066715,
+      "max_VGB_500_560ns_V": 3.6288832683066716
+    }
+  },
+  "run_results": [
+    {
+      "case": "ncda_driver_2x",
+      "seconds": 18.826986074447632,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 1E-06,
+      "finite": true
+    },
+    {
+      "case": "output_tg_half",
+      "seconds": 19.68771243095398,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 1E-06,
+      "finite": true
+    }
+  ],
+  "conclusion": "Both sizing/load perturbations reduce the original common-mode-fall transient, but a BLANK-release transient remains above 3.63 V. Neither is an accepted mitigation. The ideal startup stimulus is not the full RTL/firmware startup sequence."
+}
+

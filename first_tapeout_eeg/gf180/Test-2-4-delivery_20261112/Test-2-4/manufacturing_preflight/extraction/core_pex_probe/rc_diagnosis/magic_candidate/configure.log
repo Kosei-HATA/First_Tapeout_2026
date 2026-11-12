@@ -1,0 +1,223 @@
+configure: WARNING: unrecognized options: --disable-cairo, --disable-opengl
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking target system type... x86_64-pc-linux-gnu
+checking for gcc... gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking how to run the C preprocessor... gcc -E
+checking for g++... g++
+checking whether we are using the GNU C++ compiler... yes
+checking whether g++ accepts -g... yes
+checking for library containing strerror... none required
+checking for a BSD-compatible install... /usr/bin/install -c
+checking for ranlib... ranlib
+checking for a sed that does not truncate output... /usr/bin/sed
+checking for gdate... no
+checking for ccache... ccache
+configure: using ccache: CC="ccache gcc"
+checking for perl... /usr/bin/perl
+checking for ld used by GCC... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking size of void *... 8
+checking size of unsigned int... 4
+checking size of unsigned long... 8
+checking size of unsigned long long... 8
+checking whether byte ordering is bigendian... no
+checking for inline... inline
+checking for C/C++ restrict keyword... __restrict
+checking for ANSI C header files... (cached) yes
+checking for stdbool.h that conforms to C99... yes
+checking for _Bool... yes
+checking for size_t... yes
+checking for working alloca.h... yes
+checking for alloca... yes
+checking for setenv... yes
+checking for putenv... yes
+checking for getrlimit... yes
+checking for setrlimit... yes
+checking for vfork... yes
+checking sys/mman.h usability... yes
+checking sys/mman.h presence... yes
+checking for sys/mman.h... yes
+checking dirent.h usability... yes
+checking dirent.h presence... yes
+checking for dirent.h... yes
+checking limits.h usability... yes
+checking limits.h presence... yes
+checking for limits.h... yes
+checking param.h usability... no
+checking param.h presence... no
+checking for param.h... no
+checking paths.h usability... yes
+checking paths.h presence... yes
+checking for paths.h... yes
+checking sys/resource.h usability... yes
+checking sys/resource.h presence... yes
+checking for sys/resource.h... yes
+checking sys/time.h usability... yes
+checking sys/time.h presence... yes
+checking for sys/time.h... yes
+checking whether time.h and sys/time.h may both be included... yes
+checking termio.h usability... yes
+checking termio.h presence... yes
+checking for termio.h... yes
+checking termios.h usability... yes
+checking termios.h presence... yes
+checking for termios.h... yes
+checking sys/ioctl.h usability... yes
+checking sys/ioctl.h presence... yes
+checking for sys/ioctl.h... yes
+checking sys/ioctl_compat.h usability... no
+checking sys/ioctl_compat.h presence... no
+checking for sys/ioctl_compat.h... no
+checking sgtty.h usability... yes
+checking sgtty.h presence... yes
+checking for sgtty.h... yes
+checking for dirent.h that defines DIR... yes
+checking for library containing opendir... none required
+checking for struct dirent.d_type... yes
+checking for va_copy... yes
+checking for __va_copy... yes
+checking for gzopen in -lz... yes
+checking for gcore... /usr/bin/gcore
+checking for latex... no
+checking for dvips... no
+checking for python3... /usr/bin/python3
+checking for X... libraries , headers 
+checking for gethostbyname... yes
+checking for connect... yes
+checking for remove... yes
+checking for shmat... yes
+checking for IceConnectionNumber in -lICE... yes
+checking for XOpenDevice in -lXi... no
+checking for XmuInternAtom in -lXmu... no
+checking for XextFindDisplay in -lXext... no
+checking for tkConfig.sh... 
+can't find Tk configuration script "tkConfig.sh"
+Reverting to non-Tk compilation
+checking GL/gl.h usability... no
+checking GL/gl.h presence... no
+checking for GL/gl.h... no
+GL header files not found, disabling OpenGL
+checking cairo/cairo.h usability... no
+checking cairo/cairo.h presence... no
+checking for cairo/cairo.h... no
+Cairo header files not found, disabling Cairo
+checking whether ccache gcc generates dependencies with -MMD -MP... yes
+configure: created config header magic/autoconf/config.h
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating defs.mak
+config.status: WARNING:  'scripts/defs.mak.in' seems to ignore the --datarootdir setting
+config.status: creating scripts/makedbh
+config.status: creating magic_run_common.sh
+config.status: creating run_magic.sh
+config.status: creating run_magicnull.sh
+config.status: creating run_magic_gdb.sh
+config.status: creating run_magic_valgrind.sh
+config.status: creating tiles/Makefile
+config.status: creating bplane/Makefile
+config.status: creating calma/Makefile
+config.status: creating cif/Makefile
+config.status: creating cmwind/Makefile
+config.status: creating dbwind/Makefile
+config.status: creating debug/Makefile
+config.status: creating drc/Makefile
+config.status: creating extflat/Makefile
+config.status: creating extract/Makefile
+config.status: creating garouter/Makefile
+config.status: creating gcr/Makefile
+config.status: creating grouter/Makefile
+config.status: creating irouter/Makefile
+config.status: creating mzrouter/Makefile
+config.status: creating netmenu/Makefile
+config.status: creating plow/Makefile
+config.status: creating resis/Makefile
+config.status: creating select/Makefile
+config.status: creating sim/Makefile
+config.status: creating textio/Makefile
+config.status: creating wiring/Makefile
+config.status: creating utils/Makefile
+config.status: creating windows/Makefile
+config.status: creating commands/Makefile
+config.status: creating database/Makefile
+config.status: creating lef/Makefile
+config.status: creating plot/Makefile
+config.status: creating router/Makefile
+config.status: creating ext2spice/Makefile
+config.status: creating ext2sim/Makefile
+config.status: creating extcheck/Makefile
+config.status: creating net2ir/Makefile
+config.status: creating graphics/Makefile
+config.status: creating oa/Makefile
+config.status: creating magic/Makefile
+config.status: creating tcltk/Makefile
+config.status: creating scmos/Makefile
+config.status: creating doc/Makefile
+config.status: creating lisp/Makefile
+config.status: creating scmos/cif_template/Makefile
+config.status: creating doc/man/Makefile
+config.status: creating doc/tutcells/Makefile
+config.status: creating doc/html/Makefile
+config.status: creating doc/latexfiles/Makefile
+configure: WARNING: unrecognized options: --disable-cairo, --disable-opengl
+
+-----------------------------------------------------------
+Configuration Summary (principle requirements):
+
+X11:          yes
+Python3:      yes
+OpenGL:       no
+
+  OpenGL graphics are considerably better than the standard 8-bit
+  and 24-bit X11 graphics, provided that you have a video card and
+  driver supporting accelerated OpenGL graphics.  If you get this
+  message, you may need to download OpenGL libraries and header
+  files, which are usually available from the video card manufacturer.
+  Magic with un-accelerated OpenGL, such as using Mesa GL without
+  a supported graphics card, is usually a very bad combination.
+
+Cairo:        no
+
+  Cairo graphics are considerably better than the standard 8-bit
+  and 24-bit X11 graphics, provided that you have a video card and
+  driver supporting hardware-accelerated graphics.  If you get this
+  message, you may need to download Cairo and fontconfig libraries
+  and header files, which are usually found in package cairo-devel.
+
+Tcl/Tk:       no
+
+  Without Tcl/Tk, you cannot run the enhanced version of magic
+  with the toolbar and menus, and a number of other functions
+  are disabled.  If you did not specifically disable Tcl/Tk on
+  the configure command line, then getting this message means
+  that you do not have Tcl/Tk headers and or libraries installed,
+  or they are not in a standard path.  Try using configure options
+  --with-tcl=<DIR> and --with-tk=<DIR>.
+
+LaTeX docs:   no  (install 'latex' and 'dvips' to regenerate documentation)
+-----------------------------------------------------------
+
+Use 'make' to compile and 'make install' to install.
+
+-----------------------------------------------------------
+

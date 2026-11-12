@@ -1,0 +1,209 @@
+{
+  "completed_cases": 15,
+  "all_cases_exit0": true,
+  "all_positive_sequence_margins": true,
+  "minimum_case": {
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "exitcode": 0,
+    "minimum_margin_ns": 0.28195931079148834,
+    "positive_sequence_margins": true,
+    "seconds": 143.5,
+    "schematic_min_margin_ns": 0.14351257904435655,
+    "delta_min_margin_ns": 0.1384467317471318
+  },
+  "rc_corner": "fixed nominal; no low/high or R/C temperature variation",
+  "process_temperature_pairs": [
+    "typical/27C",
+    "ss/85C",
+    "ff/-20C",
+    "sf/27C",
+    "fs/27C"
+  ],
+  "supply_V": [
+    3.0,
+    3.3,
+    3.6
+  ],
+  "cases": [
+    {
+      "vdd": 3.0,
+      "corner": "ff",
+      "temperature_C": -20,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.40407436400032426,
+      "positive_sequence_margins": true,
+      "seconds": 146.9,
+      "schematic_min_margin_ns": 0.19084378168328775,
+      "delta_min_margin_ns": 0.2132305823170365
+    },
+    {
+      "vdd": 3.0,
+      "corner": "fs",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.579871187352178,
+      "positive_sequence_margins": true,
+      "seconds": 140.98,
+      "schematic_min_margin_ns": 0.2881862567256232,
+      "delta_min_margin_ns": 0.2916849306265548
+    },
+    {
+      "vdd": 3.0,
+      "corner": "sf",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.5688093555775808,
+      "positive_sequence_margins": true,
+      "seconds": 139.71,
+      "schematic_min_margin_ns": 0.25334079911709895,
+      "delta_min_margin_ns": 0.3154685564604819
+    },
+    {
+      "vdd": 3.0,
+      "corner": "ss",
+      "temperature_C": 85,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.7889732772594825,
+      "positive_sequence_margins": true,
+      "seconds": 141.49,
+      "schematic_min_margin_ns": 0.389905647436613,
+      "delta_min_margin_ns": 0.39906762982286953
+    },
+    {
+      "vdd": 3.0,
+      "corner": "typical",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.5708696823249954,
+      "positive_sequence_margins": true,
+      "seconds": 140.4,
+      "schematic_min_margin_ns": 0.2697322079900212,
+      "delta_min_margin_ns": 0.3011374743349742
+    },
+    {
+      "vdd": 3.3,
+      "corner": "ff",
+      "temperature_C": -20,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.3357411592212538,
+      "positive_sequence_margins": true,
+      "seconds": 147.88,
+      "schematic_min_margin_ns": 0.16474032787894805,
+      "delta_min_margin_ns": 0.17100083134230576
+    },
+    {
+      "vdd": 3.3,
+      "corner": "fs",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.48390902658164786,
+      "positive_sequence_margins": true,
+      "seconds": 151.07,
+      "schematic_min_margin_ns": 0.24695527057645386,
+      "delta_min_margin_ns": 0.236953756005194
+    },
+    {
+      "vdd": 3.3,
+      "corner": "sf",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.4680107294782584,
+      "positive_sequence_margins": true,
+      "seconds": 143.43,
+      "schematic_min_margin_ns": 0.21298565863355162,
+      "delta_min_margin_ns": 0.25502507084470677
+    },
+    {
+      "vdd": 3.3,
+      "corner": "ss",
+      "temperature_C": 85,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.6527432276582034,
+      "positive_sequence_margins": true,
+      "seconds": 142.17,
+      "schematic_min_margin_ns": 0.3253986003241581,
+      "delta_min_margin_ns": 0.32734462733404524
+    },
+    {
+      "vdd": 3.3,
+      "corner": "typical",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.4736425632570376,
+      "positive_sequence_margins": true,
+      "seconds": 133.81,
+      "schematic_min_margin_ns": 0.22848237995065276,
+      "delta_min_margin_ns": 0.2451601833063848
+    },
+    {
+      "vdd": 3.6,
+      "corner": "ff",
+      "temperature_C": -20,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.28195931079148834,
+      "positive_sequence_margins": true,
+      "seconds": 143.5,
+      "schematic_min_margin_ns": 0.14351257904435655,
+      "delta_min_margin_ns": 0.1384467317471318
+    },
+    {
+      "vdd": 3.6,
+      "corner": "fs",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.41073089978879573,
+      "positive_sequence_margins": true,
+      "seconds": 145.6,
+      "schematic_min_margin_ns": 0.21495040029970708,
+      "delta_min_margin_ns": 0.19578049948908866
+    },
+    {
+      "vdd": 3.6,
+      "corner": "sf",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.3917773586207329,
+      "positive_sequence_margins": true,
+      "seconds": 152.94,
+      "schematic_min_margin_ns": 0.18100484635456127,
+      "delta_min_margin_ns": 0.2107725122661716
+    },
+    {
+      "vdd": 3.6,
+      "corner": "ss",
+      "temperature_C": 85,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.549213149857326,
+      "positive_sequence_margins": true,
+      "seconds": 147.37,
+      "schematic_min_margin_ns": 0.2756056994772586,
+      "delta_min_margin_ns": 0.27360745038006745
+    },
+    {
+      "vdd": 3.6,
+      "corner": "typical",
+      "temperature_C": 27,
+      "exitcode": 0,
+      "minimum_margin_ns": 0.3986873593536008,
+      "positive_sequence_margins": true,
+      "seconds": 147.58,
+      "schematic_min_margin_ns": 0.19723698715077273,
+      "delta_min_margin_ns": 0.20145037220282805
+    }
+  ],
+  "limits": [
+    "Only internal clock flat RC; external OTA TG diffusion parameters schematic, parent routes/coupling/power/package excluded.",
+    "Common-mode input and specified bias code2; not full ADC signal activity/startup.",
+    "Positive sequencing is diagnostic; no product minimum guardband or full-chip PVT signoff.",
+    "Exploratory3.0/3.6V supply bounds, not independently confirmed analog operating specification.",
+    "No change to original GDS/PDK/circuit netlists; fixed nominal RC hash checked after execution."
+  ],
+  "model_scope": {
+    "MOSCAP_model": "Linear constant-C approximation in functional/sim_work/gf180/tapeout/sim/moscap_lin.spice, not official voltage-dependent MOSCAP.",
+    "affected_tests": "All 45 bias startup cases; actual-bias 15 schematic-clock cases; nominal/cap/RC comparisons; 75 clock device/RC cases and numerical controls.",
+    "limitation": "Circuit source matching and clock extraction audit do not validate nonlinear MOSCAP behavior, full-chip startup, accuracy, or manufacturing signoff.",
+    "formula": "NMOS: factor*L*W*3.983e-3 F/m2; PMOS: factor*L*W*3.958e-3 F/m2; factor typical=1, ff=.9, ss=1.1."
+  }
+}

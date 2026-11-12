@@ -1,0 +1,8 @@
+* NGSPICE file created from mim_only.ext - technology: gf180mcuD
+
+.subckt mim_only
+X0 m4_0_0# m4_n120_n120# cap_mim_2f0_m4m5_noshield c_width=98.82999u c_length=98.82999u
+C0 m4_0_0# m4_n120_n120# 5.85015f
+C1 m4_0_0# w_n120_n120# 85.7325f ; **FLOATING
+C2 m4_n120_n120# w_n120_n120# 13.0787f ; **FLOATING
+.ends

@@ -1,0 +1,981 @@
+{
+  "original_parent_cap_records": {
+    "sums_fF": {
+      "same_final_net": 6.852524800000003,
+      "incident_TOP": 8.558959299999998,
+      "different_final_nets": 11.678708399999998,
+      "incident_BOT": 9.972273899999992
+    },
+    "rows": [
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_80#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.36755200000000005,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.284354,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.411159,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_80#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_80#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_80#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.311012,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_80#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.40201,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_80#",
+        "final_a": "TOP",
+        "final_b": "TOP",
+        "fF": 0.0821249,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_80#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.0635354,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.45944,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.189713,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.502513,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.506895,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.5908909999999999,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502513,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_0_0#",
+        "final_a": "BOT",
+        "final_b": "TOP",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.207498,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.502512,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_0_0#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "TOP",
+        "final_b": "BOT",
+        "fF": 0.10265600000000001,
+        "kind": "different_final_nets"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0423889,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.061910400000000004,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "cap_mim$5$3_0/m4_n120_n120#",
+        "raw_b": "m4_200_21366#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0677145,
+        "kind": "same_final_net"
+      },
+      {
+        "raw_a": "m4_200_21366#",
+        "raw_b": "cap_mim$5$3_0/m4_n120_n120#",
+        "final_a": "BOT",
+        "final_b": "BOT",
+        "fF": 0.0138331,
+        "kind": "same_final_net"
+      }
+    ]
+  },
+  "original_added_ground_fF": {
+    "child_res_nodes": 5.850152,
+    "parent_TOP_res_node": 8.55896,
+    "parent_BOT_res_node": 9.97228,
+    "total": 24.381391999999998
+  },
+  "controls": {
+    "wire": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "B",
+              "w_0_0#"
+            ],
+            "fF": 10.8955,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 10.8955,
+        "coupling_sum_fF": 0
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "B",
+              "w_0_0#"
+            ],
+            "fF": 10.8955,
+            "ground": true
+          }
+        ],
+        "resistors": [
+          {
+            "nodes": [
+              "A",
+              "B"
+            ],
+            "ohm": 8.8205
+          }
+        ],
+        "ground_sum_fF": 10.8955,
+        "coupling_sum_fF": 0
+      },
+      "ground_delta_fF": 0.0
+    },
+    "coupled_wires": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "D",
+              "B"
+            ],
+            "fF": 5.9027,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "D",
+              "w_0_0#"
+            ],
+            "fF": 6.7262,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "B",
+              "w_0_0#"
+            ],
+            "fF": 10.8955,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 17.6217,
+        "coupling_sum_fF": 5.9027
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "B",
+              "D"
+            ],
+            "fF": 5.9027,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "D",
+              "w_0_0#"
+            ],
+            "fF": 9.67755,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "C",
+              "w_0_0#"
+            ],
+            "fF": 2.95135,
+            "ground": true
+          },
+          {
+            "name": "C3",
+            "nodes": [
+              "B",
+              "w_0_0#"
+            ],
+            "fF": 13.84685,
+            "ground": true
+          },
+          {
+            "name": "C4",
+            "nodes": [
+              "A",
+              "w_0_0#"
+            ],
+            "fF": 2.95135,
+            "ground": true
+          }
+        ],
+        "resistors": [
+          {
+            "nodes": [
+              "C",
+              "D"
+            ],
+            "ohm": 8.8205
+          },
+          {
+            "nodes": [
+              "A",
+              "B"
+            ],
+            "ohm": 8.8205
+          }
+        ],
+        "ground_sum_fF": 29.4271,
+        "coupling_sum_fF": 5.9027
+      },
+      "ground_delta_fF": 11.805399999999999
+    },
+    "mim_only": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "BOT"
+            ],
+            "fF": 5.85015,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 85.7325,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.0787,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 98.8112,
+        "coupling_sum_fF": 5.85015
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "BOT",
+              "TOP"
+            ],
+            "fF": 5.85015,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 85.7325,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.80633,
+            "ground": true
+          },
+          {
+            "name": "C3",
+            "nodes": [
+              "BOT.t0",
+              "w_n120_n120#"
+            ],
+            "fF": 5.12252,
+            "ground": true
+          }
+        ],
+        "resistors": [
+          {
+            "nodes": [
+              "BOT",
+              "BOT.t0"
+            ],
+            "ohm": 3.74784
+          }
+        ],
+        "ground_sum_fF": 104.66135,
+        "coupling_sum_fF": 5.85015
+      },
+      "ground_delta_fF": 5.850149999999999
+    },
+    "adc_flat": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "BOT"
+            ],
+            "fF": 17.5289,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_80_80#"
+            ],
+            "fF": 88.4691,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_80_80#"
+            ],
+            "fF": 18.6282,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 107.09729999999999,
+        "coupling_sum_fF": 17.5289
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "BOT",
+              "TOP"
+            ],
+            "fF": 17.5289,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_80_80#"
+            ],
+            "fF": 88.4691,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_80_80#"
+            ],
+            "fF": 19.27993,
+            "ground": true
+          },
+          {
+            "name": "C3",
+            "nodes": [
+              "BOT.t0",
+              "w_80_80#"
+            ],
+            "fF": 16.8772,
+            "ground": true
+          }
+        ],
+        "resistors": [
+          {
+            "nodes": [
+              "BOT",
+              "BOT.t0"
+            ],
+            "ohm": 3.74784
+          }
+        ],
+        "ground_sum_fF": 124.62622999999999,
+        "coupling_sum_fF": 17.5289
+      },
+      "ground_delta_fF": 17.528930000000003
+    },
+    "high_threshold": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "BOT"
+            ],
+            "fF": 5.85015,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 85.7325,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.0787,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 98.8112,
+        "coupling_sum_fF": 5.85015
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "BOT"
+            ],
+            "fF": 5.85015,
+            "ground": false
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 85.7325,
+            "ground": true
+          },
+          {
+            "name": "C2",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.0787,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 98.8112,
+        "coupling_sum_fF": 5.85015
+      },
+      "ground_delta_fF": 0.0
+    },
+    "no_coupling": {
+      "cap": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 142.89,
+            "ground": true
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.0787,
+            "ground": true
+          }
+        ],
+        "resistors": [],
+        "ground_sum_fF": 155.96869999999998,
+        "coupling_sum_fF": 0
+      },
+      "rc": {
+        "capacitors": [
+          {
+            "name": "C0",
+            "nodes": [
+              "TOP",
+              "w_n120_n120#"
+            ],
+            "fF": 142.89,
+            "ground": true
+          },
+          {
+            "name": "C1",
+            "nodes": [
+              "BOT",
+              "w_n120_n120#"
+            ],
+            "fF": 13.0787,
+            "ground": true
+          }
+        ],
+        "resistors": [
+          {
+            "nodes": [
+              "BOT",
+              "BOT.t0"
+            ],
+            "ohm": 3.74784
+          }
+        ],
+        "ground_sum_fF": 155.96869999999998,
+        "coupling_sum_fF": 0
+      },
+      "ground_delta_fF": 0.0
+    }
+  },
+  "finding": "Current Magic RC output retains coupling capacitors and additionally adds .res.ext rnode capacitance to ground. On coupled metal wires each resistively extracted net receives one full coupling value as added ground capacitance. On MIM only the bottom terminal is resistively split, adding one coupling value. In original hierarchy, parent-level raw coupling includes same-final-net entries which also contribute before alias cancellation.",
+  "qualification": "FAIL: reproduces without MIM or hierarchy; no supported option found that preserves distributed R and qualified coupling/ground capacitance simultaneously. No manual subtraction accepted."
+}

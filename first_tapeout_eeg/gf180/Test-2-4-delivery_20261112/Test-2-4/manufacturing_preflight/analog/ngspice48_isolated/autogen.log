@@ -1,0 +1,23 @@
+Removing files to be remade
+Running libtoolize
+libtoolize: putting auxiliary files in '.'.
+libtoolize: copying file './ltmain.sh'
+libtoolize: putting macros in AC_CONFIG_MACRO_DIRS, 'm4'.
+libtoolize: copying file 'm4/libtool.m4'
+libtoolize: copying file 'm4/ltoptions.m4'
+libtoolize: copying file 'm4/ltsugar.m4'
+libtoolize: copying file 'm4/ltversion.m4'
+libtoolize: copying file 'm4/lt~obsolete.m4'
+Running aclocal 
+Running autoheader
+Running automake -Wall --copy --add-missing
+configure.ac:46: installing './ar-lib'
+configure.ac:42: installing './compile'
+configure.ac:44: installing './config.guess'
+configure.ac:44: installing './config.sub'
+configure.ac:37: installing './install-sh'
+configure.ac:37: installing './missing'
+src/Makefile.am: installing './depcomp'
+configure.ac: installing './ylwrap'
+Running autoconf
+Success.

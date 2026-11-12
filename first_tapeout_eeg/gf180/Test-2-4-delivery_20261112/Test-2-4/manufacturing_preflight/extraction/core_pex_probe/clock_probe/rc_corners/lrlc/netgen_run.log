@@ -1,0 +1,153 @@
+Netgen 1.5.321 compiled on Mon Jun 22 11:31:27 AM CEST 2026
+Warning: netgen command 'format' use fully-qualified name '::netgen::format'
+Warning: netgen command 'global' use fully-qualified name '::netgen::global'
+Reading netlist file /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/mos_only.cir for /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/mos_only.cir eeg_adc_clk
+Reading netlist file /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/reference.cdl for /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/reference.cdl eeg_adc_clk
+Call to undefined subcircuit eeg_aclk_inv_s1
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s2
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_slow
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_nor2_s1
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_and2n_s1
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_nand2_s1
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_or2n_s1
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s6
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s12
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s8
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s24
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s10
+Creating placeholder cell definition.
+Call to undefined subcircuit eeg_aclk_inv_s48
+Creating placeholder cell definition.
+
+Reading setup file /foss/pdks/gf180mcuD/libs.tech/netgen/gf180mcuD_setup.tcl
+
+No property as found for device nfet_03v3
+No property ad found for device nfet_03v3
+No property ps found for device nfet_03v3
+No property pd found for device nfet_03v3
+No property as found for device pfet_03v3
+No property ad found for device pfet_03v3
+No property ps found for device pfet_03v3
+No property pd found for device pfet_03v3
+No such pin 1 in model nfet_03v3
+No property par1 found for device nfet_03v3
+No property NRD found for device nfet_03v3
+No property NRS found for device nfet_03v3
+No property par found for device nfet_03v3
+No property sa found for device nfet_03v3
+No property sb found for device nfet_03v3
+No property sd found for device nfet_03v3
+No property par found for device nfet_03v3
+No property dtemp found for device nfet_03v3
+No property nf found for device nfet_03v3
+No property as found for device nfet_03v3
+No property ad found for device nfet_03v3
+No property ps found for device nfet_03v3
+No property pd found for device nfet_03v3
+No property $D found for device nfet_03v3
+No property $X found for device nfet_03v3
+No property $Y found for device nfet_03v3
+No such pin 1 in model nfet_03v3
+No property par1 found for device nfet_03v3
+No property NRD found for device nfet_03v3
+No property NRS found for device nfet_03v3
+No property par found for device nfet_03v3
+No property sa found for device nfet_03v3
+No property sb found for device nfet_03v3
+No property sd found for device nfet_03v3
+No property par found for device nfet_03v3
+No property dtemp found for device nfet_03v3
+No property as found for device nfet_03v3
+No property ad found for device nfet_03v3
+No property ps found for device nfet_03v3
+No property pd found for device nfet_03v3
+No property $D found for device nfet_03v3
+No property $X found for device nfet_03v3
+No property $Y found for device nfet_03v3
+No such pin 1 in model pfet_03v3
+No property par1 found for device pfet_03v3
+No property NRD found for device pfet_03v3
+No property NRS found for device pfet_03v3
+No property par found for device pfet_03v3
+No property sa found for device pfet_03v3
+No property sb found for device pfet_03v3
+No property sd found for device pfet_03v3
+No property par found for device pfet_03v3
+No property dtemp found for device pfet_03v3
+No property nf found for device pfet_03v3
+No property as found for device pfet_03v3
+No property ad found for device pfet_03v3
+No property ps found for device pfet_03v3
+No property pd found for device pfet_03v3
+No property $D found for device pfet_03v3
+No property $X found for device pfet_03v3
+No property $Y found for device pfet_03v3
+No such pin 1 in model pfet_03v3
+No property par1 found for device pfet_03v3
+No property NRD found for device pfet_03v3
+No property NRS found for device pfet_03v3
+No property par found for device pfet_03v3
+No property sa found for device pfet_03v3
+No property sb found for device pfet_03v3
+No property sd found for device pfet_03v3
+No property par found for device pfet_03v3
+No property dtemp found for device pfet_03v3
+No property as found for device pfet_03v3
+No property ad found for device pfet_03v3
+No property ps found for device pfet_03v3
+No property pd found for device pfet_03v3
+No property $D found for device pfet_03v3
+No property $X found for device pfet_03v3
+No property $Y found for device pfet_03v3
+Comparison output logged to file /work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/netgen_comparison.log
+Logging to file "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/netgen_comparison.log" enabled
+
+Contents of circuit 1:  Circuit: 'eeg_adc_clk'
+Circuit eeg_adc_clk contains 486 device instances.
+  Class: nfet_03v3             instances: 237
+  Class: pfet_03v3             instances: 249
+Circuit contains 51 nets.
+Contents of circuit 2:  Circuit: 'eeg_adc_clk'
+Circuit eeg_adc_clk contains 96 device instances.
+  Class: nfet_03v3             instances:  48
+  Class: pfet_03v3             instances:  48
+Circuit contains 51 nets.
+
+Circuit was modified by parallel/series device merging.
+New circuit summary:
+
+Contents of circuit 1:  Circuit: 'eeg_adc_clk'
+Circuit eeg_adc_clk contains 96 device instances.
+  Class: nfet_03v3             instances:  48
+  Class: pfet_03v3             instances:  48
+Circuit contains 51 nets.
+Contents of circuit 2:  Circuit: 'eeg_adc_clk'
+Circuit eeg_adc_clk contains 96 device instances.
+  Class: nfet_03v3             instances:  48
+  Class: pfet_03v3             instances:  48
+Circuit contains 51 nets.
+
+Circuit 1 contains 96 devices, Circuit 2 contains 96 devices.
+Circuit 1 contains 51 nets,    Circuit 2 contains 51 nets.
+
+
+Final result: 
+Circuits match uniquely.
+.
+Logging to file "/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe/clock_probe/rc_corners/lrlc/netgen_comparison.log" disabled
+LVS Done.
+Unable to permute model nfet_03v3 pins 1, 3.
+Unable to permute model nfet_03v3 pins 1, 3.
+Unable to permute model pfet_03v3 pins 1, 3.
+Unable to permute model pfet_03v3 pins 1, 3.

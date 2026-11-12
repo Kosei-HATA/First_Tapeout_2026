@@ -1,0 +1,2 @@
+SPI CHECK PASS time=21500.000 ns CONTROL=0x64 AFE_RST=0 CHOP_EN=1
+tb.sv:20: $finish called at 192000000 (1ps)

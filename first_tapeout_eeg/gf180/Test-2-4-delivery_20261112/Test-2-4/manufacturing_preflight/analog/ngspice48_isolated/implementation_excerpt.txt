@@ -1,0 +1,106 @@
+                tfree(node2);
+                continue;
+            }
+            /* Find equation, starts with '{', till end of line */
+            str_ptr = strchr(cut_line, '{');
+            if (str_ptr == NULL) {
+                fprintf(stderr, "ERROR: mal formed capacitor instance C: %s\n", curr_line);
+                fprintf(stderr, "    in line no. %d of file %s\n", card->linenum_orig, card->linesource);
+                fprintf(stderr, "    {...} or '...' around equation's right hand side are missing!\n");
+                controlled_exit(EXIT_FAILURE);
+            }
+            else
+                equation = gettok_char(&str_ptr, '}', TRUE, TRUE);
+
+            /* evauate tc1 and tc2 */
+            char* tcrstr = eval_tc(cut_line, card->line);
+
+            /* evaluate m */
+            char* mstr = eval_mvalue(cut_line, card->line);
+
+            if (strstr(curr_line, "q=")) { /* charge formulation */
+                // Gxxx  n1 n2 n-aux 0  1
+                ckt_array[0] = tprintf("g%s %s %s %s_int1 0 %s",
+                    title_tok, node1, node2, title_tok, mstr);
+                // Lxxx  n-aux 0 1
+                ckt_array[1] = tprintf("l%s %s_int1 0 1", title_tok, title_tok);
+                // Bxxx  0 n-aux I = equation
+                ckt_array[2] = tprintf("b%s 0 %s_int1 i = (%s) "
+                    "%s reciproctc=1",
+                    title_tok, title_tok, equation, tcrstr);
+                // comment out current variable capacitor line
+                *(card->line) = '*';
+                for (i = 0; i < 3; i++) {
+                    card = insert_new_line(card, ckt_array[i], (int)i + 1, currlinenumber, card->linesource);
+                }
+            } else {                       /* capacitance formulation */
+#if (0)
+                // Exxx  n-aux 0  n2 n1  1
+                ckt_array[0] = tprintf("e%s %s_int1 0 %s %s %s", title_tok,
+                    title_tok, node2, node1, mstr);
+                // Cxxx  n-aux 0  1
+                ckt_array[1] = tprintf("c%s %s_int1 0 1", title_tok, title_tok);
+                // Bxxx  n1 n2  I = i(Exxx) * equation
+                ckt_array[2] = tprintf("b%s %s %s i = i(e%s) * (%s) "
+                    "%s reciproctc=1",
+                    title_tok, node1, node2, title_tok, equation, tcrstr);
+                // comment out current variable capacitor line
+                *(card->line) = '*';
+                for (i = 0; i < 3; i++) {
+                    card = insert_new_line(card, ckt_array[i], (int)i + 1, currlinenumber, card->linesource);
+                }
+#else
+                // Gxxx  n-aux 0  n2 n1  1e9
+                ckt_array[0] = tprintf("g%s %s_int1 0 %s %s 1e9 m=%s", title_tok,
+                    title_tok, node2, node1, mstr);
+                // Rxxx  n-aux 0 1e-9 ; generate voltage from injected current by Gxxx
+                ckt_array[1] = tprintf("r%s %s_int1 0 1e-9", title_tok,title_tok);
+                // Cxxx  n-aux1  n-aux2  1e-6
+                ckt_array[2] = tprintf("c%s %s_int1 %s_int2 1e-6", title_tok, title_tok, title_tok);
+                // Vxxx n-aux2 0 0 ; measure current in Cxxx
+                ckt_array[3] = tprintf("vcurrmeas%s %s_int2 0 0", title_tok, title_tok);
+                // Rxxxpar  n2 n1 1e15 ; generally avoid floating nodes
+                ckt_array[4] = tprintf("r%spar %s %s 1e15", title_tok, node2, node1);
+                // Bxxx  n1 n2  I = 1e6 * i(Vxxx) * equation
+                ckt_array[5] = tprintf("b%s %s %s i = 1e6 * i(vcurrmeas%s) * (%s) "
+                    "%s reciproctc=1",
+                    title_tok, node1, node2, title_tok, equation, tcrstr);
+                // comment out current variable capacitor line
+                *(card->line) = '*';
+                // insert new B source line immediately after current line
+                for (i = 0; i < 6; i++) {
+                    card = insert_new_line(card, ckt_array[i], (int)i + 1, currlinenumber, card->linesource);
+                }
+#endif
+            }
+            tfree(tcrstr);
+            tfree(mstr);
+
+            tfree(title_tok);
+            tfree(node1);
+            tfree(node2);
+            tfree(equation);
+        }
+
+        /* Lxxx n1 n2 L = {equation} or Lxxx n1 n2 {equation}
+           -->
+           Fxxx n-aux 0  Bxxx -1
+           Lxxx n-aux 0      1
+           Bxxx n1 n2 V = v(n-aux) * equation
+        */
+        else if (*curr_line == 'l') {
+            cut_line = curr_line;
+            /* title and nodes */
+            title_tok = gettok(&cut_line);
+            node1 = gettok(&cut_line);
+            node2 = gettok(&cut_line);
+            if (!b_transformation_wanted(cut_line)) {
+                tfree(title_tok);
+                tfree(node1);
+                tfree(node2);
+                continue;
+            }
+
+            /* Find equation, starts with '{', till end of line */
+            str_ptr = strchr(cut_line, '{');
+            if (str_ptr == NULL) {

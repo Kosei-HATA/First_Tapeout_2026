@@ -1,0 +1,15 @@
+* official MOSCAP AC diagnostic
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice typical
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice moscap_typical
+VDRV gate 0 DC 3.3 AC 1
+XC gate 0 cap_nmos_03v3 c_length=28.6u c_width=44u m=4
+.control
+set numdgt=15
+op
+ac lin 1 1000 1000
+let ci=-imag(i(vdrv))/(2*PI*1000)
+wrdata cap.csv ci
+quit
+.endc
+.end

@@ -1,0 +1,29 @@
+{
+  "input_sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c",
+  "cell": "Bondpad_5LM",
+  "change": "Add metal within existing single-net bondpad only; retain vias, PAD opening, M5, and all other cells. Non-CUP candidate requiring assembly approval.",
+  "layers": [
+    {
+      "layer": 36,
+      "local_added_area_um2": 561.6,
+      "local_added_bbox_um": "(5.04,2;62,62)",
+      "before_metal_components": 1,
+      "after_metal_components": 1
+    },
+    {
+      "layer": 42,
+      "local_added_area_um2": 555.1416,
+      "local_added_bbox_um": "(5.04,2.29;62,61.6)",
+      "before_metal_components": 1,
+      "after_metal_components": 1
+    },
+    {
+      "layer": 46,
+      "local_added_area_um2": 555.1416,
+      "local_added_bbox_um": "(5.04,2.29;62,61.6)",
+      "before_metal_components": 1,
+      "after_metal_components": 1
+    }
+  ],
+  "output_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755"
+}

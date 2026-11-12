@@ -1,0 +1,19 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * independent resistor zero-bias thermal noise sanity
+
+Doing analysis at TEMP = 85.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 1
+Doing analysis at TEMP = 85.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+No. of Data Rows : 24
+
+No. of Data Rows : 1
+ngspice-46 done

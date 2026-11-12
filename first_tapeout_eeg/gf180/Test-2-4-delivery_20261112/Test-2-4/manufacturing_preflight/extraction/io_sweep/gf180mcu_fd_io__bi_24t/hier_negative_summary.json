@@ -1,0 +1,37 @@
+{
+  "d_sab": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "s_sab": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "r_width": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "r_length": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "w": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "l": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  },
+  "pj": {
+    "unique_match": true,
+    "property_errors": true,
+    "mismatch": false
+  }
+}

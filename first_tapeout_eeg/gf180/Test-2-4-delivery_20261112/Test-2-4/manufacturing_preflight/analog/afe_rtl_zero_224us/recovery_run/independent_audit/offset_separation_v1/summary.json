@@ -1,0 +1,1143 @@
+{
+  "audit_version": "independent_offset_separation_recovery_v1",
+  "stage": "completed",
+  "recorded_utc": "2026-11-11T19:10:51.379691+00:00",
+  "status": "PASS_CONDITIONAL_ONE_SIDED_AFE_Q_FINITE_DIFFERENCE_ONLY",
+  "preflight_reference": "preflight_summary.json",
+  "preflight_input_hashes_still_match": [
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\controls.inc",
+      "expected_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "actual_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\mapping_and_assumptions.json",
+      "expected_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "actual_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_criteria.json",
+      "expected_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "actual_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\tb.spice",
+      "expected_sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3",
+      "actual_sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\.spiceinit",
+      "expected_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "actual_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\controls.inc",
+      "expected_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "actual_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\mapping_and_assumptions.json",
+      "expected_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "actual_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady_criteria.json",
+      "expected_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "actual_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady\\tb.spice",
+      "expected_sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e",
+      "actual_sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\steady\\.spiceinit",
+      "expected_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "actual_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\controls.inc",
+      "expected_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "actual_sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\mapping_and_assumptions.json",
+      "expected_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "actual_sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady_criteria.json",
+      "expected_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "actual_sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\tb.spice",
+      "expected_sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e",
+      "actual_sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\.spiceinit",
+      "expected_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "actual_sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\input_manifest.json",
+      "expected_sha256": "1cdf02abdd0afa41c63b1dddf8184f6508a0394f03a8ee294f945726480dfbcc",
+      "actual_sha256": "1cdf02abdd0afa41c63b1dddf8184f6508a0394f03a8ee294f945726480dfbcc",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\recovery_manifest.json",
+      "expected_sha256": "2a1d0fe6a5f04b0e5fbc0a8ce714191c94b9c727f9ed05172f992dcdd375c365",
+      "actual_sha256": "2a1d0fe6a5f04b0e5fbc0a8ce714191c94b9c727f9ed05172f992dcdd375c365",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\independent_audit\\periodicity_224us_v1\\summary.json",
+      "expected_sha256": "0b8e06ead06689532631a614c045b106e7f32c16e640dabef548de4236e0077a",
+      "actual_sha256": "0b8e06ead06689532631a614c045b106e7f32c16e640dabef548de4236e0077a",
+      "pass": true
+    },
+    {
+      "source": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\independent_audit\\summary.json",
+      "expected_sha256": "9f00ec624e149d5ded3982fea7958c9a8ec04160fbbab41bad712cac71cc402c",
+      "actual_sha256": "9f00ec624e149d5ded3982fea7958c9a8ec04160fbbab41bad712cac71cc402c",
+      "pass": true
+    }
+  ],
+  "input_hashes": {
+    "positive/mapping_and_assumptions.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    },
+    "positive/steady_criteria.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    "positive/steady_analysis.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_analysis.json",
+      "sha256": "eacfc58f0363b62418c5ff9686321e6e2da00d33209ce98d10a96671d4f5c464"
+    },
+    "positive/steady_summary.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady_summary.json",
+      "sha256": "5f02a6a8c77fcbb66073465e08333a1110aec054ab7f02885a29f1bcab0c72b9"
+    },
+    "positive/steady/tb.spice": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\tb.spice",
+      "sha256": "91e9d1699e067ff6151a3eda027fbafdd1e0074ea4fd5c9da6d42e5c3c284cc3"
+    },
+    "positive/steady/.spiceinit": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    "positive/controls.inc": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    "zero/mapping_and_assumptions.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\mapping_and_assumptions.json",
+      "sha256": "c1d4428e329e40e9e553c51c1fc63466d007844adc0de9822625c2992381ae09"
+    },
+    "zero/steady_criteria.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady_criteria.json",
+      "sha256": "1c059eb5a7e7937ee470d5dd2c3fdb66f5093e9c63495c205dbb96c9f50d4345"
+    },
+    "zero/steady_analysis.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady_analysis.json",
+      "sha256": "41a1af405d0da1cd2fb5ef1b1e301ffbc15723d7248d530b2ce60a18c59285c1"
+    },
+    "zero/steady_summary.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady_summary.json",
+      "sha256": "dad55fc60ed73b310739e86ff5c89821fc7dfa1bd1025f73e9a75bf85dcc9f6f"
+    },
+    "zero/steady/tb.spice": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\tb.spice",
+      "sha256": "04e8de84b32982f9ad424acfc49fa614ae5b4a3a64cc863bc04852310b62bb0e"
+    },
+    "zero/steady/.spiceinit": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\.spiceinit",
+      "sha256": "b507bb3081b1ab6e15858fe2315bcd1881ef24b2fdd57d997c4cef4ac85464fc"
+    },
+    "zero/controls.inc": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\controls.inc",
+      "sha256": "ba3c9dc280740989dda06b608b0874133f9bdf1cae117c9d65ff25af77f80d2f"
+    },
+    "zero/final_summary.json": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\final_summary.json",
+      "sha256": "7ae9e7b6ee7385858bde97e48ba41a2ae0aa2070fe6114fee0a85af6c26f44a0"
+    },
+    "zero/offset_comparison.csv": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\offset_comparison.csv",
+      "sha256": "749fc28740c04e65d985a1e2f0e3cadffeb94a32a8857ea63b1ccfde3f1a75c6"
+    }
+  },
+  "fixed_window_s": [
+    0.000159318117,
+    0.000221818117
+  ],
+  "cycles_per_case": 8,
+  "adjacent_comparisons_per_case": 7,
+  "case_results": {
+    "positive": {
+      "whole_fixed_window": {
+        "start_s": 0.000159318117,
+        "end_s": 0.000221818117,
+        "interior_samples": 70572,
+        "differential_mean_V": 0.029890696699764404,
+        "differential_RMS_exact_PL_V": 0.02993041186329469,
+        "differential_RMS_trapezoid_square_V": 0.029930412392533908,
+        "VCM_mean_V": 1.6485840082030585,
+        "input_ELP_minus_ELN_mean_V": 0.00010000000000021277,
+        "input_ELP_minus_ELN_range_V": [
+          9.999999999998899e-05,
+          0.00010000000000109921
+        ],
+        "SRC_mean_V": 9.999999999999999e-05,
+        "SRC_range_V": [
+          9.999999999999999e-05,
+          9.999999999999999e-05
+        ],
+        "AFE_RST_range_V": [
+          0.0,
+          0.0
+        ],
+        "VDD_range_V": [
+          3.3,
+          3.3
+        ],
+        "minimum_output_rail_headroom_V": 1.632764026368831
+      },
+      "cycles": [
+        {
+          "start_s": 0.000159318117,
+          "end_s": 0.000167130617,
+          "interior_samples": 8819,
+          "differential_mean_V": 0.02989038175099066,
+          "differential_RMS_exact_PL_V": 0.02993020745019436,
+          "differential_RMS_trapezoid_square_V": 0.029930207979893986,
+          "VCM_mean_V": 1.6484373706954083,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000020782,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632764026368831
+        },
+        {
+          "start_s": 0.000167130617,
+          "end_s": 0.00017494311700000002,
+          "interior_samples": 8821,
+          "differential_mean_V": 0.029890484604164092,
+          "differential_RMS_exact_PL_V": 0.029930271700081588,
+          "differential_RMS_trapezoid_square_V": 0.029930272229206613,
+          "VCM_mean_V": 1.6485117574625971,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000021577,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632829320570614
+        },
+        {
+          "start_s": 0.00017494311700000002,
+          "end_s": 0.000182755617,
+          "interior_samples": 8822,
+          "differential_mean_V": 0.029890575675124303,
+          "differential_RMS_exact_PL_V": 0.029930328243082272,
+          "differential_RMS_trapezoid_square_V": 0.029930328771879167,
+          "VCM_mean_V": 1.648562603573422,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000021216,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632875063038734
+        },
+        {
+          "start_s": 0.000182755617,
+          "end_s": 0.000190568117,
+          "interior_samples": 8822,
+          "differential_mean_V": 0.029890666309675514,
+          "differential_RMS_exact_PL_V": 0.029930387820464314,
+          "differential_RMS_trapezoid_square_V": 0.029930388349274976,
+          "VCM_mean_V": 1.6485973601632353,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000022183,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.63290729991772
+        },
+        {
+          "start_s": 0.000190568117,
+          "end_s": 0.000198380617,
+          "interior_samples": 8822,
+          "differential_mean_V": 0.0298907498069613,
+          "differential_RMS_exact_PL_V": 0.02993044343860833,
+          "differential_RMS_trapezoid_square_V": 0.029930443967474817,
+          "VCM_mean_V": 1.6486211166082072,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000021125,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632930312048794
+        },
+        {
+          "start_s": 0.000198380617,
+          "end_s": 0.000206193117,
+          "interior_samples": 8823,
+          "differential_mean_V": 0.029890832663102492,
+          "differential_RMS_exact_PL_V": 0.029930501272132565,
+          "differential_RMS_trapezoid_square_V": 0.02993050180122614,
+          "VCM_mean_V": 1.6486373596523158,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000020888,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632946944517485
+        },
+        {
+          "start_s": 0.000206193117,
+          "end_s": 0.000214005617,
+          "interior_samples": 8819,
+          "differential_mean_V": 0.02989090379412131,
+          "differential_RMS_exact_PL_V": 0.02993054992063439,
+          "differential_RMS_trapezoid_square_V": 0.029930550449899295,
+          "VCM_mean_V": 1.648648456396333,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000021132,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632959162861296
+        },
+        {
+          "start_s": 0.000214005617,
+          "end_s": 0.000221818117,
+          "interior_samples": 8818,
+          "differential_mean_V": 0.02989097899397556,
+          "differential_RMS_exact_PL_V": 0.029930605058914875,
+          "differential_RMS_trapezoid_square_V": 0.02993060558917144,
+          "VCM_mean_V": 1.6486560410729492,
+          "input_ELP_minus_ELN_mean_V": 0.00010000000000021309,
+          "input_ELP_minus_ELN_range_V": [
+            9.999999999998899e-05,
+            0.00010000000000109921
+          ],
+          "SRC_mean_V": 9.999999999999999e-05,
+          "SRC_range_V": [
+            9.999999999999999e-05,
+            9.999999999999999e-05
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.632968320619155
+        }
+      ],
+      "adjacent_comparisons": [
+        {
+          "cycle_pair": [
+            1,
+            2
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 1.028531734330318e-07,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 7.438676718884984e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 6.424988722650293e-08,
+          "RMS_limit_exact_PL_V": 2.9930207450194362e-05,
+          "differential_RMS_change_trapezoid_square_V": 6.424931262710709e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930207979893988e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            2,
+            3
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 9.107096021060412e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 5.084611082484258e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 5.6543000684361466e-08,
+          "RMS_limit_exact_PL_V": 2.993027170008159e-05,
+          "differential_RMS_change_trapezoid_square_V": 5.654267255447709e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930272229206615e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            3,
+            4
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 9.063455121138819e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 3.475658981333396e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 5.9577382041653415e-08,
+          "RMS_limit_exact_PL_V": 2.9930328243082274e-05,
+          "differential_RMS_change_trapezoid_square_V": 5.957739580841892e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930328771879167e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            4,
+            5
+          ],
+          "crosses_four_cycle_window_boundary": true,
+          "differential_mean_change_V": 8.349728578688209e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 2.3756444971878565e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 5.561814401741638e-08,
+          "RMS_limit_exact_PL_V": 2.9930387820464314e-05,
+          "differential_RMS_change_trapezoid_square_V": 5.561819984081784e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930388349274975e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            5,
+            6
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 8.285614119113438e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 1.624304410863253e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 5.783352423349708e-08,
+          "RMS_limit_exact_PL_V": 2.9930443438608332e-05,
+          "differential_RMS_change_trapezoid_square_V": 5.783375132267787e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930443967474817e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            6,
+            7
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 7.113101881811579e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 1.1096744017224935e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 4.864850182417779e-08,
+          "RMS_limit_exact_PL_V": 2.9930501272132567e-05,
+          "differential_RMS_change_trapezoid_square_V": 4.864867315587662e-08,
+          "RMS_limit_trapezoid_square_V": 2.993050180122614e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            7,
+            8
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 7.519985424989106e-08,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 7.5846766161014045e-06,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 5.5138280486560776e-08,
+          "RMS_limit_exact_PL_V": 2.993054992063439e-05,
+          "differential_RMS_change_trapezoid_square_V": 5.5139272144705265e-08,
+          "RMS_limit_trapezoid_square_V": 2.9930550449899294e-05,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        }
+      ],
+      "all_seven_pass": true,
+      "worker_agreement": {
+        "max_differential_mean_difference_V": 3.469446951953614e-18,
+        "max_VCM_mean_difference_V": 2.220446049250313e-16,
+        "max_RMS_compatible_difference_V": 3.469446951953614e-18,
+        "same_eight_boundaries": true
+      }
+    },
+    "zero": {
+      "whole_fixed_window": {
+        "start_s": 0.000159318117,
+        "end_s": 0.000221818117,
+        "interior_samples": 70550,
+        "differential_mean_V": -1.2209616942633066e-11,
+        "differential_RMS_exact_PL_V": 7.32762011257019e-10,
+        "differential_RMS_trapezoid_square_V": 7.328175675507031e-10,
+        "VCM_mean_V": 1.6486038534787595,
+        "input_ELP_minus_ELN_mean_V": 0.0,
+        "input_ELP_minus_ELN_range_V": [
+          0.0,
+          0.0
+        ],
+        "SRC_mean_V": 0.0,
+        "SRC_range_V": [
+          0.0,
+          0.0
+        ],
+        "AFE_RST_range_V": [
+          0.0,
+          0.0
+        ],
+        "VDD_range_V": [
+          3.3,
+          3.3
+        ],
+        "minimum_output_rail_headroom_V": 1.646616397773096
+      },
+      "cycles": [
+        {
+          "start_s": 0.000159318117,
+          "end_s": 0.000167130617,
+          "interior_samples": 8812,
+          "differential_mean_V": 3.675602155287834e-11,
+          "differential_RMS_exact_PL_V": 4.95983942616563e-10,
+          "differential_RMS_trapezoid_square_V": 4.960387794991999e-10,
+          "VCM_mean_V": 1.6484573567473433,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646616397773096
+        },
+        {
+          "start_s": 0.000167130617,
+          "end_s": 0.00017494311700000002,
+          "interior_samples": 8821,
+          "differential_mean_V": 3.9298008540243946e-11,
+          "differential_RMS_exact_PL_V": 3.8773060016735544e-10,
+          "differential_RMS_trapezoid_square_V": 3.878143297154344e-10,
+          "VCM_mean_V": 1.6485316795118499,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646709033792254
+        },
+        {
+          "start_s": 0.00017494311700000002,
+          "end_s": 0.000182755617,
+          "interior_samples": 8816,
+          "differential_mean_V": 6.484092720742729e-12,
+          "differential_RMS_exact_PL_V": 4.763779203147015e-10,
+          "differential_RMS_trapezoid_square_V": 4.764777981731651e-10,
+          "VCM_mean_V": 1.6485824801016187,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646766930702213
+        },
+        {
+          "start_s": 0.000182755617,
+          "end_s": 0.000190568117,
+          "interior_samples": 8817,
+          "differential_mean_V": -4.2488757196853954e-11,
+          "differential_RMS_exact_PL_V": 6.207515031013027e-10,
+          "differential_RMS_trapezoid_square_V": 6.208227050631777e-10,
+          "VCM_mean_V": 1.6486172084461739,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646807263179559
+        },
+        {
+          "start_s": 0.000190568117,
+          "end_s": 0.000198380617,
+          "interior_samples": 8820,
+          "differential_mean_V": -3.615725723035555e-11,
+          "differential_RMS_exact_PL_V": 6.935006047332739e-10,
+          "differential_RMS_trapezoid_square_V": 6.935485621472071e-10,
+          "VCM_mean_V": 1.6486409274635871,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646835078488262
+        },
+        {
+          "start_s": 0.000198380617,
+          "end_s": 0.000206193117,
+          "interior_samples": 8816,
+          "differential_mean_V": -1.9058524411375932e-11,
+          "differential_RMS_exact_PL_V": 8.770287697585296e-10,
+          "differential_RMS_trapezoid_square_V": 8.770775868303166e-10,
+          "VCM_mean_V": 1.648657135710566,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646854715547514
+        },
+        {
+          "start_s": 0.000206193117,
+          "end_s": 0.000214005617,
+          "interior_samples": 8821,
+          "differential_mean_V": -1.8594985825457317e-11,
+          "differential_RMS_exact_PL_V": 9.48816057930337e-10,
+          "differential_RMS_trapezoid_square_V": 9.488632029539306e-10,
+          "VCM_mean_V": 1.6486682380080877,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.64686931557641
+        },
+        {
+          "start_s": 0.000214005617,
+          "end_s": 0.000221818117,
+          "interior_samples": 8821,
+          "differential_mean_V": -6.391553369088676e-11,
+          "differential_RMS_exact_PL_V": 1.0660879027500115e-09,
+          "differential_RMS_trapezoid_square_V": 1.066138016777047e-09,
+          "VCM_mean_V": 1.6486758018408485,
+          "input_ELP_minus_ELN_mean_V": 0.0,
+          "input_ELP_minus_ELN_range_V": [
+            0.0,
+            0.0
+          ],
+          "SRC_mean_V": 0.0,
+          "SRC_range_V": [
+            0.0,
+            0.0
+          ],
+          "AFE_RST_range_V": [
+            0.0,
+            0.0
+          ],
+          "VDD_range_V": [
+            3.3,
+            3.3
+          ],
+          "minimum_output_rail_headroom_V": 1.646879137025435
+        }
+      ],
+      "adjacent_comparisons": [
+        {
+          "cycle_pair": [
+            1,
+            2
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 2.5419869873656062e-12,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 7.43227645065847e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 1.0825334244920756e-10,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 1.0822444978376546e-10,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            2,
+            3
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 3.2813915819501216e-11,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 5.080058976880686e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 8.864732014734605e-11,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 8.866346845773072e-11,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            3,
+            4
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 4.8972849917596685e-11,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 3.4728344555201573e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 1.443735827866012e-10,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 1.4434490689001255e-10,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            4,
+            5
+          ],
+          "crosses_four_cycle_window_boundary": true,
+          "differential_mean_change_V": 6.331499966498402e-12,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 2.371901741327065e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 7.274910163197121e-11,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 7.27258570840294e-11,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            5,
+            6
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 1.709873281897962e-11,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 1.620824697878831e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 1.8352816502525566e-10,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 1.8352902468310957e-10,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            6,
+            7
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 4.635385859186151e-13,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 1.1102297521770055e-05,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 7.178728817180754e-11,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 7.178561612361394e-11,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        },
+        {
+          "cycle_pair": [
+            7,
+            8
+          ],
+          "crosses_four_cycle_window_boundary": false,
+          "differential_mean_change_V": 4.532054786542944e-11,
+          "differential_mean_limit_V": 1e-06,
+          "VCM_mean_change_V": 7.563832760792977e-06,
+          "VCM_mean_limit_V": 0.0001,
+          "differential_RMS_change_exact_PL_V": 1.1727184481967442e-10,
+          "RMS_limit_exact_PL_V": 1e-06,
+          "differential_RMS_change_trapezoid_square_V": 1.1727481382311637e-10,
+          "RMS_limit_trapezoid_square_V": 1e-06,
+          "pass_exact_PL": true,
+          "pass_trapezoid_square": true
+        }
+      ],
+      "all_seven_pass": true,
+      "worker_agreement": {
+        "max_differential_mean_difference_V": 2.5849394142282115e-26,
+        "max_VCM_mean_difference_V": 2.220446049250313e-16,
+        "max_RMS_compatible_difference_V": 2.0679515313825692e-25,
+        "same_eight_boundaries": true
+      }
+    }
+  },
+  "paired_cycles": [
+    {
+      "cycle": 1,
+      "start_s": 0.000159318117,
+      "end_s": 0.000167130617,
+      "positive_mean_V": 0.02989038175099066,
+      "zero_mean_V": 3.675602155287834e-11,
+      "output_difference_V": 0.029890381714234637,
+      "actual_input_difference_V": 0.00010000000000020782,
+      "sensitivity_actual_input_V_per_V": 298.9038171417252,
+      "sensitivity_nominal_100uV_V_per_V": 298.9038171423464
+    },
+    {
+      "cycle": 2,
+      "start_s": 0.000167130617,
+      "end_s": 0.00017494311700000002,
+      "positive_mean_V": 0.029890484604164092,
+      "zero_mean_V": 3.9298008540243946e-11,
+      "output_difference_V": 0.029890484564866083,
+      "actual_input_difference_V": 0.00010000000000021577,
+      "sensitivity_actual_input_V_per_V": 298.90484564801585,
+      "sensitivity_nominal_100uV_V_per_V": 298.9048456486608
+    },
+    {
+      "cycle": 3,
+      "start_s": 0.00017494311700000002,
+      "end_s": 0.000182755617,
+      "positive_mean_V": 0.029890575675124303,
+      "zero_mean_V": 6.484092720742729e-12,
+      "output_difference_V": 0.02989057566864021,
+      "actual_input_difference_V": 0.00010000000000021216,
+      "sensitivity_actual_input_V_per_V": 298.905756685768,
+      "sensitivity_nominal_100uV_V_per_V": 298.9057566864021
+    },
+    {
+      "cycle": 4,
+      "start_s": 0.000182755617,
+      "end_s": 0.000190568117,
+      "positive_mean_V": 0.029890666309675514,
+      "zero_mean_V": -4.2488757196853954e-11,
+      "output_difference_V": 0.02989066635216427,
+      "actual_input_difference_V": 0.00010000000000022183,
+      "sensitivity_actual_input_V_per_V": 298.90666352097963,
+      "sensitivity_nominal_100uV_V_per_V": 298.90666352164266
+    },
+    {
+      "cycle": 5,
+      "start_s": 0.000190568117,
+      "end_s": 0.000198380617,
+      "positive_mean_V": 0.0298907498069613,
+      "zero_mean_V": -3.615725723035555e-11,
+      "output_difference_V": 0.02989074984311856,
+      "actual_input_difference_V": 0.00010000000000021125,
+      "sensitivity_actual_input_V_per_V": 298.90749843055414,
+      "sensitivity_nominal_100uV_V_per_V": 298.90749843118556
+    },
+    {
+      "cycle": 6,
+      "start_s": 0.000198380617,
+      "end_s": 0.000206193117,
+      "positive_mean_V": 0.029890832663102492,
+      "zero_mean_V": -1.9058524411375932e-11,
+      "output_difference_V": 0.029890832682161018,
+      "actual_input_difference_V": 0.00010000000000020888,
+      "sensitivity_actual_input_V_per_V": 298.90832682098585,
+      "sensitivity_nominal_100uV_V_per_V": 298.90832682161016
+    },
+    {
+      "cycle": 7,
+      "start_s": 0.000206193117,
+      "end_s": 0.000214005617,
+      "positive_mean_V": 0.02989090379412131,
+      "zero_mean_V": -1.8594985825457317e-11,
+      "output_difference_V": 0.029890903812716297,
+      "actual_input_difference_V": 0.00010000000000021132,
+      "sensitivity_actual_input_V_per_V": 298.9090381265313,
+      "sensitivity_nominal_100uV_V_per_V": 298.90903812716294
+    },
+    {
+      "cycle": 8,
+      "start_s": 0.000214005617,
+      "end_s": 0.000221818117,
+      "positive_mean_V": 0.02989097899397556,
+      "zero_mean_V": -6.391553369088676e-11,
+      "output_difference_V": 0.029890979057891093,
+      "actual_input_difference_V": 0.00010000000000021309,
+      "sensitivity_actual_input_V_per_V": 298.909790578274,
+      "sensitivity_nominal_100uV_V_per_V": 298.90979057891093
+    }
+  ],
+  "headline": {
+    "positive_mean_V": 0.029890696699764404,
+    "zero_baseline_numerical_residual_V": -1.2209616942633066e-11,
+    "output_difference_V": 0.02989069671197402,
+    "actual_ELP_minus_ELN_input_difference_V": 0.00010000000000021277,
+    "SRC_input_difference_V": 9.999999999999999e-05,
+    "conditional_one_sided_sensitivity_actual_input_V_per_V": 298.9069671191042,
+    "conditional_one_sided_sensitivity_actual_input_dB": 49.51072075954225,
+    "conditional_one_sided_sensitivity_nominal_100uV_V_per_V": 298.90696711974016,
+    "conditional_one_sided_sensitivity_nominal_100uV_dB": 49.51072075956073,
+    "per_cycle_actual_input_sensitivity_range_V_per_V": [
+      298.9038171417252,
+      298.909790578274
+    ],
+    "positive_and_zero_periodicity_all_seven_pass": true
+  },
+  "worker_agreement": {
+    "nominal_denominator_sensitivity_difference_V_per_V": 5.684341886080802e-14,
+    "zero_baseline_difference_V": 6.462348535570529e-27,
+    "source": "final_summary.json; separately reconstruct actual denominator from ELP-ELN and SRC"
+  },
+  "waveforms": {
+    "positive": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_startup_224us\\steady\\wave.csv",
+      "bytes": 651759420,
+      "rows": 252914,
+      "sha256_before": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+      "sha256_after": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+      "unchanged": true,
+      "last_time_s": 0.000224,
+      "finite_selected_columns": true,
+      "time_strictly_increasing": true,
+      "zero_based_loaded_columns": {
+        "time": 0,
+        "outp": 29,
+        "outn": 27,
+        "vcm": 49,
+        "vdd": 51,
+        "src": 41,
+        "rtl_afe_rst": 33,
+        "elp": 15,
+        "eln": 13
+      },
+      "independent_time_grid": true
+    },
+    "zero": {
+      "path": "Test-2-4\\manufacturing_preflight\\analog\\afe_rtl_zero_224us\\recovery_run\\steady\\wave.csv",
+      "bytes": 651473373,
+      "rows": 252803,
+      "sha256_before": "69c67381c9ab2426af31795d33e3da83abf85cb24b5774145caea71b5d81170a",
+      "sha256_after": "69c67381c9ab2426af31795d33e3da83abf85cb24b5774145caea71b5d81170a",
+      "unchanged": true,
+      "last_time_s": 0.000224,
+      "finite_selected_columns": true,
+      "time_strictly_increasing": true,
+      "zero_based_loaded_columns": {
+        "time": 0,
+        "outp": 29,
+        "outn": 27,
+        "vcm": 49,
+        "vdd": 51,
+        "src": 41,
+        "rtl_afe_rst": 33,
+        "elp": 15,
+        "eln": 13
+      },
+      "independent_time_grid": true
+    }
+  },
+  "method": {
+    "required_numeric_columns": 9,
+    "per_case_time_grid": "Integrate each case on its own nonuniform saved time grid over exactly aligned physical-time cycle boundaries. Never subtract row-by-row across different adaptive sample grids.",
+    "mean": "Linearly interpolate exact endpoints; retain every interior sample; integral segment = dt*(y0+y1)/2 summed with math.fsum and divided by exact duration. d=OUTP-OUTN.",
+    "RMS": "Exact square integral for piecewise-linear d: dt*(d0^2+d0*d1+d1^2)/3. Also compute trapezoid of squared samples for comparison with worker. Total differential RMS includes DC.",
+    "baseline": "Independent integral of zero differential output over the whole fixed window; cross-check against mean of eight equal-duration cycle means.",
+    "sensitivity": "[whole-window positive differential mean - zero differential mean] / [positive measured mean(ELP-ELN) - zero measured mean(ELP-ELN)]. Also show nominal 100 uV denominator for reconciliation.",
+    "scope_of_clipping": "Positive minimum distance of OUTP/OUTN from 0 and contemporaneous VDD in the fixed window only; not a full transistor saturation/distortion proof.",
+    "hash_verification": "SHA256 of each complete waveform computed before and after; byte size/mtime unchanged; all small source artifacts unchanged."
+  },
+  "limits": [
+    "Conditional one-sided finite difference from 0 to +100 uV in a nominal TT27C 3.3 V AFE/Q model under the documented assumed startup and fixed late window.",
+    "The approximately -12.2 pV zero mean is a deterministic symmetric-model numerical residual. It does not measure physical input offset, mismatch, noise, or picovolt accuracy.",
+    "Not a formal DC or EEG-band gain/phase result, infinitesimal small-signal derivative, negative-input symmetry/linearity test, noise or ENOB result.",
+    "Both fixed-window moment-periodicity tests pass, but finite 224 us observation does not rule out longer electrode/servo or other slow modes.",
+    "Ideal EP/EN common-mode tied to generated VCM, no external VCM capacitor, Q diagnostic model, ideal common AVSS, no full ADC/DWA closed loop.",
+    "Prior 160 us-window failure remains preserved. No all-58-MOS stress re-audit, PVT/mismatch population, lifetime or manufacturing certification."
+  ],
+  "all_original_waveforms_and_inputs_unchanged": true
+}

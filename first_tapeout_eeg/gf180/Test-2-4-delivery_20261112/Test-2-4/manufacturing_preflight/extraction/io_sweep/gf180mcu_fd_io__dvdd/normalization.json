@@ -1,0 +1,58 @@
+{
+  "raw_diodes": [
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 4.0000000000000004e-11,
+      "perimeter_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext",
+      "raw_line": "device ndiode diode_nd2ps_06v0 3489 48637 3490 48638 a=1600000 p=16400 \"dw_251_53100#\" \"DVDD_uq9\" 32080 0 \"dw_251_53100#\" 0 36201888,25992"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 4.0000000000000004e-11,
+      "perimeter_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext",
+      "raw_line": "device ndiode diode_nd2ps_06v0 3489 49571 3490 49572 a=1600000 p=16400 \"dw_251_53100#\" \"DVDD_uq9\" 32080 0 \"dw_251_53100#\" 0 36201888,25992"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 4.0000000000000004e-11,
+      "perimeter_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext",
+      "raw_line": "device ndiode diode_nd2ps_06v0 3489 50505 3490 50506 a=1600000 p=16400 \"dw_251_53100#\" \"DVDD_uq9\" 32080 0 \"dw_251_53100#\" 0 36201888,25992"
+    },
+    {
+      "model": "diode_nd2ps_06v0",
+      "area_m2": 4.0000000000000004e-11,
+      "perimeter_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext",
+      "raw_line": "device ndiode diode_nd2ps_06v0 3489 51439 3490 51440 a=1600000 p=16400 \"dw_251_53100#\" \"DVDD_uq9\" 32080 0 \"dw_251_53100#\" 0 36201888,25992"
+    }
+  ],
+  "changes": [
+    {
+      "instance": "D0",
+      "old_pj": "82p",
+      "new_pj_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext"
+    },
+    {
+      "instance": "D1",
+      "old_pj": "82p",
+      "new_pj_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext"
+    },
+    {
+      "instance": "D2",
+      "old_pj": "82p",
+      "new_pj_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext"
+    },
+    {
+      "instance": "D3",
+      "old_pj": "82p",
+      "new_pj_m": 8.2e-05,
+      "source": "GF_NI_DVDD_BASE.ext"
+    }
+  ]
+}

@@ -1,0 +1,259 @@
+[
+  {
+    "cell": "cap_mim$8",
+    "bbox": "(-0.6,-0.6;88.22,88.22)",
+    "parents": [
+      "odn_c9",
+      "odn_c8"
+    ]
+  },
+  {
+    "cell": "cap_mim$7$1",
+    "bbox": "(-0.6,-0.6;62.48,62.48)",
+    "parents": [
+      "odn_c7"
+    ]
+  },
+  {
+    "cell": "cap_mim$6$1",
+    "bbox": "(-0.6,-0.6;44.29,44.29)",
+    "parents": [
+      "odn_c6"
+    ]
+  },
+  {
+    "cell": "cap_mim$5$1",
+    "bbox": "(-0.6,-0.6;31.42,31.42)",
+    "parents": [
+      "odn_c5"
+    ]
+  },
+  {
+    "cell": "cap_mim$4$1",
+    "bbox": "(-0.6,-0.6;22.33,22.33)",
+    "parents": [
+      "odn_c4"
+    ]
+  },
+  {
+    "cell": "cap_mim$3$1",
+    "bbox": "(-0.6,-0.6;15.89,15.89)",
+    "parents": [
+      "odn_c3"
+    ]
+  },
+  {
+    "cell": "cap_mim$2$1",
+    "bbox": "(-0.6,-0.6;11.35,11.35)",
+    "parents": [
+      "odn_c2"
+    ]
+  },
+  {
+    "cell": "cap_mim$1$1",
+    "bbox": "(-0.6,-0.6;8.13,8.13)",
+    "parents": [
+      "odn_c1"
+    ]
+  },
+  {
+    "cell": "cap_mim$9",
+    "bbox": "(-0.6,-0.6;5.86,5.86)",
+    "parents": [
+      "odn_c0"
+    ]
+  },
+  {
+    "cell": "cap_mim$8$1",
+    "bbox": "(-0.6,-0.6;88.22,88.22)",
+    "parents": [
+      "odp_c9",
+      "odp_c8"
+    ]
+  },
+  {
+    "cell": "cap_mim$7$2",
+    "bbox": "(-0.6,-0.6;62.48,62.48)",
+    "parents": [
+      "odp_c7"
+    ]
+  },
+  {
+    "cell": "cap_mim$6$2",
+    "bbox": "(-0.6,-0.6;44.29,44.29)",
+    "parents": [
+      "odp_c6"
+    ]
+  },
+  {
+    "cell": "cap_mim$5$2",
+    "bbox": "(-0.6,-0.6;31.42,31.42)",
+    "parents": [
+      "odp_c5"
+    ]
+  },
+  {
+    "cell": "cap_mim$4$2",
+    "bbox": "(-0.6,-0.6;22.33,22.33)",
+    "parents": [
+      "odp_c4"
+    ]
+  },
+  {
+    "cell": "cap_mim$3$2",
+    "bbox": "(-0.6,-0.6;15.89,15.89)",
+    "parents": [
+      "odp_c3"
+    ]
+  },
+  {
+    "cell": "cap_mim$2$2",
+    "bbox": "(-0.6,-0.6;11.35,11.35)",
+    "parents": [
+      "odp_c2"
+    ]
+  },
+  {
+    "cell": "cap_mim$1$2",
+    "bbox": "(-0.6,-0.6;8.13,8.13)",
+    "parents": [
+      "odp_c1"
+    ]
+  },
+  {
+    "cell": "cap_mim$10",
+    "bbox": "(-0.6,-0.6;5.86,5.86)",
+    "parents": [
+      "odp_c0"
+    ]
+  },
+  {
+    "cell": "cap_mim$1$3",
+    "bbox": "(-0.6,-0.6;71.25,71.25)",
+    "parents": [
+      "ota1_cc"
+    ]
+  },
+  {
+    "cell": "cap_mim$2$3",
+    "bbox": "(-0.6,-0.6;71.25,71.25)",
+    "parents": [
+      "ota2_cc"
+    ]
+  },
+  {
+    "cell": "cap_mim$3$3",
+    "bbox": "(-0.6,-0.6;32.06,32.06)",
+    "parents": [
+      "q_cvbq"
+    ]
+  },
+  {
+    "cell": "cap_mim$4$3",
+    "bbox": "(-0.6,-0.6;22.78,22.78)",
+    "parents": [
+      "dac2_c3",
+      "dac2_c2",
+      "dac2_c1",
+      "dac2_c0"
+    ]
+  },
+  {
+    "cell": "cap_mim$11",
+    "bbox": "(-0.6,-0.6;97.83,97.83)",
+    "parents": [
+      "eeg_c1"
+    ]
+  },
+  {
+    "cell": "rdac_r",
+    "bbox": "(-0.16,-0.16;299.16,252.4)",
+    "parents": [
+      "adc_rdac"
+    ]
+  },
+  {
+    "cell": "cap_mim$5$3",
+    "bbox": "(-0.6,-0.6;99.43,99.43)",
+    "parents": [
+      "adc_c2"
+    ]
+  },
+  {
+    "cell": "cap_mim",
+    "bbox": "(-0.6,-0.6;100.3,100.3)",
+    "parents": [
+      "eeg_cin"
+    ]
+  },
+  {
+    "cell": "cap_mim$1",
+    "bbox": "(-0.6,-0.6;87.18,87.18)",
+    "parents": [
+      "afe_hold"
+    ]
+  },
+  {
+    "cell": "cap_mim$2",
+    "bbox": "(-0.6,-0.6;71.25,71.25)",
+    "parents": [
+      "afe_cc"
+    ]
+  },
+  {
+    "cell": "cap_mim$3",
+    "bbox": "(-0.6,-0.6;32.06,32.06)",
+    "parents": [
+      "afe_cfb"
+    ]
+  },
+  {
+    "cell": "cap_mim$4",
+    "bbox": "(-0.6,-0.6;31.52,31.52)",
+    "parents": [
+      "afe_cpf"
+    ]
+  },
+  {
+    "cell": "cap_mim$5",
+    "bbox": "(-0.6,-0.6;5.6,5.6)",
+    "parents": [
+      "afe_m5"
+    ]
+  },
+  {
+    "cell": "cap_mim$6",
+    "bbox": "(-0.6,-0.6;7.77,7.77)",
+    "parents": [
+      "afe_m717"
+    ]
+  },
+  {
+    "cell": "cap_mim$7",
+    "bbox": "(-0.6,-0.6;10.83,10.83)",
+    "parents": [
+      "afe_m1023"
+    ]
+  },
+  {
+    "cell": "cap_mim$12",
+    "bbox": "(-0.6,-0.6;190.6,44.6)",
+    "parents": [
+      "eeg_ref"
+    ]
+  },
+  {
+    "cell": "eeg_c1",
+    "bbox": "(0,0;525.15,412.32)",
+    "parents": [
+      "adc_top"
+    ]
+  },
+  {
+    "cell": "adc_rdac",
+    "bbox": "(0.4,-1;395.4,274.4)",
+    "parents": [
+      "adc_top"
+    ]
+  }
+]

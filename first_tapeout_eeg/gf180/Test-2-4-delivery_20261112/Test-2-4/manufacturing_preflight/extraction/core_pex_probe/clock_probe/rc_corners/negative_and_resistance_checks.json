@@ -1,0 +1,98 @@
+{
+  "hrhc": {
+    "missing_R": {
+      "detected": true,
+      "disconnected_groups": {
+        "a_972_8460#": 2
+      },
+      "capacity_violations": []
+    },
+    "extra_C": {
+      "detected": true,
+      "disconnected_groups": {},
+      "capacity_violations": [
+        {
+          "pair": [
+            "CHOP1",
+            "VSS"
+          ],
+          "delta_fF": 1.0000000000000004,
+          "rounding_bound_fF": 0.500065
+        }
+      ]
+    }
+  },
+  "hrlc": {
+    "missing_R": {
+      "detected": true,
+      "disconnected_groups": {
+        "a_972_8460#": 2
+      },
+      "capacity_violations": []
+    },
+    "extra_C": {
+      "detected": true,
+      "disconnected_groups": {},
+      "capacity_violations": [
+        {
+          "pair": [
+            "CHOP1",
+            "VSS"
+          ],
+          "delta_fF": 0.9999899999999999,
+          "rounding_bound_fF": 0.50002
+        }
+      ]
+    }
+  },
+  "lrhc": {
+    "missing_R": {
+      "detected": true,
+      "disconnected_groups": {
+        "a_972_8460#": 2
+      },
+      "capacity_violations": []
+    },
+    "extra_C": {
+      "detected": true,
+      "disconnected_groups": {},
+      "capacity_violations": [
+        {
+          "pair": [
+            "CHOP1",
+            "VSS"
+          ],
+          "delta_fF": 1.0000000000000004,
+          "rounding_bound_fF": 0.500065
+        }
+      ]
+    }
+  },
+  "lrlc": {
+    "missing_R": {
+      "detected": true,
+      "disconnected_groups": {
+        "a_972_8460#": 2
+      },
+      "capacity_violations": []
+    },
+    "extra_C": {
+      "detected": true,
+      "disconnected_groups": {},
+      "capacity_violations": [
+        {
+          "pair": [
+            "CHOP1",
+            "VSS"
+          ],
+          "delta_fF": 0.9999999999999996,
+          "rounding_bound_fF": 0.50011
+        }
+      ]
+    }
+  },
+  "resistance_network_identical_with_C_corner_only_change": {
+    "hrhc_hrlc": true,
+    "lrhc_lrlc": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "input": "Test2-3",
+  "candidate": "Test-2-4",
+  "checks": {
+    "all_other_geometry_hierarchy_and_properties_unchanged": true,
+    "comp_overlap_bond_opening_um2": 0.0,
+    "poly2_overlap_bond_opening_um2": 0.0,
+    "top_metal_2um_enclosure_uncovered_area_um2": 0.0,
+    "focused_CUP_marker_count": 0
+  },
+  "addition_by_layer": [
+    {
+      "layer": 36,
+      "area_um2": 561.6,
+      "single_component_before": true,
+      "single_component_after": true
+    },
+    {
+      "layer": 42,
+      "area_um2": 555.1416,
+      "single_component_before": true,
+      "single_component_after": true
+    },
+    {
+      "layer": 46,
+      "area_um2": 555.1416,
+      "single_component_before": true,
+      "single_component_after": true
+    }
+  ],
+  "bond_opening_count": 72,
+  "bond_opening_area_um2": 259200.0,
+  "limits": "No mechanical bonding, ESD, electromigration/current, parasitic or foundry signoff. CUP applicability depends on assembly conditions."
+}

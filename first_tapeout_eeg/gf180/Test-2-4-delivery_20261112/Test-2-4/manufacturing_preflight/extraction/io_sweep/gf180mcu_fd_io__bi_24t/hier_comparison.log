@@ -1,0 +1,155 @@
+
+Circuit 1 cell pfet_06v0_dss and Circuit 2 cell pfet_06v0_dss are black boxes.
+Warning: Equate pins:  cell pfet_06v0_dss is a placeholder, treated as a black box.
+Warning: Equate pins:  cell pfet_06v0_dss is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: pfet_06v0_dss                   |Circuit 2: pfet_06v0_dss                   
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes pfet_06v0_dss and pfet_06v0_dss are equivalent.
+
+Circuit 1 cell nfet_06v0_dss and Circuit 2 cell nfet_06v0_dss are black boxes.
+Warning: Equate pins:  cell nfet_06v0_dss is a placeholder, treated as a black box.
+Warning: Equate pins:  cell nfet_06v0_dss is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: nfet_06v0_dss                   |Circuit 2: nfet_06v0_dss                   
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes nfet_06v0_dss and nfet_06v0_dss are equivalent.
+
+Circuit 1 cell pfet_06v0 and Circuit 2 cell pfet_06v0 are black boxes.
+Warning: Equate pins:  cell pfet_06v0 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell pfet_06v0 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: pfet_06v0                       |Circuit 2: pfet_06v0                       
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes pfet_06v0 and pfet_06v0 are equivalent.
+
+Circuit 1 cell nfet_06v0 and Circuit 2 cell nfet_06v0 are black boxes.
+Warning: Equate pins:  cell nfet_06v0 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell nfet_06v0 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: nfet_06v0                       |Circuit 2: nfet_06v0                       
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+4                                          |4                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes nfet_06v0 and nfet_06v0 are equivalent.
+
+Circuit 1 cell ppolyf_u and Circuit 2 cell ppolyf_u are black boxes.
+Warning: Equate pins:  cell ppolyf_u is a placeholder, treated as a black box.
+Warning: Equate pins:  cell ppolyf_u is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: ppolyf_u                        |Circuit 2: ppolyf_u                        
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+3                                          |3                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes ppolyf_u and ppolyf_u are equivalent.
+
+Circuit 1 cell cap_nmos_06v0 and Circuit 2 cell cap_nmos_06v0 are black boxes.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+Warning: Equate pins:  cell cap_nmos_06v0 is a placeholder, treated as a black box.
+
+Subcircuit pins:
+Circuit 1: cap_nmos_06v0                   |Circuit 2: cap_nmos_06v0                   
+-------------------------------------------|-------------------------------------------
+1                                          |1                                          
+2                                          |2                                          
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes cap_nmos_06v0 and cap_nmos_06v0 are equivalent.
+Flattening unmatched subcell GF_NI_BI_24T_BASE in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_paddrv_24T in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_paddrv_6T_PMOS_GROUP in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_drv_pleg_6T_X in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell pmos_6p0_esd in circuit gf180mcu_fd_io__bi_24t (0)(8 instances)
+Flattening unmatched subcell comp018green_out_drv_pleg_6T_Y in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell pmos_6p0_esd in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell comp018green_out_paddrv_6T_NMOS_GROUP in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_drv_nleg_6T in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell comp018green_sigbuf_1 in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_predrv in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell comp018green_out_sigbuf_a in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_out_sigbuf_oe in circuit gf180mcu_fd_io__bi_24t (0)(3 instances)
+Flattening unmatched subcell comp018green_inpath_cms_smt in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_in_pupd in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_in_logic_pupd in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_std_xor2 in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_std_nand2 in circuit gf180mcu_fd_io__bi_24t (0)(2 instances)
+Flattening unmatched subcell comp018green_sigbuf in circuit gf180mcu_fd_io__bi_24t (0)(4 instances)
+Flattening unmatched subcell comp018green_in_drv in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_in_cms_smt in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell comp018green_esd_cdm in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+Flattening unmatched subcell x5LM_METAL_RAIL_PAD_60 in circuit gf180mcu_fd_io__bi_24t (0)(1 instance)
+
+Class gf180mcu_fd_io__bi_24t (0):  Merged 107 parallel devices.
+Class gf180mcu_fd_io__bi_24t (0):  Merged 7 series devices.
+Class gf180mcu_fd_io__bi_24t (1):  Merged 6 parallel devices.
+Class gf180mcu_fd_io__bi_24t (1):  Merged 7 series devices.
+Subcircuit summary:
+Circuit 1: gf180mcu_fd_io__bi_24t          |Circuit 2: gf180mcu_fd_io__bi_24t          
+-------------------------------------------|-------------------------------------------
+pfet_06v0_dss (12->8)                      |pfet_06v0_dss (8)                          
+nfet_06v0_dss (8)                          |nfet_06v0_dss (8)                          
+nfet_06v0 (127->83)                        |nfet_06v0 (83)                             
+pfet_06v0 (124->83)                        |pfet_06v0 (83)                             
+diode_pd2nw_06v0 (14->11)                  |diode_pd2nw_06v0 (14->11)                  
+ppolyf_u (14->4)                           |ppolyf_u (14->4)                           
+diode_nd2ps_06v0 (2->1)                    |diode_nd2ps_06v0 (2->1)                    
+cap_nmos_06v0 (12->1)                      |cap_nmos_06v0 (12->1)                      
+Number of devices: 199                     |Number of devices: 199                     
+Number of nets: 87                         |Number of nets: 87                         
+---------------------------------------------------------------------------------------
+Resolving symmetries by property value.
+Resolving symmetries by pin name.
+Resolving symmetries by net name.
+Netlists match with 26 symmetries.
+
+Subcircuit pins:
+Circuit 1: gf180mcu_fd_io__bi_24t          |Circuit 2: gf180mcu_fd_io__bi_24t          
+-------------------------------------------|-------------------------------------------
+PAD                                        |PAD                                        
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+DVDD                                       |DVDD                                       
+Y                                          |Y                                          
+OE                                         |OE                                         
+A                                          |A                                          
+CS                                         |CS                                         
+SL                                         |SL                                         
+IE                                         |IE                                         
+PD                                         |PD                                         
+PU                                         |PU                                         
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes gf180mcu_fd_io__bi_24t and gf180mcu_fd_io__bi_24t are equivalent.
+
+Final result: Circuits match uniquely.
+.

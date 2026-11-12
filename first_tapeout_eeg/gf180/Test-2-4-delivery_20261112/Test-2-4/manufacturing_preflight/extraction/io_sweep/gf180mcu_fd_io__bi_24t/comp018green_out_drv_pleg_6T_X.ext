@@ -1,0 +1,30 @@
+timestamp 1622965154
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use pmos_6p0_esd pmos_6p0_esd_0 -1 0 2080 0 1 0
+use pmos_6p0_esd pmos_6p0_esd_1 1 0 0 0 1 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_278_44#" 0.612544
+cap "pmos_6p0_esd_0/a_278_44#" "pmos_6p0_esd_1/a_278_44#" 0.395715
+cap "pmos_6p0_esd_1/a_974_132#" "pmos_6p0_esd_1/w_0_12#" -121.235
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_0/a_278_44#" 0.612544
+cap "pmos_6p0_esd_1/a_278_44#" "pmos_6p0_esd_0/a_278_44#" 0.395715
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/a_974_132#" "pmos_6p0_esd_1/w_0_12#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -130.601
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_278_44#" 0.737837
+cap "pmos_6p0_esd_1/a_278_44#" "pmos_6p0_esd_0/a_278_44#" 0.476656
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_1/a_974_132#" -87.6516
+cap "pmos_6p0_esd_0/a_278_44#" "pmos_6p0_esd_1/a_278_44#" 0.476656
+cap "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_0/a_278_44#" 0.737837
+merge "pmos_6p0_esd_1/VSUBS" "pmos_6p0_esd_0/VSUBS" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "pmos_6p0_esd_0/VSUBS" "VSUBS"
+merge "pmos_6p0_esd_1/w_0_12#" "pmos_6p0_esd_0/w_0_12#" -2620.8 -873600 -5912 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "pmos_6p0_esd_1/a_974_132#" "pmos_6p0_esd_0/a_974_132#" -1519.35 0 0 0 0 0 0 0 0 0 0 -360000 -10144 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -230000 -10092 0 0 0 0 0 0 0 0

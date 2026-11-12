@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<report-database>
+ <description>Report for density</description>
+ <original-file/>
+ <generator>drc: script='/workspace/gf180mcu/gf180mcuD/libs.tech/klayout/tech/drc/gf180mcu.drc'</generator>
+ <top-cell>chip_top</top-cell>
+ <tags>
+ </tags>
+ <categories>
+ </categories>
+ <cells>
+  <cell>
+   <name>chip_top</name>
+   <variant/>
+   <layout-name/>
+   <references>
+   </references>
+  </cell>
+ </cells>
+ <items>
+ </items>
+</report-database>

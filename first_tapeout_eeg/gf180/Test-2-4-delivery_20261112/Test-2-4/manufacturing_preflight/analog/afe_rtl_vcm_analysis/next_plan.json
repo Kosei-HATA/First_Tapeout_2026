@@ -1,0 +1,25 @@
+{
+  "status": "Plan only; no additional SPICE run started",
+  "zero_input_control": {
+    "change": "Separate-copy VS source remains zero throughout; preserve step timestamp and all other source/circuit/model/RTL settings",
+    "stop_s": 0.000224,
+    "controls_s": 0.000256,
+    "window_s": [
+      0.000159318117,
+      0.000221818117
+    ],
+    "simulation_count": 1,
+    "parallel": 1,
+    "estimated_wall_minutes": [
+      33,
+      40
+    ],
+    "proposed_cap_minutes": 45,
+    "saved_vectors": "Same full 56 vectors and full history, retaining 58-MOS stress and independent periodicity evaluation",
+    "criteria": "Require identical three engineering periodicity thresholds in zero-input run. Do not subtract unstable windows.",
+    "comparison": "For each aligned cycle, subtract zero-input differential output mean from existing +100uV mean, divide by 100uV. Report eight values and drift, raw offset separately.",
+    "limitation": "One-sided finite-difference transfer around the modeled startup trajectory, not DC/0.5-100Hz gain, linearity, opposite-sign symmetry, noise or ENOB."
+  },
+  "vcm_cap_control": "Separate later experiment only after capacitance/ESR/ESL and startup assumptions are declared. Do not combine with zero-input change. Source intent does not specify capacitor value.",
+  "model_limit": "Q integral retains C(V) constitutive law and geometry but differs from official C-form internal realization/regularization. Official full-AFE transient remains unresolved; no quantitative official-versus-Q ripple equivalence claimed."
+}

@@ -1,0 +1,10 @@
+typical 27 C, voff 0 mV, tol A
+  BRK width (ns): 1.561
+  DAC_CLK to BRK 50 % (ns): 0.624
+  BRK to DB fall, 0 -> 1 (ns): 0.063
+  BRK to D fall, 1 -> 0 (ns): 0.063
+  D rise after BRK fall, 0 -> 1 (ns): 0.041
+  BRK rise to BRKL rise (ns): 0.516
+  BRK rise to Q rise, 0 -> 1 (ns): 0.606
+  BRK rise to QB rise, 1 -> 0 (ns): 0.608
+  BRKL fall to BRK fall (ns): -0.324

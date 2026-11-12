@@ -1,0 +1,29 @@
+{
+  "scope": "Conditional IO comparison for documented common-ground usage; not unconstrained standalone IO equivalence",
+  "source": "/work/Test-2-4/baseline/pad_geometry.json",
+  "sha256": "d44bb5dfa2928c56539417bb12b9b143bc0aa43ee754de97ac95e8872acb2986",
+  "mapping": "DVSS -> VSS; remove duplicate external port",
+  "instances": [
+    {
+      "name": "IO_CORNER_NORTH_WEST_INST",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "IO_CORNER_NORTH_EAST_INST",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "IO_CORNER_SOUTH_WEST_INST",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    },
+    {
+      "name": "IO_CORNER_SOUTH_EAST_INST",
+      "DVSS": "VSS",
+      "VSS": "VSS"
+    }
+  ],
+  "reason": "All 4 independently recorded original pad instances connect DVSS and VSS to VSS. Magic extracts the common p-substrate connection."
+}

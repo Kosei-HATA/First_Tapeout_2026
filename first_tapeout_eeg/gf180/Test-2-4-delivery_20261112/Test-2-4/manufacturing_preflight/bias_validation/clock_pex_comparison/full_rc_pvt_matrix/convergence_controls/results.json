@@ -1,0 +1,87 @@
+{
+  "baseline": {
+    "rc_corner": "hrlc",
+    "vdd": 3.6,
+    "corner": "ff",
+    "temperature_C": -20,
+    "status": "finished",
+    "spice_sha256": "c4fff44712f33dde1ee4101056dcbfa9f997f0aff0e60373644121018cd1383e",
+    "exitcode": 0,
+    "error_lines": [],
+    "timing_ns": {
+      "dead A->B": 2.247463774423343,
+      "overlap A->B": 5.4194536679100755,
+      "margin1 A->B": 0.5570136212775477,
+      "margin2 A->B": 1.5271600003987365,
+      "delay A->B": 0.7010011542817486,
+      "dead B->A": 1.6533706769723033,
+      "overlap B->A": 5.005679578956296,
+      "margin1 B->A": 0.15631507667585368,
+      "margin2 B->A": 2.0452204032723005,
+      "delay B->A": 0.6832237159876546
+    },
+    "minimum_margin_ns": 0.15631507667585368,
+    "finite": true,
+    "positive_sequence_margins": true,
+    "driver_charge_pC_per_edge": 17.749124546395468,
+    "seconds": 154.78,
+    "delta_minimum_vs_nominal_ns": -0.12564423411563466,
+    "reused_from": "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/rc_corner_sensitivity/hrlc",
+    "deck_sha256": "86623e68a6aed36637ac9047a64304ee8e7056572545db8de9c6f162bb0637f5",
+    "verified_end_time_s": 5e-07
+  },
+  "controls": [
+    {
+      "name": "half_maxstep",
+      "changed_from": "500n 0 0.05n",
+      "changed_to": "500n 0 0.025n",
+      "exitcode": 0,
+      "seconds": 236.29761862754822,
+      "timing_ns": {
+        "dead A->B": 2.2475402970734404,
+        "overlap A->B": 5.419467866305094,
+        "margin1 A->B": 0.5552122695247411,
+        "margin2 A->B": 1.528345832856613,
+        "delay A->B": 0.7018110599094934,
+        "dead B->A": 1.6524984235900335,
+        "overlap B->A": 5.0052003714968665,
+        "margin1 B->A": 0.1559367495112359,
+        "margin2 B->A": 2.0440230535549477,
+        "delay B->A": 0.6838936630836131
+      },
+      "minimum_margin_ns": 0.1559367495112359,
+      "finite": true,
+      "positive_sequence_margins": true,
+      "driver_charge_pC_per_edge": 17.74010563475845,
+      "delta_minimum_margin_ns": -0.0003783271646177755,
+      "maximum_timing_delta_ns": 0.0018013517528066014
+    },
+    {
+      "name": "tight_reltol",
+      "changed_from": "reltol=1e-4",
+      "changed_to": "reltol=1e-5",
+      "exitcode": 0,
+      "seconds": 144.25625038146973,
+      "timing_ns": {
+        "dead A->B": 2.2481461540469123,
+        "overlap A->B": 5.420333566306133,
+        "margin1 A->B": 0.5562541459329937,
+        "margin2 A->B": 1.530029464698369,
+        "delay A->B": 0.6999876213563234,
+        "dead B->A": 1.654080921762636,
+        "overlap B->A": 5.005407041498981,
+        "margin1 B->A": 0.15630953339970283,
+        "margin2 B->A": 2.0447070852086675,
+        "delay B->A": 0.6823565034240796
+      },
+      "minimum_margin_ns": 0.15630953339970283,
+      "finite": true,
+      "positive_sequence_margins": true,
+      "driver_charge_pC_per_edge": 17.71066527991032,
+      "delta_minimum_margin_ns": -5.54327615084893e-06,
+      "maximum_timing_delta_ns": 0.0028694642996325292
+    }
+  ],
+  "diagnostic_timing_tolerance_ns": 0.005,
+  "all_within_5ps": true
+}

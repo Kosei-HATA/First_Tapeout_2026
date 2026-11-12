@@ -1,0 +1,57 @@
+{
+  "visual_review_completed": true,
+  "reviewed_output_count": 4,
+  "method": "Opened all four final PNG files and inspected the actual rendered pixels; checked exact geometry via KLayout separately.",
+  "checks": {
+    "all_four_change_locations_and_72_pad_positions_visible": true,
+    "original_to_Test2_3_separate_from_Test2_3_to_Test_2_4": true,
+    "layer_numbers_and_coordinates_labeled": true,
+    "equal_x_y_scale_in_each_data_panel": true,
+    "added_metal_distinct_from_existing_metal": true,
+    "bridge_inserted_box_40_um2_versus_new_union_20_um2_each_explained": true,
+    "four_bridges_new_union_total_80_um2_explained": true,
+    "legends_and_labels_not_clipped_or_overlapping": true,
+    "scale_bars_and_geometry_annotations_identified": true,
+    "no_generative_images_or_geometry_simplification": true
+  },
+  "notes": "Overview uses actual M5 and pad geometry with position guides. Detail views show KLayout polygon booleans. Pad-metal full-chip differences match all 72 transformed cell-local additions. These checks do not imply manufacturing or bonding approval.",
+  "png_files": [
+    {
+      "name": "01_change_locations.png",
+      "pixels": [
+        3520,
+        2200
+      ],
+      "bytes": 457489,
+      "sha256": "1c267d3efbd3e3df217e9827b4b46ca5fd21a1f6ecaaab258c355ab02ca0a3cf"
+    },
+    {
+      "name": "02_dvdd_bridges_before_after_diff.png",
+      "pixels": [
+        3080,
+        3300
+      ],
+      "bytes": 415263,
+      "sha256": "ed59ae24ef845a24bf33c69ed6b8429cc4832638752917690f395a3d8326f7a0"
+    },
+    {
+      "name": "03_pad_layers_before_after_diff.png",
+      "pixels": [
+        3080,
+        3080
+      ],
+      "bytes": 383227,
+      "sha256": "5f7e71078d2e1411699e15336cf690f7d178098994b2c87d36491f211ad62bac"
+    },
+    {
+      "name": "04_pad_notch_detail.png",
+      "pixels": [
+        3080,
+        2970
+      ],
+      "bytes": 295172,
+      "sha256": "241d94baff611bbebdeff53eab026207db826018a0283de73531fa94d2dbebac"
+    }
+  ],
+  "manifest_updated_utc": "2026-11-11T22:37:16Z"
+}

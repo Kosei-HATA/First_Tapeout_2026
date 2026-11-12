@@ -1,0 +1,45 @@
+{
+  "via1": {
+    "returncode": 0,
+    "resistors": [
+      [
+        "B",
+        "A",
+        6.1205
+      ]
+    ],
+    "R_AB_ohm": 6.1205,
+    "R_AC_ohm": null,
+    "ports": ".subckt via1 A B"
+  },
+  "missing_via1": {
+    "returncode": 0,
+    "resistors": [],
+    "R_AB_ohm": null,
+    "R_AC_ohm": null,
+    "ports": ".subckt missing_via1 A B"
+  },
+  "branch": {
+    "returncode": 0,
+    "resistors": [
+      [
+        "C",
+        "C.n0",
+        4.3205
+      ],
+      [
+        "C.n0",
+        "A",
+        4.4105
+      ],
+      [
+        "C.n0",
+        "B",
+        4.4105
+      ]
+    ],
+    "R_AB_ohm": 8.821,
+    "R_AC_ohm": 8.731,
+    "ports": ".subckt branch A B C"
+  }
+}

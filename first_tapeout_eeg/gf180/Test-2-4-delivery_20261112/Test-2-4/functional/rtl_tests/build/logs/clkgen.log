@@ -1,0 +1,2 @@
+PASS: tb_clkgen (2697 frames, 47 rate changes, CHOP phases 128/256 MCLK: 373/149, CHOP_OUT phases: 368/131, 86321 chop_out checks [48079 at 128 kHz, 38242 at 64 kHz] with delays 0/1/37/127/128/129/200/255, CHOP_BLANK pulses for BLANK_LEN 1/7/15 (1 MCLK before + BLANK_LEN after the edge): 73/183/139 [303 at 128 kHz, 136 at 64 kHz, 371 with CHOP_DLY != 0, 123 within 512 MCLK after a rate change, 13 blank_len changes during a pulse, all lengths 1..15 seen], 21580 raw_clk periods)
+tb/tb_clkgen.sv:377: $finish called at 2634618940 (1ps)

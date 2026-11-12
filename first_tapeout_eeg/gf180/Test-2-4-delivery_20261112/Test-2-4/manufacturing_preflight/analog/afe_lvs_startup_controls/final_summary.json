@@ -1,0 +1,3332 @@
+{
+  "scope": "Current-LVS 3.6 V TT27 integral-Q diagnostic. Startup and later windows, not physical lifetime assessment.",
+  "baseline_phase_windows": [
+    {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665517019979512,
+        "peak_time_s": 5.320013084918583E-07,
+        "exposure_3p63": {
+          "total_s": 3.3139446028464853E-09,
+          "duty_fraction_of_record": 0.0033139446028464855,
+          "longest_s": 3.3139446028464853E-09,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.662758883502,
+        "peak_time_s": 5.320013084918583E-07,
+        "exposure_3p63": {
+          "total_s": 2.508002190651121E-09,
+          "duty_fraction_of_record": 0.0025080021906511213,
+          "longest_s": 2.508002190651121E-09,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda2.xn",
+          "terminals": {
+            "d": "cda",
+            "g": "xc.cda1",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662754968427993,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087752812042883E-09,
+            "duty_fraction_of_record": 0.0025087752812042886,
+            "longest_s": 2.5087752812042883E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.662758883502,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.508002190651121E-09,
+            "duty_fraction_of_record": 0.0025080021906511213,
+            "longest_s": 2.508002190651121E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662754968427993,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087752812042883E-09,
+            "duty_fraction_of_record": 0.0025087752812042886,
+            "longest_s": 2.5087752812042883E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp1",
+          "terminals": {
+            "d": "xa.inp",
+            "g": "cda",
+            "s": "xa.scp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp4",
+          "terminals": {
+            "d": "xa.scp2",
+            "g": "cda",
+            "s": "xa.oni",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn1",
+          "terminals": {
+            "d": "xa.inn",
+            "g": "cda",
+            "s": "xa.scn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn4",
+          "terminals": {
+            "d": "xa.scn2",
+            "g": "cda",
+            "s": "xa.opi",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xn",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "cda",
+            "s": "outp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517019979512,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 3.3139446028464853E-09,
+            "duty_fraction_of_record": 0.0033139446028464855,
+            "longest_s": 3.3139446028464853E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xn",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "cda",
+            "s": "outn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517019979512,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 3.3139446028464853E-09,
+            "duty_fraction_of_record": 0.0033139446028464855,
+            "longest_s": 3.3139446028464853E-09,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 10,
+      "gate_device_exceedance_count": 10
+    },
+    {
+      "interval_s": [
+        1E-06,
+        7.8125E-06
+      ],
+      "worst_gate": {
+        "instance": "xc.xcda3.xn",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "0",
+          "b": "0"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.644227526022119,
+        "peak_time_s": 3.925821242622825E-06,
+        "exposure_3p63": {
+          "total_s": 9.732987719002651E-11,
+          "duty_fraction_of_record": 1.4286954449912148E-05,
+          "longest_s": 9.732987719002651E-11,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.632621475619484,
+        "peak_time_s": 3.963642862371243E-06,
+        "exposure_3p63": {
+          "total_s": 1.3576004941709158E-11,
+          "duty_fraction_of_record": 1.9928080648380415E-06,
+          "longest_s": 1.3576004941709158E-11,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xan4.xp",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634923801358785,
+          "peak_time_s": 3.957110257966653E-06,
+          "exposure_3p63": {
+            "total_s": 2.0488507920546914E-11,
+            "duty_fraction_of_record": 3.007487401181198E-06,
+            "longest_s": 2.0488507920546914E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.635246030075704,
+          "peak_time_s": 3.957110257966653E-06,
+          "exposure_3p63": {
+            "total_s": 2.110981197533452E-11,
+            "duty_fraction_of_record": 3.098687996379379E-06,
+            "longest_s": 2.110981197533452E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634923801358785,
+          "peak_time_s": 3.957110257966653E-06,
+          "exposure_3p63": {
+            "total_s": 2.0488507920546914E-11,
+            "duty_fraction_of_record": 3.007487401181198E-06,
+            "longest_s": 2.0488507920546914E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.635246030075704,
+          "peak_time_s": 3.957110257966653E-06,
+          "exposure_3p63": {
+            "total_s": 2.110981197533452E-11,
+            "duty_fraction_of_record": 3.098687996379379E-06,
+            "longest_s": 2.110981197533452E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6438970683070684,
+          "peak_time_s": 3.925821242622825E-06,
+          "exposure_3p63": {
+            "total_s": 9.651736905243944E-11,
+            "duty_fraction_of_record": 1.4167687200358082E-05,
+            "longest_s": 9.651736905243944E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.644227526022119,
+          "peak_time_s": 3.925821242622825E-06,
+          "exposure_3p63": {
+            "total_s": 9.732987719002651E-11,
+            "duty_fraction_of_record": 1.4286954449912148E-05,
+            "longest_s": 9.732987719002651E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6438970683070684,
+          "peak_time_s": 3.925821242622825E-06,
+          "exposure_3p63": {
+            "total_s": 9.651736905243944E-11,
+            "duty_fraction_of_record": 1.4167687200358082E-05,
+            "longest_s": 9.651736905243944E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.644227526022119,
+          "peak_time_s": 3.925821242622825E-06,
+          "exposure_3p63": {
+            "total_s": 9.732987719002651E-11,
+            "duty_fraction_of_record": 1.4286954449912148E-05,
+            "longest_s": 9.732987719002651E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.632621475619484,
+          "peak_time_s": 3.963642862371243E-06,
+          "exposure_3p63": {
+            "total_s": 1.3576004941709158E-11,
+            "duty_fraction_of_record": 1.9928080648380415E-06,
+            "longest_s": 1.3576004941709158E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.632621427669423,
+          "peak_time_s": 3.963642862371243E-06,
+          "exposure_3p63": {
+            "total_s": 1.3575909884283685E-11,
+            "duty_fraction_of_record": 1.992794111454486E-06,
+            "longest_s": 1.3575909884283685E-11,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 8,
+      "gate_device_exceedance_count": 4
+    },
+    {
+      "interval_s": [
+        7.8125E-06,
+        1.5625E-05
+      ],
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.647154131619478,
+        "peak_time_s": 7.869921907064574E-06,
+        "exposure_3p63": {
+          "total_s": 3.581245847425864E-11,
+          "duty_fraction_of_record": 4.583994684705106E-06,
+          "longest_s": 3.581245847425864E-11,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xa.xoff.xop.xnph.xn",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "0",
+          "b": "0"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.684572191115969,
+        "peak_time_s": 7.869997256216358E-06,
+        "exposure_3p63": {
+          "total_s": 4.482007466040253E-11,
+          "duty_fraction_of_record": 5.736969556531524E-06,
+          "longest_s": 4.482007466040253E-11,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xan4.xp",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6345461879757845,
+          "peak_time_s": 1.176961101421655E-05,
+          "exposure_3p63": {
+            "total_s": 1.9754991011902614E-11,
+            "duty_fraction_of_record": 2.5286388495235346E-06,
+            "longest_s": 1.9754991011902614E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.634843477319456,
+          "peak_time_s": 1.176961101421655E-05,
+          "exposure_3p63": {
+            "total_s": 2.0317879648699966E-11,
+            "duty_fraction_of_record": 2.6006885950335956E-06,
+            "longest_s": 2.0317879648699966E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6345461879757845,
+          "peak_time_s": 1.176961101421655E-05,
+          "exposure_3p63": {
+            "total_s": 1.9754991011902614E-11,
+            "duty_fraction_of_record": 2.5286388495235346E-06,
+            "longest_s": 1.9754991011902614E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.634843477319456,
+          "peak_time_s": 1.176961101421655E-05,
+          "exposure_3p63": {
+            "total_s": 2.0317879648699966E-11,
+            "duty_fraction_of_record": 2.6006885950335956E-06,
+            "longest_s": 2.0317879648699966E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xp",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6348731780053702,
+          "peak_time_s": 7.863366024736312E-06,
+          "exposure_3p63": {
+            "total_s": 2.0519435485472212E-11,
+            "duty_fraction_of_record": 2.626487742140443E-06,
+            "longest_s": 2.0519435485472212E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.635173956694598,
+          "peak_time_s": 7.863366024736312E-06,
+          "exposure_3p63": {
+            "total_s": 2.108120474620691E-11,
+            "duty_fraction_of_record": 2.6983942075144846E-06,
+            "longest_s": 2.108120474620691E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6348731780053702,
+          "peak_time_s": 7.863366024736312E-06,
+          "exposure_3p63": {
+            "total_s": 2.0519435485472212E-11,
+            "duty_fraction_of_record": 2.626487742140443E-06,
+            "longest_s": 2.0519435485472212E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.635173956694598,
+          "peak_time_s": 7.863366024736312E-06,
+          "exposure_3p63": {
+            "total_s": 2.108120474620691E-11,
+            "duty_fraction_of_record": 2.6983942075144846E-06,
+            "longest_s": 2.108120474620691E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6454141106549254,
+          "peak_time_s": 1.173834818484516E-05,
+          "exposure_3p63": {
+            "total_s": 1.019900092487792E-10,
+            "duty_fraction_of_record": 1.3054721183843737E-05,
+            "longest_s": 1.019900092487792E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.64569461815532,
+          "peak_time_s": 1.173834818484516E-05,
+          "exposure_3p63": {
+            "total_s": 1.0275850143530571E-10,
+            "duty_fraction_of_record": 1.315308818371913E-05,
+            "longest_s": 1.0275850143530571E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6454141106549254,
+          "peak_time_s": 1.173834818484516E-05,
+          "exposure_3p63": {
+            "total_s": 1.019900092487792E-10,
+            "duty_fraction_of_record": 1.3054721183843737E-05,
+            "longest_s": 1.019900092487792E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.64569461815532,
+          "peak_time_s": 1.173834818484516E-05,
+          "exposure_3p63": {
+            "total_s": 1.0275850143530571E-10,
+            "duty_fraction_of_record": 1.315308818371913E-05,
+            "longest_s": 1.0275850143530571E-10,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xp",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6458699140115938,
+          "peak_time_s": 7.832084756591078E-06,
+          "exposure_3p63": {
+            "total_s": 9.834492964590604E-11,
+            "duty_fraction_of_record": 1.2588150994675973E-05,
+            "longest_s": 9.834492964590604E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.64618248308456,
+          "peak_time_s": 7.832084756591078E-06,
+          "exposure_3p63": {
+            "total_s": 9.899422424917807E-11,
+            "duty_fraction_of_record": 1.2671260703894793E-05,
+            "longest_s": 9.899422424917807E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6458699140115938,
+          "peak_time_s": 7.832084756591078E-06,
+          "exposure_3p63": {
+            "total_s": 9.834492964590604E-11,
+            "duty_fraction_of_record": 1.2588150994675973E-05,
+            "longest_s": 9.834492964590604E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.64618248308456,
+          "peak_time_s": 7.832084756591078E-06,
+          "exposure_3p63": {
+            "total_s": 9.899422424917807E-11,
+            "duty_fraction_of_record": 1.2671260703894793E-05,
+            "longest_s": 9.899422424917807E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644717251304681,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.403435929486215E-11,
+            "duty_fraction_of_record": 4.3563979897423555E-06,
+            "longest_s": 3.403435929486215E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6319696462979154,
+          "peak_time_s": 1.177618463998274E-05,
+          "exposure_3p63": {
+            "total_s": 1.2523239901546723E-11,
+            "duty_fraction_of_record": 1.6029747073979805E-06,
+            "longest_s": 1.2523239901546723E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644717251304681,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.403435929486215E-11,
+            "duty_fraction_of_record": 4.3563979897423555E-06,
+            "longest_s": 3.403435929486215E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.684572191115969,
+          "peak_time_s": 7.869997256216358E-06,
+          "exposure_3p63": {
+            "total_s": 4.482007466040253E-11,
+            "duty_fraction_of_record": 5.736969556531524E-06,
+            "longest_s": 4.482007466040253E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6470239939139777,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.573250169805974E-11,
+            "duty_fraction_of_record": 4.573760217351647E-06,
+            "longest_s": 3.573250169805974E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644717249869767,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.4034358695162826E-11,
+            "duty_fraction_of_record": 4.356397912980842E-06,
+            "longest_s": 3.4034358695162826E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6319695981017484,
+          "peak_time_s": 1.177618463998274E-05,
+          "exposure_3p63": {
+            "total_s": 1.252313571649421E-11,
+            "duty_fraction_of_record": 1.602961371711259E-06,
+            "longest_s": 1.252313571649421E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644717249869767,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.4034358695162826E-11,
+            "duty_fraction_of_record": 4.356397912980842E-06,
+            "longest_s": 3.4034358695162826E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.684572153904965,
+          "peak_time_s": 7.869997256216358E-06,
+          "exposure_3p63": {
+            "total_s": 4.482006938338727E-11,
+            "duty_fraction_of_record": 5.73696888107357E-06,
+            "longest_s": 4.482006938338727E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647154131619478,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.581245847425864E-11,
+            "duty_fraction_of_record": 4.583994684705106E-06,
+            "longest_s": 3.581245847425864E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.647023993868933,
+          "peak_time_s": 7.869921907064574E-06,
+          "exposure_3p63": {
+            "total_s": 3.573250169805974E-11,
+            "duty_fraction_of_record": 4.573760217351647E-06,
+            "longest_s": 3.573250169805974E-11,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 28,
+      "gate_device_exceedance_count": 16
+    },
+    {
+      "interval_s": [
+        1.5625E-05,
+        2.34375E-05
+      ],
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.647179298942794,
+        "peak_time_s": 1.568243333844796E-05,
+        "exposure_3p63": {
+          "total_s": 3.61267085514992E-11,
+          "duty_fraction_of_record": 4.624218694591897E-06,
+          "longest_s": 3.61267085514992E-11,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xa.xoff.xop.xnph.xn",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "0",
+          "b": "0"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.683934872044005,
+        "peak_time_s": 1.568251122546847E-05,
+        "exposure_3p63": {
+          "total_s": 4.573217528614274E-11,
+          "duty_fraction_of_record": 5.853718436626271E-06,
+          "longest_s": 4.573217528614274E-11,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xan4.xp",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634515399195595,
+          "peak_time_s": 1.958211126152573E-05,
+          "exposure_3p63": {
+            "total_s": 1.970831117864536E-11,
+            "duty_fraction_of_record": 2.522663830866606E-06,
+            "longest_s": 1.970831117864536E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.634812184925287,
+          "peak_time_s": 1.958211126152573E-05,
+          "exposure_3p63": {
+            "total_s": 2.026924880718585E-11,
+            "duty_fraction_of_record": 2.594463847319789E-06,
+            "longest_s": 2.026924880718585E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634515399195595,
+          "peak_time_s": 1.958211126152573E-05,
+          "exposure_3p63": {
+            "total_s": 1.970831117864536E-11,
+            "duty_fraction_of_record": 2.522663830866606E-06,
+            "longest_s": 1.970831117864536E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.634812184925287,
+          "peak_time_s": 1.958211126152573E-05,
+          "exposure_3p63": {
+            "total_s": 2.026924880718585E-11,
+            "duty_fraction_of_record": 2.594463847319789E-06,
+            "longest_s": 2.026924880718585E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xp",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634855784718339,
+          "peak_time_s": 1.567586606951228E-05,
+          "exposure_3p63": {
+            "total_s": 2.0508619081411814E-11,
+            "duty_fraction_of_record": 2.625103242420712E-06,
+            "longest_s": 2.0508619081411814E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.635156401542231,
+          "peak_time_s": 1.567586606951228E-05,
+          "exposure_3p63": {
+            "total_s": 2.1068202229730746E-11,
+            "duty_fraction_of_record": 2.6967298854055355E-06,
+            "longest_s": 2.1068202229730746E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.634855784718339,
+          "peak_time_s": 1.567586606951228E-05,
+          "exposure_3p63": {
+            "total_s": 2.0508619081411814E-11,
+            "duty_fraction_of_record": 2.625103242420712E-06,
+            "longest_s": 2.0508619081411814E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.635156401542231,
+          "peak_time_s": 1.567586606951228E-05,
+          "exposure_3p63": {
+            "total_s": 2.1068202229730746E-11,
+            "duty_fraction_of_record": 2.6967298854055355E-06,
+            "longest_s": 2.1068202229730746E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644616828599406,
+          "peak_time_s": 1.955082711467704E-05,
+          "exposure_3p63": {
+            "total_s": 9.557034603331909E-11,
+            "duty_fraction_of_record": 1.2233004292264843E-05,
+            "longest_s": 9.557034603331909E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.644919375044114,
+          "peak_time_s": 1.955082711467704E-05,
+          "exposure_3p63": {
+            "total_s": 9.635919233347669E-11,
+            "duty_fraction_of_record": 1.2333976618685016E-05,
+            "longest_s": 9.635919233347669E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644616828599406,
+          "peak_time_s": 1.955082711467704E-05,
+          "exposure_3p63": {
+            "total_s": 9.557034603331909E-11,
+            "duty_fraction_of_record": 1.2233004292264843E-05,
+            "longest_s": 9.557034603331909E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.644919375044114,
+          "peak_time_s": 1.955082711467704E-05,
+          "exposure_3p63": {
+            "total_s": 9.635919233347669E-11,
+            "duty_fraction_of_record": 1.2333976618685016E-05,
+            "longest_s": 9.635919233347669E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xp",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644517281007946,
+          "peak_time_s": 1.564457657037252E-05,
+          "exposure_3p63": {
+            "total_s": 9.591463414520066E-11,
+            "duty_fraction_of_record": 1.2277073170585684E-05,
+            "longest_s": 9.591463414520066E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.644819804848166,
+          "peak_time_s": 1.564457657037252E-05,
+          "exposure_3p63": {
+            "total_s": 9.670889992478512E-11,
+            "duty_fraction_of_record": 1.2378739190372495E-05,
+            "longest_s": 9.670889992478512E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.644517281007946,
+          "peak_time_s": 1.564457657037252E-05,
+          "exposure_3p63": {
+            "total_s": 9.591463414520066E-11,
+            "duty_fraction_of_record": 1.2277073170585684E-05,
+            "longest_s": 9.591463414520066E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.644819804848166,
+          "peak_time_s": 1.564457657037252E-05,
+          "exposure_3p63": {
+            "total_s": 9.670889992478512E-11,
+            "duty_fraction_of_record": 1.2378739190372495E-05,
+            "longest_s": 9.670889992478512E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.64501337363255,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.4374629207802824E-11,
+            "duty_fraction_of_record": 4.3999525385987615E-06,
+            "longest_s": 3.4374629207802824E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63232002568609,
+          "peak_time_s": 1.958869406771377E-05,
+          "exposure_3p63": {
+            "total_s": 1.3184791203702667E-11,
+            "duty_fraction_of_record": 1.6876532740739414E-06,
+            "longest_s": 1.3184791203702667E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.64501337363255,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.4374629207802824E-11,
+            "duty_fraction_of_record": 4.3999525385987615E-06,
+            "longest_s": 3.4374629207802824E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.683934872044005,
+          "peak_time_s": 1.568251122546847E-05,
+          "exposure_3p63": {
+            "total_s": 4.573217528614274E-11,
+            "duty_fraction_of_record": 5.853718436626271E-06,
+            "longest_s": 4.573217528614274E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.647075270186845,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.6048341076771757E-11,
+            "duty_fraction_of_record": 4.614187657826785E-06,
+            "longest_s": 3.6048341076771757E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6450133718194397,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.437462865553734E-11,
+            "duty_fraction_of_record": 4.39995246790878E-06,
+            "longest_s": 3.437462865553734E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63231997098915,
+          "peak_time_s": 1.958869406771377E-05,
+          "exposure_3p63": {
+            "total_s": 1.3184683081641016E-11,
+            "duty_fraction_of_record": 1.68763943445005E-06,
+            "longest_s": 1.3184683081641016E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6450133718194397,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.437462865553734E-11,
+            "duty_fraction_of_record": 4.39995246790878E-06,
+            "longest_s": 3.437462865553734E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.683934811481998,
+          "peak_time_s": 1.568251122546847E-05,
+          "exposure_3p63": {
+            "total_s": 4.573217070200043E-11,
+            "duty_fraction_of_record": 5.853717849856055E-06,
+            "longest_s": 4.573217070200043E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.647179298942794,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.61267085514992E-11,
+            "duty_fraction_of_record": 4.624218694591897E-06,
+            "longest_s": 3.61267085514992E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.647075270128199,
+          "peak_time_s": 1.568243333844796E-05,
+          "exposure_3p63": {
+            "total_s": 3.6048341073383625E-11,
+            "duty_fraction_of_record": 4.614187657393104E-06,
+            "longest_s": 3.6048341073383625E-11,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 28,
+      "gate_device_exceedance_count": 16
+    },
+    {
+      "interval_s": [
+        2.34375E-05,
+        3.125E-05
+      ],
+      "worst_gate": {
+        "instance": "xa.xoff.xop.xnph.xp",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "vdd",
+          "b": "vdd"
+        },
+        "pair": "vgs",
+        "max_abs_V": 3.646557161553325,
+        "peak_time_s": 2.349493664123251E-05,
+        "exposure_3p63": {
+          "total_s": 3.5614705717163745E-11,
+          "duty_fraction_of_record": 4.558682331796959E-06,
+          "longest_s": 3.5614705717163745E-11,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xa.xoff.xop.xnph.xn",
+        "terminals": {
+          "d": "xa.xoff.xop.nph",
+          "g": "ofph",
+          "s": "0",
+          "b": "0"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.684147073898493,
+        "peak_time_s": 2.34950151128811E-05,
+        "exposure_3p63": {
+          "total_s": 4.468074015631716E-11,
+          "duty_fraction_of_record": 5.719134740008597E-06,
+          "longest_s": 4.468074015631716E-11,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xan4.xp",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6345611153261093,
+          "peak_time_s": 2.739461096355142E-05,
+          "exposure_3p63": {
+            "total_s": 1.9694744184166552E-11,
+            "duty_fraction_of_record": 2.5209272555733186E-06,
+            "longest_s": 1.9694744184166552E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.634856249272348,
+          "peak_time_s": 2.739461096355142E-05,
+          "exposure_3p63": {
+            "total_s": 2.0259888794963094E-11,
+            "duty_fraction_of_record": 2.593265765755276E-06,
+            "longest_s": 2.0259888794963094E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6345611153261093,
+          "peak_time_s": 2.739461096355142E-05,
+          "exposure_3p63": {
+            "total_s": 1.9694744184166552E-11,
+            "duty_fraction_of_record": 2.5209272555733186E-06,
+            "longest_s": 1.9694744184166552E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xan4.xn",
+          "terminals": {
+            "d": "ncia",
+            "g": "xc.an3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.634856249272348,
+          "peak_time_s": 2.739461096355142E-05,
+          "exposure_3p63": {
+            "total_s": 2.0259888794963094E-11,
+            "duty_fraction_of_record": 2.593265765755276E-06,
+            "longest_s": 2.0259888794963094E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xp",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6348750237992626,
+          "peak_time_s": 2.348836597369375E-05,
+          "exposure_3p63": {
+            "total_s": 2.0517492283470993E-11,
+            "duty_fraction_of_record": 2.626239012284287E-06,
+            "longest_s": 2.0517492283470993E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.635174592747026,
+          "peak_time_s": 2.348836597369375E-05,
+          "exposure_3p63": {
+            "total_s": 2.1076344852320392E-11,
+            "duty_fraction_of_record": 2.69777214109701E-06,
+            "longest_s": 2.1076344852320392E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6348750237992626,
+          "peak_time_s": 2.348836597369375E-05,
+          "exposure_3p63": {
+            "total_s": 2.0517492283470993E-11,
+            "duty_fraction_of_record": 2.626239012284287E-06,
+            "longest_s": 2.0517492283470993E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xbn4.xn",
+          "terminals": {
+            "d": "ncib",
+            "g": "xc.bn3",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.635174592747026,
+          "peak_time_s": 2.348836597369375E-05,
+          "exposure_3p63": {
+            "total_s": 2.1076344852320392E-11,
+            "duty_fraction_of_record": 2.69777214109701E-06,
+            "longest_s": 2.1076344852320392E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6449105890033895,
+          "peak_time_s": 2.736333192419436E-05,
+          "exposure_3p63": {
+            "total_s": 9.654426444492131E-11,
+            "duty_fraction_of_record": 1.2357665848949928E-05,
+            "longest_s": 9.654426444492131E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.645208537177048,
+          "peak_time_s": 2.736333192419436E-05,
+          "exposure_3p63": {
+            "total_s": 9.739407527060745E-11,
+            "duty_fraction_of_record": 1.2466441634637754E-05,
+            "longest_s": 9.739407527060745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6449105890033895,
+          "peak_time_s": 2.736333192419436E-05,
+          "exposure_3p63": {
+            "total_s": 9.654426444492131E-11,
+            "duty_fraction_of_record": 1.2357665848949928E-05,
+            "longest_s": 9.654426444492131E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.645208537177048,
+          "peak_time_s": 2.736333192419436E-05,
+          "exposure_3p63": {
+            "total_s": 9.739407527060745E-11,
+            "duty_fraction_of_record": 1.2466441634637754E-05,
+            "longest_s": 9.739407527060745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xp",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6446845621292483,
+          "peak_time_s": 2.345707821037829E-05,
+          "exposure_3p63": {
+            "total_s": 9.614147573487521E-11,
+            "duty_fraction_of_record": 1.2306108894064027E-05,
+            "longest_s": 9.614147573487521E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.644985615829997,
+          "peak_time_s": 2.345707821037829E-05,
+          "exposure_3p63": {
+            "total_s": 9.694809220689568E-11,
+            "duty_fraction_of_record": 1.2409355802482647E-05,
+            "longest_s": 9.694809220689568E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6446845621292483,
+          "peak_time_s": 2.345707821037829E-05,
+          "exposure_3p63": {
+            "total_s": 9.614147573487521E-11,
+            "duty_fraction_of_record": 1.2306108894064027E-05,
+            "longest_s": 9.614147573487521E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcdb3.xn",
+          "terminals": {
+            "d": "ncdb",
+            "g": "xc.cdbi",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.644985615829997,
+          "peak_time_s": 2.345707821037829E-05,
+          "exposure_3p63": {
+            "total_s": 9.694809220689568E-11,
+            "duty_fraction_of_record": 1.2409355802482647E-05,
+            "longest_s": 9.694809220689568E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.643577695990298,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.3607275016817213E-11,
+            "duty_fraction_of_record": 4.301731202152603E-06,
+            "longest_s": 3.3607275016817213E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63387452846029,
+          "peak_time_s": 2.740120435706282E-05,
+          "exposure_3p63": {
+            "total_s": 1.0697528037955642E-11,
+            "duty_fraction_of_record": 1.3692835888583221E-06,
+            "longest_s": 1.0697528037955642E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.643577695990298,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.3607275016817213E-11,
+            "duty_fraction_of_record": 4.301731202152603E-06,
+            "longest_s": 3.3607275016817213E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.684147073898493,
+          "peak_time_s": 2.34950151128811E-05,
+          "exposure_3p63": {
+            "total_s": 4.468074015631716E-11,
+            "duty_fraction_of_record": 5.719134740008597E-06,
+            "longest_s": 4.468074015631716E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xop.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xop.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xop.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.646373478977579,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.55204353580938E-11,
+            "duty_fraction_of_record": 4.546615725836006E-06,
+            "longest_s": 3.55204353580938E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgs",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.643577695477572,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.36072742375469E-11,
+            "duty_fraction_of_record": 4.3017311024060034E-06,
+            "longest_s": 3.36072742375469E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xp",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "vdd",
+            "b": "vdd"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63387442793358,
+          "peak_time_s": 2.740120435706282E-05,
+          "exposure_3p63": {
+            "total_s": 1.0697373637401884E-11,
+            "duty_fraction_of_record": 1.3692638255874412E-06,
+            "longest_s": 1.0697373637401884E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.643577695477572,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.36072742375469E-11,
+            "duty_fraction_of_record": 4.3017311024060034E-06,
+            "longest_s": 3.36072742375469E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xnph.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.nph",
+            "g": "ofph",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.684147039035877,
+          "peak_time_s": 2.34950151128811E-05,
+          "exposure_3p63": {
+            "total_s": 4.4680734799680804E-11,
+            "duty_fraction_of_record": 5.719134054359143E-06,
+            "longest_s": 4.4680734799680804E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxa.xp",
+          "terminals": {
+            "d": "0",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.646557161553325,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5614705717163745E-11,
+            "duty_fraction_of_record": 4.558682331796959E-06,
+            "longest_s": 3.5614705717163745E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xoff.xon.xmxb.xn",
+          "terminals": {
+            "d": "xa.xoff.xon.sb",
+            "g": "ofph",
+            "s": "xa.xoff.xon.xr",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.646373478961713,
+          "peak_time_s": 2.349493664123251E-05,
+          "exposure_3p63": {
+            "total_s": 3.5520435351317535E-11,
+            "duty_fraction_of_record": 4.5466157249686445E-06,
+            "longest_s": 3.5520435351317535E-11,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 28,
+      "gate_device_exceedance_count": 16
+    }
+  ],
+  "startup_comparisons": {
+    "baseline_1ns": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665517019979512,
+        "peak_time_s": 5.320013084918583E-07,
+        "exposure_3p63": {
+          "total_s": 3.3139446028464853E-09,
+          "duty_fraction_of_record": 0.0033139446028464855,
+          "longest_s": 3.3139446028464853E-09,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.662758883502,
+        "peak_time_s": 5.320013084918583E-07,
+        "exposure_3p63": {
+          "total_s": 2.508002190651121E-09,
+          "duty_fraction_of_record": 0.0025080021906511213,
+          "longest_s": 2.508002190651121E-09,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda2.xn",
+          "terminals": {
+            "d": "cda",
+            "g": "xc.cda1",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662754968427993,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087752812042883E-09,
+            "duty_fraction_of_record": 0.0025087752812042886,
+            "longest_s": 2.5087752812042883E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.662758883502,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.508002190651121E-09,
+            "duty_fraction_of_record": 0.0025080021906511213,
+            "longest_s": 2.508002190651121E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662754968427993,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087752812042883E-09,
+            "duty_fraction_of_record": 0.0025087752812042886,
+            "longest_s": 2.5087752812042883E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp1",
+          "terminals": {
+            "d": "xa.inp",
+            "g": "cda",
+            "s": "xa.scp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp4",
+          "terminals": {
+            "d": "xa.scp2",
+            "g": "cda",
+            "s": "xa.oni",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn1",
+          "terminals": {
+            "d": "xa.inn",
+            "g": "cda",
+            "s": "xa.scn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn4",
+          "terminals": {
+            "d": "xa.scn2",
+            "g": "cda",
+            "s": "xa.opi",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xn",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "cda",
+            "s": "outp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517019979512,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 3.3139446028464853E-09,
+            "duty_fraction_of_record": 0.0033139446028464855,
+            "longest_s": 3.3139446028464853E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xn",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "cda",
+            "s": "outn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630582791528193,
+          "peak_time_s": 2.64810889833898E-07,
+          "exposure_3p63": {
+            "total_s": 2.7667241036130858E-11,
+            "duty_fraction_of_record": 2.766724103613086E-05,
+            "longest_s": 2.7667241036130858E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517019979512,
+          "peak_time_s": 5.320013084918583E-07,
+          "exposure_3p63": {
+            "total_s": 3.3139446028464853E-09,
+            "duty_fraction_of_record": 0.0033139446028464855,
+            "longest_s": 3.3139446028464853E-09,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 10,
+      "gate_device_exceedance_count": 10
+    },
+    "tmax_025ns": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665122776544125,
+        "peak_time_s": 5.320827216331917E-07,
+        "exposure_3p63": {
+          "total_s": 3.2948879244419295E-09,
+          "duty_fraction_of_record": 0.0032948879244419295,
+          "longest_s": 3.2948879244419295E-09,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.6623694797833357,
+        "peak_time_s": 5.318667796374525E-07,
+        "exposure_3p63": {
+          "total_s": 2.5072750122480986E-09,
+          "duty_fraction_of_record": 0.0025072750122480986,
+          "longest_s": 2.5072750122480986E-09,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda2.xn",
+          "terminals": {
+            "d": "cda",
+            "g": "xc.cda1",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6623694797833357,
+          "peak_time_s": 5.318667796374525E-07,
+          "exposure_3p63": {
+            "total_s": 2.5072750122480986E-09,
+            "duty_fraction_of_record": 0.0025072750122480986,
+            "longest_s": 2.5072750122480986E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662417696707477,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 2.506580753549649E-09,
+            "duty_fraction_of_record": 0.002506580753549649,
+            "longest_s": 2.506580753549649E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp1",
+          "terminals": {
+            "d": "xa.inp",
+            "g": "cda",
+            "s": "xa.scp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp4",
+          "terminals": {
+            "d": "xa.scp2",
+            "g": "cda",
+            "s": "xa.oni",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn1",
+          "terminals": {
+            "d": "xa.inn",
+            "g": "cda",
+            "s": "xa.scn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn4",
+          "terminals": {
+            "d": "xa.scn2",
+            "g": "cda",
+            "s": "xa.opi",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xn",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "cda",
+            "s": "outp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665122776544125,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 3.2948879244419295E-09,
+            "duty_fraction_of_record": 0.0032948879244419295,
+            "longest_s": 3.2948879244419295E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xn",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "cda",
+            "s": "outn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.63070142959782,
+          "peak_time_s": 2.648121553735678E-07,
+          "exposure_3p63": {
+            "total_s": 2.9601922348115385E-11,
+            "duty_fraction_of_record": 2.9601922348115385E-05,
+            "longest_s": 2.9601922348115385E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665122776544125,
+          "peak_time_s": 5.320827216331917E-07,
+          "exposure_3p63": {
+            "total_s": 3.2948879244419295E-09,
+            "duty_fraction_of_record": 0.0032948879244419295,
+            "longest_s": 3.2948879244419295E-09,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 10,
+      "gate_device_exceedance_count": 10
+    },
+    "regularized_1ns": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.665517105387455,
+        "peak_time_s": 5.32001292132783E-07,
+        "exposure_3p63": {
+          "total_s": 3.313944617262986E-09,
+          "duty_fraction_of_record": 0.003313944617262986,
+          "longest_s": 3.313944617262986E-09,
+          "interval_count": 1
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.662758989107233,
+        "peak_time_s": 5.32001292132783E-07,
+        "exposure_3p63": {
+          "total_s": 2.508001727097941E-09,
+          "duty_fraction_of_record": 0.002508001727097941,
+          "longest_s": 2.508001727097941E-09,
+          "interval_count": 1
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda2.xn",
+          "terminals": {
+            "d": "cda",
+            "g": "xc.cda1",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662755049320362,
+          "peak_time_s": 5.32001292132783E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087747040717193E-09,
+            "duty_fraction_of_record": 0.0025087747040717194,
+            "longest_s": 2.5087747040717193E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.662758989107233,
+          "peak_time_s": 5.32001292132783E-07,
+          "exposure_3p63": {
+            "total_s": 2.508001727097941E-09,
+            "duty_fraction_of_record": 0.002508001727097941,
+            "longest_s": 2.508001727097941E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.662755049320362,
+          "peak_time_s": 5.32001292132783E-07,
+          "exposure_3p63": {
+            "total_s": 2.5087747040717193E-09,
+            "duty_fraction_of_record": 0.0025087747040717194,
+            "longest_s": 2.5087747040717193E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp1",
+          "terminals": {
+            "d": "xa.inp",
+            "g": "cda",
+            "s": "xa.scp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscp4",
+          "terminals": {
+            "d": "xa.scp2",
+            "g": "cda",
+            "s": "xa.oni",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn1",
+          "terminals": {
+            "d": "xa.inn",
+            "g": "cda",
+            "s": "xa.scn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xscn4",
+          "terminals": {
+            "d": "xa.scn2",
+            "g": "cda",
+            "s": "xa.opi",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xn",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "cda",
+            "s": "outp",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517105387455,
+          "peak_time_s": 5.32001292132783E-07,
+          "exposure_3p63": {
+            "total_s": 3.313944617262986E-09,
+            "duty_fraction_of_record": 0.003313944617262986,
+            "longest_s": 3.313944617262986E-09,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xn",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "cda",
+            "s": "outn",
+            "b": "0"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.630581725950208,
+          "peak_time_s": 2.648108785154617E-07,
+          "exposure_3p63": {
+            "total_s": 2.7649169975030547E-11,
+            "duty_fraction_of_record": 2.7649169975030547E-05,
+            "longest_s": 2.7649169975030547E-11,
+            "interval_count": 1
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.665517105387455,
+          "peak_time_s": 5.32001292132783E-07,
+          "exposure_3p63": {
+            "total_s": 3.313944617262986E-09,
+            "duty_fraction_of_record": 0.003313944617262986,
+            "longest_s": 3.313944617262986E-09,
+            "interval_count": 1
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 10,
+      "gate_device_exceedance_count": 10
+    },
+    "ramped_refs_reset": {
+      "interval_s": [
+        0,
+        1E-06
+      ],
+      "worst_gate": {
+        "instance": "xa.xamp.xop_a.xp",
+        "terminals": {
+          "d": "xa.opi",
+          "g": "ncda",
+          "s": "outp",
+          "b": "vdd"
+        },
+        "pair": "vgb",
+        "max_abs_V": 3.653432204273994,
+        "peak_time_s": 2.649398962167923E-07,
+        "exposure_3p63": {
+          "total_s": 3.631562225386456E-09,
+          "duty_fraction_of_record": 0.003631562225386456,
+          "longest_s": 3.319485559329833E-09,
+          "interval_count": 2
+        }
+      },
+      "worst_vds": {
+        "instance": "xc.xcda3.xp",
+        "terminals": {
+          "d": "ncda",
+          "g": "xc.cdai",
+          "s": "vclk",
+          "b": "vclk"
+        },
+        "pair": "vds",
+        "max_abs_V": 3.6410428050719483,
+        "peak_time_s": 5.232947639536372E-07,
+        "exposure_3p63": {
+          "total_s": 2.9509575775186446E-09,
+          "duty_fraction_of_record": 0.0029509575775186446,
+          "longest_s": 2.781760578732516E-09,
+          "interval_count": 2
+        }
+      },
+      "exceeding_pairs": [
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6410581384338188,
+          "peak_time_s": 5.232947639536372E-07,
+          "exposure_3p63": {
+            "total_s": 2.8981238706025655E-09,
+            "duty_fraction_of_record": 0.0028981238706025656,
+            "longest_s": 2.7826848648301395E-09,
+            "interval_count": 2
+          }
+        },
+        {
+          "instance": "xc.xcda3.xp",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "vclk",
+            "b": "vclk"
+          },
+          "pair": "vds",
+          "max_abs_V": 3.6410428050719483,
+          "peak_time_s": 5.232947639536372E-07,
+          "exposure_3p63": {
+            "total_s": 2.9509575775186446E-09,
+            "duty_fraction_of_record": 0.0029509575775186446,
+            "longest_s": 2.781760578732516E-09,
+            "interval_count": 2
+          }
+        },
+        {
+          "instance": "xc.xcda3.xn",
+          "terminals": {
+            "d": "ncda",
+            "g": "xc.cdai",
+            "s": "0",
+            "b": "0"
+          },
+          "pair": "vgd",
+          "max_abs_V": 3.6410581384338188,
+          "peak_time_s": 5.232947639536372E-07,
+          "exposure_3p63": {
+            "total_s": 2.8981238706025655E-09,
+            "duty_fraction_of_record": 0.0028981238706025656,
+            "longest_s": 2.7826848648301395E-09,
+            "interval_count": 2
+          }
+        },
+        {
+          "instance": "xa.xamp.xop_a.xp",
+          "terminals": {
+            "d": "xa.opi",
+            "g": "ncda",
+            "s": "outp",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.653432204273994,
+          "peak_time_s": 2.649398962167923E-07,
+          "exposure_3p63": {
+            "total_s": 3.631562225386456E-09,
+            "duty_fraction_of_record": 0.003631562225386456,
+            "longest_s": 3.319485559329833E-09,
+            "interval_count": 2
+          }
+        },
+        {
+          "instance": "xa.xamp.xon_a.xp",
+          "terminals": {
+            "d": "xa.oni",
+            "g": "ncda",
+            "s": "outn",
+            "b": "vdd"
+          },
+          "pair": "vgb",
+          "max_abs_V": 3.653432204273994,
+          "peak_time_s": 2.649398962167923E-07,
+          "exposure_3p63": {
+            "total_s": 3.631562225386456E-09,
+            "duty_fraction_of_record": 0.003631562225386456,
+            "longest_s": 3.319485559329833E-09,
+            "interval_count": 2
+          }
+        }
+      ],
+      "gate_pair_exceedance_count": 4,
+      "gate_device_exceedance_count": 4
+    }
+  },
+  "control_run_results": [
+    {
+      "case": "tmax_025ns",
+      "seconds": 17.954220056533813,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 1E-06,
+      "finite": true
+    },
+    {
+      "case": "regularized_1ns",
+      "seconds": 8.911101818084717,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 1E-06,
+      "finite": true
+    }
+  ],
+  "ramp_run_result": {
+    "case": "ramped_refs_reset",
+    "changes": [
+      [
+        "VRP VRP 0 1.9",
+        "VRP VRP 0 PWL(0 0 100n 1.9)"
+      ],
+      [
+        "VRN VRN 0 1.4",
+        "VRN VRN 0 PWL(0 0 100n 1.4)"
+      ],
+      [
+        "VRS AFE_RST 0 PWL(0 3.3 7.8125e-06 3.3 7.8135e-06 0)",
+        "VRS AFE_RST 0 PWL(0 0 100n 3.3 7.8125e-06 3.3 7.8135e-06 0)"
+      ]
+    ],
+    "seconds": 18.109373331069946,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "last_time_s": 1E-06,
+    "finite": true
+  },
+  "conclusion": "Startup stress persists with finer timestep, terminal regularization and the selected proportional reference/reset ramp. Smaller later switching excursions also remain in the original four-cycle record. No physical lifetime, manufacturing signoff or permanent power-sequence requirement is established.",
+  "required_inputs": [
+    "Actual AVDD/reference/clock/reset/electrode startup requirements",
+    "Current substrate/rail/package impedance and intended clock-return topology",
+    "Applicable transient oxide/HCI lifetime and duty acceptance criteria"
+  ]
+}

@@ -1,0 +1,5 @@
+| corner | T (C) | code | booster units P/N | I0 (uA) | AFE IDD (mA) | chopped gain | thermal | 1/f | total (nVrms) | min margin (V) | margins |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| typical | 27 | 2 | 4/4 | 31.4 | 23.47 | 275.6 | 3.84 | 2.51 | 4.59 | 0.22 (xp_p) | nt 0.50 pt 0.44 n_p 0.30 p_p 0.22 nc_p 0.39 pc_p 0.40 |
+| ss | 85 | 2 | 4/4 | 31.5 | 23.42 | 268.6 | 4.59 | 2.80 | 5.37 | 0.22 (xnc_p) | nt 0.41 pt 0.35 n_p 0.46 p_p 0.35 nc_p 0.22 pc_p 0.27 |
+| ff | -20 | 2 | 4/4 | 32.9 | 24.73 | 282.2 | 3.36 | 2.28 | 4.06 | 0.07 (xp_p) | nt 0.59 pt 0.53 n_p 0.13 p_p 0.07 nc_p 0.53 pc_p 0.53 |

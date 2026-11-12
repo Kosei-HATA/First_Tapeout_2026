@@ -1,0 +1,3281 @@
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+
+Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_adc_clk timing with ota1 as load
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using KLU as Direct Linear Solver
+ Reference value :  0.00000e+00Note: Starting dynamic gmin stepping
+Note: Dynamic gmin stepping completed
+
+No. of Data Rows : 1
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using KLU as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                          3
+chop1                                        3
+vclk                                         3
+xc.vdd.t396                                  3
+xc.a_7916_340.t5                    3.2408e-09
+xc.a_11436_4320.t1                           3
+xc.vdd.t395                                  3
+xc.vss.t151                        1.71221e-09
+xc.a_16236_340.t10                           3
+xc.a_16876_340.t0                  6.42899e-09
+xc.vss.t150                        2.20974e-09
+xc.vdd.t233                                  3
+xc.a_20876_4320.t10                7.47389e-09
+xc.a_21516_4320.t0                           3
+xc.vdd.t220                                  3
+xc.vdd.t167                                  3
+xc.a_16236_340.t11                           3
+xc.a_16876_340.t1                   6.4383e-09
+xc.vdd.t112                                  3
+xc.vss.t391                        2.04875e-09
+xc.a_5676_4320.t35                 6.52895e-09
+xc.ncib.t33                                  3
+xc.vss.t390                        1.20824e-08
+xc.ncib.t14                                  3
+xc.a_5676_4320.t44                 6.52895e-09
+xc.vdd.t359                                  3
+xc.vdd.t358                                  3
+xc.a_21516_4320.t11                          3
+xc.a_20876_4320.t5                 7.47389e-09
+xc.vss.t225                         2.7507e-09
+xc.vss.t224                        5.03445e-09
+xc.vdd.t235                                  3
+xc.a_20876_4320.t14                7.47389e-09
+xc.a_21516_4320.t4                           3
+xc.vdd.t224                                  3
+xc.vss.t27                         1.53297e-09
+xc.a_1036_4320.t31                           3
+xc.cib.t21                         6.19098e-09
+xc.vss.t26                         1.52147e-09
+xc.a_4556_4320.t0                  6.34177e-09
+xc.a_4492_4188.t2                            3
+xc.vdd.t319                                  3
+xc.vdd.t318                                  3
+xc.vss.t453                         1.2742e-09
+xc.a_972_8460.t10                            3
+xc.a_1036_6700.t13                 6.02214e-09
+xc.vss.t444                        1.45949e-09
+xc.vdd.t43                                   3
+xc.a_1036_6700.t27                 6.02771e-09
+xc.ncdb.t3                                   3
+xc.vdd.t42                                   3
+xc.ncia.t30                        6.76083e-09
+xc.a_21516_340.t28                           3
+xc.vss.t253                        2.01896e-09
+xc.vss.t252                         4.2197e-09
+xc.cda.t36                                   3
+xc.a_12076_4320.t41                7.08559e-09
+xc.vss.t91                         2.53518e-09
+xc.vss.t90                         3.72702e-09
+xc.vdd.t99                                   3
+xc.a_12076_4320.t50                7.08559e-09
+xc.cda.t17                                   3
+xc.vdd.t98                                   3
+xc.vss.t31                         1.56726e-09
+xc.a_1036_4320.t35                           3
+xc.cib.t23                         6.19106e-09
+xc.vss.t30                         1.55689e-09
+xc.cdb.t42                         7.53057e-09
+xc.a_21516_4320.t53                          3
+xc.vss.t325                         2.8093e-09
+xc.vss.t324                        2.80506e-09
+xc.vdd.t302                                  3
+xc.a_21516_4320.t62                          3
+xc.cdb.t23                         7.53989e-09
+xc.vdd.t270                                  3
+xc.a_1036_6700.t0                  6.03146e-09
+xc.a_972_8460.t5                             3
+xc.vdd.t413                                  3
+xc.vdd.t412                                  3
+xc.vdd.t183                                  3
+xc.a_16876_340.t19                 6.43446e-09
+xc.cia.t3                                    3
+xc.vdd.t182                                  3
+xc.vss.t259                        2.03005e-09
+xc.a_21516_340.t34                           3
+xc.ncia.t33                        6.76087e-09
+xc.vss.t258                        3.06842e-09
+xc.cdb.t44                         7.53058e-09
+xc.a_21516_4320.t57                          3
+xc.vss.t329                        2.81097e-09
+xc.vss.t328                        2.80671e-09
+xc.a_5036_4320.t1                            3
+xc.a_4556_4320.t3                  6.33969e-09
+xc.vss.t351                        1.65623e-09
+xc.vss.t350                        1.97102e-09
+xc.vdd.t331                                  3
+xc.a_5036_4320.t6                            3
+xc.a_5676_4320.t12                 6.53276e-09
+xc.vdd.t330                                  3
+xc.ncib.t32                                  3
+xc.a_5676_4320.t33                 6.52895e-09
+xc.vss.t389                        2.01848e-09
+xc.vss.t388                        1.47473e-08
+xc.a_1516_340.t5                             3
+xc.vdd.t159                                  3
+xc.vdd.t158                                  3
+xc.vdd.t357                                  3
+xc.a_5676_4320.t42                 6.52895e-09
+xc.ncib.t13                                  3
+xc.vdd.t356                                  3
+xc.a_21516_4320.t2                           3
+xc.a_20876_4320.t12                7.47389e-09
+xc.vdd.t234                                  3
+xc.vdd.t222                                  3
+xc.a_1036_6700.t12                 6.02213e-09
+xc.a_972_8460.t8                             3
+xc.vss.t452                        1.23298e-09
+xc.vss.t442                        2.36176e-09
+xc.ncia.t8                         6.77018e-09
+xc.a_21516_340.t33                           3
+xc.vdd.t283                                  3
+xc.vdd.t282                                  3
+xc.a_12076_4320.t2                 7.08944e-09
+xc.a_11436_4320.t12                          3
+xc.vdd.t71                                   3
+xc.vdd.t70                                   3
+xc.ncda.t2                         2.62372e-09
+xc.a_1292_12000.t25                          3
+xc.vdd.t135                                  3
+xc.vdd.t134                                  3
+xc.vdd.t423                                  3
+xc.a_972_8460.t15                            3
+xc.a_1036_6700.t5                  6.03154e-09
+xc.vdd.t422                                  3
+xc.vdd.t405                                  3
+xc.a_972_4188.t6                    6.7846e-09
+xc.a_1036_4320.t1                            3
+xc.vdd.t404                                  3
+xc.vss.t51                         2.32813e-09
+xc.a_11436_4320.t7                           3
+xc.a_12076_4320.t13                7.08006e-09
+xc.vss.t50                         2.38313e-09
+xc.cia.t2                                    3
+xc.a_16876_340.t17                 6.43446e-09
+xc.vdd.t181                                  3
+xc.vdd.t180                                  3
+xc.ncib.t40                                  3
+xc.a_5676_4320.t49                 6.52895e-09
+xc.vss.t405                        2.13315e-09
+xc.vss.t404                        1.41675e-08
+xc.cdb.t2                          7.53974e-09
+xc.a_21516_4320.t20                          3
+xc.vdd.t298                                  3
+xc.vdd.t262                                  3
+xc.vss.t239                        2.77513e-09
+xc.a_20876_4320.t19                7.47389e-09
+xc.a_21516_4320.t9                           3
+xc.vss.t238                        6.00836e-09
+xc.vss.t43                         1.61339e-09
+xc.a_1036_6700.t30                 6.02771e-09
+xc.ncdb.t17                                  3
+xc.vss.t42                          1.7916e-09
+xc.a_1516_340.t0                             3
+xc.a_1036_340.t2                   4.84627e-09
+xc.vss.t5                          1.63687e-10
+xc.vss.t4                          7.12009e-10
+xc.vss.t327                        2.81097e-09
+xc.a_21516_4320.t55                          3
+xc.cdb.t43                         7.53057e-09
+xc.vss.t326                        2.80589e-09
+xc.a_14476_1540.t0                 1.08883e-08
+xc.a_11116_340.t4                            3
+xc.a_14476_340.t0                  6.17025e-09
+xc.vss.t463                        1.46896e-09
+xc.a_5676_4320.t10                 6.53276e-09
+xc.a_5036_4320.t4                            3
+xc.vdd.t329                                  3
+xc.vdd.t328                                  3
+xc.vss.t117                        1.38993e-09
+xc.a_1292_12000.t22                          3
+xc.ncda.t13                        2.60663e-09
+xc.vss.t116                        1.57664e-09
+xc.vss.t105                        2.59573e-09
+xc.a_12076_4320.t55                7.08559e-09
+xc.cda.t43                                   3
+xc.vss.t104                        1.61685e-08
+xc.vss.t353                        1.69182e-09
+xc.a_4556_4320.t5                  6.33969e-09
+xc.a_5036_4320.t3                            3
+xc.vss.t352                        1.83815e-09
+xc.a_7916_1540.t0                      3.00079
+xc.a_1516_340.t7                             3
+xc.vdd.t161                                  3
+xc.vdd.t160                                  3
+xc.vdd.t315                                  3
+xc.a_27276_4320.t4                 7.55059e-09
+xc.a_972_8460.t2                             3
+xc.vdd.t314                                  3
+xc.vdd.t69                                   3
+xc.a_11436_4320.t10                          3
+xc.a_12076_4320.t0                 7.08942e-09
+xc.vdd.t68                                   3
+xc.a_1036_6700.t4                  6.03154e-09
+xc.a_972_8460.t13                            3
+xc.vdd.t421                                  3
+xc.vdd.t420                                  3
+xc.a_12076_4320.t11                7.08006e-09
+xc.a_11436_4320.t5                           3
+xc.vss.t49                         2.30432e-09
+xc.vss.t48                         2.39523e-09
+xc.vss.t163                        1.80765e-09
+xc.a_16876_340.t18                 6.43446e-09
+xc.cia.t15                                   3
+xc.vss.t162                        1.00123e-08
+xc.vss.t403                        2.13315e-09
+xc.a_5676_4320.t47                 6.52895e-09
+xc.ncib.t39                                  3
+xc.vss.t402                        1.22783e-08
+xc.a_21516_4320.t7                           3
+xc.a_20876_4320.t17                7.47389e-09
+xc.vss.t237                        2.77169e-09
+xc.vss.t236                        5.67583e-09
+xc.vdd.t287                                  3
+xc.a_21516_4320.t18                          3
+xc.cdb.t1                          7.53973e-09
+xc.vdd.t240                                  3
+xc.ncda.t16                        2.60533e-09
+xc.a_1292_12000.t28                          3
+xc.vss.t123                        1.40752e-09
+xc.vss.t122                        1.43816e-09
+xc.vss.t461                        1.38783e-09
+xc.a_972_8460.t22                            3
+xc.a_1036_6700.t19                 6.02239e-09
+xc.vss.t10                         1.37612e-09
+xc.a_21516_340.t14                           3
+xc.a_20876_340.t8                  6.65988e-09
+xc.vss.t213                        1.96048e-09
+xc.vss.t212                        5.50461e-09
+xc.a_15116_1540.t0                     3.00079
+xc.a_11116_340.t7                            3
+xc.vdd.t61                                   3
+xc.vdd.t60                                   3
+xc.vdd.t253                                  3
+xc.a_21516_340.t47                           3
+xc.ncia.t15                        6.77027e-09
+xc.vdd.t252                                  3
+xc.vdd.t83                                   3
+xc.a_12076_4320.t18                7.08559e-09
+xc.cda.t1                                    3
+xc.vdd.t82                                   3
+xc.cda.t42                                   3
+xc.a_12076_4320.t53                7.08559e-09
+xc.vss.t103                         2.5813e-09
+xc.vss.t102                        1.60435e-08
+xc.a_12076_4320.t7                 7.08018e-09
+xc.a_11436_4320.t17                          3
+xc.vss.t61                         2.37254e-09
+xc.vss.t60                         7.32539e-09
+xc.vss.t445                        1.27551e-09
+xc.a_972_4188.t11                   6.7846e-09
+xc.a_1036_4320.t9                            3
+xc.vdd.t113                                  3
+xc.a_12076_4320.t62                7.08559e-09
+xc.cda.t23                                   3
+xc.cib.t0                          6.20002e-09
+xc.a_1036_4320.t12                           3
+xc.vdd.t9                                    3
+xc.vdd.t8                                    3
+xc.a_972_8460.t0                             3
+xc.a_27276_4320.t2                 7.55059e-09
+xc.vdd.t313                                  3
+xc.vdd.t312                                  3
+xc.vdd.t195                                  3
+xc.a_16876_340.t31                 6.43446e-09
+xc.cia.t9                                    3
+xc.vdd.t194                                  3
+xc.a_7916_340.t2                   3.24375e-09
+xc.a_7916_1540.t1                      3.00079
+xc.vdd.t383                                  3
+xc.a_27276_4320.t1                 7.54746e-09
+xc.a_9196_340.t7                             3
+xc.vss.t437                        2.81333e-09
+xc.vss.t436                        2.81166e-09
+xc.a_5676_4320.t15                 6.52344e-09
+xc.a_5036_4320.t9                            3
+xc.vss.t359                        1.76024e-09
+xc.vss.t358                        1.80602e-09
+xc.vss.t275                        2.04474e-09
+xc.a_21516_340.t50                           3
+xc.ncia.t41                          6.761e-09
+xc.vss.t274                        2.03755e-09
+xc.vdd.t343                                  3
+xc.a_5036_4320.t18                           3
+xc.a_5676_4320.t8                  6.53282e-09
+xc.vdd.t342                                  3
+xc.a_17836_4320.t1                           3
+xc.a_7916_340.t8                    3.2408e-09
+xc.vss.t429                         2.6347e-09
+xc.vss.t428                        3.27294e-09
+xc.a_5676_4320.t3                  6.52351e-09
+xc.a_5036_4320.t13                           3
+xc.vss.t363                        1.79397e-09
+xc.vss.t362                        2.48282e-09
+xc.a_16876_340.t2                  6.42903e-09
+xc.a_16236_340.t12                           3
+xc.vss.t153                        1.71221e-09
+xc.vss.t152                        3.91112e-09
+xc.a_21516_340.t15                           3
+xc.a_20876_340.t9                  6.65988e-09
+xc.vdd.t219                                  3
+xc.vdd.t218                                  3
+xc.ncia.t14                        6.77027e-09
+xc.a_21516_340.t45                           3
+xc.vdd.t251                                  3
+xc.vdd.t250                                  3
+xc.vss.t59                         2.37254e-09
+xc.a_11436_4320.t15                          3
+xc.a_12076_4320.t5                 7.08014e-09
+xc.vss.t58                         5.16238e-09
+xc.cda.t0                                    3
+xc.a_12076_4320.t16                7.08559e-09
+xc.vdd.t81                                   3
+xc.vdd.t80                                   3
+xc.a_1036_4320.t8                            3
+xc.a_972_4188.t9                    6.7846e-09
+xc.vss.t443                        1.23427e-09
+xc.vss.t63                         2.39288e-09
+xc.a_11436_4320.t19                          3
+xc.a_12076_4320.t9                 7.08018e-09
+xc.vss.t62                          9.4884e-09
+xc.ncdb.t8                                   3
+xc.a_1036_6700.t34                 6.02771e-09
+xc.vdd.t53                                   3
+xc.vdd.t52                                   3
+xc.cdb.t8                          7.53979e-09
+xc.a_21516_4320.t32                          3
+xc.vdd.t308                                  3
+xc.vss.t295                         2.7887e-09
+xc.a_21516_4320.t23                          3
+xc.cdb.t27                         7.53041e-09
+xc.vss.t294                        4.69877e-09
+xc.vss.t255                        2.02479e-09
+xc.a_21516_340.t30                           3
+xc.ncia.t31                        6.76083e-09
+xc.vss.t254                        3.83594e-09
+xc.a_16236_340.t1                            3
+xc.a_14476_1540.t4                 1.08941e-08
+xc.vdd.t151                                  3
+xc.vdd.t96                                   3
+xc.ncia.t22                        6.77034e-09
+xc.a_21516_340.t61                           3
+xc.vdd.t269                                  3
+xc.vdd.t268                                  3
+xc.cib.t14                         6.19068e-09
+xc.a_1036_4320.t17                           3
+xc.vss.t13                         1.38888e-09
+xc.vss.t12                         1.39443e-09
+xc.vdd.t197                                  3
+xc.a_17836_4320.t4                           3
+xc.a_18316_4320.t2                 7.39801e-09
+xc.vdd.t27                                   3
+xc.a_1036_4320.t26                           3
+xc.cib.t7                          6.20018e-09
+xc.vdd.t26                                   3
+xc.vss.t361                        1.79397e-09
+xc.a_5036_4320.t11                           3
+xc.a_5676_4320.t1                  6.52345e-09
+xc.vss.t360                         1.7996e-09
+xc.vdd.t217                                  3
+xc.a_20876_340.t7                  6.65988e-09
+xc.a_21516_340.t13                           3
+xc.vdd.t216                                  3
+xc.ncia.t34                         6.7609e-09
+xc.a_21516_340.t36                           3
+xc.vss.t261                        2.03005e-09
+xc.vss.t260                        2.68465e-09
+xc.vdd.t39                                   3
+xc.a_1036_6700.t37                 6.02771e-09
+xc.ncdb.t11                                  3
+xc.vdd.t38                                   3
+xc.a_9196_340.t1                             3
+xc.a_8556_1540.t4                  1.03357e-08
+xc.vdd.t399                                  3
+xc.vdd.t354                                  3
+xc.vdd.t369                                  3
+xc.a_5676_4320.t54                 6.52895e-09
+xc.ncib.t19                                  3
+xc.vdd.t368                                  3
+xc.a_4492_4188.t1                            3
+xc.a_15116_340.t4                  3.91996e-09
+xc.vdd.t155                                  3
+xc.vdd.t90                                   3
+xc.vss.t133                        1.63437e-09
+xc.a_14476_1540.t5                 1.08941e-08
+xc.a_16236_340.t2                            3
+xc.vss.t132                        1.90066e-09
+xc.ncib.t4                                   3
+xc.a_5676_4320.t24                 6.52895e-09
+xc.vdd.t382                                  3
+xc.vdd.t145                                  3
+xc.a_1292_12000.t33                          3
+xc.ncda.t7                         2.62503e-09
+xc.vdd.t144                                  3
+xc.cib.t4                          6.20011e-09
+xc.a_1036_4320.t20                           3
+xc.vdd.t21                                   3
+xc.vdd.t20                                   3
+xc.vss.t375                         1.9252e-09
+xc.a_5676_4320.t19                 6.52895e-09
+xc.ncib.t25                                  3
+xc.vss.t374                        1.79787e-08
+xc.ncib.t6                                   3
+xc.a_5676_4320.t28                 6.52895e-09
+xc.vdd.t386                                  3
+xc.vdd.t385                                  3
+xc.a_1292_12000.t18                          3
+xc.a_18316_4320.t21                7.39416e-09
+xc.vss.t201                        2.71988e-09
+xc.vss.t200                        5.88779e-09
+xc.vdd.t267                                  3
+xc.a_21516_340.t59                           3
+xc.ncia.t21                        6.77033e-09
+xc.vdd.t266                                  3
+xc.a_16876_340.t6                  6.42895e-09
+xc.a_16236_340.t4                            3
+xc.vss.t145                         1.6598e-09
+xc.vss.t144                        1.79469e-09
+xc.vdd.t122                                  3
+xc.a_12076_4320.t30                7.08559e-09
+xc.cda.t7                                    3
+xc.vdd.t121                                  3
+xc.cda.t26                                   3
+xc.a_12076_4320.t21                7.08559e-09
+xc.vss.t71                         2.43733e-09
+xc.vss.t70                         1.86511e-08
+xc.vss.t11                         1.38888e-09
+xc.a_1036_4320.t15                           3
+xc.cib.t13                          6.1906e-09
+xc.cib.t6                          6.20018e-09
+xc.a_1036_4320.t24                           3
+xc.vdd.t25                                   3
+xc.vdd.t24                                   3
+xc.ncia.t24                        6.76075e-09
+xc.a_21516_340.t16                           3
+xc.vss.t241                        1.99663e-09
+xc.vss.t240                        6.52226e-09
+xc.vdd.t165                                  3
+xc.a_16236_340.t7                            3
+xc.a_16876_340.t9                  6.43829e-09
+xc.vdd.t108                                  3
+xc.vdd.t125                                  3
+xc.a_12076_4320.t34                7.08559e-09
+xc.cda.t9                                    3
+xc.cda.t28                                   3
+xc.a_12076_4320.t25                7.08559e-09
+xc.vss.t75                          2.4578e-09
+xc.vss.t74                         1.91215e-08
+xc.vdd.t293                                  3
+xc.a_21516_4320.t46                          3
+xc.cdb.t15                         7.53984e-09
+xc.cdb.t34                         7.53049e-09
+xc.a_21516_4320.t37                          3
+xc.vss.t309                        2.79942e-09
+xc.vss.t308                        3.17092e-09
+xc.ncda.t10                         2.6256e-09
+xc.a_1292_12000.t36                          3
+xc.vdd.t131                                  3
+xc.vdd.t130                                  3
+xc.ncib.t18                                  3
+xc.a_5676_4320.t52                 6.52895e-09
+xc.vdd.t367                                  3
+xc.vdd.t366                                  3
+xc.a_1036_340.t1                   4.84835e-09
+xc.chop1.t1                                  3
+xc.vdd.t1                                    3
+xc.vdd.t0                                    3
+xc.vss.t247                        2.01247e-09
+xc.a_21516_340.t22                           3
+xc.ncia.t27                        6.76077e-09
+xc.vss.t246                        5.37098e-09
+xc.vdd.t381                                  3
+xc.a_5676_4320.t22                 6.52895e-09
+xc.ncib.t3                                   3
+xc.vdd.t380                                  3
+xc.vdd.t47                                   3
+xc.a_1036_6700.t31                 6.02771e-09
+xc.ncdb.t5                                   3
+xc.vdd.t46                                   3
+xc.a_1292_12000.t4                           3
+xc.a_18316_4320.t12                7.39416e-09
+xc.vdd.t202                                  3
+xc.ncib.t24                                  3
+xc.a_5676_4320.t17                 6.52895e-09
+xc.vss.t373                        1.89195e-09
+xc.vss.t372                        1.62371e-08
+xc.a_1516_340.t4                             3
+xc.vss.t141                        2.22286e-10
+xc.vss.t140                        3.15872e-10
+xc.vdd.t384                                  3
+xc.a_5676_4320.t26                 6.52895e-09
+xc.ncib.t5                                   3
+xc.vss.t199                        2.71988e-09
+xc.a_18316_4320.t19                7.39416e-09
+xc.a_1292_12000.t17                          3
+xc.vss.t198                        5.57367e-09
+xc.vdd.t129                                  3
+xc.a_1292_12000.t23                          3
+xc.ncda.t1                         2.62314e-09
+xc.vdd.t128                                  3
+xc.vss.t129                        1.53482e-09
+xc.a_15116_340.t1                  3.91696e-09
+xc.vss.t128                        1.54312e-09
+xc.vss.t187                        2.68981e-09
+xc.a_18316_4320.t7                 7.39416e-09
+xc.a_1292_12000.t11                          3
+xc.vss.t186                        6.12818e-09
+xc.ncia.t0                          6.7701e-09
+xc.a_21516_340.t17                           3
+xc.vdd.t239                                  3
+xc.vdd.t238                                  3
+xc.vss.t415                           2.21e-09
+xc.a_5676_4320.t59                 6.52895e-09
+xc.ncib.t45                                  3
+xc.vss.t414                        1.53514e-08
+xc.a_11436_4320.t0                           3
+xc.a_7916_340.t3                    3.2408e-09
+xc.vdd.t394                                  3
+xc.vdd.t393                                  3
+xc.vss.t73                          2.4578e-09
+xc.a_12076_4320.t23                7.08559e-09
+xc.cda.t27                                   3
+xc.vss.t72                         1.91617e-08
+xc.a_16876_340.t7                  6.43829e-09
+xc.a_16236_340.t5                            3
+xc.vdd.t164                                  3
+xc.vdd.t106                                  3
+xc.vdd.t353                                  3
+xc.a_5676_4320.t38                 6.52895e-09
+xc.ncib.t11                                  3
+xc.vdd.t352                                  3
+xc.vss.t435                        2.74234e-09
+xc.a_9196_340.t5                             3
+xc.a_20876_4320.t3                 7.46842e-09
+xc.vss.t434                        2.94622e-09
+xc.a_4492_4188.t0                            3
+xc.a_15116_340.t3                  3.91996e-09
+xc.vss.t137                        1.56508e-09
+xc.vss.t136                        1.75221e-09
+xc.a_21516_4320.t14                          3
+xc.a_20876_4320.t8                 7.47389e-09
+xc.vdd.t232                                  3
+xc.vss.t307                        2.79942e-09
+xc.a_21516_4320.t35                          3
+xc.cdb.t33                         7.53047e-09
+xc.vss.t306                        3.38918e-09
+xc.cdb.t14                         7.53984e-09
+xc.a_21516_4320.t44                          3
+xc.vdd.t292                                  3
+xc.a_16876_340.t11                  6.4383e-09
+xc.a_16236_340.t9                            3
+xc.vdd.t166                                  3
+xc.vdd.t110                                  3
+xc.vss.t171                        1.84757e-09
+xc.a_16876_340.t26                 6.43446e-09
+xc.cia.t19                                   3
+xc.vss.t170                        5.96345e-09
+xc.ncda.t4                         2.62446e-09
+xc.a_1292_12000.t29                          3
+xc.vdd.t139                                  3
+xc.vdd.t138                                  3
+xc.cda.t14                                   3
+xc.a_12076_4320.t44                7.08559e-09
+xc.vdd.t93                                   3
+xc.vdd.t92                                   3
+xc.cib.t20                         6.19098e-09
+xc.a_1036_4320.t29                           3
+xc.vss.t25                         1.49704e-09
+xc.vss.t24                         1.50376e-09
+xc.vdd.t379                                  3
+xc.a_5676_4320.t62                 6.52895e-09
+xc.ncib.t23                                  3
+xc.vdd.t378                                  3
+xc.a_21516_340.t6                            3
+xc.a_20876_340.t16                 6.65988e-09
+xc.vss.t221                         1.9824e-09
+xc.vss.t220                        7.08923e-09
+xc.vss.t89                         2.53518e-09
+xc.a_12076_4320.t39                7.08559e-09
+xc.cda.t35                                   3
+xc.vss.t88                         3.41757e-09
+xc.cda.t16                                   3
+xc.a_12076_4320.t48                7.08559e-09
+xc.vdd.t97                                   3
+xc.cia.t22                                   3
+xc.a_16876_340.t32                 6.43446e-09
+xc.vss.t177                        1.86493e-09
+xc.vss.t176                        9.02952e-09
+xc.vss.t323                         2.8093e-09
+xc.a_21516_4320.t51                          3
+xc.cdb.t41                         7.53056e-09
+xc.vss.t322                        2.80424e-09
+xc.cdb.t22                         7.53989e-09
+xc.a_21516_4320.t60                          3
+xc.vdd.t301                                  3
+xc.ncib.t44                                  3
+xc.a_5676_4320.t57                 6.52895e-09
+xc.vss.t413                        2.18488e-09
+xc.vss.t412                        1.62162e-08
+xc.vdd.t7                                    3
+xc.a_1036_340.t5                   4.84627e-09
+xc.a_1516_340.t3                             3
+xc.vdd.t6                                    3
+xc.ncib.t10                                  3
+xc.a_5676_4320.t36                 6.52895e-09
+xc.vdd.t351                                  3
+xc.vdd.t350                                  3
+xc.vdd.t231                                  3
+xc.a_20876_4320.t6                 7.47389e-09
+xc.a_21516_4320.t12                          3
+xc.a_20876_4320.t2                 7.46842e-09
+xc.a_9196_340.t3                             3
+xc.vss.t433                        2.73422e-09
+xc.vss.t432                        3.28863e-09
+xc.vss.t121                        1.40752e-09
+xc.a_1292_12000.t26                          3
+xc.ncda.t15                        2.60596e-09
+xc.vss.t120                        1.48432e-09
+xc.a_1292_12000.t16                          3
+xc.a_18316_4320.t17                7.39416e-09
+xc.vss.t197                        2.71099e-09
+xc.vss.t196                        4.70875e-09
+xc.vss.t387                        2.01848e-09
+xc.a_5676_4320.t31                 6.52895e-09
+xc.ncib.t31                                  3
+xc.vss.t386                        1.68613e-08
+xc.ncib.t12                                  3
+xc.a_5676_4320.t40                 6.52895e-09
+xc.vdd.t355                                  3
+xc.vdd.t277                                  3
+xc.a_21516_340.t27                           3
+xc.ncia.t5                         6.77013e-09
+xc.vdd.t276                                  3
+xc.vss.t283                        2.04834e-09
+xc.a_21516_340.t58                           3
+xc.ncia.t45                        6.76104e-09
+xc.vss.t282                        2.04153e-09
+xc.vdd.t91                                   3
+xc.a_12076_4320.t42                7.08559e-09
+xc.cda.t13                                   3
+xc.cda.t32                                   3
+xc.a_12076_4320.t33                7.08559e-09
+xc.vss.t83                         2.49731e-09
+xc.vss.t82                         1.34526e-08
+xc.vss.t343                        5.22102e-10
+xc.vss.t342                        5.75645e-10
+xc.vss.t451                        1.23298e-09
+xc.a_972_8460.t6                             3
+xc.a_1036_6700.t11                 6.02206e-09
+xc.vss.t440                        3.39165e-09
+xc.vdd.t281                                  3
+xc.a_21516_340.t31                           3
+xc.ncia.t7                         6.77016e-09
+xc.vdd.t280                                  3
+xc.vdd.t95                                   3
+xc.a_12076_4320.t46                7.08559e-09
+xc.cda.t15                                   3
+xc.vdd.t94                                   3
+xc.cda.t34                                   3
+xc.a_12076_4320.t37                7.08559e-09
+xc.vss.t87                         2.51636e-09
+xc.vss.t86                         7.31339e-09
+xc.cia.t12                                   3
+xc.a_16876_340.t12                 6.43446e-09
+xc.vss.t157                        1.76022e-09
+xc.vss.t156                        1.07166e-08
+xc.vdd.t345                                  3
+xc.vdd.t344                                  3
+xc.vdd.t300                                  3
+xc.a_21516_4320.t58                          3
+xc.cdb.t21                         7.53988e-09
+xc.cdb.t40                         7.53056e-09
+xc.a_21516_4320.t49                          3
+xc.vss.t321                         2.8073e-09
+xc.vss.t320                        2.80341e-09
+xc.vdd.t175                                  3
+xc.a_16876_340.t15                 6.43446e-09
+xc.cia.t1                                    3
+xc.vdd.t174                                  3
+xc.vdd.t109                                  3
+xc.a_12076_4320.t58                7.08559e-09
+xc.cda.t21                                   3
+xc.vss.t195                        2.71099e-09
+xc.a_18316_4320.t15                7.39416e-09
+xc.a_1292_12000.t15                          3
+xc.vss.t194                        3.29303e-09
+xc.vss.t65                         1.30723e-09
+xc.vss.t64                         2.10394e-09
+xc.ncia.t4                         6.77013e-09
+xc.a_21516_340.t25                           3
+xc.vdd.t275                                  3
+xc.vdd.t274                                  3
+xc.a_1036_4320.t0                            3
+xc.a_972_4188.t4                    6.7846e-09
+xc.vdd.t403                                  3
+xc.vss.t427                        2.28217e-09
+xc.a_7916_340.t6                    3.2408e-09
+xc.a_11436_4320.t3                           3
+xc.vss.t426                        2.43152e-09
+xc.ncdb.t14                                  3
+xc.a_1036_6700.t24                 6.02771e-09
+xc.vss.t37                         1.64959e-09
+xc.vss.t36                         7.75069e-09
+xc.ncia.t6                         6.77016e-09
+xc.a_21516_340.t29                           3
+xc.vdd.t279                                  3
+xc.vdd.t278                                  3
+xc.a_12076_4320.t14                7.08942e-09
+xc.a_11436_4320.t8                           3
+xc.vdd.t67                                   3
+xc.vdd.t66                                   3
+xc.vdd.t419                                  3
+xc.a_972_8460.t11                            3
+xc.a_1036_6700.t3                  6.03149e-09
+xc.vdd.t418                                  3
+xc.vdd.t365                                  3
+xc.a_5676_4320.t50                 6.52895e-09
+xc.ncib.t17                                  3
+xc.vdd.t364                                  3
+xc.vss.t231                        2.76622e-09
+xc.a_20876_4320.t11                7.47389e-09
+xc.a_21516_4320.t1                           3
+xc.vss.t230                        3.81785e-09
+xc.ncia.t38                        6.76097e-09
+xc.a_21516_340.t44                           3
+xc.vss.t269                        2.03863e-09
+xc.vss.t268                        2.03455e-09
+xc.a_1036_6700.t16                 6.02232e-09
+xc.a_972_8460.t16                            3
+xc.vss.t457                        1.31338e-09
+xc.vss.t456                        1.43137e-09
+xc.vss.t147                        1.68672e-09
+xc.a_16236_340.t6                            3
+xc.a_16876_340.t8                  6.42895e-09
+xc.vss.t146                        1.75937e-09
+xc.vdd.t59                                   3
+xc.a_11116_340.t5                            3
+xc.a_14476_1540.t1                  1.0898e-08
+xc.vdd.t58                                   3
+xc.ncib.t38                                  3
+xc.a_5676_4320.t45                 6.52895e-09
+xc.vss.t401                        2.10662e-09
+xc.vss.t400                        9.83836e-09
+xc.cia.t0                                    3
+xc.a_16876_340.t13                 6.43446e-09
+xc.vdd.t173                                  3
+xc.vdd.t172                                  3
+xc.vss.t235                        2.77169e-09
+xc.a_20876_4320.t15                7.47389e-09
+xc.a_21516_4320.t5                           3
+xc.vss.t234                        4.79249e-09
+xc.ncia.t12                        6.77025e-09
+xc.a_21516_340.t41                           3
+xc.vdd.t247                                  3
+xc.vdd.t246                                  3
+xc.cdb.t0                          7.53973e-09
+xc.a_21516_4320.t16                          3
+xc.vdd.t286                                  3
+xc.cda.t20                                   3
+xc.a_12076_4320.t56                7.08559e-09
+xc.vdd.t107                                  3
+xc.a_4556_4320.t1                  6.33656e-09
+xc.a_4492_4188.t3                            3
+xc.vss.t345                        1.60244e-09
+xc.vss.t344                        1.61001e-09
+xc.vdd.t411                                  3
+xc.a_972_4188.t14                   6.7846e-09
+xc.a_1036_4320.t5                            3
+xc.vdd.t410                                  3
+xc.a_1036_6700.t18                 6.02239e-09
+xc.a_972_8460.t20                            3
+xc.vss.t460                        1.35076e-09
+xc.vss.t8                          1.38731e-09
+xc.vss.t101                         2.5813e-09
+xc.a_12076_4320.t51                7.08559e-09
+xc.cda.t41                                   3
+xc.vss.t100                        1.53678e-08
+xc.cda.t22                                   3
+xc.a_12076_4320.t60                7.08559e-09
+xc.vdd.t111                                  3
+xc.ncdb.t10                                  3
+xc.a_1036_6700.t36                 6.02771e-09
+xc.vdd.t37                                   3
+xc.vdd.t36                                   3
+xc.a_20396_340.t1                            3
+xc.a_14476_1540.t8                 1.08941e-08
+xc.vdd.t154                                  3
+xc.vdd.t153                                  3
+xc.vss.t335                        2.81243e-09
+xc.a_21516_4320.t63                          3
+xc.cdb.t47                         7.53059e-09
+xc.vss.t334                        2.80919e-09
+xc.a_7916_340.t0                   3.23779e-09
+xc.a_1516_340.t6                             3
+xc.vss.t143                        8.24589e-10
+xc.vss.t142                        8.32034e-10
+xc.ncda.t6                         2.62503e-09
+xc.a_1292_12000.t32                          3
+xc.vdd.t143                                  3
+xc.vdd.t142                                  3
+xc.a_1036_6700.t2                  6.03149e-09
+xc.a_972_8460.t9                             3
+xc.vdd.t417                                  3
+xc.vdd.t416                                  3
+xc.cia.t8                                    3
+xc.a_16876_340.t29                 6.43446e-09
+xc.vdd.t193                                  3
+xc.vdd.t192                                  3
+xc.a_14476_1540.t2                  1.0898e-08
+xc.vdd.t150                                  3
+xc.vdd.t118                                  3
+xc.vss.t357                        1.76024e-09
+xc.a_5036_4320.t7                            3
+xc.a_5676_4320.t13                 6.52339e-09
+xc.vss.t356                        1.81245e-09
+xc.vss.t399                        2.10662e-09
+xc.a_5676_4320.t43                 6.52895e-09
+xc.ncib.t37                                  3
+xc.vss.t398                        6.84758e-09
+xc.a_5676_4320.t6                  6.53282e-09
+xc.a_5036_4320.t16                           3
+xc.vdd.t341                                  3
+xc.vdd.t340                                  3
+xc.vdd.t245                                  3
+xc.a_21516_340.t39                           3
+xc.ncia.t11                        6.77022e-09
+xc.vdd.t244                                  3
+xc.a_21516_4320.t3                           3
+xc.a_20876_4320.t13                7.47389e-09
+xc.vss.t233                        2.76622e-09
+xc.vss.t232                        3.35834e-09
+xc.a_1036_4320.t4                            3
+xc.a_972_4188.t12                   6.7846e-09
+xc.vdd.t409                                  3
+xc.vss.t459                        1.35076e-09
+xc.a_972_8460.t18                            3
+xc.a_1036_6700.t17                 6.02232e-09
+xc.vss.t458                        1.40934e-09
+xc.vdd.t249                                  3
+xc.a_21516_340.t43                           3
+xc.ncia.t13                        6.77025e-09
+xc.vdd.t248                                  3
+xc.a_12076_4320.t3                 7.08014e-09
+xc.a_11436_4320.t13                          3
+xc.vss.t57                         2.35064e-09
+xc.vss.t56                         2.99938e-09
+xc.vdd.t187                                  3
+xc.a_16876_340.t23                 6.43446e-09
+xc.cia.t5                                    3
+xc.vdd.t186                                  3
+xc.vss.t441                        1.23427e-09
+xc.a_972_4188.t7                    6.7846e-09
+xc.a_1036_4320.t7                            3
+xc.vdd.t149                                  3
+xc.a_1292_12000.t35                          3
+xc.ncda.t9                         2.62541e-09
+xc.vdd.t148                                  3
+xc.vdd.t305                                  3
+xc.a_21516_4320.t26                          3
+xc.cdb.t5                          7.53975e-09
+xc.cia.t20                                   3
+xc.a_16876_340.t28                 6.43446e-09
+xc.vss.t173                        1.84757e-09
+xc.vss.t172                        7.95355e-09
+xc.vdd.t191                                  3
+xc.a_16876_340.t27                 6.43446e-09
+xc.cia.t7                                    3
+xc.vdd.t190                                  3
+xc.cdb.t26                         7.53041e-09
+xc.a_21516_4320.t21                          3
+xc.vss.t293                        2.78449e-09
+xc.vss.t292                        4.91704e-09
+xc.vdd.t307                                  3
+xc.a_21516_4320.t30                          3
+xc.cdb.t7                          7.53977e-09
+xc.a_5676_4320.t11                 6.52338e-09
+xc.a_5036_4320.t5                            3
+xc.vss.t355                        1.72522e-09
+xc.vss.t354                        1.81887e-09
+xc.vss.t223                        1.98941e-09
+xc.a_20876_340.t18                 6.65988e-09
+xc.a_21516_340.t8                            3
+xc.vss.t222                        7.67354e-09
+xc.vdd.t339                                  3
+xc.a_5036_4320.t14                           3
+xc.a_5676_4320.t4                   6.5328e-09
+xc.vdd.t338                                  3
+xc.vss.t179                        1.87977e-09
+xc.a_16876_340.t34                 6.43446e-09
+xc.cia.t23                                   3
+xc.vss.t178                        8.11539e-09
+xc.a_11116_340.t0                            3
+xc.vdd.t3                                    3
+xc.vdd.t2                                    3
+xc.a_18316_4320.t0                 7.39801e-09
+xc.a_17836_4320.t2                           3
+xc.vdd.t196                                  3
+xc.vdd.t163                                  3
+xc.a_1516_340.t9                             3
+xc.a_8556_1540.t1                    1.034e-08
+xc.vdd.t162                                  3
+xc.a_21516_340.t11                           3
+xc.a_20876_340.t5                  6.65988e-09
+xc.vdd.t215                                  3
+xc.vdd.t214                                  3
+xc.vss.t341                         2.8157e-09
+xc.a_27276_4320.t5                 7.55059e-09
+xc.a_972_8460.t3                             3
+xc.vss.t340                        2.97228e-09
+xc.vss.t55                         2.35064e-09
+xc.a_11436_4320.t11                          3
+xc.a_12076_4320.t1                  7.0801e-09
+xc.vss.t54                         2.35893e-09
+xc.vdd.t431                                  3
+xc.a_972_8460.t23                            3
+xc.a_1036_6700.t9                  6.03162e-09
+xc.vdd.t430                                  3
+xc.cdb.t4                          7.53975e-09
+xc.a_21516_4320.t24                          3
+xc.vdd.t304                                  3
+xc.vss.t7                          1.98862e-10
+xc.a_1036_340.t4                   4.84627e-09
+xc.a_1516_340.t2                             3
+xc.vss.t6                          4.64303e-10
+xc.ncia.t46                        6.76104e-09
+xc.a_21516_340.t60                           3
+xc.vss.t285                        2.04834e-09
+xc.vss.t284                        2.04253e-09
+xc.vss.t291                        2.78449e-09
+xc.a_21516_4320.t19                          3
+xc.cdb.t25                          7.5304e-09
+xc.vss.t290                         5.1353e-09
+xc.ncia.t18                        6.77032e-09
+xc.a_21516_340.t53                           3
+xc.vdd.t259                                  3
+xc.vdd.t258                                  3
+xc.cdb.t6                          7.53977e-09
+xc.a_21516_4320.t28                          3
+xc.vdd.t306                                  3
+xc.vdd.t137                                  3
+xc.a_1292_12000.t27                          3
+xc.ncda.t3                         2.62372e-09
+xc.vdd.t136                                  3
+xc.vdd.t19                                   3
+xc.a_1036_4320.t18                           3
+xc.cib.t3                          6.20006e-09
+xc.vdd.t18                                   3
+xc.vss.t159                        1.78512e-09
+xc.a_16876_340.t14                 6.43446e-09
+xc.cia.t13                                   3
+xc.vss.t158                        1.14499e-08
+xc.ncia.t20                        6.77033e-09
+xc.a_21516_340.t57                           3
+xc.vdd.t265                                  3
+xc.vdd.t264                                  3
+xc.cda.t6                                    3
+xc.a_12076_4320.t28                7.08559e-09
+xc.vdd.t120                                  3
+xc.vss.t69                         2.43733e-09
+xc.a_12076_4320.t19                7.08559e-09
+xc.cda.t25                                   3
+xc.vss.t68                         1.75897e-08
+xc.cib.t12                          6.1906e-09
+xc.a_1036_4320.t13                           3
+xc.vss.t9                          1.34986e-09
+xc.vss.t113                        2.62156e-09
+xc.a_12076_4320.t63                7.08559e-09
+xc.cda.t47                                   3
+xc.vss.t112                        1.11602e-08
+xc.vdd.t317                                  3
+xc.vdd.t316                                  3
+xc.vdd.t23                                   3
+xc.a_1036_4320.t22                           3
+xc.cib.t5                          6.20011e-09
+xc.vdd.t22                                   3
+xc.a_8556_1540.t2                    1.034e-08
+xc.vdd.t392                                  3
+xc.vdd.t389                                  3
+xc.cdb.t12                         7.53983e-09
+xc.a_21516_4320.t40                          3
+xc.vdd.t290                                  3
+xc.a_21516_340.t10                           3
+xc.a_20876_340.t4                  6.65988e-09
+xc.vss.t209                         1.9459e-09
+xc.vss.t208                        5.96173e-09
+xc.a_972_8460.t1                             3
+xc.a_27276_4320.t3                 7.55059e-09
+xc.vss.t339                        2.81531e-09
+xc.vss.t338                        3.12121e-09
+xc.cia.t16                                   3
+xc.a_16876_340.t20                 6.43446e-09
+xc.vss.t165                        1.80765e-09
+xc.vss.t164                        7.84138e-09
+xc.vss.t369                         1.8587e-09
+xc.a_5036_4320.t19                           3
+xc.a_5676_4320.t9                  6.52357e-09
+xc.vss.t368                        9.35996e-09
+xc.a_9196_340.t0                             3
+xc.a_8556_1540.t3                  1.03357e-08
+xc.vss.t431                        9.55573e-10
+xc.vss.t430                        1.14359e-09
+xc.vss.t215                        1.97271e-09
+xc.a_20876_340.t10                 6.65988e-09
+xc.a_21516_340.t0                            3
+xc.vss.t214                        3.82393e-09
+xc.ncib.t2                                   3
+xc.a_5676_4320.t20                 6.52895e-09
+xc.vdd.t371                                  3
+xc.vdd.t370                                  3
+xc.vdd.t209                                  3
+xc.a_18316_4320.t22                7.39416e-09
+xc.a_1292_12000.t9                           3
+xc.vdd.t201                                  3
+xc.a_18316_4320.t10                7.39416e-09
+xc.a_1292_12000.t3                           3
+xc.vdd.t261                                  3
+xc.a_21516_340.t55                           3
+xc.ncia.t19                        6.77032e-09
+xc.vdd.t260                                  3
+xc.a_1516_340.t10                            3
+xc.vss.t139                        9.93244e-10
+xc.vss.t138                        1.04296e-09
+xc.vss.t271                        2.04199e-09
+xc.a_21516_340.t46                           3
+xc.ncia.t39                        6.76097e-09
+xc.vss.t270                        2.03555e-09
+xc.vdd.t229                                  3
+xc.a_20876_340.t19                 6.65988e-09
+xc.a_21516_340.t9                            3
+xc.vdd.t228                                  3
+xc.cda.t24                                   3
+xc.a_12076_4320.t17                7.08559e-09
+xc.vss.t67                         2.41493e-09
+xc.vss.t66                         1.59774e-08
+xc.vdd.t119                                  3
+xc.a_12076_4320.t26                7.08559e-09
+xc.cda.t5                                    3
+xc.vdd.t289                                  3
+xc.a_21516_4320.t38                          3
+xc.cdb.t11                         7.53981e-09
+xc.ncdb.t2                                   3
+xc.a_1036_6700.t25                 6.02771e-09
+xc.vdd.t41                                   3
+xc.vdd.t40                                   3
+xc.a_16876_340.t10                 6.42899e-09
+xc.a_16236_340.t8                            3
+xc.vss.t149                        1.68672e-09
+xc.vss.t148                        1.72405e-09
+xc.ncia.t42                        6.76102e-09
+xc.a_21516_340.t52                           3
+xc.vss.t277                        2.04474e-09
+xc.vss.t276                        2.03854e-09
+xc.cdb.t32                         7.53047e-09
+xc.a_21516_4320.t33                          3
+xc.vss.t305                        2.79617e-09
+xc.vss.t304                        3.60745e-09
+xc.vdd.t291                                  3
+xc.a_21516_4320.t42                          3
+xc.cdb.t13                         7.53983e-09
+xc.a_1292_12000.t0                           3
+xc.a_18316_4320.t4                 7.39416e-09
+xc.vdd.t198                                  3
+xc.cib.t10                         6.20027e-09
+xc.a_1036_4320.t32                           3
+xc.vdd.t13                                   3
+xc.vdd.t12                                   3
+xc.a_20396_340.t0                            3
+xc.a_14476_1540.t7                 1.08941e-08
+xc.vss.t135                        1.89571e-09
+xc.vss.t134                        2.46875e-09
+xc.vdd.t323                                  3
+xc.a_4492_4188.t7                            3
+xc.a_972_4188.t3                   6.78845e-09
+xc.vdd.t322                                  3
+xc.vss.t155                        1.73544e-09
+xc.a_16236_340.t14                           3
+xc.a_16876_340.t4                  6.42903e-09
+xc.vss.t154                         5.6125e-09
+xc.vdd.t133                                  3
+xc.a_1292_12000.t37                          3
+xc.ncda.t11                         2.6256e-09
+xc.vdd.t132                                  3
+xc.vss.t183                        2.66455e-09
+xc.a_17836_4320.t5                           3
+xc.a_18316_4320.t3                 7.38869e-09
+xc.vss.t182                        2.93853e-09
+xc.vss.t23                         1.49704e-09
+xc.a_1036_4320.t27                           3
+xc.cib.t19                         6.19089e-09
+xc.vss.t22                         1.48576e-09
+xc.a_1292_12000.t2                           3
+xc.a_18316_4320.t8                 7.39416e-09
+xc.vdd.t200                                  3
+xc.a_1516_340.t11                            3
+xc.vdd.t157                                  3
+xc.vdd.t156                                  3
+xc.vss.t35                         1.64959e-09
+xc.a_1036_6700.t22                 6.02771e-09
+xc.ncdb.t13                                  3
+xc.vss.t34                         8.65131e-09
+xc.a_21516_340.t7                            3
+xc.a_20876_340.t17                 6.65988e-09
+xc.vdd.t227                                  3
+xc.vdd.t226                                  3
+xc.vss.t421                        8.57666e-10
+xc.a_7916_340.t1                    3.2378e-09
+xc.vss.t420                        8.48317e-10
+xc.ncib.t22                                  3
+xc.a_5676_4320.t60                 6.52895e-09
+xc.vdd.t377                                  3
+xc.vdd.t376                                  3
+xc.a_20876_340.t0                  6.65441e-09
+xc.a_20396_340.t2                            3
+xc.vss.t205                        1.91712e-09
+xc.vss.t204                        1.91892e-09
+xc.vdd.t79                                   3
+xc.vdd.t78                                   3
+xc.vss.t411                        2.18488e-09
+xc.a_5676_4320.t55                 6.52895e-09
+xc.ncib.t43                                  3
+xc.vss.t410                        1.65302e-08
+xc.ncib.t28                                  3
+xc.a_5676_4320.t25                 6.52895e-09
+xc.vss.t381                        1.95659e-09
+xc.vss.t380                        1.98986e-08
+xc.ncia.t32                        6.76087e-09
+xc.a_21516_340.t32                           3
+xc.vss.t257                        2.02479e-09
+xc.vss.t256                        3.45218e-09
+xc.a_1516_340.t1                             3
+xc.a_1036_340.t3                   4.84627e-09
+xc.vdd.t5                                    3
+xc.vdd.t4                                    3
+xc.a_8556_340.t1                   5.61071e-09
+xc.vss.t423                        8.92636e-10
+xc.vss.t422                         8.9713e-10
+xc.a_21516_4320.t10                          3
+xc.a_20876_4320.t4                 7.47389e-09
+xc.vdd.t230                                  3
+xc.vdd.t391                                  3
+xc.a_5676_4320.t34                 6.52895e-09
+xc.ncib.t9                                   3
+xc.cib.t16                         6.19078e-09
+xc.a_1036_4320.t21                           3
+xc.vss.t17                         1.42537e-09
+xc.vss.t16                         1.43105e-09
+xc.vdd.t31                                   3
+xc.a_1036_4320.t30                           3
+xc.cib.t9                          6.20023e-09
+xc.vdd.t30                                   3
+xc.ncib.t30                                  3
+xc.a_5676_4320.t29                 6.52895e-09
+xc.vss.t385                        1.98777e-09
+xc.vss.t384                        1.84246e-08
+xc.ncdb.t16                                  3
+xc.a_1036_6700.t28                 6.02771e-09
+xc.vss.t41                         1.65808e-09
+xc.vss.t40                         3.73972e-09
+xc.a_972_4188.t1                   6.78845e-09
+xc.a_4492_4188.t5                            3
+xc.vdd.t321                                  3
+xc.vdd.t320                                  3
+xc.vss.t263                         2.0346e-09
+xc.a_21516_340.t38                           3
+xc.ncia.t35                         6.7609e-09
+xc.vss.t262                        2.30089e-09
+xc.vss.t81                         2.49731e-09
+xc.a_12076_4320.t31                7.08559e-09
+xc.cda.t31                                   3
+xc.vss.t80                          1.5696e-08
+xc.cib.t18                         6.19088e-09
+xc.a_1036_4320.t25                           3
+xc.vss.t21                         1.46132e-09
+xc.vss.t20                         1.46762e-09
+xc.cda.t12                                   3
+xc.a_12076_4320.t40                7.08559e-09
+xc.vdd.t89                                   3
+xc.vdd.t88                                   3
+xc.vdd.t15                                   3
+xc.a_1036_4320.t34                           3
+xc.cib.t11                         6.20027e-09
+xc.vdd.t14                                   3
+xc.cdb.t18                         7.53987e-09
+xc.a_21516_4320.t52                          3
+xc.vdd.t296                                  3
+xc.ncda.t12                        2.60662e-09
+xc.a_1292_12000.t20                          3
+xc.vss.t115                        1.36546e-09
+xc.vss.t114                         1.6228e-09
+xc.vss.t85                         2.51636e-09
+xc.a_12076_4320.t35                7.08559e-09
+xc.cda.t33                                   3
+xc.vss.t84                         1.06584e-08
+xc.cdb.t20                         7.53988e-09
+xc.a_21516_4320.t56                          3
+xc.vdd.t299                                  3
+xc.vss.t319                         2.8073e-09
+xc.a_21516_4320.t47                          3
+xc.cdb.t39                         7.53054e-09
+xc.vss.t318                        2.80259e-09
+xc.ncib.t42                                  3
+xc.a_5676_4320.t53                 6.52895e-09
+xc.vss.t409                        2.15926e-09
+xc.vss.t408                        1.62935e-08
+xc.vss.t379                        1.95659e-09
+xc.a_5676_4320.t23                 6.52895e-09
+xc.ncib.t27                                  3
+xc.vss.t378                        1.98095e-08
+xc.a_5036_4320.t0                            3
+xc.a_4556_4320.t2                  6.33969e-09
+xc.vdd.t325                                  3
+xc.vdd.t324                                  3
+xc.ncib.t8                                   3
+xc.a_5676_4320.t32                 6.52895e-09
+xc.vdd.t390                                  3
+xc.a_1292_12000.t14                          3
+xc.a_18316_4320.t13                7.39416e-09
+xc.vss.t193                         2.7007e-09
+xc.vss.t192                        3.97629e-09
+xc.a_1036_6700.t10                 6.02205e-09
+xc.a_972_8460.t4                             3
+xc.vss.t450                         1.1904e-09
+xc.vss.t438                        3.87073e-09
+xc.vss.t383                        1.98777e-09
+xc.a_5676_4320.t27                 6.52895e-09
+xc.ncib.t29                                  3
+xc.vss.t382                         1.9437e-08
+xc.vdd.t273                                  3
+xc.a_21516_340.t23                           3
+xc.ncia.t3                         6.77011e-09
+xc.vdd.t272                                  3
+xc.vss.t243                        2.00535e-09
+xc.a_21516_340.t18                           3
+xc.ncia.t25                        6.76075e-09
+xc.vss.t242                         6.1385e-09
+xc.ncda.t8                         2.62541e-09
+xc.a_1292_12000.t34                          3
+xc.vdd.t147                                  3
+xc.vdd.t146                                  3
+xc.vdd.t65                                   3
+xc.a_11436_4320.t6                           3
+xc.a_12076_4320.t12                7.08941e-09
+xc.vdd.t64                                   3
+xc.a_11436_4320.t2                           3
+xc.a_7916_340.t4                    3.2408e-09
+xc.vss.t425                        2.25767e-09
+xc.vss.t424                        4.41753e-09
+xc.vdd.t171                                  3
+xc.a_16236_340.t15                           3
+xc.a_16876_340.t5                  6.43831e-09
+xc.vdd.t170                                  3
+xc.vss.t395                         2.0785e-09
+xc.a_5676_4320.t39                 6.52895e-09
+xc.ncib.t35                                  3
+xc.vss.t394                        5.10034e-09
+xc.ncib.t16                                  3
+xc.a_5676_4320.t48                 6.52895e-09
+xc.vdd.t363                                  3
+xc.vdd.t362                                  3
+xc.a_21516_4320.t15                          3
+xc.a_20876_4320.t9                 7.47389e-09
+xc.vss.t229                        2.75941e-09
+xc.vss.t228                        4.77418e-09
+xc.ncia.t28                         6.7608e-09
+xc.a_21516_340.t24                           3
+xc.vss.t249                        2.01247e-09
+xc.vss.t248                        4.98722e-09
+xc.vdd.t237                                  3
+xc.a_20876_4320.t18                7.47389e-09
+xc.a_21516_4320.t8                           3
+xc.cdb.t38                         7.53054e-09
+xc.a_21516_4320.t45                          3
+xc.vss.t317                        2.80498e-09
+xc.vss.t316                        2.80176e-09
+xc.vdd.t297                                  3
+xc.a_21516_4320.t54                          3
+xc.cdb.t19                         7.53987e-09
+xc.vss.t455                        1.31338e-09
+xc.a_972_8460.t14                            3
+xc.a_1036_6700.t15                 6.02223e-09
+xc.vss.t448                         1.4534e-09
+xc.a_972_4188.t0                   6.77913e-09
+xc.a_4492_4188.t4                            3
+xc.vss.t347                        2.04885e-09
+xc.vss.t346                        2.04652e-09
+xc.vdd.t103                                  3
+xc.a_12076_4320.t54                7.08559e-09
+xc.cda.t19                                   3
+xc.vdd.t102                                  3
+xc.cda.t38                                   3
+xc.a_12076_4320.t45                7.08559e-09
+xc.vss.t95                         2.55104e-09
+xc.vss.t94                         1.00357e-08
+xc.vdd.t327                                  3
+xc.a_4556_4320.t4                  6.33969e-09
+xc.a_5036_4320.t2                            3
+xc.vdd.t326                                  3
+xc.vss.t419                        2.23324e-09
+xc.a_5676_4320.t63                 6.52895e-09
+xc.ncib.t47                                  3
+xc.vss.t418                        1.19693e-08
+xc.cda.t40                                   3
+xc.a_12076_4320.t49                7.08559e-09
+xc.vss.t99                         2.56642e-09
+xc.vss.t98                         1.41412e-08
+xc.cdb.t46                         7.53059e-09
+xc.a_21516_4320.t61                          3
+xc.vss.t333                        2.81234e-09
+xc.vss.t332                        2.80836e-09
+xc.a_12076_4320.t10                7.08941e-09
+xc.a_11436_4320.t4                           3
+xc.vdd.t63                                   3
+xc.vdd.t62                                   3
+xc.ncib.t34                                  3
+xc.a_5676_4320.t37                 6.52895e-09
+xc.vss.t393                        2.04875e-09
+xc.vss.t392                        8.86679e-09
+xc.vdd.t415                                  3
+xc.a_972_8460.t7                             3
+xc.a_1036_6700.t1                  6.03146e-09
+xc.vdd.t414                                  3
+xc.vdd.t361                                  3
+xc.a_5676_4320.t46                 6.52895e-09
+xc.ncib.t15                                  3
+xc.vdd.t360                                  3
+xc.vss.t227                        2.75941e-09
+xc.a_20876_4320.t7                 7.47389e-09
+xc.a_21516_4320.t13                          3
+xc.vss.t226                        5.17972e-09
+xc.a_21516_340.t2                            3
+xc.a_20876_340.t12                 6.65988e-09
+xc.vss.t217                        1.97271e-09
+xc.vss.t216                        3.01636e-09
+xc.a_21516_4320.t6                           3
+xc.a_20876_4320.t16                7.47389e-09
+xc.vdd.t236                                  3
+xc.a_1036_6700.t14                 6.02223e-09
+xc.a_972_8460.t12                            3
+xc.vss.t454                         1.2742e-09
+xc.vss.t446                         1.5894e-09
+xc.ncib.t36                                  3
+xc.a_5676_4320.t41                 6.52895e-09
+xc.vss.t397                         2.0785e-09
+xc.vss.t396                        3.30599e-09
+xc.vdd.t51                                   3
+xc.a_1036_6700.t33                 6.02771e-09
+xc.ncdb.t7                                   3
+xc.vdd.t50                                   3
+xc.ncia.t10                        6.77022e-09
+xc.a_21516_340.t37                           3
+xc.vdd.t243                                  3
+xc.vdd.t242                                  3
+xc.a_12076_4320.t6                 7.08945e-09
+xc.a_11436_4320.t16                          3
+xc.vdd.t75                                   3
+xc.vdd.t74                                   3
+xc.vss.t93                         2.55104e-09
+xc.a_12076_4320.t43                7.08559e-09
+xc.cda.t37                                   3
+xc.vss.t92                         7.15677e-09
+xc.cda.t18                                   3
+xc.a_12076_4320.t52                7.08559e-09
+xc.vdd.t101                                  3
+xc.vdd.t100                                  3
+xc.vdd.t408                                  3
+xc.a_972_4188.t10                   6.7846e-09
+xc.a_1036_4320.t3                            3
+xc.cia.t4                                    3
+xc.a_16876_340.t21                 6.43446e-09
+xc.vdd.t185                                  3
+xc.vdd.t184                                  3
+xc.vss.t97                         2.56642e-09
+xc.a_12076_4320.t47                7.08559e-09
+xc.cda.t39                                   3
+xc.vss.t96                         1.23639e-08
+xc.vss.t279                        2.04688e-09
+xc.a_21516_340.t54                           3
+xc.ncia.t43                        6.76102e-09
+xc.vss.t278                        2.03954e-09
+xc.vss.t331                        2.81234e-09
+xc.a_21516_4320.t59                          3
+xc.cdb.t45                         7.53058e-09
+xc.vss.t330                        2.80754e-09
+xc.a_27276_4320.t0                 7.55267e-09
+xc.a_9196_340.t6                             3
+xc.vdd.t402                                  3
+xc.a_5676_4320.t14                 6.53278e-09
+xc.a_5036_4320.t8                            3
+xc.vdd.t333                                  3
+xc.vdd.t332                                  3
+xc.cia.t6                                    3
+xc.a_16876_340.t25                 6.43446e-09
+xc.vdd.t189                                  3
+xc.vdd.t188                                  3
+xc.vss.t109                        2.60966e-09
+xc.a_12076_4320.t59                7.08559e-09
+xc.cda.t45                                   3
+xc.vss.t108                        1.47659e-08
+xc.a_17836_4320.t0                           3
+xc.a_7916_340.t7                    3.2408e-09
+xc.vdd.t398                                  3
+xc.vdd.t397                                  3
+xc.vss.t207                        1.93143e-09
+xc.a_20396_340.t4                            3
+xc.a_20876_340.t2                  6.65441e-09
+xc.vss.t206                        2.29105e-09
+xc.a_5676_4320.t2                   6.5328e-09
+xc.a_5036_4320.t12                           3
+xc.vdd.t337                                  3
+xc.vdd.t336                                  3
+xc.vdd.t213                                  3
+xc.a_20396_340.t5                            3
+xc.a_20876_340.t3                  6.66373e-09
+xc.vdd.t212                                  3
+xc.vdd.t285                                  3
+xc.a_21516_340.t35                           3
+xc.ncia.t9                         6.77018e-09
+xc.vdd.t284                                  3
+xc.vdd.t73                                   3
+xc.a_11436_4320.t14                          3
+xc.a_12076_4320.t4                 7.08944e-09
+xc.vdd.t72                                   3
+xc.a_1036_6700.t6                  6.03159e-09
+xc.a_972_8460.t17                            3
+xc.vdd.t425                                  3
+xc.vdd.t424                                  3
+xc.a_1036_4320.t6                            3
+xc.a_972_4188.t5                    6.7846e-09
+xc.vss.t439                        1.19122e-09
+xc.a_1036_4320.t2                            3
+xc.a_972_4188.t8                    6.7846e-09
+xc.vdd.t407                                  3
+xc.vdd.t406                                  3
+xc.vdd.t35                                   3
+xc.a_1036_6700.t23                 6.02771e-09
+xc.ncdb.t1                                   3
+xc.vdd.t34                                   3
+xc.a_8556_1540.t0                  1.03304e-08
+xc.a_1516_340.t8                             3
+xc.a_8556_340.t0                   5.61229e-09
+xc.vss.t462                         9.2989e-10
+xc.vdd.t77                                   3
+xc.a_11436_4320.t18                          3
+xc.a_12076_4320.t8                 7.08945e-09
+xc.vdd.t76                                   3
+xc.a_12076_4320.t15                 7.0801e-09
+xc.a_11436_4320.t9                           3
+xc.vss.t53                         2.32813e-09
+xc.vss.t52                         2.37103e-09
+xc.a_1036_6700.t8                  6.03162e-09
+xc.a_972_8460.t21                            3
+xc.vdd.t429                                  3
+xc.vdd.t428                                  3
+xc.vdd.t311                                  3
+xc.vdd.t310                                  3
+xc.vss.t407                        2.15926e-09
+xc.a_5676_4320.t51                 6.52895e-09
+xc.ncib.t41                                  3
+xc.vss.t406                        1.55059e-08
+xc.vdd.t303                                  3
+xc.a_21516_4320.t22                          3
+xc.cdb.t3                          7.53974e-09
+xc.a_16236_340.t0                            3
+xc.a_14476_1540.t3                 1.08941e-08
+xc.vss.t131                        1.60696e-09
+xc.vss.t130                        2.15329e-09
+xc.ncia.t36                        6.76094e-09
+xc.a_21516_340.t40                           3
+xc.vss.t265                         2.0346e-09
+xc.vss.t264                        2.03256e-09
+xc.vss.t125                        1.41908e-09
+xc.a_1292_12000.t30                          3
+xc.ncda.t17                        2.60533e-09
+xc.vss.t124                        1.57076e-09
+xc.vdd.t257                                  3
+xc.a_21516_340.t51                           3
+xc.ncia.t17                         6.7703e-09
+xc.vdd.t256                                  3
+xc.cdb.t24                          7.5304e-09
+xc.a_21516_4320.t17                          3
+xc.vss.t289                        2.77897e-09
+xc.vss.t288                        5.35357e-09
+xc.vss.t449                        1.31327e-09
+xc.a_972_4188.t15                   6.7846e-09
+xc.a_1036_4320.t11                           3
+xc.cda.t44                                   3
+xc.a_12076_4320.t57                7.08559e-09
+xc.vss.t107                        2.59573e-09
+xc.vss.t106                        1.57426e-08
+xc.cib.t2                          6.20006e-09
+xc.a_1036_4320.t16                           3
+xc.vdd.t17                                   3
+xc.vdd.t16                                   3
+xc.vss.t337                         3.7075e-10
+xc.vss.t336                        1.17406e-09
+xc.vdd.t335                                  3
+xc.a_5036_4320.t10                           3
+xc.a_5676_4320.t0                  6.53278e-09
+xc.vdd.t334                                  3
+xc.ncdb.t12                                  3
+xc.a_1036_6700.t20                 6.02771e-09
+xc.vss.t33                         1.58709e-09
+xc.vss.t32                         8.81534e-09
+xc.a_20876_340.t1                  6.66373e-09
+xc.a_20396_340.t3                            3
+xc.vdd.t211                                  3
+xc.vdd.t210                                  3
+xc.ncdb.t4                                   3
+xc.a_1036_6700.t29                 6.02771e-09
+xc.vdd.t45                                   3
+xc.vdd.t44                                   3
+xc.vdd.t179                                  3
+xc.a_16876_340.t35                 6.43446e-09
+xc.cia.t11                                   3
+xc.vdd.t178                                  3
+xc.cda.t46                                   3
+xc.a_12076_4320.t61                7.08559e-09
+xc.vss.t111                        2.60966e-09
+xc.vss.t110                        1.32385e-08
+xc.ncda.t0                         2.62314e-09
+xc.a_1292_12000.t21                          3
+xc.vdd.t127                                  3
+xc.vdd.t126                                  3
+xc.a_11116_340.t1                            3
+xc.vss.t3                          1.13994e-09
+xc.vss.t2                           1.3323e-09
+xc.vdd.t427                                  3
+xc.a_972_8460.t19                            3
+xc.a_1036_6700.t7                  6.03159e-09
+xc.vdd.t426                                  3
+xc.a_5676_4320.t7                  6.52356e-09
+xc.a_5036_4320.t17                           3
+xc.vss.t367                        1.82717e-09
+xc.vss.t366                        7.06758e-09
+xc.ncia.t26                        6.76077e-09
+xc.a_21516_340.t20                           3
+xc.vss.t245                        2.00535e-09
+xc.vss.t244                        5.75474e-09
+xc.a_15116_340.t2                  3.92291e-09
+xc.a_15116_1540.t1                     3.00079
+xc.vdd.t84                                   3
+xc.a_11116_340.t2                            3
+xc.vss.t45                          1.1763e-09
+xc.vss.t44                         1.22425e-09
+xc.vdd.t349                                  3
+xc.a_5676_4320.t18                 6.52895e-09
+xc.ncib.t1                                   3
+xc.vdd.t348                                  3
+xc.a_1292_12000.t8                           3
+xc.a_18316_4320.t20                7.39416e-09
+xc.vdd.t208                                  3
+xc.vdd.t207                                  3
+xc.vss.t39                         1.65808e-09
+xc.a_1036_6700.t26                 6.02771e-09
+xc.ncdb.t15                                  3
+xc.vss.t38                          6.1135e-09
+xc.ncia.t16                         6.7703e-09
+xc.a_21516_340.t49                           3
+xc.vdd.t255                                  3
+xc.vdd.t254                                  3
+xc.cda.t2                                    3
+xc.a_12076_4320.t20                7.08559e-09
+xc.vdd.t105                                  3
+xc.vdd.t104                                  3
+xc.a_1036_4320.t10                           3
+xc.a_972_4188.t13                   6.7846e-09
+xc.vss.t447                        1.27551e-09
+xc.vdd.t11                                   3
+xc.a_1036_4320.t14                           3
+xc.cib.t1                          6.20002e-09
+xc.vdd.t10                                   3
+xc.a_15116_340.t0                  3.91695e-09
+xc.a_11116_340.t6                            3
+xc.vss.t47                         1.50575e-09
+xc.vss.t46                         1.51214e-09
+xc.vss.t251                        2.01896e-09
+xc.a_21516_340.t26                           3
+xc.ncia.t29                         6.7608e-09
+xc.vss.t250                        4.60346e-09
+xc.cda.t4                                    3
+xc.a_12076_4320.t24                7.08559e-09
+xc.vdd.t117                                  3
+xc.vdd.t116                                  3
+xc.cia.t10                                   3
+xc.a_16876_340.t33                 6.43446e-09
+xc.vdd.t177                                  3
+xc.vdd.t176                                  3
+xc.vss.t299                        2.79259e-09
+xc.a_21516_4320.t27                          3
+xc.cdb.t29                         7.53043e-09
+xc.vss.t298                        4.26224e-09
+xc.cdb.t10                         7.53981e-09
+xc.a_21516_4320.t36                          3
+xc.vdd.t288                                  3
+xc.vss.t349                        2.04913e-09
+xc.a_4492_4188.t6                            3
+xc.a_972_4188.t2                   6.77913e-09
+xc.vss.t348                        2.04723e-09
+xc.vss.t303                        2.79617e-09
+xc.a_21516_4320.t31                          3
+xc.cdb.t31                         7.53045e-09
+xc.vss.t302                        3.82571e-09
+xc.a_11116_340.t3                            3
+xc.vdd.t57                                   3
+xc.vdd.t56                                   3
+xc.vss.t365                        1.82717e-09
+xc.a_5036_4320.t15                           3
+xc.a_5676_4320.t5                  6.52351e-09
+xc.vss.t364                         4.7752e-09
+xc.cia.t18                                   3
+xc.a_16876_340.t24                 6.43446e-09
+xc.vss.t169                        1.82931e-09
+xc.vss.t168                        3.00528e-09
+xc.vdd.t221                                  3
+xc.a_20876_340.t11                 6.65988e-09
+xc.a_21516_340.t1                            3
+xc.vdd.t206                                  3
+xc.a_18316_4320.t18                7.39416e-09
+xc.a_1292_12000.t7                           3
+xc.vdd.t205                                  3
+xc.ncib.t0                                   3
+xc.a_5676_4320.t16                 6.52895e-09
+xc.vdd.t347                                  3
+xc.vdd.t346                                  3
+xc.ncda.t14                        2.60596e-09
+xc.a_1292_12000.t24                          3
+xc.vss.t119                        1.38993e-09
+xc.vss.t118                        1.53048e-09
+xc.a_18316_4320.t1                 7.38869e-09
+xc.a_17836_4320.t3                           3
+xc.vss.t181                        2.65256e-09
+xc.vss.t180                        2.65378e-09
+xc.vdd.t199                                  3
+xc.a_18316_4320.t6                 7.39416e-09
+xc.a_1292_12000.t1                           3
+xc.vss.t219                         1.9824e-09
+xc.a_20876_340.t14                 6.65988e-09
+xc.a_21516_340.t4                            3
+xc.vss.t218                        5.53683e-09
+xc.vdd.t225                                  3
+xc.a_20876_340.t15                 6.65988e-09
+xc.a_21516_340.t5                            3
+xc.vss.t371                        6.67923e-10
+xc.vss.t370                        1.47022e-09
+xc.vdd.t375                                  3
+xc.a_5676_4320.t58                 6.52895e-09
+xc.ncib.t21                                  3
+xc.vdd.t374                                  3
+xc.vss.t175                        1.86493e-09
+xc.a_16876_340.t30                 6.43446e-09
+xc.cia.t21                                   3
+xc.vss.t174                        8.97558e-09
+xc.vdd.t115                                  3
+xc.a_12076_4320.t22                7.08559e-09
+xc.cda.t3                                    3
+xc.vdd.t114                                  3
+xc.vdd.t309                                  3
+xc.a_21516_4320.t34                          3
+xc.cdb.t9                          7.53979e-09
+xc.vdd.t401                                  3
+xc.a_9196_340.t4                             3
+xc.a_20876_4320.t1                 7.47773e-09
+xc.cdb.t28                         7.53043e-09
+xc.a_21516_4320.t25                          3
+xc.vss.t297                         2.7887e-09
+xc.vss.t296                        4.48051e-09
+xc.vdd.t152                                  3
+xc.a_14476_1540.t6                 1.08941e-08
+xc.a_16236_340.t3                            3
+xc.vdd.t271                                  3
+xc.a_21516_340.t63                           3
+xc.ncia.t23                        6.77034e-09
+xc.cdb.t30                         7.53045e-09
+xc.a_21516_4320.t29                          3
+xc.vss.t301                        2.79259e-09
+xc.vss.t300                        4.04398e-09
+xc.vss.t15                         1.42537e-09
+xc.a_1036_4320.t19                           3
+xc.cib.t15                         6.19068e-09
+xc.vss.t14                         1.41274e-09
+xc.cib.t8                          6.20023e-09
+xc.a_1036_4320.t28                           3
+xc.vdd.t29                                   3
+xc.vdd.t28                                   3
+xc.ncia.t44                        6.76104e-09
+xc.a_21516_340.t56                           3
+xc.vss.t281                        2.04688e-09
+xc.vss.t280                        2.04054e-09
+xc.a_14476_340.t1                  6.16867e-09
+xc.vss.t127                        1.45059e-09
+xc.vss.t126                        1.45443e-09
+xc.cda.t30                                   3
+xc.a_12076_4320.t29                7.08559e-09
+xc.vss.t79                         2.47779e-09
+xc.vss.t78                         1.73886e-08
+xc.vdd.t87                                   3
+xc.a_12076_4320.t38                7.08559e-09
+xc.cda.t11                                   3
+xc.vdd.t86                                   3
+xc.vss.t19                         1.46132e-09
+xc.a_1036_4320.t23                           3
+xc.cib.t17                         6.19078e-09
+xc.vss.t18                         1.44936e-09
+xc.vdd.t295                                  3
+xc.a_21516_4320.t50                          3
+xc.cdb.t17                         7.53986e-09
+xc.cdb.t36                         7.53052e-09
+xc.a_21516_4320.t41                          3
+xc.vss.t313                        2.80235e-09
+xc.vss.t312                        2.80011e-09
+xc.a_21516_340.t3                            3
+xc.a_20876_340.t13                 6.65988e-09
+xc.vdd.t223                                  3
+xc.ncib.t20                                  3
+xc.a_5676_4320.t56                 6.52895e-09
+xc.vdd.t373                                  3
+xc.vdd.t372                                  3
+xc.vss.t287                        2.04827e-09
+xc.a_21516_340.t62                           3
+xc.ncia.t47                        6.76104e-09
+xc.vss.t286                        2.04353e-09
+xc.a_20876_4320.t0                 7.47773e-09
+xc.a_9196_340.t2                             3
+xc.vdd.t400                                  3
+xc.a_1292_12000.t6                           3
+xc.a_18316_4320.t16                7.39416e-09
+xc.vdd.t204                                  3
+xc.ncdb.t6                                   3
+xc.a_1036_6700.t32                 6.02771e-09
+xc.vdd.t49                                   3
+xc.vdd.t48                                   3
+xc.ncib.t26                                  3
+xc.a_5676_4320.t21                 6.52895e-09
+xc.vss.t377                         1.9252e-09
+xc.vss.t376                        1.91695e-08
+xc.vdd.t388                                  3
+xc.a_5676_4320.t30                 6.52895e-09
+xc.ncib.t7                                   3
+xc.vdd.t387                                  3
+xc.vss.t203                        2.72688e-09
+xc.a_18316_4320.t23                7.39416e-09
+xc.a_1292_12000.t19                          3
+xc.vss.t202                         5.6511e-09
+xc.cia.t14                                   3
+xc.a_16876_340.t16                 6.43446e-09
+xc.vss.t161                        1.78512e-09
+xc.vss.t160                        1.12152e-08
+xc.cda.t8                                    3
+xc.a_12076_4320.t32                7.08559e-09
+xc.vdd.t124                                  3
+xc.vdd.t123                                  3
+xc.vss.t191                         2.7007e-09
+xc.a_18316_4320.t11                7.39416e-09
+xc.a_1292_12000.t13                          3
+xc.vss.t190                        5.24439e-09
+xc.ncia.t2                         6.77011e-09
+xc.a_21516_340.t21                           3
+xc.vdd.t263                                  3
+xc.vss.t211                        1.96048e-09
+xc.a_20876_340.t6                  6.65988e-09
+xc.a_21516_340.t12                           3
+xc.vss.t210                        6.21721e-09
+xc.cda.t10                                   3
+xc.a_12076_4320.t36                7.08559e-09
+xc.vdd.t85                                   3
+xc.vss.t77                         2.47779e-09
+xc.a_12076_4320.t27                7.08559e-09
+xc.cda.t29                                   3
+xc.vss.t76                         1.85304e-08
+xc.vss.t167                        1.82931e-09
+xc.a_16876_340.t22                 6.43446e-09
+xc.cia.t17                                   3
+xc.vss.t166                        4.70237e-09
+xc.vss.t311                        2.80235e-09
+xc.a_21516_4320.t39                          3
+xc.cdb.t35                         7.53049e-09
+xc.vss.t310                        2.95265e-09
+xc.cdb.t16                         7.53986e-09
+xc.a_21516_4320.t48                          3
+xc.vdd.t294                                  3
+xc.vss.t267                        2.03863e-09
+xc.a_21516_340.t42                           3
+xc.ncia.t37                        6.76094e-09
+xc.vss.t266                        2.03356e-09
+xc.a_16876_340.t3                  6.43831e-09
+xc.a_16236_340.t13                           3
+xc.vdd.t169                                  3
+xc.vdd.t168                                  3
+xc.vdd.t55                                   3
+xc.a_1036_6700.t35                 6.02771e-09
+xc.ncdb.t9                                   3
+xc.vdd.t54                                   3
+xc.vss.t315                        2.80498e-09
+xc.a_21516_4320.t43                          3
+xc.cdb.t37                         7.53052e-09
+xc.vss.t314                        2.80094e-09
+xc.cib.t22                         6.19105e-09
+xc.a_1036_4320.t33                           3
+xc.vss.t29                         1.53297e-09
+xc.vss.t28                         1.53918e-09
+xc.vdd.t203                                  3
+xc.a_18316_4320.t14                7.39416e-09
+xc.a_1292_12000.t5                           3
+xc.a_1292_12000.t10                          3
+xc.a_18316_4320.t5                 7.39416e-09
+xc.vss.t185                        2.67701e-09
+xc.vss.t184                        5.74388e-09
+xc.a_1036_340.t0                   4.84313e-09
+xc.chop1.t0                                  3
+xc.vss.t1                          1.09013e-10
+xc.vss.t0                          1.32838e-10
+xc.vdd.t141                                  3
+xc.a_1292_12000.t31                          3
+xc.ncda.t5                         2.62446e-09
+xc.vdd.t140                                  3
+xc.ncia.t40                          6.761e-09
+xc.a_21516_340.t48                           3
+xc.vss.t273                        2.04199e-09
+xc.vss.t272                        2.03655e-09
+xc.a_1292_12000.t12                          3
+xc.a_18316_4320.t9                 7.39416e-09
+xc.vss.t189                        2.68981e-09
+xc.vss.t188                        5.96169e-09
+xc.ncdb.t0                                   3
+xc.a_1036_6700.t21                 6.02771e-09
+xc.vdd.t33                                   3
+xc.vdd.t32                                   3
+xc.vdd.t241                                  3
+xc.a_21516_340.t19                           3
+xc.ncia.t1                          6.7701e-09
+xc.ncib.t46                                  3
+xc.a_5676_4320.t61                 6.52895e-09
+xc.vss.t417                           2.21e-09
+xc.vss.t416                        1.39357e-08
+xc.a_972_8460.n10                            3
+xc.a_972_8460.n9                             3
+xc.a_972_8460.n0                             3
+xc.a_972_8460.n1                             3
+xc.a_972_8460.n3                             3
+xc.a_972_8460.n2                             3
+xc.a_972_8460.n4                             3
+xc.a_972_8460.n5                             3
+xc.a_972_8460.n6                             3
+xc.a_972_8460.n7                             3
+xc.a_972_8460.n8                             3
+xc.a_972_4188.n7                   6.78813e-09
+xc.a_972_4188.n6                    6.7846e-09
+xc.a_972_4188.n0                   6.77992e-09
+xc.a_972_4188.n1                    6.7846e-09
+xc.a_972_4188.n3                    6.7846e-09
+xc.a_972_4188.n2                    6.7846e-09
+xc.a_972_4188.n4                    6.7846e-09
+xc.a_972_4188.n5                    6.7846e-09
+xc.a_9196_340.n2                             3
+xc.a_9196_340.n1                             3
+xc.a_9196_340.n0                             3
+xc.a_8556_1540.n1                  1.03397e-08
+xc.a_8556_1540.n0                  1.03357e-08
+xc.a_7916_340.n3                    3.2408e-09
+xc.a_7916_340.n2                    3.2408e-09
+xc.a_7916_340.n1                    3.2408e-09
+xc.a_7916_340.n0                    3.2382e-09
+xc.a_5676_4320.n35                 6.53246e-09
+xc.a_5676_4320.n34                 6.52893e-09
+xc.a_5676_4320.n0                  6.52424e-09
+xc.a_5676_4320.n3                  6.52891e-09
+xc.a_5676_4320.n33                 6.52895e-09
+xc.a_5676_4320.n6                  6.52896e-09
+xc.a_5676_4320.n9                  6.52898e-09
+xc.a_5676_4320.n10                 6.52895e-09
+xc.a_5676_4320.n11                 6.52895e-09
+xc.a_5676_4320.n12                 6.52895e-09
+xc.a_5676_4320.n13                 6.52895e-09
+xc.a_5676_4320.n14                 6.52895e-09
+xc.a_5676_4320.n15                 6.52895e-09
+xc.a_5676_4320.n16                 6.52895e-09
+xc.a_5676_4320.n17                 6.52895e-09
+xc.a_5676_4320.n18                 6.52895e-09
+xc.a_5676_4320.n19                 6.52895e-09
+xc.a_5676_4320.n20                 6.52895e-09
+xc.a_5676_4320.n21                 6.52895e-09
+xc.a_5676_4320.n22                 6.52895e-09
+xc.a_5676_4320.n23                 6.52895e-09
+xc.a_5676_4320.n24                 6.52895e-09
+xc.a_5676_4320.n25                 6.52895e-09
+xc.a_5676_4320.n26                 6.52895e-09
+xc.a_5676_4320.n27                 6.52895e-09
+xc.a_5676_4320.n28                 6.52895e-09
+xc.a_5676_4320.n29                 6.52895e-09
+xc.a_5676_4320.n30                 6.52895e-09
+xc.a_5676_4320.n31                 6.52895e-09
+xc.a_5676_4320.n32                 6.52895e-09
+xc.a_5676_4320.n8                  6.53251e-09
+xc.a_5676_4320.n7                  6.52435e-09
+xc.a_5676_4320.n5                  6.53249e-09
+xc.a_5676_4320.n4                   6.5243e-09
+xc.a_5676_4320.n2                  6.53244e-09
+xc.a_5676_4320.n1                  6.52419e-09
+xc.a_5036_4320.n9                            3
+xc.a_5036_4320.n8                            3
+xc.a_5036_4320.n0                            3
+xc.a_5036_4320.n1                            3
+xc.a_5036_4320.n2                            3
+xc.a_5036_4320.n3                            3
+xc.a_5036_4320.n4                            3
+xc.a_5036_4320.n5                            3
+xc.a_5036_4320.n6                            3
+xc.a_5036_4320.n7                            3
+xc.a_4556_4320.n1                  6.33969e-09
+xc.a_4556_4320.n0                  6.33969e-09
+xc.a_4492_4188.n2                            3
+xc.a_4492_4188.n0                            3
+xc.a_4492_4188.n1                            3
+xc.a_27276_4320.n1                 7.55059e-09
+xc.a_27276_4320.n0                 7.55059e-09
+xc.a_21516_4320.n35                          3
+xc.a_21516_4320.n34                          3
+xc.a_21516_4320.n0                           3
+xc.a_21516_4320.n3                           3
+xc.a_21516_4320.n33                          3
+xc.a_21516_4320.n6                           3
+xc.a_21516_4320.n9                           3
+xc.a_21516_4320.n10                          3
+xc.a_21516_4320.n11                          3
+xc.a_21516_4320.n12                          3
+xc.a_21516_4320.n13                          3
+xc.a_21516_4320.n14                          3
+xc.a_21516_4320.n15                          3
+xc.a_21516_4320.n16                          3
+xc.a_21516_4320.n17                          3
+xc.a_21516_4320.n18                          3
+xc.a_21516_4320.n19                          3
+xc.a_21516_4320.n20                          3
+xc.a_21516_4320.n21                          3
+xc.a_21516_4320.n22                          3
+xc.a_21516_4320.n23                          3
+xc.a_21516_4320.n24                          3
+xc.a_21516_4320.n25                          3
+xc.a_21516_4320.n26                          3
+xc.a_21516_4320.n27                          3
+xc.a_21516_4320.n28                          3
+xc.a_21516_4320.n29                          3
+xc.a_21516_4320.n30                          3
+xc.a_21516_4320.n31                          3
+xc.a_21516_4320.n32                          3
+xc.a_21516_4320.n8                           3
+xc.a_21516_4320.n7                           3
+xc.a_21516_4320.n5                           3
+xc.a_21516_4320.n4                           3
+xc.a_21516_4320.n2                           3
+xc.a_21516_4320.n1                           3
+xc.a_21516_340.n35                           3
+xc.a_21516_340.n34                           3
+xc.a_21516_340.n0                            3
+xc.a_21516_340.n3                            3
+xc.a_21516_340.n33                           3
+xc.a_21516_340.n6                            3
+xc.a_21516_340.n9                            3
+xc.a_21516_340.n10                           3
+xc.a_21516_340.n11                           3
+xc.a_21516_340.n12                           3
+xc.a_21516_340.n13                           3
+xc.a_21516_340.n14                           3
+xc.a_21516_340.n15                           3
+xc.a_21516_340.n16                           3
+xc.a_21516_340.n17                           3
+xc.a_21516_340.n18                           3
+xc.a_21516_340.n19                           3
+xc.a_21516_340.n20                           3
+xc.a_21516_340.n21                           3
+xc.a_21516_340.n22                           3
+xc.a_21516_340.n23                           3
+xc.a_21516_340.n24                           3
+xc.a_21516_340.n25                           3
+xc.a_21516_340.n26                           3
+xc.a_21516_340.n27                           3
+xc.a_21516_340.n28                           3
+xc.a_21516_340.n29                           3
+xc.a_21516_340.n30                           3
+xc.a_21516_340.n31                           3
+xc.a_21516_340.n32                           3
+xc.a_21516_340.n8                            3
+xc.a_21516_340.n7                            3
+xc.a_21516_340.n5                            3
+xc.a_21516_340.n4                            3
+xc.a_21516_340.n2                            3
+xc.a_21516_340.n1                            3
+xc.a_20876_4320.n9                 7.47741e-09
+xc.a_20876_4320.n8                 7.47389e-09
+xc.a_20876_4320.n0                 7.46921e-09
+xc.a_20876_4320.n1                 7.47389e-09
+xc.a_20876_4320.n2                 7.47389e-09
+xc.a_20876_4320.n3                 7.47389e-09
+xc.a_20876_4320.n4                 7.47389e-09
+xc.a_20876_4320.n5                 7.47389e-09
+xc.a_20876_4320.n6                 7.47389e-09
+xc.a_20876_4320.n7                 7.47389e-09
+xc.a_20876_340.n9                  6.66341e-09
+xc.a_20876_340.n8                  6.65988e-09
+xc.a_20876_340.n0                   6.6552e-09
+xc.a_20876_340.n1                  6.65988e-09
+xc.a_20876_340.n2                  6.65988e-09
+xc.a_20876_340.n3                  6.65988e-09
+xc.a_20876_340.n4                  6.65988e-09
+xc.a_20876_340.n5                  6.65988e-09
+xc.a_20876_340.n6                  6.65988e-09
+xc.a_20876_340.n7                  6.65988e-09
+xc.a_20396_340.n1                            3
+xc.a_20396_340.n0                            3
+xc.a_18316_4320.n11                7.39769e-09
+xc.a_18316_4320.n10                7.39416e-09
+xc.a_18316_4320.n0                 7.38948e-09
+xc.a_18316_4320.n1                 7.39416e-09
+xc.a_18316_4320.n2                 7.39416e-09
+xc.a_18316_4320.n3                 7.39416e-09
+xc.a_18316_4320.n4                 7.39416e-09
+xc.a_18316_4320.n5                 7.39416e-09
+xc.a_18316_4320.n6                 7.39416e-09
+xc.a_18316_4320.n7                 7.39416e-09
+xc.a_18316_4320.n8                 7.39416e-09
+xc.a_18316_4320.n9                 7.39416e-09
+xc.a_17836_4320.n1                           3
+xc.a_17836_4320.n0                           3
+xc.a_16876_340.n20                 6.43799e-09
+xc.a_16876_340.n19                 6.43446e-09
+xc.a_16876_340.n0                  6.42978e-09
+xc.a_16876_340.n3                  6.43445e-09
+xc.a_16876_340.n18                 6.43446e-09
+xc.a_16876_340.n6                  6.43447e-09
+xc.a_16876_340.n7                  6.43446e-09
+xc.a_16876_340.n8                  6.43446e-09
+xc.a_16876_340.n9                  6.43446e-09
+xc.a_16876_340.n10                 6.43446e-09
+xc.a_16876_340.n11                 6.43446e-09
+xc.a_16876_340.n12                 6.43446e-09
+xc.a_16876_340.n13                 6.43446e-09
+xc.a_16876_340.n14                 6.43446e-09
+xc.a_16876_340.n15                 6.43446e-09
+xc.a_16876_340.n16                 6.43446e-09
+xc.a_16876_340.n17                 6.43446e-09
+xc.a_16876_340.n5                  6.42982e-09
+xc.a_16876_340.n4                    6.438e-09
+xc.a_16876_340.n2                  6.42975e-09
+xc.a_16876_340.n1                  6.43798e-09
+xc.a_16236_340.n7                            3
+xc.a_16236_340.n6                            3
+xc.a_16236_340.n0                            3
+xc.a_16236_340.n1                            3
+xc.a_16236_340.n2                            3
+xc.a_16236_340.n3                            3
+xc.a_16236_340.n4                            3
+xc.a_16236_340.n5                            3
+xc.a_1516_340.n7                             3
+xc.a_1516_340.n6                             3
+xc.a_1516_340.n0                             3
+xc.a_1516_340.n5                             3
+xc.a_1516_340.n1                             3
+xc.a_1516_340.n2                             3
+xc.a_1516_340.n3                             3
+xc.a_1516_340.n4                             3
+xc.a_15116_340.n1                  3.91996e-09
+xc.a_15116_340.n0                  3.91736e-09
+xc.a_14476_1540.n2                 1.08976e-08
+xc.a_14476_1540.n1                 1.08941e-08
+xc.a_14476_1540.n0                 1.08941e-08
+xc.a_1292_12000.n31                          3
+xc.a_1292_12000.n30                          3
+xc.a_1292_12000.n0                           3
+xc.a_1292_12000.n3                           3
+xc.a_1292_12000.n6                           3
+xc.a_1292_12000.n29                          3
+xc.a_1292_12000.n9                           3
+xc.a_1292_12000.n12                          3
+xc.a_1292_12000.n13                          3
+xc.a_1292_12000.n21                          3
+xc.a_1292_12000.n15                          3
+xc.a_1292_12000.n14                          3
+xc.a_1292_12000.n16                          3
+xc.a_1292_12000.n17                          3
+xc.a_1292_12000.n18                          3
+xc.a_1292_12000.n19                          3
+xc.a_1292_12000.n20                          3
+xc.a_1292_12000.n22                          3
+xc.a_1292_12000.n23                          3
+xc.a_1292_12000.n24                          3
+xc.a_1292_12000.n25                          3
+xc.a_1292_12000.n26                          3
+xc.a_1292_12000.n27                          3
+xc.a_1292_12000.n28                          3
+xc.a_1292_12000.n11                          3
+xc.a_1292_12000.n10                          3
+xc.a_1292_12000.n8                           3
+xc.a_1292_12000.n7                           3
+xc.a_1292_12000.n5                           3
+xc.a_1292_12000.n4                           3
+xc.a_1292_12000.n2                           3
+xc.a_1292_12000.n1                           3
+xc.a_12076_4320.n35                7.08911e-09
+xc.a_12076_4320.n34                7.08558e-09
+xc.a_12076_4320.n0                 7.08089e-09
+xc.a_12076_4320.n3                 7.08557e-09
+xc.a_12076_4320.n33                7.08559e-09
+xc.a_12076_4320.n6                  7.0856e-09
+xc.a_12076_4320.n9                 7.08561e-09
+xc.a_12076_4320.n10                7.08559e-09
+xc.a_12076_4320.n11                7.08559e-09
+xc.a_12076_4320.n12                7.08559e-09
+xc.a_12076_4320.n13                7.08559e-09
+xc.a_12076_4320.n14                7.08559e-09
+xc.a_12076_4320.n15                7.08559e-09
+xc.a_12076_4320.n16                7.08559e-09
+xc.a_12076_4320.n17                7.08559e-09
+xc.a_12076_4320.n18                7.08559e-09
+xc.a_12076_4320.n19                7.08559e-09
+xc.a_12076_4320.n20                7.08559e-09
+xc.a_12076_4320.n21                7.08559e-09
+xc.a_12076_4320.n22                7.08559e-09
+xc.a_12076_4320.n23                7.08559e-09
+xc.a_12076_4320.n24                7.08559e-09
+xc.a_12076_4320.n25                7.08559e-09
+xc.a_12076_4320.n26                7.08559e-09
+xc.a_12076_4320.n27                7.08559e-09
+xc.a_12076_4320.n28                7.08559e-09
+xc.a_12076_4320.n29                7.08559e-09
+xc.a_12076_4320.n30                7.08559e-09
+xc.a_12076_4320.n31                7.08559e-09
+xc.a_12076_4320.n32                7.08559e-09
+xc.a_12076_4320.n8                 7.08914e-09
+xc.a_12076_4320.n7                 7.08096e-09
+xc.a_12076_4320.n5                 7.08912e-09
+xc.a_12076_4320.n4                 7.08093e-09
+xc.a_12076_4320.n2                 7.08909e-09
+xc.a_12076_4320.n1                 7.08085e-09
+xc.a_11436_4320.n9                           3
+xc.a_11436_4320.n8                           3
+xc.a_11436_4320.n0                           3
+xc.a_11436_4320.n1                           3
+xc.a_11436_4320.n2                           3
+xc.a_11436_4320.n3                           3
+xc.a_11436_4320.n4                           3
+xc.a_11436_4320.n5                           3
+xc.a_11436_4320.n6                           3
+xc.a_11436_4320.n7                           3
+xc.a_11116_340.n3                            3
+xc.a_11116_340.n2                            3
+xc.a_11116_340.n1                            3
+xc.a_11116_340.n0                            3
+xc.a_1036_6700.n31                 6.03114e-09
+xc.a_1036_6700.n30                 6.02762e-09
+xc.a_1036_6700.n0                  6.02286e-09
+xc.a_1036_6700.n3                  6.02765e-09
+xc.a_1036_6700.n6                   6.0277e-09
+xc.a_1036_6700.n29                 6.02771e-09
+xc.a_1036_6700.n9                  6.02774e-09
+xc.a_1036_6700.n12                 6.02777e-09
+xc.a_1036_6700.n28                 6.02771e-09
+xc.a_1036_6700.n13                 6.02771e-09
+xc.a_1036_6700.n14                 6.02771e-09
+xc.a_1036_6700.n15                 6.02771e-09
+xc.a_1036_6700.n16                 6.02771e-09
+xc.a_1036_6700.n17                 6.02771e-09
+xc.a_1036_6700.n18                 6.02771e-09
+xc.a_1036_6700.n19                 6.02771e-09
+xc.a_1036_6700.n20                 6.02771e-09
+xc.a_1036_6700.n21                 6.02771e-09
+xc.a_1036_6700.n22                 6.02771e-09
+xc.a_1036_6700.n23                 6.02771e-09
+xc.a_1036_6700.n24                 6.02771e-09
+xc.a_1036_6700.n25                 6.02771e-09
+xc.a_1036_6700.n26                 6.02771e-09
+xc.a_1036_6700.n27                 6.02771e-09
+xc.a_1036_6700.n11                 6.02317e-09
+xc.a_1036_6700.n10                  6.0313e-09
+xc.a_1036_6700.n8                   6.0231e-09
+xc.a_1036_6700.n7                  6.03127e-09
+xc.a_1036_6700.n5                  6.02302e-09
+xc.a_1036_6700.n4                  6.03122e-09
+xc.a_1036_6700.n2                  6.02293e-09
+xc.a_1036_6700.n1                  6.03118e-09
+xc.a_1036_4320.n20                           3
+xc.a_1036_4320.n19                           3
+xc.a_1036_4320.n0                            3
+xc.a_1036_4320.n3                            3
+xc.a_1036_4320.n18                           3
+xc.a_1036_4320.n6                            3
+xc.a_1036_4320.n7                            3
+xc.a_1036_4320.n8                            3
+xc.a_1036_4320.n9                            3
+xc.a_1036_4320.n10                           3
+xc.a_1036_4320.n11                           3
+xc.a_1036_4320.n12                           3
+xc.a_1036_4320.n13                           3
+xc.a_1036_4320.n14                           3
+xc.a_1036_4320.n15                           3
+xc.a_1036_4320.n16                           3
+xc.a_1036_4320.n17                           3
+xc.a_1036_4320.n5                            3
+xc.a_1036_4320.n4                            3
+xc.a_1036_4320.n2                            3
+xc.a_1036_4320.n1                            3
+xc.a_1036_340.n1                   4.84627e-09
+xc.a_1036_340.n0                   4.84627e-09
+xc.vss.n0                          1.08937e-09
+xc.vss.n55                         1.82213e-10
+xc.vss.n13                         1.94012e-10
+xc.vss.n351                        2.20525e-10
+xc.vss.n12                         2.22254e-10
+xc.vss.n327                        1.80352e-09
+xc.vss.n5                          1.82234e-09
+xc.vss.n4                          1.83005e-09
+xc.vss.n312                        1.96857e-09
+xc.vss.n3                          1.96979e-09
+xc.vss.n298                        2.02725e-09
+xc.vss.n2                          2.03173e-09
+xc.vss.n1                          2.03329e-09
+xc.vss.n11                         3.70737e-10
+xc.vss.n10                         5.20326e-10
+xc.vss.n9                           6.6791e-10
+xc.vss.n8                          9.91468e-10
+xc.vss.n7                          1.17452e-09
+xc.vss.n6                          1.30721e-09
+xc.vss.n350                        1.07218e-10
+xc.vss.n279                        1.20348e-10
+xc.vss.n281                        1.20462e-10
+xc.vss.n349                        1.61024e-10
+xc.vss.n56                          1.8224e-10
+xc.vss.n348                        1.96244e-10
+xc.vss.n53                         2.91478e-10
+xc.vss.n54                         2.91482e-10
+xc.vss.n51                           4.417e-10
+xc.vss.n52                         4.41726e-10
+xc.vss.n49                         5.90073e-10
+xc.vss.n50                         5.90075e-10
+xc.vss.n47                           7.376e-10
+xc.vss.n48                         7.37626e-10
+xc.vss.n347                        8.23674e-10
+xc.vss.n45                         8.43436e-10
+xc.vss.n46                         8.43436e-10
+xc.vss.n346                        8.56769e-10
+xc.vss.n345                        8.89231e-10
+xc.vss.n43                          9.0852e-10
+xc.vss.n44                          9.0852e-10
+xc.vss.n344                        9.52911e-10
+xc.vss.n41                          9.6419e-10
+xc.vss.n42                         9.64218e-10
+xc.vss.n39                         1.05641e-09
+xc.vss.n40                         1.05641e-09
+xc.vss.n343                        1.13727e-09
+xc.vss.n37                         1.14818e-09
+xc.vss.n38                          1.1482e-09
+xc.vss.n35                         1.23723e-09
+xc.vss.n36                         1.23724e-09
+xc.vss.n33                         1.36987e-09
+xc.vss.n34                         1.36989e-09
+xc.vss.n342                        1.44719e-09
+xc.vss.n31                         1.46465e-09
+xc.vss.n32                         1.46464e-09
+xc.vss.n341                        1.50484e-09
+xc.vss.n29                         1.52221e-09
+xc.vss.n30                         1.52221e-09
+xc.vss.n340                        1.53392e-09
+xc.vss.n339                        1.56242e-09
+xc.vss.n27                          1.5725e-09
+xc.vss.n28                         1.57253e-09
+xc.vss.n338                         1.6043e-09
+xc.vss.n25                          1.6208e-09
+xc.vss.n26                         1.62083e-09
+xc.vss.n337                        1.63172e-09
+xc.vss.n336                        1.65799e-09
+xc.vss.n335                        1.68394e-09
+xc.vss.n23                         1.69928e-09
+xc.vss.n24                         1.69933e-09
+xc.vss.n333                        1.70944e-09
+xc.vss.n331                        1.73365e-09
+xc.vss.n330                        1.75756e-09
+xc.vss.n329                          1.781e-09
+xc.vss.n325                        1.82524e-09
+xc.vss.n22                         1.82739e-09
+xc.vss.n323                        1.84347e-09
+xc.vss.n321                        1.86077e-09
+xc.vss.n319                        1.87714e-09
+xc.vss.n318                        1.89304e-09
+xc.vss.n20                         1.89859e-09
+xc.vss.n21                         1.89869e-09
+xc.vss.n317                        1.91532e-09
+xc.vss.n18                         1.92396e-09
+xc.vss.n19                         1.92398e-09
+xc.vss.n316                        1.92965e-09
+xc.vss.n315                        1.94324e-09
+xc.vss.n314                        1.95637e-09
+xc.vss.n310                        1.97826e-09
+xc.vss.n308                        1.98677e-09
+xc.vss.n307                        1.99483e-09
+xc.vss.n306                        2.00257e-09
+xc.vss.n304                        2.00968e-09
+xc.vss.n302                        2.01616e-09
+xc.vss.n300                        2.02202e-09
+xc.vss.n296                        2.03187e-09
+xc.vss.n17                         2.03226e-09
+xc.vss.n294                        2.03584e-09
+xc.vss.n292                        2.03921e-09
+xc.vss.n290                        2.04197e-09
+xc.vss.n288                         2.0441e-09
+xc.vss.n286                         2.0456e-09
+xc.vss.n284                        2.04649e-09
+xc.vss.n283                        2.04706e-09
+xc.vss.n15                         2.04722e-09
+xc.vss.n16                         2.04722e-09
+xc.vss.n282                        2.04735e-09
+xc.vss.n14                         2.04735e-09
+xc.vss.n334                        1.68593e-09
+xc.vss.n332                        1.71143e-09
+xc.vss.n328                        1.78394e-09
+xc.vss.n326                        1.80648e-09
+xc.vss.n324                        1.82813e-09
+xc.vss.n322                         1.8464e-09
+xc.vss.n320                        1.86375e-09
+xc.vss.n313                        1.95931e-09
+xc.vss.n311                        1.97153e-09
+xc.vss.n309                        1.98123e-09
+xc.vss.n305                        2.00456e-09
+xc.vss.n303                        2.01168e-09
+xc.vss.n301                        2.01817e-09
+xc.vss.n299                        2.02399e-09
+xc.vss.n297                        2.02926e-09
+xc.vss.n295                        2.03381e-09
+xc.vss.n293                        2.03784e-09
+xc.vss.n291                         2.0412e-09
+xc.vss.n289                        2.04395e-09
+xc.vss.n287                        2.04609e-09
+xc.vss.n285                        2.04755e-09
+xc.vss.n280                         1.7299e-10
+xc.vss.n267                        4.31398e-10
+xc.vss.n268                        5.75645e-10
+xc.vss.n269                        7.27561e-10
+xc.vss.n270                        8.32034e-10
+xc.vss.n271                        1.04296e-09
+xc.vss.n272                        1.14621e-09
+xc.vss.n273                        1.22425e-09
+xc.vss.n274                        1.36128e-09
+xc.vss.n275                        1.45443e-09
+xc.vss.n276                        1.61427e-09
+xc.vss.n277                        1.91892e-09
+xc.vss.n278                        2.04723e-09
+xc.vss.n57                         3.60718e-09
+xc.vss.n58                         1.25527e-09
+xc.vss.n246                        1.29477e-09
+xc.vss.n59                          1.3712e-09
+xc.vss.n60                         1.46218e-09
+xc.vss.n61                         1.49845e-09
+xc.vss.n62                         1.61356e-09
+xc.vss.n63                         1.66413e-09
+xc.vss.n64                         1.67484e-09
+xc.vss.n65                          1.7951e-09
+xc.vss.n66                         2.07826e-09
+xc.vss.n67                          2.2699e-09
+xc.vss.n68                         2.35047e-09
+xc.vss.n80                         2.52823e-09
+xc.vss.n69                         2.53283e-09
+xc.vss.n70                         2.63695e-09
+xc.vss.n71                         2.65378e-09
+xc.vss.n72                           2.658e-09
+xc.vss.n73                         2.70306e-09
+xc.vss.n74                         2.73739e-09
+xc.vss.n75                         2.76285e-09
+xc.vss.n76                         2.79987e-09
+xc.vss.n77                         2.81183e-09
+xc.vss.n78                         2.81432e-09
+xc.vss.n79                         2.81299e-09
+xc.vss.n266                        2.87906e-09
+xc.vss.n265                        2.00786e-09
+xc.vss.n247                        2.39937e-09
+xc.vss.n264                        1.88477e-09
+xc.vss.n248                        1.40584e-09
+xc.vss.n263                        6.35339e-09
+xc.vss.n262                        1.56247e-09
+xc.vss.n249                        1.56235e-09
+xc.vss.n252                         1.5372e-09
+xc.vss.n251                        1.55128e-09
+xc.vss.n261                        1.64794e-09
+xc.vss.n250                        1.56013e-09
+xc.vss.n260                        1.65642e-09
+xc.vss.n254                        1.41292e-09
+xc.vss.n259                        1.35903e-09
+xc.vss.n258                        1.37751e-09
+xc.vss.n256                        1.39533e-09
+xc.vss.n253                        1.40583e-09
+xc.vss.n257                        1.38972e-09
+xc.vss.n255                        1.40731e-09
+xc.vss.n81                         1.18856e-09
+xc.vss.n194                         1.1886e-09
+xc.vss.n82                         1.23015e-09
+xc.vss.n193                        1.23021e-09
+xc.vss.n83                          1.2551e-09
+xc.vss.n84                         1.27138e-09
+xc.vss.n190                        1.27145e-09
+xc.vss.n85                         1.29475e-09
+xc.vss.n181                         1.3106e-09
+xc.vss.n187                        1.31065e-09
+xc.vss.n180                        1.34804e-09
+xc.vss.n185                        1.34806e-09
+xc.vss.n179                         1.3712e-09
+xc.vss.n178                        1.38607e-09
+xc.vss.n183                         1.3861e-09
+xc.vss.n177                        1.42258e-09
+xc.vss.n176                        1.45623e-09
+xc.vss.n197                        1.45858e-09
+xc.vss.n86                         1.46792e-09
+xc.vss.n175                        1.49431e-09
+xc.vss.n174                        1.53025e-09
+xc.vss.n173                        1.56553e-09
+xc.vss.n171                        1.61355e-09
+xc.vss.n170                         1.6536e-09
+xc.vss.n169                        1.67483e-09
+xc.vss.n168                         1.6892e-09
+xc.vss.n165                        1.79121e-09
+xc.vss.n162                        1.88931e-09
+xc.vss.n161                        1.92114e-09
+xc.vss.n156                        2.04464e-09
+xc.vss.n154                        2.07442e-09
+xc.vss.n155                        2.07811e-09
+xc.vss.n148                         2.2306e-09
+xc.vss.n147                        2.25504e-09
+xc.vss.n146                        2.26985e-09
+xc.vss.n145                        2.27954e-09
+xc.vss.n144                        2.30253e-09
+xc.vss.n143                        2.32537e-09
+xc.vss.n142                        2.34788e-09
+xc.vss.n141                         2.3698e-09
+xc.vss.n139                         2.4123e-09
+xc.vss.n138                        2.43324e-09
+xc.vss.n137                        2.45371e-09
+xc.vss.n136                         2.4737e-09
+xc.vss.n135                        2.49323e-09
+xc.vss.n134                        2.51228e-09
+xc.vss.n133                        2.52816e-09
+xc.vss.n87                          2.5306e-09
+xc.vss.n222                        2.53112e-09
+xc.vss.n132                        2.53416e-09
+xc.vss.n131                        2.54696e-09
+xc.vss.n130                        2.56232e-09
+xc.vss.n129                        2.57722e-09
+xc.vss.n128                        2.59164e-09
+xc.vss.n127                        2.60559e-09
+xc.vss.n126                        2.61894e-09
+xc.vss.n88                         2.63206e-09
+xc.vss.n89                         2.63686e-09
+xc.vss.n125                        2.65078e-09
+xc.vss.n124                        2.66278e-09
+xc.vss.n123                        2.67437e-09
+xc.vss.n122                        2.68572e-09
+xc.vss.n121                         2.6966e-09
+xc.vss.n120                        2.70296e-09
+xc.vss.n119                        2.70688e-09
+xc.vss.n118                         2.7158e-09
+xc.vss.n117                        2.72424e-09
+xc.vss.n116                        2.73245e-09
+xc.vss.n115                        2.73737e-09
+xc.vss.n114                        2.74057e-09
+xc.vss.n113                        2.74806e-09
+xc.vss.n112                        2.75533e-09
+xc.vss.n111                        2.76212e-09
+xc.vss.n110                        2.76762e-09
+xc.vss.n107                        2.77719e-09
+xc.vss.n106                        2.78173e-09
+xc.vss.n105                        2.78594e-09
+xc.vss.n104                        2.78984e-09
+xc.vss.n102                        2.79668e-09
+xc.vss.n90                         2.79952e-09
+xc.vss.n240                        2.79961e-09
+xc.vss.n101                        2.79997e-09
+xc.vss.n100                        2.80223e-09
+xc.vss.n99                         2.80455e-09
+xc.vss.n98                         2.80655e-09
+xc.vss.n97                         2.80824e-09
+xc.vss.n95                         2.81066e-09
+xc.vss.n94                         2.81156e-09
+xc.vss.n93                         2.81183e-09
+xc.vss.n91                         2.81267e-09
+xc.vss.n92                         2.81297e-09
+xc.vss.n96                         2.80961e-09
+xc.vss.n245                        2.81155e-09
+xc.vss.n244                        2.81019e-09
+xc.vss.n243                        2.80851e-09
+xc.vss.n242                        2.80651e-09
+xc.vss.n241                        2.80419e-09
+xc.vss.n239                        2.80156e-09
+xc.vss.n238                        2.79863e-09
+xc.vss.n103                        2.79341e-09
+xc.vss.n237                        2.79538e-09
+xc.vss.n236                         2.7918e-09
+xc.vss.n235                        2.78791e-09
+xc.vss.n234                        2.78369e-09
+xc.vss.n108                         2.7725e-09
+xc.vss.n233                        2.76504e-09
+xc.vss.n232                        2.75824e-09
+xc.vss.n231                         2.7187e-09
+xc.vss.n230                        2.70981e-09
+xc.vss.n229                        2.69953e-09
+xc.vss.n228                        2.68864e-09
+xc.vss.n227                        2.60849e-09
+xc.vss.n226                        2.59455e-09
+xc.vss.n225                        2.58013e-09
+xc.vss.n224                        2.56524e-09
+xc.vss.n223                        2.54987e-09
+xc.vss.n221                        2.53401e-09
+xc.vss.n220                        2.51519e-09
+xc.vss.n219                        2.49614e-09
+xc.vss.n218                        2.47662e-09
+xc.vss.n217                        2.45662e-09
+xc.vss.n216                        2.43615e-09
+xc.vss.n140                        2.39113e-09
+xc.vss.n215                        2.37175e-09
+xc.vss.n214                        2.34985e-09
+xc.vss.n213                        2.32734e-09
+xc.vss.n149                        2.20593e-09
+xc.vss.n212                        2.20883e-09
+xc.vss.n150                        2.18078e-09
+xc.vss.n211                         2.1837e-09
+xc.vss.n151                        2.15516e-09
+xc.vss.n210                        2.15808e-09
+xc.vss.n152                        2.12907e-09
+xc.vss.n209                        2.13198e-09
+xc.vss.n153                        2.10251e-09
+xc.vss.n208                        2.10544e-09
+xc.vss.n207                        2.07732e-09
+xc.vss.n206                        2.04757e-09
+xc.vss.n157                         2.0144e-09
+xc.vss.n205                        2.01731e-09
+xc.vss.n158                        1.98368e-09
+xc.vss.n204                         1.9866e-09
+xc.vss.n159                        1.95249e-09
+xc.vss.n203                        1.95542e-09
+xc.vss.n163                        1.85695e-09
+xc.vss.n164                        1.82443e-09
+xc.vss.n202                        1.82639e-09
+xc.vss.n201                        1.79318e-09
+xc.vss.n166                        1.75747e-09
+xc.vss.n200                        1.75945e-09
+xc.vss.n167                        1.72342e-09
+xc.vss.n172                        1.60066e-09
+xc.vss.n199                        1.53219e-09
+xc.vss.n198                        1.49626e-09
+xc.vss.n196                        1.46053e-09
+xc.vss.n195                        1.42457e-09
+xc.vss.n191                         1.2331e-09
+xc.vss.n192                        1.23218e-09
+xc.vss.n188                        1.27434e-09
+xc.vss.n189                         1.2734e-09
+xc.vss.n186                        1.31259e-09
+xc.vss.n184                        1.34998e-09
+xc.vss.n182                        1.38808e-09
+xc.vss.n160                        1.92403e-09
+xc.vss.n109                        2.77051e-09
+xc.vdd.n37                                   3
+xc.vdd.n36                                   3
+xc.vdd.n26                                   3
+xc.vdd.n82                                   3
+xc.vdd.n193                                  3
+xc.vdd.n80                                   3
+xc.vdd.n85                                   3
+xc.vdd.n38                                   3
+xc.vdd.n87                                   3
+xc.vdd.n78                                   3
+xc.vdd.n91                                   3
+xc.vdd.n40                                   3
+xc.vdd.n174                                  3
+xc.vdd.n277                                  3
+xc.vdd.n77                                   3
+xc.vdd.n172                                  3
+xc.vdd.n41                                   3
+xc.vdd.n93                                   3
+xc.vdd.n74                                   3
+xc.vdd.n98                                   3
+xc.vdd.n68                                   3
+xc.vdd.n112                                  3
+xc.vdd.n66                                   3
+xc.vdd.n116                                  3
+xc.vdd.n42                                   3
+xc.vdd.n118                                  3
+xc.vdd.n63                                   3
+xc.vdd.n121                                  3
+xc.vdd.n60                                   3
+xc.vdd.n129                                  3
+xc.vdd.n291                                  3
+xc.vdd.n43                                   3
+xc.vdd.n57                                   3
+xc.vdd.n137                                  3
+xc.vdd.n55                                   3
+xc.vdd.n141                                  3
+xc.vdd.n54                                   3
+xc.vdd.n163                                  3
+xc.vdd.n52                                   3
+xc.vdd.n236                                  3
+xc.vdd.n44                                   3
+xc.vdd.n159                                  3
+xc.vdd.n233                                  3
+xc.vdd.n46                                   3
+xc.vdd.n45                                   3
+xc.vdd.n224                                  3
+xc.vdd.n47                                   3
+xc.vdd.n157                                  3
+xc.vdd.n199                                  3
+xc.vdd.n48                                   3
+xc.vdd.n49                                   3
+xc.vdd.n50                                   3
+xc.vdd.n51                                   3
+xc.vdd.n152                                  3
+xc.vdd.n53                                   3
+xc.vdd.n56                                   3
+xc.vdd.n296                                  3
+xc.vdd.n297                                  3
+xc.vdd.n298                                  3
+xc.vdd.n299                                  3
+xc.vdd.n300                                  3
+xc.vdd.n301                                  3
+xc.vdd.n58                                   3
+xc.vdd.n293                                  3
+xc.vdd.n294                                  3
+xc.vdd.n295                                  3
+xc.vdd.n59                                   3
+xc.vdd.n292                                  3
+xc.vdd.n61                                   3
+xc.vdd.n62                                   3
+xc.vdd.n290                                  3
+xc.vdd.n64                                   3
+xc.vdd.n67                                   3
+xc.vdd.n69                                   3
+xc.vdd.n70                                   3
+xc.vdd.n71                                   3
+xc.vdd.n72                                   3
+xc.vdd.n289                                  3
+xc.vdd.n73                                   3
+xc.vdd.n75                                   3
+xc.vdd.n79                                   3
+xc.vdd.n81                                   3
+xc.vdd.n196                                  3
+xc.vdd.n288                                  3
+xc.vdd.n287                                  3
+xc.vdd.n284                                  3
+xc.vdd.n285                                  3
+xc.vdd.n286                                  3
+xc.vdd.n278                                  3
+xc.vdd.n279                                  3
+xc.vdd.n280                                  3
+xc.vdd.n281                                  3
+xc.vdd.n282                                  3
+xc.vdd.n283                                  3
+xc.vdd.n276                                  3
+xc.vdd.n272                                  3
+xc.vdd.n273                                  3
+xc.vdd.n274                                  3
+xc.vdd.n275                                  3
+xc.vdd.n260                                  3
+xc.vdd.n261                                  3
+xc.vdd.n262                                  3
+xc.vdd.n263                                  3
+xc.vdd.n264                                  3
+xc.vdd.n265                                  3
+xc.vdd.n266                                  3
+xc.vdd.n267                                  3
+xc.vdd.n268                                  3
+xc.vdd.n269                                  3
+xc.vdd.n270                                  3
+xc.vdd.n271                                  3
+xc.vdd.n259                                  3
+xc.vdd.n255                                  3
+xc.vdd.n256                                  3
+xc.vdd.n257                                  3
+xc.vdd.n258                                  3
+xc.vdd.n243                                  3
+xc.vdd.n244                                  3
+xc.vdd.n245                                  3
+xc.vdd.n246                                  3
+xc.vdd.n247                                  3
+xc.vdd.n248                                  3
+xc.vdd.n249                                  3
+xc.vdd.n250                                  3
+xc.vdd.n251                                  3
+xc.vdd.n252                                  3
+xc.vdd.n253                                  3
+xc.vdd.n254                                  3
+xc.vdd.n242                                  3
+xc.vdd.n237                                  3
+xc.vdd.n238                                  3
+xc.vdd.n239                                  3
+xc.vdd.n240                                  3
+xc.vdd.n241                                  3
+xc.vdd.n235                                  3
+xc.vdd.n234                                  3
+xc.vdd.n229                                  3
+xc.vdd.n230                                  3
+xc.vdd.n231                                  3
+xc.vdd.n232                                  3
+xc.vdd.n225                                  3
+xc.vdd.n226                                  3
+xc.vdd.n227                                  3
+xc.vdd.n228                                  3
+xc.vdd.n212                                  3
+xc.vdd.n213                                  3
+xc.vdd.n214                                  3
+xc.vdd.n215                                  3
+xc.vdd.n216                                  3
+xc.vdd.n217                                  3
+xc.vdd.n218                                  3
+xc.vdd.n219                                  3
+xc.vdd.n220                                  3
+xc.vdd.n221                                  3
+xc.vdd.n222                                  3
+xc.vdd.n223                                  3
+xc.vdd.n200                                  3
+xc.vdd.n201                                  3
+xc.vdd.n202                                  3
+xc.vdd.n203                                  3
+xc.vdd.n204                                  3
+xc.vdd.n205                                  3
+xc.vdd.n206                                  3
+xc.vdd.n207                                  3
+xc.vdd.n208                                  3
+xc.vdd.n209                                  3
+xc.vdd.n210                                  3
+xc.vdd.n211                                  3
+xc.vdd.n198                                  3
+xc.vdd.n197                                  3
+xc.vdd.n83                                   3
+xc.vdd.n84                                   3
+xc.vdd.n195                                  3
+xc.vdd.n86                                   3
+xc.vdd.n88                                   3
+xc.vdd.n39                                   3
+xc.vdd.n176                                  3
+xc.vdd.n89                                   3
+xc.vdd.n90                                   3
+xc.vdd.n92                                   3
+xc.vdd.n175                                  3
+xc.vdd.n173                                  3
+xc.vdd.n94                                   3
+xc.vdd.n95                                   3
+xc.vdd.n76                                   3
+xc.vdd.n96                                   3
+xc.vdd.n97                                   3
+xc.vdd.n99                                   3
+xc.vdd.n100                                  3
+xc.vdd.n101                                  3
+xc.vdd.n102                                  3
+xc.vdd.n103                                  3
+xc.vdd.n104                                  3
+xc.vdd.n105                                  3
+xc.vdd.n170                                  3
+xc.vdd.n171                                  3
+xc.vdd.n106                                  3
+xc.vdd.n107                                  3
+xc.vdd.n108                                  3
+xc.vdd.n109                                  3
+xc.vdd.n110                                  3
+xc.vdd.n111                                  3
+xc.vdd.n113                                  3
+xc.vdd.n114                                  3
+xc.vdd.n115                                  3
+xc.vdd.n168                                  3
+xc.vdd.n169                                  3
+xc.vdd.n117                                  3
+xc.vdd.n119                                  3
+xc.vdd.n120                                  3
+xc.vdd.n65                                   3
+xc.vdd.n122                                  3
+xc.vdd.n123                                  3
+xc.vdd.n124                                  3
+xc.vdd.n125                                  3
+xc.vdd.n126                                  3
+xc.vdd.n127                                  3
+xc.vdd.n128                                  3
+xc.vdd.n130                                  3
+xc.vdd.n167                                  3
+xc.vdd.n131                                  3
+xc.vdd.n132                                  3
+xc.vdd.n133                                  3
+xc.vdd.n134                                  3
+xc.vdd.n135                                  3
+xc.vdd.n136                                  3
+xc.vdd.n138                                  3
+xc.vdd.n139                                  3
+xc.vdd.n140                                  3
+xc.vdd.n165                                  3
+xc.vdd.n166                                  3
+xc.vdd.n142                                  3
+xc.vdd.n164                                  3
+xc.vdd.n143                                  3
+xc.vdd.n144                                  3
+xc.vdd.n145                                  3
+xc.vdd.n146                                  3
+xc.vdd.n161                                  3
+xc.vdd.n162                                  3
+xc.vdd.n147                                  3
+xc.vdd.n148                                  3
+xc.vdd.n160                                  3
+xc.vdd.n158                                  3
+xc.vdd.n156                                  3
+xc.vdd.n155                                  3
+xc.vdd.n149                                  3
+xc.vdd.n150                                  3
+xc.vdd.n151                                  3
+xc.vdd.n153                                  3
+xc.vdd.n154                                  3
+xc.vdd.n194                                  3
+xc.vdd.n177                                  3
+xc.vdd.n178                                  3
+xc.vdd.n179                                  3
+xc.vdd.n180                                  3
+xc.vdd.n181                                  3
+xc.vdd.n182                                  3
+xc.vdd.n183                                  3
+xc.vdd.n184                                  3
+xc.vdd.n185                                  3
+xc.vdd.n186                                  3
+xc.vdd.n187                                  3
+xc.vdd.n188                                  3
+xc.vdd.n189                                  3
+xc.vdd.n190                                  3
+xc.vdd.n191                                  3
+xc.vdd.n192                                  3
+xc.vdd.n27                                   3
+xc.vdd.n31                                   3
+xc.vdd.n32                                   3
+xc.vdd.n33                                   3
+xc.vdd.n34                                   3
+xc.vdd.n35                                   3
+xc.vdd.n29                                   3
+xc.vdd.n30                                   3
+xc.vdd.n28                                   3
+xc.vdd.n15                                   3
+xc.vdd.n12                                   3
+xc.vdd.n17                                   3
+xc.vdd.n19                                   3
+xc.vdd.n13                                   3
+xc.vdd.n14                                   3
+xc.vdd.n21                                   3
+xc.vdd.n23                                   3
+xc.vdd.n25                                   3
+xc.vdd.n24                                   3
+xc.vdd.n22                                   3
+xc.vdd.n20                                   3
+xc.vdd.n18                                   3
+xc.vdd.n16                                   3
+xc.vdd.n3                                    3
+xc.vdd.n5                                    3
+xc.vdd.n0                                    3
+xc.vdd.n1                                    3
+xc.vdd.n7                                    3
+xc.vdd.n9                                    3
+xc.vdd.n11                                   3
+xc.vdd.n10                                   3
+xc.vdd.n8                                    3
+xc.vdd.n6                                    3
+xc.vdd.n4                                    3
+xc.vdd.n2                                    3
+xc.ncib.n5                                   3
+xc.ncib.n2                                   3
+xc.ncib.n8                                   3
+xc.ncib.n11                                  3
+xc.ncib.n14                                  3
+xc.ncib.n17                                  3
+xc.ncib.n20                                  3
+xc.ncib.n23                                  3
+xc.ncib.n26                                  3
+xc.ncib.n29                                  3
+xc.ncib.n32                                  3
+xc.ncib.n35                                  3
+ncib                                         3
+xc.ncib.n34                                  3
+xc.ncib.n33                                  3
+xc.ncib.n31                                  3
+xc.ncib.n30                                  3
+xc.ncib.n28                                  3
+xc.ncib.n27                                  3
+xc.ncib.n25                                  3
+xc.ncib.n24                                  3
+xc.ncib.n22                                  3
+xc.ncib.n21                                  3
+xc.ncib.n19                                  3
+xc.ncib.n18                                  3
+xc.ncib.n16                                  3
+xc.ncib.n15                                  3
+xc.ncib.n13                                  3
+xc.ncib.n12                                  3
+xc.ncib.n10                                  3
+xc.ncib.n9                                   3
+xc.ncib.n7                                   3
+xc.ncib.n6                                   3
+xc.ncib.n4                                   3
+xc.ncib.n3                                   3
+xc.ncib.n1                                   3
+xc.ncib.n0                                   3
+ncia                               6.76626e-09
+xc.ncia.n36                        6.76626e-09
+xc.ncia.n2                         6.76626e-09
+xc.ncia.n5                         6.76627e-09
+xc.ncia.n8                         6.76629e-09
+xc.ncia.n11                        6.76631e-09
+xc.ncia.n14                        6.76634e-09
+xc.ncia.n17                        6.76637e-09
+xc.ncia.n20                         6.7664e-09
+xc.ncia.n23                        6.76643e-09
+xc.ncia.n26                        6.76645e-09
+xc.ncia.n29                        6.76647e-09
+xc.ncia.n32                        6.76649e-09
+xc.ncia.n35                        6.76649e-09
+xc.ncia.n34                        6.76183e-09
+xc.ncia.n33                        6.77002e-09
+xc.ncia.n31                        6.76182e-09
+xc.ncia.n30                        6.77001e-09
+xc.ncia.n28                        6.76181e-09
+xc.ncia.n27                           6.77e-09
+xc.ncia.n25                        6.76179e-09
+xc.ncia.n24                        6.76998e-09
+xc.ncia.n22                        6.76176e-09
+xc.ncia.n21                        6.76996e-09
+xc.ncia.n19                        6.76173e-09
+xc.ncia.n18                        6.76993e-09
+xc.ncia.n16                         6.7617e-09
+xc.ncia.n15                         6.7699e-09
+xc.ncia.n13                        6.76166e-09
+xc.ncia.n12                        6.76987e-09
+xc.ncia.n10                        6.76162e-09
+xc.ncia.n9                         6.76984e-09
+xc.ncia.n7                         6.76159e-09
+xc.ncia.n6                         6.76981e-09
+xc.ncia.n4                         6.76157e-09
+xc.ncia.n3                         6.76979e-09
+xc.ncia.n1                         6.76155e-09
+xc.ncia.n0                         6.76978e-09
+ncdb                                         3
+xc.ncdb.n36                                  3
+xc.ncdb.n28                                  3
+xc.ncdb.n29                                  3
+xc.ncdb.n27                                  3
+xc.ncdb.n32                                  3
+xc.ncdb.n2                                   3
+xc.ncdb.n3                                   3
+xc.ncdb.n1                                   3
+xc.ncdb.n0                                   3
+xc.ncdb.n30                                  3
+xc.ncdb.n31                                  3
+xc.ncdb.n34                                  3
+xc.ncdb.n35                                  3
+xc.ncdb.n33                                  3
+xc.ncdb.n4                                   3
+xc.ncdb.n5                                   3
+xc.ncdb.n6                                   3
+xc.ncdb.n13                                  3
+xc.ncdb.n7                                   3
+xc.ncdb.n8                                   3
+xc.ncdb.n9                                   3
+xc.ncdb.n10                                  3
+xc.ncdb.n11                                  3
+xc.ncdb.n25                                  3
+xc.ncdb.n14                                  3
+xc.ncdb.n12                                  3
+xc.ncdb.n26                                  3
+xc.ncdb.n15                                  3
+xc.ncdb.n16                                  3
+xc.ncdb.n24                                  3
+xc.ncdb.n23                                  3
+xc.ncdb.n17                                  3
+xc.ncdb.n20                                  3
+xc.ncdb.n22                                  3
+xc.ncdb.n21                                  3
+xc.ncdb.n19                                  3
+xc.ncdb.n18                                  3
+ncda                               2.61515e-09
+xc.ncda.n36                        2.61515e-09
+xc.ncda.n28                        2.60713e-09
+xc.ncda.n29                        2.60685e-09
+xc.ncda.n27                        2.60911e-09
+xc.ncda.n32                        2.60723e-09
+xc.ncda.n2                         2.62008e-09
+xc.ncda.n3                         2.62178e-09
+xc.ncda.n1                         2.62192e-09
+xc.ncda.n0                         2.62285e-09
+xc.ncda.n30                        2.60659e-09
+xc.ncda.n31                        2.60553e-09
+xc.ncda.n34                        2.60617e-09
+xc.ncda.n35                        2.60617e-09
+xc.ncda.n33                        2.60683e-09
+xc.ncda.n4                         2.62118e-09
+xc.ncda.n5                         2.62233e-09
+xc.ncda.n6                         2.62315e-09
+xc.ncda.n13                        2.62452e-09
+xc.ncda.n7                         2.62552e-09
+xc.ncda.n8                         2.62288e-09
+xc.ncda.n9                          2.6234e-09
+xc.ncda.n10                        2.62383e-09
+xc.ncda.n11                        2.62419e-09
+xc.ncda.n25                        2.62487e-09
+xc.ncda.n14                        2.62454e-09
+xc.ncda.n12                        2.62532e-09
+xc.ncda.n26                        2.62485e-09
+xc.ncda.n15                        2.62339e-09
+xc.ncda.n16                        2.62403e-09
+xc.ncda.n24                        2.62452e-09
+xc.ncda.n23                        2.62411e-09
+xc.ncda.n17                        2.62495e-09
+xc.ncda.n20                        2.62262e-09
+xc.ncda.n22                        2.62347e-09
+xc.ncda.n21                        2.62438e-09
+xc.ncda.n19                        2.62364e-09
+xc.ncda.n18                        2.62306e-09
+xc.cib.n5                          6.19621e-09
+xc.cib.n2                          6.19618e-09
+xc.cib.n8                          6.19627e-09
+xc.cib.n11                         6.19633e-09
+xc.cib.n14                         6.19639e-09
+xc.cib.n17                         6.19642e-09
+cib                                6.19642e-09
+xc.cib.n16                         6.19995e-09
+xc.cib.n15                         6.19183e-09
+xc.cib.n13                         6.19991e-09
+xc.cib.n12                         6.19176e-09
+xc.cib.n10                         6.19986e-09
+xc.cib.n9                          6.19167e-09
+xc.cib.n7                          6.19979e-09
+xc.cib.n6                          6.19157e-09
+xc.cib.n4                          6.19974e-09
+xc.cib.n3                          6.19148e-09
+xc.cib.n1                           6.1997e-09
+xc.cib.n0                          6.19141e-09
+cia                                          3
+xc.cia.n18                                   3
+xc.cia.n2                                    3
+xc.cia.n5                                    3
+xc.cia.n8                                    3
+xc.cia.n11                                   3
+xc.cia.n14                                   3
+xc.cia.n17                                   3
+xc.cia.n16                                   3
+xc.cia.n15                                   3
+xc.cia.n13                                   3
+xc.cia.n12                                   3
+xc.cia.n10                                   3
+xc.cia.n9                                    3
+xc.cia.n7                                    3
+xc.cia.n6                                    3
+xc.cia.n4                                    3
+xc.cia.n3                                    3
+xc.cia.n1                                    3
+xc.cia.n0                                    3
+cdb                                7.53591e-09
+xc.cdb.n36                         7.53591e-09
+xc.cdb.n5                           7.5359e-09
+xc.cdb.n2                          7.53589e-09
+xc.cdb.n8                          7.53591e-09
+xc.cdb.n11                         7.53592e-09
+xc.cdb.n14                         7.53594e-09
+xc.cdb.n17                         7.53596e-09
+xc.cdb.n20                         7.53598e-09
+xc.cdb.n23                           7.536e-09
+xc.cdb.n26                         7.53602e-09
+xc.cdb.n29                         7.53603e-09
+xc.cdb.n32                         7.53604e-09
+xc.cdb.n35                         7.53604e-09
+xc.cdb.n34                         7.53957e-09
+xc.cdb.n33                         7.53138e-09
+xc.cdb.n31                         7.53956e-09
+xc.cdb.n30                         7.53137e-09
+xc.cdb.n28                         7.53955e-09
+xc.cdb.n27                         7.53136e-09
+xc.cdb.n25                         7.53954e-09
+xc.cdb.n24                         7.53135e-09
+xc.cdb.n22                         7.53953e-09
+xc.cdb.n21                         7.53133e-09
+xc.cdb.n19                         7.53951e-09
+xc.cdb.n18                         7.53131e-09
+xc.cdb.n16                         7.53949e-09
+xc.cdb.n15                         7.53128e-09
+xc.cdb.n13                         7.53947e-09
+xc.cdb.n12                         7.53126e-09
+xc.cdb.n10                         7.53945e-09
+xc.cdb.n9                          7.53124e-09
+xc.cdb.n7                          7.53943e-09
+xc.cdb.n6                          7.53122e-09
+xc.cdb.n4                          7.53942e-09
+xc.cdb.n3                           7.5312e-09
+xc.cdb.n1                          7.53941e-09
+xc.cdb.n0                          7.53119e-09
+xc.cda.n5                                    3
+xc.cda.n2                                    3
+xc.cda.n8                                    3
+xc.cda.n11                                   3
+xc.cda.n14                                   3
+xc.cda.n17                                   3
+xc.cda.n20                                   3
+xc.cda.n23                                   3
+xc.cda.n26                                   3
+xc.cda.n29                                   3
+xc.cda.n32                                   3
+xc.cda.n35                                   3
+cda                                          3
+xc.cda.n34                                   3
+xc.cda.n33                                   3
+xc.cda.n31                                   3
+xc.cda.n30                                   3
+xc.cda.n28                                   3
+xc.cda.n27                                   3
+xc.cda.n25                                   3
+xc.cda.n24                                   3
+xc.cda.n22                                   3
+xc.cda.n21                                   3
+xc.cda.n19                                   3
+xc.cda.n18                                   3
+xc.cda.n16                                   3
+xc.cda.n15                                   3
+xc.cda.n13                                   3
+xc.cda.n12                                   3
+xc.cda.n10                                   3
+xc.cda.n9                                    3
+xc.cda.n7                                    3
+xc.cda.n6                                    3
+xc.cda.n4                                    3
+xc.cda.n3                                    3
+xc.cda.n1                                    3
+xc.cda.n0                                    3
+vcm                                       1.65
+xota1.cip                                 1.65
+xota1.cin                                 1.65
+xota1.xota.xcore.d1p                  0.869264
+xota1.xota.xcore.tail                 0.809115
+xota1.xota.xcore.d1n                  0.869264
+o1n                                    1.64971
+vnc1                                   1.82062
+xota1.xota.xcore.n1p                  0.890547
+o1p                                    1.64971
+xota1.xota.xcore.n1n                  0.890547
+xota1.xota.xcore.p1p                   2.71006
+xota1.xota.vbp                         1.83242
+xota1.xota.xcore.p1n                   2.71006
+vpc1                                   1.54361
+xota1.xota.xcore.p2p                   2.67909
+xota1.xota.xcore.p2n                   2.67909
+vbn1                                  0.765806
+xota1.xota.xcmfb.nd                    1.96133
+xota1.xota.xcmfb.nta                  0.771084
+xota1.xota.xcmfb.ntb                  0.771084
+vbcm1                                 0.734106
+ib1                                          3
+ib0                                          0
+bp1                                          0
+bp0                                          3
+bn1                                          0
+bn0                                          3
+bln                                   0.999876
+blnl                                  0.999876
+blpl                                   1.10701
+blp                                    1.10701
+vrefp                                      1.9
+vrefn                                      1.4
+idn                                   0.612351
+idnl                                  0.612351
+idpl                                   1.96277
+idp                                    1.96277
+iq                                    0.730245
+iql                                   0.730245
+itst                                         1
+xb.g1                                 0.601307
+xb.gp                                  1.80465
+xb.s2                                0.0542183
+xb.xr0.11                             0.052901
+xb.xr0.21                           0.00131727
+xb.sbm                                 2.54142
+xb.sb                               0.00837766
+xb.nt                                 0.761545
+xb.ta                                   1.6269
+xb.tb                                   1.6269
+xb.tc                                        3
+xb.ga                              1.14999e-08
+xb.gb                              4.73112e-09
+xb.gc                                        3
+xb.xla.m                              0.824753
+xb.xlc.m                               2.56231
+xb.xrvbn.11                           0.761545
+xb.xrvbn.21                           0.761545
+vbn                                   0.761545
+xb.nc                                 0.734106
+xb.xrvbcm.11                          0.734106
+xb.xrvbcm.21                          0.734106
+vbcm                                  0.734106
+xb.bna                                 1.73493
+xb.bnb                                       3
+xb.bnc                                       3
+xb.gpa                             4.77284e-09
+xb.gpb                                       3
+xb.gpc                                       3
+xb.xlpa.m                                    3
+xb.xlpc.m                          7.88229e-09
+xb.nd                                 0.776737
+xb.nda                                 1.73235
+xb.ndb                                       3
+xb.ndc                                       3
+xb.gna                             4.77284e-09
+xb.gnb                                       3
+xb.gnc                                       3
+xb.xlna.m                                    3
+xb.xlnc.m                          7.88229e-09
+xb.na1                                0.765806
+xb.xrvbn1.11                          0.765806
+xb.xrvbn1.21                          0.765806
+xb.na2                                0.734106
+xb.xrvbcm1.11                         0.734106
+xb.xrvbcm1.21                         0.734106
+xb.xrc1.11                             2.99923
+xb.xrc1.21                             1.82139
+xb.xrc2.11                             1.81985
+xb.xrc2.21                             1.63768
+vbpc2                                  1.63691
+xb.xrc2b.11                            1.63615
+xb.xrc2b.21                            1.54438
+xb.xrc3.11                             1.54284
+xb.xrc3.21                             1.36068
+vbnc2                                  1.35991
+xb.xrc3b.11                            1.35914
+xb.xrc3b.21                        0.000767933
+xb.nd2                                0.840607
+xb.xrv1.11                             1.89979
+xb.xrv1.21                             1.65021
+xb.xrv2.11                             1.64979
+xb.xrv2.21                             1.40021
+evbn0#branch                                 0
+evbp0#branch                                 0
+evib1#branch                                 0
+vmitst#branch                      3.09558e-05
+vmiq#branch                        3.09814e-05
+vmidp#branch                       2.33967e-07
+vmidn#branch                       2.32616e-07
+vrn#branch                         2.43935e-06
+vrp#branch                        -2.43937e-06
+vmblp#branch                       0.000124428
+vmbln#branch                       0.000123651
+vbn1#branch                                  0
+vbp1#branch                                  0
+vib0#branch                                  0
+vclk#branch                       -1.52323e-09
+vch#branch                        -2.77556e-17
+vdd#branch                         -0.00429921
+
+ Reference value :  0.00000e+00 Reference value :  1.20120e-09 Reference value :  2.95120e-09 Reference value :  4.70120e-09 Reference value :  6.45120e-09 Reference value :  8.35120e-09 Reference value :  1.01012e-08 Reference value :  1.16512e-08 Reference value :  1.32012e-08 Reference value :  1.48512e-08 Reference value :  1.66512e-08 Reference value :  1.83012e-08 Reference value :  1.99512e-08 Reference value :  2.15012e-08 Reference value :  2.33012e-08 Reference value :  2.49012e-08 Reference value :  2.63012e-08 Reference value :  2.79512e-08 Reference value :  2.96012e-08 Reference value :  3.12012e-08 Reference value :  3.29512e-08 Reference value :  3.47012e-08 Reference value :  3.62512e-08 Reference value :  3.80012e-08 Reference value :  3.98512e-08 Reference value :  4.15512e-08 Reference value :  4.30012e-08 Reference value :  4.46012e-08 Reference value :  4.62512e-08 Reference value :  4.78012e-08 Reference value :  4.95512e-08 Reference value :  5.11512e-08 Reference value :  5.28012e-08 Reference value :  5.43512e-08 Reference value :  5.61512e-08 Reference value :  5.78512e-08 Reference value :  5.95012e-08 Reference value :  6.10012e-08 Reference value :  6.24512e-08 Reference value :  6.37512e-08 Reference value :  6.55012e-08 Reference value :  6.70512e-08 Reference value :  6.86512e-08 Reference value :  7.02512e-08 Reference value :  7.18512e-08 Reference value :  7.35012e-08 Reference value :  7.51012e-08 Reference value :  7.67512e-08 Reference value :  7.82012e-08 Reference value :  7.98012e-08 Reference value :  8.14012e-08 Reference value :  8.30512e-08 Reference value :  8.48512e-08 Reference value :  8.62512e-08 Reference value :  8.78512e-08 Reference value :  8.94512e-08 Reference value :  9.10512e-08 Reference value :  9.25512e-08 Reference value :  9.42512e-08 Reference value :  9.57012e-08 Reference value :  9.72512e-08 Reference value :  9.89512e-08 Reference value :  1.00241e-07 Reference value :  1.00643e-07 Reference value :  1.01063e-07 Reference value :  1.01480e-07 Reference value :  1.02523e-07 Reference value :  1.03099e-07 Reference value :  1.04045e-07 Reference value :  1.05045e-07 Reference value :  1.06295e-07 Reference value :  1.07264e-07 Reference value :  1.07645e-07 Reference value :  1.08630e-07 Reference value :  1.09730e-07 Reference value :  1.10660e-07 Reference value :  1.11036e-07 Reference value :  1.11503e-07 Reference value :  1.12353e-07 Reference value :  1.13603e-07 Reference value :  1.14753e-07 Reference value :  1.15903e-07 Reference value :  1.16953e-07 Reference value :  1.18103e-07 Reference value :  1.19203e-07 Reference value :  1.20403e-07 Reference value :  1.21353e-07 Reference value :  1.22653e-07 Reference value :  1.24203e-07 Reference value :  1.25953e-07 Reference value :  1.27653e-07 Reference value :  1.29303e-07 Reference value :  1.30953e-07 Reference value :  1.32553e-07 Reference value :  1.34303e-07 Reference value :  1.36053e-07 Reference value :  1.37403e-07 Reference value :  1.39103e-07 Reference value :  1.40503e-07 Reference value :  1.42053e-07 Reference value :  1.43803e-07 Reference value :  1.45353e-07 Reference value :  1.47053e-07 Reference value :  1.48703e-07 Reference value :  1.50303e-07 Reference value :  1.52003e-07 Reference value :  1.53653e-07 Reference value :  1.55203e-07 Reference value :  1.56953e-07 Reference value :  1.58703e-07 Reference value :  1.60203e-07 Reference value :  1.61903e-07 Reference value :  1.63553e-07 Reference value :  1.65203e-07 Reference value :  1.66853e-07 Reference value :  1.68503e-07 Reference value :  1.70003e-07 Reference value :  1.71253e-07 Reference value :  1.73053e-07 Reference value :  1.74903e-07 Reference value :  1.76653e-07 Reference value :  1.78103e-07 Reference value :  1.79703e-07 Reference value :  1.81303e-07 Reference value :  1.82953e-07 Reference value :  1.84553e-07 Reference value :  1.86003e-07 Reference value :  1.87653e-07 Reference value :  1.89203e-07 Reference value :  1.90703e-07 Reference value :  1.92353e-07 Reference value :  1.93903e-07 Reference value :  1.95603e-07 Reference value :  1.97203e-07 Reference value :  1.98853e-07 Reference value :  2.00453e-07 Reference value :  2.01903e-07 Reference value :  2.03653e-07 Reference value :  2.05253e-07 Reference value :  2.06703e-07 Reference value :  2.08353e-07 Reference value :  2.10003e-07 Reference value :  2.11603e-07 Reference value :  2.13253e-07 Reference value :  2.14903e-07 Reference value :  2.16553e-07 Reference value :  2.18103e-07 Reference value :  2.19603e-07 Reference value :  2.21253e-07 Reference value :  2.22653e-07 Reference value :  2.24153e-07 Reference value :  2.25753e-07 Reference value :  2.27253e-07 Reference value :  2.28903e-07 Reference value :  2.30353e-07 Reference value :  2.31953e-07 Reference value :  2.33053e-07 Reference value :  2.34503e-07 Reference value :  2.35903e-07 Reference value :  2.37453e-07 Reference value :  2.39103e-07 Reference value :  2.40803e-07 Reference value :  2.42553e-07 Reference value :  2.44203e-07 Reference value :  2.45603e-07 Reference value :  2.47253e-07 Reference value :  2.48703e-07 Reference value :  2.50503e-07 Reference value :  2.52103e-07 Reference value :  2.53553e-07 Reference value :  2.54903e-07 Reference value :  2.56603e-07 Reference value :  2.58353e-07 Reference value :  2.60053e-07 Reference value :  2.61753e-07 Reference value :  2.63303e-07 Reference value :  2.64753e-07 Reference value :  2.66503e-07 Reference value :  2.68103e-07 Reference value :  2.69553e-07 Reference value :  2.71153e-07 Reference value :  2.72653e-07 Reference value :  2.74153e-07 Reference value :  2.75853e-07 Reference value :  2.77453e-07 Reference value :  2.79003e-07 Reference value :  2.80653e-07 Reference value :  2.82103e-07 Reference value :  2.83653e-07 Reference value :  2.85153e-07 Reference value :  2.86753e-07 Reference value :  2.88403e-07 Reference value :  2.90003e-07 Reference value :  2.91753e-07 Reference value :  2.93303e-07 Reference value :  2.94553e-07 Reference value :  2.96003e-07 Reference value :  2.97753e-07 Reference value :  2.99203e-07 Reference value :  3.00250e-07 Reference value :  3.00736e-07 Reference value :  3.01113e-07 Reference value :  3.01718e-07 Reference value :  3.02176e-07 Reference value :  3.03078e-07 Reference value :  3.04128e-07 Reference value :  3.05128e-07 Reference value :  3.05492e-07 Reference value :  3.06383e-07 Reference value :  3.07483e-07 Reference value :  3.08633e-07 Reference value :  3.09583e-07 Reference value :  3.10041e-07 Reference value :  3.10785e-07 Reference value :  3.12085e-07 Reference value :  3.13185e-07 Reference value :  3.14485e-07 Reference value :  3.15835e-07 Reference value :  3.17185e-07 Reference value :  3.18535e-07 Reference value :  3.20135e-07 Reference value :  3.21435e-07 Reference value :  3.22935e-07 Reference value :  3.24535e-07 Reference value :  3.26185e-07 Reference value :  3.27985e-07 Reference value :  3.29735e-07 Reference value :  3.31335e-07 Reference value :  3.32935e-07 Reference value :  3.34685e-07 Reference value :  3.36385e-07 Reference value :  3.37985e-07 Reference value :  3.39385e-07 Reference value :  3.41085e-07 Reference value :  3.42335e-07 Reference value :  3.43935e-07 Reference value :  3.45535e-07 Reference value :  3.47185e-07 Reference value :  3.48835e-07 Reference value :  3.50435e-07 Reference value :  3.51985e-07 Reference value :  3.53635e-07 Reference value :  3.55135e-07 Reference value :  3.56635e-07 Reference value :  3.58085e-07 Reference value :  3.59685e-07 Reference value :  3.61285e-07 Reference value :  3.62985e-07 Reference value :  3.64585e-07 Reference value :  3.66235e-07 Reference value :  3.67635e-07 Reference value :  3.69285e-07 Reference value :  3.71135e-07 Reference value :  3.72685e-07 Reference value :  3.74385e-07 Reference value :  3.75985e-07 Reference value :  3.77635e-07 Reference value :  3.79185e-07 Reference value :  3.80735e-07 Reference value :  3.82335e-07 Reference value :  3.83835e-07 Reference value :  3.85535e-07 Reference value :  3.86935e-07 Reference value :  3.88385e-07 Reference value :  3.89935e-07 Reference value :  3.91535e-07 Reference value :  3.92935e-07 Reference value :  3.94535e-07 Reference value :  3.96035e-07 Reference value :  3.97685e-07 Reference value :  3.99535e-07 Reference value :  4.01085e-07 Reference value :  4.02635e-07 Reference value :  4.03935e-07 Reference value :  4.05335e-07 Reference value :  4.07085e-07 Reference value :  4.08885e-07 Reference value :  4.10535e-07 Reference value :  4.12185e-07 Reference value :  4.13785e-07 Reference value :  4.15385e-07 Reference value :  4.17035e-07 Reference value :  4.18635e-07 Reference value :  4.20135e-07 Reference value :  4.21885e-07 Reference value :  4.23285e-07 Reference value :  4.24885e-07 Reference value :  4.26485e-07 Reference value :  4.28185e-07 Reference value :  4.29885e-07 Reference value :  4.31435e-07 Reference value :  4.33235e-07 Reference value :  4.34785e-07 Reference value :  4.36435e-07 Reference value :  4.37935e-07 Reference value :  4.39635e-07 Reference value :  4.41435e-07 Reference value :  4.42985e-07 Reference value :  4.44535e-07 Reference value :  4.46285e-07 Reference value :  4.47785e-07 Reference value :  4.49385e-07 Reference value :  4.50885e-07 Reference value :  4.52335e-07 Reference value :  4.53835e-07 Reference value :  4.55535e-07 Reference value :  4.57335e-07 Reference value :  4.58935e-07 Reference value :  4.60685e-07 Reference value :  4.62385e-07 Reference value :  4.64085e-07 Reference value :  4.65735e-07 Reference value :  4.66985e-07 Reference value :  4.68185e-07 Reference value :  4.69835e-07 Reference value :  4.71485e-07 Reference value :  4.73035e-07 Reference value :  4.74435e-07 Reference value :  4.75885e-07 Reference value :  4.77535e-07 Reference value :  4.79185e-07 Reference value :  4.80835e-07 Reference value :  4.82535e-07 Reference value :  4.84335e-07 Reference value :  4.85935e-07 Reference value :  4.87585e-07 Reference value :  4.89235e-07 Reference value :  4.90985e-07 Reference value :  4.92685e-07 Reference value :  4.94135e-07 Reference value :  4.95635e-07 Reference value :  4.97335e-07 Reference value :  4.98985e-07
+No. of Data Rows : 10123
+ngspice-46 done

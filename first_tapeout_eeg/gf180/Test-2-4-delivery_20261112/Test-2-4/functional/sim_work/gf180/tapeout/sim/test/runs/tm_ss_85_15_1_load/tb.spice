@@ -1,0 +1,38 @@
+* eeg_testmux check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice ss
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/test/eeg_testmux.spice
+.temp 85
+VDD AVDD 0 3.3
+VVCM VCM 0 1.65
+VVREFP VREFP 0 1.9
+VVREFN VREFN 0 1.4
+VVBN VBN 0 0.85
+VVBCM VBCM 0 0.82
+VVBN1 VBN1 0 0.851
+VVNC1 VNC1 0 2.0
+VVPC1 VPC1 0 1.7
+VVBPC2 VBPC2 0 1.8
+VVBNC2 VBNC2 0 1.5
+VAOP AOP 0 1.61
+VAON AON 0 1.69
+VO2P O2P 0 1.63
+VO2N O2N 0 1.67
+IITST AVDD ITST 31.4u
+* the mirror cannot pull above about 3 V; keeps ITST defined if both TGs were off
+DITST ITST AVDD dclamp
+.model dclamp d is=1e-15
+VTC0 TC0 0 3.3
+VTC1 TC1 0 3.3
+VTC2 TC2 0 3.3
+VTC3 TC3 0 3.3
+VTC4 TC4 0 3.3
+RATP ATP 0 1Meg
+XM ATP TC0 TC1 TC2 TC3 TC4 VCM VREFP VREFN VBN VBCM VBN1 VNC1 VPC1 VBPC2 VBNC2 ITST AOP AON O2P O2N AVDD 0 eeg_testmux
+.control
+set noaskquit
+op
+print v(atp) i(vvcm) i(vvrefp) i(vvrefn) i(vvbn) i(vvbcm) i(vvbn1) i(vvnc1) i(vvpc1) i(vvbpc2) i(vvbnc2) i(vaop) i(vaon) i(vo2p) i(vo2n) 
+quit
+.endc
+.end

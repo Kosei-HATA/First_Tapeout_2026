@@ -1,0 +1,61 @@
+{
+  "scope": "Original unchanged decks/PDK; directory-local official set enable_noisy_r; thermal-only",
+  "results": [
+    {
+      "case": "ideal_B",
+      "exitcode": 0,
+      "R_ohm": 300000.0,
+      "noise_V_per_sqrtHz": 0.0,
+      "PSD_ratio_to_4kTR": 0.0
+    },
+    {
+      "case": "ideal_R",
+      "exitcode": 0,
+      "R_ohm": 300000.0,
+      "noise_V_per_sqrtHz": 7.051822345561464e-08,
+      "PSD_ratio_to_4kTR": 0.999999652337415
+    },
+    {
+      "case": "ideal_R_noiseless",
+      "exitcode": 0,
+      "R_ohm": 300000.0,
+      "noise_V_per_sqrtHz": 0.0,
+      "PSD_ratio_to_4kTR": 0.0
+    },
+    {
+      "case": "pdk_double_length",
+      "exitcode": 0,
+      "R_ohm": 599381.6429958704,
+      "noise_V_per_sqrtHz": 9.967642525732073e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523373486
+    },
+    {
+      "case": "pdk_hot",
+      "exitcode": 0,
+      "R_ohm": 286085.174713824,
+      "noise_V_per_sqrtHz": 7.522318462211136e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523370075
+    },
+    {
+      "case": "pdk_one",
+      "exitcode": 0,
+      "R_ohm": 299777.4585242594,
+      "noise_V_per_sqrtHz": 7.049206322073175e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523371004
+    },
+    {
+      "case": "pdk_parallel",
+      "exitcode": 0,
+      "R_ohm": 149888.7292621112,
+      "noise_V_per_sqrtHz": 4.984541592320408e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523369764
+    },
+    {
+      "case": "pdk_series",
+      "exitcode": 0,
+      "R_ohm": 599554.9170484396,
+      "noise_V_per_sqrtHz": 9.96908318464074e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523369697
+    }
+  ]
+}

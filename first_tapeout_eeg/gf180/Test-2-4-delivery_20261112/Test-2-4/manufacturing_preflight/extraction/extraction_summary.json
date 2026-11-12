@@ -1,0 +1,75 @@
+{
+  "scope": "Isolated Bondpad_5LM capacitance-only extraction; identical model and settings; not whole-chip RC PEX",
+  "verified_utc": "2026-11-11T02:02:05.541755+00:00",
+  "tool": "Magic 8.3.664",
+  "technology": "/foss/pdks/gf180mcuD/libs.tech/magic/gf180mcuD.tech",
+  "technology_sha256": "2662e35e3dc94c88d55fc795e30ac22378561be4556bb3b5f248a1daa2ac1cd8",
+  "cthresh_fF": 0.001,
+  "substrate_node": "VSUBS",
+  "capacitance_fF": {
+    "test23": 111.68,
+    "test24": 100.7
+  },
+  "delta_fF": -10.980000000000004,
+  "delta_percent": -9.831661891117482,
+  "source_files": [
+    {
+      "tag": "test23",
+      "input_gds": "/work/Test2-3/gds/Test2-3.gds",
+      "input_sha256": "1ec7bd329d5ee1ba7cf3ac39ab22a698fb91847c486b6ede2aa6c3fb2003277c",
+      "cell": "Bondpad_5LM",
+      "merged_shape_counts": {
+        "36/0": 1,
+        "42/0": 1,
+        "38/0": 6464,
+        "46/0": 1,
+        "40/0": 6464,
+        "81/0": 1,
+        "41/0": 6464,
+        "37/0": 72
+      },
+      "input_unchanged": true
+    },
+    {
+      "tag": "test24",
+      "input_gds": "/work/Test-2-4/gds/Test-2-4.gds",
+      "input_sha256": "7af0c9bb19fdb005f7b8d54fda6ef0f1d7ee24c68aedc2269310048d9e121755",
+      "cell": "Bondpad_5LM",
+      "merged_shape_counts": {
+        "36/0": 1,
+        "42/0": 1,
+        "38/0": 6464,
+        "46/0": 1,
+        "40/0": 6464,
+        "81/0": 1,
+        "41/0": 6464,
+        "37/0": 72
+      },
+      "input_unchanged": true
+    }
+  ],
+  "method": [
+    "Merge per-layer polygon geometry from Bondpad_5LM; add PAD label only to isolated test fixture.",
+    "Magic extract all with GF180D magicrc, ext2spice hierarchy off, format ngspice, cthresh 0.001.",
+    "Preserve originals and compare extracted PAD-to-VSUBS capacitance."
+  ],
+  "interpretation": "The compact extraction model predicts less total pad-to-substrate capacitance after filling slots, because area/perimeter contributions and shielding change. This is not a measurement or foundry-certified accuracy claim.",
+  "not_covered": [
+    "Neighboring I/O devices and wiring",
+    "full-chip or package coupling",
+    "resistive extraction and EM/IR",
+    "ESD and bonding mechanics",
+    "full-chip performance or ENOB"
+  ],
+  "next_steps": [
+    "Build independently specified full-chip/padring reference CDL before full-device LVS; supplied project contains core-only reference and IO primitive CDL, not assembled top.",
+    "Use current matched core LVS database to map window/core capacitor extraction; validate model layer-name mapping and MIM shielding corrections first.",
+    "Perform parasitic-included analog simulations once extracted-device/reference equivalence and required accuracy targets are established."
+  ],
+  "existing_pex_flow_limits": [
+    "pex.py is capacitance-only, not interconnect resistance extraction.",
+    "Source run_magic uses absent macOS nix paths; adaptation is needed.",
+    "Original block runs/<block>/<block>.lvsdb paths do not exist in supplied source.",
+    "Existing MIM shielding correction has fixed layer names and numeric coefficients; must be validated against current PDK rather than reused blindly."
+  ]
+}

@@ -1,0 +1,474 @@
+{
+  "CIA": {
+    "all_connected_devices": 4,
+    "external_devices": [
+      {
+        "layout": "$45150",
+        "schematic": "ADC.OTA1.IP_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CIA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      },
+      {
+        "layout": "$45154",
+        "schematic": "ADC.OTA1.IN_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CIA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      }
+    ],
+    "external_gate_count": 2,
+    "external_gate_W_um": 320.0,
+    "all_external_are_gates": true
+  },
+  "NCIA": {
+    "all_connected_devices": 4,
+    "external_devices": [
+      {
+        "layout": "$378",
+        "schematic": "ADC.OTA1.IP_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCIA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      },
+      {
+        "layout": "$383",
+        "schematic": "ADC.OTA1.IN_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCIA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      }
+    ],
+    "external_gate_count": 2,
+    "external_gate_W_um": 640.0,
+    "all_external_are_gates": true
+  },
+  "CIB": {
+    "all_connected_devices": 4,
+    "external_devices": [
+      {
+        "layout": "$45151",
+        "schematic": "ADC.OTA1.IP_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CIB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      },
+      {
+        "layout": "$45155",
+        "schematic": "ADC.OTA1.IN_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CIB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      }
+    ],
+    "external_gate_count": 2,
+    "external_gate_W_um": 320.0,
+    "all_external_are_gates": true
+  },
+  "NCIB": {
+    "all_connected_devices": 4,
+    "external_devices": [
+      {
+        "layout": "$379",
+        "schematic": "ADC.OTA1.IP_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCIB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      },
+      {
+        "layout": "$384",
+        "schematic": "ADC.OTA1.IN_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCIB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      }
+    ],
+    "external_gate_count": 2,
+    "external_gate_W_um": 640.0,
+    "all_external_are_gates": true
+  },
+  "CDA": {
+    "all_connected_devices": 6,
+    "external_devices": [
+      {
+        "layout": "$45562",
+        "schematic": "ADC.OTA1.OTA.CORE.PP_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      },
+      {
+        "layout": "$45604",
+        "schematic": "ADC.OTA1.OTA.CORE.DN_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      },
+      {
+        "layout": "$45606",
+        "schematic": "ADC.OTA1.OTA.CORE.DP_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      },
+      {
+        "layout": "$45608",
+        "schematic": "ADC.OTA1.OTA.CORE.PN_A.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDA",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 43.5,
+          "AD": 43.5,
+          "PS": 178.70000000000002,
+          "PD": 178.70000000000002
+        }
+      }
+    ],
+    "external_gate_count": 4,
+    "external_gate_W_um": 640.0,
+    "all_external_are_gates": true
+  },
+  "NCDA": {
+    "all_connected_devices": 6,
+    "external_devices": [
+      {
+        "layout": "$665",
+        "schematic": "ADC.OTA1.OTA.CORE.PP_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      },
+      {
+        "layout": "$691",
+        "schematic": "ADC.OTA1.OTA.CORE.DP_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      },
+      {
+        "layout": "$694",
+        "schematic": "ADC.OTA1.OTA.CORE.PN_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      },
+      {
+        "layout": "$696",
+        "schematic": "ADC.OTA1.OTA.CORE.DN_A.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDA",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 85.10000000000001,
+          "AD": 85.10000000000001,
+          "PS": 347.02,
+          "PD": 347.02
+        }
+      }
+    ],
+    "external_gate_count": 4,
+    "external_gate_W_um": 1280.0,
+    "all_external_are_gates": true
+  },
+  "CDB": {
+    "all_connected_devices": 6,
+    "external_devices": [
+      {
+        "layout": "$45563",
+        "schematic": "ADC.OTA1.OTA.CORE.PP_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      },
+      {
+        "layout": "$45605",
+        "schematic": "ADC.OTA1.OTA.CORE.DN_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      },
+      {
+        "layout": "$45607",
+        "schematic": "ADC.OTA1.OTA.CORE.DP_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      },
+      {
+        "layout": "$45609",
+        "schematic": "ADC.OTA1.OTA.CORE.PN_B.N",
+        "class": "nfet_03v3",
+        "port_terminals": {
+          "G": "CDB",
+          "B": "VSS"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 160.0,
+          "AS": 41.6,
+          "AD": 41.6,
+          "PS": 168.32,
+          "PD": 168.32
+        }
+      }
+    ],
+    "external_gate_count": 4,
+    "external_gate_W_um": 640.0,
+    "all_external_are_gates": true
+  },
+  "NCDB": {
+    "all_connected_devices": 6,
+    "external_devices": [
+      {
+        "layout": "$666",
+        "schematic": "ADC.OTA1.OTA.CORE.PP_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      },
+      {
+        "layout": "$692",
+        "schematic": "ADC.OTA1.OTA.CORE.DP_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      },
+      {
+        "layout": "$695",
+        "schematic": "ADC.OTA1.OTA.CORE.PN_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      },
+      {
+        "layout": "$697",
+        "schematic": "ADC.OTA1.OTA.CORE.DN_B.P",
+        "class": "pfet_03v3",
+        "port_terminals": {
+          "G": "NCDB",
+          "B": "VDD"
+        },
+        "params": {
+          "L": 0.28,
+          "W": 320.0,
+          "AS": 83.2,
+          "AD": 83.2,
+          "PS": 336.64,
+          "PD": 336.64
+        }
+      }
+    ],
+    "external_gate_count": 4,
+    "external_gate_W_um": 1280.0,
+    "all_external_are_gates": true
+  }
+}

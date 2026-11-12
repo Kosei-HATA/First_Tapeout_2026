@@ -1,0 +1,214 @@
+[
+  {
+    "path": "acceptance_source.json",
+    "unchanged": true
+  },
+  {
+    "path": "models\\design.ngspice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\design.spice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\sm141064.ngspice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\sm141064.spice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\sm141064_mim.ngspice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\sm141064_mim.spice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\smbb000149.ngspice",
+    "unchanged": true
+  },
+  {
+    "path": "models\\smbb000149.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_bin\\ngspice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc_clk.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_adc_otas.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_dac1.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_dac2.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_quantizer.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\adc\\eeg_ref.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\eeg_afe.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\eeg_afe_clk.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\afe\\make_afe_netlist.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\bias\\eeg_bias.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\moscap_lin.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\test\\eeg_testmux.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\aclk_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\adc_deck.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\adc_headroom.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\analyze_tone.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\chop1_fold.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\make_deck.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\ota1_edge.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\ota1_noise.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\otas_ideal.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\adc_loop\\quantizer_ideal.spice",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_bias_noise.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_blank_noise.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_chop_distortion.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_chop_gain.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_distortion.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_noise.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\afe_offset.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\clk_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\afe\\supply_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\bias\\bias_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\dac1\\dac1_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\dac1\\eld_mixed.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\e2e\\e2e_deck.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\e2e\\tr_window.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\qcmp_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\quantizer_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\quantizer\\quantizer_spec.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\ref\\ref_behav.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\ref\\ref_check.py",
+    "unchanged": true
+  },
+  {
+    "path": "sim_work\\gf180\\tapeout\\sim\\test\\testmux_check.py",
+    "unchanged": true
+  }
+]

@@ -1,0 +1,13 @@
+* NGSPICE file created from gf180mcu_fd_io__fillnc.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__fillnc VSS VDD DVSS DVDD DVDD_uq0 DVDD_uq1 DVDD_uq2 DVDD_uq3
++ DVDD_uq4 DVDD_uq5 DVDD_uq6 DVDD_uq7 DVDD_uq8 DVDD_uq9 DVDD_uq10 DVDD_uq11 DVDD_uq12
++ DVDD_uq13 DVDD_uq14 DVDD_uq15 DVDD_uq16 DVDD_uq17 DVDD_uq18 DVDD_uq19 DVDD_uq20
++ DVDD_uq21 DVDD_uq22 DVDD_uq23 DVDD_uq24 DVDD_uq25 DVDD_uq26 DVDD_uq27 DVDD_uq28
++ DVDD_uq29 DVDD_uq30 DVDD_uq31 DVDD_uq32 DVDD_uq33 DVDD_uq34 DVSS_uq0 DVSS_uq1 DVSS_uq2
++ DVSS_uq3 DVSS_uq4 DVSS_uq5 DVSS_uq6 DVSS_uq7 DVSS_uq8 DVSS_uq9 DVSS_uq10 DVSS_uq11
++ DVSS_uq12 DVSS_uq13 DVSS_uq14 DVSS_uq15 DVSS_uq16 DVSS_uq17 DVSS_uq18 DVSS_uq19
++ DVSS_uq20 DVSS_uq21 DVSS_uq22 DVSS_uq23 DVSS_uq24 DVSS_uq25 DVSS_uq26 DVSS_uq27
++ DVSS_uq28 VDD_uq0 VDD_uq1 VDD_uq2 VDD_uq3 VDD_uq4 VSS_uq0 VSS_uq1 VSS_uq2 VSS_uq3
++ VSS_uq4
+.ends

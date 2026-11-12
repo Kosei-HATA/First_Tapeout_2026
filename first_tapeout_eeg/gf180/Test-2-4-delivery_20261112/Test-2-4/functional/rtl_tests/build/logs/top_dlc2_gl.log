@@ -1,0 +1,10 @@
+eeg_regs.sv:190: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'off_mag[9:0]').
+eeg_regs.sv:191: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'off_mag[9:0]').
+eeg_chop1.sv:58: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:59: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:60: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:61: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+eeg_chop1.sv:62: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in 'fcnt[9:0]').
+PASS: tb_top DAC_LOAD_CYCLE=2 (40 samples bit-exact vs golden, 43149 SEL checks [29837 DWA, 13312 thermometer], 43148 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 91.55..91.55 ns, 43149 DAC_CLK pulses 1 MCLK after SEL, 43129 RAW words, 10788 CHOP edges at 128 kHz, 10787 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
+tb/tb_top.sv:375: $finish called at 42138552486 (1ps)
+PASS: gate level == RTL at every MCLK falling edge (1380777 cycles, 117 signals: all outputs of both macros and the wires between them)

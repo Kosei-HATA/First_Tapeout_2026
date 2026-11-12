@@ -1,0 +1,7 @@
+{
+  "MOS_count": 659,
+  "effective_m_values": [
+    1.0
+  ],
+  "scope": "PDK wrapper default m=1 warning; all expanded MOS m=1, no upstream DAC multiplicity above1. nf scaling retained separately."
+}

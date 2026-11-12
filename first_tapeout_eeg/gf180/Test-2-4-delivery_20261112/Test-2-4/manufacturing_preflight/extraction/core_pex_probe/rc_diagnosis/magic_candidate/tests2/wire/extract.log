@@ -1,0 +1,38 @@
+Using NULL graphics device.
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Using technology "gf180mcuD", version 1.0.599-0-gb344c97.
+Global Foundries 180mcu: open PDK rules and DRC
+:drc off
+:crashbackups stop
+Unknown command: 'crashbackups' 'stop' at (100, 100)
+:gds read input.gds
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "wire".
+:load wire
+:select top cell
+Selected cell is wire (Topmost cell in the window)
+:box values 1um 0.5um 1um 0.5um
+:label A center metal1
+:port make 1
+:box values 99um 0.5um 99um 0.5um
+:label B center metal1
+:port make 2
+:extresist threshold 0
+:extresist minres 0.1
+:extresist mindelay 0
+:extresist simplify off
+:extract do local
+:extract do resistance
+:extract all
+Extracting wire into wire.ext:
+Processing wire
+Processing cell wire for resistance extraction.
+Extracting B
+Total Nets: 2
+Nets extracted: 1 (0.500000)
+Nets output: 1 (0.500000)
+:quit -noprompt

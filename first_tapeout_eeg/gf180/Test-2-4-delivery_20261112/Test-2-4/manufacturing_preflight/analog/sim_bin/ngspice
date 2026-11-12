@@ -1,0 +1,4 @@
+#!/bin/sh
+# Explicit local configuration; no source or global user settings modified.
+printf "%s\n" "set ngbehavior=hsa" "set num_threads=1" > .spiceinit
+exec /foss/tools/bin/ngspice "$@"

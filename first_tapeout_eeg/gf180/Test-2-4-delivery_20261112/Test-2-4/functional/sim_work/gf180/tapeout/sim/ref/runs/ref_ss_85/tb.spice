@@ -1,0 +1,35 @@
+* eeg_ref check
+.include /work/Test-2-4/functional/models/design.ngspice
+.lib /work/Test-2-4/functional/models/sm141064.ngspice ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice res_ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice mimcap_ss
+.lib /work/Test-2-4/functional/models/sm141064.ngspice cap_mim
+.param moscap_corner=1.1
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/sim/moscap_lin.spice
+.include /work/Test-2-4/functional/sim_work/gf180/tapeout/adc/eeg_ref.spice
+.temp 85
+.options sparse reltol=1e-6 abstol=1e-15 vntol=1e-9
+VEP EP 0 DC 1.9 AC 0.5
+VEN EN 0 DC 1.4 AC -0.5
+LBP EP BP 2n
+RBP BP PADP 0.2 noisy=0
+LBN EN BN 2n
+RBN BN PADN 0.2 noisy=0
+XR PADP PADN VREFP VREFN 0 eeg_ref
+* constant load 30 uA (VREFP -> VREFN) and the break dips of DAC1
+ILOAD VREFP VREFN DC 30u
+IDP VREFP 0 PULSE(0 9u 2.1220703125e-06 0.2n 0.2n 1.8n 9.7656250000e-07)
+IDN 0 VREFN PULSE(0 9u 2.1220703125e-06 0.2n 0.2n 1.8n 9.7656250000e-07)
+.control
+set noaskquit
+op
+print v(vrefp)-v(vrefn) v(padp)-v(padn)
+tran 0.02n 4.929688e-06 0 0.1n
+wrdata tr.csv v(vrefp)-v(vrefn)
+noise v(vrefp, vrefn) VEP dec 20 0.1 1e6 1
+print onoise_total
+setplot noise1
+wrdata nz.csv onoise_spectrum
+quit
+.endc
+.end

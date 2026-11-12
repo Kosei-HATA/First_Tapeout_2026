@@ -1,0 +1,156 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-10-20T09:04:40.400955+00:00",
+  "target": "AFE + ADC + implemented digital decimation, modeled noise and distortion included, effective16.5bit",
+  "target_effective_bits": 16.5,
+  "primary_sndr_threshold_dB": 101.10081115967061,
+  "required_total_input_residual_Vrms": 5.876768442749352e-09,
+  "required_total_input_residual_nVrms": 5.876768442749352,
+  "source_of_target_change": "User explicitly requested: 一旦16.5bitを目標にしましょう・。",
+  "active_target": true,
+  "previous18bit_target_is_historical": true,
+  "historical_acceptance": {
+    "path": "/Volumes/mukiebi/Codex/gf180_ishi_env_20261015/enob18_20261015/acceptance.json",
+    "sha256": "de4283d448b85d7b2e63c152313552d323d89b4ca90ae971296fc2e277793959",
+    "target_effective_bits": 18
+  },
+  "user_priorities": [
+    "Short turnaround",
+    "Many small informative trials",
+    "Existing repository untouched",
+    "Outputs and temporary results on external disk"
+  ],
+  "baseline": {
+    "process": "GF180MCU-D / ISHI WS_RUN3",
+    "band_Hz": [
+      0.5,
+      100
+    ],
+    "supply_V": 3.3,
+    "temperature_C": 27,
+    "adc_clock_Hz": 512000,
+    "afe_gain_assumed": 31.8,
+    "benchmark_electrode_peak_V": 0.0009433962264150942,
+    "nominal_fs_unvalidated_electrode_peak_V": 0.0015723270440251573,
+    "primary_benchmark_frequency_Hz": 32,
+    "system_boundary": "Chip input terminals through AFE/ADC/implemented decimator output; external electrode impedance/noise must be specified separately before claiming electrode-to-digital system performance"
+  },
+  "current_design_candidate": {
+    "adc_clock_Hz": 1024000,
+    "digital_output_rate_Hz": 1000,
+    "digital_format_bits": 24,
+    "CIC_order": 3,
+    "CIC_ratio": 1024,
+    "rate_and_format_are_not_effective_bits": true,
+    "physical_integration_qualified": false
+  },
+  "signal_reference": {
+    "source_differential_peak_V": 0.0009433962264150942,
+    "band_Hz": [
+      0.5,
+      100
+    ],
+    "source_amplitude_policy": "Retain the same differential open-circuit electrode-source benchmark before declared source impedance. Measure and report actual chip-terminal voltage and candidate gain; do not substitute larger-FS normalization.",
+    "maximum_input_and_overload_range_qualified": false
+  },
+  "source_impedance_policy": {
+    "differential_total_ohm": [
+      10000,
+      100000,
+      1000000
+    ],
+    "each_leg": "Rs_total/2",
+    "current_short_fixture_differential_total_ohm": 100000,
+    "electrode_to_digital_noise_qualified": false,
+    "boundary": "Chip input terminals through AFE/ADC/implemented decimator output; external electrode impedance/noise must be specified separately before claiming electrode-to-digital system performance",
+    "external_resistor_thermal_noise_reported_separately": true,
+    "source_noise_not_silently_removed": "Preserve both intrinsic chip noise and total source-inclusive ledgers. A chip-intrinsic ENOB result does not qualify electrode-to-digital performance with unspecified external noise."
+  },
+  "other_constraints": {
+    "process": "GF180MCU-D",
+    "band_Hz": [
+      0.5,
+      100
+    ],
+    "footprint_goal": "Half; final fit unverified",
+    "interface": "SPI to external MCU, MCU model undecided",
+    "power_preference": "No hard user power cap; avoid extremely large power and report measured power.",
+    "original_circuits_results_jobs_preserved": true,
+    "simulation_outputs_and_TMP_on_external_SSD": true
+  },
+  "stages": [
+    {
+      "name": "fast_block_screen",
+      "scope": "op/ac/noise on frozen linear blocks, model validation and physical noise budget",
+      "per_trial_wall_s": 120,
+      "can_qualify_target_ENOB": false,
+      "target_effective_bits": 16.5
+    },
+    {
+      "name": "switching_block_characterization",
+      "scope": "actual chopping/sampling, calibrated noise sources including folding, settling and numerical convergence",
+      "can_qualify_target_ENOB": false,
+      "target_effective_bits": 16.5
+    },
+    {
+      "name": "behavioral_search",
+      "scope": "noise/mismatch models calibrated to blocks, exact quantizer/DAC units and fixed-point decimator, multiple seeds and amplitudes",
+      "can_qualify_transistor_system_target_ENOB": false,
+      "target_effective_bits": 16.5
+    },
+    {
+      "name": "continuous_system_verification",
+      "scope": "qualified candidate AFE through digital output, transistor analog and implemented digital timing, calibrated noise, explicit model limitations",
+      "minimum_analysis_duration_s": 4,
+      "minimum_low_frequency_endpoint_duration_s": 20,
+      "frequency_tests_Hz": [
+        0.5,
+        2,
+        8,
+        32,
+        97
+      ],
+      "primary_benchmark_input_electrode_peak_V": 0.0009433962264150942,
+      "primary_sndr_threshold_dB": 101.10081115967061,
+      "amplitude_tests_relative_to_primary": [
+        0.1,
+        0.5,
+        1
+      ],
+      "report_per_test_input_and_sndr": true,
+      "numerical_sndr_change_limit_proposed_dB": 0.2,
+      "include": [
+        "Multiple disjoint windows",
+        "At least two maxstep/tolerance settings",
+        "FFT and sine-fit agreement",
+        "Gain/range/clipping report",
+        "Actual CIC/FIR response and decimation aliasing",
+        "Static mismatch/PVT/noise seeds",
+        "No removed residual tones; no segment-state reset; startup discarded explicitly"
+      ],
+      "caution": "4 s only gives0.25Hz bins. Low-end behavior needs several0.5Hz cycles and longer settled records. Lower-amplitude SNR need not meet101.10dB; report per-input and full-scale normalization explicitly.",
+      "target_effective_bits": 16.5
+    }
+  ],
+  "noise_rules": [
+    "Use Sparse for .noise, not KLU",
+    "Normal .tran does not automatically include device noise",
+    "TRNOISE amplitudes/PSD/update interval require independent calibration",
+    "Frozen-chopper .noise is screening only",
+    "PDK statistical switches do not perturb ideal capacitors",
+    "No qualified ENOB until complete, valid, adequately long records exist"
+  ],
+  "gain_policy": "Measure signal amplitude and gain for each frequency, operating point and candidate; 31.8 is only the budget baseline, never a substitute for measured transfer.",
+  "historical_excluded_evidence": [
+    "nodeset chained 72.11 dB is not an established continuous-system ceiling",
+    "One-cycle 110.68 dB is not 18-bit qualification"
+  ],
+  "provisional_headroom": {
+    "margin_dB": 3,
+    "residual_nVrms": 4.160433444846139,
+    "status": "Design-screening preference before long evaluation, not a replacement for the16.5bit acceptance threshold."
+  },
+  "evidence_status": "not_qualified",
+  "system_target_ENOB_qualified": false,
+  "change_scope": "Only the interim target ENOB and corresponding primary residual/SNDR thresholds change. Circuit/model/solver/test-source amplitude/bandwidth and evidence requirements are not relaxed."
+}

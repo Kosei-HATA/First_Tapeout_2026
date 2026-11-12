@@ -1,0 +1,60 @@
+{
+  "scope": "Replay of converged terminal voltage only; no original driving impedance or rejected solver state",
+  "source_last_time_s": 7.832482490343594e-06,
+  "stop_time_s": 7.932482490343595e-06,
+  "extra_interval": "100 ns constant endpoint hold, not measured circuit trajectory",
+  "linear_C_F": 4.578690217752828e-12,
+  "points": 8800,
+  "min_source_dt_s": 1.6127507315721878e-18,
+  "stimulus_sha256": "ba828ec102fa7661ebb603a9e0b4e58e93a1a2d00278b677f712c9003746436c",
+  "results": [
+    {
+      "case": "46_official",
+      "seconds": 2.442694664001465,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 7.932482490343595e-06,
+      "finite": true,
+      "max_voltage_replay_error_V": 8.326672684688674e-16,
+      "max_abs_source_current_A": 1.601360244481583e-05,
+      "rows": 43837
+    },
+    {
+      "case": "46_linear_diagnostic",
+      "seconds": 2.1588122844696045,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 7.932482490343595e-06,
+      "finite": true,
+      "max_voltage_replay_error_V": 8.326672684688674e-16,
+      "max_abs_source_current_A": 3.035294418365919e-05,
+      "rows": 43837
+    },
+    {
+      "case": "47plus_official",
+      "seconds": 2.3758630752563477,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 7.932482490343595e-06,
+      "finite": true,
+      "max_voltage_replay_error_V": 8.326672684688674e-16,
+      "max_abs_source_current_A": 1.601360244559348e-05,
+      "rows": 43751
+    },
+    {
+      "case": "47plus_linear_diagnostic",
+      "seconds": 2.512376308441162,
+      "exitcode": 0,
+      "diagnostics": [],
+      "completed": true,
+      "last_time_s": 7.932482490343595e-06,
+      "finite": true,
+      "max_voltage_replay_error_V": 8.326672684688674e-16,
+      "max_abs_source_current_A": 3.035294418365919e-05,
+      "rows": 43750
+    }
+  ]
+}

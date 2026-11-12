@@ -1,0 +1,240 @@
+{
+  "review": "independent_read_only_vcm_ripple_paths",
+  "recorded_utc": "2026-11-11T17:07:26.130346+00:00",
+  "status": "INPUT_CHOPPER_EDGE_CORRELATION_CONFIRMED_CAUSAL_CONTRIBUTIONS_NOT_SEPARATED",
+  "scope": "Existing 224 us AFE/Q diagnostic only. No simulator launched and no source, deck, model or waveform modified. Only this README and summary written.",
+  "environment": "MY-NOTE-2",
+  "waveform": {
+    "path": "afe_rtl_startup_224us/steady/wave.csv",
+    "bytes": 651759420,
+    "rows": 252914,
+    "recorded_prior_audit_sha256": "d3e6bb14cf46508647f5a8d9cff61a4ef658f55789f3ba139b92137e4fe896ac",
+    "hash_note": "Hash copied from the existing independent periodicity audit; this review did not claim a new before/after waveform hash.",
+    "zero_based_loaded_columns": {
+      "time": 0,
+      "vcm": 49,
+      "cia": 9,
+      "cib": 11,
+      "cda": 5,
+      "cdb": 7,
+      "vclk": 47,
+      "outp": 29,
+      "outn": 27,
+      "xa.inp": 55,
+      "xa.inn": 53,
+      "xa.opi": 59,
+      "xa.oni": 57,
+      "xa.wp": 71,
+      "xa.wn": 69,
+      "elp": 15,
+      "eln": 13,
+      "src": 41,
+      "rtl_chop": 37,
+      "rtl_blank": 35,
+      "vbn": 45,
+      "vbcm": 43
+    },
+    "reader": "numpy.loadtxt(usecols=...) retained only these 22 of 112 columns; no SPICE execution.",
+    "window_s": [
+      0.000159318117,
+      0.000221818117
+    ],
+    "method": "Window boundaries linearly interpolated; all saved interior samples retained. Time mean: sum(dt*(y0+y1)/2)/T. AC RMS: remove that window mean, then sqrt(sum(dt*(z0*z0+z0*z1+z1*z1)/3)/T). RMS includes deterministic switching ripple and residual drift, not random noise or ENOB."
+  },
+  "fixed_window_metrics_V": {
+    "vcm": {
+      "min": 1.612508604972964,
+      "max": 1.707413670246287,
+      "pp": 0.09490506527332299,
+      "mean": 1.6485840082030587,
+      "ac_rms": 0.002132848384203331
+    },
+    "output_common_mode": {
+      "definition": "(OUTP+OUTN)/2",
+      "min": 1.6465899523210195,
+      "max": 1.6517277122266425,
+      "pp": 0.0051377599056230405,
+      "mean": 1.6483265400927702,
+      "ac_rms": 0.00036150822309481917
+    },
+    "output_differential": {
+      "definition": "OUTP-OUTN",
+      "min": 0.020011167651778017,
+      "max": 0.03076248595819009,
+      "pp": 0.010751318306412072,
+      "mean": 0.029890696699764404,
+      "ac_rms": 0.0015413646905079877
+    },
+    "internal_input_common_mode": {
+      "definition": "(xa.inp+xa.inn)/2",
+      "pp": 0.054952367413121816,
+      "ac_rms": 0.0015637156403873846
+    },
+    "internal_output_common_mode": {
+      "definition": "(xa.opi+xa.oni)/2",
+      "pp": 0.08143772779398617,
+      "ac_rms": 0.0023280752168020422
+    },
+    "chopper_plate_common_mode": {
+      "definition": "(xa.wp+xa.wn)/2",
+      "pp": 0.06054281273284756,
+      "ac_rms": 0.0017111761273011354
+    },
+    "vbn": {
+      "pp": 0.0014034247476844008,
+      "ac_rms": 3.9619225623392366e-05
+    },
+    "vbcm": {
+      "pp": 2.7730284549942752e-05,
+      "ac_rms": 7.35140482506392e-07
+    },
+    "vclk": {
+      "min": 2.805755967876085,
+      "max": 3.300068689352002,
+      "pp": 0.4943127214759171,
+      "ac_rms": 0.027293758479279322
+    }
+  },
+  "last_cycle": {
+    "window_s": [
+      0.000214005617,
+      0.000221818117
+    ],
+    "vcm": {
+      "min": 1.612767680223069,
+      "max": 1.707413670246287,
+      "pp": 0.09464599002321794,
+      "mean": 1.6486560410729492,
+      "ac_rms": 0.002132083493534983
+    },
+    "events": [
+      {
+        "node": "CIA",
+        "edge": "rising_1p65V_crossing",
+        "time_s": 0.00021401352847005958
+      },
+      {
+        "node": "VCM",
+        "event": "minimum",
+        "time_s": 0.0002140152689063149,
+        "value_V": 1.612767680223069,
+        "after_CIA_crossing_ns": 1.74043625532,
+        "VCLK_V": 2.826008993184407
+      },
+      {
+        "node": "VCM",
+        "event": "maximum",
+        "time_s": 0.0002179197824146962,
+        "value_V": 1.707413670246287,
+        "before_CIB_crossing_ns": 0.04231457176,
+        "VCLK_V": 2.886430700933385
+      },
+      {
+        "node": "CIB",
+        "edge": "rising_1p65V_crossing",
+        "time_s": 0.00021791982472926796
+      }
+    ],
+    "timing_caveat": "Crossing times are linearly interpolated saved-wave measurements, not an assertion of picosecond accuracy or timestep convergence.",
+    "interpretation": "Large ripple repeats at input chopper transitions; a later stable cycle mean does not remove these spikes."
+  },
+  "bench_constraint_check": {
+    "ELP_equals_VCM_plus_SRC_over_2_max_error_V": 9.93698396137277e-16,
+    "ELN_equals_VCM_minus_SRC_over_2_max_error_V": 9.93698396137277e-16
+  },
+  "source_integrity_comparisons": [
+    {
+      "path": "gf180/tapeout/bias/eeg_bias.spice",
+      "source_equals_sim_work_bytes": true,
+      "sha256": "e15cdb934a62374909e4a9db5b6a48c88e55a229488786998de7aaf30170d5b3"
+    },
+    {
+      "path": "gf180/tapeout/afe/eeg_afe.spice",
+      "source_equals_sim_work_bytes": true,
+      "sha256": "552f454eac2c33dcb4ae71d1b85da8539a308d96c3ad9168374a997bbee20278"
+    },
+    {
+      "path": "gf180/tapeout/afe/eeg_afe_clk.spice",
+      "source_equals_sim_work_bytes": true,
+      "sha256": "fd77d7e6a5590f134909f6fe06446917803ab464dedc09e968c5a94e0393fdc0"
+    },
+    {
+      "path": "gf180/tapeout/sim/e2e/e2e_deck.py",
+      "source_equals_sim_work_bytes": true,
+      "sha256": "b4d455fe76568986906f397818a176327f56a644759f9532d19d3a7839674fe1"
+    }
+  ],
+  "bias_q_diff": "Exact source text equality after replacing cap_nmos_03v3 -> audit_q_nmos and cap_pmos_03v3 -> audit_q_pmos. No other bias-circuit text change.",
+  "findings": [
+    {
+      "category": "circuit_and_bench",
+      "finding": "VCM is the midpoint of two nominal 100 kohm poly resistors, not an ideal voltage source or active buffer. Source explicitly calls for off-chip VCM-pad decoupling; the current deck has no explicit external VCM capacitor. This does not mean total VCM capacitance is zero.",
+      "evidence": [
+        "moscap_charge_equivalent/bias_q_diagnostic.spice:30,161-163",
+        "sim_work/gf180/tapeout/bias/eeg_bias.spice:30,161-163",
+        "afe_rtl_startup_224us/steady/tb.spice:15-69"
+      ]
+    },
+    {
+      "category": "bench",
+      "finding": "EP and EN are ideal voltage sources between each electrode and the VCM node. They force electrode common mode to equal VCM and can return input-switch charging current to VCM; there is no independent electrode impedance model.",
+      "evidence": [
+        "afe_rtl_startup_224us/steady/tb.spice:34-36",
+        "afe_rtl_startup_224us/mapping_and_assumptions.json:assumptions.electrode_common_mode"
+      ]
+    },
+    {
+      "category": "real_circuit_mechanism",
+      "finding": "Physical input TGs, W20/W40 um with m=256, precede the large Cin. Input chopper edges correlate with the VCM extrema. Charge injection/feedthrough is a strong candidate, but port-current contributions were not saved.",
+      "evidence": [
+        "sim_work/gf180/tapeout/afe/eeg_afe.spice:13-16,57-60,337-371,378-379",
+        "sim_work/gf180/tapeout/afe/eeg_afe_clk.spice:5-9,40-59"
+      ]
+    },
+    {
+      "category": "circuit_and_bench",
+      "finding": "VCM also connects to CMFB reference gates, disabled OFFDAC group parking switches, disabled CPF trim paths, and 16 output-to-VCM resistors per side. OFEN=0 parks about 61.38 pF nominal MIM per half (122.76 pF total) at VCM. These plus parasitics mean VCM is not an unloaded divider.",
+      "evidence": [
+        "sim_work/gf180/tapeout/afe/eeg_afe.spice:43-51,66,79,100-107,114-178,193-200,207-271,304-334",
+        "prepare_afe_rtl_startup_224us.py:6",
+        "afe_rtl_startup_224us/steady/tb.spice:38-69"
+      ]
+    },
+    {
+      "category": "historical_bench_assumption",
+      "finding": "Older ADC and end-to-end benches explicitly used 100 nF at VCM; end-to-end bench also used 100 ohm per electrode leg. Neither establishes the actual board specification for this diagnostic.",
+      "evidence": [
+        "sim_work/gf180/tapeout/sim/adc_loop/adc_deck.py:14,104",
+        "sim_work/gf180/tapeout/sim/e2e/e2e_deck.py:92,94-99"
+      ]
+    },
+    {
+      "category": "time_constant_estimate",
+      "finding": "Nominal unloaded-divider Rth is about 50 kohm; 100 nF gives about 5 ms. This is only a divider-alone estimate, not the full loaded circuit settling constant. Output resistors, active circuit paths, startup and initial charge change it. Adding a capacitor cannot reuse the 224 us window as automatic settling proof."
+    },
+    {
+      "category": "Q_model_specific_limit",
+      "finding": "There is no direct Q MOSCAP on VCM. Q replacements occur in bias filters (21 instances) and VCLK decoupling (10 instances). Q can affect VCM indirectly through bias and clock edges. VCLK drops to 2.805756 V in the fixed window, making the clock path relevant, but this is not proof of a Q-model artifact.",
+      "evidence": [
+        "moscap_charge_equivalent/q_models.spice:1-7",
+        "moscap_charge_equivalent/bias_q_diagnostic.spice:66,86-95,125-149",
+        "afe_rtl_startup_224us/steady/tb.spice:21-33",
+        "moscap_charge_equivalent/README.md:Simulator implementation is not identical"
+      ]
+    }
+  ],
+  "proposed_next_diagnostics_not_executed": [
+    "Complete the planned matched zero-input control with the exact same original topology, timing and numerical settings. It separates stimulus-dependent behavior from offset/switching effects; it does not by itself identify the VCM current path.",
+    "In an explicitly separate diagnostic, separate the electrode voltage-source return from VCM while preserving its commanded common-mode waveform (e.g. controlled source to ground). Save source/port currents to isolate return-path loading. Treat the change as a bench experiment, not a real electrode model or acceptance run.",
+    "Obtain actual board VCM capacitance, ESR/ESL, source impedances and startup requirements. If unknown, use clearly labelled sensitivity cases only; do not pick 100 nF as the specification. Bound runtime and declare appropriate transient/ripple criteria before running.",
+    "Save currents through EP/EN, VCM divider, output-load returns, CMFB reference branch, OFFDAC parking and any external capacitor; integrate per-edge charge and check KCL. Existing voltage-only waves cannot uniquely separate them.",
+    "Separate VCLK/bias formulation and timestep sensitivities in bounded diagnostic cases while preserving original PDK files. A C(V)/Q(V) law comparison alone does not prove equal numerical conditioning or ripple convergence.",
+    "Report reference VCM, output common mode and differential ripple separately; retain all switching outliers. Do not equate deterministic ripple RMS or the fixed mean-periodicity pass with low-noise/ENOB acceptance."
+  ],
+  "limitations": [
+    "No unique causal attribution without current or controlled comparison data.",
+    "No approved external capacitance value.",
+    "No new simulation, PDK qualification, low-noise performance, PVT/mismatch or full ADC/DWA validation.",
+    "Existing fixed 8-cycle periodicity pass remains valid only for its original declared scope and thresholds."
+  ]
+}

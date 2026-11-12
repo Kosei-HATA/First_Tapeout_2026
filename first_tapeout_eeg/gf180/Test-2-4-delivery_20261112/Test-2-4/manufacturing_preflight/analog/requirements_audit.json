@@ -1,0 +1,57 @@
+{
+  "source": "gf180/tapeout/import_20261021/acceptance_16p5_20261020.json; historical design acceptance, not new user instructions",
+  "target": {
+    "bits": 16.5,
+    "sndr_dB": 101.10081115967061,
+    "band_Hz": [
+      0.5,
+      100
+    ],
+    "electrode_differential_peak_V": 0.0009433962264150942,
+    "residual_nVrms": 5.876768442749352
+  },
+  "rate_reconciliation": {
+    "historical_baseline_adc_Hz": 512000,
+    "current_candidate_adc_Hz": 1024000,
+    "external_MCLK_Hz": 32768000,
+    "MCLK_per_frame": 32,
+    "decimation_ratio": 1024,
+    "output_sample_rate_Hz": 1000,
+    "evidence": [
+      "gf180/tapeout/rtl/README.md lines7,41,166",
+      "gf180/tapeout/sim/dac1/dac1_check.py T=1/1.024e6 and TM=T/32",
+      "Test-2-4/functional/functional_summary.json verified RTL/GL tests"
+    ]
+  },
+  "source_resistor_noise_screen": {
+    "assumptions": "Pure resistive source, differential total R, 27C, unweighted 0.5-100Hz. Not measured electrode noise; chip/filters/gain omitted. Not chip ENOB failure.",
+    "results": [
+      {
+        "differential_total_ohm": 10000,
+        "thermal_noise_nVrms": 128.42582113628865,
+        "source_only_snr_dB": 74.31053571362665,
+        "equivalent_snr_bits": 12.051584005585822
+      },
+      {
+        "differential_total_ohm": 100000,
+        "thermal_noise_nVrms": 406.1181051680656,
+        "source_only_snr_dB": 64.31053571362665,
+        "equivalent_snr_bits": 10.39045443747951
+      },
+      {
+        "differential_total_ohm": 1000000,
+        "thermal_noise_nVrms": 1284.2582113628864,
+        "source_only_snr_dB": 54.31053571362664,
+        "equivalent_snr_bits": 8.729324869373198
+      }
+    ]
+  },
+  "qualification_gaps": [
+    "Acceptance current_candidate physical_integration_qualified=false; system_target_ENOB_qualified=false.",
+    "Existing e2e_deck.py defaults to70us at16kHz; this is functional short-window evidence, not4s/20s in-band qualification.",
+    "Existing e2e deck uses XSPICE DWA event controller and linear MOSCAP approximation; not implemented RTL co-simulation or full PEX.",
+    "Normal transient has no device thermal/flicker noise unless explicitly modeled and calibrated.",
+    "ENOB requires multiple frequencies/amplitudes, settled continuous windows, solver convergence, calibrated noise/mismatch and actual decimator.",
+    "At maxstep1ns,4s requires at least4e9 integration steps; no long-run feasibility or result asserted."
+  ]
+}

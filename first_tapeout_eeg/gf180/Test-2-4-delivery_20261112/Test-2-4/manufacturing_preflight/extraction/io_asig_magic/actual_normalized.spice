@@ -1,0 +1,52 @@
+* NGSPICE file created from gf180mcu_fd_io__asig_5p0.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__asig_5p0 VDD VSS DVSS DVDD ASIG5V
+D0 DVSS ASIG5V diode_nd2ps_06v0 pj=1.060000000000e-04 area=0.15n
+D1 DVSS ASIG5V diode_nd2ps_06v0 pj=1.060000000000e-04 area=0.15n
+D2 ASIG5V DVDD diode_pd2nw_06v0 pj=1.060000000000e-04 area=0.15n
+D3 DVSS ASIG5V diode_nd2ps_06v0 pj=1.060000000000e-04 area=0.15n
+D4 DVSS ASIG5V diode_nd2ps_06v0 pj=1.060000000000e-04 area=0.15n
+D5 ASIG5V DVDD diode_pd2nw_06v0 pj=1.060000000000e-04 area=0.15n
+D6 ASIG5V DVDD diode_pd2nw_06v0 pj=1.060000000000e-04 area=0.15n
+D7 ASIG5V DVDD diode_pd2nw_06v0 pj=1.060000000000e-04 area=0.15n
+X0 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X1 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X2 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X3 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X4 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X5 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X6 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X7 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X8 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X9 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X10 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X11 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X12 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X13 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X14 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X15 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X16 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X17 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X18 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X19 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X20 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X21 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X22 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X23 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X24 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X25 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X26 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X27 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X28 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X29 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+D8 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+X30 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X31 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X32 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+D9 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+X33 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+D10 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+X34 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+X35 DVDD DVSS cap_nmos_06v0 c_width=15u c_length=15u
+D11 DVSS DVDD diode_nd2ps_06v0 pj=8.200000000000e-05 area=40p
+.ends

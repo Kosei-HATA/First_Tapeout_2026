@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/run_fixed_rc_pvt.py", line 28, in <module>
+    nom=next(r for r in json.loads((p/'results.json').read_text())['cases'] if r['variant']=='rc_klu');assert nom['exitcode']==0 and nom['finite'];rows.append({'vdd':3.3,'corner':'typical','temperature_C':27,'status':'finished','exitcode':0,'reused_from':'../rc_klu','seconds':nom['seconds'],**measure(p/'rc_klu',3.3)});save()
+                                                                                                                                                                                                                                                                                                                                ^^^^^^
+  File "/work/Test-2-4/manufacturing_preflight/bias_validation/clock_pex_comparison/run_fixed_rc_pvt.py", line 7, in save
+    with lock:(out/'results.json').write_text(json.dumps({'scope':'Device PVT with fixed nominal clock RC. Not independent RC corners, whole-chip PEX, or manufacturing signoff.','rc_sha256':rc_hash,'max_workers':2,'per_case_timeout_s':600,'cases':rows},indent=2))
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/usr/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type bool is not JSON serializable

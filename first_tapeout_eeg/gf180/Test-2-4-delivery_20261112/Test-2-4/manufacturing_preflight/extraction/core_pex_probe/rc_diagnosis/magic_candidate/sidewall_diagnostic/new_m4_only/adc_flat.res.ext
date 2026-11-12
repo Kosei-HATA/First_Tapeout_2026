@@ -1,0 +1,28 @@
+scale 1000 1 0.5
+rnode "BOT" 0 -17935.6 100 700 0
+rnode "BOT.t0" 0 17935.6 10083 800 0
+resist "BOT" "BOT.t0" 3.74734
+rnode "TOP" 0 -88201.5 220 100 0
+rnode "TOP.n0" 0 11.1438 10207 178 0
+rnode "TOP.n1" 0 5.74793 10207 178 0
+rnode "TOP.n2" 0 208.598 10083 178 0
+rnode "TOP.n3" 0 31.9923 9959 178 0
+rnode "TOP.n4" 0 365.34 9835 178 0
+rnode "TOP.n5" 0 2.21006 10207 302 0
+rnode "TOP.n6" 0 3291.6 10207 302 0
+rnode "TOP.n7" 0 510.759 9883 240 0
+rnode "TOP.t0" 0 83774.1 10083 10683 0
+resist "TOP.n6" "TOP.t0" 0.0700747
+resist "TOP.n7" "TOP.n0" 0.000955306
+resist "TOP.n7" "TOP.n1" 0.0062
+resist "TOP.n4" "TOP.n7" 0.104691
+resist "TOP.n2" "TOP.n0" 0.348835
+resist "TOP.n5" "TOP.n2" 0.0357404
+resist "TOP.n4" "TOP.n3" 0.252457
+resist "TOP" "TOP.n4" 0.987991
+resist "TOP.n3" "TOP.n5" 0.0178702
+resist "TOP.n5" "TOP.n6" 2.24181
+resist "TOP.n0" "TOP.n6" 0.00623679
+resist "TOP.n3" "TOP.n1" 4.5
+resist "TOP.n2" "TOP.n1" 2.24181
+device csubckt cap_mim_2f0_m4m5_noshield 200 800 201 801  "None" "TOP.t0" 157112 0 "BOT.t0" -58917 9753280,159888

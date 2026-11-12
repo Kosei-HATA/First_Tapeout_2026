@@ -1,0 +1,41 @@
+{
+  "scope": "Verification-only noisy=1 on copied body instance; thermal zero-bias only, not flicker/PDK signoff",
+  "source_model_sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+  "results": [
+    {
+      "case": "pdk_double_length",
+      "R_ohm": 599381.6429958704,
+      "AC_max_abs_change": 2.7869828045368195e-07,
+      "noise_V_per_sqrtHz": 9.967642525732073e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523373486
+    },
+    {
+      "case": "pdk_hot",
+      "R_ohm": 286085.174713824,
+      "AC_max_abs_change": 1.548323780298233e-08,
+      "noise_V_per_sqrtHz": 7.522318462211136e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523370075
+    },
+    {
+      "case": "pdk_one",
+      "R_ohm": 299777.4585242594,
+      "AC_max_abs_change": 6.961636245250702e-08,
+      "noise_V_per_sqrtHz": 7.049206322073175e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523371004
+    },
+    {
+      "case": "pdk_parallel",
+      "R_ohm": 149888.7292621112,
+      "AC_max_abs_change": 0.0,
+      "noise_V_per_sqrtHz": 4.984541592320408e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523369764
+    },
+    {
+      "case": "pdk_series",
+      "R_ohm": 599554.9170484396,
+      "AC_max_abs_change": 9.872019290924072e-08,
+      "noise_V_per_sqrtHz": 9.96908318464074e-08,
+      "PSD_ratio_to_4kTR": 0.9999996523369697
+    }
+  ]
+}

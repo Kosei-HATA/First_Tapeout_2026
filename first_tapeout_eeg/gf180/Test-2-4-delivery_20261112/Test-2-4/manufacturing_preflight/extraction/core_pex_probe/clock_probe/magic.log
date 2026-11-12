@@ -1,0 +1,224 @@
+
+Magic 8.3 revision 697 - Compiled on Wed Nov 11 10:04:37 AM CET 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+WARNING: RLIMIT_NOFILE is above 1024 and Tcl_Version<9 this may cause runtime issues [rlim_cur=1048576]
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology gf180mcuD ...
+10 Magic internal units = 1 Lambda
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Scaled tech values by 10 / 1 to match internal grid scaling
+Loading gf180mcuD Device Generator Menu ...
+Loading "run.tcl" from command line.
+Warning: Calma reading is not undoable!  I hope that's OK.
+Library written using GDS-II Release 6.0
+Library name: LIB
+Reading "filler_127200".
+Reading "filler_2400".
+Reading "eeg_aclk_inv_s48".
+Reading "eeg_aclk_inv_s10".
+Reading "eeg_aclk_inv_s24".
+Reading "eeg_aclk_inv_s8".
+Reading "eeg_aclk_inv_s12".
+Reading "eeg_aclk_inv_s6".
+Reading "eeg_aclk_nand2_s1".
+Reading "eeg_aclk_nor2_s1".
+Reading "eeg_aclk_slow".
+Reading "eeg_aclk_inv_s2".
+Reading "eeg_aclk_inv_s1".
+Reading "eeg_adc_clk".
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment 
+Extraction style is now "ngspice()"
+Extracting eeg_aclk_inv_s1 into eeg_aclk_inv_s1.ext:
+Processing eeg_aclk_inv_s1
+Extracting eeg_aclk_inv_s2 into eeg_aclk_inv_s2.ext:
+Processing eeg_aclk_inv_s2
+Extracting eeg_aclk_slow into eeg_aclk_slow.ext:
+Processing eeg_aclk_slow
+Extracting eeg_aclk_inv_s6 into eeg_aclk_inv_s6.ext:
+Processing eeg_aclk_inv_s6
+Extracting eeg_aclk_inv_s12 into eeg_aclk_inv_s12.ext:
+Processing eeg_aclk_inv_s12
+Extracting eeg_aclk_nor2_s1 into eeg_aclk_nor2_s1.ext:
+Processing eeg_aclk_nor2_s1
+Extracting eeg_aclk_nand2_s1 into eeg_aclk_nand2_s1.ext:
+Processing eeg_aclk_nand2_s1
+Extracting eeg_aclk_inv_s8 into eeg_aclk_inv_s8.ext:
+Processing eeg_aclk_inv_s8
+Extracting eeg_aclk_inv_s24 into eeg_aclk_inv_s24.ext:
+Processing eeg_aclk_inv_s24
+Extracting eeg_aclk_inv_s10 into eeg_aclk_inv_s10.ext:
+Processing eeg_aclk_inv_s10
+Extracting filler_2400 into filler_2400.ext:
+Processing filler_2400
+Extracting filler_127200 into filler_127200.ext:
+Processing filler_127200
+Extracting eeg_aclk_inv_s48 into eeg_aclk_inv_s48.ext:
+Processing eeg_aclk_inv_s48
+Extracting eeg_adc_clk into eeg_adc_clk.ext:
+Processing eeg_adc_clk
+Processing cell eeg_aclk_inv_s1 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_inv_s2 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_slow for resistance extraction.
+Extracting a_180_208#
+Extracting a_580_1540#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_inv_s6 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_inv_s12 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_nor2_s1 for resistance extraction.
+Extracting a_172_2600#
+Extracting a_236_1540#
+Extracting a_236_340#
+Extracting a_332_2600#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 6
+Nets extracted: 6 (1.000000)
+Nets output: 6 (1.000000)
+Processing cell eeg_aclk_nand2_s1 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_1540#
+Extracting a_236_340#
+Extracting a_332_2100#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 6
+Nets extracted: 6 (1.000000)
+Nets output: 6 (1.000000)
+Processing cell eeg_aclk_inv_s8 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_inv_s24 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_aclk_inv_s10 for resistance extraction.
+Extracting a_172_2100#
+Extracting a_236_340#
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell filler_2400 for resistance extraction.
+Extracting w_n40_0#
+Extracting w_n40_1450#
+Total Nets: 2
+Nets extracted: 2 (1.000000)
+Nets output: 2 (1.000000)
+Processing cell filler_127200 for resistance extraction.
+Extracting w_n40_0#
+Total Nets: 2
+Nets extracted: 1 (0.500000)
+Nets output: 1 (0.500000)
+Processing cell eeg_aclk_inv_s48 for resistance extraction.
+Extracting a_492_2060#
+Extracting a_556_400#
+Extracting w_n40_0#
+Extracting w_n40_2270#
+Total Nets: 4
+Nets extracted: 4 (1.000000)
+Nets output: 4 (1.000000)
+Processing cell eeg_adc_clk for resistance extraction.
+Extracting CDA
+Extracting CDB
+Extracting CHOP1
+Extracting CIA
+Extracting CIB
+Extracting NCDA
+Extracting NCDB
+Extracting NCIA
+Extracting NCIB
+Extracting VDD
+Extracting VSS
+Extracting m2_10420_1182#
+Extracting m2_11060_1182#
+Extracting m2_11540_5122#
+Extracting m2_11860_1182#
+Extracting m2_12660_5122#
+Extracting m2_13780_1182#
+Extracting m2_14420_1182#
+Extracting m2_1460_5122#
+Extracting m2_15220_1182#
+Extracting m2_1620_1182#
+Extracting m2_16340_1182#
+Extracting m2_17300_1182#
+Extracting m2_17780_5122#
+Extracting m2_1780_4196#
+Extracting m2_1780_7542#
+Extracting m2_18420_5122#
+Extracting m2_20340_1182#
+Extracting m2_20980_1182#
+Extracting m2_20980_5122#
+Extracting m2_22100_1182#
+Extracting m2_22100_5122#
+Extracting m2_2260_8468#
+Extracting m2_2420_1182#
+Extracting m2_27220_5122#
+Extracting m2_3060_12092#
+Extracting m2_3860_1182#
+Extracting m2_4500_4196#
+Extracting m2_4500_5122#
+Extracting m2_5140_5122#
+Extracting m2_5300_1182#
+Extracting m2_6260_5122#
+Extracting m2_7220_1182#
+Extracting m2_8020_1182#
+Extracting m2_8660_1182#
+Extracting m2_9140_1182#
+Extracting m2_980_1182#
+Extracting w_80_n200#
+Total Nets: 48
+Nets extracted: 48 (1.000000)
+Nets output: 48 (1.000000)
+exttospice finished.
+exttospice finished.

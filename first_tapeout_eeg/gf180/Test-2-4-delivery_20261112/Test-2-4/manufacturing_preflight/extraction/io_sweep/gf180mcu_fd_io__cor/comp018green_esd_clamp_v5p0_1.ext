@@ -1,0 +1,566 @@
+timestamp 1622965155
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use nmos_clamp_20_50_4 nmos_clamp_20_50_4_0 1 0 0 0 1 0
+use comp018green_esd_rc_v5p0_1 comp018green_esd_rc_v5p0_1_0 1 0 -356 0 -1 46507
+use top_route top_route_0 1 0 43 0 1 25617
+parameters nfet_06v0_dss l=l w=w a1=as p1=ps a2=ad p2=pd l1=s_sab l2=d_sab
+parameters nfet_06v0 l=l w=w a1=as p1=ps a2=ad p2=pd
+parameters pfet_06v0_dss l=l w=w a1=as p1=ps a2=ad p2=pd l1=s_sab l2=d_sab
+parameters pfet_06v0 l=l w=w a1=as p1=ps a2=ad p2=pd
+node "a_4685_27789#" 1209 11374 4685 27789 mvpdif 0 0 0 0 0 0 0 0 312000 6624 1248000 26496 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4097944 73860 67712 1472 0 0 0 0 0 0
+node "a_3781_27789#" 2848 8750.93 3781 27789 mvpdif 0 0 0 0 0 0 0 0 312000 6624 192000 4384 5771808 88480 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1124360 30004 0 0 0 0 0 0 0 0
+node "a_2805_27789#" 961 4198.83 2805 27789 mvpdif 0 0 0 0 0 0 0 0 88000 2176 208000 4416 1719312 26488 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 612636 16274 0 0 0 0 0 0 0 0
+node "a_2665_27517#" 404 4022.28 2665 27517 p 0 0 0 0 0 0 0 0 0 0 0 0 935872 14576 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 941492 14384 0 0 0 0 0 0 0 0
+node "w_2170_27627#" 7828 39058.1 2170 27627 nw 13260636 20320 0 0 991800 22220 0 0 0 0 1720000 37440 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2316352 63408 0 0 0 0 0 0 0 0
+substrate "a_2253_25712#" 1505 0 2253 25712 ppd 0 0 0 0 0 0 1008720 22596 784000 17568 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1463464 41300 0 0 0 0 0 0 0 0
+cap "a_2805_27789#" "a_2665_27517#" 2198.78
+cap "w_2170_27627#" "a_4685_27789#" 7945.7
+cap "a_4685_27789#" "a_3781_27789#" 10436
+cap "a_4685_27789#" "a_2665_27517#" 1.41773
+cap "a_4685_27789#" "a_2805_27789#" 9.94061
+cap "w_2170_27627#" "a_3781_27789#" 8740.93
+cap "w_2170_27627#" "a_2665_27517#" 1310.58
+cap "w_2170_27627#" "a_2805_27789#" 2228.37
+cap "a_3781_27789#" "a_2665_27517#" 1.70689
+cap "a_2805_27789#" "a_3781_27789#" 3365.01
+device msubckt nfet_06v0 7875 26006 7876 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "a_2253_25712#" 1000 88000,2176
+device msubckt nfet_06v0 7631 26006 7632 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_2253_25712#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt nfet_06v0 7387 26006 7388 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "a_2253_25712#" 1000 52000,1104
+device msubckt nfet_06v0 7143 26006 7144 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_2253_25712#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt nfet_06v0 6899 26006 6900 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "a_2253_25712#" 1000 52000,1104
+device msubckt nfet_06v0 6655 26006 6656 26007 l=140 w=1000 "a_2253_25712#" "a_3781_27789#" 280 0 "a_2253_25712#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt nfet_06v0 6411 26006 6412 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_3781_27789#" 1000 52000,1104 "a_2253_25712#" 1000 52000,1104
+device msubckt nfet_06v0 6167 26006 6168 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_2253_25712#" 1000 52000,1104 "a_3781_27789#" 1000 52000,1104
+device msubckt nfet_06v0 5923 26006 5924 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_3781_27789#" 1000 52000,1104 "a_2253_25712#" 1000 52000,1104
+device msubckt nfet_06v0 5679 26006 5680 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_2253_25712#" 1000 52000,1104 "a_3781_27789#" 1000 52000,1104
+device msubckt nfet_06v0 5435 26006 5436 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_3781_27789#" 1000 52000,1104 "a_2253_25712#" 1000 52000,1104
+device msubckt nfet_06v0 5191 26006 5192 26007 l=140 w=1000 "a_2253_25712#" "a_2805_27789#" 280 0 "a_2253_25712#" 1000 88000,2176 "a_3781_27789#" 1000 52000,1104
+device msubckt nfet_06v0 4129 26006 4130 26007 l=140 w=1000 "a_2253_25712#" "a_2665_27517#" 280 0 "a_2253_25712#" 1000 88000,2176 "a_2805_27789#" 1000 88000,2176
+device msubckt pfet_06v0 10157 27789 10158 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 88000,2176
+device msubckt pfet_06v0 9913 27789 9914 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 9669 27789 9670 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 9425 27789 9426 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 9181 27789 9182 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 8937 27789 8938 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 8693 27789 8694 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 8449 27789 8450 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 8205 27789 8206 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 7961 27789 7962 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 7717 27789 7718 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 7473 27789 7474 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 7229 27789 7230 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 6985 27789 6986 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 6741 27789 6742 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 6497 27789 6498 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 6253 27789 6254 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 6009 27789 6010 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 5765 27789 5766 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 5521 27789 5522 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 5277 27789 5278 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 5033 27789 5034 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 4789 27789 4790 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "a_4685_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 4545 27789 4546 27790 l=140 w=1000 "w_2170_27627#" "a_3781_27789#" 280 0 "w_2170_27627#" 1000 88000,2176 "a_4685_27789#" 1000 52000,1104
+device msubckt pfet_06v0 4129 27789 4130 27790 l=140 w=1000 "w_2170_27627#" "a_2805_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_3781_27789#" 1000 88000,2176
+device msubckt pfet_06v0 3885 27789 3886 27790 l=140 w=1000 "w_2170_27627#" "a_2805_27789#" 280 0 "a_3781_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 3641 27789 3642 27790 l=140 w=1000 "w_2170_27627#" "a_2805_27789#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_3781_27789#" 1000 52000,1104
+device msubckt pfet_06v0 3397 27789 3398 27790 l=140 w=1000 "w_2170_27627#" "a_2665_27517#" 280 0 "a_2805_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 3153 27789 3154 27790 l=140 w=1000 "w_2170_27627#" "a_2665_27517#" 280 0 "w_2170_27627#" 1000 52000,1104 "a_2805_27789#" 1000 52000,1104
+device msubckt pfet_06v0 2909 27789 2910 27790 l=140 w=1000 "w_2170_27627#" "a_2665_27517#" 280 0 "a_2805_27789#" 1000 52000,1104 "w_2170_27627#" 1000 52000,1104
+device msubckt pfet_06v0 2665 27789 2666 27790 l=140 w=1000 "w_2170_27627#" "a_2665_27517#" 280 0 "w_2170_27627#" 1000 88000,2176 "a_2805_27789#" 1000 52000,1104
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "nmos_clamp_20_50_4_0/a_1237_1481#" -0.00806003
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "nmos_clamp_20_50_4_0/a_1237_1481#" 0.016815
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "nmos_clamp_20_50_4_0/a_1237_1481#" 0.00875502
+cap "a_2665_27517#" "top_route_0/m1_0_106#" 18.9935
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 205.852
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "top_route_0/m1_n384_16623#" 101.778
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "top_route_0/m1_0_106#" 99.2254
+cap "a_2665_27517#" "top_route_0/m1_0_106#" 18.4801
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" -62.6254
+cap "top_route_0/m1_n384_16623#" "nmos_clamp_20_50_4_0/a_1237_1481#" 638.212
+cap "top_route_0/m1_0_106#" "nmos_clamp_20_50_4_0/a_1237_1481#" 914.221
+cap "top_route_0/m1_n384_16623#" "nmos_clamp_20_50_4_0/a_1237_1481#" 982.998
+cap "nmos_clamp_20_50_4_0/a_582_632#" "a_2665_27517#" 18.5701
+cap "nmos_clamp_20_50_4_0/a_582_632#" "nmos_clamp_20_50_4_0/a_1237_1481#" 219.519
+cap "a_2665_27517#" "top_route_0/m1_n384_16623#" 26.902
+cap "nmos_clamp_20_50_4_0/a_582_632#" "top_route_0/m1_n384_16623#" 172.261
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_6892_106#" 146.56
+cap "top_route_0/m1_n384_16623#" "a_4685_27789#" 1073.84
+cap "top_route_0/m1_6892_106#" "a_4685_27789#" 128.677
+cap "top_route_0/m1_n384_16623#" "a_2665_27517#" 19.0469
+cap "top_route_0/m1_n384_16623#" "a_3781_27789#" 12.4472
+cap "top_route_0/m1_n384_16623#" "a_2805_27789#" 217.514
+cap "a_2665_27517#" "top_route_0/m1_6892_106#" 6.13697
+cap "a_3781_27789#" "top_route_0/m1_6892_106#" 144.714
+cap "top_route_0/m1_6892_106#" "a_2805_27789#" 112.827
+cap "a_4685_27789#" "top_route_0/m1_6892_106#" 571.416
+cap "top_route_0/m1_6892_106#" "a_2805_27789#" 203.175
+cap "top_route_0/m1_6892_106#" "top_route_0/m1_n384_16623#" 64.064
+cap "a_3781_27789#" "top_route_0/m1_n384_16623#" 86.133
+cap "a_4685_27789#" "top_route_0/m1_n384_16623#" 1104.28
+cap "top_route_0/m1_n384_16623#" "a_2805_27789#" 29.2667
+cap "top_route_0/m1_6892_106#" "a_3781_27789#" 360.358
+cap "top_route_0/m1_6892_106#" "a_4685_27789#" 677.048
+cap "top_route_0/m1_n384_16623#" "a_4685_27789#" 1068.37
+cap "a_3781_27789#" "a_4685_27789#" -8.12971
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_6892_106#" 242.828
+cap "a_3781_27789#" "top_route_0/m1_6892_106#" 147.556
+cap "a_3781_27789#" "top_route_0/m1_n384_16623#" 113.773
+cap "top_route_0/m1_n384_16623#" "a_4685_27789#" 719.473
+cap "a_4685_27789#" "top_route_0/m1_6892_106#" 485.655
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_6892_106#" -59.3945
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "top_route_0/m1_n384_16623#" 1211.14
+cap "top_route_0/m1_n384_16623#" "nmos_clamp_20_50_4_0/a_582_632#" 226.057
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "nmos_clamp_20_50_4_0/a_582_632#" 215.306
+cap "a_4685_27789#" "nmos_clamp_20_50_4_0/a_582_632#" 1.15851
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "top_route_0/m1_n384_16623#" 356.128
+cap "nmos_clamp_20_50_4_0/a_1237_1481#" "nmos_clamp_20_50_4_0/a_582_632#" 263.264
+cap "top_route_0/m1_n384_16623#" "nmos_clamp_20_50_4_0/a_582_632#" 110.433
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "top_route_0/m1_6892_106#" 39.5699
+cap "a_2665_27517#" "top_route_0/m1_n384_16623#" 785.465
+cap "a_2665_27517#" "top_route_0/m1_0_106#" 19.4929
+cap "a_2665_27517#" "top_route_0/m1_n384_16623#" 12.1344
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 192.118
+cap "a_2805_27789#" "top_route_0/m1_0_106#" 0.482832
+cap "a_2665_27517#" "top_route_0/m1_0_106#" 860.469
+cap "a_2665_27517#" "nmos_clamp_20_50_4_0/w_n51_n51#" 366.92
+cap "top_route_0/m1_0_106#" "a_2665_27517#" 361.052
+cap "top_route_0/m1_0_106#" "nmos_clamp_20_50_4_0/w_n51_n51#" 208.168
+cap "a_2805_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 601.195
+cap "a_2805_27789#" "top_route_0/m1_0_106#" 246.331
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_3781_27789#" 174.345
+cap "a_4685_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 254.488
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_2665_27517#" 26.2911
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_3781_27789#" 517.072
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_2665_27517#" 0.0171024
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 93.5729
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 186.4
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 280.392
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_2805_27789#" 628.718
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_2805_27789#" 135.037
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_4685_27789#" 201.699
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_2805_27789#" 30.1543
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_3781_27789#" 507.749
+cap "a_4685_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 188.943
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "nmos_clamp_20_50_4_0/w_n51_n51#" 189.709
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 0.311624
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_2805_27789#" 358.485
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 785.545
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 345.355
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 415.209
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "nmos_clamp_20_50_4_0/w_n51_n51#" 312.423
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 279.425
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 354.483
+cap "a_3781_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 487.696
+cap "a_4685_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 268.01
+cap "a_4685_27789#" "a_3781_27789#" 4.54747e-13
+cap "a_4685_27789#" "nmos_clamp_20_50_4_0/w_n51_n51#" 310.642
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_3781_27789#" 74.6914
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_4685_27789#" 153.915
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 449.454
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "nmos_clamp_20_50_4_0/w_n51_n51#" 126.307
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 897.334
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 0.128352
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_3781_27789#" 191.984
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 6.42834
+cap "nmos_clamp_20_50_4_0/w_n51_n51#" "a_4685_27789#" 659.779
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "nmos_clamp_20_50_4_0/w_n51_n51#" 240.137
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/a_n654_17198#" 1.04598
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.6845
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/a_n654_17198#" 0.192384
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/a_n654_17198#" 1.8444
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 42.7509
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/a_n1214_17198#" 0.685463
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1.68349
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 425.146
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 15.8148
+cap "top_route_0/m1_0_106#" "a_2805_27789#" 2.53487
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 13.9546
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 805.996
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 64.2194
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_2665_27517#" 2.34396
+cap "w_2170_27627#" "a_2665_27517#" 64.2502
+cap "top_route_0/m1_0_106#" "w_2170_27627#" 398.631
+cap "a_2805_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 1.01559
+cap "w_2170_27627#" "a_2805_27789#" 271.275
+cap "a_2805_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 0.318333
+cap "w_2170_27627#" "a_3781_27789#" 245.212
+cap "top_route_0/m1_0_106#" "a_2665_27517#" 128.919
+cap "top_route_0/m1_0_106#" "a_2805_27789#" 373.241
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_2805_27789#" 0.202669
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 90.3131
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_2805_27789#" 0.100652
+cap "w_2170_27627#" "a_2805_27789#" 26.5492
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 371.931
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_2805_27789#" 0.042825
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 49.3316
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 3.63315
+cap "w_2170_27627#" "a_3781_27789#" 424.783
+cap "w_2170_27627#" "a_4685_27789#" 405.425
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 219.415
+cap "w_2170_27627#" "a_3781_27789#" 137.842
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 490.424
+cap "w_2170_27627#" "a_4685_27789#" 231.081
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 573.707
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 0.364013
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 3.09397
+cap "a_3781_27789#" "w_2170_27627#" 186.556
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 556.525
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_4685_27789#" 353.942
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 4.53725
+cap "a_4685_27789#" "w_2170_27627#" 371.404
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 188.628
+cap "a_4685_27789#" "w_2170_27627#" 129.273
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 3.43302
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 800.022
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 0.369723
+cap "a_3781_27789#" "w_2170_27627#" 74.42
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 595.031
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 313.261
+cap "a_3781_27789#" "w_2170_27627#" 129.597
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 113.803
+cap "top_route_0/m1_6892_106#" "w_2170_27627#" 4.81311
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 1.56264
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "a_3781_27789#" 0.995569
+cap "top_route_0/m1_6892_106#" "a_3781_27789#" 0.0187428
+cap "a_4685_27789#" "w_2170_27627#" 245.212
+cap "w_2170_27627#" "top_route_0/m1_6892_106#" -1.13687e-13
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 42.7373
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VPLUS" -5.02975
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VPLUS" 100.665
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 214.096
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 906.561
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.9336
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 13.5812
+cap "comp018green_esd_rc_v5p0_1_0/VPLUS" "top_route_0/m1_0_106#" -5.31155
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1320.21
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" -0.152295
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 8.47001
+cap "a_2805_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.131982
+cap "a_2665_27517#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_2665_27517#" 0.636249
+cap "a_2805_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "w_2170_27627#" "top_route_0/m1_0_106#" 452.839
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 693.87
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.0503614
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_2805_27789#" 0.131982
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 419.27
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VRC" 594.61
+cap "a_2665_27517#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 108.247
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 429.838
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_2805_27789#" 0.0409017
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.413562
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "w_2170_27627#" 1245.61
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 577.708
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.222687
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 276.407
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.122705
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 264.334
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VMINUS" 269.883
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.0318124
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.0538346
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "w_2170_27627#" 356.555
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 783.987
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "w_2170_27627#" 882.988
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 348.03
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 954.959
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.513544
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.060781
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VMINUS" 527.798
+cap "a_3781_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.0136339
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 865.971
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VRC" 256.662
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 95.4226
+cap "a_4685_27789#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_4685_27789#" 0.131982
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "a_3781_27789#" 0.636249
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 923.802
+cap "w_2170_27627#" "comp018green_esd_rc_v5p0_1_0/VRC" 1611.03
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 0.853469
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "w_2170_27627#" 653.742
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 258.067
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 305.511
+cap "comp018green_esd_rc_v5p0_1_0/VPLUS" "top_route_0/m1_n384_16623#" 86.9336
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 292.16
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1524.47
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 946.331
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1071.51
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 433.186
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 681.161
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 252.03
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1614.77
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 606.772
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 822.05
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VMINUS" 619.167
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 213.049
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1302.56
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1410.9
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 378.782
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1199.02
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 637.067
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 2210.37
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 318.14
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 292.16
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.9336
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.511
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_0_106#" 1074.63
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1187.37
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 127.232
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 26.0159
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.953
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 946.331
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1045.49
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 681.161
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1277.67
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 252.03
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_0_106#" 619.167
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 606.772
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 213.049
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 484.948
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 1265.27
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1178.5
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 145.628
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 124.054
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 308.181
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 137.412
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 191.474
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 24.1553
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 354.626
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 1199.02
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1873.26
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 318.14
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 768.888
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 292.16
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 305.511
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.9336
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1524.47
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 433.186
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 946.331
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 1071.51
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1614.77
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 252.03
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 681.161
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 606.772
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 822.05
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 213.049
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1302.56
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 1410.9
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 445.593
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 191.474
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 378.782
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 2210.37
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 318.14
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 292.579
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 292.16
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.511
+cap "comp018green_esd_rc_v5p0_1_0/VPLUS" "top_route_0/m1_n384_16623#" 86.9336
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 454.324
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 426.012
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.864279
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" -24.2094
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.864279
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 188.463
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 250.399
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 1332.11
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 180.418
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 230.499
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 155.461
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 473.141
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 142.811
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 443.152
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1265.67
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 291.817
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 0.0527275
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 0.0527275
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 276.55
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 824.839
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 0.0527275
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 0.683499
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 114.25
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.0527275
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 118.207
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 307.748
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 682.829
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 364.806
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 331.939
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 338.604
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 0.597861
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 192.229
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 174.278
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 89.7568
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 105.467
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 183.954
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 101.911
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 82.7223
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.853469
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 613.008
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1721.46
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 571.958
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 0.853469
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" -2.27374e-13
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 292.16
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.511
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.9336
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1524.47
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 946.331
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1071.51
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 433.186
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1614.77
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 252.03
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 681.161
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 822.05
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 606.772
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 213.049
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1410.9
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1302.56
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 191.474
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "comp018green_esd_rc_v5p0_1_0/VRC" 445.593
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 378.782
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 318.14
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 2210.37
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" 86.9336
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.16
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.511
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 337.103
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 1074.63
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1187.37
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 305.953
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 26.0159
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 127.232
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 1045.49
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 946.331
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 252.03
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1277.67
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 681.161
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 337.103
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 606.772
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 619.167
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 213.049
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 484.948
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 145.628
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1178.5
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 1265.27
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 124.054
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 354.626
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 137.412
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 24.1553
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 191.474
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 308.181
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 1199.02
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 318.14
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 337.103
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1873.26
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "comp018green_esd_rc_v5p0_1_0/VPLUS" "top_route_0/m1_n384_16623#" 86.9336
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 292.16
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 305.511
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 1524.47
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 1071.51
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 946.331
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 433.186
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1614.77
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 681.161
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 252.03
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 606.772
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 213.049
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 619.167
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 822.05
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1302.56
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 1410.9
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 1199.02
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 637.067
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 378.782
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 318.14
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 2210.37
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 292.579
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 768.888
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 195.328
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 0.437706
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 905.135
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1.13288
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" -6.32048
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 1315.5
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 577.994
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 701.796
+cap "top_route_0/m1_0_106#" "top_route_0/m1_n384_16623#" 401.903
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_n384_16623#" 436.845
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 112.928
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_0_106#" 514.211
+cap "top_route_0/m1_0_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 437.503
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 1244.65
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 275.602
+cap "top_route_0/m1_n384_16623#" "top_route_0/m1_6892_106#" 241.639
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 783.481
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 281.382
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 342.878
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 884.23
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 964.699
+cap "top_route_0/m1_6892_106#" "top_route_0/m1_n384_16623#" 307.128
+cap "top_route_0/m1_6892_106#" "top_route_0/m1_n384_16623#" 74.0424
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 550.066
+cap "top_route_0/m1_6892_106#" "comp018green_esd_rc_v5p0_1_0/VRC" 851.201
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 251.975
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_6892_106#" 0.853469
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 852.598
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 1616.39
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VMINUS" 616.891
+cap "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" 244.582
+cap "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VRC" 234.165
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_n384_16623#" 133.575
+cap "comp018green_esd_rc_v5p0_1_0/a_n934_4325#" "top_route_0/m1_n384_16623#" 1.07974
+cap "comp018green_esd_rc_v5p0_1_0/VRC" "top_route_0/m1_0_106#" 0.311445
+cap "comp018green_esd_rc_v5p0_1_0/a_n1494_4325#" "top_route_0/m1_n384_16623#" 0.225826
+merge "top_route_0/m1_n384_16623#" "comp018green_esd_rc_v5p0_1_0/VPLUS" -43461.7 -8902880 -10596 0 0 -678600 -15080 0 0 0 0 -1198400 -25640 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3444876 -65037 -13071800 -29904 0 0 0 0 0 0
+merge "comp018green_esd_rc_v5p0_1_0/VPLUS" "w_2170_27627#"
+merge "w_2170_27627#" "nmos_clamp_20_50_4_0/w_n51_n51#"
+merge "nmos_clamp_20_50_4_0/a_1237_1481#" "a_4685_27789#" -4829.72 0 0 0 0 0 0 0 0 -312000 -6624 -728000 -15456 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2532156 -48286 -67712 -1472 0 0 0 0 0 0
+merge "comp018green_esd_rc_v5p0_1_0/VMINUS" "top_route_0/m1_6892_106#" -38086.1 0 0 0 0 0 0 -147960 -3288 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -5937424 -57372 -1113000 -13104 0 0 0 0 0 0
+merge "top_route_0/m1_6892_106#" "top_route_0/m1_0_106#"
+merge "top_route_0/m1_0_106#" "top_route_0/VSUBS"
+merge "top_route_0/VSUBS" "nmos_clamp_20_50_4_0/a_582_632#"
+merge "nmos_clamp_20_50_4_0/a_582_632#" "a_2253_25712#"
+merge "comp018green_esd_rc_v5p0_1_0/VRC" "a_2665_27517#" -334.629 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -7072 -344 0 0 0 0 0 0 0 0

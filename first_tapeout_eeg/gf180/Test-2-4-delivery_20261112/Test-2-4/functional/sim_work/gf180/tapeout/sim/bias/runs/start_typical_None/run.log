@@ -1,0 +1,132 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * eeg_bias check
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+vdd                                          0
+ib1                                        3.3
+ib0                                          0
+bp1                                          0
+bp0                                        3.3
+bn1                                          0
+bn0                                        3.3
+bln                                1.53307e-19
+blnl                               1.53307e-19
+blpl                              -7.41163e-13
+blp                               -7.41163e-13
+vrefp                                      1.9
+vrefn                                      1.4
+idn                                4.87019e-24
+idnl                               4.87019e-24
+idpl                                 5.278e-26
+idp                                  5.278e-26
+iq                                -1.25427e-20
+iql                               -1.25427e-20
+itst                                         1
+xb.g1                             -4.79408e-20
+xb.gp                              7.03823e-19
+xb.s2                             -1.24767e-25
+xb.xr0.11                         -1.21735e-25
+xb.xr0.21                         -3.03129e-27
+xb.sbm                             8.11932e-28
+xb.sb                             -6.46468e-28
+xb.nt                              3.22866e-20
+xb.ta                             -1.08837e-19
+xb.tb                              1.05257e-20
+xb.tc                              -5.1501e-22
+xb.ga                              2.08968e-43
+xb.gb                                        0
+xb.gc                              2.91439e-24
+xb.xla.m                          -1.48338e-34
+xb.xlc.m                           2.91439e-24
+xb.xrvbn.11                        3.22866e-20
+xb.xrvbn.21                        3.22866e-20
+vbn                                3.22866e-20
+xb.nc                              1.51433e-21
+xb.xrvbcm.11                       1.51433e-21
+xb.xrvbcm.21                       1.51433e-21
+vbcm                               1.51433e-21
+xb.bna                             2.71877e-20
+xb.bnb                             3.47709e-21
+xb.bnc                             2.46769e-20
+xb.gpa                            -1.66053e-42
+xb.gpb                            -9.63958e-24
+xb.gpc                            -6.58825e-26
+xb.xlpa.m                         -9.11099e-34
+xb.xlpc.m                          1.25182e-34
+xb.nd                              2.55722e-15
+xb.nda                             2.15588e-17
+xb.ndb                             2.15548e-17
+xb.ndc                             2.15535e-17
+xb.gna                            -1.66053e-42
+xb.gnb                            -9.63958e-24
+xb.gnc                            -6.58825e-26
+xb.xlna.m                         -9.11099e-34
+xb.xlnc.m                          1.25182e-34
+xb.na1                             6.37304e-21
+xb.xrvbn1.11                       6.37304e-21
+xb.xrvbn1.21                       6.37304e-21
+vbn1                               6.37304e-21
+xb.na2                             1.51433e-21
+xb.xrvbcm1.11                      1.51433e-21
+xb.xrvbcm1.21                      1.51433e-21
+vbcm1                              1.51433e-21
+xb.xrc1.11                                   0
+xb.xrc1.21                                   0
+vnc1                                         0
+xb.xrc2.11                                   0
+xb.xrc2.21                                   0
+vbpc2                                        0
+xb.xrc2b.11                                  0
+xb.xrc2b.21                                  0
+vpc1                                         0
+xb.xrc3.11                                   0
+xb.xrc3.21                                   0
+vbnc2                                        0
+xb.xrc3b.11                                  0
+xb.xrc3b.21                                  0
+xb.nd2                            -3.10742e-22
+xb.xrv1.11                             1.89979
+xb.xrv1.21                             1.65021
+vcm                                       1.65
+xb.xrv2.11                             1.64979
+xb.xrv2.21                             1.40021
+vmitst#branch                         -7.78403
+vmiq#branch                        4.20088e-32
+vmidp#branch                       2.38591e-39
+vmidn#branch                       2.30255e-37
+vrn#branch                         2.43936e-06
+vrp#branch                        -2.43936e-06
+vmblp#branch                       5.72451e-24
+vmbln#branch                      -1.12931e-30
+vbn0#branch                                  0
+vbn1#branch                                  0
+vbp0#branch                                  0
+vbp1#branch                                  0
+vib0#branch                                  0
+vib1#branch                                  0
+vdd#branch                             7.78403
+
+ Reference value :  2.83734e-06
+ Reference value :  8.25783e-06
+ Reference value :  1.29050e-05
+ Reference value :  2.01050e-05
+ Reference value :  2.75150e-05
+ Reference value :  3.40150e-05
+ Reference value :  3.96450e-05
+No. of Data Rows : 4080
+ibln[length(ibln)-1] = 1.253245e-04
+v(vbn)[length(v(vbn))-1] = 8.461015e-01
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

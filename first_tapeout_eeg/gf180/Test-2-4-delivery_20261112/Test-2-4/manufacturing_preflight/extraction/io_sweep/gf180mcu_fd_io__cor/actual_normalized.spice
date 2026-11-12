@@ -1,0 +1,362 @@
+* NGSPICE file created from gf180mcu_fd_io__cor.ext - technology: gf180mcuD
+
+.subckt gf180mcu_fd_io__cor DVDD VSS VDD
+X0 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X1 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X2 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X3 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X4 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X5 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X6 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X7 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X8 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X9 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X10 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X11 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X12 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X13 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X14 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X15 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X16 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X17 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X18 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X19 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X20 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X21 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X22 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X23 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X24 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X25 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X26 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X27 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X28 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X29 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X30 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X31 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X32 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X33 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X34 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X35 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X36 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X37 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X38 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X39 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X40 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X41 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X42 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X43 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X44 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X45 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X46 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X47 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X48 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X49 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X50 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X51 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X52 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X53 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X54 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X55 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X56 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X57 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X58 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X59 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X60 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X61 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X62 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X63 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X64 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X65 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X66 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X67 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X68 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X69 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X70 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X71 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X72 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X73 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X74 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X75 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X76 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X77 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X78 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X79 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X80 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X81 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X82 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X83 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X84 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X85 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X86 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X87 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X88 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X89 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X90 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X91 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X92 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X93 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X94 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X95 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X96 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X97 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X98 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X99 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X100 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X101 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X102 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X103 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X104 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X105 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X106 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X107 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X108 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X109 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X110 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X111 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X112 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X113 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X114 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X115 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X116 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X117 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X118 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X119 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X120 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X121 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X122 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X123 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X124 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X125 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X126 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X127 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X128 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X129 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X130 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X131 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X132 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X133 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=22p pd=0.10088m as=13p ps=50.52u w=50u l=0.7u
+X134 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X135 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X136 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X137 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X138 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=13p ps=50.52u w=50u l=0.7u
+X139 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD VSS nfet_06v0 ad=13p pd=50.52u as=22p ps=0.10088m w=50u l=0.7u
+X140 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X141 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X142 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X143 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X144 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2894_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2614_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X145 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1774_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2054_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X146 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1214_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1494_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X147 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2894_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3174_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X148 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X149 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2334_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2614_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X150 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1214_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n934_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X151 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3454_17198# VDD VDD ppolyf_u r_width=0.8u r_length=63.855u
+X152 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1774_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n1494_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X153 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X154 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2334_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n2054_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X155 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n654_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n934_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X156 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X157 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X158 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3454_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n3174_4325# VDD ppolyf_u r_width=0.8u r_length=63.855u
+X159 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/a_n654_17198# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VDD ppolyf_u r_width=0.8u r_length=63.855u
+X160 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X161 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X162 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X163 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X164 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X165 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X166 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X167 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X168 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X169 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X170 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X171 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X172 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X173 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X174 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X175 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X176 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X177 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X178 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X179 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X180 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X181 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X182 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X183 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X184 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X185 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VSS VSS nfet_06v0 ad=2.2p pd=10.88u as=2.2p ps=10.88u w=5u l=0.7u
+X186 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X187 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X188 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X189 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X190 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/comp018green_esd_rc_v5p0_1_0/VRC GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X191 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X192 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X193 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X194 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X195 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VSS nfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X196 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X197 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X198 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X199 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X200 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X201 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_2805_27789# VDD VDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X202 VDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X203 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_1_0/a_3781_27789# VDD VDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X204 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=1.112n pd=4.44448m as=3.12565n ps=0.01357 w=50u l=0.7u
+X205 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X206 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X207 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X208 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X209 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X210 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X211 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X212 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X213 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X214 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X215 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X216 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X217 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X218 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X219 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X220 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X221 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X222 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X223 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X224 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X225 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X226 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X227 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X228 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X229 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X230 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X231 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X232 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X233 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X234 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X235 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X236 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X237 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X238 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X239 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X240 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X241 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X242 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X243 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X244 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X245 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X246 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X247 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X248 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X249 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X250 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X251 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X252 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X253 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X254 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X255 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X256 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X257 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X258 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X259 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X260 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X261 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X262 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X263 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X264 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X265 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X266 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X267 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X268 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X269 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X270 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X271 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X272 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X273 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X274 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X275 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X276 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X277 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X278 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X279 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X280 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X281 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X282 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X283 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD VSS nfet_06v0 ad=0 pd=0 as=0 ps=0 w=50u l=0.7u
+X284 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2269# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_1989# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X285 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X286 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_3389# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_3109# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X287 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2829# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_3109# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X288 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X289 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_1709# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_1989# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X290 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_1709# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_1429# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X291 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2829# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_2549# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X292 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X293 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X294 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_3669# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X295 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X296 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_1149# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_1429# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X297 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_869# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X298 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_2269# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_2549# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X299 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X300 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_3389# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_3669# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X301 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X302 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS cap_nmos_06v0 c_width=25u c_length=10u
+X303 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_353_1149# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/a_13226_869# DVDD ppolyf_u r_width=0.8u r_length=63.855u
+X304 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X305 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X306 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X307 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X308 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X309 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X310 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X311 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X312 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X313 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X314 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X315 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X316 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X317 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X318 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X319 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X320 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X321 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X322 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X323 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X324 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X325 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X326 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X327 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X328 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X329 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC VSS VSS nfet_06v0 ad=2.2p pd=10.88u as=2.2p ps=10.88u w=5u l=0.7u
+X330 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X331 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X332 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X333 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=2.2p ps=10.88u w=5u l=0.7u
+X334 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/comp018green_esd_rc_v5p0_0/VRC GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X335 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X336 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X337 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X338 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X339 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# VSS nfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X340 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X341 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X342 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# VSS VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X343 VSS GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# VSS nfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X344 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X345 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_2805_27789# DVDD DVDD pfet_06v0 ad=2.2p pd=10.88u as=1.3p ps=5.52u w=5u l=0.7u
+X346 DVDD GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X347 GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_4685_27789# GF_NI_COR_BASE_0/ESD_CLAMP_COR_0/comp018green_esd_clamp_v5p0_2_0/a_3781_27789# DVDD DVDD pfet_06v0 ad=1.3p pd=5.52u as=1.3p ps=5.52u w=5u l=0.7u
+X348 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X349 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X350 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X351 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X352 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X353 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X354 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X355 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X356 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+X357 DVDD VSS cap_nmos_06v0 c_width=25u c_length=10u
+.ends

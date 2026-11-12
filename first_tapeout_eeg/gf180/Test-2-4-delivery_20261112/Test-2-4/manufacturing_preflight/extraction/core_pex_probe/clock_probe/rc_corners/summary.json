@@ -1,0 +1,94 @@
+{
+  "hrhc": {
+    "style": "style ngspice(hrhc)",
+    "extraction_seconds": 2.449239730834961,
+    "rc_preservation_pass": true,
+    "independent_MOS_LVS_pass": true,
+    "resistclasses": "resistclasses 1200000 3250000 15000 15000 15000 15000 15000 1200000 75000 225000 75000 225000 15000 15000 15000 15000 15000 15000 420000 370000 1200000 104 104 104 104 49",
+    "R_count": 7330,
+    "R_min_ohm": 0.0018,
+    "R_max_ohm": 34260.4,
+    "all_R_positive": true,
+    "counts": {
+      "M": 486,
+      "R": 7330,
+      "C": 4077
+    },
+    "sha256": {
+      "labeled.gds": "d99ed4b5d676006ad9995cecf9c7bdb12c5f9e5af9dff75770949fabe0ce8cc7",
+      "cap.spice": "d90ae2369c592d8fe0b92ade04c2b99bec834feedb501788194ce67fbd2d870e",
+      "rc.spice": "392f8d47c92b55fa3b62bbb862f3985de55dc97113b480c05fdf37d01294e0f2",
+      "run.tcl": "7a8e8aff240482e83408df4318a3876bd91f69519bb213985bd8f88145b0ca29"
+    },
+    "pass": true
+  },
+  "hrlc": {
+    "style": "style ngspice(hrlc)",
+    "extraction_seconds": 2.453448534011841,
+    "rc_preservation_pass": true,
+    "independent_MOS_LVS_pass": true,
+    "resistclasses": "resistclasses 1200000 3250000 15000 15000 15000 15000 15000 1200000 75000 225000 75000 225000 15000 15000 15000 15000 15000 15000 420000 370000 1200000 104 104 104 104 49",
+    "R_count": 7330,
+    "R_min_ohm": 0.0018,
+    "R_max_ohm": 34260.4,
+    "all_R_positive": true,
+    "counts": {
+      "M": 486,
+      "R": 7330,
+      "C": 4077
+    },
+    "sha256": {
+      "labeled.gds": "d99ed4b5d676006ad9995cecf9c7bdb12c5f9e5af9dff75770949fabe0ce8cc7",
+      "cap.spice": "c2e8b23cb1a7901176ba16afe801b1f64e7f6fa41350154fae65ac5ded7a64d2",
+      "rc.spice": "c4fff44712f33dde1ee4101056dcbfa9f997f0aff0e60373644121018cd1383e",
+      "run.tcl": "e2a4bb97eb509ac1ee4bbf11d56efe537717cc4e84063bd6c9560593cf14979c"
+    },
+    "pass": true
+  },
+  "lrhc": {
+    "style": "style ngspice(lrhc)",
+    "extraction_seconds": 2.4133641719818115,
+    "rc_preservation_pass": true,
+    "independent_MOS_LVS_pass": true,
+    "resistclasses": "resistclasses 800000 3250000 1000 1000 1000 1000 1000 8000000 45000 145000 45000 145000 1000 1000 1000 1000 1000 1000 280000 250000 800000 76 76 76 76 31",
+    "R_count": 3295,
+    "R_min_ohm": 0.00121895,
+    "R_max_ohm": 34260.4,
+    "all_R_positive": true,
+    "counts": {
+      "M": 486,
+      "R": 3295,
+      "C": 2641
+    },
+    "sha256": {
+      "labeled.gds": "d99ed4b5d676006ad9995cecf9c7bdb12c5f9e5af9dff75770949fabe0ce8cc7",
+      "cap.spice": "d90ae2369c592d8fe0b92ade04c2b99bec834feedb501788194ce67fbd2d870e",
+      "rc.spice": "9c8d31eca57ce43ab232f54997eefa2987d9581f3c96c12ee42d8ce48db40cfa",
+      "run.tcl": "7a82037dd24bb0ba17454579a887af9ca2ad58d9c6a070a05b7a2cf03030a7a4"
+    },
+    "pass": true
+  },
+  "lrlc": {
+    "style": "style ngspice(lrlc)",
+    "extraction_seconds": 2.4037396907806396,
+    "rc_preservation_pass": true,
+    "independent_MOS_LVS_pass": true,
+    "resistclasses": "resistclasses 800000 3250000 1000 1000 1000 1000 1000 8000000 45000 145000 45000 145000 1000 1000 1000 1000 1000 1000 280000 250000 800000 76 76 76 76 31",
+    "R_count": 3295,
+    "R_min_ohm": 0.00121895,
+    "R_max_ohm": 34260.4,
+    "all_R_positive": true,
+    "counts": {
+      "M": 486,
+      "R": 3295,
+      "C": 2641
+    },
+    "sha256": {
+      "labeled.gds": "d99ed4b5d676006ad9995cecf9c7bdb12c5f9e5af9dff75770949fabe0ce8cc7",
+      "cap.spice": "c2e8b23cb1a7901176ba16afe801b1f64e7f6fa41350154fae65ac5ded7a64d2",
+      "rc.spice": "6d3cd1ec3135371ff57276a300955990b6aa0983f263fb70ec5fe83edc1d632f",
+      "run.tcl": "5f3ed88ff02bd357654d7e26411167fa51cf8a01050d1717290c455617ea3c3e"
+    },
+    "pass": true
+  }
+}

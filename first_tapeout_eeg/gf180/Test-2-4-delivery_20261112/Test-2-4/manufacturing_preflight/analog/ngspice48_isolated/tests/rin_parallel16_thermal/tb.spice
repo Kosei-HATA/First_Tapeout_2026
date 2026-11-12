@@ -1,0 +1,56 @@
+* Current design ADC RIN pair; thermal-only isolated budget
+.include /work/Test-2-4/manufacturing_preflight/analog/models/design.ngspice
+.lib /work/Test-2-4/manufacturing_preflight/analog/models/sm141064.ngspice res_typical
+.temp 27
+VCM CM 0 1.65
+VSRC SRC 0 DC 0 AC 1
+EP INP CM SRC 0 0.5
+EN INN CM SRC 0 -0.5
+XRP0 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP1 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP2 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP3 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP4 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP5 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP6 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP7 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP8 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP9 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP10 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP11 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP12 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP13 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP14 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRP15 INP SP 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN0 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN1 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN2 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN3 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN4 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN5 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN6 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN7 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN8 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN9 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN10 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN11 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN12 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN13 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN14 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+XRN15 INN SN 0 ppolyf_u_1k r_length=291.28u r_width=1u
+RSP SP CM 1 noisy=0
+RSN SN CM 1 noisy=0
+.control
+set numdgt=15
+op
+print v(inp) v(inn) v(sp) v(sn)
+ac lin 501 0.5 100
+let hr=real(v(sp)-v(sn))
+let hi=imag(v(sp)-v(sn))
+wrdata gain.csv hr hi
+noise v(sp,sn) VSRC lin 501 0.5 100
+setplot noise1
+wrdata noise.csv onoise_spectrum inoise_spectrum
+quit
+.endc
+.end

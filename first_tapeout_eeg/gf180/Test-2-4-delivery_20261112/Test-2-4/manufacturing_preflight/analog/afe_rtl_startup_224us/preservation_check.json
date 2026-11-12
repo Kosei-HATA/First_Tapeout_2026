@@ -1,0 +1,83 @@
+{
+  "utc": "2026-11-11T16:49:56.390638+00:00",
+  "all_unchanged": true,
+  "checks": [
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/steady_summary.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/steady_analysis.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/steady_criteria.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/mapping_and_assumptions.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/controls.inc",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup/rtl/controls.csv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_adc_dig.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_chop1.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_cic3.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_clkgen.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_sys.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_top.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_dwa.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_fifo.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_raw.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_regs.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_rnd_sat.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_spi_slave.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_therm2bin.sv",
+      "unchanged": true
+    }
+  ],
+  "scope": "Old 160us summary/analysis/criteria/mapping/controls and 13 original RTL sources compared with previously stored hashes. No GDS/PDK modification was performed; this check does not claim a newly recomputed full GDS/PDK manifest."
+}

@@ -1,0 +1,74 @@
+[
+  [
+    "\n defaultsidewall    *poly active  11.098 -0.082",
+    "\n defaultsidewall    *poly active  11.098 -0.05"
+  ],
+  [
+    " defaultsidewall    allm1 metal1  40.512  -0.053",
+    " defaultsidewall    allm1 metal1  40.512  -0.05"
+  ],
+  [
+    " defaultsidewall    allm2 metal2  46.736  0.289",
+    " defaultsidewall    allm2 metal2  46.736  0.25"
+  ],
+  [
+    " defaultsidewall    allm3 metal3  70.675  0.534",
+    " defaultsidewall    allm3 metal3  70.675  0.5"
+  ],
+  [
+    " defaultsidewall    allm4 metal4  77.388  0.611",
+    " defaultsidewall    allm4 metal4  77.388  0.6000000000000001"
+  ],
+  [
+    " defaultsidewall    allm5 metal5       114.86  0.025",
+    " defaultsidewall    allm5 metal5       114.86  0.0"
+  ],
+  [
+    "\n defaultsidewall    *poly active  10.434  -0.09",
+    "\n defaultsidewall    *poly active  10.434  -0.05"
+  ],
+  [
+    " defaultsidewall    allm1 metal1  29.146  -0.107",
+    " defaultsidewall    allm1 metal1  29.146  -0.1"
+  ],
+  [
+    " defaultsidewall    allm2 metal2  47.311  -0.055",
+    " defaultsidewall    allm2 metal2  47.311  -0.05"
+  ],
+  [
+    " defaultsidewall    allm3 metal3  52.065  0.011",
+    " defaultsidewall    allm3 metal3  52.065  0.0"
+  ],
+  [
+    " defaultsidewall    allm4 metal4  64.224  0.022",
+    " defaultsidewall    allm4 metal4  64.224  0.0"
+  ],
+  [
+    " defaultsidewall    allm5 metal5  129.73  0.043",
+    " defaultsidewall    allm5 metal5  129.73  0.0"
+  ],
+  [
+    "\n defaultsidewall    *poly active  11.749  -0.074",
+    "\n defaultsidewall    *poly active  11.749  -0.05"
+  ],
+  [
+    " defaultsidewall    allm1 metal1  34.592   -0.066",
+    " defaultsidewall    allm1 metal1  34.592   -0.05"
+  ],
+  [
+    " defaultsidewall    allm2 metal2  45.876  0.308",
+    " defaultsidewall    allm2 metal2  45.876  0.30000000000000004"
+  ],
+  [
+    " defaultsidewall    allm3 metal3  80.787  0.719",
+    " defaultsidewall    allm3 metal3  80.787  0.7000000000000001"
+  ],
+  [
+    " defaultsidewall    allm4 metal4  79.719  0.700",
+    " defaultsidewall    allm4 metal4  79.719  0.65"
+  ],
+  [
+    " defaultsidewall    allm5 metal5  92.462  -0.034",
+    " defaultsidewall    allm5 metal5  92.462  0.0"
+  ]
+]

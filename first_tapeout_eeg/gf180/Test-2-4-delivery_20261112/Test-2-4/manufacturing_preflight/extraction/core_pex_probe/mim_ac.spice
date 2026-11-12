@@ -1,0 +1,25 @@
+* Independent MIM units and multiplicity check
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice cap_mim
+.temp 25
+Vs schematic 0 dc 0 ac 1
+Ve extracted 0 dc 0 ac 1
+Vn native 0 dc 0 ac 1
+Xn native 0 cap_mim_2f0_m4m5_noshield c_length=98.82999u c_width=98.82999u
+Vd double 0 dc 0 ac 1
+Xs schematic 0 cap_mim_2f0ff c_length=98.83u c_width=98.83u
+Xe extracted 0 cap_mim_2f0ff c_length=98.82999u c_width=98.82999u
+Xd1 double 0 cap_mim_2f0ff c_length=98.82999u c_width=98.82999u
+Xd2 double 0 cap_mim_2f0ff c_length=98.82999u c_width=98.82999u
+.control
+ac lin 1 1000 1000
+let c_schematic=-imag(i(Vs))/(2*pi*frequency)
+let c_extracted=-imag(i(Ve))/(2*pi*frequency)
+let c_double=-imag(i(Vd))/(2*pi*frequency)
+let c_native=-imag(i(Vn))/(2*pi*frequency)
+print c_schematic c_extracted c_double c_native
+wrdata mim_ac.dat c_schematic c_extracted c_double c_native
+quit
+.endc
+.end
+

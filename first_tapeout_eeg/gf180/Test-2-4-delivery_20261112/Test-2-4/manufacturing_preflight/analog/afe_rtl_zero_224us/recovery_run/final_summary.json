@@ -1,0 +1,193 @@
+{
+  "recorded_utc": "2026-11-11T19:06:23.126473+00:00",
+  "run": {
+    "seconds": 1458.059187412262,
+    "exitcode": 0,
+    "diagnostics": [],
+    "completed": true,
+    "scope": "AFE-only current-LVS topology with RTL-derived controls; assumed board sequence and integral-Q model; not system or steady-state acceptance",
+    "last_time_s": 0.000224,
+    "finite": true,
+    "endpoints": {
+      "outn": 1.648328718195599,
+      "outp": 1.648328719295266,
+      "rtl_afe_rst": 0.0,
+      "src": 0.0,
+      "vbcm": 0.8180702594488043,
+      "vbn": 0.846101456568024,
+      "vcm": 1.648737144242731
+    }
+  },
+  "zero_periodicity_pass": true,
+  "positive_periodicity_pass": true,
+  "fixed_window_s": [
+    0.000159318117,
+    0.000221818117
+  ],
+  "cycles": [
+    {
+      "cycle": 0,
+      "start_s": 0.000159318117,
+      "end_s": 0.000167130617,
+      "positive_mean_V": 0.029890381750990656,
+      "zero_mean_V": 3.675602155287836e-11,
+      "difference_V": 0.029890381714234634,
+      "one_sided_sensitivity_V_per_V": 298.9038171423463
+    },
+    {
+      "cycle": 1,
+      "start_s": 0.000167130617,
+      "end_s": 0.00017494311700000002,
+      "positive_mean_V": 0.029890484604164092,
+      "zero_mean_V": 3.9298008540243946e-11,
+      "difference_V": 0.029890484564866083,
+      "one_sided_sensitivity_V_per_V": 298.9048456486608
+    },
+    {
+      "cycle": 2,
+      "start_s": 0.00017494311700000002,
+      "end_s": 0.000182755617,
+      "positive_mean_V": 0.0298905756751243,
+      "zero_mean_V": 6.484092720742704e-12,
+      "difference_V": 0.029890575668640208,
+      "one_sided_sensitivity_V_per_V": 298.90575668640207
+    },
+    {
+      "cycle": 3,
+      "start_s": 0.000182755617,
+      "end_s": 0.000190568117,
+      "positive_mean_V": 0.029890666309675514,
+      "zero_mean_V": -4.2488757196853974e-11,
+      "difference_V": 0.02989066635216427,
+      "one_sided_sensitivity_V_per_V": 298.90666352164266
+    },
+    {
+      "cycle": 4,
+      "start_s": 0.000190568117,
+      "end_s": 0.000198380617,
+      "positive_mean_V": 0.029890749806961305,
+      "zero_mean_V": -3.615725723035556e-11,
+      "difference_V": 0.029890749843118562,
+      "one_sided_sensitivity_V_per_V": 298.9074984311856
+    },
+    {
+      "cycle": 5,
+      "start_s": 0.000198380617,
+      "end_s": 0.000206193117,
+      "positive_mean_V": 0.029890832663102492,
+      "zero_mean_V": -1.905852441137595e-11,
+      "difference_V": 0.029890832682161018,
+      "one_sided_sensitivity_V_per_V": 298.90832682161016
+    },
+    {
+      "cycle": 6,
+      "start_s": 0.000206193117,
+      "end_s": 0.000214005617,
+      "positive_mean_V": 0.02989090379412131,
+      "zero_mean_V": -1.8594985825457323e-11,
+      "difference_V": 0.029890903812716297,
+      "one_sided_sensitivity_V_per_V": 298.90903812716294
+    },
+    {
+      "cycle": 7,
+      "start_s": 0.000214005617,
+      "end_s": 0.000221818117,
+      "positive_mean_V": 0.029890978993975564,
+      "zero_mean_V": -6.391553369088678e-11,
+      "difference_V": 0.029890979057891096,
+      "one_sided_sensitivity_V_per_V": 298.90979057891093
+    }
+  ],
+  "one_sided_sensitivity_mean_V_per_V": 298.9069671197402,
+  "one_sided_sensitivity_range_V_per_V": [
+    298.9038171423463,
+    298.90979057891093
+  ],
+  "one_sided_sensitivity_mean_dB": 49.51072075956073,
+  "zero_mean_over_window_V": -1.2209616942633072e-11,
+  "zero_baseline_interpretation": "Near-zero residual of nominal symmetric deterministic circuit, numerical floor; no mismatch/noise, not physical offset or noise measurement.",
+  "scope": "AFE-only nominal TT27C 3.3V, assumed startup, no external VCM capacitor, ideal EP/EN linked to VCM, Q diagnostic and ideal common AVSS. One-sided finite-difference response after a 100uV step, not verified DC/0.5-100Hz transfer, linearity, ENOB or whole-chip signoff.",
+  "not_proven": [
+    "Physical input offset/mismatch/noise",
+    "Negative-input symmetry and linearity",
+    "Slow-mode settling and EEG-band gain/phase",
+    "User board sequence/electrode/VCM capacitor model",
+    "Foundry-qualified official C-form startup and extracted full-loop behavior"
+  ],
+  "preservation_all_unchanged": true,
+  "preservation_checks": [
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady/tb.spice",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/controls.inc",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady/.spiceinit",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/steady_criteria.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/Test-2-4/manufacturing_preflight/analog/afe_rtl_startup_224us/mapping_and_assumptions.json",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_adc_dig.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_chop1.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_cic3.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_clkgen.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_sys.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_digital_top.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_dwa.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_fifo.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_raw.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_regs.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_rnd_sat.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_spi_slave.sv",
+      "unchanged": true
+    },
+    {
+      "path": "/work/gf180/tapeout/rtl/eeg_therm2bin.sv",
+      "unchanged": true
+    }
+  ],
+  "original_interrupted_attempt": "../recovery_status.json; original files kept, no saved waveform there."
+}

@@ -1,0 +1,4 @@
+* Extracted by KLayout with GF180MCU LVS runset on : 11/11/2026 09:46
+
+.SUBCKT coupled_wires
+.ENDS coupled_wires

@@ -1,0 +1,22 @@
+== GF180 EEG ADC digital block: RTL tests ==
+iverilog: Icarus Verilog version 14.0 (devel) (s20260301-217-g8c7f8f3f-dirty)
+python:   Python 3.12.3
+
+PASS  golden_selfcheck    0s  cic_golden self checks passed
+PASS  gen_vectors        39s  top_stream: 60000 frames, codes 3..27, 56 valid outputs, wraps i3 80
+PASS  therm2bin           9s  tb_therm2bin (101024 patterns)
+PASS  dwa                44s  tb_dwa (160913 loads, every k 0..31 >= 100 times, 50641 usage-spread checks)
+PASS  clkgen              5s  tb_clkgen (2697 frames, 47 rate changes, CHOP phases 128/256 MCLK: 373/149, CHOP_OUT phases: 368/131, 86321 chop_out checks [48079 at 128 kHz, 38242 at 64 kHz] with delays 0/1/37/127/128/129/200/255, CHOP_BLANK pulses for BLANK_LEN 1/7/15 (1 MCLK before + BLANK_LEN after the edge): 73/183/139 [303 at 128 kHz, 136 at 64 kHz, 371 with CHOP_DLY != 0, 123 within 512 MCLK after a rate change, 13 blank_len changes during a pulse, all lengths 1..15 seen], 21580 raw_clk periods)
+PASS  chop1              10s  chop1 rates, e16 edges, phase lengths and 1 ms rate changes
+PASS  rnd_sat             0s  tb_rnd_sat (25156 vectors)
+PASS  cic_impulse         1s  tb_cic impulse (41984 operations, 41 output strobes bit-exact, 39 valid)
+PASS  cic_step            0s  tb_cic step (29749 operations, 29 output strobes bit-exact, 27 valid)
+PASS  cic_stream        179s  tb_cic stream (20600001 operations, 20116 output strobes bit-exact, 20110 valid)
+PASS  spi_fifo_regs      22s  tb_spi (163 SPI transfers at 2 and 1 MHz, 25 READ_SAMPLE frames, 994059 DRDY_N checks, 7 CHOP/CHOP_OUT and 14 CHOP_BLANK pin checks at 128 and 64 kHz, 11400 DBG_SEL pin checks, max MISO latency 91.5 ns, max MISO_OE latency 60.8 ns)
+PASS  top_dlc2           43s  tb_top DAC_LOAD_CYCLE=2 (40 samples bit-exact vs golden, 43149 SEL checks [29837 DWA, 13312 thermometer], 43148 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 91.55..91.55 ns, 43149 DAC_CLK pulses 1 MCLK after SEL, 43129 RAW words, 10788 CHOP edges at 128 kHz, 10787 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
+PASS  top_dlc5           15s  tb_top DAC_LOAD_CYCLE=5 (12 samples bit-exact vs golden, 14477 SEL checks [10381 DWA, 4096 thermometer], 14476 SEL popcount checks at the next CMP_STROBE, ELD CMP_STROBE->SEL 183.11..183.11 ns, 14477 DAC_CLK pulses 1 MCLK after SEL, 14458 RAW words, 3620 CHOP edges at 128 kHz, 3619 CHOP_BLANK pulses from 1 MCLK before to 7 MCLK after the CHOP_OUT edge, max MISO latency 91.5 ns)
+gate level: /work/Test-2-4/functional/netlists/eeg_digital_top.nl.v, /work/Test-2-4/functional/netlists/eeg_adc_dig.nl.v
+PASS  spi_fifo_regs_gl  410s  gate level == RTL at every MCLK falling edge (994067 cycles, 117 signals: all outputs of both macros and the wires between them)
+PASS  top_dlc2_gl       677s  gate level == RTL at every MCLK falling edge (1380777 cycles, 117 signals: all outputs of both macros and the wires between them)
+
+== summary: 15 passed, 0 failed ==

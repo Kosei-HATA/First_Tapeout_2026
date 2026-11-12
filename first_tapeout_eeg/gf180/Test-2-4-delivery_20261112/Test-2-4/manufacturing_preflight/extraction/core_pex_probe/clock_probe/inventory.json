@@ -1,0 +1,1014 @@
+[
+  {
+    "cell": "eeg_dac1_slow",
+    "bbox": "(-0.2,-0.16;7.4,16.1)",
+    "parent_cells": [
+      "adc_rdac"
+    ],
+    "instances": 0,
+    "direct_shapes": 107,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s48",
+    "bbox": "(-0.2,0;13,24)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 667,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s10",
+    "bbox": "(-0.2,-0.16;9.8,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 253,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s24",
+    "bbox": "(-0.2,-0.16;21,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 550,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s8",
+    "bbox": "(-0.2,-0.16;8.2,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 210,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s12",
+    "bbox": "(-0.2,-0.16;11.4,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 294,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s6",
+    "bbox": "(-0.2,-0.16;6.6,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 165,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_nand2_s1",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 89,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_nor2_s1",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 97,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_slow",
+    "bbox": "(-0.2,-0.16;7.4,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 107,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s2",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 81,
+    "labels": []
+  },
+  {
+    "cell": "eeg_aclk_inv_s1",
+    "bbox": "(-0.2,-0.16;2.6,16.1)",
+    "parent_cells": [
+      "eeg_adc_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 60,
+    "labels": []
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_2",
+    "bbox": "(-0.43,-0.43;4.91,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 36,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_1",
+    "bbox": "(-0.43,-0.43;3.79,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 33,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkinv_1",
+    "bbox": "(-0.43,-0.43;2.67,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 27,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_3",
+    "bbox": "(-0.43,-0.43;8.27,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 47,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_8",
+    "bbox": "(-0.43,-0.43;14.99,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 77,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_16",
+    "bbox": "(-0.43,-0.43;28.43,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 130,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu7t5v0__clkbuf_4",
+    "bbox": "(-0.43,-0.43;8.27,4.35)",
+    "parent_cells": [
+      "eeg_adc_dig"
+    ],
+    "instances": 0,
+    "direct_shapes": 51,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_mcu_sc7",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v1",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "eeg_clk_inv_s4",
+    "bbox": "(-0.2,-0.16;5,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 124,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s160",
+    "bbox": "(-0.2,0;35.4,24)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 2047,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s48",
+    "bbox": "(-0.2,0;13,24)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 667,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s10",
+    "bbox": "(-0.2,-0.16;9.8,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 253,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s96",
+    "bbox": "(-0.2,0;22.6,24)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 1294,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s32",
+    "bbox": "(-0.2,0;9.8,24)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 492,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s8",
+    "bbox": "(-0.2,-0.16;8.2,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 210,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s2",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 81,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_slow",
+    "bbox": "(-0.2,-0.16;7.4,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 107,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_nor2_s1",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 97,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_nand2_s1",
+    "bbox": "(-0.2,-0.16;3.4,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 89,
+    "labels": []
+  },
+  {
+    "cell": "eeg_clk_inv_s1",
+    "bbox": "(-0.2,-0.16;2.6,16.1)",
+    "parent_cells": [
+      "eeg_afe_clk"
+    ],
+    "instances": 0,
+    "direct_shapes": 60,
+    "labels": []
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_3",
+    "bbox": "(-0.43,-0.45;8.27,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 50,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_16",
+    "bbox": "(-0.43,-0.45;28.43,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 146,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_4",
+    "bbox": "(-0.43,-0.45;8.27,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 50,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkinv_3",
+    "bbox": "(-0.43,-0.45;4.91,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 36,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_1",
+    "bbox": "(-0.43,-0.45;3.79,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 34,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkinv_2",
+    "bbox": "(-0.43,-0.45;3.79,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 32,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_2",
+    "bbox": "(-0.43,-0.45;4.91,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 37,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkinv_1",
+    "bbox": "(-0.43,-0.45;2.67,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 28,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "gf180mcu_fd_sc_mcu9t5v0__clkbuf_8",
+    "bbox": "(-0.43,-0.45;14.99,5.49)",
+    "parent_cells": [
+      "eeg_digital_top"
+    ],
+    "instances": 0,
+    "direct_shapes": 86,
+    "labels": [
+      {
+        "layer": "63/63",
+        "text": "& Vendor GLOBALFOUNDRIES",
+        "x_um": 0.0,
+        "y_um": 2.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Product GF018hv5v_green_sc9",
+        "x_um": 0.0,
+        "y_um": 1.5
+      },
+      {
+        "layer": "63/63",
+        "text": "& Version 2015q2v2",
+        "x_um": 0.0,
+        "y_um": 1.0
+      },
+      {
+        "layer": "63/63",
+        "text": "& Metric 1.00",
+        "x_um": 0.0,
+        "y_um": 0.5
+      },
+      {
+        "layer": "21/10",
+        "text": "VNW",
+        "x_um": 0.34500000000000003,
+        "y_um": 3.92
+      },
+      {
+        "layer": "204/10",
+        "text": "VPW",
+        "x_um": 0.34,
+        "y_um": -0.085
+      }
+    ]
+  },
+  {
+    "cell": "eeg_adc_clk",
+    "bbox": "(0.4,-1;145.4,83.5)",
+    "parent_cells": [
+      "adc_top"
+    ],
+    "instances": 46,
+    "direct_shapes": 3255,
+    "labels": []
+  },
+  {
+    "cell": "eeg_afe_clk",
+    "bbox": "(0.4,-1;147,93)",
+    "parent_cells": [
+      "afe_top"
+    ],
+    "instances": 49,
+    "direct_shapes": 4475,
+    "labels": []
+  }
+]

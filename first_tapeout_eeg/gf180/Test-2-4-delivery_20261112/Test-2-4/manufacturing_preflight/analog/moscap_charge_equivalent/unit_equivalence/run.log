@@ -1,0 +1,45 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * nonlinear c versus exact integral q
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+node                                         0
+nmos_c                                       0
+xnmos_c.c_moscap_int1                        0
+xnmos_c.c_moscap_int2                        0
+nmos_q                                       0
+xnmos_q.cq_int1                              0
+pmos_c                                       0
+xpmos_c.c_moscap_int1                        0
+xpmos_c.c_moscap_int2                        0
+pmos_q                                       0
+xpmos_q.cq_int1                              0
+v.xpmos_c.vcurrmeasc_moscap#branch               0
+v.xnmos_c.vcurrmeasc_moscap#branch               0
+l.xpmos_q.lcq#branch                         0
+l.xnmos_q.lcq#branch                         0
+epmos_q#branch                               0
+epmos_c#branch                               0
+enmos_q#branch                               0
+enmos_c#branch                               0
+vreplay#branch                               0
+
+ Reference value :  0.00000e+00  [                        ]   0%
+ Reference value :  1.77891e-06  [=====                   ]  22%
+ Reference value :  3.79433e-06  [===========             ]  48%
+ Reference value :  5.13573e-06  [================        ]  65%
+ Reference value :  6.78773e-06  [=====================   ]  86%
+No. of Data Rows : 43751
+ngspice-47+ done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

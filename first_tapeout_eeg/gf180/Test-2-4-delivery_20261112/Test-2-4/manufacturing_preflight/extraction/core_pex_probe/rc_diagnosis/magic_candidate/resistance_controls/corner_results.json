@@ -1,0 +1,30 @@
+{
+  "hrhc": {
+    "style": "style ngspice(hrhc)",
+    "R": [
+      "R0 B A 16.8725"
+    ],
+    "returncode": 0
+  },
+  "hrlc": {
+    "style": "style ngspice(hrlc)",
+    "R": [
+      "R0 B A 16.8725"
+    ],
+    "returncode": 0
+  },
+  "lrhc": {
+    "style": "style ngspice(lrhc)",
+    "R": [
+      "R0 B A 1.3685"
+    ],
+    "returncode": 0
+  },
+  "lrlc": {
+    "style": "style ngspice(lrlc)",
+    "R": [
+      "R0 B A 1.3685"
+    ],
+    "returncode": 0
+  }
+}

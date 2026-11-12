@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "title": "Test-2-4 動作・起動条件の資料調査",
+  "environment": "MY-NOTE-2",
+  "root": "C:\\projects\\ft\\test1x",
+  "status": "既存設計・RTL条件は確認。実ボード動作条件は未確定。",
+  "manufacturing_signoff": false,
+  "new_simulations_run": false,
+  "original_design_changed": false,
+  "additional_research_for_artifact_write": false,
+  "classification_policy": "既存資料の設計値、試験モデルの仮定、実ボードで未取得の条件を区別する。既存資料は新しいユーザー指示や製造承認ではない。",
+  "documented_design_facts": [
+    {"subject":"公称電源","finding":"旧acceptance baselineは3.3 V、digital DVDD公称は3.3 V。analogのmin/maxを確定しない。","evidence":[{"path":"Test-2-4/manufacturing_preflight/analog/acceptance_source.json","lines":"23-36"},{"path":"gf180/tapeout/rtl/README.md","lines":"166"}]},
+    {"subject":"外部MCLK","finding":"32.768 MHz、唯一のclock。","evidence":[{"path":"gf180/tapeout/rtl/README.md","lines":"41"}]},
+    {"subject":"RESET_N","finding":"非同期assert、2FF同期deassert。","evidence":[{"path":"gf180/tapeout/rtl/README.md","lines":"42"},{"path":"gf180/tapeout/rtl/eeg_digital_top.sv","lines":"67-80"}]},
+    {"subject":"reset保持中","finding":"CMP_STROBE/DAC_CLK/CHOP/CHOP_OUT/CHOP_BLANK=0。AFE_RST=1、CHOP_EN=1、CHOP_DLY=0、BLANK_LEN=7。","evidence":[{"path":"gf180/tapeout/rtl/README.md","lines":"88-97"},{"path":"gf180/tapeout/rtl/eeg_regs.sv","lines":"104-123"}]},
+    {"subject":"AFE_RST解除","finding":"CONTROL bit4。reset後も1を保持し、register writeで変更する。経過時間による自動解除ではない。","evidence":[{"path":"gf180/tapeout/rtl/eeg_regs.sv","lines":"130-137"}]},
+    {"subject":"初回CHOPとblank","finding":"内部同期reset解除後の最初のMCLKでframe 0とCHOP開始。CHOP_DLY=0時の最初のCHOP_OUT立上りだけblankされず、その時点のAFE_RST=1を前提とする。","evidence":[{"path":"gf180/tapeout/rtl/README.md","lines":"128,140-142"},{"path":"gf180/tapeout/rtl/eeg_clkgen.sv","lines":"55-63"}]},
+    {"subject":"通常blankとCHOP_EN","finding":"CHOP_BLANKはCHOP_OUT edgeの1 MCLK前からBLANK_LEN MCLK後まで。CHOP/CHOP_OUT生成はCHOP_ENに依存せず継続。","evidence":[{"path":"gf180/tapeout/rtl/README.md","lines":"140,416"}]},
+    {"subject":"参照供給","finding":"VREFP/VREFNは外部低雑音源からpad経由。旧記述に参照差動noise<=375 nVrmsがあるが、参照元資料は見つからず現目標との再照合が必要。","evidence":[{"path":"gf180/tapeout/adc/eeg_ref.spice","lines":"4-18"}]},
+    {"subject":"VCM","finding":"VREFP/VREFNの100 kohm×2 divider midpoint。VCM padで外付けdecoupleする設計。","evidence":[{"path":"gf180/tapeout/bias/eeg_bias.spice","lines":"30,161-163"}]},
+    {"subject":"電源pad構成","finding":"AVDD×3、AVSS×3。asig_5p0というcell名を5 V動作許可とは解釈しない。","evidence":[{"path":"Test-2-4/source/layout/chip_lay.py","lines":"7-9"}]},
+    {"subject":"現LVS clock return","finding":"AVSS_CLKとDVSSをAVSSへtie。RCKN両端がAVSS。旧分離return意図と有限substrate/rail/package impedanceは未解決。","evidence":[{"path":"Test-2-4/manufacturing_preflight/analog/clock_supply_model_reconciliation.json","lines":"28-44"}]}
+  ],
+  "bench_assumptions_not_board_requirements": [
+    {"subject":"analog探索電源","values_V":[3.0,3.3,3.6],"limitation":"digital corner資料由来の探索点。confirmed full analog specificationではない。","evidence":[{"path":"Test-2-4/manufacturing_preflight/analog/clock_sensitivity.json","lines":"2"}]},
+    {"subject":"旧bias起動試験","supply_final_V":3.3,"ramp_s":0.00001,"evidence":[{"path":"gf180/tapeout/sim/bias/bias_check.py","lines":"6,51-52"}]},
+    {"subject":"最新比例ramp診断","supply_final_V":3.6,"ramp_s":0.0000001,"VRP_final_V":1.9,"VRN_final_V":1.4,"VIT_V":1.0,"CHOP_start_s":0.00000005,"BLANK_rise_start_approx_s":0.0000000195,"AFE_RST_release_start_s":0.0000078125,"limitation":"完全な外部RESET_N/同期器/SPI起動手順を実装しない。供給ramp中にも理想logicが遷移する。","evidence":[{"path":"Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/ramped_refs_reset/tb.spice","lines":"15-19,33-40"},{"path":"Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/README.md","lines":"19,45-57"}]},
+    {"subject":"電極CM","finding":"旧AFE benchは固定1.65 V。最新EP/ENはbias生成VCM基準のdependent source。実電極の許容CMや起動挙動を規定しない。","evidence":[{"path":"gf180/tapeout/sim/afe/afe_offset.py","lines":"89,97-100"},{"path":"Test-2-4/manufacturing_preflight/analog/afe_lvs_startup_controls/ramped_refs_reset/tb.spice","lines":"19,39-40"}]},
+    {"subject":"旧AFE供給/packageモデル","package_ideal_supply_V":3.3,"bondwires_per_side":3,"per_bondwire_L_H":0.000000002,"per_bondwire_R_ohm":0.1,"pad_ESD_C_per_pad_F":0.000000000003,"amplifier_decap_F":0.0000000002,"other_decap_F":0.0000000001,"other_DC_load_A":0.005,"rail_R_per_side_ohm":0.3,"adopted_clock_isolation_R_per_side_ohm":100,"adopted_clock_decap_F":0.00000000015,"limitation":"既定モデル/旧設計意図であり、実package測定やboard保証仕様ではない。","evidence":[{"path":"gf180/tapeout/sim/afe/supply_check.py","lines":"6-16,27-30,157-164"}]},
+    {"subject":"旧参照packageモデル","per_side_L_H":0.000000002,"per_side_R_ohm":0.2,"external_reference_V":[1.9,1.4],"limitation":"AFE supply bondwireモデルとは別の参照試験条件。","evidence":[{"path":"gf180/tapeout/sim/ref/ref_check.py","lines":"4-5,29,52-57"}]}
+  ],
+  "missing_board_conditions": [
+    "AVDD/DVDDのmin/nom/max、許容差、ramp範囲、rail間順序、brownout動作",
+    "外部VREFP/VREFNの精度・許容絶対範囲・AVDDとの順序・settling判定",
+    "VCM外付け容量/ESR、負荷、起動時定数",
+    "RESET_N assertion幅・解除条件、MCLK開始条件、AFE_RST解除のSPI手順と時刻",
+    "実電極common-mode範囲、電源OFF/起動時の接続、CM拘束回路",
+    "実package/bondwire/board PDN、有限substrate/rail impedance、clock-return設計意図",
+    "適用transient reliability基準、duty/lifetime目標と診断モデルの適用妥当性"
+  ],
+  "verified_matching_rtl_copies": [
+    {"source":"gf180/tapeout/rtl/README.md","copy":"Test-2-4/functional/rtl_tests/README.md","sha256":"1B0D741348441377A51E98393384DD5A618B1EDD998016332ABAF6F000BBA3AE"},
+    {"source":"gf180/tapeout/rtl/eeg_digital_top.sv","copy":"Test-2-4/functional/rtl_tests/eeg_digital_top.sv","sha256":"F8A990052D635ACD4FC7FA5B06FDD3002886E683BCF1B8540CC51554446E3D0B"},
+    {"source":"gf180/tapeout/rtl/eeg_regs.sv","copy":"Test-2-4/functional/rtl_tests/eeg_regs.sv","sha256":"CC3C9A7ED429278D117F8AAFF7D55458E92BA17037F4E280B312FEB65152042C"},
+    {"source":"gf180/tapeout/rtl/eeg_clkgen.sv","copy":"Test-2-4/functional/rtl_tests/eeg_clkgen.sv","sha256":"51C4E81EDA444C8F6EDAE0EA88244DA8EBAE5A6C6267AB45629FEF54E5AF2A9F"}
+  ],
+  "search_scope": {
+    "main_trees":["gf180/tapeout","Test-2-4/source","Test-2-4/functional","Test-2-4/manufacturing_preflight","Test2-3","verification_20261029"],
+    "enumerated_files":9743,
+    "enumeration_excluded_directory_names":["tools","ngspice48_isolated","dependencies","source_tcl",".git","__pycache__"],
+    "method":"ファイル列挙と関連キーワード検索後、関連文書・回路・RTL・試験生成スクリプトを選択して内容確認。全ファイルの全文精読ではない。",
+    "not_found_in_target":["実board schematic/PCB","製品datasheet","documentation/gf180_test_decap_20261022.md","documentation/gf180_dac1_ref_20261022.md"],
+    "absent_directories_checked":["C:\\projects\\ft\\test1x\\documentation","C:\\projects\\ft\\test1\\documentation","C:\\projects\\ft\\First_Tapeout_2026-f6437bdb182aad42397867cce8e94290f2b97bb0\\documentation"],
+    "limitation":"隣接repository全体やarchiveは完全調査していない。未確認は今回資料から確定できないという意味であり、運用条件の不存在を断定しない。"
+  },
+  "recommended_next_step":"既知RTL仕様を起動条件表へ取り込み、未知board条件だけを確認する。確定前に診断bench条件を恒久要求へ昇格しない。",
+  "artifacts":["README.md","summary.json","startup_conditions.md"]
+}

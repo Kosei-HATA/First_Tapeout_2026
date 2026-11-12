@@ -1,0 +1,83 @@
+{
+  "connectivity": {
+    "status": "finished",
+    "start_epoch": 1794277449.6571393,
+    "cmd": [
+      "python3",
+      "/work/Test-2-4/scripts/check_connectivity.py"
+    ],
+    "exitcode": 0,
+    "seconds": 620.67
+  },
+  "prepare_core": {
+    "status": "finished",
+    "start_epoch": 1794278070.3266819,
+    "cmd": [
+      "python3",
+      "/work/Test-2-4/verification/prepare_core_lvs.py"
+    ],
+    "exitcode": 0,
+    "seconds": 14.95
+  },
+  "restore_hints": {
+    "status": "finished",
+    "start_epoch": 1794278085.282093,
+    "cmd": [
+      "python3",
+      "/work/Test-2-4/verification/restore_lvs_hints.py"
+    ],
+    "exitcode": 0,
+    "seconds": 12.29
+  },
+  "core_lvs": {
+    "status": "finished",
+    "start_epoch": 1794278097.5715847,
+    "cmd": [
+      "bash",
+      "/work/Test-2-4/verification/core_with_hints/run.sh"
+    ],
+    "exitcode": 0,
+    "seconds": 1579.07
+  },
+  "summarize_core": {
+    "status": "finished",
+    "start_epoch": 1794279676.647255,
+    "cmd": [
+      "python3",
+      "/work/Test-2-4/verification/summarize_core_lvs.py"
+    ],
+    "exitcode": 0,
+    "seconds": 54.18
+  },
+  "full_drc": {
+    "status": "finished",
+    "start_epoch": 1794279730.8352382,
+    "cmd": [
+      "/foss/tools/klayout/klayout",
+      "-b",
+      "-r",
+      "/foss/pdks/gf180mcuD/libs.tech/klayout/tech/drc/gf180mcu.drc",
+      "-rd",
+      "input=/work/Test-2-4/gds/Test-2-4.gds",
+      "-rd",
+      "report=/work/Test-2-4/verification/full_drc.lyrdb",
+      "-rd",
+      "topcell=chip_top",
+      "-rd",
+      "variant=D",
+      "-rd",
+      "run_mode=deep",
+      "-rd",
+      "workers=2",
+      "-rd",
+      "threads=2",
+      "-rd",
+      "decks=all"
+    ],
+    "exitcode": 0,
+    "seconds": 2229.51
+  },
+  "workflow": {
+    "status": "finished"
+  }
+}

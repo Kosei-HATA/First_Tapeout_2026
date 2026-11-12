@@ -1,0 +1,114 @@
+* Independent closure from verified eeg_core_reference.cdl
+.subckt eeg_adc_clk CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB VDD VSS
+XI0 XB CHOP1 VDD VSS eeg_aclk_inv_s1
+XI1 X XB VDD VSS eeg_aclk_inv_s2
+XD1 XD1 X VDD VSS eeg_aclk_slow
+XD2 XD2 XD1 VDD VSS eeg_aclk_slow
+XD3 XD3 XD2 VDD VSS eeg_aclk_slow
+XD4 XD XD3 VDD VSS eeg_aclk_slow
+XGDA DAN X XD VDD VSS eeg_aclk_nor2_s1
+XGDB DBN X XD VDD VSS eeg_aclk_and2n_s1
+XM1 XMB X VDD VSS eeg_aclk_slow
+XM2 XM XMB VDD VSS eeg_aclk_inv_s1
+XMD1 XMD1 XM VDD VSS eeg_aclk_slow
+XMD2 XMD XMD1 VDD VSS eeg_aclk_slow
+XGIA IAN XM XMD VDD VSS eeg_aclk_nand2_s1
+XGIB IBN XM XMD VDD VSS eeg_aclk_or2n_s1
+XA1 A1 IAN VDD VSS eeg_aclk_inv_s2
+XA2 A2 A1 VDD VSS eeg_aclk_inv_s6
+XA3 CIA A2 VDD VSS eeg_aclk_inv_s12
+XAI IA IAN VDD VSS eeg_aclk_inv_s1
+XAN1 AN1 IA VDD VSS eeg_aclk_inv_s2
+XAN2 AN2 AN1 VDD VSS eeg_aclk_inv_s8
+XAN3 NCIA AN2 VDD VSS eeg_aclk_inv_s24
+XB1 B1 IBN VDD VSS eeg_aclk_inv_s2
+XB2 B2 B1 VDD VSS eeg_aclk_inv_s6
+XB3 CIB B2 VDD VSS eeg_aclk_inv_s12
+XBI IB IBN VDD VSS eeg_aclk_inv_s1
+XBN1 BN1 IB VDD VSS eeg_aclk_inv_s2
+XBN2 BN2 BN1 VDD VSS eeg_aclk_inv_s8
+XBN3 NCIB BN2 VDD VSS eeg_aclk_inv_s24
+XDA1 DA1 DAN VDD VSS eeg_aclk_inv_s2
+XDA2 DA2 DA1 VDD VSS eeg_aclk_inv_s8
+XDA3 CDA DA2 VDD VSS eeg_aclk_inv_s24
+XDAI DA DAN VDD VSS eeg_aclk_inv_s1
+XDAN1 DAN1 DA VDD VSS eeg_aclk_inv_s2
+XDAN2 DAN2 DAN1 VDD VSS eeg_aclk_inv_s10
+XDAN3 NCDA DAN2 VDD VSS eeg_aclk_inv_s48
+XDB1 DB1 DBN VDD VSS eeg_aclk_inv_s2
+XDB2 DB2 DB1 VDD VSS eeg_aclk_inv_s8
+XDB3 CDB DB2 VDD VSS eeg_aclk_inv_s24
+XDBI DB DBN VDD VSS eeg_aclk_inv_s1
+XDBN1 DBN1 DB VDD VSS eeg_aclk_inv_s2
+XDBN2 DBN2 DBN1 VDD VSS eeg_aclk_inv_s10
+XDBN3 NCDB DBN2 VDD VSS eeg_aclk_inv_s48
+.ends eeg_adc_clk
+
+.subckt eeg_aclk_inv_s48 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=120u l=0.28u nf=48 m=1
+MN Y A VSS VSS nfet_03v3 w=48u l=0.28u nf=48 m=1
+.ends eeg_aclk_inv_s48
+
+.subckt eeg_aclk_inv_s10 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=25u l=0.28u nf=10 m=1
+MN Y A VSS VSS nfet_03v3 w=10u l=0.28u nf=10 m=1
+.ends eeg_aclk_inv_s10
+
+.subckt eeg_aclk_inv_s2 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=5u l=0.28u nf=2 m=1
+MN Y A VSS VSS nfet_03v3 w=2u l=0.28u nf=2 m=1
+.ends eeg_aclk_inv_s2
+
+.subckt eeg_aclk_inv_s1 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=2.5u l=0.28u nf=1 m=1
+MN Y A VSS VSS nfet_03v3 w=1u l=0.28u nf=1 m=1
+.ends eeg_aclk_inv_s1
+
+.subckt eeg_aclk_inv_s24 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=60u l=0.28u nf=24 m=1
+MN Y A VSS VSS nfet_03v3 w=24u l=0.28u nf=24 m=1
+.ends eeg_aclk_inv_s24
+
+.subckt eeg_aclk_inv_s8 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=20u l=0.28u nf=8 m=1
+MN Y A VSS VSS nfet_03v3 w=8u l=0.28u nf=8 m=1
+.ends eeg_aclk_inv_s8
+
+.subckt eeg_aclk_inv_s12 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=30u l=0.28u nf=12 m=1
+MN Y A VSS VSS nfet_03v3 w=12u l=0.28u nf=12 m=1
+.ends eeg_aclk_inv_s12
+
+.subckt eeg_aclk_inv_s6 Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=15u l=0.28u nf=6 m=1
+MN Y A VSS VSS nfet_03v3 w=6u l=0.28u nf=6 m=1
+.ends eeg_aclk_inv_s6
+
+.subckt eeg_aclk_or2n_s1 Y A B VDD VSS
+XG YB A B VDD VSS eeg_aclk_nor2_s1
+XI Y YB VDD VSS eeg_aclk_inv_s1
+.ends eeg_aclk_or2n_s1
+
+.subckt eeg_aclk_nor2_s1 Y A B VDD VSS
+MPA M1 A VDD VDD pfet_03v3 w=5u l=0.28u nf=1 m=1
+MPB Y B M1 VDD pfet_03v3 w=5u l=0.28u nf=1 m=1
+MNA Y A VSS VSS nfet_03v3 w=1u l=0.28u nf=1 m=1
+MNB Y B VSS VSS nfet_03v3 w=1u l=0.28u nf=1 m=1
+.ends eeg_aclk_nor2_s1
+
+.subckt eeg_aclk_nand2_s1 Y A B VDD VSS
+MPA Y A VDD VDD pfet_03v3 w=2.5u l=0.28u nf=1 m=1
+MPB Y B VDD VDD pfet_03v3 w=2.5u l=0.28u nf=1 m=1
+MNA Y A M1 VSS nfet_03v3 w=2u l=0.28u nf=1 m=1
+MNB M1 B VSS VSS nfet_03v3 w=2u l=0.28u nf=1 m=1
+.ends eeg_aclk_nand2_s1
+
+.subckt eeg_aclk_slow Y A VDD VSS
+MP Y A VDD VDD pfet_03v3 w=1u l=2u nf=1 m=1
+MN Y A VSS VSS nfet_03v3 w=1u l=4u nf=1 m=1
+.ends eeg_aclk_slow
+
+.subckt eeg_aclk_and2n_s1 Y A B VDD VSS
+XG YB A B VDD VSS eeg_aclk_nand2_s1
+XI Y YB VDD VSS eeg_aclk_inv_s1
+.ends eeg_aclk_and2n_s1

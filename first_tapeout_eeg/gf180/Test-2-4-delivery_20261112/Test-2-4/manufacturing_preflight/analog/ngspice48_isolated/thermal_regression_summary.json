@@ -1,0 +1,66 @@
+[
+  {
+    "case": "ideal_B",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "ideal_R",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "ideal_R_noiseless",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "pdk_double_length",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "pdk_hot",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "pdk_one",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "pdk_parallel",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  },
+  {
+    "case": "pdk_series",
+    "exitcode": 0,
+    "ac.csv_max_abs_difference": 0.0,
+    "ac.csv_exactly_equal": true,
+    "noise.csv_max_abs_difference": 0.0,
+    "noise.csv_exactly_equal": true
+  }
+]

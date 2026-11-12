@@ -1,0 +1,12 @@
+rnd_sat: 25156 vectors, 10077 saturated
+cic_impulse: 41984 ops, 41984 inputs, 0 clears (0 inputs dropped by clear), 41 strobes, 39 valid
+  wraps i1/i2/i3 = 0/0/35, comb1/2/3 = 10/2/0
+  rounding: ties to even 1, ties odd->up 1, up 12, down 27, saturated 0
+cic_step: 29749 ops, 29749 inputs, 0 clears (0 inputs dropped by clear), 29 strobes, 27 valid
+  wraps i1/i2/i3 = 0/0/127, comb1/2/3 = 3/7/4
+  rounding: ties to even 3, ties odd->up 3, up 6, down 17, saturated 0
+stream codes: min 2 max 31 mean x +1.5596
+cic_stream: 20600001 ops, 20599999 inputs, 2 clears (1 inputs dropped by clear), 20116 strobes, 20110 valid
+  wraps i1/i2/i3 = 0/816/5105718, comb1/2/3 = 5005/5074/2624
+  rounding: ties to even 3, ties odd->up 3, up 9901, down 10209, saturated 0
+top_stream: 60000 frames, codes 3..27, 56 valid outputs, wraps i3 80

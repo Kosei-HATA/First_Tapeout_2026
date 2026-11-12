@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-11",
+  "project": "Test-2-4",
+  "scope": "Official public GF180MCU reliability documents, installed open PDK implementation, and existing current-LVS integral-Q diagnostic records.",
+  "status": "TRANSIENT_RELIABILITY_NOT_APPROVED",
+  "conclusion_ja": "公開資料だけでは今回の短時間超過を信頼性合格にも不合格にも確定できない。3.63 VはDC gate-to-any-node上限。周期的超過はdutyとTDDB lifetimeに依存するが、定量許容条件を今回確認した資料とモデルから取得できなかった。",
+  "dc_gate_to_any_node_limit_V": 3.63,
+  "interpretation": {
+    "periodic_exceedance_possible_in_official_guidance": true,
+    "instantaneous_absolute_maximum_not_established_by_dc_limit": true,
+    "short_duration_alone_does_not_establish_acceptability": true,
+    "simulation_completion_does_not_prove_lifetime": true,
+    "hci_requires_vds_conduction_and_stress_history": true,
+    "formal_CX020_waiver_requirement_not_established": true,
+    "not_a_manufacturing_or_lifetime_signoff": true
+  },
+  "sources": [
+    {
+      "id": "drm_14_1",
+      "url": "https://gf180mcu-pdk.readthedocs.io/en/latest/physical_verification/design_manual/drm_14_1.html",
+      "source_url": "https://gf180mcu-pdk.readthedocs.io/en/latest/_sources/physical_verification/design_manual/drm_14_1.rst.txt",
+      "sections": [
+        "14.1.1",
+        "14.1.2",
+        "14.1.3",
+        "14.1.4.1",
+        "14.1.4.2"
+      ],
+      "exact_quote_fragments": [
+        "allowed to periodically exceed the maximum DC values",
+        "Maximum allowable duty cycle will depend upon TDDB lifetime at that duty cycle."
+      ],
+      "findings_ja": [
+        "薄膜酸化膜のDC gate-to-any-node上限3.63 V。",
+        "周期的超過値はdutyに依存し、許容dutyはTDDB寿命に依存する。数値曲線や寿命係数は当該節にない。",
+        "通常設計範囲−40～125℃、0℃未満のHCIについてR-QR-MI-008参照。",
+        "LV nominal 3.3 V、電源overshoot tolerance 10%。",
+        "HCIはVDSとhot carrier発生中の導通時間割合に依存。"
+      ]
+    },
+    {
+      "id": "oxide_breakdown",
+      "url": "https://gf180mcu-pdk.readthedocs.io/en/latest/analog/spice/elec_specs/elec_specs_5_4.html",
+      "sections": [
+        "5.4"
+      ],
+      "finding_ja": "BVoxは破壊電圧仕様であり、長期TDDB使用許容値へ転用できない。"
+    },
+    {
+      "id": "model_extraction",
+      "url": "https://gf180mcu-pdk.readthedocs.io/en/latest/analog/model_parameters/LV/LV_2_1.html",
+      "sections": [
+        "2.1"
+      ],
+      "finding_ja": "−40/25/125℃のDC I-V測定とモデル調整が説明される。過渡寿命認定の証拠ではない。"
+    },
+    {
+      "id": "drm_scope",
+      "url": "https://gf180mcu-pdk.readthedocs.io/en/latest/physical_verification/design_manual/drm_02.html",
+      "sections": [
+        "2.5"
+      ],
+      "finding_ja": "DRC rulesとguidelinesを区別。今回の過渡問題をCX-020 DRC waiver必須と呼ぶ根拠は確認できない。"
+    }
+  ],
+  "installed_pdk": {
+    "environment": "MY-NOTE-2",
+    "container": "gf180-audit-20261029",
+    "path": "/foss/pdks/gf180mcuD",
+    "open_pdks_commit": "b344c97eacc2aaf8e14ae7e43e2e9dc0871de2c0",
+    "gf180mcu_fd_pr_commit": "a0c31bd71c2084a5283204dc4e80f1f901d2d5d0",
+    "gf180mcu_pdk_reference_commit": "a897aa30369d3bcec87d9d50ce9b01f320f854ef",
+    "provenance_files": [
+      "SOURCES",
+      ".config/nodeinfo.json"
+    ],
+    "model_file": "libs.tech/ngspice/sm141064.ngspice",
+    "document": "YI-141-SM064",
+    "revision": 9,
+    "bsim_version": "4.5",
+    "model_level": 54,
+    "sha256": "f6f4a96e18fc5ad11270ad3451aaecc7ac37fc81eb61e15b0d7d94c7bc594a24",
+    "search_scope": "Files directly under libs.tech/ngspice",
+    "search_terms": [
+      "reliability",
+      "aging",
+      "TDDB",
+      "HCI",
+      "lifetime",
+      "SOA",
+      "assert",
+      "vgs_max",
+      "vgd_max",
+      "vgb_max",
+      "vds_max"
+    ],
+    "corresponding_reliability_definitions_found": false,
+    "scope_caveat": "Negative result applies to inspected files; it does not establish absence from every foundry deliverable."
+  },
+  "diagnostic_records": {
+    "source_paths": [
+      "../analog/afe_lvs_supply_comparison.json",
+      "../analog/afe_lvs_startup_controls/README.md",
+      "../analog/afe_lvs_startup_controls/final_summary.json"
+    ],
+    "conditions": "3.6 V TT27, current-LVS common-AVSS, integral-Q diagnostic; not official-model or physical lifetime validation.",
+    "startup": {
+      "instance": "xa.xamp.xop_a.xp",
+      "pair": "VGB",
+      "max_abs_V": 3.665517019979512,
+      "peak_time_s": 5.320013084918583e-7,
+      "exposure_above_3p63_s": 3.3139446028464853e-9,
+      "record_duration_s": 0.00003125,
+      "duty_fraction_of_record": 0.00010604622729108753,
+      "mission_lifetime_duty": false
+    },
+    "finer_startup_control": {
+      "maximum_timestep_s": 2.5e-10,
+      "max_abs_gate_pair_V": 3.665122777,
+      "exposure_above_3p63_s": 3.294887924e-9,
+      "simulation_end_s": 0.000001,
+      "asymptotic_convergence_proven": false
+    },
+    "later_events": [
+      {
+        "window_s": [
+          0.000001,
+          0.0000078125
+        ],
+        "instance": "xc.xcda3.xn",
+        "pair": "VGS",
+        "max_abs_V": 3.644227526022119,
+        "exposure_above_3p63_s": 9.732987719002651e-11
+      },
+      {
+        "window_s": [
+          0.0000078125,
+          0.000015625
+        ],
+        "instance": "xa.xoff.xop.xnph.xp",
+        "pair": "VGS",
+        "max_abs_V": 3.647154,
+        "exposure_above_3p63_s": 3.5812e-11,
+        "values_rounded_from_readme": true
+      },
+      {
+        "window_s": [
+          0.000015625,
+          0.0000234375
+        ],
+        "instance": "xa.xoff.xop.xnph.xp",
+        "pair": "VGS",
+        "max_abs_V": 3.647179,
+        "exposure_above_3p63_s": 3.6127e-11,
+        "values_rounded_from_readme": true
+      },
+      {
+        "window_s": [
+          0.0000234375,
+          0.00003125
+        ],
+        "instance": "xa.xoff.xop.xnph.xp",
+        "pair": "VGS",
+        "max_abs_V": 3.646557,
+        "exposure_above_3p63_s": 3.5615e-11,
+        "values_rounded_from_readme": true
+      }
+    ],
+    "later_exposure_fine_timestep_validated": false,
+    "caveats_ja": [
+      "起動と周期内の最悪値は同じVGBではない。",
+      "後続約36～97 psは1 ns最大刻み波形からの補間値である。",
+      "保存窓のdutyは製品寿命dutyではない。",
+      "Q診断、理想substrate/rail、未確定の電源シーケンス、短い後続記録という制約がある。",
+      "VDSの超過はHCIの独立した評価が必要である。"
+    ]
+  },
+  "missing_reliability_data": [
+    "Voltage-versus-duty allowance",
+    "TDDB lifetime coefficients",
+    "Target lifetime and failure probability",
+    "Area and temperature dependence",
+    "Single-pulse limits",
+    "HCI aging/allowed degradation and waveform integration method",
+    "R-QR-MI-008 body"
+  ],
+  "required_mission_profile": [
+    "Target service life and powered hours",
+    "Operating/standby fraction",
+    "Clock frequencies and operating modes",
+    "Lifetime startup/reset/brownout counts",
+    "Junction-temperature distribution",
+    "Supply range and ramp-rate range",
+    "VRP/VRN and clock/blank availability sequence",
+    "Reset assertion/release requirements",
+    "Electrode common-mode startup behavior",
+    "Substrate/rail/package impedance"
+  ],
+  "required_external_confirmation_ja": "超過を残して許容と認定するには、製造窓口／foundryから対象デバイス・端子対・温度・波形・寿命に適用できる資料または個別判断を得る必要がある。承認取得済みではなく、CX-020 DRC waiver必須とも断定しない。",
+  "external_contact_performed": false,
+  "new_simulation_performed": false,
+  "original_design_modified": false,
+  "pdk_modified": false,
+  "write_scope": [
+    "reliability_research/README.md",
+    "reliability_research/summary.json"
+  ],
+  "research_limits": [
+    "R-QR-MI-008 body not obtained through public search",
+    "No quantitative public TDDB/HCI transient qualification criteria found in inspected sources",
+    "Specific public GitHub revision fetch restricted; installed revision verified from local provenance files"
+  ]
+}

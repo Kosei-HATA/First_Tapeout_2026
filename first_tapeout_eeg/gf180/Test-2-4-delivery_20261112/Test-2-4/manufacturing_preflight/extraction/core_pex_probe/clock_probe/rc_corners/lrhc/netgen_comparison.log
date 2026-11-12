@@ -1,0 +1,48 @@
+Flattening unmatched subcell eeg_aclk_inv_s1 in circuit eeg_adc_clk (2)(6 instances)
+Flattening unmatched subcell eeg_aclk_inv_s2 in circuit eeg_adc_clk (2)(9 instances)
+Flattening unmatched subcell eeg_aclk_slow in circuit eeg_adc_clk (2)(7 instances)
+Flattening unmatched subcell eeg_aclk_nor2_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_and2n_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_nand2_s1 in circuit eeg_adc_clk (2)(2 instances)
+Flattening unmatched subcell eeg_aclk_inv_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_or2n_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_nor2_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_inv_s1 in circuit eeg_adc_clk (2)(1 instance)
+Flattening unmatched subcell eeg_aclk_inv_s6 in circuit eeg_adc_clk (2)(2 instances)
+Flattening unmatched subcell eeg_aclk_inv_s12 in circuit eeg_adc_clk (2)(2 instances)
+Flattening unmatched subcell eeg_aclk_inv_s8 in circuit eeg_adc_clk (2)(4 instances)
+Flattening unmatched subcell eeg_aclk_inv_s24 in circuit eeg_adc_clk (2)(4 instances)
+Flattening unmatched subcell eeg_aclk_inv_s10 in circuit eeg_adc_clk (2)(2 instances)
+Flattening unmatched subcell eeg_aclk_inv_s48 in circuit eeg_adc_clk (2)(2 instances)
+
+Class eeg_adc_clk (0):  Merged 390 parallel devices.
+Subcircuit summary:
+Circuit 1: eeg_adc_clk                     |Circuit 2: eeg_adc_clk                     
+-------------------------------------------|-------------------------------------------
+pfet_03v3 (249->48)                        |pfet_03v3 (48)                             
+nfet_03v3 (237->48)                        |nfet_03v3 (48)                             
+Number of devices: 96                      |Number of devices: 96                      
+Number of nets: 51                         |Number of nets: 51                         
+---------------------------------------------------------------------------------------
+Netlists match uniquely.
+
+Subcircuit pins:
+Circuit 1: eeg_adc_clk                     |Circuit 2: eeg_adc_clk                     
+-------------------------------------------|-------------------------------------------
+CHOP1                                      |CHOP1                                      
+CIA                                        |CIA                                        
+CDA                                        |CDA                                        
+CIB                                        |CIB                                        
+CDB                                        |CDB                                        
+NCIA                                       |NCIA                                       
+NCDA                                       |NCDA                                       
+NCDB                                       |NCDB                                       
+NCIB                                       |NCIB                                       
+VDD                                        |VDD                                        
+VSS                                        |VSS                                        
+---------------------------------------------------------------------------------------
+Cell pin lists are equivalent.
+Device classes eeg_adc_clk and eeg_adc_clk are equivalent.
+
+Final result: Circuits match uniquely.
+.

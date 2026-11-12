@@ -1,0 +1,35 @@
+
+Note: Compatibility modes selected: hs a
+
+
+Circuit: * original model isolation
+
+Doing analysis at TEMP = 27.000000 and TNOM = 27.000000
+
+Using SPARSE 1.3 as Direct Linear Solver
+
+Initial Transient Solution
+--------------------------
+
+Node                                   Voltage
+----                                   -------
+drive                                     0.85
+gate                                      0.85
+xc.c_moscap_int1                         -0.85
+e.xc.ec_moscap#branch                        0
+vdrv#branch                                  0
+
+ Reference value :  6.23763e-08
+ Reference value :  1.81408e-07
+ Reference value :  2.97751e-07
+ Reference value :  4.12486e-07
+ Reference value :  5.30595e-07
+ Reference value :  6.38454e-07
+ Reference value :  7.28361e-07
+ Reference value :  7.86876e-07
+ Reference value :  8.89564e-07
+ Reference value :  9.92283e-07
+No. of Data Rows : 27240
+ngspice-46 done
+Warning: m=xx on .subckt line will override multiplier m hierarchy!
+

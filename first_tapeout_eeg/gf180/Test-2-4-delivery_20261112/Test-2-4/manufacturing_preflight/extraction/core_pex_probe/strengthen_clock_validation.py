@@ -1,0 +1,11 @@
+from pathlib import Path
+import re,subprocess,json
+p=Path('/work/Test-2-4/manufacturing_preflight/extraction/core_pex_probe');f=p/'validate_clock_flat_rc.py';s=f.read_text();s=s.replace('import re,json,collections','import re,json,collections,sys');s=s.replace("b,bp=flatten(p/'rc.spice')","b,bp=flatten(p/(sys.argv[1] if len(sys.argv)>1 else 'rc.spice'))")
+s=s.replace("r={'ports_before'", "bycanonical=collections.defaultdict(set)\nfor group,choices in groups.items():\n if len(choices)==1:bycanonical[next(iter(choices))].add(group)\ndisconnected={n:len(g) for n,g in bycanonical.items() if len(g)>1}\ndef uncertainty(rows,rc=False):\n z=collections.defaultdict(float)\n for typ,ns,v in rows:\n  if typ=='C':\n   x,y=(map(canon,ns) if rc else ns)\n   if x==y:continue\n   m=re.fullmatch(r'([-+0-9.]+)([fpnum]?)',v[0])\n   decimals=len(m[1].split('.')[1]) if '.' in m[1] else 0\n   z[tuple(sorted([x,y]))]+=.5*10**(-decimals)*{'':1e15,'f':1,'p':1e3,'n':1e6,'u':1e9,'m':1e12}[m[2]]\n return z\nua,ub=uncertainty(a),uncertainty(b,True)\nviolations=[{'pair':list(x),'delta_fF':abs(ca[x]-cb[x]),'rounding_bound_fF':ua[x]+ub[x]} for x in set(ca)|set(cb) if abs(ca[x]-cb[x])>ua[x]+ub[x]+1e-8]\nr={'disconnected_groups':disconnected,'cap_print_precision_violations':violations,'pass':ap==bp and not unknown and ma==mb and not disconnected and not violations,'ports_before'")
+s=s.replace("p/'rc_preservation.json'","p/(sys.argv[2] if len(sys.argv)>2 else 'rc_preservation.json')");f.write_text(s)
+d=p/'clock_probe/flat';raw=(d/'rc.spice').read_text();cases={'missing_R':re.sub(r'^R0 .*\n','',raw,flags=re.M),'extra_C':raw.replace('.ends','C999999 CHOP1 VSS 1f\n.ends')};reports={}
+for name,txt in [('positive',raw)]+list(cases.items()):
+ file='rc.spice' if name=='positive' else name+'.spice'
+ if name!='positive':(d/file).write_text(txt)
+ output='rc_preservation.json' if name=='positive' else name+'.json';r=subprocess.run(['python3',str(f),file,output],capture_output=True,text=True);(d/(name+'_check.log')).write_text(r.stdout+r.stderr);assert r.returncode==0;r=json.loads((d/output).read_text());reports[name]={'pass':r['pass'],'disconnected':r['disconnected_groups'],'C_violations':r['cap_print_precision_violations'][:3]}
+(d/'negative_checks.json').write_text(json.dumps(reports,indent=2));print(json.dumps(reports,indent=2))

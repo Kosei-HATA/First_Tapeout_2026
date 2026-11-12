@@ -1,0 +1,79 @@
+{
+  "stage": "finished",
+  "completed_corners": [
+    {
+      "corner": "ss",
+      "temperature_C": 85,
+      "tolerance": "A",
+      "even_charge_fC_per_toggle": {
+        "one": -0.00010607135388867515,
+        "all": 1.1113579185279271e-05
+      },
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true,
+      "seconds": 5450.24
+    },
+    {
+      "corner": "ff",
+      "temperature_C": -20,
+      "tolerance": "A",
+      "even_charge_fC_per_toggle": {
+        "one": -0.00010001621893696366,
+        "all": -0.0001032661331034771
+      },
+      "limit_fC_per_toggle": 0.016,
+      "within_limit": true,
+      "seconds": 8156.98
+    }
+  ],
+  "completed_subruns": [
+    {
+      "tag": "even_one0_ss85_v0_s0",
+      "seconds": 1529.53,
+      "last_time_s": 7.23125e-05,
+      "samples": 279760
+    },
+    {
+      "tag": "even_one1_ss85_v0_s0",
+      "seconds": 1460.89,
+      "last_time_s": 7.23125e-05,
+      "samples": 274434
+    },
+    {
+      "tag": "even_all0_ss85_v0_s0",
+      "seconds": 1357.02,
+      "last_time_s": 7.23125e-05,
+      "samples": 277900
+    },
+    {
+      "tag": "even_all1_ss85_v0_s0",
+      "seconds": 1102.75,
+      "last_time_s": 7.23125e-05,
+      "samples": 271953
+    },
+    {
+      "tag": "even_one0_ff-20_v0_s0",
+      "seconds": 1111.13,
+      "last_time_s": 7.23125e-05,
+      "samples": 278980
+    },
+    {
+      "tag": "even_one1_ff-20_v0_s0",
+      "seconds": 4820.17,
+      "last_time_s": 7.23125e-05,
+      "samples": 273575
+    },
+    {
+      "tag": "even_all0_ff-20_v0_s0",
+      "seconds": 1126.38,
+      "last_time_s": 7.23125e-05,
+      "samples": 276795
+    },
+    {
+      "tag": "even_all1_ff-20_v0_s0",
+      "seconds": 1099.23,
+      "last_time_s": 7.23125e-05,
+      "samples": 270989
+    }
+  ]
+}

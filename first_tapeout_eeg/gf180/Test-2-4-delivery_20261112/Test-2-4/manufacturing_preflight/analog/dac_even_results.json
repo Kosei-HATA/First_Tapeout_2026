@@ -1,0 +1,26 @@
+[
+  {
+    "corner": "ss",
+    "temperature_C": 85,
+    "tolerance": "A",
+    "even_charge_fC_per_toggle": {
+      "one": -0.00010607135388867515,
+      "all": 1.1113579185279271e-05
+    },
+    "limit_fC_per_toggle": 0.016,
+    "within_limit": true,
+    "seconds": 5450.24
+  },
+  {
+    "corner": "ff",
+    "temperature_C": -20,
+    "tolerance": "A",
+    "even_charge_fC_per_toggle": {
+      "one": -0.00010001621893696366,
+      "all": -0.0001032661331034771
+    },
+    "limit_fC_per_toggle": 0.016,
+    "within_limit": true,
+    "seconds": 8156.98
+  }
+]

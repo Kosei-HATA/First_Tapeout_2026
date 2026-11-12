@@ -97,7 +97,7 @@ def main():
         return
     variant, rest = sys.argv[1], sys.argv[2:]
     tag = "_".join(a.lstrip("-") for a in rest) or "default"
-    out = os.path.join(HERE, "runs", "adc", f"{variant}_{tag}")
+    out = os.path.join(HERE, "runs", "adc" + (f"_{_REV}" if _REV else ""), f"{variant}_{tag}")   # r7: runs/adc_r7
     subprocess.run([sys.executable, os.path.join(ADC_LOOP, "adc_deck.py"), out] + rest, check=True, cwd=ADC_LOOP)
     path = os.path.join(out, "circuit.spice")
     txt = open(path).read()

@@ -1,0 +1,11 @@
+metric,unit,schematic,pex_1023,final,note
+"DAC1 even-order error, one element",fC,5e-05,0.473,-0.00135,Requirement |q| <= 0.008 fC; adc_rdac unchanged since r6 (its extraction)
+"DAC1 even-order error, 31 elements",fC,-3e-05,-0.687,-0.00125,Requirement |q| <= 0.008 fC; adc_rdac unchanged since r6 (its extraction)
+"SNDR with DAC1 even-order error, behavioural",dB,151.7,68.9,123.0,"adc_beh_mc.py with C1 and C2 x1.25, ELD 0.22, typical, one element's even charge (schematic +0.00005 fC, extraction -0.00135 fC); the 10/23 column is its own run (ELD 3/32)"
+Clock CLKQ to O2P coupling,fF,,32.5,2.010,r10 extraction of adc_top (2.0100 and 2.0088 fF, identical to r7's)
+Clock CLKQ to O2N coupling,fF,,5.3,2.009,r10 extraction of adc_top (2.0100 and 2.0088 fF, identical to r7's)
+Loop gain,V/V,0.9997,1.0046,0.9974,"pex_adc.py (runs/adc_r10/): the r10 extraction and the current schematic, both with C1 and C2 x1.25; equal to the r7 extraction's run"
+"Loop residual, rms",DAC1 range = 1,0.0165,0.0455,0.0202,80 frames: about +-8 % from the quantization sequence alone
+"Second-integrator swing, minimum",mV,-31.7,-49.6,-32.2,Quantizer range +-46.9 mV
+"Second-integrator swing, maximum",mV,32.0,32.6,33.3,Quantizer range +-46.9 mV
+Decisions at the ideal threshold,%,96.2,11.2,95.0,"Final 76 of 80 frames (best common offset +0.2 mV: 95.0 %), schematic 77 of 80"

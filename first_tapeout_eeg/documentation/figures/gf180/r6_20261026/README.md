@@ -1,11 +1,13 @@
-# r6：Magic DRC の直しのあと（10/26、今の版）
+# r6：Magic DRC の直しのあと（10/26）
+
+**この版は使わない。** コアの DVDD が、どの DVDD パッドにもつながっていない（10/29 に判明。最初の組み立てから r7 までのすべての版）。今の版は r9（`../r9_20261029/`）。ここの図は、比べるために残している。
 
 - チップ：c752ec78（6 回目の組み立て：抵抗の頭のコンタクト、MIM の下の板の Via4、穴埋めの COMP／ポリを木に組み替えた形）。チップ全体の DRC 違反なし、コアの LVS 一致、precheck は pre_20261026 で通り、10/27 に最新の precheck（10/20 版）と `--slot 1x0p5 --cob` でも通った（pre_20261027_cob。`chip_top_fill.gds` の sha256 1343e9cc…）。
 - GDS（穴埋めのあと、precheck に出した形）は `gf180/tapeout/chip/gds/chip_top_fill_r6_20261026.gds.gz`（gzip、42 MB）。
 - ここの図は、すべてこの版の GDS、コアの LVS の結果、抽出から描いた（10/26 夜）。ファイル名と図の右上に版（r6）を書いた。
 - 比べるために前の値を並べた列（回路図、10/23 の抽出、B7 の前の DC 経路など）は、図の中にそう書いてある。
 
-## `viz/`：可視化（24 枚）
+## `viz/`：可視化（30 枚）
 
 | 番号 | 図 | 元にしたもの |
 |---|---|---|
@@ -19,6 +21,9 @@
 | 19、20 | AFE のループ、帯域内の伝達 | `viz_data.py afe_loop`、`bb`、`zin`（帯域内の過渡の菱形） |
 | 21、22 | ADC の OTA、NTF／STF | `viz_data.py ota`、`ntf`（6 回目の adc_top の抽出） |
 | 23、24 | 入力インピーダンス | `viz_data.py zin_ac`、`zin` |
+| 25〜28 | 電源投入、解除、電極の DC オフセット、フルスケールの正弦波（10/29 に追加） | `afe_startup.py`（`runs/startup/*_chip`：6 回目のチップの配線。ADC の基準の負荷は、C1 を半分にする前の 18.4 kΩ のまま）と、図 26 の計算点を残した回し直し（各回の `probe/`） |
+| 29 | ADC のブロックのばらつきと SNDR（10/29 に追加） | `adc_block_mc.py`（`runs/adc_mc/`）、`adc_beh_mc.py`（`runs/adc_beh_mc/`） |
+| 30 | ADC のトランジスタのループのばらつき（10/29 に追加） | `adc_loop_mc.py`（`runs/adc_mc_loop/`） |
 
 ログと CSV は `gf180/tapeout/pex/runs/` と `runs/viz/`（git の対象外）。
 

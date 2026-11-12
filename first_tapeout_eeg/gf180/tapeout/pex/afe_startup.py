@@ -54,7 +54,9 @@ them), and the saved node voltages and supply currents; run.log prints vamax, th
 Remaining simplifications: the board values are assumptions (no board yet); afe_top's own
 supply rails are a lumped estimate (--rafe) and the blocks' extractions have no resistance
 inside them (runs/chipnets/README.md, "Left out"); the ADC is its input resistors, reference
-load and supply current only; the test multiplexer is not modeled (its pins of the chip
+load and supply current only (the reference load RADC 29.9 kohm: 16.3 uA at 487.7 mV, as the
+transistor ADC of e2e_startup.py draws; 18.4 kohm, the ADC before C1 was halved on 10/23, until
+10/30); the test multiplexer is not modeled (its pins of the chip
 wiring are left open); the digital block draws no supply current and its pads are missing;
 the MOS capacitors are the linear stand-ins of moscap_lin.spice unless --moscap pdk (a run
 with them at 0.3 x moved no bias settling time with the 1 ms ramp); the MIM and
@@ -107,7 +109,10 @@ REF = os.path.join(P.REPO, "gf180", "tapeout", "adc", "eeg_ref.spice")
 REF_PEX = os.path.join(HERE, "runs", "eeg_ref_c", "eeg_ref_pex.spice")          # pex_chipnets.py blocks
 BIAS_PEX = os.path.join(HERE, "runs", "eeg_bias_c", "eeg_bias_pex.spice")
 _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
-CHIPNETS = os.path.join(HERE, "runs", "chipnets" + (f"_{_REV}" if _REV else ""))
+# r10 (11/9) changed only adc_top (a Via4 / Metal5 strap): the chip-level shapes are r9's by XOR
+# (layout/runs/chip_top/xor_r9_r10_chip_top_20261109.log), so r10's chip wiring is chipnets_r9
+_NET_REV = {"r10": "r9"}.get(_REV, _REV)
+CHIPNETS = os.path.join(HERE, "runs", "chipnets" + (f"_{_NET_REV}" if _NET_REV else ""))
 IO = os.path.normpath(os.path.join(P.PDK, "..", "..", "libs.ref", "gf180mcu_fd_io", "spice", "gf180mcu_fd_io.spice"))
 RUNS = os.path.join(HERE, "runs", "startup")
 MOSF = {"typical": 1.0, "ff": 0.9, "ss": 1.1, "fs": 1.0, "sf": 1.0}
@@ -379,7 +384,7 @@ def deck(a, mode, seed):
 {board_and_pads(a, chip)}RAFEVDD AVDD_AFE AVDD_AFEI {max(rafe[1], 1e-6):g}
 RAFEVSS AVSS_AFEI AVSS_AFE {max(rafe[0], 1e-6):g}
 XREF VREFP_PAD_REF VREFN_PAD_REF VREFP_REF VREFN_REF AVSS_REF eeg_ref
-RADC VREFP_ADC VREFN_ADC 18.4k
+RADC VREFP_ADC VREFN_ADC 29.9k
 IADC AVDD_ADC AVSS_ADC PWL(0 0 {a.tramp:.6e} {a.iadc:g})
 XB VBN_BIAS VBCM_BIAS BLP_BIAS BLN_BIAS VBN1 VBCM1 VNC1 VPC1 VBPC2 VBNC2 IDP IDN IQ ITST VCM_BIAS VREFP_BIAS VREFN_BIAS
 + IB1 IB0 BP1 BP0 BN1 BN0 AVDD_BIAS AVSS_BIAS eeg_bias

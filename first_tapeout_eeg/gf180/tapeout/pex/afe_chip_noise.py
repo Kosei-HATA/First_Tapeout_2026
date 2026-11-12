@@ -43,7 +43,7 @@ import afe_startup as S  # noqa: E402  (chip wiring, extracted blocks, model lib
 import pex_afe as P  # noqa: E402
 import afe_noise  # noqa: E402  (raw reader, harmonic sums; on pex_afe's path)
 
-RUNS = os.path.join(HERE, "runs", "chip_noise")
+RUNS = os.path.join(HERE, "runs", "chip_noise" + (f"_{S._REV}" if S._REV else ""))   # EEG_PEX_REV: the chip wiring of that chip
 VDD, VREFP, VREFN, CVCM, R_BW = 3.3, 1.9, 1.4, 10e-9, 0.1
 OP = ("i(vavdd) v(avdd_afei) v(avss_afei) v(avdd_bias) v(avss_bias) v(vbn_afe) v(vbn_bias) v(vcm_afe) "
       "v(vrefp_adc) v(vrefn_adc) v(xdut.opi) v(xdut.oni) v(xdut.inp) v(xdut.inn) @rafevss[i]")

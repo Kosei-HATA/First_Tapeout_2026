@@ -35,7 +35,8 @@
 * (TEST_CFG[5]), SEL1_0..30, SEL2_0..30 (eeg_adc_dig SEL1/SEL2), TH0..TH30 (to eeg_adc_dig),
 * VREFP VREFN (filtered, eeg_ref), VCM (CM reference), VBN1 VNC1 VPC1 VBCM1 VBPC2 VBNC2
 * IDP IDN IQ (eeg_bias), O2P O2N (the stage-2 outputs, to the test multiplexer, 10/23), AVDD
-* AVSS, DVDD DVSS (quantizer latches).
+* AVSS, DVDD (quantizer latches), DVSS (unused inside since r10, kept for the port order: the
+* latches' ground is AVSS, see the quantizer below).
 * Needs: eeg_adc_otas.spice, eeg_adc_clk.spice, eeg_dac1.spice, eeg_dac2.spice,
 * eeg_quantizer.spice (all in gf180/tapeout/adc/).
 
@@ -74,7 +75,12 @@ CW1N O1N AVSS 2p
 CW2P O2P AVSS 2p
 CW2N O2N AVSS 2p
 * ---- quantizer
-XQ O2P O2N VREFP VREFN CMP_STROBE TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD DVSS eeg_quantizer
+* The latches' ground (the quantizer's DVSS pin: StrongARM, SR latch, TH inverters, strobe
+* buffer, the DVSS shields) on AVSS since r10 (11/9, tracker E4): the latches sit in the ADC's
+* analog band and their 313 substrate taps hold the substrate there; on DVSS they would put
+* eeg_adc_dig's ground bounce into it. Their supply stays DVDD, so the strobe current is not
+* on AVDD. Through r9 that pin was wired to nothing in the layout (adc_lay.py).
+XQ O2P O2N VREFP VREFN CMP_STROBE TH0 TH1 TH2 TH3 TH4 TH5 TH6 TH7 TH8 TH9 TH10 TH11 TH12 TH13 TH14 TH15 TH16 TH17 TH18 TH19 TH20 TH21 TH22 TH23 TH24 TH25 TH26 TH27 TH28 TH29 TH30 IQ AVDD AVSS DVDD AVSS eeg_quantizer
 .ends eeg_adc
 
 * ADC_ZERO switch: TG of about 100 ohm (NMOS 10 um, PMOS 20 um; RIN is 9375 ohm per

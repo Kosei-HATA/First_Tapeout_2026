@@ -7,10 +7,12 @@ recorded values (budget, afe_noise, wiring_r, afe_metrics, adc_metrics, distorti
 checks, schedule: documentation/gf180_pex_20261023.md, gf180_adc_d6_fix_20261023.md,
 gf180_chip_assembly_20261023.md, gf180_tapeout_tracker.md).
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs.py gf180/tapeout/viz/data documentation/figures/gf180/r6_20261026/viz [names]
-       (the chip version, r6, is set in vizstyle.py: file names gf180_viz_<chip>_NN_*.png)"""
+usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs.py gf180/tapeout/viz/data_r9 documentation/figures/gf180/r9_20261029/viz [names]
+       (the chip version is set in vizstyle.py: file names gf180_viz_<chip>_NN_*.png; data/ holds r6's data, data_<chip>/ a
+       later chip's, with notes.json for the version-dependent figure texts)"""
 import csv
 import datetime as dt
+import json
 import math
 import os
 import sys
@@ -47,6 +49,12 @@ VER = {"Schematic": INK2, "Extracted 10/23": LIGHT, "Final": ACCENT}
 def load(name):
     with open(os.path.join(DATA, name + ".csv"), encoding="utf-8") as f:
         return list(csv.DictReader(f))
+
+
+def note(key, default):
+    """A figure text that depends on the chip version: notes.json in the data folder (a later chip's), else r6's text."""
+    p = os.path.join(DATA, "notes.json")
+    return json.load(open(p, encoding="utf-8")).get(key, default) if os.path.exists(p) else default
 
 
 def num(x):
@@ -390,24 +398,29 @@ def fig_budget():
     tot = math.sqrt(p.sum())
     enob = lambda n: 16.5 - math.log2(n / target)  # noqa: E731
     cols = ["#4f46e5", "#0d9488", "#d97706", "#e11d48"]
-    fig = figure(12.6, 6.4, "Noise budget at the input",
+    fig = figure(12.6, 6.4, note("budget_title", "Noise budget at the input"),
                  f"Input-referred, 0.5–100 Hz, electrode thermal noise excluded · uncorrelated parts add in power · {STAMP}",
                  note=f"ENOB = 16.50 − log2(N / {target:.2f} nV rms); {target:.2f} nV rms gives SNDR 101.1 dB at 0.943 mV peak full scale. "
-                      "AFE: 4.81 nV rms extracted, × 1.01 for the chopper blanking.")
+                      + note("budget", "AFE: 4.81 nV rms extracted, × 1.01 for the chopper blanking."))
     a1, a2 = fig.subplots(2, 1, height_ratios=[1.0, 1.35])
     acc = 0.0
     for r, pi, c in zip(comps, p, cols):
         a1.barh(0, pi, left=acc, color=c, height=0.5, edgecolor="white", linewidth=1.2)
         lab = f"{r['component']}\n{num(r['nvrms']):.2f} nV · {100 * pi / p.sum():.0f} %"
         if pi > 4:
-            a1.text(acc + pi / 2, 0, lab, ha="center", va="center", fontsize=8, color="white")
+            xt = acc + pi / 2
+            if acc < target ** 2 < acc + pi:                  # the target line crosses this part: centre the label beside it
+                left, right = target ** 2 - acc, acc + pi - target ** 2
+                xt = acc + left / 2 if left >= right else target ** 2 + right / 2
+            a1.text(xt, 0, lab, ha="center", va="center", fontsize=8, color="white")
         acc += pi
     small = [(r, pi, c) for r, pi, c in zip(comps, p, cols) if pi <= 4]
     xs = p.sum() - sum(pi for _, pi, _ in small)
     for k, (r, pi, c) in enumerate(small):
         right = k == len(small) - 1
+        tx = xs + pi / 2 + 1.2 if right else min(xs + pi / 2 - 1.2, target ** 2 - 0.5)   # left labels clear of the target line
         a1.annotate(f"{r['component']}\n{num(r['nvrms']):.2f} nV · {100 * pi / p.sum():.0f} %", xy=(xs + pi / 2, -0.26),
-                    xytext=(xs + pi / 2 + (1.2 if right else -1.2), -0.66), fontsize=7.8, color=INK2,
+                    xytext=(tx, -0.66), fontsize=7.8, color=INK2,
                     ha="left" if right else "right", va="center", arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.6))
         xs += pi
     a1.axvline(target ** 2, color=INK, ls=(0, (4, 3)), lw=1)
@@ -429,7 +442,7 @@ def fig_budget():
     a2.set_yticks(yy, [n for n, _, _ in gains])
     for yi, (_, g, _) in zip(yy, gains):
         a2.text(g + 0.012, yi, f"+{g:.3f} bit", va="center", fontsize=8, color=INK2)
-    a2.set_xlim(0, 0.9)
+    a2.set_xlim(0, max(0.9, 1.12 * max(g for _, g, _ in gains)))
     a2.set_xlabel("ENOB gained if this contribution were removed (bit)")
     a2.set_title(f"What each contribution costs (predicted {enob(tot):.2f} bit, target 16.50 bit)")
     a2.grid(axis="y", visible=False)
@@ -440,8 +453,8 @@ def fig_afe_noise():
     d = load("afe_noise")
     fig = figure(10.0, 4.8, "AFE noise through extraction",
                  "Chopped noise estimate, input-referred (nV rms); thermal and 1/f add in power to the total",
-                 note="Harmonic-sum gain 287.3 V/V in the schematic, 284.8 V/V extracted. The rise comes from the larger input-node capacitance and, in the "
-                      "last row, the input-path wiring, which the budget books as its own line.")
+                 note=note("afe_noise", "Harmonic-sum gain 287.3 V/V in the schematic, 284.8 V/V extracted. The rise comes from the larger input-node capacitance and, in the "
+                      "last row, the input-path wiring, which the budget books as its own line."))
     ax = fig.add_subplot()
     y = np.arange(len(d))[::-1]
     for yi, r in zip(y, d):
@@ -477,8 +490,8 @@ def fig_rwire():
     fig = figure(11.0, 6.4, "AFE input-path wiring resistance",
                  "Noise-equivalent series resistance per side (Ω, log): E pad to chopper · W chopper to the Cin bottom plate · "
                  "T Cin top plate to the input-pair gates",
-                 note="T was set by the auto-routed gate wiring of the input pair (0.38 µm wires, single vias) before the D6 fixes. "
-                      "The per-side target for 16.50 bit is 0.35 Ω.")
+                 note=note("rwire", "T was set by the auto-routed gate wiring of the input pair (0.38 µm wires, single vias) before the D6 fixes. "
+                      "The per-side target for 16.50 bit is 0.35 Ω."))
     ax = fig.add_subplot()
     n = len(groups)
     y = np.arange(n)[::-1] * 1.0
@@ -550,9 +563,9 @@ def fig_metrics():
     dm = {r["metric"]: r for r in load("adc_metrics")}
     fig = figure(13.6, 7.6, "Schematic against layout, AFE and ADC",
                  f"Each panel compares the schematic, the 10/23 extraction (before the D6 fixes) and the extraction of {STAMP.lower()}",
-                 note="AFE gain from the ±0.5 mV chopped transient (200 µs); the 70 µs end-to-end sine gives 291.45 V/V (schematic) and 291.34 V/V (final). "
+                 note=note("metrics", "AFE gain from the ±0.5 mV chopped transient (200 µs); the 70 µs end-to-end sine gives 291.45 V/V (schematic) and 291.34 V/V (final). "
                       "SNDR values are the low end of each simulated range.\nADC loop: 20 kHz, 0.3 V pk, 100 µs, evaluated over 20–100 µs "
-                      "(80 frames); the final ADC includes the D6 and B4 (comparator latch) fixes.")
+                      "(80 frames); the final ADC includes the D6 and B4 (comparator latch) fixes."))
     axs = fig.subplots(2, 5)
     cats3 = ["Schematic", "10/23", "Final"]
     cols3 = [INK2, LIGHT, ACCENT]
@@ -687,11 +700,11 @@ def fig_checks():
         colours[(i, 3)] = OK if res in ("pass", "match") else BAD if res == "no result" else WARN
         body.append([r["check"], r["scope"], r["tool"], "● " + res, "–" if r["violations"] == "" else f"{int(num(r['violations'])):,}", r["detail"]])
     table_fig("13_checks", "Checks on the final chip",
-              "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–27 Oct 2026",
+              note("checks_sub", "DRC, LVS, wafer.space precheck, Magic and digital verification · 23–27 Oct 2026"),
               ["Check", "Scope", "Tool", "Result", "Violations", "Detail"], body, [0.22, 0.15, 0.2, 0.09, 0.07, 0.27],
-              note="Precheck pre_20261027_cob: --slot 1x0p5 --cob as the shuttle specifies, latest image (20 Oct, PDK 792ef670). "
+              note=note("checks", "Precheck pre_20261027_cob: --slot 1x0p5 --cob as the shuttle specifies, latest image (20 Oct, PDK 792ef670). "
                    "Until 25 Oct its Magic step crashed (a Magic bin-index bug hit by the COMP / Poly2 fill arrays) and was reported "
-                   "as 0; since 26 Oct those fill cells hold at most 9 instances each.",
+                   "as 0; since 26 Oct those fill cells hold at most 9 instances each."),
               colours=colours, h_row=0.33, w=15.0)
 
 

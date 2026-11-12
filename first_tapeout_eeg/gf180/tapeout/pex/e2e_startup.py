@@ -1236,6 +1236,7 @@ def cic(d):
     byte per frame) and e2e.gold (the valid outputs, 24-bit hex), the inputs of the RTL's own
     end-to-end test (tb_e2e.sv: TH from the codes, SPI reads checked bit-exact against the
     golden file), and prints the strobes and the command for that test."""
+    d = os.path.abspath(d)                 # iverilog and vvp run in rtl/
     rtl = os.path.join(REPO, "gf180", "tapeout", "rtl")
     sys.path.insert(0, os.path.join(rtl, "model"))
     import cic_golden as g
@@ -1268,7 +1269,10 @@ def cic(d):
         if p.returncode:
             print("  RTL compile failed:\n" + p.stdout + p.stderr)
             return
-        p = subprocess.run(["vvp", "-n", vvp, f"+codes={d}/e2e.codes", f"+gold={d}/e2e.gold", f"+nsamp={len(valid)}",
+        # the testbench keeps driving TH until the last sample is read over SPI (about 35 frames after its
+        # strobe), so its stream goes on past the run's last frame: 100 frames of 15, 16 that reach no checked sample
+        open(os.path.join(d, "e2e_tb.codes"), "wb").write(codes + bytes([15, 16] * 50))
+        p = subprocess.run(["vvp", "-n", vvp, f"+codes={d}/e2e_tb.codes", f"+gold={d}/e2e.gold", f"+nsamp={len(valid)}",
                             f"+out={d}/e2e.samples"], cwd=rtl, capture_output=True, text=True)
         res = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.startswith(("PASS", "FAIL"))]
         print("  RTL (tb_e2e.sv, Icarus): " + (res[0] if res else "no PASS/FAIL line, see the vvp output"))

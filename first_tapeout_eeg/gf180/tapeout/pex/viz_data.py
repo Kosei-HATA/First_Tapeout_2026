@@ -82,8 +82,9 @@ _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the runs of a ch
 OUT = os.path.join(HERE, "runs", "viz" + (f"_{_REV}" if _REV else ""))
 KC12 = 1.25                                          # C1 and C2 against the loop model's values (x1.25 since 10/29, r7)
 # the integrator outputs' capacitance to the supplies in adc_top's extraction (ota, pex): O1, O2 (r7: the larger
-# C1 and C2 add bottom plate, runs/adc_top_c_r7/adc_top_caps.txt: O1 to the supplies 2.23-2.27 pF, r6 1.82-1.85)
-CW_PEX = {"": ("2.6p", "0.8p"), "r7": ("3.0p", "0.9p")}[_REV]
+# C1 and C2 add bottom plate, runs/adc_top_c_r7/adc_top_caps.txt: O1 to the supplies 2.23-2.27 pF, r6 1.82-1.85;
+# r10: the same as r7, runs/adc_top_c_r10/adc_top_caps.txt, O1P / O1N / O2P / O2N within 0.03 fF of r7)
+CW_PEX = {"": ("2.6p", "0.8p"), "r7": ("3.0p", "0.9p"), "r10": ("3.0p", "0.9p")}[_REV]
 ADC = os.path.join(REPO, "gf180", "tapeout", "adc")
 REF = os.path.join(ADC, "eeg_ref.spice")
 PEXR = os.path.join(HERE, "runs")

@@ -1,0 +1,8 @@
+layer,density_pct,min_pct,max_pct,rule
+COMP,48.27,25,70,"DCF.1b, DCF.1d"
+Poly2,38.08,14,,PL.8
+Metal1,39.68,30,,DM.4
+Metal2,37.76,30,,DM.4
+Metal3,53.19,30,,DM.4
+Metal4,59.07,30,,DM.4
+Metal5,65.77,30,,DM.4

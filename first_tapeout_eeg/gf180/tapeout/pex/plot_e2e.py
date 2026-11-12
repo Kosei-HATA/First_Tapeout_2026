@@ -26,6 +26,7 @@ Usage: python3 gf180/tapeout/pex/plot_e2e.py [--runs d4 sch pex pexchip] [--t0 2
 import argparse
 import json
 import os
+import re
 
 import numpy as np
 import matplotlib
@@ -35,10 +36,13 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
-_REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the runs of a changed layout (r7: runs/e2e_r7)
-RUNS = os.path.join(HERE, "runs", "e2e" + (f"_{_REV}" if _REV else ""))
-CHIP, CHIP_DATE = "r6", "20261026"       # the chip of the pex / pexchip runs (sixth assembly)
-CHIP_LABEL = "6 回目のチップ（r6、10/26）"
+# the chip of the figures: vizstyle.py's (read as text: importing it would set its Latin-only font); the E2E has both
+# blocks, so a chip that left them unchanged reads the runs of the chip that last changed one (r9: afe_top of r6,
+# adc_top of r7 -> runs/e2e_r7; figs_perf.SRC)
+CHIP, CHIP_DATE = re.search(r'^CHIP, CHIP_DATE = "(\w+)", "(\d+)"',
+                            open(os.path.join(HERE, "..", "viz", "vizstyle.py"), encoding="utf-8").read(), re.M).groups()
+RUNS = os.path.join(HERE, "runs", "e2e" + {"r6": "", "r9": "_r7", "r10": "_r10"}[CHIP])
+CHIP_LABEL = {"r6": "6 回目のチップ（r6、10/26）", "r9": "9 回目のチップ（r9、10/29）", "r10": "10 回目のチップ（r10、11/9）"}[CHIP]
 FIGS = os.path.join(REPO, "documentation", "figures", "gf180", f"{CHIP}_{CHIP_DATE}", "e2e_pex")
 
 FS = 1.024e6

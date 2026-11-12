@@ -28,7 +28,11 @@ Hand-drawn wiring (assemble.Assembly.wire / via_stack):
   - power: AVSS / AVDD Metal5 rails along the bottom of the band (AVSS next to the I1N
     bus) and in the top channel east of the C1 array, joined by two Metal5 trunks at the
     east; block straps extended to them with via stacks. DVDD / DVSS rails over
-    eeg_adc_dig; DVDD for the quantizer's latches from the top edge.
+    eeg_adc_dig; DVDD for the quantizer's latches from the top edge. The latches' ground
+    (the quantizer's DVSS port) on AVSS since r10 (11/9): a Metal5 strap from the port down
+    to the top AVSS rail. Through r9 that port was left open, so the latches, the TH
+    inverters, the strobe buffer and the DVSS shields reached ground only through their
+    p-taps and the substrate; the LVS (DVSS tied into AVSS) could not see it.
 Everything else: route.Router on Metal3 / Metal4 (small cells' supplies included).
 Digital lines (SEL1, TH) cross the stage-1 straps only at right angles; the charge they
 couple there follows the change of the code (rising minus falling lines), so it is
@@ -241,6 +245,18 @@ def power(a, I):
     a.via_stack("metal4", "metal5", xd, q[2], xd + 6.0, q[4], "DVDD")
     a.wire("metal5", xd, q[2] - 1.0, W - 1.0, q[4] + 3.0, "DVDD")
     a.wire("metal5", X_DVDD, R_DVDD[0], W - 1.0, q[4] + 3.0, "DVDD")
+    # the quantizer's latch ground (r10, 11/9): its DVSS port, the Metal4 stub 2 um above
+    # the DVDD port, onto the top AVSS rail. The quantizer's block LVS ties DVSS into AVSS
+    # and renames its labels, so the port comes in as a Metal4 "AVSS" pin, and
+    # strap_to_rail() takes the Metal3 straps only: through r9 the port stayed open. Via4
+    # on the stub, a Metal5 run east of the block and a Metal5 strap down to the rail:
+    # Metal5 only, so the router's view (Metal3 / Metal4) is the same as in r9.
+    s = I["quant"].pin("AVSS", "metal4")
+    assert abs(s[2] - q[4] - 2.0) < 0.1 and abs(s[3] - q[3]) < 0.1, f"quantizer: Metal4 AVSS pin {s} is not the latch port"
+    xs = s[3] + 10.0
+    a.via_stack("metal4", "metal5", s[1], s[2], s[3], s[4], "AVSS")
+    a.wire("metal5", s[1], s[2], xs + 6.0, s[4], "AVSS")
+    a.wire("metal5", xs, R_AVSS_T[0], xs + 6.0, s[4], "AVSS")
     # Metal4 pads under the rails for the router (small cells' supplies, DAC2)
     pads = {}
     for net, x, (y1, y2) in (("AVSS", 548.0, R_AVSS_T), ("AVDD", 556.0, R_AVDD_T), ("AVSS", 440.0, R_AVSS_B),

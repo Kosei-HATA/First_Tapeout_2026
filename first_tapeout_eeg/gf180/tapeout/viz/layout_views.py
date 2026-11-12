@@ -192,11 +192,14 @@ frame("03_afe", "AFE layout",
 
 # ---------------------------------------------------------------- ADC
 adc, kids = block("adc_top")
-c1 = sorted((b for n, b in kids if n == "eeg_c1"), key=lambda b: -b.center().y)
+c1 = sorted((b for n, b in kids if n in ("eeg_c1", "eeg_c1a")), key=lambda b: -b.center().y)   # eeg_c1a from r7
+c1x = sorted((b for n, b in kids if n == "eeg_c1x"), key=lambda b: -b.center().y)            # r7 on: the rest of C1
 adc_names = {"adc_rdac": "RIN + DAC1", "gf180_inside_cascode_ota": "OTA1", "gf180_ct_ota_tel16_cmfb": "OTA2",
              "eeg_quantizer": "Quantizer", "eeg_dac2": "DAC2", "eeg_adc_dig": "ADC digital\n(eeg_adc_dig)"}
 adc_labels = [(b, adc_names[n], 9.0) for n, b in kids if n in adc_names]
 adc_labels += [(c1[0], "C1P (MIM array)", 10.0), (c1[1], "C1N (MIM array)", 10.0, "bl")]
+if c1x:
+    adc_labels += [(c1x[0], "C1P, rest", 7.5, "c"), (c1x[1], "C1N, rest", 7.5, "c")]
 adc_labels += [(b, "C2", 7.5, "c") for n, b in kids if n == "adc_c2"]
 adc_labels += [(b, n_, 7.5, "c") for n, b in kids for k, n_ in (("eeg_adc_clk", "Clock\ndriver"),) if n == k]
 frame("04_adc", "ADC layout",

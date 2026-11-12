@@ -7,13 +7,21 @@ other sources:
   - the supply pads: DVDD / DVSS by their IO cell (gf180mcu_fd_io__dvdd / __dvss), AVDD /
     AVSS by the floorplan's pad table (gf180/tapeout/chip/padring/pad_coordinates.csv); each
     bond pad (pad_geometry.json, from the template's pad ring run) probed on Metal5
-  - the nets: Metal1..5 / Via1..4 of the GDS (KLayout LayoutToNetlist, hierarchical)
+  - the nets: Metal1..5 / Via1..4 of the GDS (KLayout LayoutToNetlist, hierarchical). A Via4
+    on a MIM top plate (FuseTop) joins that plate and Metal5 only (until 11/9 every Via4 was
+    joined to Metal4, which put the two plates of every MIM on one net)
   - the blocks' supply pins: the digital macros' power pins from their LEF (LibreLane), the
     other blocks' from the labels of their own GDS (what their block LVS checked)
   - the resistance of the chip-level wiring (shapes drawn in chip_top itself) from where it
     meets the supply's pads to where it meets each block (pex_chipnets.network(): KLayout's
     R extractor with the PDK's sheet resistances); the pad cells' own resistance and the pad
     ring's rails are not in it
+  - every net that holds substrate or n-well taps, in every cell at every level, reaches a
+    supply pad in metal (tap_check(), 11/9): the quantizer's latch ground (its DVSS port) was
+    never wired in adc_top in r0..r9 and reached ground only through its 313 taps. The block
+    LVS ties DVSS into AVSS and the PEX takes the substrate as AVSS, so neither could see it,
+    and this check's one label per block pin did not either. Nets that stay inside their
+    cell by design are listed in LOCAL_TAP_NETS.
 
 usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/supply_check.py [chip_top.gds]
        (default: gf180/tapeout/layout/runs/chip_top/chip_top.gds)
@@ -23,7 +31,7 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 
@@ -49,18 +57,63 @@ MACROS = {"eeg_digital_top": ("eeg_digital_top.lef", ("eeg_digital_top",)),
 MACRO_PINS = {"VDD": "DVDD", "VSS": "DVSS"}
 SHORT = {"afe_top": "AFE", "adc_top": "ADC", "eeg_bias": "BIAS", "eeg_ref": "REF", "eeg_testmux": "TM",
          "eeg_digital_top": "DIG", "chip_decap": "DECAP"}
+FUSETOP = (75, 0)                    # MIM top plate: Via4 lands on it, not on the Metal4 below
+DEVL = {"comp": (22, 0), "poly": (30, 0), "nplus": (32, 0), "pplus": (31, 0), "nwell": (21, 0), "contact": (33, 0)}
+TAPS = ("ptap", "ntap")
+# nets that hold taps but stay inside their cell by design (no pin up to the parent):
+# (cell, tap kind, taps on the net) -> (how many such nets the cell holds, why)
+LOCAL_TAP_NETS = {
+    ("afe_top", "ptap", 49): (1, "AVSS_CLK, the AFE clock driver's ground: joined to AVSS through RCKN (100 ohm)"),
+    ("afe_top", "ntap", 49): (1, "AVDD_CLK, the AFE clock driver's supply: joined to AVDD through RCKP (100 ohm)"),
+    ("eeg_qcmp", "ntap", 4): (2, "the comparator preamplifier's two PMOS pairs, each n-well on its common source"),
+    ("cap_nmos", "ptap", 4): (1, "offdac_n's decoupling guard rings: p+ in the substrate, no metal (offdac_lay.py)"),
+}
 
 
-def extract(path):
+def extract(path, taps=False):
+    """Metal1..5 / Via1..4 nets of the GDS (KLayout LayoutToNetlist, hierarchical); a Via4 on a MIM
+    top plate (FuseTop) joins that plate and Metal5 only. taps: also the p-substrate taps (COMP &
+    PPLUS - NWELL), n-well taps (COMP & NPLUS & NWELL) and MOS source / drain diffusion (COMP -
+    POLY with NPLUS outside / PPLUS inside the n-wells, so that a tap butted to a source is that
+    source's net) through their contacts, joined to no substrate or well net; the pad ring's own
+    cells keep only their metal."""
     ly = kdb.Layout()
     ly.read(path)
     top = ly.top_cell()
+    if taps and ly.cell("padring") is not None:
+        pr = ly.cell("padring")
+        ring = {pr.cell_index()} | set(pr.called_cells())
+        core = set()
+        for inst in top.each_inst():
+            if inst.cell.name != "padring":
+                core |= {inst.cell_index} | set(inst.cell.called_cells())
+        for k in ("comp", "contact"):
+            li = ly.layer(*DEVL[k])
+            for ci in ring - core:
+                ly.cell(ci).shapes(li).clear()
     l2n = kdb.LayoutToNetlist(kdb.RecursiveShapeIterator(ly, top, []))
-    keys = ("m1", "v1", "m2", "v2", "m3", "v3", "m4", "v4", "m5")
-    R = {k: l2n.make_layer(ly.find_layer(*PC.GDSL[k]), k) for k in keys}
-    for k in keys:
-        l2n.connect(R[k])
-    for lo, hi in zip(keys, keys[1:]):
+
+    def mk(name, gl):
+        return l2n.make_layer(ly.layer(*gl), name)
+    R = {k: mk(k, PC.GDSL[k]) for k in ("m1", "v1", "m2", "v2", "m3", "v3", "m4", "m5")}
+    v4, R["ft"] = mk("v4raw", PC.GDSL["v4"]), mk("ft", FUSETOP)
+    R["v4"], R["v4m"] = v4 - R["ft"], v4 & R["ft"]
+    conn = [("m1", "v1"), ("v1", "m2"), ("m2", "v2"), ("v2", "m3"), ("m3", "v3"), ("v3", "m4"),
+            ("m4", "v4"), ("v4", "m5"), ("ft", "v4m"), ("v4m", "m5")]
+    if taps:
+        L = {k: mk(k, gl) for k, gl in DEVL.items()}
+        diff = L["comp"] - L["poly"]
+        R["ptap"] = (diff & L["pplus"]) - L["nwell"]
+        R["nsd"] = (diff & L["nplus"]) - L["nwell"]
+        R["ntap"] = (diff & L["nplus"]) & L["nwell"]
+        R["psd"] = (diff & L["pplus"]) & L["nwell"]
+        R["ct"] = L["contact"]
+        conn += [("ct", "m1")] + [("ct", k) for k in ("ptap", "nsd", "ntap", "psd")]
+    for k, r in R.items():
+        if k in ("v4", "v4m", "ptap", "nsd", "ntap", "psd"):
+            l2n.register(r, k)
+        l2n.connect(r)
+    for lo, hi in conn:
         l2n.connect(R[lo], R[hi])
     l2n.extract_netlist()
     return ly, top, l2n, R
@@ -244,6 +297,74 @@ def pad_split(geo, ports, sources, loads):
     return {g: float(v[idx[rep[groups[g][0]]]] / R_PAD) for g in sources}
 
 
+def tap_check(path):
+    """Every net that holds substrate or n-well taps, in every cell at every level, reaches a
+    supply pad in metal, apart from LOCAL_TAP_NETS (exactly as listed there). The taps are counted
+    bottom up through the subcircuit pins; a net with taps and no pin stays inside its cell (it
+    reaches its parent in no metal), and a top-level net with taps must be one of the supply
+    pads' nets. Returns the problems."""
+    ly, top, l2n, R = extract(path, taps=True)
+    nl = l2n.netlist()
+    pads = supply_pads()
+    supply = {}
+    for s in SUPPLIES:
+        ids = {getattr(top_net(l2n, R, "m5", x, y), "cluster_id", None) for _, (x, y), _ in pads[s]}
+        supply.update({i: s for i in ids if i is not None})
+    ily = l2n.internal_layout()
+    lidx = {k: l2n.layer_of(R[k]) for k in TAPS}
+    placed = Counter(sc.circuit_ref().name for c in nl.each_circuit() for sc in c.each_subcircuit())
+    T = {}                                   # circuit -> {cluster id: Counter(tap kind -> taps)}
+    bad, local = [], Counter()
+    for c in nl.each_circuit_bottom_up():
+        cell = ily.cell(c.cell_index)
+        tc = defaultdict(Counter)
+        kinds = [k for k in TAPS if not cell.shapes(lidx[k]).is_empty()]
+        if kinds:
+            for n in c.each_net():
+                for k in kinds:
+                    r = l2n.shapes_of_net(n, R[k], False)
+                    if not r.is_empty():
+                        tc[n.cluster_id][k] += r.count()
+        for sc in c.each_subcircuit():
+            sub = sc.circuit_ref()
+            for pin in sub.each_pin():
+                inner, outer = sub.net_for_pin(pin.id()), sc.net_for_pin(pin.id())
+                cnt = T.get(sub.name, {}).get(inner.cluster_id) if inner is not None else None
+                if not cnt:
+                    continue
+                if outer is None:
+                    bad.append(f"taps {dict(cnt)} under pin {pin.name()} of {sub.name}, not connected in {c.name}")
+                else:
+                    tc[outer.cluster_id].update(cnt)
+        T[c.name] = tc
+    for c in nl.each_circuit():
+        for n in c.each_net():
+            t = T[c.name].get(n.cluster_id)
+            if not t:
+                continue
+            if c.name == top.name:
+                if n.cluster_id not in supply:
+                    bad.append(f"top-level net {n.expanded_name()} with {dict(t)} taps reaches no supply pad")
+            elif not list(n.each_pin()):
+                bb = l2n.shapes_of_net(n, R["m1"], True).bbox().to_dtype(ly.dbu)
+                where = f"{c.name} (x{placed[c.name]}) net {n.expanded_name()} {dict(t)}, Metal1 within " \
+                        f"({bb.left:.1f}, {bb.bottom:.1f}; {bb.right:.1f}, {bb.top:.1f}) of the cell"
+                for k, v in t.items():
+                    if (c.name, k, v) in LOCAL_TAP_NETS:
+                        local[(c.name, k, v)] += 1
+                    else:
+                        bad.append(f"taps stay inside their cell: {where}")
+    for key, (want, why) in sorted(LOCAL_TAP_NETS.items()):
+        got = local.get(key, 0)
+        print(f"   local tap nets {key[0]} {key[1]} x{key[2]}: {got} (expected {want}: {why})")
+        if got != want:
+            bad.append(f"local tap nets {key}: {got}, expected {want}")
+    on_supply = sum(1 for i in supply if T[top.name].get(i))
+    print(f"   tap check: every tapped net on a supply pad ({on_supply} supply nets hold taps), "
+          f"{sum(local.values())} local by design, {len(bad)} problems")
+    return bad
+
+
 def main(path=None):
     """The check of the chip GDS `path` (default: the command line's, else the chip's
     chip_top.gds); returns the problems (empty: ok)."""
@@ -306,6 +427,7 @@ def main(path=None):
             tot = sum(LOADS[s].values())
             print(f"   {s} pad currents ({tot * 1e3:.1f} mA; limit {PAD_LIMIT * 1e3:.1f} mA per pad, its Metal2 bars): " +
                   ", ".join(f"{g} {a * 1e3:.2f} mA ({a / PAD_LIMIT:.0%})" for g, a in sorted(sp.items())))
+    bad += tap_check(path)
     print("result:", "ok" if not bad else f"{len(bad)} problems")
     for b in bad:
         print("  " + b)

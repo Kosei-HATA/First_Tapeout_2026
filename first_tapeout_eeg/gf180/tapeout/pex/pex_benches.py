@@ -40,7 +40,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 ADC = os.path.join(REPO, "gf180", "tapeout", "adc")
 LVS = os.path.join(REPO, "gf180", "tapeout", "layout", "lvs")
-RUNS = os.path.join(HERE, "runs", "benches")
+# EEG_PEX_REV=r11: the extraction of a changed layout (pex.py: runs/<block>_c_r11), runs in runs/benches_r11
+_REV = os.environ.get("EEG_PEX_REV", "")
+SUFFIX = f"_{_REV}" if _REV else ""
+RUNS = os.path.join(HERE, "runs", "benches" + SUFFIX)
 
 
 def dac1_wrapper(variant):
@@ -61,14 +64,14 @@ def dac1_wrapper(variant):
         sw = re.compile(r"^(SEL1_\d+|DAC_CLK|DAC1\.BRK\w*|DAC1\.C\d+\.(D|DB|Q|QB|N1)|DAC1\.\w+\.M\d)$")
         xn = re.compile(r"^DAC1\.C\d+\.X[PN]$")
         lines = []
-        for ln in open(os.path.join(HERE, "runs", "adc_rdac_c", "adc_rdac_pex.spice")):
+        for ln in open(os.path.join(HERE, "runs", "adc_rdac_c" + SUFFIX, "adc_rdac_pex.spice")):
             t = ln.split()
             if ln.startswith("CP") and ((xn.match(t[1]) and sw.match(t[2])) or (xn.match(t[2]) and sw.match(t[1]))):
                 continue
             lines.append(ln)
         inc = "".join(lines)
     else:
-        inc = open(os.path.join(HERE, "runs", "adc_rdac_c", f"adc_rdac_{variant}.spice")).read()
+        inc = open(os.path.join(HERE, "runs", "adc_rdac_c" + SUFFIX, f"adc_rdac_{variant}.spice")).read()
     txt = (inc + f"\n.subckt eeg_dac1 OUTP OUTN VRP VRN {sel} DAC_CLK VDD VSS\n"
            f"XBLK OUTP OUTN OUTP OUTN VRP VRN {sel} DAC_CLK VDD VSS adc_rdac\n.ends eeg_dac1\n")
     open(path, "w").write(txt)

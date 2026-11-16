@@ -41,8 +41,9 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 # adc_top of r7 -> runs/e2e_r7; figs_perf.SRC)
 CHIP, CHIP_DATE = re.search(r'^CHIP, CHIP_DATE = "(\w+)", "(\d+)"',
                             open(os.path.join(HERE, "..", "viz", "vizstyle.py"), encoding="utf-8").read(), re.M).groups()
-RUNS = os.path.join(HERE, "runs", "e2e" + {"r6": "", "r9": "_r7", "r10": "_r10"}[CHIP])
-CHIP_LABEL = {"r6": "6 回目のチップ（r6、10/26）", "r9": "9 回目のチップ（r9、10/29）", "r10": "10 回目のチップ（r10、11/9）"}[CHIP]
+RUNS = os.path.join(HERE, "runs", "e2e" + {"r6": "", "r9": "_r7", "r10": "_r10", "r11": "_r11", "r12": "_r12"}[CHIP])
+CHIP_LABEL = {"r6": "6 回目のチップ（r6、10/26）", "r9": "9 回目のチップ（r9、10/29）", "r10": "10 回目のチップ（r10、11/9）",
+              "r11": "11 回目のチップ（r11、11/13）", "r12": "12 回目のチップ（r12、11/13）"}[CHIP]
 FIGS = os.path.join(REPO, "documentation", "figures", "gf180", f"{CHIP}_{CHIP_DATE}", "e2e_pex")
 
 FS = 1.024e6

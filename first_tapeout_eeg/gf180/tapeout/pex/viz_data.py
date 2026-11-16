@@ -83,8 +83,26 @@ OUT = os.path.join(HERE, "runs", "viz" + (f"_{_REV}" if _REV else ""))
 KC12 = 1.25                                          # C1 and C2 against the loop model's values (x1.25 since 10/29, r7)
 # the integrator outputs' capacitance to the supplies in adc_top's extraction (ota, pex): O1, O2 (r7: the larger
 # C1 and C2 add bottom plate, runs/adc_top_c_r7/adc_top_caps.txt: O1 to the supplies 2.23-2.27 pF, r6 1.82-1.85;
-# r10: the same as r7, runs/adc_top_c_r10/adc_top_caps.txt, O1P / O1N / O2P / O2N within 0.03 fF of r7)
-CW_PEX = {"": ("2.6p", "0.8p"), "r7": ("3.0p", "0.9p"), "r10": ("3.0p", "0.9p")}[_REV]
+# r10: the same as r7, runs/adc_top_c_r10/adc_top_caps.txt, O1P / O1N / O2P / O2N within 0.03 fF of r7;
+# r11: O1P / O1N to the supplies 2270.5 / 2227.6 fF (r10 2270.5 / 2232.8), O2P / O2N 368.0 / 333.7 fF (381.3 / 336.2);
+# r12: O1P / O1N 2254.2 / 2227.5 fF, O2P / O2N 368.0 / 333.7 fF)
+CW_PEX = {"": ("2.6p", "0.8p"), "r7": ("3.0p", "0.9p"), "r10": ("3.0p", "0.9p"), "r11": ("3.0p", "0.9p"),
+          "r12": ("3.0p", "0.9p")}[_REV]
+# the 300 kohm unit resistors of RIN (16 in parallel) and R21 (3 in parallel), as eeg_adc.spice has them: through
+# r10 one ppolyf_u_1k strip of 291.28 x 1 um; since r11 two ppolyf_u strips of 320.48 x 0.8 um in series (RIN)
+# and three of 213.54 x 0.8 um (R21), the middle nodes of the parallel units joined
+R_PU = _REV not in ("", "r7", "r10")
+
+
+def res_unit(name, a, b, kind):
+    """RIN (kind 'rin', m=16) or R21 ('r21', m=3) from a to b, substrate terminal on ground"""
+    m = 16 if kind == "rin" else 3
+    if not R_PU:
+        return f"X{name} {a} {b} 0 ppolyf_u_1k r_length=291.28u r_width=1u m={m}\n"
+    n, ln = (2, "320.48u") if kind == "rin" else (3, "213.54u")
+    nodes = [a] + [f"{name}_M{k}" for k in range(1, n)] + [b]
+    return "".join(f"X{name}{k + 1} {nodes[k]} {nodes[k + 1]} 0 ppolyf_u r_length={ln} r_width=0.8u m={m}\n"
+                   for k in range(n))
 ADC = os.path.join(REPO, "gf180", "tapeout", "adc")
 REF = os.path.join(ADC, "eeg_ref.spice")
 PEXR = os.path.join(HERE, "runs")
@@ -358,9 +376,7 @@ def ota_deck(which, variant, phase, mode):
         cw = "2p" if variant == "sch" else CW_PEX[0]
         body = f"""{chop}EP INP VCM SIG 0 0.5
 EN INN VCM SIG 0 -0.5
-XRINP INP I1P 0 ppolyf_u_1k r_length=291.28u r_width=1u m=16
-XRINN INN I1N 0 ppolyf_u_1k r_length=291.28u r_width=1u m=16
-RD1P I1P VCM 19.355k
+{res_unit("RINP", "INP", "I1P", "rin")}{res_unit("RINN", "INN", "I1N", "rin")}RD1P I1P VCM 19.355k
 RD1N I1N VCM 19.355k
 XC1P I1P O1N eeg_c1
 XC1N I1N O1P eeg_c1
@@ -368,9 +384,7 @@ LF1P I1P O1N 1e16
 LF1N I1N O1P 1e16
 CW1P O1P 0 {cw}
 CW1N O1N 0 {cw}
-XR21P O1P VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u m=3
-XR21N O1N VCM 0 ppolyf_u_1k r_length=291.28u r_width=1u m=3
-RTP I1P IAP 1m
+{res_unit("R21P", "O1P", "VCM", "r21")}{res_unit("R21N", "O1N", "VCM", "r21")}RTP I1P IAP 1m
 RTN I1N IAN 1m
 {probe("IAP", "IAN", "IXP", "IXN", mode)}XOTA1 IXP IXN O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD 0 gf180_inside_cascode_ota
 """
@@ -385,9 +399,7 @@ RTN I1N IAN 1m
         th = " ".join(f"TH{k}" for k in range(31))
         body = f"""EP S2P VCM SIG 0 0.5
 EN S2N VCM SIG 0 -0.5
-XR21P S2P I2P 0 ppolyf_u_1k r_length=291.28u r_width=1u m=3
-XR21N S2N I2N 0 ppolyf_u_1k r_length=291.28u r_width=1u m=3
-XC2P I2P O2N eeg_c2
+{res_unit("R21P", "S2P", "I2P", "r21")}{res_unit("R21N", "S2N", "I2N", "r21")}XC2P I2P O2N eeg_c2
 XC2N I2N O2P eeg_c2
 LF2P I2P O2N 1e16
 LF2N I2N O2P 1e16

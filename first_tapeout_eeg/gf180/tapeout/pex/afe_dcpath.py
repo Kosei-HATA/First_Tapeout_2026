@@ -49,7 +49,7 @@ import pex_afe as p  # noqa: E402
 
 TCH = p.TCH
 TADC = 32 * p.MCLK                     # ADC clock, 8 per chopper period
-RUNS = os.path.join(p.HERE, "runs", "afe_dcpath")
+RUNS = os.path.join(p.HERE, "runs", "afe_dcpath" + (f"_{p._AFE_REV}" if p._AFE_REV else ""))   # r12: runs/afe_dcpath_r12 (pex_afe.PEXDIR)
 FS_MV = 0.943
 
 

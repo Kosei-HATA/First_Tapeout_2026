@@ -1,0 +1,6 @@
+component,kind,nvrms,note
+"AFE on the chip, AFE_IBIAS 3",component,5.340,"Monte Carlo 30 mean on the chip wiring (afe_chip_noise.py; r12's wiring and afe_top extraction): every device and resistor incl. the input path and the pad cells"
+"ADC, referred to input",component,2.93,"Still the 10/22 budget (its allocations for distortion and chopper effects included); the ADC's own distortion is not resolved below about -110 dBc"
+Chopper blanking fold,component,0.681,The AFE's x1.01 for the output chopper's blanking (10/26: 4.811 -> 4.859)
+"ADC poly flicker, full scale",component,0.29,"RIN and DAC1 on ppolyf_u since r11 (adc_flicker.py, model B, runs/adc_flicker_r11); 4.15 nV rms with r10's ppolyf_u_1k"
+Target for 16.50 bit,target,5.88,"SNDR 101.1 dB at 0.943 mV pk, 0.5-100 Hz"

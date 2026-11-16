@@ -14,6 +14,7 @@ usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/figs_perf.py gf180/tapeo
        (the chip version is set in vizstyle.py; SRC below says which runs each figure reads for it)"""
 import csv
 import functools
+import glob
 import importlib.util
 import json
 import os
@@ -42,9 +43,20 @@ PEX, OUT = sys.argv[1], sys.argv[2]
 # r10 (11/9): adc_top changed (the quantizer's latch ground, a Metal5 strap), so the ADC's runs are r10's on its
 # own extraction (the user's decision; the analog nets are within 0.03 fF of r7's); afe_top is r6's, and the chip
 # wiring (top-level shapes identical to r9's by XOR) keeps r9's runs.
+# r11 (11/13): RIN, DAC1 and R21 on ppolyf_u (adc_top's cells adc_rdac, rdac_r, adc_r21 and its top changed), and
+# the router's wires to the ADC's moved west ports (OUTP / OUTN, VREFP / VREFN and the ADC's bias lines): the ADC's
+# runs, the blocks' Monte Carlo (mc: runs/adc_mc_r11, DAC1 and the OTAs' loads), the flicker study and the runs on
+# the chip wiring (chipnets_r11) are r11's own; afe_top stays r6's.
+# r12 (11/13): no switching line under the sensitive nets (adc_top: the SEL1 / DAC_CLK tunnel under the I1N / O1P
+# straps, afe_top: the corridor's shield and the WN sheet off the clock rows): the AFE's and the ADC's runs and the
+# runs on the chip wiring (chipnets_r12) are r12's own; the blocks' Monte Carlo and the flicker study stay r11's
+# (adc_rdac, the OTAs and the comparator did not change), and so does the per-die loop model (beh: adc_beh_mc.py
+# reads only the blocks' Monte Carlo).
 SRC = {"r6": dict(afe="", adc="", startup="_chip"),
        "r9": dict(afe="", adc="_r7", startup="_chip_r9"),
-       "r10": dict(afe="", adc="_r10", startup="_chip_r9")}[vizstyle.CHIP]
+       "r10": dict(afe="", adc="_r10", startup="_chip_r9"),
+       "r11": dict(afe="", adc="_r11", startup="_chip_r11", mc="_r11", flicker="_r11"),
+       "r12": dict(afe="_r12", adc="_r12", startup="_chip_r12", mc="_r11", flicker="_r11", beh="_r11")}[vizstyle.CHIP]
 VIZ = os.path.join(PEX, "runs", "viz" + SRC["afe"])
 VIZ_ADC = os.path.join(PEX, "runs", "viz" + SRC["adc"])
 E2E = os.path.join(PEX, "runs", "e2e" + SRC["adc"])
@@ -960,7 +972,7 @@ def fig_startup():
     ax.set_xlabel("Time from the AFE release (ms)")
     ax.set_ylabel("OUTP − OUTN (mV)")
     ax.set_title("AFE output, chopper-period means", fontsize=9.5)
-    ax.legend(loc="lower right", fontsize=8)
+    ax.legend(loc="center right", fontsize=8)              # the curves sit near the bottom of the axis
     ax = fig.add_subplot(gs[0, 1])
     for r in ok:
         a = r["x"] > 0
@@ -1240,11 +1252,27 @@ def fig_dc_input():
     save(fig, "27_dc_input")
 
 
+SINE_RUN = "start_c1e-08_v3.3_typical_+0mV_sine0.943mV2000Hz_afe5ms"
+
+
+def sine_amp(r, f0):
+    """A start run's amplitude at f0, period by period: a sine, an offset and a drift fitted to the chopper-period means
+    over each signal period, the period average's sinc taken out. (period centres after the release, amplitudes)"""
+    a = r["x"] > 0
+    x, m = r["x"][a], r["m"][a]
+    win = int(round(1 / f0 / TCH))                    # one signal period of chopper means
+    tc, av = [], []
+    for i in range(0, len(x) - win, win // 8):
+        tc.append(x[i + win // 2])
+        av.append(sine_fit(x[i:i + win], m[i:i + win], f0))
+    return np.array(tc), np.array(av) / np.sinc(f0 * TCH)   # undo the chopper-period average
+
+
 def fig_pex_sine():
     """The full-scale sine from power-on on the chip (against the schematic where that run exists), its
     amplitude settling, and the extraction's capacitors."""
     gain = su_gain()
-    nm = "start_c1e-08_v3.3_typical_+0mV_sine0.943mV2000Hz_afe5ms" + SU_IB
+    nm = SINE_RUN + SU_IB
     d = {k: su_release(p + nm) for k, p in (("pex", ""), ("sch", "sch_"))}
     d = {k: r for k, r in d.items() if r and r["done"]}
     if "pex" not in d:
@@ -1252,16 +1280,7 @@ def fig_pex_sine():
         return
     sch = "sch" in d
     f0 = 2000.0
-    amp = {}
-    for k, r in d.items():
-        a = r["x"] > 0
-        x, m = r["x"][a], r["m"][a]
-        win = int(round(1 / f0 / TCH))                    # one signal period of chopper means
-        tc, av = [], []
-        for i in range(0, len(x) - win, win // 8):
-            tc.append(x[i + win // 2])
-            av.append(sine_fit(x[i:i + win], m[i:i + win], f0))
-        amp[k] = (np.array(tc), np.array(av) / np.sinc(f0 * TCH))   # undo the chopper-period average
+    amp = {k: sine_amp(r, f0) for k, r in d.items()}
     caps = pex_caps()
     tot = {}
     for a_, b_, c in caps:
@@ -1334,8 +1353,8 @@ def fig_pex_sine():
 
 # ---------------------------------------------------------------- the ADC with manufacturing variation
 
-ADC_MC = os.path.join(PEX, "runs", "adc_mc", "adc_block_mc.json")    # adc_block_mc.py (blocks, extracted)
-ADC_BEH = os.path.join(PEX, "runs", "adc_beh_mc" + SRC["adc"])              # adc_beh_mc.py (per-die loop model)
+ADC_MC = os.path.join(PEX, "runs", "adc_mc" + SRC.get("mc", ""), "adc_block_mc.json")    # adc_block_mc.py (blocks)
+ADC_BEH = os.path.join(PEX, "runs", "adc_beh_mc" + SRC.get("beh", SRC["adc"]))  # adc_beh_mc.py (per-die loop model)
 ADC_LOOP_MC = os.path.join(PEX, "runs", "adc_mc_loop" + SRC["adc"])         # adc_loop_mc.py (transistor-level loop)
 LSB_Q = 3.125                                                        # quantizer LSB at O2 (mV)
 SNDR_165 = 6.02 * 16.5 + 1.76                                        # 16.5 bits (101.1 dB)
@@ -1783,8 +1802,10 @@ def fig_digital_noise():
 
 CHAIN_BASE = "c1e-08_v3.3_typical_+0mV_dc+0.3mV_ib3_sine0.5mV16000Hz_rst4.8_afe5_to10.002ms"
 # the power-on-to-CIC chains (e2e_startup.py) a chip's figure reads, the first one that has finished: r10's own ADC
-# extraction, else r9's chain (r7's ADC extraction, the same chip wiring) until r10's ends
-CHAIN_TAGS = {"r6": ["_chain"], "r9": ["_r9_chain"], "r10": ["_r10_chain", "_r9_chain"]}[vizstyle.CHIP]
+# extraction, else r9's chain (r7's ADC extraction, the same chip wiring) until r10's ends; r11 only its own (its ADC
+# resistors and chip wiring differ from r10's)
+CHAIN_TAGS = {"r6": ["_chain"], "r9": ["_r9_chain"], "r10": ["_r10_chain", "_r9_chain"], "r11": ["_r11_chain"],
+              "r12": ["_r12_chain"]}[vizstyle.CHIP]
 FS_SPEC = 0.943e-3          # V pk at the electrodes: the full scale of the ENOB budget (budget.csv's target row)
 ADC_LOOP_PK = 0.30          # V pk at the ADC input: what the transistor ADC loop was run at (B2, adc_loop_mc.py)
 ADC_SAT_PK = 0.44           # V pk (period means): the behavioral loop's quantizer starts to saturate (adc_headroom.py, 10/24)
@@ -1820,12 +1841,30 @@ def chain_io():
     w = h[nn - np.arange(lo, nn + 1)]
     uw, sw = (float(np.dot(w, x[k][lo:nn + 1]) / w.sum()) for k in ("u", "s"))
     rev = "r6" if tag == "_chain" else tag.split("_")[1]
-    return dict(rev=rev, folder=d, samples=[a for a, v in x["outs"] if v], sw=sw, uw=uw, adc=x["outs"][j][0] / (2 ** 24 * uw))
+    # VREF at the ADC: the mean over 9-10 ms from the chunks' saved vectors (None if they are not here)
+    num = den = 0.0
+    for cdir in sorted(glob.glob(os.path.join(d, "chunk_*"))):
+        try:
+            cm = json.load(open(os.path.join(cdir, "chunk.json"), encoding="utf-8"))
+            if cm["t1"] < 9e-3 or cm["t0"] > 10e-3:
+                continue
+            z = np.load(os.path.join(cdir, "lean.npz"))
+        except (OSError, KeyError, ValueError):
+            continue
+        t = z["time"]
+        k = (t >= 9e-3) & (t <= 10e-3)
+        if k.sum() > 1:
+            num += np.trapz((z["v(vrefp_adc)"] - z["v(vrefn_adc)"])[k], t[k])
+            den += t[k][-1] - t[k][0]
+    return dict(rev=rev, folder=d, samples=[a for a, v in x["outs"] if v], sw=sw, uw=uw, adc=x["outs"][j][0] / (2 ** 24 * uw),
+                vref=num / den if den > 0.9e-3 else None)
 
 
 def fig_input_output():
     c = chain_io()
     zero = su_release("start_c1e-08_v3.3_typical_+0mV_afe5ms" + SU_IB)["final"]   # the AFE's output with the electrodes at 0 V
+    rs_ = su_release(SINE_RUN + SU_IB)                                               # figure 28's full-scale sine
+    g28 = sine_amp(rs_, 2000.0)[1][-4:].mean() / 0.943e-3 if rs_ and rs_["done"] else None
     cnt = c["adc"] * 2 ** 24                       # DATA per volt at the ADC input
     afe = (c["uw"] - zero) / c["sw"]               # the AFE's gain once its own offset is taken out
     k7 = cnt * afe * 1e-6                          # DATA per µV at the electrodes, DAC off (7 MCLK of blanking)
@@ -1869,9 +1908,11 @@ def fig_input_output():
                  f"the frequency response from the RTL's CIC with the extracted AFE and the modulator's STF, the offset DAC from the "
                  f"extracted start-up runs",
                  note=f"Slope: the chain's last valid sample at +0.3 mV DC gives the ADC {c['adc']:.5f} × 2^24 counts per volt at its "
-                      f"input (VREF from the board's 0.5 V, 487.7 mV at the ADC); the AFE's gain {afe:.2f} is the chain's "
+                      f"input (VREF from the board's 0.5 V" + (f", {c['vref'] * 1e3:.1f} mV at the ADC over 9–10 ms" if c["vref"] else "") +
+                      f"); the AFE's gain {afe:.2f} is the chain's "
                       f"{c['uw'] / c['sw']:.2f} with the start-up run's own offset at 0 V ({minus(f'{zero * 1e3:.4f}')} mV at its output) "
-                      f"taken out; the full-scale sine (figure 28) gives 297.8. So DATA ≈ {minus(f'{d0:,.0f}')} + {k7:,.1f} × V (µV), "
+                      f"taken out" + (f"; the full-scale sine (figure 28) gives {g28:.1f}" if g28 else "") +
+                      f". So DATA ≈ {minus(f'{d0:,.0f}')} + {k7:,.1f} × V (µV), "
                       f"which puts the chain's 0.3 mV at {fit:,.0f} against its samples {', '.join(f'{v:,d}' for v in c['samples'])}. "
                       f"The slope scales with 1 / VREF at the ADC and with the AFE's capacitor ratio, so a real chip wants one "
                       f"calibration with a known input. Noise: the budget's {nb * 1e9:.2f} nVrms in 0.5–100 Hz ({nb * 1e6 * k7:.0f} "
@@ -2025,7 +2066,10 @@ def logbin(f, p, lo, hi, nb=56):
 
 
 def fig_adc_flicker():
-    d = json.load(open(os.path.join(PEX, "runs", "adc_flicker", "adc_flicker.json")))
+    # r11 on (SRC "flicker"): RIN, DAC1 and R21 in ppolyf_u, each 300 kohm unit two strips of 320.48 x 0.8 um in series
+    # (adc_flicker.py --unit); the figure then also shows r10's ppolyf_u_1k unit (runs/adc_flicker) for comparison
+    src = SRC.get("flicker", "")
+    d = json.load(open(os.path.join(PEX, "runs", "adc_flicker" + src, "adc_flicker.json")))
     lp, sm = d["loop"], d["summary"]
     fs, p10, dcr, z0, zt = lp["sine_fs"], lp["sine_10pct"], lp["dc_res153"], lp["zero"], lp["zero_therm"]
     g = d["g_afe"]
@@ -2034,23 +2078,41 @@ def fig_adc_flicker():
     # closed forms through the full-scale runs (the 10 Hz runs leave out sidebands beyond 100 Hz and within 0.5 Hz
     # of the tone, about 10 % below the closed forms)
     kb, kd, ka = fs["rin_b_nv"] / amp_fs, fs["dac_nv"] / amp_fs, fs["rin_a_nv"] / np.sqrt(amp_fs)
-    unit = next(r for r in d["ngspice"] if r["type"] == "ppolyf_u_1k" and r["l_um"] == 291.28 and abs(r["i_ua"] - 0.4064) < 1e-6)
-    worst_ng = max(abs(r["ratio"] - 1) for r in d["ngspice"] if r["type"] == "ppolyf_u_1k")
+    pu = "unit" in sm
+    utype, ul, uw, un = sm["unit"] if pu else ("ppolyf_u_1k", 291.28, 1.0, 1)
+    unit = next(r for r in d["ngspice"] if r["type"] == utype and r["l_um"] == ul and abs(r["i_ua"] - 0.4064) < 1e-6)
+    worst_ng = max(abs(r["ratio"] - 1) for r in d["ngspice"] if r["type"] == utype and (not pu or r["l_um"] == ul))
+    if pu:
+        prev = json.load(open(os.path.join(PEX, "runs", "adc_flicker", "adc_flicker.json")))
+        pfs = prev["loop"]["sine_fs"]
+        prev_unit = next(r for r in d["ngspice"] if r["type"] == "ppolyf_u_1k")
+        what = (f"RIN (16 units per side, each {({2: 'two', 3: 'three'}).get(un, un)} ppolyf_u strips of {ul:g} × {uw:g} µm "
+                f"in series) and DAC1 (31 cells, two "
+                f"600 kΩ strings each, the same units)")
+        model = (f"The PDK gives the body of ppolyf_u S_I = KF·|I|^AF / (f·L·W), KF {d['kf']:.2g}, AF {d['af']:.2f} (ngspice "
+                 f".noise on afe_startup.res_mm agrees within {worst_ng * 100:.2f} %: one unit at {unit['i_ua']:.2f} µA gives "
+                 f"{unit['sim_nv']:.0f} nV/√Hz at 10 Hz, against 70 nV/√Hz of 4kTR; r10's unit, one ppolyf_u_1k strip of "
+                 f"291.28 × 1 µm, gave {prev_unit['sim_nv']:.0f}). ")
+        level = (f"with AF {d['af']:.2f} its level KF·I^(AF−2) grows only as I^{d['af'] - 2:.2f} as the current falls "
+                 f"(r10's ppolyf_u_1k, AF 1: as 1/I), so (b) sweeps I_cal for both. ")
+    else:
+        what = "RIN (16 ppolyf_u_1k units of 291.28 × 1 µm per side) and DAC1 (31 cells, two 600 kΩ strings each)"
+        model = (f"The PDK gives the body of ppolyf_u_1k S_I = KF·|I|^AF / (f·L·W), KF 2.62e-26, AF 1 (ngspice .noise on "
+                 f"afe_startup.res_mm agrees within {worst_ng * 100:.2f} %: one unit at {unit['i_ua']:.2f} µA gives "
+                 f"{unit['sim_nv']:.0f} nV/√Hz at 10 Hz, against 70 nV/√Hz of 4kTR). ")
+        level = "with AF = 1 its level KF/I grows as the current falls, so (b) sweeps I_cal. "
     fig = figure(13.6, 10.4, "Flicker noise of the ADC's poly resistors",
-                 f"RIN (16 ppolyf_u_1k units of 291.28 × 1 µm per side) and DAC1 (31 cells, two 600 kΩ strings each) with the "
-                 f"PDK's 1/f model, through the behavioral CT loop and the RTL's DWA · 0.5–100 Hz, electrode-referred (AFE gain "
-                 f"{g:.2f}) · typical, 27 °C",
-                 note=minus(f"The PDK gives the body of ppolyf_u_1k S_I = KF·|I|^AF / (f·L·W), KF 2.62e-26, AF 1 (ngspice .noise on "
-                            f"afe_startup.res_mm agrees within {worst_ng * 100:.2f} %: one unit at {unit['i_ua']:.2f} µA gives "
-                            f"{unit['sim_nv']:.0f} nV/√Hz at 10 Hz, against 70 nV/√Hz of 4kTR). A resistor's 1/f noise is a fluctuation "
+                 f"{what} with the PDK's 1/f model, through the behavioral CT loop and the RTL's DWA · 0.5–100 Hz, "
+                 f"electrode-referred (AFE gain {g:.2f}) · typical, 27 °C",
+                 note=minus(f"{model}A resistor's 1/f noise is a fluctuation "
                             f"of its resistance, noise current −I(t)·δR/R (Coram, McAndrew, Gullapalli, Kundert, IEEE TCAD 2020). "
                             f"Model B, used for the budget, takes δR/R at the PDK's level at a current I_cal and applies it to each "
                             f"resistor's own current: a DAC1 string carries a constant {i0:.2f} µA whatever the code, and the steering "
                             f"switches multiply its noise by the cell's ±1; with the DWA every cell's selection averages to the code, so "
                             f"only the part that follows the signal stays in the band. Model A applies KF·|I|^AF at RIN's instantaneous "
                             f"current, as a periodic-noise analysis with the PDK's model would; the paper shows that form is wrong when "
-                            f"the current reverses. The PDK documents 1/f measurement conditions only for MOSFETs, and with AF = 1 its "
-                            f"level KF/I grows as the current falls, so (b) sweeps I_cal. Code streams: rtl/model/ct2_codes.py with "
+                            f"the current reverses. The PDK documents 1/f measurement conditions only for MOSFETs, and {level}"
+                            f"Code streams: rtl/model/ct2_codes.py with "
                             f"{d['noise'] * 1e6:.0f} µVrms of white noise at its input, {d['n'] / FS:.1f} s at 1.024 MHz, tone "
                             f"{d['f0']:.2f} Hz (bins within 0.5 Hz of it count as the signal). Run: pex/adc_flicker.py."))
     gs = fig.add_gridspec(2, 2, width_ratios=[1.12, 1])
@@ -2062,6 +2124,12 @@ def fig_adc_flicker():
     ax.loglog(x, kd * x, color=TEAL, lw=1.6, label="DAC1 with the DWA (the same with A or B)")
     ax.loglog(x, np.hypot(kb, kd) * x, color=INK, lw=2.0, label="RIN + DAC1, model B")
     ax.loglog(x, ka * np.sqrt(x), color=LIGHT, lw=1.4, ls=(0, (5, 2.5)), label="RIN, model A (the PDK's |I| form, for reference)")
+    if pu:
+        tot_p = np.hypot(pfs["rin_b_nv"], pfs["dac_nv"])
+        ax.loglog(x, tot_p / amp_fs * x, color=MUTED, lw=1.3, ls=(0, (2, 2)),
+                  label="r10 (one ppolyf_u_1k strip per unit): RIN + DAC1, model B")
+        ax.annotate(f"r10: {tot_p:.2f} nVrms", (amp_fs, tot_p), xytext=(-12, 8), textcoords="offset points", fontsize=7.5,
+                    color=MUTED, ha="right", arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
     for r, mk in ((p10, "o"), (fs, "o"), (dcr, "s")):
         xv = (r["amp_v"] or r["dc_v"]) / g * 1e6
         ax.plot([xv], [r["rin_b_nv"]], mk, color=ACCENT, ms=6, mec="white", mew=1.0, zorder=4)
@@ -2073,52 +2141,83 @@ def fig_adc_flicker():
     ax.axhline(sm["room_nv"], color=BAD, lw=1.0, ls=(0, (4, 2.5)))
     ax.text(3.3, sm["room_nv"] * 1.12, f"room left for 16.5 bit at full scale: {sm['room_nv']:.2f} nVrms", fontsize=7.5, color=BAD)
     ax.axvline(amp_fs, color=MUTED, lw=0.8, ls=(0, (1, 2)))
-    ax.text(amp_fs * 1.06, 0.25, f"full\nscale\n{amp_fs:.0f}\nµV pk", fontsize=7.5, color=MUTED, ha="left", va="bottom")
+    ax.text(amp_fs * 1.06, 0.0115 if pu else 0.25, f"full\nscale\n{amp_fs:.0f}\nµV pk", fontsize=7.5, color=MUTED, ha="left",
+            va="bottom")
     tot = np.hypot(fs["rin_b_nv"], fs["dac_nv"])
     ax.annotate(f"{tot:.2f} nVrms\n(RIN {fs['rin_b_nv']:.2f}, DAC1 {fs['dac_nv']:.2f})", (amp_fs, tot), xytext=(-12, 22),
                 textcoords="offset points", fontsize=7.5, color=INK, ha="right", arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
-    ax.text(3.3, 9.5, f"No input: DAC1 {z0['dac_nv']:.2f} nVrms with the DWA,\n{zt['dac_nv']:.1f} nVrms with the thermometer "
+    ax.text(3.3, 7.5 if pu else 9.5, f"No input: DAC1 {z0['dac_nv']:.{3 if pu else 2}f} nVrms with the DWA,\n"
+                      f"{zt['dac_nv']:.{2 if pu else 1}f} nVrms with the thermometer "
                       f"(DWA_EN = 0); RIN none", fontsize=7.6, color=INK2, va="top", linespacing=1.35,
             bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
     ax.set_xlim(3, 2000)
-    ax.set_ylim(0.01, 20)
+    ax.set_ylim(0.01, 60 if pu else 20)
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:g}"))
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:g}"))
     ax.set_xlabel("Signal at the electrodes, sine peak or DC (µV)")
     ax.set_ylabel("Flicker noise in 0.5–100 Hz (nVrms)")
     ax.set_title("It follows the signal: a gain noise of the ADC (the RIN / DAC1 ratio)", fontsize=9.5)
-    ax.legend(loc="lower right", fontsize=7.2)
+    if pu:
+        ax.legend(loc="upper left", fontsize=6.9, ncol=2, columnspacing=1.2, handlelength=2.2)
+    else:
+        ax.legend(loc="lower right", fontsize=7.2)
 
     # (b) full-scale ENOB against where the PDK's level holds
     ax = fig.add_subplot(gs[0, 1])
     ic = np.array([s["i_cal"] for s in d["sweep"]]) * 1e6
     en = np.array([s["enob"] for s in d["sweep"]])
-    ax.semilogx(ic, en, color=ACCENT, lw=1.8, label="RIN + DAC1, model B")
+    if pu:
+        icp = np.array([s["i_cal"] for s in prev["sweep"]]) * 1e6
+        enp = np.array([s["enob"] for s in prev["sweep"]])
+        ax.semilogx(icp, enp, color=MUTED, lw=1.4, ls=(0, (2, 2)), label="r10: one ppolyf_u_1k strip per unit (AF 1)")
+        ax.plot([i0], [sm["enob_prev"]], "o", color=MUTED, ms=6, mec="white", mew=1.0, zorder=4)
+        ax.annotate(f"r10 at {i0:.2f} µA: {sm['fs_b_prev_nv']:.2f} nVrms, {sm['enob_prev']:.2f} bit", (i0, sm["enob_prev"]),
+                    xytext=(14, -8), textcoords="offset points", fontsize=7.5, color=MUTED, va="top",
+                    arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
+    ax.semilogx(ic, en, color=ACCENT, lw=1.8,
+                label=f"RIN + DAC1, model B ({({2: 'two', 3: 'three'}).get(un, un)} ppolyf_u strips per unit, AF {d['af']:.2f})" if pu else "RIN + DAC1, model B")
     ax.axhline(16.5, color=BAD, lw=1.0, ls=(0, (4, 2.5)))
     ax.text(0.105, 16.503, "target 16.5 bit", fontsize=7.5, color=BAD, va="bottom")
     ax.axhline(sm["base_enob"], color=MUTED, lw=0.8, ls=(0, (1, 2)))
     ax.text(0.105, sm["base_enob"] + 0.003, f"without these terms: {sm['base_enob']:.2f} bit ({sm['base_nv']:.2f} nVrms)",
             fontsize=7.5, color=MUTED, va="bottom")
     ax.plot([i0], [sm["enob_b"]], "o", color=ACCENT, ms=7, mec="white", mew=1.2, zorder=4)
-    ax.annotate(f"the PDK's level at our {i0:.2f} µA:\n{sm['fs_b_nv']:.2f} nVrms, {sm['enob_b']:.2f} bit", (i0, sm["enob_b"]),
-                xytext=(14, -6), textcoords="offset points", fontsize=7.5, color=INK, va="top",
-                arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
-    ax.plot([i0], [sm["enob_a"]], "o", color=LIGHT, ms=6.5, mfc="white", mew=1.3, zorder=4)
-    ax.annotate(f"model A: {sm['fs_a_nv']:.2f} nVrms, {sm['enob_a']:.2f} bit", (i0, sm["enob_a"]), xytext=(12, -2),
-                textcoords="offset points", fontsize=7.5, color=MUTED, va="center")
-    ax.axvline(sm["i_cross"] * 1e6, color=MUTED, lw=0.8, ls=(0, (1, 2)))
-    ax.text(sm["i_cross"] * 1e6 * 1.12, 16.33, f"16.5 bit if the PDK's level\nholds only above {sm['i_cross'] * 1e6:.2f} µA",
-            fontsize=7.5, color=INK2, va="center")
-    ax.text(0.105, 16.04, minus(f"At the PDK's level at {i0:.2f} µA:\n"
-                                 f"· RIN and DAC1 in ppolyf_u (857 × 1 µm, AF 1.79): ×{sm['alt_ratio']:.3f}, {sm['enob_alt']:.2f} bit\n"
-                                 f"· ppolyf_u_1k at 4× the area (582.56 × 2 µm): ×{sm['big_ratio']:.2f}, {sm['enob_big']:.2f} bit"),
-            fontsize=7.5, color=INK2, va="bottom", linespacing=1.4, bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
+    if pu:          # A and B fall on one point: one label, and the crossing far left of the axis as text
+        ax.plot([i0], [sm["enob_a"]], "o", color=LIGHT, ms=4.5, mfc="white", mew=1.1, zorder=5)
+        ax.annotate(f"the PDK's level at our {i0:.2f} µA:\n{sm['fs_b_nv']:.2f} nVrms, {sm['enob_b']:.2f} bit\n"
+                    f"(model A, open: {sm['fs_a_nv']:.2f} nVrms, {sm['enob_a']:.2f} bit)", (i0, sm["enob_b"]),
+                    xytext=(3.2, 16.475), textcoords="data", fontsize=7.5, color=INK, va="top", linespacing=1.35,
+                    arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
+        ax.text(95, 16.03, minus(f"At {i0:.2f} µA the flicker is ×{1 / sm['prev_ratio']:.3f} of r10's\n"
+                                  f"({sm['fs_b_prev_nv']:.2f} nVrms in r10, {sm['fs_b_nv']:.2f} now). 16.5 bit\n"
+                                  f"for any I_cal above {sm['i_cross'] * 1e6:.0e} µA (r10: above "
+                                  f"{prev['summary']['i_cross'] * 1e6:.2f} µA)."),
+                fontsize=7.5, color=INK2, ha="right", va="bottom", linespacing=1.4,
+                bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
+    else:
+        ax.annotate(f"the PDK's level at our {i0:.2f} µA:\n{sm['fs_b_nv']:.2f} nVrms, {sm['enob_b']:.2f} bit", (i0, sm["enob_b"]),
+                    xytext=(14, -6), textcoords="offset points", fontsize=7.5, color=INK, va="top",
+                    arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.7))
+        ax.plot([i0], [sm["enob_a"]], "o", color=LIGHT, ms=6.5, mfc="white", mew=1.3, zorder=4)
+        ax.annotate(f"model A: {sm['fs_a_nv']:.2f} nVrms, {sm['enob_a']:.2f} bit", (i0, sm["enob_a"]), xytext=(12, -2),
+                    textcoords="offset points", fontsize=7.5, color=MUTED, va="center")
+        ax.axvline(sm["i_cross"] * 1e6, color=MUTED, lw=0.8, ls=(0, (1, 2)))
+        ax.text(sm["i_cross"] * 1e6 * 1.12, 16.33, f"16.5 bit if the PDK's level\nholds only above {sm['i_cross'] * 1e6:.2f} µA",
+                fontsize=7.5, color=INK2, va="center")
+        ax.text(0.105, 16.04, minus(f"At the PDK's level at {i0:.2f} µA:\n"
+                                     f"· RIN and DAC1 in ppolyf_u (857 × 1 µm, AF 1.79): ×{sm['alt_ratio']:.3f}, {sm['enob_alt']:.2f} bit\n"
+                                     f"· ppolyf_u_1k at 4× the area (582.56 × 2 µm): ×{sm['big_ratio']:.2f}, {sm['enob_big']:.2f} bit"),
+                fontsize=7.5, color=INK2, va="bottom", linespacing=1.4, bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
     ax.set_xlim(0.1, 100)
     ax.set_ylim(16.0, 16.62)
     ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:g}"))
-    ax.set_xlabel("I_cal: the current at which the PDK's level KF / I is taken (µA)")
+    ax.set_xlabel("I_cal: the current at which the PDK's level KF·I^(AF−2) is taken (µA)" if pu else
+                  "I_cal: the current at which the PDK's level KF / I is taken (µA)")
     ax.set_ylabel("ENOB at full scale (bit)")
-    ax.set_title("Full-scale ENOB: decided by where the PDK's AF = 1 fit holds", fontsize=9.5)
+    ax.set_title("Full-scale ENOB against I_cal: nearly flat with ppolyf_u's AF 1.79" if pu else
+                 "Full-scale ENOB: decided by where the PDK's AF = 1 fit holds", fontsize=9.5)
+    if pu:
+        ax.legend(loc="center right", bbox_to_anchor=(1.0, 0.43), fontsize=7.2)
 
     # (c) DAC1's spectrum: the DWA moves the cells' noise out of the band
     ax = fig.add_subplot(gs[1, 0])
@@ -2126,14 +2225,14 @@ def fig_adc_flicker():
                                       ("sine_fs", "rin_b", ACCENT, 1.3, "RIN, model B, full-scale sine"),
                                       ("sine_fs", "dac", TEAL, 1.5, "DAC1, full-scale sine, DWA"),
                                       ("zero", "dac", INK2, 1.5, "DAC1, no input, DWA")):
-        z = np.load(os.path.join(PEX, "runs", "adc_flicker", f"psd_{name}.npz"))
+        z = np.load(os.path.join(PEX, "runs", "adc_flicker" + src, f"psd_{name}.npz"))
         fc, pc = logbin(z["f"], z[key], 0.3, 400)
         ax.loglog(fc, np.sqrt(pc) * 1e9, color=color, lw=lw, label=lab)
     band(ax, label=True)
     ax.axvline(d["f0"], color=MUTED, lw=0.8, ls=(0, (1, 2)))
-    ax.text(d["f0"] * 1.06, 3.5, f"tone {d['f0']:.1f} Hz", fontsize=7.3, color=MUTED, va="top")
+    ax.text(d["f0"] * 1.06, 0.7 if pu else 3.5, f"tone {d['f0']:.1f} Hz", fontsize=7.3, color=MUTED, va="top")
     logf(ax, 0.3, 400)
-    ax.set_ylim(1e-4, 5)
+    ax.set_ylim(*((1e-5, 1) if pu else (1e-4, 5)))
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:g}"))
     ax.set_xlabel("Frequency (Hz)")
     ax.set_ylabel("Electrode-referred noise (nV/√Hz)")
@@ -2144,7 +2243,7 @@ def fig_adc_flicker():
     # (d) the table
     ax = fig.add_subplot(gs[1, 1])
     ax.axis("off")
-    f2 = lambda v: f"{v:.2f}"                                                        # noqa: E731
+    f2 = lambda v: f"{v:.3f}" if pu and 0 < v < 0.01 else f"{v:.2f}"                 # noqa: E731
     rows = [("No input (electrodes shorted)", f2(z0["rin_b_nv"]), f2(z0["dac_nv"]), f2(np.hypot(z0["rin_b_nv"], z0["dac_nv"])),
              f2(z0["rin_a_nv"])),
             ("   the same, DWA_EN = 0", "0.00", f"{zt['dac_nv']:.2f}", f"{zt['dac_nv']:.2f}", "0.00"),

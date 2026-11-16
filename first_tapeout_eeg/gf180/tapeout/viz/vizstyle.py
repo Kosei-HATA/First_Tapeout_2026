@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 # The chip the figures show: the assembly round of the docs ("N 回目のチップ"). It names the
 # folder documentation/figures/gf180/<CHIP>_<CHIP_DATE>/viz/, the files gf180_viz_<CHIP>_NN_*.png
 # and the label on every figure. A new round gets a new folder and a full set of figures.
-CHIP, CHIP_DATE = "r10", "20261109"
-CHIP_LABEL = "Chip r10 (tenth assembly, 9 Nov 2026)"
+CHIP, CHIP_DATE = "r12", "20261113"
+CHIP_LABEL = "Chip r12 (twelfth assembly, 13 Nov 2026)"
 
 INK, INK2, MUTED, LIGHT, HAIR = "#0f172a", "#334155", "#64748b", "#94a3b8", "#e2e8f0"
 ACCENT = "#4f46e5"

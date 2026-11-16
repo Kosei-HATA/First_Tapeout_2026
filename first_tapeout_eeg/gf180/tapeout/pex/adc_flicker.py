@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Flicker (1/f) noise of the ADC's poly resistors (11/12, gf180_realistic_eval_20261028.md): the ppolyf_u_1k units
-of RIN and DAC1 (291.28 x 1 um, about 310 kohm) and the reference filter R_f (ppolyf_u 2 x 7 um), in the residual
-band 0.5-100 Hz, electrode-referred (AFE gain 297.75).
+"""Flicker (1/f) noise of the ADC's poly resistors (11/12, gf180_realistic_eval_20261028.md): the units of RIN and
+DAC1 and the reference filter R_f (ppolyf_u 2 x 7 um), in the residual band 0.5-100 Hz, electrode-referred (AFE gain
+297.75). The unit is read from the netlists: up to r10 one ppolyf_u_1k strip of 291.28 x 1 um (about 300 kohm), from r11
+(the user's decision of 11/12) two ppolyf_u strips of 320.48 x 0.8 um in series. A unit of n strips in series has the
+relative 1/f noise of one strip of n times the area (the strips fluctuate independently). R21 (ppolyf_u in r11) is left
+out: its noise enters after the first integrator, whose gain in the band (over 200 at 100 Hz) divides it.
 
 The PDK's model: the body of each resistor carries KF and AF (ppolyf_u_1k: KF 2.62e-26, AF 1; ppolyf_u: KF 2.4e-23,
 AF 1.79) and ngspice gives a shunt noise current S_I = KF |I|^AF / (f L W) (L, W the effective dimensions in m). With
@@ -27,8 +30,8 @@ How the noise reaches DATA:
   MOSFETs, so where its fit holds is not known. I_cal = I0 (the DAC1 strings' current, also the RIN units' current at
   full scale) is the conservative choice; Part 3 sweeps I_cal.
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/adc_flicker.py [--log2n 22]   (from the repo root)
-writes runs/adc_flicker/: adc_flicker.json (all numbers), psd_<case>.npz (spectra for figs_perf.py), ng/ (decks)"""
+usage: [EEG_PEX_REV=r11] gf180/tools/venv310/bin/python gf180/tapeout/pex/adc_flicker.py [--log2n 22]   (from the repo root)
+writes runs/adc_flicker[_<rev>]/: adc_flicker.json (all numbers), psd_<case>.npz (spectra for figs_perf.py), ng/ (decks)"""
 import argparse
 import bisect
 import json
@@ -48,7 +51,8 @@ sys.path.insert(0, os.path.join(HERE, "..", "rtl", "model"))
 import afe_startup as S  # noqa: E402  (res_mm model header)
 import ct2_codes as C  # noqa: E402  (behavioral CT loop)
 
-OUT = os.path.join(HERE, "runs", "adc_flicker")
+_REV = os.environ.get("EEG_PEX_REV", "")
+OUT = os.path.join(HERE, "runs", "adc_flicker" + (f"_{_REV}" if _REV else ""))
 ADC = os.path.join(HERE, "..", "adc")
 K_B, T_K = 1.380649e-23, 300.15
 FS = 1.024e6
@@ -64,26 +68,53 @@ TYPES = {  # kf, af, r_dw, r_dl (PDK sm141064.spice, .lib res)
     "ppolyf_u_1k": (2.62e-26, 1.0, 0.0148e-6, 3.85e-11),
     "ppolyf_u": (2.4e-23, 1.79, 2.55e-8, 2e-11),
 }
-UNIT = ("ppolyf_u_1k", 291.28, 1.0)
+UNIT_1K = ("ppolyf_u_1k", 291.28, 1.0, 1)        # type, strip length, width (um), strips in series: up to r10
+UNIT_PU = ("ppolyf_u", 320.48, 0.8, 2)           # r11
+UNIT = None                                      # the netlists' unit (check_netlists)
+
+
+def strip(unit):
+    return f"{unit[0]} r_length={unit[1]:g}u r_width={unit[2]:g}u"
 
 
 def check_netlists():
-    """the geometry this script assumes, from the netlists"""
+    """the geometry this script assumes, from the netlists; sets UNIT"""
+    global UNIT
     adc = open(os.path.join(ADC, "eeg_adc.spice")).read()
     dac = open(os.path.join(ADC, "eeg_dac1.spice")).read()
     ref = open(os.path.join(ADC, "eeg_ref.spice")).read()
-    for side in "PN":
-        assert re.search(rf"^XRIN{side} \S+ \S+ AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=16$", adc, re.M), side
     cell = dac[dac.index(".subckt eeg_dac1_cell"):]
     cell = cell[:cell.index(".ends")]
-    assert len(re.findall(r"ppolyf_u_1k r_length=291.28u r_width=1u$", cell, re.M)) == 4
+    for unit in (UNIT_1K, UNIT_PU):
+        rin = [len(re.findall(rf"^XRIN{side}[AB]? \S+ \S+ AVSS {strip(unit)} m=16$", adc, re.M)) for side in "PN"]
+        if rin == [unit[3]] * 2:
+            break
+    else:
+        raise SystemExit("RIN is neither the r10 unit nor the r11 unit")
+    assert len(re.findall(rf"{strip(unit)}$", cell, re.M)) == 4 * unit[3]
     assert dac.count("eeg_dac1_cell\n") >= 31
     assert len(re.findall(r"ppolyf_u r_length=2u r_width=7u$", ref, re.M)) == 2
+    UNIT = unit
+    return unit
 
 
-def eff_lw(typ, l_um, w_um):
+def eff_lw(typ, l_um, w_um, nser=1):
+    """the effective area of one strip times the strips in series (the relative 1/f noise of the string)"""
     kf, af, dw, dl = TYPES[typ]
-    return (l_um * 1e-6 - 2 * dl) * (w_um * 1e-6 - 2 * dw)
+    return nser * (l_um * 1e-6 - 2 * dl) * (w_um * 1e-6 - 2 * dw)
+
+
+def body(typ, l_um, w_um, nser):
+    """the string between n and ground"""
+    nodes = ["n"] + [f"m{k}" for k in range(1, nser)] + ["0"]
+    return "\n".join(f"XR{k} {nodes[k]} {nodes[k + 1]} 0 {typ} r_length={l_um}u r_width={w_um}u" for k in range(nser))
+
+
+def mean_abs_pow(dc, amp, af):
+    """the time average of |u|^af for u = dc (amp = 0) or a sine of amplitude amp"""
+    if amp == 0:
+        return abs(dc) ** af
+    return amp ** af * math.gamma((af + 1) / 2) / (math.sqrt(math.pi) * math.gamma(af / 2 + 1))
 
 
 def header():
@@ -99,13 +130,17 @@ def header():
 def ngspice_part():
     """.noise at 10 Hz of one device on a DC current, against sqrt(4kTR + KF I^AF R^2 / (f L W))"""
     cases = [(*UNIT, i) for i in (0.03, 0.1, 0.3, 0.4064, 1.0, 3.0)]
-    cases += [("ppolyf_u_1k", 582.56, 2.0, 0.4064), ("ppolyf_u", 857.0, 1.0, 0.4064), ("ppolyf_u", 2.0, 7.0, I_RF * 1e6)]
+    if UNIT == UNIT_1K:     # r10: the alternatives of 11/12
+        cases += [("ppolyf_u_1k", 582.56, 2.0, 1, 0.4064), ("ppolyf_u", 857.0, 1.0, 1, 0.4064)]
+    else:                   # r11: the r10 unit, for the comparison
+        cases += [(*UNIT_1K, 0.4064)]
+    cases += [("ppolyf_u", 2.0, 7.0, 1, I_RF * 1e6)]
     rows = []
-    for typ, l_um, w_um, i_ua in cases:
-        d = os.path.join(OUT, "ng", f"{typ}_{l_um:g}x{w_um:g}_{i_ua:g}uA")
+    for typ, l_um, w_um, nser, i_ua in cases:
+        d = os.path.join(OUT, "ng", f"{typ}_{l_um:g}x{w_um:g}{f'x{nser}' if nser > 1 else ''}_{i_ua:g}uA")
         os.makedirs(d, exist_ok=True)
         deck = (f"* poly flicker check (adc_flicker.py)\n{header()}\n.temp 27\n"
-                f"XR n 0 0 {typ} r_length={l_um}u r_width={w_um}u\nI1 0 n dc {i_ua}u ac 1\n"
+                f"{body(typ, l_um, w_um, nser)}\nI1 0 n dc {i_ua}u ac 1\n"
                 f".control\nop\nlet rdc = v(n) / {i_ua}u\nprint rdc\nnoise v(n) I1 dec 1 10 10\nsetplot noise1\n"
                 f"print onoise_spectrum\n.endc\n.end\n")
         open(os.path.join(d, "tb.spice"), "w").write(deck)
@@ -115,13 +150,13 @@ def ngspice_part():
         sim = float(re.findall(r"onoise_spectrum = ([-0-9.e+]+)", log)[0])
         kf, af = TYPES[typ][:2]
         i = i_ua * 1e-6
-        lw = eff_lw(typ, l_um, w_um)
+        lw = eff_lw(typ, l_um, w_um, nser)
         form = math.sqrt(4 * K_B * T_K * r + kf * i ** af / (10.0 * lw) * r ** 2)
         fl10 = max(sim ** 2 - 4 * K_B * T_K * r, 0.0)          # the flicker part of the simulated V^2/Hz at 10 Hz
-        rows.append(dict(type=typ, l_um=l_um, w_um=w_um, i_ua=i_ua, r=r, sim_nv=sim * 1e9, formula_nv=form * 1e9,
+        rows.append(dict(type=typ, l_um=l_um, w_um=w_um, nser=nser, i_ua=i_ua, r=r, sim_nv=sim * 1e9, formula_nv=form * 1e9,
                          ratio=sim / form, rel_f=fl10 * 10.0 / (i * r) ** 2,   # S_I / I^2 x f from the simulation
                          rel_f_model=kf * i ** (af - 2) / lw))
-        print(f"  {typ:12s} {l_um:7.2f} x {w_um:4.1f} um, {i_ua:7.4f} uA, R {r:10.1f}: {sim * 1e9:9.3f} nV/rtHz at 10 Hz "
+        print(f"  {typ:12s} {nser} x {l_um:7.2f} x {w_um:4.1f} um, {i_ua:7.4f} uA, R {r:10.1f}: {sim * 1e9:9.3f} nV/rtHz at 10 Hz "
               f"(closed form {form * 1e9:9.3f}, ratio {sim / form:.4f}), S_I/I^2 x f {rows[-1]['rel_f']:.4e}", flush=True)
     return rows
 
@@ -200,7 +235,8 @@ def loop_part(n, s_r, r_u, noise_rms):
     f0 = round(10.0 * n / FS) * FS / n                    # about 10 Hz, an integer number of cycles in the record
     a_fs = FS_PK * G_AFE
     u_fs_model = C.m.VREF * C.m.RIN / C.m.RD1             # ADC input for y = 1 in the behavioral loop
-    kf, lw = TYPES["ppolyf_u_1k"][0], eff_lw(*UNIT)
+    kf, af = TYPES[UNIT[0]][:2]
+    lw = eff_lw(*UNIT)
     cases = [("zero", 0.0, 0.0, True), ("dc_res153", 153e-6 * G_AFE, 0.0, True), ("sine_10pct", 0.0, 0.1 * a_fs, True),
              ("sine_fs", 0.0, a_fs, True), ("zero_therm", 0.0, 0.0, False), ("sine_fs_therm", 0.0, a_fs, False)]
     cache, res = {}, {}
@@ -222,14 +258,15 @@ def loop_part(n, s_r, r_u, noise_rms):
         f, p_dac = psd(e)
         tt = (np.arange(nset, nset + n) + 0.5) / FS
         u = dc + amp * np.sin(2 * math.pi * f0 * tt)
-        v_a = np.sqrt(kf * np.abs(u) * r_u / (32 * lw)) * (pink(n, 1.0, np.random.default_rng(2001)) -
-                                                           pink(n, 1.0, np.random.default_rng(2002)))
+        # model A: S_I = KF |I_u|^AF / (f L W) per unit, I_u = u / 2 / R_u, 16 units per side, R_u / 16 per side
+        v_a = np.sqrt(kf * (np.abs(u) / (2 * r_u)) ** af * r_u ** 2 / (16 * lw)) * (
+            pink(n, 1.0, np.random.default_rng(2001)) - pink(n, 1.0, np.random.default_rng(2002)))
         v_b = u / 2 * (pink(n, s_r / 16, np.random.default_rng(2003)) + pink(n, s_r / 16, np.random.default_rng(2004)))
         _, p_a = psd(v_a)
         _, p_b = psd(v_b)
         to_nv = lambda pw, scale=1.0: math.sqrt(pw) * scale / G_AFE * 1e9   # noqa: E731
         u2 = dc ** 2 + amp ** 2 / 2
-        mabs = abs(dc) if amp == 0 else 2 / math.pi * amp
+        mpow = mean_abs_pow(dc, amp, af)
         r = dict(dc_v=dc, amp_v=amp, dwa=dwa,
                  dac_nv=to_nv(band_power(f, p_dac, ft), u_fs_model),
                  dac_gain_nv=to_nv(band_power(*psd(e_gain), ft), u_fs_model),
@@ -237,7 +274,7 @@ def loop_part(n, s_r, r_u, noise_rms):
                  dac_cf_nv=math.sqrt(u2 * s_r / 124 * LNB) / G_AFE * 1e9,
                  rin_b_nv=to_nv(band_power(f, p_b, ft)), rin_b_cf_nv=math.sqrt(u2 * s_r / 32 * LNB) / G_AFE * 1e9,
                  rin_a_nv=to_nv(band_power(f, p_a, ft)),
-                 rin_a_cf_nv=math.sqrt(kf * mabs * r_u / (16 * lw) * LNB) / G_AFE * 1e9,
+                 rin_a_cf_nv=math.sqrt(2 * kf * mpow / (2 * r_u) ** af * r_u ** 2 / (16 * lw) * LNB) / G_AFE * 1e9,
                  code_mean=float(c_all[nset:].mean()), code_std=float(c_all[nset:].std()))
         res[name] = r
         print(f"  {name:14s} DAC1 {r['dac_nv']:6.3f} nV (follows the code {r['dac_gain_nv']:6.3f}, rest {r['dac_rest_nv']:6.3f}, "
@@ -262,15 +299,17 @@ def main():
     os.chdir(REPO)
     os.makedirs(OUT, exist_ok=True)
     check_netlists()
+    if UNIT != UNIT_1K and not _REV:
+        raise SystemExit("the netlists hold the r11 unit: set EEG_PEX_REV (runs/adc_flicker holds r10's results)")
+    print(f"unit: {UNIT[3]} x {UNIT[0]} {UNIT[1]:g} x {UNIT[2]:g} um; output {OUT}")
     print("Part 1: ngspice .noise of the PDK's resistors (res_mm), 10 Hz")
     ng = ngspice_part()
-    unit = next(r for r in ng if r["type"] == "ppolyf_u_1k" and r["l_um"] == 291.28 and r["i_ua"] == 0.4064)
+    key = lambda r: (r["type"], r["l_um"], r["w_um"], r["nser"])   # noqa: E731
+    unit = next(r for r in ng if key(r) == UNIT and r["i_ua"] == 0.4064)
     r_u = unit["r"]
     i0 = VREF_CHIP / 2 / (2 * r_u)                      # DAC1 string current
-    kf = TYPES["ppolyf_u_1k"][0]
-    s_r = kf / (i0 * eff_lw(*UNIT))                     # relative 1/f PSD x f of one unit at I0 (model B at I_cal = I0)
-    alt = next(r for r in ng if r["type"] == "ppolyf_u" and r["l_um"] == 857.0)
-    big = next(r for r in ng if r["l_um"] == 582.56)
+    kf, af = TYPES[UNIT[0]][:2]
+    s_r = kf * i0 ** (af - 2) / eff_lw(*UNIT)           # relative 1/f PSD x f of one unit at I0 (model B at I_cal = I0)
     rf = next(r for r in ng if r["type"] == "ppolyf_u" and r["l_um"] == 2.0)
     # R_f: both references' fluctuations add to VREFP - VREFN; the DAC1 output (and the signal it balances) scales with it
     rf_v2 = 2 * rf["rel_f"] * (I_RF * rf["r"]) ** 2 * LNB
@@ -284,22 +323,36 @@ def main():
     fs_a = math.hypot(fs["rin_a_nv"], fs["dac_nv"])
     base = BASE_NV
     room = math.sqrt((FS_PK / math.sqrt(2) / 10 ** ((16.5 * 6.02 + 1.76) / 20) * 1e9) ** 2 - base ** 2)
-    # Part 3: where the PDK's level is taken (model B scales as sqrt(I0 / I_cal))
+    # Part 3: where the PDK's level is taken (model B scales as (I_cal / I0)^((AF - 2) / 2): AF 1 sqrt(I0 / I_cal))
     ical = np.logspace(-7, -4, 121)
-    sweep = [dict(i_cal=float(ic), fs_nv=fs_b * math.sqrt(i0 / ic), enob=enob(math.hypot(base, fs_b * math.sqrt(i0 / ic))))
-             for ic in ical]
-    i_cross = i0 * (fs_b / room) ** 2
-    alt_ratio = math.sqrt(alt["rel_f"] / unit["rel_f"])
-    big_ratio = math.sqrt(big["rel_f"] / unit["rel_f"])
+    lvl = lambda ic: (ic / i0) ** ((af - 2) / 2)        # noqa: E731
+    sweep = [dict(i_cal=float(ic), fs_nv=fs_b * lvl(ic), enob=enob(math.hypot(base, fs_b * lvl(ic)))) for ic in ical]
+    i_cross = i0 * (room / fs_b) ** (2 / (af - 2))
     summ = dict(base_nv=base, base_enob=enob(base), fs_b_nv=fs_b, fs_a_nv=fs_a, enob_b=enob(math.hypot(base, fs_b)),
                 enob_a=enob(math.hypot(base, fs_a)), room_nv=room, i_cross=i_cross, rf_nv=rf_nv,
-                rf_fs_nv=0.5 * rf_nv / EXT_REF_NV, alt_ratio=alt_ratio, enob_alt=enob(math.hypot(base, fs_b * alt_ratio)),
-                big_ratio=big_ratio, enob_big=enob(math.hypot(base, fs_b * big_ratio)))
+                rf_fs_nv=0.5 * rf_nv / EXT_REF_NV, unit=list(UNIT))
+    if UNIT == UNIT_1K:
+        alt = next(r for r in ng if r["type"] == "ppolyf_u" and r["l_um"] == 857.0)
+        big = next(r for r in ng if r["l_um"] == 582.56)
+        alt_ratio = math.sqrt(alt["rel_f"] / unit["rel_f"])
+        big_ratio = math.sqrt(big["rel_f"] / unit["rel_f"])
+        summ.update(alt_ratio=alt_ratio, enob_alt=enob(math.hypot(base, fs_b * alt_ratio)), big_ratio=big_ratio,
+                    enob_big=enob(math.hypot(base, fs_b * big_ratio)))
+    else:                   # the r10 unit at the same current: what r11 changed
+        prev = next(r for r in ng if key(r) == UNIT_1K)
+        prev_ratio = math.sqrt(prev["rel_f"] / unit["rel_f"])
+        summ.update(prev_ratio=prev_ratio, fs_b_prev_nv=fs_b * prev_ratio,
+                    enob_prev=enob(math.hypot(base, fs_b * prev_ratio)))
     print(f"full scale, model B at I0: RIN {fs['rin_b_nv']:.2f} + DAC1 {fs['dac_nv']:.2f} -> {fs_b:.2f} nVrms, "
           f"{summ['enob_b']:.2f} bit (without: {summ['base_enob']:.2f}); model A {fs_a:.2f} nVrms, {summ['enob_a']:.2f} bit")
-    print(f"room for 16.5 bit at full scale {room:.2f} nVrms: the PDK's level must hold only above {i_cross * 1e6:.2f} uA; "
-          f"ppolyf_u units x{alt_ratio:.4f} -> {summ['enob_alt']:.2f} bit; 4x area x{big_ratio:.3f} -> {summ['enob_big']:.2f} bit")
-    json.dump(dict(ngspice=ng, loop=loop, f0=f0, n=1 << a.log2n, i0=i0, s_r=s_r, r_u=r_u, kf=kf, lw=eff_lw(*UNIT),
+    print(f"room for 16.5 bit at full scale {room:.2f} nVrms: the PDK's level must hold only above {i_cross * 1e6:.3g} uA")
+    if UNIT == UNIT_1K:
+        print(f"ppolyf_u units x{summ['alt_ratio']:.4f} -> {summ['enob_alt']:.2f} bit; 4x area x{summ['big_ratio']:.3f} -> "
+              f"{summ['enob_big']:.2f} bit")
+    else:
+        print(f"the r10 unit (ppolyf_u_1k 291.28 x 1 um) x{summ['prev_ratio']:.3f}: {summ['fs_b_prev_nv']:.2f} nVrms, "
+              f"{summ['enob_prev']:.2f} bit")
+    json.dump(dict(ngspice=ng, loop=loop, f0=f0, n=1 << a.log2n, i0=i0, s_r=s_r, r_u=r_u, kf=kf, af=af, lw=eff_lw(*UNIT),
                    g_afe=G_AFE, band=BAND, noise=a.noise, sweep=sweep, summary=summ, vref=VREF_CHIP, i_rf=I_RF),
               open(os.path.join(OUT, "adc_flicker.json"), "w"), indent=1)
     print("wrote", os.path.join(OUT, "adc_flicker.json"))

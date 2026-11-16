@@ -46,6 +46,23 @@ PAD_R = 1.2716                                   # pad cell, bond pad -> core ed
 R_REF_PAD = (41.1, 87.1)                         # core edge -> eeg_ref's inputs (VREFP_PAD, VREFN_PAD)
 R_REF_ADC = (200.8, 187.1)                       # eeg_ref -> the ADC's VREFP / VREFN
 R_REF_BIAS = (426.6, 413.1)                      # eeg_ref -> the bias block's divider
+# (these three through r10; from r11 on, where the ADC's VREFP / VREFN ports moved, chip_r() takes them from the
+# chip wiring's rnet, afe_startup.CHIPNETS/rnet.json, the other ports open)
+
+
+def chip_r():
+    """(R_REF_PAD, R_REF_ADC, R_REF_BIAS) of this chip, each (VREFP side, VREFN side) in ohm"""
+    if _REV in ("", "r7", "r8", "r9", "r10"):
+        return R_REF_PAD, R_REF_ADC, R_REF_BIAS
+    import numpy as np
+    import pex_chipnets as pc
+    j = json.load(open(os.path.join(S.CHIPNETS, "rnet.json")))
+
+    def r(net, a, b):
+        return pc.r_between(np.array(j[net]["G"]), j[net]["names"], [a], [b])
+    return ((r("VREFP_PAD", "A10", "REF"), r("VREFN_PAD", "A11", "REF")),
+            (r("VREFP", "REF", "ADC"), r("VREFN", "REF", "ADC")),
+            (r("VREFP", "REF", "BIAS"), r("VREFN", "REF", "BIAS")))
 
 
 def header(kind, seed):
@@ -72,7 +89,8 @@ def local(d, src, mc):
 def build(a, kind, seed):
     name = {"mc": f"mc{seed}", "rc": f"rc_{seed}", "typ": "typical"}[kind] + \
         f"_f{a.fsig / 1e3:g}k_a{a.amp:g}_t{a.tstop * 1e6:g}u" + ("" if a.chip else "_nochip") + \
-        ("" if a.tmax == 10e-6 else f"_tmax{a.tmax * 1e9:g}n")
+        ("" if a.tmax == 10e-6 else f"_tmax{a.tmax * 1e9:g}n") + \
+        ("" if not a.chip or a.avdd == 3.245 else f"_avdd{a.avdd:g}")   # 11/16: a raised board AVDD keeps its own folder
     d = os.path.join(RUNS, name)
     os.makedirs(d, exist_ok=True)
     subprocess.run([sys.executable, os.path.join(pex_adc.ADC_LOOP, "adc_deck.py"), d, "--tstop", f"{a.tstop:g}",
@@ -96,15 +114,16 @@ def build(a, kind, seed):
     ref = local(d, S.REF_PEX if a.chip else REF_SCH, mc)
     assert txt.count(f".include {REF_SCH}\n") == 1
     txt = txt.replace(f".include {REF_SCH}\n", f".include {ref}\n")
+    r_pad, r_adc, r_bias = chip_r()
     if a.chip:
         txt = txt.replace("VAVDD AVDD 0 3.3\n", f"VAVDD AVDD 0 {a.avdd:g}\n", 1)
-        txt = txt.replace("RBP EP PADP 0.2\n", f"RBP EP PADP {0.2 + PAD_R + R_REF_PAD[0]:g}\n", 1)
-        txt = txt.replace("RBN EN PADN 0.2\n", f"RBN EN PADN {0.2 + PAD_R + R_REF_PAD[1]:g}\n", 1)
+        txt = txt.replace("RBP EP PADP 0.2\n", f"RBP EP PADP {0.2 + PAD_R + r_pad[0]:g}\n", 1)
+        txt = txt.replace("RBN EN PADN 0.2\n", f"RBN EN PADN {0.2 + PAD_R + r_pad[1]:g}\n", 1)
         assert txt.count("XREF PADP PADN VREFP VREFN 0 eeg_ref\n") == 1
         txt = txt.replace("XREF PADP PADN VREFP VREFN 0 eeg_ref\n",
                           "XREF PADP PADN VREFP_R VREFN_R 0 eeg_ref\n"
-                          f"RREFADCP VREFP_R VREFP {R_REF_ADC[0]:g}\nRREFADCN VREFN_R VREFN {R_REF_ADC[1]:g}\n"
-                          f"RREFBP VREFP_R VREFP_B {R_REF_BIAS[0]:g}\nRREFBN VREFN_R VREFN_B {R_REF_BIAS[1]:g}\n")
+                          f"RREFADCP VREFP_R VREFP {r_adc[0]:g}\nRREFADCN VREFN_R VREFN {r_adc[1]:g}\n"
+                          f"RREFBP VREFP_R VREFP_B {r_bias[0]:g}\nRREFBN VREFN_R VREFN_B {r_bias[1]:g}\n")
         old = "IDP IDN IQ ITST VCM VREFP VREFN IB1 IB0"
         assert txt.count(old) == 1
         txt = txt.replace(old, "IDP IDN IQ ITST VCM VREFP_B VREFN_B IB1 IB0")
@@ -115,7 +134,8 @@ def build(a, kind, seed):
     assert n == 1
     open(path, "w").write(txt)
     json.dump({"kind": kind, "seed": seed, "chip": a.chip, "avdd": a.avdd if a.chip else 3.3, "tstop": a.tstop,
-               "fsig": a.fsig, "amp": a.amp}, open(os.path.join(d, "meta.json"), "w"), indent=1)
+               "fsig": a.fsig, "amp": a.amp, "r_ref_pad": r_pad, "r_ref_adc": r_adc, "r_ref_bias": r_bias},
+              open(os.path.join(d, "meta.json"), "w"), indent=1)
     return name, d
 
 

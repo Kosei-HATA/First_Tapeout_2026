@@ -262,8 +262,9 @@ r, s = inside("adc_rdac")
 logic = pick(s, *[n for n in s if n.startswith(("eeg_dac1_", "filler_", "dac1_cd"))])
 frame("08_dac1", "ADC input resistor and DAC1",
       f"adc_rdac, {r.width():.0f} × {r.height():.0f} µm · RIN and the 31 DAC1 elements share one resistor array", r,
-      [(s["rdac_r"], "Resistor array: 156 units of 300 kΩ (ppolyf_u_1k, 291 × 1 µm)\nRIN 16 per side; DAC1 2 in series "
-                     "per side and element", 9.0),
+      [(s["rdac_r"], ("Resistor array: 156 units of 300 kΩ (ppolyf_u_1k, 291 × 1 µm)" if CHIP in ("r6", "r7", "r8", "r9", "r10")
+                     else "Resistor array: 156 units of 300 kΩ, each two ppolyf_u strips\nof 320.48 × 0.8 µm in series") +
+                    "\nRIN 16 per side; DAC1 2 in series per side and element", 9.0),
        (s["dac1_quad"], "Switches, 31 × dac1_quad", 7.5, "c", False, 90),
        (logic, "Element\nlogic", 8.0)],
       note=KL + "The resistor array lies under its SAB and resistor marker layers. Logic: latch TGs, inverters, NORs, "

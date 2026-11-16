@@ -18,7 +18,8 @@ mismatch scales with par, not with m. The extractions merge parallel fingers int
 preamp input pairs W20/L1.25 nf 2 come out as w=10u M=2), so par matters there too. Corners: the PDK's MOS corner
 with the matching resistor / MIM / diode corners.
 
-Benches (one ngspice deck per job; at most --jobs (<= 2) at a time; a job with a res.json is skipped):
+Benches (one ngspice deck per job; at most --jobs (<= ADC_MC_SLOTS, default 2) at a time; a job with a res.json
+is skipped):
   quant   eeg_quantizer (pex) with its bias current IQ from eeg_bias (pex, reset codes), VREFP / VREFN ideal
           1.9 / 1.4 V, input CM 1.65 V: a slow differential ramp -60 -> +60 mV with one strobe per frame
           (CMP_STROBE 1 MCLK high), TH read at e2 (quantizer_check.py static). Frame QUANT['nm'] MCLK (the
@@ -60,7 +61,9 @@ Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/adc_block_mc.py run [--b
            [--seeds 1-30] [--corners typical ss ff fs sf] [--jobs 2] [--hold-slot]
        gf180/tools/venv310/bin/python gf180/tapeout/pex/adc_block_mc.py report [--seeds 1-30]
        gf180/tools/venv310/bin/python gf180/tapeout/pex/adc_block_mc.py checkq --seeds 1   (quantizer frame check)
-       (several drivers may run at once: a lock in runs/adc_mc/locks keeps their ngspice processes at <= 2)
+       (several drivers may run at once: a lock in runs/adc_mc/locks keeps their ngspice processes at <= 2, or at
+       <= ADC_MC_SLOTS from the environment)
+       EEG_PEX_REV=r11 ...: the r11 chip's adc_rdac, the runs in runs/adc_mc_r11 (see _RDAC_REV)
 Output: runs/adc_mc/<block>/<test>_<case>/ (tb.spice, run.log, res.json; waveforms deleted after parsing),
         runs/adc_mc/adc_block_mc.json (per-seed distributions, corners, statistics), runs/adc_mc/summary.md.
 """
@@ -89,12 +92,17 @@ import dac1_check as DC  # noqa: E402  (frame timing, tolerances)
 sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "sim", "quantizer"))
 import quantizer_check as QC  # noqa: E402  (frame timing, ideal thresholds)
 
-RUNS = os.path.join(HERE, "runs", "adc_mc")
+# EEG_PEX_REV=r11 (pex.py): the r11 chip, runs in runs/adc_mc_r11. Of these blocks only adc_rdac changed after r6
+# (r11, 11/12: RIN and DAC1 on ppolyf_u, runs/adc_rdac_c_r11; the cells of the quantizer, the OTAs, eeg_bias and
+# eeg_ref are r6's by XOR); the OTA benches change with it too (viz_data.ota_deck's RIN and R21 follow the rev)
+_REV = os.environ.get("EEG_PEX_REV", "")
+_RDAC_REV = {"r11": "r11"}.get(_REV, "")
+RUNS = os.path.join(HERE, "runs", "adc_mc" + (f"_{_REV}" if _REV else ""))
 NETS = os.path.join(RUNS, "nets")
 PEXR = os.path.join(HERE, "runs")
 SRC = {  # the extractions (pex.py; eeg_bias / eeg_ref: pex_chipnets.py, rebuild of 10/27, XOR-identical to r6)
     "eeg_quantizer": os.path.join(PEXR, "eeg_quantizer_c", "eeg_quantizer_pex.spice"),
-    "adc_rdac": os.path.join(PEXR, "adc_rdac_c", "adc_rdac_pex.spice"),
+    "adc_rdac": os.path.join(PEXR, "adc_rdac_c" + (f"_{_RDAC_REV}" if _RDAC_REV else ""), "adc_rdac_pex.spice"),
     "ota1": os.path.join(PEXR, "gf180_inside_cascode_ota_c", "gf180_inside_cascode_ota_pex.spice"),
     "ota2": os.path.join(PEXR, "gf180_ct_ota_tel16_cmfb_c", "gf180_ct_ota_tel16_cmfb_pex.spice"),
     "eeg_bias": S.BIAS_PEX,
@@ -106,10 +114,14 @@ VDD = 3.3
 PAR_MODELS = {"ppolyf_u", "ppolyf_u_1k", "cap_mim_2f0ff", "cap_mim_1f5ff", "cap_mim_1f0ff"}
 # global process draws recorded per seed (the PDK's statistical section: agauss(0, 1, 3), times mc_skew = 3 in
 # the model equations; mc_rsh_ppolyf_u_1k: agauss(0, 49.754, 3) ohm/sq, times res_mc_skew = 3; mc_c_cox_2p0ff:
-# relative, already times cap_mc_skew = 3)
+# relative, already times cap_mc_skew = 3; mc_rsh_ppolyf_u: agauss(0, 18.116, 3) ohm/sq, times res_mc_skew = 3, the
+# sheet of RIN, DAC1 and R21 since r11, recorded from r11 on: reading a draw does not change the draws)
 GLOBALS = ["mc_sig_vth", "mc_sig_vthn", "mc_sig_vthp", "mc_toxe", "mc_toxen", "mc_toxep", "mc_xl", "mc_xln",
            "mc_xlp", "mc_xw", "mc_xwn", "mc_xwp", "mc_rdswn", "mc_rdswp", "mc_rsh_ppolyf_u_1k", "mc_c_cox_2p0ff"]
-GLOBAL_SIGMA = {g: 1 / 3 for g in GLOBALS} | {"mc_rsh_ppolyf_u_1k": 49.754 / 3, "mc_c_cox_2p0ff": 0.025}
+if _RDAC_REV:
+    GLOBALS.append("mc_rsh_ppolyf_u")
+GLOBAL_SIGMA = {g: 1 / 3 for g in GLOBALS} | {"mc_rsh_ppolyf_u_1k": 49.754 / 3, "mc_c_cox_2p0ff": 0.025,
+                                              "mc_rsh_ppolyf_u": 18.116 / 3}
 # a hard failure of the run, and the solver warnings that are recorded with a run that finished
 FAIL_RX = re.compile(r"timestep too small|simulation\(s\) aborted|analysis aborted|error on line|unknown subckt|"
                      r"too few parameters|could not find (?:a )?(?:valid )?(?:model|subckt)", re.I)
@@ -619,7 +631,9 @@ def ota_deck(case, which, phase):
     # block's 50 kohm divider, so that the OTA's output CM pulls VCM (x 6 at DC with OTA1's loads). On the chip
     # RD1 (the DAC1 elements) returns to VREFP / VREFN (midpoint VCM), R21 to the stage-2 summing node, and the
     # inputs come from the AFE outputs (their own CM loop); VCM carries no DC load.
-    ret = (("RD1P I1P VCM ", "RD1N I1N VCM ", "XR21P O1P VCM ", "XR21N O1N VCM ", "EP INP VCM ", "EN INN VCM ")
+    # (R21 since r11: three ppolyf_u strips in series, the last one on VCM, viz_data.res_unit)
+    r21 = ("XR21P3 R21P_M2 VCM ", "XR21N3 R21N_M2 VCM ") if V.R_PU else ("XR21P O1P VCM ", "XR21N O1N VCM ")
+    ret = (("RD1P I1P VCM ", "RD1N I1N VCM ") + r21 + ("EP INP VCM ", "EN INN VCM ")
            if which == "ota1" else ("EP S2P VCM ", "EN S2N VCM "))
     for a in ret:
         assert body.count(a) == 1, a
@@ -1367,7 +1381,7 @@ def main():
         if a.hold_slot:
             HELD = acquire_slot()
         try:
-            run_all(cases, a.blocks, 1 if a.hold_slot else min(a.jobs, 2))
+            run_all(cases, a.blocks, 1 if a.hold_slot else min(a.jobs, SLOTS))
         finally:
             if HELD is not None:
                 fcntl.flock(HELD, fcntl.LOCK_UN)

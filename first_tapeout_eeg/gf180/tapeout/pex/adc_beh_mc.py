@@ -15,7 +15,10 @@ numba is not needed). Each Monte Carlo die takes, from the block Monte Carlo of 
   - the loop's time constants: RIN as measured, R21 and the DAC2 current (from eeg_bias, set by a
     ppolyf_u_1k resistor) with the PDK's global sheet-resistance draw of the seed
     (1 + 3 mc_rsh_ppolyf_u_1k / 1000, res_mc_skew 3), C1 and C2 with its global MIM draw
-    (1 + mc_c_cox_2p0ff).
+    (1 + mc_c_cox_2p0ff). From r11 on (EEG_PEX_REV=r11: RIN, DAC1 and R21 on ppolyf_u, eeg_bias
+    unchanged) R21 takes the ppolyf_u draw (1 + 3 mc_rsh_ppolyf_u / 350) and the DAC2 current keeps
+    the ppolyf_u_1k one: the two sheets are drawn independently, so DAC2 against R21 varies too
+    (k_rd2); the block results come from runs/adc_mc_r11 (adc_block_mc.py with EEG_PEX_REV=r11).
 
 What the block Monte Carlo does not cover keeps the model's assumptions: DAC2 element mismatch
 2 % (sigma, DWA), no DAC2 even / odd charge, no OTA offsets (OTA1 is chopped; OTA2's offset, sigma
@@ -62,8 +65,11 @@ except ImportError:                                  # ct2_dac2_options only nee
 sys.path.insert(0, os.path.join(REPO, "gf180", "behavioral"))
 import ct2_dac2_options as m  # noqa: E402
 
-BLOCK = os.path.join(HERE, "runs", "adc_mc", "adc_block_mc.json")
 _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the runs of a changed layout (r7: runs/adc_beh_mc_r7)
+# the block Monte Carlo of the chip: r6's (runs/adc_mc) through r10 (its blocks did not change), r11's own
+# (runs/adc_mc_r11: adc_rdac on ppolyf_u)
+R_PU = _REV not in ("", "r7", "r10")                  # RIN, DAC1, R21 on ppolyf_u (r11)
+BLOCK = os.path.join(HERE, "runs", "adc_mc" + ("_r11" if R_PU else ""), "adc_block_mc.json")
 OUT = os.path.join(HERE, "runs", "adc_beh_mc" + (f"_{_REV}" if _REV else ""))
 # C1 and C2 as drawn against the model's (ct2_dac2_options: C1 halved with RIN doubled, stage 2 x10):
 # x1.25 since 10/29 (r7; the r6 results in runs/adc_beh_mc/ are with 1)
@@ -72,7 +78,8 @@ S2 = 10.0                                            # stage 2 scaled x10 (R21 1
 ELD = 3 / 32                                         # CMP_STROBE -> new DAC levels (RTL DAC_LOAD_CYCLE)
 SIGMA2 = 0.02                                        # DAC2 element mismatch (assumed, as D3)
 RSH_1K = 1000.0                                      # ppolyf_u_1k sheet (typical), res_mc_skew 3
-CORNER_R = {"res_ss": 1.2, "res_ff": 0.8}            # ppolyf_u_1k 1000 +- 200
+RSH_PU = 350.0                                       # ppolyf_u sheet (typical), res_mc_skew 3
+CORNER_R = {"res_ss": 1.2, "res_ff": 0.8}            # ppolyf_u_1k 1000 +- 200, ppolyf_u 350 +- 70 (the same factors)
 CORNER_C = {"mimcap_ss": 1.1, "mimcap_ff": 0.9}      # mim_corner_2p0ff
 
 
@@ -99,13 +106,26 @@ def prefix(w):
     return cs
 
 
-def simulate(ad, b, ad0, b0, u, thr, w1, w2, e1, o1, eps2, o2):
+def horner(c, x):
+    """per die: the polynomial with ascending coefficients c (S, K) at x (S,)"""
+    r = c[:, -1].copy()
+    for j in range(c.shape[1] - 2, -1, -1):
+        r = r * x + c[:, j]
+    return r
+
+
+def simulate(ad, b, ad0, b0, u, thr, w1, w2, e1, o1, eps2, o2, nl1=None, nl2=None, rec=None):
     """ct2_dac2_options.simulate for S dies at once. Per die (first axis): ad, b over the clock after
     the DAC update and ad0, b0 before it (the excess loop delay), the 31 thresholds thr, the DAC
     element weights w1 / w2 (sum 31), DAC1's even charge per toggled element e1 and odd charge o1
     (+ when it turns on, - off), DAC2's even charge per toggle eps2 (one value) and odd charge o2,
     all in units of one element's charge per clock. Returns the codes (n, S) int8 (-1 from a loop
-    runaway on) and the peak |x1|, |x2| after the first 5 %."""
+    runaway on) and the peak |x1|, |x2| after the first 5 %.
+    Optional (11/15, ota_static.py): nl1 (S, K), the first OTA's static nonlinearity as an error at the
+    input (V, ascending polynomial in x1; subtracted from u), nl2 (S, K), the second OTA's as an error in
+    DAC2's level (polynomial in x2; added to y2), both at the state at the start of the clock; rec, a dict
+    of (n, S) arrays to fill per clock with x1 and x2 after it ('x1', 'x2') and x1 at the DAC update
+    ('mx1')."""
     S, n = thr.shape[0], u.shape[0]
     a00, a01, a10, a11 = ad[:, 0, 0], ad[:, 0, 1], ad[:, 1, 0], ad[:, 1, 1]
     b00, b01, b02, b10, b11, b12 = b[:, 0, 0], b[:, 0, 1], b[:, 0, 2], b[:, 1, 0], b[:, 1, 1], b[:, 1, 2]
@@ -124,6 +144,8 @@ def simulate(ad, b, ad0, b0, u, thr, w1, w2, e1, o1, eps2, o2):
     i5 = n // 20
     for i in range(n):
         ui = u[i]
+        if nl1 is not None:
+            ui = ui - horner(nl1, x1)
         mx1 = z00 * x1 + z01 * x2 + c00 * ui + c01 * y1p + c02 * y2p
         mx2 = z10 * x1 + z11 * x2 + c10 * ui + c11 * y1p + c12 * y2p
         c = (x2[:, None] > thr).sum(1)
@@ -144,8 +166,12 @@ def simulate(ad, b, ad0, b0, u, thr, w1, w2, e1, o1, eps2, o2):
         p = (p + k) % 31
         y1 = 1.0 - 2.0 * s1 / 31.0 + t1 / 31.0
         y2 = 1.0 - 2.0 * s2 / 31.0 + t2 / 31.0
+        if nl2 is not None:
+            y2 = y2 + horner(nl2, x2)
         x1 = a00 * mx1 + a01 * mx2 + b00 * ui + b01 * y1 + b02 * y2
         x2 = a10 * mx1 + a11 * mx2 + b10 * ui + b11 * y1 + b12 * y2
+        if rec is not None:
+            rec["mx1"][i], rec["x1"][i], rec["x2"][i] = mx1, x1, x2
         y1p, y2p = y1, y2
         if i > i5:
             np.maximum(x1max, np.abs(x1), out=x1max)
@@ -164,7 +190,7 @@ class Die:
     noted)."""
 
     def __init__(self, label, thr_err=None, w1=None, e1=None, o1=None, vfs=None, k_rin=1.0, k_r=1.0, k_c=1.0,
-                 a1=2710.0, a2=3000.0, sigma1=0.0, seed=1, note="", k_c1=DRAWN_C12, k_c2=DRAWN_C12):
+                 a1=2710.0, a2=3000.0, sigma1=0.0, seed=1, note="", k_c1=DRAWN_C12, k_c2=DRAWN_C12, k_rd2=None):
         self.label, self.note = label, note
         self.thr = m.THR + (np.zeros(31) if thr_err is None else np.asarray(thr_err))
         rng = np.random.RandomState(seed)                      # DAC2 mismatch (and DAC1 if not given)
@@ -177,10 +203,11 @@ class Die:
         self.vfs = m.VREF * m.RIN / m.RD1 if vfs is None else vfs
         self.k_rin, self.k_r, self.k_c, self.a1, self.a2 = k_rin, k_r, k_c, a1, a2
         self.k_c1, self.k_c2 = k_c1, k_c2                    # C1 / C2 against the model's (DRAWN_C12: as drawn)
+        self.k_rd2 = k_r if k_rd2 is None else k_rd2         # DAC2 (1 / its current) against R21's k_r (r11: apart)
 
     def coeffs(self, eld):
         el = dict(rin=m.RIN * self.k_rin, c1=m.C1 * self.k_c * self.k_c1, vfs=self.vfs, r21=m.R21_0 / S2 * self.k_r,
-                  rd2=m.RD2_0 / S2 * self.k_r, c2=m.C2_0 * S2 * self.k_c * self.k_c2, a1=self.a1, a2=self.a2)
+                  rd2=m.RD2_0 / S2 * self.k_rd2, c2=m.C2_0 * S2 * self.k_c * self.k_c2, a1=self.a1, a2=self.a2)
         if eld > 0:
             ad0, b0 = discretize(**el, tseg=eld * m.T)
             ad, b = discretize(**el, tseg=(1 - eld) * m.T)
@@ -333,8 +360,12 @@ def mc_dies(j):
         note = "" if own == {"static", "even"} else "DAC1 even charge typical" if own else "DAC1 typical"
         if note:
             nod.append(s)
+        k_1k = 1.0 + 3 * g.get("mc_rsh_ppolyf_u_1k", 0.0) / RSH_1K
+        if R_PU and "mc_rsh_ppolyf_u" not in g:
+            raise SystemExit(f"seed {s}: no mc_rsh_ppolyf_u among the block results' globals ({BLOCK})")
+        k_pu = 1.0 + 3 * g["mc_rsh_ppolyf_u"] / RSH_PU if R_PU else k_1k
         dies.append(Die(f"mc{s}", thr_err=np.asarray(d["quant_threshold_error_mv"]) * 1e-3, a1=a1, a2=a2,
-                        k_r=1.0 + 3 * g.get("mc_rsh_ppolyf_u_1k", 0.0) / RSH_1K, k_c=1.0 + g.get("mc_c_cox_2p0ff", 0.0),
+                        k_r=k_pu, k_rd2=k_1k, k_c=1.0 + g.get("mc_c_cox_2p0ff", 0.0),
                         seed=s, note=note, **dac))
     return dies, nod, even_sd
 
@@ -386,12 +417,13 @@ def base_dies():
 def report(title, dies, r, dt):
     print(f"\n### {title} ({len(dies)} dies, {dt:.0f} s)\n")
     print("| die | SNDR (dB) | SNR without HD2/3 (dB) | HD2 / HD3 (dBc) | peak abs x1 (V) | peak abs x2 (mV) | A1 / A2 (dB) | "
-          "R / C / RIN factor | DAC1 full scale (mV) | note |")
+          "R / C / RIN factor" + (" (R: R21 / DAC2)" if R_PU else "") + " | DAC1 full scale (mV) | note |")
     print("|---|---|---|---|---|---|---|---|---|---|")
     for k, d in enumerate(dies):
         print(f"| {d.label} | {r['sndr'][k]:.1f} | {r['snr'][k]:.1f} | {r['hd2'][k]:.1f} / {r['hd3'][k]:.1f} | {r['x1m'][k]:.3f} | "
               f"{r['x2m'][k] * 1e3:.1f} | {20 * np.log10(d.a1):.2f} / {20 * np.log10(d.a2):.2f} | "
-              f"{d.k_r:.4f} / {d.k_c:.4f} / {d.k_rin:.4f} | {d.vfs * 1e3:.2f} | {d.note} |")
+              f"{d.k_r:.4f}" + (f" / {d.k_rd2:.4f}" if R_PU else "") + f" / {d.k_c:.4f} / {d.k_rin:.4f} | "
+              f"{d.vfs * 1e3:.2f} | {d.note} |")
     ok = np.isfinite(r["sndr"])
     if ok.sum() > 1:
         print(f"\nSNDR mean {r['sndr'][ok].mean():.1f} dB, sigma {r['sndr'][ok].std(ddof=1):.1f} dB, worst {r['sndr'][ok].min():.1f} dB; "
@@ -430,7 +462,7 @@ def main():
         report(f"{title}: ain {a.ain:g} V pk, ELD {a.eld:.4f}", dies, r, time.time() - t)
         res[title] = [dict(label=d.label, sndr_db=float(r["sndr"][k]), snr_db=float(r["snr"][k]), hd2_dbc=float(r["hd2"][k]),
                            hd3_dbc=float(r["hd3"][k]), x1max=float(r["x1m"][k]), x2max=float(r["x2m"][k]), k_r=d.k_r,
-                           k_c=d.k_c, k_rin=d.k_rin, a1=d.a1, a2=d.a2, vfs=d.vfs, e1_mean=float(d.e1.mean()),
+                           k_rd2=d.k_rd2, k_c=d.k_c, k_rin=d.k_rin, a1=d.a1, a2=d.a2, vfs=d.vfs, e1_mean=float(d.e1.mean()),
                            e1_sd=float(d.e1.std()), o1_mean=float(d.o1.mean()),
                            thr_sd_mv=float((d.thr - m.THR).std() * 1e3), note=d.note)
                       for k, d in enumerate(dies)]

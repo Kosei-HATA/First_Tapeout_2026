@@ -52,6 +52,10 @@ usage:
         (runs/adc_top_c_r10) in place of the chain's (r7's), in runs/digital_noise_r10/. 'base' writes its
         base_chunk014 (the chain's chunk 14 deck with that eeg_adc), and its 'A' is a run of that deck over the
         window (make / run A ... b3), not the chain's own chunk
+  --chain r12 (base / make / run / compare, 11/16): the 12th chip's own chain (afe_top and eeg_adc of r12's
+        extraction on chipnets_r12) in place of r9's, in runs/digital_noise_r12/. 'base' copies its chunk 14 deck
+        (the same window, 6.1735 ms on, and the same element names as r9's); 'A' is that chain's own chunk, as for
+        r9. The chip-level DVDD / DVSS (R_DIST) are r12's too: its supply check gives r9's values to the mΩ
   --nice n (run): below the chain's priority
 """
 import argparse
@@ -106,6 +110,29 @@ ADC_REV = ""
 ADC_PEX = {"r10": os.path.join(HERE, "runs", "adc_top_c_r10", "eeg_adc_pex.spice")}
 BASE0 = BASE                            # the chain's chunk deck, copied (r7's eeg_adc)
 SMALL = os.path.join(RUNS, "small")     # the pads' operating point (op_pads.json): the same for every eeg_adc
+# --chain: another chip's own chain ("" = r9's, CHAIN above)
+CHAINS = {"r12": os.path.join(HERE, "runs", "e2e_startup",
+                              "c1e-08_v3.3_typical_+0mV_dc+0.3mV_ib3_sine0.5mV16000Hz_rst4.8_afe5_to10.002ms_r12_chain")}
+CHAIN_REV = ""
+
+
+def use_chain(rev):
+    """the decks on chip <rev>'s own chain (its chunk 14), in runs/digital_noise_<rev>/ (CHAIN, RUNS, BASE)"""
+    global CHAIN_REV, CHAIN, RUNS, BASE, BASE0
+    if not rev:
+        return
+    CHAIN_REV, CHAIN = rev, CHAINS[rev]
+    RUNS = os.path.join(HERE, "runs", f"digital_noise_{rev}")
+    BASE = BASE0 = os.path.join(RUNS, "base_chunk014")
+
+
+def copy_chain_base():
+    """BASE of use_chain(rev): the chain's chunk 14 deck, quantizer and events as they are"""
+    src = os.path.join(CHAIN, "chunk_014")
+    os.makedirs(BASE, exist_ok=True)
+    for f in ("tb.spice", "quantizer.spice", "events.txt"):
+        open(os.path.join(BASE, f), "w").write(open(os.path.join(src, f)).read())
+    return BASE
 
 
 def use_adc(rev):
@@ -533,13 +560,20 @@ def main():
     ap.add_argument("--twin", type=float, default=47.3e-6,
                     help="make / run: the window of the chunk to run (s): 6 chopper periods after its first edge")
     ap.add_argument("--adc", default="", choices=("", *ADC_PEX), help="the decks with this extraction of eeg_adc")
+    ap.add_argument("--chain", default="", choices=("", *CHAINS), help="the decks on this chip's own chain")
     ap.add_argument("--nice", type=int, default=0, help="run: nice level of the runs")
     a = ap.parse_args()
+    if a.adc and a.chain:
+        raise SystemExit("--adc or --chain, not both")
     use_adc(a.adc)
+    use_chain(a.chain)
     if a.mode == "base":
-        if not ADC_REV:
-            raise SystemExit("base: with --adc (the chain's own deck is runs/digital_noise/base_chunk014)")
-        print(make_base())
+        if CHAIN_REV:
+            print(copy_chain_base())
+        elif not ADC_REV:
+            raise SystemExit("base: with --adc or --chain (r9's own deck is runs/digital_noise/base_chunk014)")
+        else:
+            print(make_base())
     elif a.mode == "op":
         print(len(small_op()), "pad nodes")
     elif a.mode == "small":
@@ -678,7 +712,7 @@ def compare(cases=None):
     if "A" in R:
         tend = min(tend, R["A"]["time"][-1])
     P = periods(tend)
-    res = {"adc": ADC_REV or "r7 (the chain's)", "tend_us": tend * 1e6,
+    res = {"adc": ADC_REV or (f"{CHAIN_REV} (the chain's)" if CHAIN_REV else "r7 (the chain's)"), "tend_us": tend * 1e6,
            "periods_us": [[a * 1e6, b * 1e6] for a, b in P], "cases": {}}
     # the electrode's 16 kHz tone: its per-period means are exact, so a difference splits into offset + tone + rest
     m = re.search(r"^VSIG SIG 0 DC \S+ SIN\((\S+) (\S+) (\S+) (\S+)\)", text, re.M)

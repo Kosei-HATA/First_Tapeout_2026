@@ -621,7 +621,8 @@ def fig_metrics():
     ax.scatter([], [], marker="o", color=INK2, label="1 element")
     ax.scatter([], [], marker="s", color=INK2, label="31 elements")
     ax.set_yscale("log")
-    ax.set_ylim(1e-5, 3)
+    ax.set_ylim(min(1e-5, 0.5 * min(v for v in (abs(num(r[c])) for r in (e1, e31) for c in ("schematic", "pex_1023", "final"))
+                                    if v > 0)), 3)   # r11 on: the schematic's 31 elements at 1e-5 fC
     ax.axhline(0.008, color=BAD, ls=(0, (4, 3)), lw=1)
     ax.annotate("requirement 0.008", (2.55, 0.008), textcoords="offset points", xytext=(0, 3), ha="right", va="bottom", fontsize=7.5, color=BAD)
     ax.set_xticks(range(3), cats3, fontsize=8)

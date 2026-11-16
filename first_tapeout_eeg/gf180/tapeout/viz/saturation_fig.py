@@ -3,7 +3,8 @@
 (gf180_electrode_dc_20261022.md, "使い方"): AFE_RST released at 5 ms with the offset DAC off, so the AFE saturates; the
 host writes the DAC's range and M with BLANK 15 at 6.0 ms (afe_saturation.py). Against figure 27's runs (the DAC
 written before the release), and with the host re-asserting AFE_RST for 20 us or 100 us after the write
-(afe_saturation.py --rst-pulse), where those runs exist; the 100 us restart also at ss.
+(afe_saturation.py --rst-pulse), where those runs exist; the 100 us restart also at ss; 300 mV without the restart
+to 11 ms (afe_saturation.py --tstop 11e-3 --tag _sat6ms_to11ms_chip_r12), where the AFE comes back by itself.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/saturation_fig.py
 """
@@ -125,7 +126,7 @@ def main():
     def R(vin, kind, corner="typical"):
         return runs.get((vin, kind, corner), (None, None))
 
-    fig = V.figure(12.8, 14.0, "First power-on with an electrode offset: saturated, then the DAC written" +
+    fig = V.figure(12.8, 14.4, "First power-on with an electrode offset: saturated, then the DAC written" +
                    (" (interim)" if interim else ""),
                    "afe_top, eeg_bias and eeg_ref extracted on the chip's own wiring, pads, board, bond wires, power-on · "
                    "typical (one restart also at ss), 27 °C · RESET_N at 4.8 ms, AFE_IBIAS = 3 at 4.82 ms, AFE_RST released "
@@ -140,7 +141,7 @@ def main():
                         "(1.08–1.52 V at 300 mV, against 1.59–1.67 V with the DAC on), and their common mode settles low; "
                         "once the AFE is released, only the DC path (two switched capacitors, about 72 MΩ to the outputs) "
                         "moves it. VCM_AFE has 10 nF on the board.")
-    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 1, 0.5])
+    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 1, 0.6])
 
     # (a) chopper-period means
     ax = fig.add_subplot(gs[0, 0])
@@ -170,33 +171,41 @@ def main():
     ax = fig.add_subplot(gs[0, 1])
     ax.axhspan(-ADC_FS, ADC_FS, color=ACCENT, alpha=0.07, lw=0)
     ax.text(4.92, ADC_FS * 1.05, "the ADC's range", fontsize=7.4, color=ACCENT, va="bottom")
+    back = []
     for vin, mag, col in CASES:
         v, m = R(vin, "long") if (vin, "long", "typical") in have else R(vin, "sat")
         tc, lo, hi = envelope(v, 4.9e-3, v["t"][-1])
         ax.fill_between(tc * 1e3, lo, hi, color=col, alpha=0.35, lw=0)
         ax.plot([], [], color=col, lw=6, alpha=0.35, label=f"{vin} mV: per half chopper period, lowest to highest")
+        tb = back_in_range(v, m["t_dac"])
+        back.append(f"{tb * 1e3:.2f} ms ({vin} mV)" if tb is not None else
+                    f"past {(v['t'][-1] - m['t_dac']) * 1e3:.1f} ms ({vin} mV)")
     ax.axvline(6.0012, color=MUTED, lw=0.8, ls=(0, (1, 2)))
     ax.set_xlabel("Time from power-on (ms)")
     ax.set_ylabel("OUTP − OUTN at the ADC, instantaneous (V)")
     ax.legend(loc="lower right", fontsize=7.4)
-    ax.set_title("What the ADC sees: the amplifier stays saturated\nbehind the output chopper (±1.2–1.5 V square wave)",
-                 loc="left")
+    ax.set_title("What the ADC sees: saturated behind the output chopper (±1.2–1.5 V\nsquare wave) until "
+                 + " and ".join(back) + " after the write", loc="left")
 
     # (c) the amplifier's input nodes
     ax = fig.add_subplot(gs[1, 0])
+    ramp = None
     for vin, mag, col in CASES:
         v, m = R(vin, "long") if (vin, "long", "typical") in have else R(vin, "sat")
         d = v["inp"] - v["inn"]
         tc, mm = chop_means(dict(t=v["t"], qo=np.concatenate([[0.0], np.cumsum(0.5 * (d[1:] + d[:-1]) * np.diff(v["t"]))])),
                             4.9e-3, v["t"][-1])
         ax.plot(tc * 1e3, mm * 1e3, color=col, lw=1.3, label=f"{vin} mV")
+        k = (tc > m["t_dac"] + 0.2e-3) & (np.abs(mm) > 5e-3)      # while the saturated output drives the DC path
+        if vin == 300 and k.sum() > 8:
+            ramp = np.polyfit(tc[k], mm[k], 1)[0]
     ax.axvline(6.0012, color=MUTED, lw=0.8, ls=(0, (1, 2)))
     ax.axhline(0, color=LIGHT, lw=0.8)
     ax.set_xlabel("Time from power-on (ms)")
     ax.set_ylabel("INP − INN, chopper-period mean (mV)")
     ax.legend(loc="lower right", fontsize=7.6)
-    ax.set_title("The amplifier's inputs, unregulated while it is saturated:\nthe charge leaves only through the DC path",
-                 loc="left")
+    ax.set_title("The amplifier's inputs, unregulated while it is saturated:\nthe charge leaves only through the DC path" +
+                 (f" (300 mV: a straight {ramp:.0f} mV/ms)" if ramp else ""), loc="left")
 
     # (d) the input common mode from power-on
     ax = fig.add_subplot(gs[1, 1])
@@ -213,8 +222,8 @@ def main():
             ax.plot(vr["t"][ar][::20] * 1e3, cmr[ar][::20], color=col, lw=0.9, ls=(0, (4, 2)))
             ref = cmr[vr["t"] > vr["t"][-1] - 0.1e-3].mean()
             sat = cm[(v["t"] > 5.5e-3) & (v["t"] < m["t_dac"])].mean()
-            end = cm[(v["t"] > 7.9e-3) & (v["t"] < 8.0e-3)].mean()
-            drop[vin] = (ref - sat, ref - end)
+            end = cm[v["t"] > v["t"][-1] - 0.1e-3].mean()                # the run's last 0.1 ms
+            drop[vin] = (ref - sat, ref - end, v["t"][-1])
         for kind in RCOL:
             rv, rm = R(vin, kind)
             if rv is not None:
@@ -230,7 +239,8 @@ def main():
     ax.legend(loc="lower right", fontsize=7.4)
     d3 = drop.get(300)
     ax.set_title("The amplifier's input common mode against figure 27:\n" +
-                 (f"{d3[0]:.2f} V low already in reset at 300 mV, still {d3[1]:.2f} V low at 8 ms" if d3 else ""), loc="left")
+                 (f"{d3[0]:.2f} V low already in reset at 300 mV, still {d3[1]:.2f} V low at {d3[2] * 1e3:.0f} ms"
+                  if d3 else ""), loc="left")
 
     # (e) the pulse itself: the input common mode climbs to its reset level
     ax = fig.add_subplot(gs[2, 0])
@@ -327,6 +337,25 @@ def main():
                 extra = f" ({(m['t_dac'] + tb - m['afe_rst_again'][0]) * 1e6:.1f} µs after AFE_RST went high)"
             left.append(f"  {vin} mV, {lab}: " + (f"{tb * 1e3:.3f} ms{extra}" if tb is not None else
                                                     f"not by {(v['t'][-1] - m['t_dac']) * 1e3:.1f} ms"))
+    vl, ml = R(300, "long")
+    vr3, mr3 = R(300, "ref")
+    tbl = back_in_range(vl, ml["t_dac"]) if vl is not None else None
+    if tbl is not None and vr3 is not None:                    # where the run without the restart ends up
+        te = vl["t"][-1]
+        tcl, mml = chop_means(vl, ml["t_reset"] + TCH / 4, te)
+        tcr, mmr = chop_means(vr3, mr3["t_reset"] + TCH / 4, vr3["t"][-1])
+        o_end, o_1 = mml[-8:].mean(), mml[(tcl > te - 1e-3 - 8 * TCH) & (tcl <= te - 1e-3)].mean()
+        cml = 0.5 * (vl["inp"] + vl["inn"])
+        x = te - 2e-3 + 0.125e-3 * np.arange(17)
+        h = np.array([wmean(vl["t"], cml, a - 8 * TCH, a) for a in x])
+        cref = wmean(vr3["t"], 0.5 * (vr3["inp"] + vr3["inn"]), vr3["t"][-1] - 8 * TCH, vr3["t"][-1])
+        tau = -1 / np.polyfit(x, np.log(cref - h), 1)[0]
+        left.append(f"Without the restart, 300 mV at {te * 1e3:.0f} ms ({(te - ml['t_dac'] - tbl) * 1e3:.1f} ms after "
+                    "back in range):")
+        left.append(f"  output {(o_end - mmr[-8:].mean()) * 1e3:+.2f} mV against figure 27 (settled, "
+                    f"{vr3['t'][-1] * 1e3:.0f} ms), closing at {(o_end - o_1) * 1e3:.2f} mV/ms;".replace("-", "−"))
+        left.append(f"  input CM {cref - h[-1]:.2f} V below figure 27's, time constant about {tau * 1e3:.0f} ms "
+                    f"(fit, {(te - 2e-3) * 1e3:.0f}–{te * 1e3:.0f} ms)")
     right = ["After AFE_RST again, 1.5 ms after the release (figure 27 at the same time):"]
     gain = {}
     for vin, kind, c, col, ls, lab in RESTARTS:

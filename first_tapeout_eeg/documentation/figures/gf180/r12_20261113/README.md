@@ -13,10 +13,10 @@
   - 最新の precheck（10/20 版。11/13 にも最新と確かめた）を、事務局の指定どおり `--slot 1x0p5 --cob` で回して通った（pre_20261113_r12）。
 - GDS（穴埋めのあと、precheck に出した形）は `gf180/tapeout/chip/gds/chip_top_fill_r12_20261113.gds.gz`（gzip、41,882,152 バイト）。展開した `chip_top_fill.gds` の sha256 は 6b832e0e…。
 - ここの図は、すべてこの版の図として描いた（11/14）。ファイル名と図の右上に版（r12）を書いた。
-  - 31（デジタル側）は、12 回目の通しのチャンク 14 での 4 本（11/16 の 3 時 49 分から）が 23 時 44 分に終わってから描いた。これで 42 枚がそろった（39 は途中の版）。32（電極の入力と DATA の対応）は、12 回目の通しが 11/16 の 12 時 3 分に終わったので描いた。
+  - 31（デジタル側）は、12 回目の通しのチャンク 14 での 4 本（11/16 の 3 時 49 分から）が 23 時 44 分に終わってから描いた。これで 42 枚がそろった。32（電極の入力と DATA の対応）は、12 回目の通しが 11/16 の 12 時 3 分に終わったので描いた。
   - 図 25〜28 は、起動のバッチ（50 本）が 11/16 の 3 時 44 分に終わってから描いた。
   - 図 34（敏感な網とスイッチする網の交差）、図 35（フルスケールの正弦波から出した ENOB、11/14）、図 36（ADC の OTA の非線形と DAC1 のジッタ、11/15）、図 37（電源投入のプロセスの角と電源の立ち上がりの速さ、11/15）は、この版で足した図。
-  - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。図 42（AFE の雑音：AVDD と BOOST_TRIM）も 11/16 に足した図で、typical の BTRIM_P 4 のチップの HD3 の 3 本（21 時 37 分にそろった）を入れて仕上げた。39 は 300 mV の 11 ms までのランを回している。
+  - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。図 42（AFE の雑音：AVDD と BOOST_TRIM）も 11/16 に足した図で、typical の BTRIM_P 4 のチップの HD3 の 3 本（21 時 37 分にそろった）を入れて仕上げた。39 は、300 mV をパルスなしで 11 ms まで回したラン（11/17 の 2 時 30 分に終わった）を入れて仕上げた。
 - **12 回目で変わっていないものは、最後に変わった版の結果を使った**（変わっていないことは XOR かデッキの比べで確かめた）。
   - adc_rdac、OTA、量子化器、eeg_bias、eeg_ref は 11 回目と同じなので、ブロックのモンテカルロ（図 29）とポリ抵抗のフリッカ（図 33）は 11 回目のもの。行動モデル（図 29）も 11 回目のブロックのモンテカルロから回した（`runs/adc_beh_mc_r11/`）。
   - 寄生込みの E2E（図 16〜18）の d4 と sch は、11 回目の実行の写し。回路図のデッキは版によらず、`pex_e2e.deck_text()` が 11 回目のものと 1 文字も違わず、読み込むファイルもその実行より前のまま（`runs/e2e_r12/README.md`）。
@@ -28,7 +28,7 @@
   - ブロックのモンテカルロ（図 29）：OTA1 の利得のばらつきが 0.09 → 0.46 dB に増えた。負荷（RIN、R21）が ppolyf_u になり、OTA1 のバイアス電流を決める eeg_bias の ppolyf_u_1k と別々にばらつくため（6 回目との差が 2 つの抵抗の比と相関 0.999）。最悪の 69.26 dB でも、行動モデルの 68.7 dB より高い。30 ダイの SNDR は 114.8〜153.8 dB。
 - 比べるために前の値を並べた列（回路図、10/23 の抽出、B7 の前の DC 経路など）は、図の中にそう書いてある。
 
-## `viz/`：可視化（42 枚。39 は途中の版）
+## `viz/`：可視化（42 枚）
 
 | 番号 | 図 | 元にしたもの |
 |---|---|---|
@@ -54,7 +54,7 @@
 | 36 | ADC の OTA の非線形と DAC1 のジッタ（フルスケール） | `ota_static.py`（`runs/ota_static_r12/`：抽出した OTA1 と OTA2 を段の負荷で DC スイープ。OTA1 はチョッパの両相、typical、角 4、モンテカルロ 1〜10。OTA2 は typical と角）、`ota_distortion.py`（行動モデルの積分器の出力に当てた入力での誤差、DAC1 のジッタの感度）、`enob_sine.py --ota-nl`（`runs/enob_sine_r12/enob_sine_otanl.json`）→ `ota_fig.py` |
 | 37 | 電源投入：プロセスの角、AVDD ±5 %、電源の立ち上がり 10 µs〜100 ms | `powerup_checks.py`（`afe_startup.py` の power、AFE はリセットのまま、起動回路の SB と G1 も残す。`runs/startup/power_*_su_*_chip_r12/`：角 4 つと typical × 3.135／3.3／3.465 V、立ち上がり 10 µs／10 ms／100 ms と 100 ms の ss・sf）。比べるモンテカルロは図 26 のラン（RESET_N の前の code 2）→ `powerup_fig.py` |
 | 38 | 角での AFE の解除 | `corner_start_fig.py`（`runs/startup/start_*_sine0.943mV2000Hz_*_chip_r12`：`afe_startup.py` の start と `afe_trim_start.py`。角 5、AVDD 3.3／3.135 V、BOOST_TRIM 4/4 と 10/22 の表のトリム、AFE_IBIAS 3、ss 2/2 は 2 も） |
-| 39 | 電極オフセットがある最初の電源投入（途中） | `saturation_fig.py`（`runs/startup/start_c1e-08_v3.3_typical_+{30,300}mV_*_sat6ms*_chip_r12`：`afe_saturation.py`。DAC を切ったまま解除、6.0 ms に書く、AFE_RST の入れ直し 20 µs と 100 µs）。比べるのは図 27 のラン。300 mV の 11 ms までと、ss での 100 µs のパルスを回している |
+| 39 | 電極オフセットがある最初の電源投入 | `saturation_fig.py`（`runs/startup/start_c1e-08_v3.3_typical_+{30,300}mV_*_sat6ms*_chip_r12`：`afe_saturation.py`。DAC を切ったまま解除、6.0 ms に書く、AFE_RST の入れ直し 20 µs と 100 µs）。比べるのは図 27 のラン。300 mV をパルスなしで 11 ms まで（`--tstop 11e-3`、`*_sat6ms_to11ms_chip_r12`）と、ss での 100 µs のパルス（`start_c1e-08_v3.3_ss_+300mV_*_sat6ms_rst100us_chip_r12`）も入れた |
 | 40 | ADC の過負荷 | `overload_fig.py`（`adc_overload.py` の抽出した ADC のループ：±2.5 V と 20 kHz の正弦波、+2.5 V を 150 µs のあと −39 mV の DC。`adc_overload_beh.py` の行動モデル：抽出との比べ、同じ状態からの 2 ms、42 ダイ × 300 状態のスイープ。`runs/adc_overload_r12/`） |
 | 41 | AFE の線形性の窓：AVDD に対するフルスケールの HD3 | `afe_window_fig.py`（`gf180/tapeout/sim/afe/afe_margin_map.py`：`runs/margin_map/hd_window.json`、`calib.json`、`map_fine3.json`）。チップの点は図 38 のランと、AVDD 3.40 V の 5 本（`runs/startup/start_c1e-08_v3.4_*_chip_r12`）、3.40 V ±1 % の 2 本（ss 3.366 V、ff 3.434 V）と窓の端の 2 本（ff 3.465 V、ss 3.45 V、`run_edges.py`）。入力対の余裕は `calib.py` の台（3.4845 V の点も） |
 | 42 | AFE の雑音：AVDD と BOOST_TRIM | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical の BTRIM_P 4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` と `start_c1e-08_v3.4_typical_*_bt4-2_chip_r12`（`afe_trim_start.py`）を図 41 と同じ方法で。4/4 の 2 本（11/16 の 21 時 11 分）と 4/2（21 時 37 分）がそろったので仕上げた） |

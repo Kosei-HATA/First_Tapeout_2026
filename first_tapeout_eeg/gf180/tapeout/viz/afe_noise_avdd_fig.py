@@ -36,6 +36,7 @@ CODE = {2: 0, 4: 1, 6: 2, 8: 3}
 # the corners with the 3.40 V trims of figure 41 (the margin map's), and typical's reset value 4/4
 SERIES = [("typical", 2, 2, INK, "-", "typical 2/2 (the 3.40 V map's trim)"),
           ("typical", 4, 4, INK, (0, (5, 2.5)), "typical 4/4 (the reset value)"),
+          ("typical", 4, 2, INK, (0, (1, 1.6)), "typical 4/2 (the proposal for 11/18)"),
           ("ss", 2, 2, ACCENT, "-", "ss 2/2"), ("ff", 8, 2, AMBER, "-", "ff 8/2"),
           ("sf", 8, 2, PLUM, "-", "sf 8/2 (PMOS fast)"), ("fs", 2, 2, TEAL, "-", "fs 2/2 (NMOS fast)")]
 AVDDS = {("typical", 2, 2): [3.3, 3.35, 3.4, 3.415, 3.43, 3.44, 3.45, 3.465], ("ss", 2, 2): [3.3, 3.366, 3.4, 3.43, 3.45, 3.465],
@@ -151,7 +152,8 @@ def main():
         if not pts:
             continue
         x, y = zip(*pts)
-        ax.plot(x, y, color=col, ls=ls, lw=1.6 if (c, p, n) == ("typical", 2, 2) else 1.2, marker="o", ms=3.2, label=lab)
+        ax.plot(x, y, color=col, ls=ls, lw=1.6 if (c, p, n) == ("typical", 2, 2) else 1.2,
+                marker="s" if (c, p, n) == ("typical", 4, 2) else "o", ms=3.2, label=lab)
     ax.set_xlim(3.29, 3.475)
     ax.set_ylim(5.0, 6.05)
     ax.set_xlabel("Board AVDD (V)")
@@ -159,7 +161,7 @@ def main():
     ax.legend(loc="upper left", fontsize=7.6)
     t22 = {av: data[("typical", 2, 2, av)]["total"] for av in (3.3, 3.45) if ("typical", 2, 2, av) in data}
     ax.set_title("Typical with the map's 2/2 trim gets noisier as AVDD rises" +
-                 (f":\n{t22[3.3]:.2f} nVrms at 3.30 V, {t22[3.45]:.2f} at 3.45 V; with 4/4 it stays flat" if len(t22) == 2 else ""),
+                 (f":\n{t22[3.3]:.2f} nVrms at 3.30 V, {t22[3.45]:.2f} at 3.45 V; with 4/2 or 4/4 it stays flat" if len(t22) == 2 else ""),
                  loc="left")
 
     # (b) noise against the PMOS pair's margin
@@ -169,7 +171,7 @@ def main():
         filled = not (c == "typical" and p != 2)
         ax.plot(r["pmos_pair"] * 1e3, r["total"], ls="none", marker="o", ms=4.6, color=col[c],
                 mfc=col[c] if filled else "white", mew=1.0)
-    for c, _, _, k, _, lab in SERIES[2:]:
+    for c, _, _, k, _, lab in (s for s in SERIES if s[0] != "typical"):
         ax.plot([], [], ls="none", marker="o", ms=4.6, color=k, label=lab)
     ax.plot([], [], ls="none", marker="o", ms=4.6, color=INK, label="typical, BTRIM_P 2 (2/2, 2/4)")
     ax.plot([], [], ls="none", marker="o", ms=4.6, color=INK, mfc="white", mew=1.0, label="typical, BTRIM_P 4, 6, 8")
@@ -204,6 +206,7 @@ def main():
     ax.set_axis_off()
     lines = ["ENOB of the noise budget with each case's AFE noise:"]
     for c, p, n, avs in (("typical", 2, 2, (3.4, 3.43, 3.45)), ("typical", 4, 4, (3.4, 3.43, 3.45)),
+                         ("typical", 4, 2, (3.4, 3.43, 3.45)),
                          ("ss", 2, 2, (3.3, 3.45)), ("ff", 8, 2, (3.43, 3.45)), ("sf", 8, 2, (3.43, 3.45)), ("fs", 2, 2, (3.43, 3.45))):
         got = [(av, data[(c, p, n, av)]["total"]) for av in avs if (c, p, n, av) in data]
         if got:
@@ -237,9 +240,10 @@ def main():
         lines.append(f"  {p}/{n} at {av:.2f} V: " + (f"{h:.1f} dBc".replace("-", "−") if h is not None else "running"))
     if not interim:
         worst = max(hd.values())
-        cost = max(h - h22 for (p, n, av), h in hd.items() if av == 3.4)
-        lines += [f"→ BTRIM_P 4 costs typical at most {cost:.1f} dB of HD3 against 2/2 and leaves",
-                  f"   {-111 - worst:.1f} dB or more to the requirement, with the noise flat"]
+        dd3 = {pn: hd[(*pn, 3.4)] - h22 for pn in ((4, 2), (4, 4))}
+        word = lambda d: f"{abs(d):.1f} dB " + ("better" if d < 0 else "worse")     # noqa: E731
+        lines += [f"So at 3.40 V, 4/2 is {word(dd3[(4, 2)])} than 2/2 and 4/4 {word(dd3[(4, 4)])}; every case",
+                  f"   leaves {-111 - worst:.1f} dB or more to the requirement, and the noise stays flat"]
     ax.text(0.0, 1.0, "\n".join(lines), transform=ax.transAxes, va="top", fontsize=8.4, color=INK, linespacing=1.5)
 
     os.makedirs(OUT, exist_ok=True)

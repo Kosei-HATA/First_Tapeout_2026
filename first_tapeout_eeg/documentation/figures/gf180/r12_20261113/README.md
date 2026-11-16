@@ -16,7 +16,7 @@
   - **まだ描いていない図：** 31（デジタル側。12 回目の通しのチャンク 14 で、11/16 の 3 時 49 分から E コアで回している。1 日ほどかかる）。32（電極の入力と DATA の対応）は、12 回目の通しが 11/16 の 12 時 3 分に終わったので描いた。
   - 図 25〜28 は、起動のバッチ（50 本）が 11/16 の 3 時 44 分に終わってから描いた。
   - 図 34（敏感な網とスイッチする網の交差）、図 35（フルスケールの正弦波から出した ENOB、11/14）、図 36（ADC の OTA の非線形と DAC1 のジッタ、11/15）、図 37（電源投入のプロセスの角と電源の立ち上がりの速さ、11/15）は、この版で足した図。
-  - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。
+  - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。図 42（AFE の雑音：AVDD と BOOST_TRIM）も 11/16 に足した図で、typical の BTRIM_P 4 のチップの HD3 の 3 本（21 時 37 分にそろった）を入れて仕上げた。39 は 300 mV の 11 ms までのランを回している。
 - **12 回目で変わっていないものは、最後に変わった版の結果を使った**（変わっていないことは XOR かデッキの比べで確かめた）。
   - adc_rdac、OTA、量子化器、eeg_bias、eeg_ref は 11 回目と同じなので、ブロックのモンテカルロ（図 29）とポリ抵抗のフリッカ（図 33）は 11 回目のもの。行動モデル（図 29）も 11 回目のブロックのモンテカルロから回した（`runs/adc_beh_mc_r11/`）。
   - 寄生込みの E2E（図 16〜18）の d4 と sch は、11 回目の実行の写し。回路図のデッキは版によらず、`pex_e2e.deck_text()` が 11 回目のものと 1 文字も違わず、読み込むファイルもその実行より前のまま（`runs/e2e_r12/README.md`）。
@@ -57,7 +57,7 @@
 | 39 | 電極オフセットがある最初の電源投入（途中） | `saturation_fig.py`（`runs/startup/start_c1e-08_v3.3_typical_+{30,300}mV_*_sat6ms*_chip_r12`：`afe_saturation.py`。DAC を切ったまま解除、6.0 ms に書く、AFE_RST の入れ直し 20 µs と 100 µs）。比べるのは図 27 のラン。300 mV の 11 ms までと、ss での 100 µs のパルスを回している |
 | 40 | ADC の過負荷 | `overload_fig.py`（`adc_overload.py` の抽出した ADC のループ：±2.5 V と 20 kHz の正弦波、+2.5 V を 150 µs のあと −39 mV の DC。`adc_overload_beh.py` の行動モデル：抽出との比べ、同じ状態からの 2 ms、42 ダイ × 300 状態のスイープ。`runs/adc_overload_r12/`） |
 | 41 | AFE の線形性の窓：AVDD に対するフルスケールの HD3 | `afe_window_fig.py`（`gf180/tapeout/sim/afe/afe_margin_map.py`：`runs/margin_map/hd_window.json`、`calib.json`、`map_fine3.json`）。チップの点は図 38 のランと、AVDD 3.40 V の 5 本（`runs/startup/start_c1e-08_v3.4_*_chip_r12`）、3.40 V ±1 % の 2 本（ss 3.366 V、ff 3.434 V）と窓の端の 2 本（ff 3.465 V、ss 3.45 V、`run_edges.py`）。入力対の余裕は `calib.py` の台（3.4845 V の点も） |
-| 42 | AFE の雑音：AVDD と BOOST_TRIM（途中） | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical の BTRIM_P 4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` と `start_c1e-08_v3.4_typical_*_bt4-2_chip_r12`（`afe_trim_start.py`）を図 41 と同じ方法で。4/4 の 2 本は 11/16 の 21 時 11 分に終わり、途中の版に入れた。4/2 は回している） |
+| 42 | AFE の雑音：AVDD と BOOST_TRIM | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical の BTRIM_P 4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` と `start_c1e-08_v3.4_typical_*_bt4-2_chip_r12`（`afe_trim_start.py`）を図 41 と同じ方法で。4/4 の 2 本（11/16 の 21 時 11 分）と 4/2（21 時 37 分）がそろったので仕上げた） |
 
 ### 図 11 の元
 

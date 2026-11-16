@@ -57,7 +57,7 @@
 | 39 | 電極オフセットがある最初の電源投入（途中） | `saturation_fig.py`（`runs/startup/start_c1e-08_v3.3_typical_+{30,300}mV_*_sat6ms*_chip_r12`：`afe_saturation.py`。DAC を切ったまま解除、6.0 ms に書く、AFE_RST の入れ直し 20 µs と 100 µs）。比べるのは図 27 のラン。300 mV の 11 ms までと、ss での 100 µs のパルスを回している |
 | 40 | ADC の過負荷 | `overload_fig.py`（`adc_overload.py` の抽出した ADC のループ：±2.5 V と 20 kHz の正弦波、+2.5 V を 150 µs のあと −39 mV の DC。`adc_overload_beh.py` の行動モデル：抽出との比べ、同じ状態からの 2 ms、42 ダイ × 300 状態のスイープ。`runs/adc_overload_r12/`） |
 | 41 | AFE の線形性の窓：AVDD に対するフルスケールの HD3 | `afe_window_fig.py`（`gf180/tapeout/sim/afe/afe_margin_map.py`：`runs/margin_map/hd_window.json`、`calib.json`、`map_fine3.json`）。チップの点は図 38 のランと、AVDD 3.40 V の 5 本（`runs/startup/start_c1e-08_v3.4_*_chip_r12`）、3.40 V ±1 % の 2 本（ss 3.366 V、ff 3.434 V）と窓の端の 2 本（ff 3.465 V、ss 3.45 V、`run_edges.py`）。入力対の余裕は `calib.py` の台（3.4845 V の点も） |
-| 42 | AFE の雑音：AVDD と BOOST_TRIM（途中） | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical 4/4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` を図 41 と同じ方法で） |
+| 42 | AFE の雑音：AVDD と BOOST_TRIM（途中） | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical の BTRIM_P 4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` と `start_c1e-08_v3.4_typical_*_bt4-2_chip_r12`（`afe_trim_start.py`）を図 41 と同じ方法で。4/4 の 2 本は 11/16 の 21 時 11 分に終わり、途中の版に入れた。4/2 は回している） |
 
 ### 図 11 の元
 

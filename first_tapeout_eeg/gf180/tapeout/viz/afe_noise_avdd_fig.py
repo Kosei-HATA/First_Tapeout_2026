@@ -230,10 +230,16 @@ def main():
                   (f"even at 3.30 V (margin {sw[3.3]['pmos_pair'] * 1e3:.0f} mV), {sw[3.3]['total']:.1f} nVrms, gain "
                    f"{(sw[3.3]['gain'] / g0 - 1) * 100:+.0f} %; at 3.40 V {sw[3.4]['total']:.0f} nVrms").replace("-", "−"),
                   ""]
+    h22 = json.load(open(os.path.join(SU, f"corner_release_340_{V.CHIP}.json")))["typical|3.4|2/2"]["hd3"]
     lines += ["Chip HD3 of typical with BTRIM_P 4 (2 kHz, figure 41's requirement −111 dBc;",
-              "2/2 at 3.40 V: −116.8 dBc):"]
+              f"2/2 at 3.40 V: {h22:.1f} dBc):".replace("-", "−")]
     for (p, n, av), h in hd.items():
         lines.append(f"  {p}/{n} at {av:.2f} V: " + (f"{h:.1f} dBc".replace("-", "−") if h is not None else "running"))
+    if not interim:
+        worst = max(hd.values())
+        cost = max(h - h22 for (p, n, av), h in hd.items() if av == 3.4)
+        lines += [f"→ BTRIM_P 4 costs typical at most {cost:.1f} dB of HD3 against 2/2 and leaves",
+                  f"   {-111 - worst:.1f} dB or more to the requirement, with the noise flat"]
     ax.text(0.0, 1.0, "\n".join(lines), transform=ax.transAxes, va="top", fontsize=8.4, color=INK, linespacing=1.5)
 
     os.makedirs(OUT, exist_ok=True)

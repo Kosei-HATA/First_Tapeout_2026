@@ -3,12 +3,18 @@
 the ADC's stage-1 input resistors RIN and the DAC1 (gf180/tapeout/adc/eeg_dac1.spice).
 
 Since C1 was halved (10/23) RIN is 16 unit resistors per side and every DAC1 element
-two units in series (RIN/RD1 = 31/32 by construction), so all 156 units (300 kohm
-ppolyf_u_1k, 291.28 x 1 um) sit in one resistor array. An element is folded: its two
-units have the middle node MP / MN on their west ends and VRP, XP (XN, VRN) on their
-east ends. Rows per DAC1 cell k, bottom to top: [RIN_P] RPA RPB | RNB RNA [RIN_N]
-(RIN rows at even k), mirror images about the element's axis between RPB and RNB; the
-axes are 8 um apart.
+two units in series (RIN/RD1 = 31/32 by construction), so all 156 units (300 kohm) sit
+in one resistor array. Since r11 (11/12) a unit is two ppolyf_u strips of 320.48 x 0.8
+um in series (through r10 one ppolyf_u_1k strip of 291.28 x 1 um; the flicker noise of
+the 1k poly, documentation/gf180_realistic_eval_20261028.md), 312 strips at 1.2 um
+pitch (PRES.2 0.4 apart). A unit is folded: its two strips are joined by a Metal2
+jumper on their west heads, so both of its ends are on the east side. Rows per DAC1
+cell k, bottom to top: [RINP_A RINP_B] RPA1 RPA2 RPB1 RPB2 | RNB2 RNB1 RNA2 RNA1
+[RINN_B RINN_A] (RIN rows at even k), mirror images about the element's axis between
+RPB2 and RNB2; the axes are 12 um apart. East heads: VRP (RPA1), MP (RPA2 and RPB1,
+joined by a Metal2 bar), XP (RPB2); RIN: INP (RINP_A) and I1P (RINP_B). West: the
+jumpers (RPAM, RPBM, ...), and the RIN units' middle nodes RINPM / RINNM, each joined
+over the array by a Metal3 bus.
 
 The even (ISI) error of DAC1 (documentation/gf180_pex_20261023.md, D6) comes from the
 couplings of the steering nodes XP / XN, which float during the common break, to the
@@ -17,20 +23,22 @@ So each element's steering nodes are drawn by hand and mirror-symmetric:
   - the four switches (dac1_quad) sit at the east ends of the element's rows, two NMOS
     strips [OUTN DB XP D OUTP] below the axis and [OUTP DB XN D OUTN] above it, the DB
     and D fingers shared by both strips and contacted on the axis; XP / XN reach the
-    strips on straight Metal2 lines from the RPB / RNB heads;
+    strips on straight Metal2 lines from the RPB2 / RNB2 heads (0.6 um from the axis,
+    jogged to the quad's 0.8 um just before it);
   - D leaves on Metal2 and DB on Metal4 along the axis to the east, so they couple to XP
     and XN alike; a Metal3 AVSS strap on both sides of the switch column and Metal4 AVSS
     between the DB lines screen the column;
   - no other line (other cells' D / DB / SEL, the latches, the break lines) comes within
     8 um of the column: the router (route.Router) works only east of it, where the logic
     (latch TGs, inverters, NORs of every cell, and the common-break driver
-    eeg_dac1_brk) sits in rows, cells 2r and 2r+1 in row r beside their axes.
-Between the array and the switch column: Metal3 buses VREFP, VREFN, I1N, I1P (the
-switches' outputs and the RIN east ends), west of the array INN, INP; all static.
+    eeg_dac1_brk) sits in rows, cells 2r and 2r+1 in row r beside their axes (rows apart
+    at 23.5 um since r11, from 4 um above the block's bottom).
+Between the array and the switch column: Metal3 buses INN, INP, VREFP, VREFN, I1N, I1P
+(the RIN ends, the references and the switches' outputs); all static.
 Ports (for the ADC assembly, gf180/tapeout/layout/adc_lay.py): INN, INP, VREFP, VREFN
 above their buses and I1P, I1N at the east end of the top edge (Metal4 runs above the
-logic); SEL1_0..30 and DAC_CLK on the bottom edge under the logic, above a 14 um
-channel (the SEL1 lines come from eeg_adc_dig along the bottom of the ADC band).
+logic); SEL1_0..30 and DAC_CLK on the bottom edge under the logic (the SEL1 lines come
+from eeg_adc_dig along the bottom of the ADC band).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/rdac1_lay.py [--drc] [--lvs]
 """
@@ -47,17 +55,20 @@ import route
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILES = [os.path.join(HERE, "lvs", "adc_rdac.spice"), os.path.join(g.REPO, "gf180", "tapeout", "adc", "eeg_dac1.spice")]
 SW = 2.4
-YB = 14.0           # bottom channel for the SEL1 / DAC_CLK ports
+UNIT_L, UNIT_W = 320.48, 0.8        # each 300 kohm unit: two ppolyf_u strips in series (r11)
+ROW = UNIT_W + f.PRES_GAP           # strip pitch, 1.2
+Y_HX = ROW / 2                      # RPB2 / RNB2 heads from the axis
+Y_LOG, ROW_P = 4.0, 23.5            # logic rows: the first one's bottom, and their pitch
 W2 = 0.38           # hand-drawn Metal2 lines
 # switch quad (local: axis at y = 0, west edge of its ring at x = 0)
 Q_XC = an.RING_W + an.GAP + 0.5          # COMP left edge (0.5 for the dummy poly)
 Q_W = 1.0                                # finger width (eeg_dac1_cell: W 1 um, L 0.28)
 Q_Y0 = 0.48                              # axis to COMP (poly contacts on the axis, PO_EXT)
-Y_X = 0.8                                # XP / XN lines (the RPB / RNB head rows)
+Y_X = 0.8                                # XP / XN lines in the quad
 Y_O1, Y_O2 = 1.48, 2.18                  # output straps of S/D 0 and S/D 2
 RING_IN = 2.66                           # ring inner edge
 Y_RB = RING_IN + an.RING_W / 2           # Metal2 band on the ring's bottom / top side
-PITCH_AX = 8.0                           # axis to axis (5 resistor rows)
+PITCH_AX = 10 * ROW                      # axis to axis (10 strips, 12 um)
 
 
 def quad_cell(b):
@@ -110,9 +121,18 @@ def quad_cell(b):
     return c, width, {"sd": x_sd, "g": x_g}
 
 
-def element_rows(k):
-    """Row index of RPB of DAC1 cell k (rows per pair of cells: 10)"""
-    return 10 * (k // 2) + (2 if k % 2 == 0 else 7)
+def cell_rows(k):
+    """Rows of DAC1 cell k, bottom to top: (device or RIN row name, order) where order "gd"
+    puts the device's second node on the west head and "dg" its first one."""
+    rows = [("RPA1", "gd"), ("RPA2", "dg"), ("RPB1", "gd"), ("RPB2", "dg"),
+            ("RNB2", "dg"), ("RNB1", "gd"), ("RNA2", "dg"), ("RNA1", "gd")]
+    if k % 2 == 0:
+        rows = [("RINP_A", None), ("RINP_B", None)] + rows + [("RINN_B", None), ("RINN_A", None)]
+    return rows
+
+
+RIN_ROWS = {"RINP_A": ("RINPM", "INP"), "RINP_B": ("RINPM", "I1P"),
+            "RINN_B": ("RINNM", "I1N"), "RINN_A": ("RINNM", "INN")}
 
 
 def build():
@@ -137,7 +157,7 @@ def build():
     # ---- sort the leaves: resistors, switch NMOS (per DAC1 cell), gates
     res, sw, gates = [], {}, []
     for path, model, env, cnets in items:
-        if model == "dev" and env.model == "ppolyf_u_1k":
+        if model == "dev" and env.model == "ppolyf_u":
             res.append(env)
         elif model == "dev" and env.model == "nfet_03v3" and ".XS" in path:
             cell = path.rsplit(".", 1)[0]
@@ -149,86 +169,87 @@ def build():
     sw_nets = {}
     for cell in cells:
         d = {(t.d, t.g, t.s) for t in sw[cell]}
-        xp, xn = dev[f"{cell}.XRPB"].g, dev[f"{cell}.XRNB"].g
+        xp, xn = dev[f"{cell}.XRPB2"].g, dev[f"{cell}.XRNB2"].g
         dd = [t.g for t in sw[cell] if t.d == xp and t.s == "I1P"]
         ddb = [t.g for t in sw[cell] if t.d == xp and t.s == "I1N"]
         if len(d) != 4 or not dd or not ddb:
             raise ValueError(f"{cell}: unexpected switches {sw[cell]}")
         sw_nets[cell] = (xp, xn, dd[0], ddb[0])
-    # ---- resistor array: rows [RIN_P] RPA RPB | RNB RNA [RIN_N] per cell (see the doc)
-    terms = []
+    # ---- resistor array: rows per cell as cell_rows() (see the doc)
+    terms, rowof = [], {}                       # (west, east) per strip; (k, name) -> strip index
     for k, cell in enumerate(cells):
-        ra, rb = dev[f"{cell}.XRPA"], dev[f"{cell}.XRPB"]
-        na, nb_ = dev[f"{cell}.XRNA"], dev[f"{cell}.XRNB"]
-        rows_k = [(ra.g, ra.d), (rb.d, rb.g), (nb_.d, nb_.g), (na.g, na.d)]   # (west, east)
-        if k % 2 == 0:
-            rows_k = [("INP", "I1P")] + rows_k + [("INN", "I1N")]
-        terms += rows_k
+        for name, order in cell_rows(k):
+            rowof[(k, name)] = len(terms)
+            if order is None:
+                terms.append(RIN_ROWS[name])
+            else:
+                dv = dev[f"{cell}.X{name}"]
+                terms.append((dv.g, dv.d) if order == "gd" else (dv.d, dv.g))
     for k, cell in enumerate(cells):
-        assert terms[element_rows(k)][1] == sw_nets[cell][0]
-    x_r = SW + 2.0
-    ra_ = an.res_cell(b, "rdac_r", 291.28, 1.0, terms, sub="AVSS")
-    b.place(ra_.cell, x_r, YB)
-    pr = bl.Placed(ra_, x_r, YB, False, "R")
+        assert terms[rowof[(k, "RPB2")]][1] == sw_nets[cell][0] and terms[rowof[(k, "RNB2")]][1] == sw_nets[cell][1]
+    x_r, y_r = SW + 2.0, 0.0
+    ra_ = an.pres_cell(b, "rdac_r", UNIT_L, UNIT_W, terms, sub="AVSS")
+    b.place(ra_.cell, x_r, y_r)
     x_re = x_r + ra_.width
 
     def head(r, east=True):
-        """(x1, x2, y) of the Metal2 pad of row r's east / west head"""
-        net = terms[r][1 if east else 0]
-        y = YB + (an.RING_W + 0.8 + f.RES_RY) + r * (1.0 + f.RES_GAP) + 0.5
-        for lay, x1, y1, x2, y2 in pr.pins[net]:
-            if abs((y1 + y2) / 2 - y) < 0.01 and ((x1 > x_r + ra_.width / 2) == east):
-                return x1, x2, y
-        raise KeyError((r, net, east))
+        """(x1, x2, y) of the Metal2 pad of strip r's east / west head"""
+        x1, y1, x2, y2 = ra_.pad(r, east)
+        return x_r + x1, x_r + x2, y_r + (y1 + y2) / 2
+
+    def bar(r0, r1, east):
+        """Metal2 jumper joining the pads of strips r0 and r1 at their outer ends"""
+        xa1, xa2, ya = head(r0, east)
+        _, _, yb = head(r1, east)
+        x = xa2 - W2 if east else xa1
+        b.box("metal2", x, min(ya, yb) - W2 / 2, x + W2, max(ya, yb) + W2 / 2)
     # ---- buses (Metal3, x ranges) between the array and the switch column
     bus = {}
     x = x_re + 0.5
-    for n in ("VREFP", "VREFN", "I1N", "I1P", "AVSS_W"):
+    for n in ("INN", "INP", "VREFP", "VREFN", "I1N", "I1P", "AVSS_W"):
         bus[n] = (x, x + 1.0)
         x += 1.6
     x_q = x - 0.1                                   # west edge of the switch quads
     qc, q_w, q_x = quad_cell(b)
     bus["AVSS_E"] = (x_q + q_w + 0.2, x_q + q_w + 1.2)
-    axes = [YB + an.RING_W + 0.8 + f.RES_RY + element_rows(k) * (1.0 + f.RES_GAP) + 1.0 + f.RES_GAP / 2
-            for k in range(len(cells))]
+    axes = [(head(rowof[(k, "RPB2")])[2] + head(rowof[(k, "RNB2")])[2]) / 2 for k in range(len(cells))]
     assert all(abs(axes[k + 1] - axes[k] - PITCH_AX) < 1e-6 for k in range(len(axes) - 1))
-    y_bus0, y_bus1 = YB + 1.0, axes[-1] + 4.0 + 1.0
+    assert all(abs(head(rowof[(k, "RPB2")])[2] - (axes[k] - Y_HX)) < 1e-6 for k in range(len(axes)))
+    y_top_col = axes[-1] + 4.0                      # top of the switch column's straps and shield
+    y_bus0 = y_r + 1.0
     x_hd = x_q + 13.4                               # D: Metal2 to here (router pin west of it)
     x_hdb = x_q + 15.0                              # DB: Metal4 to here, then a Metal3 stub
     x_router = x_q + 11.0                           # the router works east of this
     x_logic = round((x_q + 16.4) / lg.PITCH) * lg.PITCH
     gx0 = (x_logic + lg.GATE0) % lg.PITCH
     snap = lambda v: gx0 + round((v - gx0) / lg.PITCH) * lg.PITCH
-    # ---- per element: quad, X lines, output straps, heads to the buses, D / DB
+    # ---- per element: quad, X lines, the MP / MN bars, heads to the buses, D / DB
     db_m4 = []                      # (net, Metal4 box, via3 box) of the DB lines inside the router's region
     for k, cell in enumerate(cells):
         ya = axes[k]
         xp, xn, dnet, dbnet = sw_nets[cell]
-        rb = element_rows(k)
         b.place(qc, x_q, ya)
-        for r, y in ((rb, ya - Y_X), (rb + 1, ya + Y_X)):          # XP, XN
-            x1, x2, yh = head(r)
-            assert abs(yh - y) < 1e-6
-            m2(x1, y, x_q + 0.4)
-        x1, x2, yh = head(rb - 1)                                  # VREFP head
-        m2(x1, yh, bus["VREFP"][1])
-        via2_on(*bus["VREFP"], yh)
-        x1, x2, yh = head(rb + 2)                                  # VREFN head
-        m2(x1, yh, bus["VREFN"][1])
-        via2_on(*bus["VREFN"], yh)
+        for name, s_ in (("RPB2", -1), ("RNB2", 1)):               # XP, XN: jog to the quad's lines
+            x1, x2, yh = head(rowof[(k, name)])
+            m2(x1, yh, x_q - 0.5)
+            m2(x_q - 0.9, ya + s_ * Y_X, x_q + 0.4)
+        bar(rowof[(k, "RPA2")], rowof[(k, "RPB1")], True)          # MP
+        bar(rowof[(k, "RNB1")], rowof[(k, "RNA2")], True)          # MN
+        for name, n in (("RPA1", "VREFP"), ("RNA1", "VREFN")):
+            x1, x2, yh = head(rowof[(k, name)])
+            m2(x1, yh, bus[n][1])
+            via2_on(*bus[n], yh)
         if k % 2 == 0:                                             # RIN east heads
-            x1, x2, yh = head(rb - 2)
-            m2(x1, yh, bus["I1P"][1])
-            via2_on(*bus["I1P"], yh)
-            x1, x2, yh = head(rb + 3)
-            m2(x1, yh, bus["I1N"][1])
-            via2_on(*bus["I1N"], yh)
+            for name, n in (("RINP_A", "INP"), ("RINP_B", "I1P"), ("RINN_B", "I1N"), ("RINN_A", "INN")):
+                x1, x2, yh = head(rowof[(k, name)])
+                m2(x1, yh, bus[n][1])
+                via2_on(*bus[n], yh)
         # outputs: OUTN at -Y_O1 and +Y_O2, OUTP at -Y_O2 and +Y_O1
         for y, n in ((ya - Y_O1, "I1N"), (ya + Y_O2, "I1N"), (ya - Y_O2, "I1P"), (ya + Y_O1, "I1P")):
             m2(bus[n][0], y, x_q + 0.4)
             via2_on(*bus[n], y)
-        for s in (-1, 1):                                          # ring bands to the AVSS straps
-            y = ya + s * Y_RB
+        for s_ in (-1, 1):                                         # ring bands to the AVSS straps
+            y = ya + s_ * Y_RB
             m2(bus["AVSS_W"][0], y, x_q + 0.4)
             via2_on(*bus["AVSS_W"], y)
             m2(x_q + q_w - 0.4, y, bus["AVSS_E"][1])
@@ -243,27 +264,30 @@ def build():
         b.box("metal3", xs - 0.19, ya - 0.7, xs + 0.19, ya + 0.7)
         conn(dbnet, [("metal3", xs - 0.19, ya - 0.7, xs + 0.19, ya + 0.7)])
         db_m4.append((dbnet, (x_router - 1.0, ya - 0.19, xs + 0.19, ya + 0.19), (xs - 0.13, ya - 0.13, xs + 0.13, ya + 0.13)))
-    # MP / MN: Metal2 bars joining the west heads of RPA-RPB and RNB-RNA
-    for k, cell in enumerate(cells):
-        rb = element_rows(k)
-        for r0, r1 in ((rb - 1, rb), (rb + 1, rb + 2)):
-            xa1, xa2, ya0 = head(r0, east=False)
-            xb1, xb2, ya1 = head(r1, east=False)
-            b.box("metal2", xa1, ya0 - W2 / 2, xa1 + W2, ya1 + W2 / 2)
-    # INP / INN buses west of the array (the RIN west heads)
+    # west jumpers: the two strips of every unit
+    for k in range(len(cells)):
+        pairs = [("RPA1", "RPA2"), ("RPB1", "RPB2"), ("RNB2", "RNB1"), ("RNA2", "RNA1")]
+        if k % 2 == 0:
+            pairs += [("RINP_A", "RINP_B"), ("RINN_B", "RINN_A")]
+        for r0, r1 in pairs:
+            bar(rowof[(k, r0)], rowof[(k, r1)], False)
+    # RINPM / RINNM buses over the west heads (the RIN units' middle nodes joined)
     x1w, x2w, _ = head(0, east=False)
-    bus["INP"] = (x2w - 1.2, x2w - 0.2)
-    bus["INN"] = (x_r + 0.2, x_r + 1.2)
+    bus["RINPM"] = (x2w - 1.2, x2w - 0.2)
+    bus["RINNM"] = (x_r + 0.2, x_r + 1.2)
     for k in range(0, len(cells), 2):
-        rb = element_rows(k)
-        _, _, y = head(rb - 2, east=False)
-        via2_on(*bus["INP"], y)
-        x1, x2, y = head(rb + 3, east=False)
-        m2(bus["INN"][0], y, x2)
-        via2_on(*bus["INN"], y)
+        _, _, y = head(rowof[(k, "RINP_A")], east=False)
+        via2_on(*bus["RINPM"], y)
+        x1, x2, y = head(rowof[(k, "RINN_A")], east=False)
+        m2(bus["RINNM"][0], y, x2)
+        via2_on(*bus["RINNM"], y)
+    y_rin1 = max(head(rowof[(k, "RINN_A")], east=False)[2] for k in range(0, len(cells), 2)) + 0.5
+    for n in ("RINPM", "RINNM"):
+        x1, x2 = bus[n]
+        b.box("metal3", x1, y_bus0, x2, y_rin1)
     # ---- Metal4 AVSS between the DB lines over the switch column, via3 onto both straps
     xa, xe = bus["AVSS_W"][0], bus["AVSS_E"][1]
-    edges = [axes[0] - PITCH_AX / 2] + [a + PITCH_AX / 2 for a in axes[:-1]] + [axes[-1] + PITCH_AX / 2]
+    edges = [axes[0] - 4.0] + [a + PITCH_AX / 2 for a in axes[:-1]] + [y_top_col]
     shield = []
     for k, ya in enumerate(axes):
         for y1, y2 in ((edges[k], ya - 0.19 - 0.3), (ya + 0.19 + 0.3, edges[k + 1])):
@@ -298,7 +322,7 @@ def build():
     mid = list(range(nrow // 2 - 2, nrow // 2 + 2))
     for j, item in enumerate(brk):
         plan[mid[j * len(mid) // len(brk)]].append(item)
-    rows = bl.Rows(b, x_logic, YB)
+    rows = bl.Rows(b, x_logic, Y_LOG, pitch=ROW_P)
     for r, row in enumerate(plan):
         for path, model, env, cnets in row:
             if model == "dev":                       # the brk's MOS capacitor (nfet, S/D/B on VSS)
@@ -320,10 +344,11 @@ def build():
                     continue
                 conn(cmap.get(pn, pn), segs)
     rows.fill_all()
-    y_rows = YB + rows.height()
+    y_rows = Y_LOG + rows.height()
     width = x_logic + rows.width() + 2.0 + 2 * (SW + 1.0) + 0.6
-    y_i1p, y_i1n = y_rows + 1.5, y_rows + 3.3          # Metal4 runs of I1P / I1N (1 um)
-    height = y_i1n + 1.0 + 1.7
+    y_i1p = max(y_rows, y_top_col) + 0.6               # Metal4 runs of I1P / I1N (1 um), above
+    y_i1n = y_i1p + 1.8                                # the logic and the column's shield
+    height = max(y_i1n + 1.0 + 1.7, y_r + ra_.height + 0.5)
     # ---- power: AVSS straps on the west edge and east of the logic, AVDD on the east
     # edge; the logic rails run east to their strap (VDD under the AVSS strap)
     xs_vss, xs_vss2, xs_vdd = SW / 2 + 0.4, width - 1.5 * SW - 1.4, width - SW / 2 - 0.4
@@ -336,14 +361,14 @@ def build():
         b.vias("via2", x - SW / 2, a, x + SW / 2, c_)
     nets.pop("AVDD", None)
     conn("AVSS", [("metal3", xs_vss2 - SW / 2, -1.0, xs_vss2 + SW / 2, height)])
-    # the array's ring band, the column straps and the logic's bottom rail on one Metal2
-    # band along the bottom, via2 onto the west strap and the column straps
-    b.box("metal2", xs_vss - SW / 2, YB, x_logic + 1.0, YB + an.RING_W)
-    b.vias("via2", xs_vss - SW / 2, YB, xs_vss + SW / 2, YB + an.RING_W)
+    # the array's ring band and the column straps on one Metal2 band along the bottom, via2
+    # onto the west strap and the column straps (the logic rails join the straps east)
+    b.box("metal2", xs_vss - SW / 2, y_r, bus["AVSS_E"][1], y_r + an.RING_W)
+    b.vias("via2", xs_vss - SW / 2, y_r, xs_vss + SW / 2, y_r + an.RING_W)
     for n in ("AVSS_W", "AVSS_E"):
         x1, x2 = bus[n]
-        b.box("metal3", x1, YB, x2, axes[-1] + PITCH_AX / 2)
-        b.vias("via2", x1, YB, x2, YB + an.RING_W)
+        b.box("metal3", x1, y_r, x2, y_top_col)
+        b.vias("via2", x1, y_r, x2, y_r + an.RING_W)
     # ---- the Metal3 buses and the top ports
     for n in ("VREFP", "VREFN", "I1N", "I1P", "INP", "INN"):
         x1, x2 = bus[n]

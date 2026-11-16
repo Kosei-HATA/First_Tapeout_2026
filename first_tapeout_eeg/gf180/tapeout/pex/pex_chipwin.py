@@ -26,7 +26,7 @@ import pex
 
 LAYOUT = pex.LAYOUT
 GDS = os.path.join(LAYOUT, "runs", "chip_top", "chip_top_fill.gds")
-LVSDB = os.path.join(LAYOUT, "runs", "chip_top", "eeg_core.lvsdb")
+LVSDB = os.environ.get("EEG_CORE_LVSDB", os.path.join(LAYOUT, "runs", "chip_top", "eeg_core.lvsdb"))  # see pex_chipnets
 
 
 def window_gds(src, box, out):

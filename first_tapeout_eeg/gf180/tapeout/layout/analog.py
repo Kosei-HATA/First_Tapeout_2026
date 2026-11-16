@@ -196,6 +196,52 @@ def res_cell(b, name, l, w, terms, sub="VSS", gap=f.RES_GAP, pad=1.6, label=True
     return AnalogCell(c, width, height, pins)
 
 
+PRES_RING = 0.40      # ring's inner edge to the outer end of the head pads (ppolyf_u rows)
+PRES_RY = 1.00        # ring's inner edge to the first / last strip (PRES.3 0.6; the ring's
+                      # PPLUS 0.4 away from the strips' PPLUS)
+
+
+def pres_cell(b, name, l, w, terms, sub="VSS", gap=f.PRES_GAP, pad=1.6, label=True):
+    """Resistor rows like res_cell, of ppolyf_u strips (fets.pres_array): strip k from
+    terms[k][0] (west head) to terms[k][1] (east head), a Metal2 pad (pad um long,
+    outwards) on every head, substrate-tap ring (net sub) with a Metal2 band along its
+    bottom side. Jumpers between strips (heads of one net) are the caller's. Returns an
+    AnalogCell with .pad(k, east) = the Metal2 pad box of strip k's west or east head."""
+    n = len(terms)
+    m = RING_W + PRES_RING + 0.19            # cell edge to the pads' outer Metal2 edge
+    x0 = m + pad + f.PRES_CO                  # body start
+    y0 = RING_W + PRES_RY
+    c = b.new_cell(name)
+    heads = f.pres_array(c, x0, y0, l, w, n, gap=gap)
+    width = x0 + l + f.PRES_CO + pad + m
+    height = y0 + n * (w + gap) - gap + PRES_RY + RING_W
+    pins, pads = {}, []
+    for k, ((xa, ya), (xb, yb)) in enumerate(heads):
+        row = []
+        for (xt, yt), net, sgn in (((xa, ya), terms[k][0], -1), ((xb, yb), terms[k][1], 1)):
+            c.box("via1", xt - 0.13, yt - 0.13, xt + 0.13, yt + 0.13)
+            xe = xt + sgn * pad
+            box = (min(xt, xe) - 0.19, yt - 0.19, max(xt, xe) + 0.19, yt + 0.19)
+            c.box("metal2", *box)
+            pins.setdefault(net, []).append(("metal2",) + box)
+            row.append(box)
+        pads.append(tuple(row))
+    f.ring(c, "p", 0, 0, width, height, w=RING_W, well=False)
+    c.box("metal2", 0, 0, width, RING_W)
+    x = 0.4
+    while x < width - 0.4:
+        c.box("via1", x - 0.13, RING_W / 2 - 0.13, x + 0.13, RING_W / 2 + 0.13)
+        x += 0.8
+    pins.setdefault(sub, []).append(("metal2", 0, 0, width, RING_W))
+    if label:
+        for net, segs in pins.items():
+            lay, x1, y1, x2, y2 = segs[0]
+            c.label(lay, net, (x1 + x2) / 2, (y1 + y2) / 2)
+    cell = AnalogCell(c, width, height, pins)
+    cell.pad = lambda k, east: pads[k][1 if east else 0]
+    return cell
+
+
 def mim_cell(b, name, side, top, bot, n=1, label=True, length=None):
     """n cap_mim_2f0ff units in a row between `top` (top plates) and `bot` (bottom plates),
     side um wide and `length` um tall (square if not given). Pins are Metal4 islands for

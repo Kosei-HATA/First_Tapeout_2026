@@ -69,7 +69,9 @@ CHIP_LABEL = {"": "10/27, sixth assembly", "r7": "10/29, seventh assembly",
 CHIP = os.path.join(LAYOUT, "runs", "chip_top")
 GDS_NOFILL = os.path.join(CHIP, "chip_top.gds")
 GDS_FILL = os.path.join(CHIP, "chip_top_fill.gds")
-LVSDB = os.path.join(CHIP, "eeg_core.lvsdb")
+# EEG_CORE_LVSDB: another run of the same core LVS (r11, 11/13: runs/chip_top/core_r11_20261113, run apart from
+# the background build so that the wiring extraction need not wait for the build's full-chip LVS)
+LVSDB = os.environ.get("EEG_CORE_LVSDB", os.path.join(CHIP, "eeg_core.lvsdb"))
 PADRING = os.path.join(REPO, "gf180", "tapeout", "chip", "padring", "padring_1x0p5_20261023.gds.gz")
 PADGEOM = os.path.join(REPO, "gf180", "tapeout", "chip", "padring", "pad_geometry.json")
 

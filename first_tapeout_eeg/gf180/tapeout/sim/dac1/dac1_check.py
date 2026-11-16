@@ -19,10 +19,13 @@ VCM +- 0.25 V.
   brk    BRK width, BRK rise to D / DB fall of a cell (both directions)
 
 Usage: python3 dac1_check.py [--corner typical] [--temp 27] [--voff 0] [--mc seeds]
-       [--tests even ref brk] [--tol A|B|C]
+       [--tests even ref brk] [--tol A|B|C] [--tmax 0.5]
+       (--tmax: the largest time step in ns; a run that stops early, e.g. 'Timestep too small',
+       raises instead of being integrated over the points it reached)
 """
 import argparse
 import os
+import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
@@ -79,7 +82,7 @@ VDCLK DAC_CLK 0 {dclk}
 XD OUTP OUTN VRP VRN {sel_nodes} DAC_CLK VDD 0 eeg_dac1
 .control
 set noaskquit
-tran 0.05n {T0 + nframes * T:.9e} 0 0.5n
+tran 0.05n {T0 + nframes * T:.9e} 0 {getattr(o, 'tmax', 0.5):g}n
 wrdata tr.csv {save}
 quit
 .endc
@@ -92,9 +95,16 @@ def run(o, name, sels, nframes, seed=0, save="i(vop) i(von) i(vrp)"):
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "tb.spice"), "w").write(deck(o, sels, nframes, seed, save))
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
-    open(os.path.join(d, "run.log"), "w").write(r.stdout + r.stderr)
+    log = r.stdout + r.stderr
+    open(os.path.join(d, "run.log"), "w").write(log)
     x = np.loadtxt(os.path.join(d, "tr.csv"))
     os.remove(os.path.join(d, "tr.csv"))
+    # an aborted transient still writes the points it reached (r11 even_all1, 11/13: stopped at
+    # 28.5 us of 70.3 us and gave -25 fC): never integrate a truncated run
+    m = re.search(r"Timestep too small[^\n]*|simulation\(s\) aborted", log)
+    if m or x[-1, 0] < T0 + nframes * T - 1e-9:
+        raise RuntimeError(f"{name}: the transient stopped at {x[-1, 0]:.6e} s of {T0 + nframes * T:.6e} s "
+                           f"({m.group(0) if m else 'short'}; {d}/run.log)")
     return x
 
 
@@ -196,6 +206,7 @@ def main():
     ap.add_argument("--mc", type=int, default=0)
     ap.add_argument("--tests", nargs="+", default=["even", "ref", "brk"])
     ap.add_argument("--tol", choices=sorted(TOLS), default="A")
+    ap.add_argument("--tmax", type=float, default=0.5, help="largest time step (ns)")
     o = ap.parse_args()
     print(f"{o.corner} {o.temp:g} C, voff {o.voff:g} mV, tol {o.tol}")
     if o.mc:
@@ -212,7 +223,7 @@ def main():
     if "even" in o.tests:
         r = even(o)
         print(f"  even per toggle: one cell {r['one'] * 1e15:+.5f} fC, all cells {r['all'] * 1e15:+.5f} fC "
-              f"(requirement 0.016 fC)")
+              f"(requirement 0.008 fC)")
     if "ref" in o.tests:
         for k, v in ref(o).items():
             print(f"  {k}: {v:.4f}")

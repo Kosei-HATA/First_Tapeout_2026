@@ -1,13 +1,17 @@
 * eeg_adc: the CT 2nd-order 5-bit sigma-delta modulator of the EEG chip (GF180, this
 * rev), from the independent-environment gain-10 loop (import_20261021/adc_gain10_loop)
 * with the changes of tracker B2-B8:
-*   stage 1  RIN 18750 ohm = 16 parallel 300 kohm unit resistors (ppolyf_u_1k,
-*            291.28 x 1 um), so RIN/RD1 = 31/32 by construction (a DAC1 element is two
-*            units in series); OTA1
+*   stage 1  RIN 18750 ohm = 16 parallel 300 kohm unit resistors (since r11 each two
+*            ppolyf_u strips of 320.48 x 0.8 um in series, the 16 middle nodes joined;
+*            through r10 one ppolyf_u_1k strip of 291.28 x 1 um), so RIN/RD1 = 31/32 by
+*            construction (a DAC1 element is two units in series); OTA1
 *            (gf180_inside_cascode_ota, input pair L 1 um m 1024, eeg_adc_otas.spice)
 *            chopped by CHOP1 through eeg_adc_clk; C1 425.4 pF per side; DAC1
 *            eeg_dac1 (steered cells, common-break drive from DAC_CLK)
-*   stage 2  scaled x10: R21 100 kohm = 3 parallel 300 kohm unit resistors; OTA2
+*   stage 2  scaled x10: R21 100 kohm = 3 parallel 300 kohm unit resistors (since r11
+*            each three ppolyf_u strips of 213.54 x 0.8 um in series, middle nodes
+*            joined, so that the stage-2 resistors follow RIN and DAC1 over corners and
+*            temperature); OTA2
 *            (gf180_ct_ota_tel16_cmfb); C2 24.41 pF per side; DAC2 eeg_dac2 (current
 *            steering, SEL2 at e3)
 *   quantizer eeg_quantizer on O2P/O2N (31 comparators, ladder from VREFP/VREFN)
@@ -48,8 +52,10 @@
 * ---- ADC-only test: INP-INN short (open in normal operation)
 XZERO INP INN ADC_ZERO AVDD AVSS eeg_adc_zero
 * ---- stage 1
-XRINP INP I1P AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=16
-XRINN INN I1N AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=16
+XRINPA INP RINPM AVSS ppolyf_u r_length=320.48u r_width=0.8u m=16
+XRINPB RINPM I1P AVSS ppolyf_u r_length=320.48u r_width=0.8u m=16
+XRINNA INN RINNM AVSS ppolyf_u r_length=320.48u r_width=0.8u m=16
+XRINNB RINNM I1N AVSS ppolyf_u r_length=320.48u r_width=0.8u m=16
 XCLK1 CHOP1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS eeg_adc_clk
 XOTA1 I1P I1N O1P O1N VCM VBN1 VNC1 VPC1 VBCM1 CIA NCIA CIB NCIB CDA NCDA CDB NCDB AVDD AVSS
 + gf180_inside_cascode_ota
@@ -60,8 +66,12 @@ XRSTB NRST RST AVDD AVSS eeg_adc_inv
 XR1P O1N I1P RST NRST AVDD AVSS eeg_adc_rst
 XR1N O1P I1N RST NRST AVDD AVSS eeg_adc_rst
 * ---- stage 2
-XR21P O1P I2P AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=3
-XR21N O1N I2N AVSS ppolyf_u_1k r_length=291.28u r_width=1u m=3
+XR21P1 O1P R21PA AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
+XR21P2 R21PA R21PB AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
+XR21P3 R21PB I2P AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
+XR21N1 O1N R21NA AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
+XR21N2 R21NA R21NB AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
+XR21N3 R21NB I2N AVSS ppolyf_u r_length=213.54u r_width=0.8u m=3
 XOTA2 I2P I2N O2P O2N VCM VBN1 VNC1 VPC1 VBCM1 AVDD AVSS gf180_ct_ota_tel16_cmfb
 XC2P I2P O2N eeg_c2
 XC2N I2N O2P eeg_c2

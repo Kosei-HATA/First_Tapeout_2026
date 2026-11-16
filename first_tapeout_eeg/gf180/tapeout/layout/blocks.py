@@ -26,15 +26,19 @@ class Placed:
 
 class Rows:
     """Logic rows stacked from y0 upwards; odd rows mirrored so that neighbouring rows
-    share a rail (VDD between rows 0 and 1, VSS between rows 1 and 2, ...)."""
+    share a rail (VDD between rows 0 and 1, VSS between rows 1 and 2, ...). With pitch,
+    row r sits at y0 + r * pitch instead, none mirrored (rows apart, each with its rails)."""
 
-    def __init__(self, top, x0, y0):
+    def __init__(self, top, x0, y0, pitch=None):
         self.top, self.x0, self.y0 = top, x0, y0
+        self.pitch = pitch
         self.rows = []      # per row: list of Placed
         self.xcur = []
 
     def row_y(self, r):
         """(origin y, mirrored) of row r"""
+        if self.pitch is not None:
+            return self.y0 + r * self.pitch, False
         if r % 2 == 0:
             return self.y0 + r * lg.H, False
         return self.y0 + (r + 1) * lg.H, True
@@ -75,6 +79,8 @@ class Rows:
         return max(self.xcur) - self.x0
 
     def height(self):
+        if self.pitch is not None and self.rows:
+            return (len(self.rows) - 1) * self.pitch + lg.H
         return len(self.rows) * lg.H
 
     def rails(self):

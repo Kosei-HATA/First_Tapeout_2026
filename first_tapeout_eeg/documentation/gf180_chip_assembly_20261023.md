@@ -528,3 +528,235 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
   - 非線形の MOSCAP のモデルでは、AFE の過渡解析が止まる。後輩は電荷の形に書き直して回し、AFE の利得は 298.907 だった。こちらの線形の MOSCAP での 298.94（AFE だけ、7 MCLK）と合う。
   - VCM の外付けの容量なしでは、VCM が 94.9 mV p-p 揺れる。こちらの前提（10 nF）を基板の要求として守る。
   - AVDD 3.6 V では、クロックの TG のゲートとバルクの間が 3.666 V（DC の目安 3.63 V）を合計 3.3 ns 超える。3.3 V では 3.354 V で、超えない。
+
+## 組み直し（11/12〜13、11 回目：ADC の RIN、DAC1、R21 を ppolyf_u に）
+
+**決めたこと（11/12、ユーザーの判断）**
+
+- ADC の RIN と DAC1 を ppolyf_u_1k から ppolyf_u に替える。勧めのとおり R21 も替える。
+- 理由はポリ抵抗のフリッカ雑音。ppolyf_u_1k のままだと、PDK の大きさを今の電流でとってフルスケールで 16.26 bit になる（`gf180_realistic_eval_20261028.md` の「ADC のポリ抵抗のフリッカ雑音」と「RIN と DAC1 を ppolyf_u に替える案」）。
+
+**直し**
+
+- **RIN と DAC1**（`rdac1_lay.py`、`eeg_dac1.spice`、`lvs/adc_rdac.spice`）
+  - 300 kΩ の 1 単位を、ppolyf_u の 320.48 × 0.8 µm の 2 本の直列にした。r10 までは ppolyf_u_1k の 291.28 × 1 µm が 1 本だった。
+  - 156 単位で 312 本になる。1.2 µm の間隔（PRES.2 の 0.4 µm）で並べた。
+  - 1 単位の 2 本は西の頭を Metal2 の渡りでつなぎ、両端を東に出す。
+  - DAC1 の要素の軸の間は 12 µm（r10 は 8 µm）。スイッチの列のまわりの鏡像の形と、列の 8 µm 以内にほかの線を通さない決まりは r10 と同じ。
+  - adc_rdac は 425 × 379 µm になった。
+- **R21**（`adc_lay.r21_cell()`、`eeg_adc.spice`）
+  - 1 単位を 213.54 × 0.8 µm の ppolyf_u 3 本の直列にした。片側 3 単位で、単位の中の節点どうしをつなぐ。
+  - O1P／O1N は西、I2P／I2N は東に出る。r10 と同じ向き。
+- **ADC の組み立て**（`adc_lay.py`）
+  - adc_rdac を C1NX のすぐ上に置いた。その東の OTA1 と第 2 段は、AVDD／AVSS の幹線ごと 31.2 µm 東へずらした（11/12 の案では 28.9 µm）。
+  - 西の端子と ADC_ZERO のスイッチは、adc_rdac と C1PX の間の溝に移した。端子の間は配線器の 2 行にした（r10 は 8 行）。
+  - ADC の外形（1210 × 1447 µm）は変わらない。
+  - O1N：OTA1 が東へずれて、OTA1 の OUTN の引き出しが Metal5 のストラップの東に来た。そのため Metal4 をストラップの西 8 µm まで延ばし、配線器の端子をそこに置いた。延ばす前の 1 回目の組み立てでは、O1N が配線できなかった。
+
+**ブロックでの確認（11/12）**
+
+- adc_rdac：DRC 違反なし、LVS 一致。
+- adc_top：DRC 違反なし、LVS 一致（配線 256 秒）。
+- セルごとの XOR（r10 と比べる）：192 セルのうち 188 が同じ。違うのは adc_r21、adc_rdac、rdac_r（抵抗の列）、adc_top の 4 つ。
+- 抽出（`EEG_PEX_REV=r11`、`gf180/tapeout/pex/runs/adc_top_c_r11/`）
+  - eeg_adc の素子は 2,836 から 3,004 に、容量は 15,355 から 15,916 個に増えた。
+  - ppolyf_u は 330 本で、内訳は RIN 64、DAC1 248、R21 18。
+- DAC1 の偶成分（抽出、`dac1_check.py`。トグルあたり）
+  - 1 セル −0.00090 fC、31 セル全部 −0.00138 fC（r10 は −0.00135／−0.00125 fC）。
+  - 31 セル全部は、2 つの設定で回した（設定 A で最大の刻み 0.4 ns、設定 B（台形則）で 0.5 ns）。B では −0.00136 fC。
+  - 要求（0.008 fC）の約 1/6 で、r10 と同じ程度。
+  - 31 セル全部の最初の実行（設定 A、0.5 ns）は、片方が 70.3 µs のうち 28.5 µs で止まった（Timestep too small）。止まるまでの点を積分して −25 fC と出た。`dac1_check.run()` を、止まった実行を積分せずにエラーにするように直し、`--tmax` を足した。
+
+**チップでの確認（11/13）**
+
+- **組み立て**（`chip_lay.py --drc --lvs`、配線 624 秒）
+  - パッドリング込みのつながりの確認、GDS だけからの電源の確認（タップの規則を含む）、DRC は、どれも問題なし（DRC 違反なし）。
+  - 電源の配線の抵抗、パッドの電流、タップの規則の結果は r10 と同じ値。
+- **チップ全体の LVS（パッドリング込み、KLayout）：一致**（「Congratulations! Netlists match.」）。
+  - ほかの計算に場所をゆずる低い優先度で回したので、5 時間 15 分かかった。
+- **コアの LVS：一致**。
+  - 組み立ての中のものと、別に回したもの（`runs/chip_top/core_r11_20261113/`）で、抽出したネットリストは日時の 1 行を除いて同じ。
+- **KLayout の LVS の警告は 1 文だけ**：「Comp labels are ignored, as comp is not defined as a valid conductive layer」。
+  - これは PDK の `rule_decks/layers_definitions.lvs` が層の物（`comp_label`）を 0 と比べているためで、ラベルの数によらず毎回出る。
+  - ログの次の行は「comp_label has 0 polygons」で、COMP の層にラベルはない。設計が原因の警告ではない。
+- **XOR（r10 と比べる、穴埋め前）**
+  - adc_top の中で 21 層が違う。RIN、DAC1、R21 と、OTA1 と第 2 段の移動による。
+  - adc_top の外で違うのは、Via3 74 個、Metal3 27 個、Metal4 46 個だけ。どれも ADC の西の縁の外 15 µm（x 1717〜1732 µm）にある配線器の線で、ADC の西の端子が動いたためにつなぎ直された。
+  - パッドリング、マクロ、AFE は同じ（`gf180/tapeout/layout/runs/chip_top/xor_r10_r11_chip_top_20261113.log`）。
+- **チップの配線の抽出**（`EEG_PEX_REV=r11`、`gf180/tapeout/pex/runs/chipnets_r11/`）
+  - r9 と違うのは、ADC の西の端子につながる網（OUTP／OUTN、VREFP／VREFN、VCM）だけ。
+  - OUTP／OUTN
+    - AFE から ADC まで 55.9／54.9 Ω（r9 は 35.8／35.8 Ω）。P と N の差 0.96 Ω は RIN の 5 × 10⁻⁵。
+    - 容量は 102.0／100.5 fF（r9 は 71.5／69.2 fF）。そのうち OUTP–OUTN 46.5 fF（19.1）、OUTP–ITST 23.6 fF。
+    - ADC の中の I1P へは、OUTN から 9.1 fF、OUTP から 1.6 fF。
+  - VREFP／VREFN：eeg_ref から ADC まで 191.6／178.9 Ω（r9 は 200.8／187.1 Ω）。
+  - VCM：ADC の枝 6.6 Ω（6.2）。
+  - 動作点（AFE はリセット、ADC の電流 4.7 mA）は r9 と同じ。ADC での VREF は 479.12 mV（r9 は 478.64）。
+  - AFE の出力の負荷が ADC の入力（134／129 fF）と配線で増えても、AFE の帰還の位相余裕は 82.46°（負荷なし 82.42°、r10 の負荷 82.44°）で変わらない。
+  - **窓の抽出の限り**
+    - `pex_chipwin.py` の窓は ADC の縁（x 1732.4 µm）で切れるので、r11 で ADC の縁に沿って走る OUTP／OUTN と ADC の中の配線との結合を落とす。
+    - r11 の寄生込みの E2E（pexchip）は、ADC の中まで 27.6 µm 入る `pex_chipnets.py` の窓（Ch-A、x 1572〜1760 µm）の値を使う（`pex_e2e.chipnets_wiring()`）。
+- **穴埋め**（20 秒）のあとの全 DRC（アンテナと密度を含む、CUP を除く）も違反なし。`chip_top_fill.gds` は sha256 8850ffda…（224,183,676 バイト）。
+- **wafer.space の precheck（タグ pre_20261113_r11）：通った**（passed、exit 0）。
+  - 最新のイメージ（10/20 版、digest 104d9ccb…。11/13 にも最新と確かめた）を `--slot 1x0p5 --cob` で回した。1 時間 25 分。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は最後まで走った。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力の警告は、GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、r10 と同じ。
+- **GDS**：gz を `gf180/tapeout/chip/gds/chip_top_fill_r11_20261113.gds.gz` に置いた（41,908,408 バイト、sha256 a03a06f1…）。展開すると 8850ffda… に戻る。
+- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`）**。r10 と同じ形で回した。
+  - **1 回目（11/13）：判定は不一致**。
+    - 素子は 90,779 と 90,779、ネットは 51,211 と 51,211。Magic の `no such node` は 0 件。
+    - 「Netlists match with 3153 symmetries with property errors」で、「Final result: Circuits match uniquely.」の後に「Property errors were found.」が出た。
+    - プロパティの違いは 3 つのセルにあり、どれも r11 で入れた ppolyf_u の抵抗（RIN と R21）。1 回目の報告は `runs/chip_top/netgen_r11_20261113_first.out` に残した。
+  - **原因は Netgen 1.5.323 の抵抗のまとめ方で、レイアウトの間違いではない**。
+    - 回路図は RIN を `m=16`（INP から中点まで 16 本、中点から I1P までさらに 16 本）、R21 を `m=3` と書いている。Magic は 1 本ずつ抽出する。
+    - PDK の設定は、抵抗を直列（r_width をそろえ、r_length を足す）にも並列（r_length をそろえ、r_width を足す）にもまとめる。m が 1 より大きい抵抗をさらに直列にまとめると両側のまとめ方が食い違い、幅と本数（r_width、M）が合わなくなる。
+    - 2 つの節点の小さな回路で再現した。回路図も 1 本ずつ書くと、プロパティの違いもなく一致する。
+    - r10 までは抵抗が 1 本ずつで、直列にまとめる形がなかったので出なかった。
+  - **直し**：`gf180lay.to_cdl()` の Netgen 用の書き出しで、抵抗の m を 1 本ずつの素子に展開する（KLayout 用はもともとそうしている）。シミュレーションの回路図は変えていない。
+  - **1 回目の抽出のまま比べ直した結果（約 67 分）：一致**。「Netlists match with 3153 symmetries.」、「Final result: Circuits match uniquely.」で、プロパティの違いはない。
+  - 記録として、`chip_lay.py --netgen` を抽出から回し直していた（11/13 9 時 6 分から、低い優先度で）。r12 に替えたので、12 時過ぎに抽出の途中で止めた。途中までの出力は `runs/chip_top/r11_20261113/lvs_netgen_rerun_stopped/` にある。
+- **r11 の組み立ての出力**（GDS、LVS、DRC、ログ）は `runs/chip_top/r11_20261113/` に移した。
+- 11 回目は、DRC、穴埋めのあとの全 DRC、precheck、KLayout のチップ全体とコアの LVS が通った。Magic／Netgen の LVS も、1 回目の抽出を直した書き出しで比べ直して一致した。発注の候補にはしなかった。同じ日に、敏感な網の下のクロックとデータの線を直す 12 回目に替えたため（次の節）。
+
+## 組み直し（11/13、12 回目：敏感な網の下からクロックとデータの線を外す）
+
+**きっかけ（11/13）**
+
+- 外から「Sensitive-net crossings outside analog core footprints」という図をもらった（形だけを見た結合の候補）。
+  - A（AFE の西）：入力チョッパのゲートの 4 本（CIA、CIB、NCIB、NCIA、Metal3）が WN の Metal5 の下を通る。1 本あたり 68.3 µm² の重なりで、間の Metal4 の AVSS は 0.456 µm² しかない。
+  - B（ADC）：DAC_CLK（Metal4）が I1N と O1P の Metal5 の下をそれぞれ 1.9 µm² 横切る。
+  - 添えられたコメント：「アナログとデジタルを分けて動かすなら、クロックの配線は干渉しないところで通すべきではないか」。
+- r11 の抽出での見積もり（11/13）：効き目は雑音の床より何桁も小さく、寄生込みの計算にはすでに入っている。
+  - どれも線形の容量で、状態に比例してたまらないので、偶成分（要求 0.008 fC）には効かない。帯域内では約 −120 dB。
+  - DAC_CLK とチョッパのクロックは周期的で、DC かクロックの周波数の成分にしかならない。
+- **決めたこと（11/13、ユーザーの判断）**：r12 で直す。
+
+**調べ方**（`gf180/tapeout/layout/crossings.py`、新しく作った）
+
+- LVS のデータベースから、敏感な網とスイッチする網の組ごとに、2 つの異なる金属で重なる面積を出す。
+- そのうち間の金属（どの網でも）で覆われていない部分を「覆いのない重なり」とし、Magic の tech の面積の係数で板の容量を出し、場所も示す。
+- 同じ金属で 1 µm 以内に並ぶ縁の長さも出す。
+- データベースの層には名前がないので、GDS の層と形を比べて対応を決める。
+
+**r11 で見つけたこと**（指摘の 2 か所のほか）
+
+- ADC：指摘の DAC_CLK だけでなく、SEL1 の 31 本も同じところで I1N と O1P の Metal5 の下を Metal4 で横切っていた。
+  - I1N、O1P とも覆いのない重なりは約 59 µm² で、2.3 fF ずつ。抽出では I1N–SEL1 9.4 fF、O1P–SEL1 13.9 fF、I1P–SEL1 5.0 fF。
+  - リセットのスイッチ XR1N の I1N／O1P の線が SEL1 の束の中を通っていた。I1N の線と RST、NRST は、rdac と OTA1 の間のすき間を Metal3 で上がっていた（I1N–NRST 32.7 fF）。
+- AFE：クロックドライバから西の端へ出る行の上の 5 本（NCDA、CDB、NCDB、RST、CHOP_EN、Metal4）が、WN の Metal5（シートと Cin_N のバスの延長）の下を 46〜147 µm 走っていた。
+  - 板の容量で 0.7〜2.2 fF ずつ、抽出では WN に 3.0〜9.2 fF ずつ。
+  - コードの説明では、この 5 行は「端が 1 つのチョッパの相の中に入るか、動かない網」として選んであった。
+
+**直し**
+
+- **ADC**（`adc_lay.tunnel()`）
+  - SEL1_0〜30 と DAC_CLK の 32 本は、幹の下を Metal2 でくぐる。配線器の 1 行（0.68 µm）おきに、ADC の座標で x 422.45〜456.43 µm、y 443.36〜464.44 µm。
+  - Metal3 を使わないのは、rdac の AVSS／AVDD と OTA1 の AVSS の縦線（Metal3）がすき間を通っているため。
+  - 上を Metal4 の AVSS の板（x 428.5〜454.8、y 441.0〜466.6）で覆う。板は帯で下の AVSS のレールにつなぐ（Via4 と、OTA1 の AVSS の縦線の積み上げ）。
+  - 両端に Via2／Via3 の積み上げを置き、配線器の端子にした。東側は元の網の名前、西側は `<名前>_W` という配線器の別の網として、rdac の端子へつなぐ。
+  - rdac と OTA1 の間のすき間（x 429.4〜452.4 µm、C1N のバスから rdac の上端の 10 µm 下まで）は、配線器の Metal3／Metal4 を入れない。
+  - XR1N の B（I1N）と A（O1P）は、幹から東へ出した Metal4 の短い枝（幅 1.4 µm）へ、配線器の別の網（I1N_R、O1P_R）でつなぐ。
+- **AFE**（`afe_lay.w_entry()`、`wiring()`、`corridor_shield()`）
+  - WN のシートを、クロックドライバの西の行の 3 µm 上から始めた。Cin_N のバスの西への延長も、行の東 3 µm から始めた。取り除いた Metal5 は x 5.0〜155.43、y 410.70〜419.35 µm の 1,301 µm²。
+  - 通路の 4 本の上に Metal4 の覆い（x 169.92〜191.42、y 408.70〜484.92 µm）を置いた。
+    - 近くに AVSS がないので、覆いは AVDD にした。チョッパの n ウェルの縦線の下端に Via3 を 6 個打ち、配線器の AVDD の Metal4 ともつながる。
+    - 覆いは配線のあとで描き、配線器には見せない。最初の組み立てでは覆いを配線器の障害物として渡したため、通路の中を通っていた配線器の AVDD と AVSS が引き直され、AFE の全体で電源、RST2、VBP の経路が変わった。配線のあとで描く形にすると、配線器の結果は r11 と同じになった。
+    - 覆いは、通路の中の AVSS の線から 0.3 µm 離した。そのため 2 つに分かれている（合わせて 1,608 µm²）。
+
+**ブロックでの確認（11/13）**
+
+- adc_top：DRC 違反なし、LVS 一致（配線 71 秒）。
+  - 1 回目は帯の Via4 の部分と OTA1 の積み上げの間に 0.2 µm のすき間が残り、M4.2a が 1 件出たので、帯を 1 µm 下まで伸ばして直した。
+- adc_top の XOR（r11 と比べる）：Metal2 の 32 本、Via2、Via4 のほか、配線器の Metal3／Metal4／Via3 が ADC の広い範囲（x 322〜1196 µm）で引き直された。
+- afe_top：DRC 違反なし、LVS 一致（配線 18 秒）。
+- afe_top の XOR（r11 と比べる）：Via3（6 個）、Metal4（覆い、2 つ）、Metal5（1 つ、1,301 µm²）だけ。配線器の結果は r11 と同じ。
+- 覆いの 2 つの部分は、LVS のデータベースでどちらも AVDD の網だった。
+- **覆いのない重なり（crossings.py、板の容量）**
+
+| 組 | r11 | r12 |
+|---|---|---|
+| I1N × SEL1 | 2.544 fF | 0 |
+| O1P × SEL1 | 2.558 fF | 0 |
+| I1N × DAC_CLK、O1P × DAC_CLK | 0.075 fF ずつ | 0 |
+| I1P × SEL1 | 0.540 fF | 0 |
+| O1P × NRST | 0.197 fF | 1.764 fF |
+| WN × CDB／NCDB／NCDA／RST／CHOP_EN | 1.79／1.95／0.91／2.23／0.71 fF | 0 |
+| WN × 通路の各レーン（Metal5／Metal3） | 1.52 fF ずつ | 0.01 fF ずつ |
+
+  - 同じ金属で 1 µm 以内に並ぶ縁：I1N × NRST（Metal3）403 µm、O1P × SEL1（Metal4）85 µm、I1N × SEL1 59 µm、I1P × SEL1 46 µm が、どれも 0 になった。
+  - ADC のほかの組（第 2 段の I2P／I2N／O2P／O2N、INP／INN、VREFP／VREFN と、SEL2、TH、CMP_STROBE、MCLK、CHOP1 など）は r11 と同じ。
+  - NRST は、r12 では OTA1 の西の縁の中を上がり、OTA1 の中の OUTP の Metal4 の下を 72 µm 走る。NRST は ADC のリセットの反転で変換中は動かないので、O1P の容量が少し増えるだけ。
+- **抽出（Magic）での結合**
+
+| 組 | r11 | r12 |
+|---|---|---|
+| I1P–SEL1 | 5.04 fF | 0 |
+| I1N–SEL1 | 9.37 fF | 0.24 fF |
+| O1P–SEL1 | 13.89 fF | 3.75 fF |
+| I1N–DAC_CLK、O1P–DAC_CLK | 0.21 fF ずつ | 0 |
+| I1N–NRST | 32.65 fF | 0.45 fF |
+| O1P–NRST | 3.63 fF | 7.32 fF |
+| WN − WP（CIA／NCIA／CIB／NCIB） | +4.08／+4.02／+3.96／+4.69 fF | +0.65／+0.77／+0.80／+1.31 fF |
+| WN–NCDA／CDB／NCDB／RST／CHOP_EN | 3.05／5.41／5.99／9.24／3.01 fF | 0／0.05／0.09／0.99／0.32 fF |
+
+  - O1P–SEL1 に残る 3.75 fF は SEL1_22〜29 によるもので、SEL1_29 が 1.84 fF。dig から上がる区間が C1N の配列の東の縁（O1P は C1N の下の板）に沿うところで、r11 にも同じ形であった（SEL1_29 2.04 fF）。O1P は OTA1 が駆動する積分器の出力。
+  - 第 2 段（I2P／I2N／O2P／O2N）の結合は、小数第 3 位まで r11 と同じ。
+  - AFE：WN–AVDD は覆いの分 +69 fF、WN–AVSS は −13 fF。WN の全容量は 14.355 → 14.372 pF で、WP の 14.386 pF に近づいた。
+  - 抽出の素子と容量の数：eeg_adc 3,004 素子、容量 15,690 個（r11 は 15,916）。afe_top 702 素子、容量 3,610 個（r6〜r11 は 3,614）。
+- **WN の配線抵抗**（`pex_rin.py --afe --nets AFE.WN --tess m3`、AFE ブロック）：r11 357 mΩ、r12 359 mΩ。WN の Metal5 の帯を取った分。`pex_afe.RIN_EXTRACTED` の W を r12 では (0.347, 0.359) Ω にした。
+- 抽出と評価の置き場：`EEG_PEX_REV=r12` で `runs/adc_top_c_r12`、`runs/afe_top_c_r12`（`pex_afe.PEXDIR`。r6〜r11 は `runs/afe_top_c` を共有）、AFE の評価は `runs/afe_r12`。
+
+**チップでの確認（11/13）**
+
+- **XOR（r11 と比べる、穴埋め前）**：違うのは afe_top と adc_top の中だけで、中身はブロックでの XOR と同じ。チップの配線、パッドリング、マクロ、ほかのブロックは r11 と同じ（`runs/chip_top/xor_r11_r12_chip_top_20261113.log`）。
+- **組み立て**（`chip_lay.py --drc --lvs`、配線 177 秒）
+  - パッドリング込みのつながりの確認と、GDS だけからの電源の確認（タップの規則を含む）は問題なし。どちらかで問題があると組み立ては DRC の前で止まるが、DRC まで進んだ。
+  - DRC 違反なし（「DRC RESULT: SUCCESS (0 violations)」、624 秒）。
+  - 電源の配線の抵抗、パッドの電流（AVDD 46／79／75 %、AVSS 81／44／75 %）、タップの規則の結果（問題 0 件、設計どおりの局所の網 5 つ）は r11 と同じ。
+- **チップ全体の LVS（パッドリング込み、KLayout）：一致**（「Congratulations! Netlists match.」、約 2 時間、14:01）。組み立ての中のコアの LVS も一致。
+  - KLayout の LVS の警告は、毎回出る「Comp labels are ignored, as comp is not defined as a valid conductive layer」の 1 文だけ（設計が原因ではない。11 回目の節）。
+- **コアの LVS：一致**（組み立てと別に回したもの、`runs/chip_top/core_r12_20261113/`、701 秒）。そこで書いた chip_top.gds は、組み立てのものと同一。
+- **穴埋め**（144 秒）のあとの全 DRC（アンテナと密度を含む、CUP を除く）も違反なし。
+- **wafer.space の precheck**
+  - 1 回目（12:51）は、始まってすぐ Docker の中で「No space left on device」で止まった（`runs/precheck/precheck_pre_20261113_r12_nospace.log`）。内部ディスクの空きが 1 GB を切っていたため。
+  - もう読まない古い出力 14.4 GB を外付けへ移し（コピーを sha256 で照合してから元を消し、リンクを残す）、同じ形で回し直した。
+  - **2 回目（タグ pre_20261113_r12）：通った**（passed、exit 0）。最新のイメージ（10/20 版、digest 104d9ccb…。11/13 にも最新と確かめた）を `--slot 1x0p5 --cob` で回した。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。パッドマスク一致、ID の 4 つのセルの位置も通った。Magic DRC は最後まで走った。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力の警告は、GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、r11 と同じ。
+- **GDS**：穴埋めした `chip_top_fill.gds`（224,073,644 バイト、sha256 6b832e0e…）の gz を `gf180/tapeout/chip/gds/chip_top_fill_r12_20261113.gds.gz` に置いた（41,882,152 バイト、sha256 a89a5fb8…）。展開すると 6b832e0e… に戻る。
+- **チップの配線の抽出**（`EEG_PEX_REV=r12`、`gf180/tapeout/pex/runs/chipnets_r12/`、15 分）
+  - afe_top 自身の電源の格子の見積もり（afegrid）は AVSS 0.746 Ω、AVDD 0.123 Ω で、r6〜r11 と同じ。覆いは AVDD の行き止まりの板なので、電源の道には入らない。
+  - 配線の抵抗は r11 と同じ。OUTP／OUTN は AFE から ADC まで 55.9／54.9 Ω。
+  - 動作点の確かめ（AFE はリセット、ADC 4.7 mA）：IDD 23.99 mA、AFE の電源 3.229 V。
+- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`）：一致**（12:10 から、抽出 16:29、比べ 17:56）。
+  - 素子 90,779 と 90,779、ネット 51,211 と 51,211。Magic の `no such node` は 0 件。
+  - 「Netlists match with 3153 symmetries.」、「Final result: Circuits match uniquely.」。プロパティの違いはない（11 回目で直した抵抗の m の展開のまま）。
+- 12 回目は、KLayout と Magic／Netgen の 2 つの道具でチップ全体の LVS が一致し、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）もすべて通った。**発注の候補は r12**（11/13、ユーザーの判断で通路の覆いを残した形）。
+
+**評価（11/13〜、`EEG_PEX_REV=r12`）**
+
+- **AFE の抽出での比べ**（`pex_afe.py`、`viz_data.py zin`）
+  - r11 の値は、今のコードで r11 の抽出（r6〜r11 共通の `runs/afe_top_c`）を回し直したもの（`runs/afe_r11check`、`runs/viz_r11check`）。
+
+| 項目 | r11 | r12 |
+|---|---|---|
+| 利得（±0.5 mV） | 297.89 | 297.89 |
+| 入力換算のオフセット | −0.249 µV | −0.337 µV |
+| リップル（ブランキングの外） | 2.37 mV p-p | 1.76 mV p-p |
+| 雑音（配線抵抗込み、相 A／B） | 5.050／5.051 nVrms | 5.051／5.051 nVrms |
+| 信号がないときの電極の DC 電流（差動の組） | −1.552／+1.569 nA | −1.707／+1.723 nA |
+| 信号がないときの電極の DC 電流（同相の組） | −1.563／+1.557 nA | −1.719／+1.712 nA |
+| 電極側の入力インピーダンス（DC、差動／同相） | 3.563 MΩ／59.8 MΩ | 3.541 MΩ／60.2 MΩ |
+| 同（1 kHz、差動） | 2.155 − j1.771 MΩ | 2.152 − j1.755 MΩ |
+
+  - 正弦波（fch/64＝2 kHz、0.943 mV pk、`pex_afe.py sine`）：r12 は利得 299.14、HD2〜HD5 −134.2／−118.0／−144.0／−141.2 dBc。
+    - r11 の抽出では回し直していない（1 本 1.5 時間）。10/25 の記録（2 kHz で −127.7／−118.1／−143.8／−141.1 dBc）と比べ、HD3〜HD5 は 0.2 dB 以内で同じ。
+  - r11 の電極の DC 電流は 10/26 の記録（`runs/viz/afe_zin_bias.json`）と同じ値だった。
+  - 電極の DC 電流は 0.15 nA（10 %）増えた。
+    - r5（10/25）で WN のシートを通路の上に戻したとき、この電流は ±1.65 → ±1.56 nA に下がった。通路のレーンから WN への結合は、相補の組でほぼ打ち消すが、残りの差（抽出で組あたり約 1 fC）がほかの非対称を一部打ち消していた。
+    - 覆いでその分がなくなった。128 kHz で 1 fC は約 0.13 nA で、増えた分と大きさが合う。
+  - リップルが減ったのは、西の行のクロック（出力チョッパの相 CDA／CDB の系）が WN に結合しなくなったためと見ている。
+- **決めたこと（11/13、ユーザーの判断）：通路の覆いは残す。**
+  - 電極の DC 電流 ±1.71 nA は、1 MΩ の乾式の電極で片側約 1.7 mV。入力の DC オフセットとして打ち消せる範囲（±300 mV）に十分入り、r4 で今回 rev として受け入れた ±1.65 nA とほぼ同じ水準。
+  - 覆いで、指摘のあったクロックから WN への結合がなくなり（WN − WP は各 4 fF → 0.7〜1.3 fF）、リップルも 26 % 減った。
+  - 残る DC 電流の大部分はコアの INP／INN の寄生の非対称による（r4 の調べ）。直すならコアの側で、今回の範囲の外。

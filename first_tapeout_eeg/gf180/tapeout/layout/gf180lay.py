@@ -390,7 +390,8 @@ def to_cdl(netlist_files, top, form="klayout"):
     eeg_afe_inv s=1) become one plain subcircuit per parameter set, named by
     variant_name(). Ideal capacitors named CW* are pre-layout wiring estimates (eeg_adc)
     and are left out. form="netgen": the X devices stay as they are (Magic extracts them as
-    subcircuits too) with their m, the MIM in the PDK's spelling (cap_mim_2f0fF)."""
+    subcircuits too) with their m, except resistors (m separate devices, see below), the MIM
+    in the PDK's spelling (cap_mim_2f0fF)."""
     text = "\n".join(open(f).read() for f in netlist_files)
     text = re.sub(r"\n\+", " ", text)  # join continuation lines
     blocks = _subckt_blocks(text)
@@ -434,16 +435,23 @@ def to_cdl(netlist_files, top, form="klayout"):
                                                               "c_length") else f"{x:.6g}"
                     vals.append(f"{k}={v}")
                 line = " ".join([w[0]] + pos + vals)
-                if form == "netgen":
-                    body.append(_netgen_line(line))
-                    continue
-                # resistors and capacitors with m: m separate devices (KLayout combines them back)
+                # Resistors with m: m separate devices for both tools; capacitors too for KLayout,
+                # which combines them back. Netgen 1.5.323 mis-combines a resistor with m > 1 that
+                # it also merges in series. RIN (r11) is 16 strips from INP to a shared middle node
+                # and 16 more on to I1P, and Magic extracts it strip by strip. With m=16 in the
+                # schematic, Netgen reported r_width / M property errors on that correct layout
+                # (11/13, also on a two-node test); written strip by strip, it matches.
                 mk = [v for v in vals if v.lower().startswith("m=")]
-                if mk and pos[-1] in _DEV and _DEV[pos[-1]] in "RC":
+                kind = _DEV.get(pos[-1])
+                if mk and (kind == "R" or (kind == "C" and form != "netgen")):
                     mm = int(round(spice_num(mk[0].split("=", 1)[1], env)))
                     rest = [v for v in vals if not v.lower().startswith("m=")]
                     for k in range(mm):
-                        body.append(_device_line(" ".join([f"{w[0]}_m{k}"] + pos + rest)))
+                        one = " ".join([f"{w[0]}_m{k}"] + pos + rest)
+                        body.append(_netgen_line(one) if form == "netgen" else _device_line(one))
+                    continue
+                if form == "netgen":
+                    body.append(_netgen_line(line))
                     continue
             body.append(_netgen_line(line) if form == "netgen" else _device_line(line))
         out.append(f".subckt {vname} " + " ".join(ports))

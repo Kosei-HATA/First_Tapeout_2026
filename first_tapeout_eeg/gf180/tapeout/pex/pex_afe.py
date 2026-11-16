@@ -55,8 +55,13 @@ LAYOUT = os.path.join(REPO, "gf180", "tapeout", "layout")
 AFE = os.path.join(REPO, "gf180", "tapeout", "afe")
 BIAS = os.path.join(REPO, "gf180", "tapeout", "bias", "eeg_bias.spice")
 MOSLIN = os.path.join(REPO, "gf180", "tapeout", "sim", "moscap_lin.spice")
-PEXDIR = os.path.join(HERE, "runs", "afe_top_c")
-RUNS = os.path.join(HERE, "runs", "afe")
+# afe_top changed last in r12 (11/13: a shield over the chopper gates' corridor, the WN sheet
+# lifted off the clock driver's west rows); the chips r6..r11 share runs/afe_top_c. With
+# EEG_PEX_REV=r12 or later (pex.py) the extraction is runs/afe_top_c_<rev>
+_REV = os.environ.get("EEG_PEX_REV", "")
+_AFE_REV = "" if _REV in ("", "r7", "r8", "r9", "r10", "r11") else _REV
+PEXDIR = os.path.join(HERE, "runs", "afe_top_c" + (f"_{_AFE_REV}" if _AFE_REV else ""))
+RUNS = os.path.join(HERE, "runs", "afe" + (f"_{_AFE_REV}" if _AFE_REV else ""))   # r12: runs/afe_r12
 PDK = afe_noise.PDK
 FCH = 128e3
 TCH = 1 / FCH
@@ -86,6 +91,11 @@ def ports():
 # corridor (afe_lay.w_entry). 10/24: E 0.171 / 0.213, W 0.344 / 0.339, T 0.119 / 0.124;
 # 10/23 before the D6 fixes: E 0.350 / 0.346, W 3.970 / 3.935, T 71.60 / 114.59
 RIN_EXTRACTED = {"E": (0.168, 0.211), "W": (0.347, 0.357), "T": (0.119, 0.124)}
+# r12 (11/13): WN 2 mohm higher, the WN sheet's strip over the clock driver's west rows taken off (pex_rin.py --afe
+# --nets AFE.WN --tess m3 on the block: 359 against 357 mohm for r11's afe_top, runs/rin_afe_r1{1,2}_WN.log); E, T
+# and WP unchanged
+if _AFE_REV:
+    RIN_EXTRACTED = dict(RIN_EXTRACTED, W=(0.347, 0.359))
 
 
 def split_signal_path(text, variant):

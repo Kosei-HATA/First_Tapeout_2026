@@ -381,10 +381,11 @@ CK_X, CK_Y = 14.0, 306.0        # eeg_afe_clk origin (its shapes from y CK_Y - 1
 OD_PORTS = ["VCM", "S", "PH"] + [f"M{k}" for k in range(10)] + [f"EN{k}" for k in range(4)]
 OD_NET = dict({"VCM": "VCM", "S": "OFS", "PH": "OFPH"}, **{f"M{k}": f"OFM{k}" for k in range(10)},
               **{f"EN{k}": f"OFEN{k}" for k in range(4)})
-# (west ports from the bottom; the top five rows run under the WN sheet, so they hold nets
-# whose edges both fall inside one chopper phase or that are static: OFPH changes when the
-# new phase's input TG closes, and under WN its 10 fF moved C x VDD from one electrode to
-# the other every period, 4.2 nA, tracker D6)
+# (west ports from the bottom; through r11 the top five rows ran under the WN sheet, so they
+# hold nets whose edges both fall inside one chopper phase or that are static: OFPH changes
+# when the new phase's input TG closes, and under WN its 10 fF moved C x VDD from one
+# electrode to the other every period, 4.2 nA, tracker D6. Since r12 the sheet starts above
+# the rows: w_entry())
 CLK_WEST = ["CHOP", "CHOP_OUT", "CHOP_BLANK", "OFPH", "AFE_RST", "CIA", "CIB", "CDA", "NCDA", "CDB", "NCDB",
             "RST", "CHOP_EN"]
 # the chopper's gates: Metal2 jogs (bottom edges, JOG_W tall) just above the clock driver,
@@ -503,6 +504,15 @@ def corners(a, I):
 W_ROW = 15.0                    # pitch of the via rows in the W entries (under 30 um: MSLOT)
 
 
+def clk_rows(I):
+    """(x, y): 3 um east of the clock driver's west rows (CLK_WEST, Metal4 from its ports to
+    the west edge) and the top edge of their top row."""
+    gx0, px, gy0, py = GRID
+    names, y0, step = I["west_ports"][0]
+    y = gy0 + (round((y0 - gy0) / py) + step * (len(names) - 1)) * py + 0.19
+    return max(I["clk"].pin(n, "metal3")[3] for n in names) + 3.0, y
+
+
 def w_entry(a, I, y_wn, y_wp):
     """WP / WN from the input chopper into the Metal3 planes under the Cin arrays
     (gf180lay.mim_array plane), on Metal3 / Metal4 / Metal5 with via rows between them:
@@ -602,12 +612,21 @@ def w_entry(a, I, y_wn, y_wp):
     # Metal5: one sheet from the chopper's bottom edge down to the Cin_N bus, east to the core
     # over the corridor (the WN stripes alone met only on the 5 um bus: 0.2 ohm, tracker D6), a
     # row of holes over the old jog band (no via rows there); below the bus, a strip east of
-    # the corridor (clear of the jogs)
-    m5 = [(5.0, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (ce, yw0, xa - 0.6, bn[2] + 0.5),
+    # the corridor (clear of the jogs). r12 (11/13): over the clock driver's west rows (Metal4,
+    # CLK_WEST) the sheet starts 3 um above the top row: through r11 it started at the bus's
+    # bottom, over the top five rows (NCDA, CDB, NCDB, RST, CHOP_EN: 0.7-2.2 fF each to WN)
+    x_rows, y_rows = clk_rows(I)
+    y_w = max(bn[2] - 0.5, round(y_rows + 3.0, 2))
+    m5 = [(5.0, y_w, x_rows, y_wp), (x_rows, bn[2] - 0.5, core.bbox[0] - 0.6, y_wp), (ce, yw0, xa - 0.6, bn[2] + 0.5),
           (max(vb[3] - 1.0, ce), bn[4] - 0.5, xa - 0.6, core.bbox[1] - 0.6)]
     yh = (yj0 + yj1) / 2 - 1.0
     holes = [(x, yh, x + 2.0, yh + 2.0) for x in [17.0 + 25.0 * k for k in range(8)] if x + 2.0 < core.bbox[0] - 1.0]
     plate("WN", m3, m4, m5, holes)
+    # r12: the corridor's shield (corridor_shield(), after the routing): its box, from 2 um below
+    # the sheet's bottom over the corridor up to the chopper's Metal4
+    assert vb[1] > lanes[-1] + 1.2 + 1.0 and vb[3] < ce - 1.0, (vb, lanes, ce)
+    I["corr_box"] = (cw + 0.6, bn[2] - 0.5 - 2.0, ce - 0.6, y4)
+    I["corr_bar"] = vb
 
 
 EAST_PORTS_LO = ["VBN", "VBCM", "BLP", "BLN", "VCM"]
@@ -625,7 +644,9 @@ def wiring(a, I):
     tn, bn = cinn.pin("INN", "metal5"), cinn.pin("WN", "metal5")
     # bus extensions to the west (WP / WN for the input chopper)
     a.wire("metal5", 5.0, bp[2], bp[1] + 1.0, bp[4], "WP")
-    a.wire("metal5", 5.0, bn[2], bn[1] + 1.0, bn[4], "WN")
+    # (r12: the WN one from 3 um east of the clock driver's west rows, which ran under it from
+    # x 5 um through r11: w_entry)
+    a.wire("metal5", clk_rows(I)[0], bn[2], bn[1] + 1.0, bn[4], "WN")
     # the input chopper's WP stripes up into the WP bus (past the WN stripes' ends they widen
     # to the whole lane period); the WN stripes end in a Metal5 sheet below the chopper
     # (w_entry)
@@ -797,6 +818,52 @@ def route_all(a, nets, keep):
             print("why", n, r.why.get(n))
         raise RuntimeError(f"unrouted {failed}")
     r.draw(a)
+    return r
+
+
+def corridor_shield(a, I, r):
+    """r12 (11/13): a Metal4 shield over the corridor of the input chopper's gate lanes
+    (w_entry: I["corr_box"]), between the lanes (Metal3) and the WN sheet (Metal5), from 2 um
+    below the sheet up to the chopper's Metal4. Through r11 each lane ran 57 um under the sheet
+    (1.5 fF plate area each, WN only; the complementary pairs cancelled it in the commutated
+    charge, tracker D6). Drawn after the routing and not given to the router, which so routes
+    as through r11: its AVDD and AVSS wires in the corridor stay (AVDD up to the chopper's
+    n-well bar, both across on Metal4). The shield is AVDD (no AVSS nearby): it joins the
+    router's AVDD Metal4 there, Via3 on the n-well bar's bottom end and on the router's AVDD
+    Metal3 under it; 0.3 um (the wide-metal space) around every other Metal4, and no part
+    narrower than 1 um."""
+    pya = A.pya
+    um = lambda v: int(round(v * 1000))
+    x1, y1, x2, y2 = I["corr_box"]
+    box = pya.Box(um(x1), um(y1), um(x2), um(y2))
+    m4 = pya.Region(a.cell.begin_shapes_rec_touching(a.li("metal4"), box.enlarged(um(1.0), um(1.0))))
+    avdd = [s for s in r.shapes if s[5] == "AVDD"]
+    mine = pya.Region([pya.Box(um(s[1]), um(s[2]), um(s[3]), um(s[4])) for s in avdd if s[0] == "metal4"])
+    sh = pya.Region(box) - (m4 - mine).sized(um(0.3))
+    sh = sh.sized(-um(0.5)).sized(um(0.5)).merged()
+    a.cell.shapes(a.li("metal4")).insert(sh)
+    inside = lambda bx: (pya.Region(pya.Box(*[um(v) for v in bx])) - sh).is_empty()
+    v3 = pya.Region(a.cell.begin_shapes_rec_touching(a.li("via3"), box.enlarged(um(2.0), um(2.0))))
+    clear = lambda bx: (pya.Region(pya.Box(*[um(v) for v in bx])).sized(um(0.7)) & v3).is_empty()
+    vb = I["corr_bar"]
+    bar = (vb[1], max(vb[2], y1) + 0.2, vb[3], y2 - 0.2)
+    assert inside(bar) and clear(bar), "the n-well bar's bottom end under the shield"
+    a.vias_fit("via3", *bar)
+    n = 0
+    for s in avdd:                                  # the router's AVDD Metal3 under the shield
+        if s[0] != "metal3" or s[4] - s[2] < 4.0:
+            continue
+        xc, y = (s[1] + s[3]) / 2, s[2] + 1.5
+        while y < s[4] - 1.5:
+            cut = (xc - 0.13, y - 0.13, xc + 0.13, y + 0.13)
+            if inside((xc - 0.19, y - 0.19, xc + 0.19, y + 0.19)) and clear(cut):
+                a.box("via3", *cut)
+                v3.insert(pya.Box(*[um(v) for v in cut]))
+                n += 1
+            y += 6.0
+    b = sh.bbox()
+    print(f"corridor shield: {sh.count()} parts, {sh.area() * 1e-6:.1f} um2, x {b.left / 1000:.2f}..{b.right / 1000:.2f} "
+          f"y {b.bottom / 1000:.2f}..{b.top / 1000:.2f}; Via3 on the router's AVDD: {n}")
 
 
 def labels(a, I):
@@ -830,7 +897,8 @@ def main():
     a, nets, keep, I = build()
     for n, pins in wiring(a, I).items():
         nets.setdefault(n, []).extend(pins)
-    route_all(a, nets, keep)
+    r = route_all(a, nets, keep)
+    corridor_shield(a, I, r)
     labels(a, I)
     a.write(os.path.join(runs, "afe_route.gds"))
     bl.check(a, TOP, NETLISTS, runs, drc=args.drc, lvs=args.lvs, ties=[("AVSS_CLK", "AVSS")])

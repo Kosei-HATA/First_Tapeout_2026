@@ -323,3 +323,48 @@ def res_array(c, x0, y0, l, w, n, gap=RES_GAP):
             term.append((xc, yb + w / 2))
         out.append(tuple(term))
     return out
+
+
+# ----------------------------------------------------------------------------------
+# ppolyf_u resistors (P+ poly with an unsalicided body; RIN, DAC1 and R21 since r11)
+# ----------------------------------------------------------------------------------
+# geometry of the PDK pcell ppolyf_u_resistor (draw_res.draw_ppolyf_res / polyf_res_inst):
+# the body is the SAB length, the poly runs PRES_HEAD beyond it into the contacted heads,
+# PPLUS covers all of the poly; no RESISTOR layer (KLayout's LVS tells ppolyf_u from the
+# 1k kind by it). Rules: the PDK's drc/rule_decks/pres.rb (PRES.1-9).
+PRES_HEAD = 0.66     # poly beyond the body at each end (pl_res_ext of the pcell)
+PRES_CO = 0.33       # body edge to the head contact centre: SAB to contact 0.22 (PRES.7),
+                     # and the contact within SAB + 0.44 (Magic)
+PRES_PP = 0.30       # PPLUS beyond the poly all round (PRES.5)
+PRES_SAB_Y = 0.28    # SAB beyond the body in the width direction (PRES.6); in x the SAB is
+                     # the body (PRES.9a: RES_MK = the SAB length)
+PRES_GAP = 0.40      # poly to poly between the strips of an array (PRES.2; SAB merged)
+PRES_M1 = 0.62       # Metal1 pad height on the single contact of a 0.8 um strip (M1 area)
+
+
+def pres_array(c, x0, y0, l, w, n, gap=PRES_GAP):
+    """n ppolyf_u strips (body l x w um, along x) stacked in y at pitch w + gap: one PPLUS
+    box and one SAB box over all of them (the SAB merged over the gaps), poly and RES_MK
+    per strip, one contact column in each head. Body k spans x0..x0+l, y0 + k * (w + gap)
+    .. + w. Returns per strip ((xa, y), (xb, y)), the Metal1 terminal centres (west, east),
+    as res_array."""
+    pitch = w + gap
+    yt = y0 + (n - 1) * pitch + w
+    c.box("pplus", x0 - PRES_HEAD - PRES_PP, y0 - PRES_PP, x0 + l + PRES_HEAD + PRES_PP, yt + PRES_PP)
+    c.box("sab", x0, y0 - PRES_SAB_Y, x0 + l, yt + PRES_SAB_Y)
+    out = []
+    for k in range(n):
+        yb = y0 + k * pitch
+        c.box("poly2", x0 - PRES_HEAD, yb, x0 + l + PRES_HEAD, yb + w)
+        c.box("res_mk", x0, yb, x0 + l, yb + w)
+        ys = _contacts(yb + CO_ENC, yb + w - CO_ENC)
+        yc = yb + w / 2
+        hm = max(PRES_M1, ys[-1] - ys[0] + CO + 2 * M1_ENC)
+        term = []
+        for xc in (x0 - PRES_CO, x0 + l + PRES_CO):
+            for y in ys:
+                c.box("contact", xc - CO / 2, y - CO / 2, xc + CO / 2, y + CO / 2)
+            c.box("metal1", xc - M1_COL / 2, yc - hm / 2, xc + M1_COL / 2, yc + hm / 2)
+            term.append((xc, yc))
+        out.append(tuple(term))
+    return out

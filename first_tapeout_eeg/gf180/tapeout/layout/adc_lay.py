@@ -11,10 +11,13 @@ Placement (local um; the differential axis at y = 723.5):
     smaller units in a row) lies in the band's west end on each side, its buses facing
     those of the main array: C1PX mirrored right under C1P (the two TOP buses abut), C1NX
     above the bottom rails (c1_extension()).
-  - band: adc_rdac (RIN + DAC1) at the west, OTA1 east of it, both centred on the axis;
-    east of OTA1 the second stage: OTA2, C2P / C2N (MIM cells, two units each), the OTA1
-    chopper driver eeg_adc_clk, the stage-2 reset TGs east of OTA2; R21 in the band's top
-    channel.
+  - band: adc_rdac (RIN + DAC1) at the west, OTA1 east of it; east of OTA1 the second
+    stage: OTA2, C2P / C2N (MIM cells, two units each), the OTA1 chopper driver
+    eeg_adc_clk, the stage-2 reset TGs east of OTA2; R21 in the band's top channel. Since
+    r11 (11/12, RIN, DAC1 and R21 in ppolyf_u) adc_rdac is 426 x 378 um: it sits right
+    above C1NX, everything east of it moved east by DX_BAND (31.2 um) and the AVDD / AVSS
+    trunks with it; the west ports and the ADC_ZERO switch moved into the channel between
+    adc_rdac and C1PX.
   - top right: the quantizer (ports on its east edge); bottom right: DAC2 (SEL ports on
     its bottom edge) above eeg_adc_dig (LibreLane macro: SEL1 west, SEL2 north, TH and the
     frame interface east).
@@ -34,9 +37,13 @@ Hand-drawn wiring (assemble.Assembly.wire / via_stack):
     inverters, the strobe buffer and the DVSS shields reached ground only through their
     p-taps and the substrate; the LVS (DVSS tied into AVSS) could not see it.
 Everything else: route.Router on Metal3 / Metal4 (small cells' supplies included).
-Digital lines (SEL1, TH) cross the stage-1 straps only at right angles; the charge they
-couple there follows the change of the code (rising minus falling lines), so it is
-high-pass shaped in the band.
+Since r12 (11/13) no switching line runs under the I1N / O1P straps unshielded (tunnel()):
+SEL1_0..30 and DAC_CLK cross them on Metal2 under a Metal4 AVSS shield, the router keeps
+out of the gap between adc_rdac and OTA1 (Metal3 / Metal4, from the C1N buses up to rdac's
+top), and the stage-1 reset TG XR1N reaches I1N / O1P on short Metal4 taps from the straps.
+Through r11 the router took those lines across on Metal4 right under the straps' Metal5
+(I1N and O1P each about 9-14 fF to the SEL1 lines in the extraction), XR1N's I1N / O1P wires
+ran inside that bus, and its I1N wire, RST and NRST ran up the gap on Metal3.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/layout/adc_lay.py [--drc] [--lvs]
 """
@@ -64,7 +71,10 @@ GRID = (0.24, 0.8, 0.0, route.P)          # router: columns x0, pitch; rows y0, 
 R_AVSS_B, R_AVDD_B = (422.4, 430.4), (432.4, 440.4)    # 5.68 um above C1N (416.72 tall since 10/29)
 R_AVDD_T, R_AVSS_T = (1012.0, 1020.0), (1024.0, 1032.0)
 X_TOPRAIL = 545.0
-T_AVDD, T_AVSS = (1150.0, 1158.0), (1162.0, 1170.0)
+T_AVDD, T_AVSS = (1168.0, 1176.0), (1180.0, 1188.0)   # r11: 18 um east (C2N moved east)
+DX_BAND = 31.2                       # r11: OTA1 and the second stage east of adc_rdac (426.2 um wide)
+Y_RDAC = 531.0                       # r11: adc_rdac right above C1NX (its bottom ports at 530)
+Y_WPORT = 916.5                      # r11: the first west port, in the channel above adc_rdac
 R_DVDD, R_DVSS = (100.0, 106.0), (112.0, 118.0)
 X_DVDD = 1203.0                      # DVDD riser along the east edge (Metal5)
 # C1's rest (eeg_c1x): the west edge of both parts and the bottom of C1NX (3.6 um above the
@@ -80,10 +90,48 @@ EAST_PORTS = ["MCLK", "ADC_RST_N", "TH_CAPTURE", "DAC_LOAD", "DWA_EN"] + [f"CODE
     ["DAC_CLK"]
 
 
+R21_L = 213.54                      # r11: three ppolyf_u strips of 213.54 x 0.8 um make a 300 kohm unit
+# r12: the lines that cross the I1N / O1P straps in the tunnel, bottom row first
+TUNNEL = ["DAC_CLK"] + [f"SEL1_{k}" for k in range(31)]
+
+
+def r21_cell(a):
+    """R21 (r11): per side three units of three ppolyf_u strips in series, the units'
+    middle nodes joined (eeg_adc.spice XR21P1..3, XR21N1..3, m=3). Strips bottom to top:
+    O1P -> R21PA (x3), R21PB -> R21PA (x3), R21PB -> I2P (x3), then the N side mirrored;
+    Metal2 bars on the heads join each net's strips, so O1P / O1N stay on the west side
+    and I2P / I2N on the east side as through r10 (one ppolyf_u_1k strip per unit)."""
+    terms = ([("O1P", "R21PA")] * 3 + [("R21PB", "R21PA")] * 3 + [("R21PB", "I2P")] * 3 +
+             [("R21NB", "I2N")] * 3 + [("R21NB", "R21NA")] * 3 + [("O1N", "R21NA")] * 3)
+    r = an.pres_cell(a, "adc_r21", R21_L, 0.8, terms, sub="AVSS")
+    bars = {}
+    for e in (0, 1):
+        k = 0
+        while k < len(terms):
+            net, j = terms[k][e], k
+            while j + 1 < len(terms) and terms[j + 1][e] == net:
+                j += 1
+            if j > k:
+                x1, y1, x2, _ = r.pad(k, e == 1)
+                yt = r.pad(j, e == 1)[3]
+                x = x2 - 0.38 if e else x1
+                r.cell.box("metal2", x, y1, x + 0.38, yt)
+                bars.setdefault(net, []).append(("metal2", x, y1, x + 0.38, yt))
+            k = j + 1
+    # the router gets one pad per net (the middle one; the bar joins the others): it reaches
+    # Metal2 pins as horizontal segments, so the vertical bars are no pins
+    for n in ("R21PA", "R21PB", "R21NA", "R21NB"):
+        r.pins.pop(n)
+    for n in ("O1P", "O1N", "I2P", "I2N"):
+        assert len(r.pins[n]) == 3 and bars[n]
+        r.pins[n] = [r.pins[n][1]]
+    return r
+
+
 def small_cells(a):
     """R21, the reset TG, the NRST inverter, the ADC_ZERO switch and the C2 MIM cell (two
     units of 61.68 x 98.83 um, 24.41 pF), as cells of the assembly."""
-    r21 = an.res_cell(a, "adc_r21", 291.28, 1.0, [("O1P", "I2P"), ("O1N", "I2N")] * 3, sub="AVSS")
+    r21 = r21_cell(a)
     tg = lg.tg_cell(a, "adc_rst_tg", 2, 2, 0.5, 1.0, a="A", y="B", gn="G", gp="GN")
     p, n = lg.inv_seq(1)
     inv = lg.cmos_cell(a, "adc_inv", p, n, 2.0, 1.0, ["A", "Y"])
@@ -153,18 +201,90 @@ def stage1(a, I):
     a.wire("metal4", xo1, y_o1p[0], xc + 0.5, y_o1p[1], "O1P")
     a.via_stack("metal4", "metal5", xo1, y_o1p[0], xo2, y_o1p[1], "O1P")
     pins["O1P"] = [("metal4", xo2 + 2.0, y_o1p[0], xc - 2.0, y_o1p[1])]
-    # O1N: the C1P BOT bus extended east of the array, a Metal5 strap down to OTA1
+    # O1N: the C1P BOT bus extended east of the array, a Metal5 strap down to OTA1 (west of
+    # the top rails), a Metal4 run to OTA1's OUTN stub with the router's pin on it. Since r11
+    # (OTA1 31.2 um east) the stub lies east of the strap: the run then also reaches 8 um
+    # west of the strap, and the pin is there.
     y_o1n = (yo + 3.0, yo + 5.0)
     s = so["O1N"]
     xc = (s[0] + s[2]) / 2
     xs1 = bp[3] + 4.0
+    assert xs1 + 5.0 < X_TOPRAIL - 1.0, "O1N strap under the top rails"
     a.wire("metal5", bp[3] - 1.0, bp[2], xs1 + 5.0, bp[4], "O1N")
     a.wire("metal5", xs1, y_o1n[0], xs1 + 5.0, bp[4], "O1N")
     pad = rise(a, s, *y_o1n, "O1N")
-    a.wire("metal4", xc - 0.5, y_o1n[0], xs1 + 5.0, y_o1n[1], "O1N")
+    if xc + 2.0 < xs1 - 6.0:                         # the stub west of the strap (through r10)
+        a.wire("metal4", xc - 0.5, y_o1n[0], xs1 + 5.0, y_o1n[1], "O1N")
+        pins["O1N"] = [("metal4", xc + 2.0, y_o1n[0], xs1 - 2.0, y_o1n[1])]
+    else:
+        a.wire("metal4", xs1 - 8.0, y_o1n[0], max(xc + 0.5, xs1 + 5.0), y_o1n[1], "O1N")
+        pins["O1N"] = [("metal4", xs1 - 7.5, y_o1n[0], xs1 - 2.0, y_o1n[1])]
     a.via_stack("metal4", "metal5", xs1, y_o1n[0], xs1 + 5.0, y_o1n[1], "O1N")
-    pins["O1N"] = [("metal4", xc + 2.0, y_o1n[0], xs1 - 2.0, y_o1n[1])]
     return pins
+
+
+def tunnel(a, I):
+    """r12 (11/13): the switching lines that cross the I1N / O1P straps (TUNNEL: DAC_CLK and
+    SEL1_0..30, from eeg_adc_dig and the east port to adc_rdac's bottom ports) pass under
+    them on Metal2, one router row apart, under a Metal4 AVSS shield; a Metal4 strip joins
+    the shield to the bottom AVSS rail (Via4, and OTA1's AVSS strap stack). Metal2, because
+    adc_rdac's AVSS / AVDD straps and OTA1's AVSS strap (Metal3, strap_to_rail()) run down
+    through the gap. Via stacks up to Metal4 at both ends, on router columns clear of those
+    straps, are the router's pins: east of the gap the line keeps its name (to eeg_adc_dig
+    or the east port), west of it the router sees a net <name>_W (to adc_rdac's port).
+    Also the reset TG XR1N's taps: Metal4 from the I1N and O1P straps east to pads beside
+    OTA1's AVSS strap, the router's pins of I1N_R / O1P_R (XR1N's B / A), above the shield.
+    Returns ({router net: [pins]}, [(layer, box)] router obstacles: the shield, its strip,
+    and the gap between adc_rdac and OTA1 from the C1N buses up to 10 um below rdac's top,
+    on Metal3 and Metal4)."""
+    gx0, px, gy0, py = GRID
+    rdac, ota1 = I["rdac"], I["ota1"]
+    gx, ox = rdac.bbox[2], ota1.bbox[0]
+    xs1, xo1 = gx + 2.6, gx + 11.6                   # west edges of the I1N and O1P straps (stage1())
+    west = min(s[1] for n in ("AVSS", "AVDD") for s in rdac.pins[n]
+               if s[0] == "metal3" and s[3] - s[1] >= 1.0 and s[3] > gx - 8.0)
+    east = max(s[3] for s in ota1.pins["AVSS"] if s[0] == "metal3" and s[3] - s[1] >= 1.0 and s[1] < ox + 5.0)
+    assert west > gx - 8.0 and east < ox + 4.0, (west, east)
+    i_w = int((west - 1.0 - gx0) / px)
+    i_e = -int(-(east + 1.0 - gx0) // px)
+    xw, xe = gx0 + i_w * px, gx0 + i_e * px
+    y_sb = R_AVDD_B[1] + 0.6                          # shield bottom, 0.6 um above the AVDD bridge
+    j0 = -int(-(y_sb + 2.0 + 0.19 - gy0) // py)
+    rows = {n: gy0 + (j0 + k) * py for k, n in enumerate(TUNNEL)}
+    y_st = max(rows.values()) + 0.19 + 2.0
+    xsh = (xs1 - 3.9, round(east - 0.03, 2))          # the shield over both straps and OTA1's AVSS strap
+    assert xsh[0] - (xw + 0.19) > 0.6 and (xe - 0.19) - xsh[1] > 0.6
+    pins, obs = {}, []
+    h = 0.19
+    for n, y in rows.items():
+        a.box("metal2", xw - h, y - h, xe + h, y + h)
+        for x, rn in ((xw, n + "_W"), (xe, n)):
+            for via in ("via2", "via3"):
+                a.box(via, x - 0.13, y - 0.13, x + 0.13, y + 0.13)
+            for lay in ("metal3", "metal4"):
+                a.box(lay, x - h, y - h, x + h, y + h)
+                a.manual.append((lay, (x - h, y - h, x + h, y + h), rn))
+            a.via3s.append((x - 0.13, y - 0.13, x + 0.13, y + 0.13))
+            pins[rn] = [("metal4", x - h, y - h, x + h, y + h)]
+    a.box("metal4", xsh[0], y_sb, xsh[1], y_st)
+    xa = round(gx + 20.0 + 0.6, 2)                    # the strip: 0.6 um east of the AVDD bridge (power())
+    a.box("metal4", xa, R_AVSS_B[0] + 1.0, xsh[1], y_sb + 1.0)
+    a.vias("via4", xa, R_AVSS_B[0] + 1.0, xa + 1.8, R_AVSS_B[1] - 1.0)
+    obs += [("metal4", (xsh[0] - 0.6, y_sb - 0.6, xsh[1] + 0.6, y_st + 0.6)),
+            ("metal4", (xa - 0.6, R_AVSS_B[0] + 0.4, xsh[1] + 0.6, y_sb))]
+    # XR1N's taps (Metal4, 1.4 um, two router rows each) from the straps to pads east of the gap
+    jt = j0 + len(TUNNEL) + 15
+    for n, xs, j in (("I1N_R", xs1, jt), ("O1P_R", xo1, jt + 5)):
+        y1 = gy0 + j * py - h
+        xp2 = xe + 2 * px + h
+        a.wire("metal4", xs, y1, xp2, y1 + 1.4, n)
+        a.vias("via4", xs, y1, xs + 5.0, y1 + 1.4)
+        pins[n] = [("metal4", xe - h, y1, xp2, y1 + 1.4)]
+    assert gy0 + jt * py - h - (y_st + 0.6) > 5.0
+    # the gap: no router wire under the straps (the bias lines cross above rdac's top, as before)
+    yb, yt = I["c1n"].bbox[3], rdac.bbox[3] - 10.0
+    obs += [("metal4", (xs1 - 3.0, yb, ox, yt)), ("metal3", (gx + 0.6, yb, ox - 0.5, yt))]
+    return pins, obs
 
 
 def c1_extension(a, I):
@@ -259,8 +379,10 @@ def power(a, I):
     a.wire("metal5", xs, R_AVSS_T[0], xs + 6.0, s[4], "AVSS")
     # Metal4 pads under the rails for the router (small cells' supplies, DAC2)
     pads = {}
-    for net, x, (y1, y2) in (("AVSS", 548.0, R_AVSS_T), ("AVDD", 556.0, R_AVDD_T), ("AVSS", 440.0, R_AVSS_B),
-                             ("AVDD", 448.0, R_AVDD_B), ("AVSS", 1120.0, R_AVSS_B), ("AVDD", 1128.0, R_AVDD_B),
+    # (the two on the bottom rails west of OTA1 moved with the band in r11: at 440 / 448 they
+    # would sit in the rails' Metal4 bridge over the gap straps, on the O1P strap)
+    for net, x, (y1, y2) in (("AVSS", 548.0, R_AVSS_T), ("AVDD", 556.0, R_AVDD_T), ("AVSS", 440.0 + DX_BAND, R_AVSS_B),
+                             ("AVDD", 448.0 + DX_BAND, R_AVDD_B), ("AVSS", 1120.0, R_AVSS_B), ("AVDD", 1128.0, R_AVDD_B),
                              ("AVSS", 1100.0, R_AVSS_T), ("AVDD", 1108.0, R_AVDD_T)):
         a.via_stack("metal4", "metal5", x, y1 + 2.0, x + 4.0, y2 - 2.0, net)
         pads.setdefault(net, []).append(("metal4", x, y1 + 2.0, x + 4.0, y2 - 2.0))
@@ -274,9 +396,9 @@ def ports(a):
     {net: [pin]}."""
     gx0, px, gy0, py = GRID
     out = {}
-    j0 = round((870.0 - gy0) / py)
-    for k, n in enumerate(WEST_PORTS):
-        y = gy0 + (j0 + 8 * k) * py
+    j0 = round((Y_WPORT - gy0) / py)
+    for k, n in enumerate(WEST_PORTS):          # r11: two router rows apart (eight through r10)
+        y = gy0 + (j0 + 2 * k) * py
         box = (0.0, y - 0.19, 3.0, y + 0.19)
         a.box("metal4", *box)
         a.label("metal4", n, 1.0, y)
@@ -346,14 +468,14 @@ def build():
     I["c1p"] = a.put("eeg_c1a", 0.0, H - h1, name="C1P", nets={"TOP": "I1P", "BOT": "O1N"}, mim=True)
     I["c1n"] = a.put("eeg_c1a", 0.0, h1, mirror=True, name="C1N", nets={"TOP": "I1N", "BOT": "O1P"}, mim=True)
     c1_extension(a, I)
-    I["rdac"] = a.put("adc_rdac", 4.0, 585.0, name="RDAC", grid=GRID)
-    I["ota1"] = a.put("gf180_inside_cascode_ota", 421.0, 494.2, name="OTA1", grid=GRID, nets={
+    I["rdac"] = a.put("adc_rdac", 4.0, Y_RDAC, name="RDAC", grid=GRID)
+    I["ota1"] = a.put("gf180_inside_cascode_ota", 421.0 + DX_BAND, 494.2, name="OTA1", grid=GRID, nets={
         "INP": "I1P", "INN": "I1N", "OUTP": "O1P", "OUTN": "O1N", "VCMREF": "VCM", "VBN": "VBN1", "VNC": "VNC1",
         "VPC": "VPC1", "VBCM": "VBCM1", "VDD": "AVDD", "VSS": "AVSS"})
-    I["ota2"] = a.put("gf180_ct_ota_tel16_cmfb", 868.0, 600.0, name="OTA2", grid=GRID, nets={
+    I["ota2"] = a.put("gf180_ct_ota_tel16_cmfb", 868.0 + DX_BAND, 600.0, name="OTA2", grid=GRID, nets={
         "INP": "I2P", "INN": "I2N", "OUTP": "O2P", "OUTN": "O2N", "VCMREF": "VCM", "VBN": "VBN1", "VNC": "VNC1",
         "VPC": "VPC1", "VBCM": "VBCM1", "VDD": "AVDD", "VSS": "AVSS"})
-    I["aclk"] = a.put("eeg_adc_clk", 880.0, 925.0, name="ACLK", grid=GRID, nets={"VDD": "AVDD", "VSS": "AVSS"})
+    I["aclk"] = a.put("eeg_adc_clk", 880.0 + DX_BAND, 925.0, name="ACLK", grid=GRID, nets={"VDD": "AVDD", "VSS": "AVSS"})
     I["quant"] = a.put("eeg_quantizer", 560.0, 1042.0, name="Q", grid=GRID, nets={"INP": "O2P", "INN": "O2N"})
     I["dac2"] = a.put("eeg_dac2", 570.0, 262.0, name="DAC2", grid=GRID, nets=dict(
         {"OUTP": "I2P", "OUTN": "I2N", "VBPC": "VBPC2", "VBNC": "VBNC2", "VDD": "AVDD", "VSS": "AVSS"},
@@ -363,6 +485,8 @@ def build():
         **{f"SEL1[{k}]": f"SEL1_{k}" for k in range(31)}, **{f"SEL2[{k}]": f"SEL2_{k}" for k in range(31)},
         **{f"TH[{k}]": f"TH{k}" for k in range(31)}, **{f"CODE[{k}]": f"CODE{k}" for k in range(5)}))
     A.macro_pads(a, I["dig"])
+    for n in TUNNEL:                     # r12: adc_rdac's side of the tunnelled lines (tunnel())
+        I["rdac"].pins[n + "_W"] = I["rdac"].pins.pop(n)
     for k in ("rdac", "ota1", "ota2", "aclk", "dac2"):
         a.cover(I[k])
     for k in ("rdac", "ota1", "ota2", "aclk", "quant", "dig"):
@@ -373,23 +497,25 @@ def build():
 
     # ---- small cells
     r21, tg, inv, zero, c2 = small_cells(a)
-    cell_at(r21, 560.0, 990.0, "R21", {})
-    cell_at(tg, 460.0, 968.0 + 6.0, "XR1P", {"A": "O1N", "B": "I1P", "G": "RST", "GN": "NRST",
-                                              "VDD": "AVDD", "VSS": "AVSS"})
-    cell_at(tg, 440.0, 474.0, "XR1N", {"A": "O1P", "B": "I1N", "G": "RST", "GN": "NRST",
-                                        "VDD": "AVDD", "VSS": "AVSS"})
-    cell_at(inv, 500.0, 968.0 + 6.0, "XRSTB", {"A": "RST", "Y": "NRST", "VDD": "AVDD", "VSS": "AVSS"})
-    cell_at(zero, 70.0, 868.0, "XZERO", {"A": "INP", "B": "INN", "Z": "ADC_ZERO", "ZB": "ZB0",
-                                         "VDD": "AVDD", "VSS": "AVSS"})
-    for name, x, cmap in (("C2P", 868.0, {"TOP": "I2P", "BOT": "O2N"}), ("C2N", 1002.5, {"TOP": "I2N", "BOT": "O2P"})):
+    cell_at(r21, 560.0 + DX_BAND, 983.0, "R21", {})
+    cell_at(tg, 460.0 + DX_BAND, 968.0 + 6.0, "XR1P", {"A": "O1N", "B": "I1P", "G": "RST", "GN": "NRST",
+                                                       "VDD": "AVDD", "VSS": "AVSS"})
+    # (r12: XR1N's A / B on their own router nets, to the taps from the straps: tunnel())
+    cell_at(tg, 440.0 + DX_BAND, 474.0, "XR1N", {"A": "O1P_R", "B": "I1N_R", "G": "RST", "GN": "NRST",
+                                                 "VDD": "AVDD", "VSS": "AVSS"})
+    cell_at(inv, 500.0 + DX_BAND, 968.0 + 6.0, "XRSTB", {"A": "RST", "Y": "NRST", "VDD": "AVDD", "VSS": "AVSS"})
+    cell_at(zero, 345.0, 952.0, "XZERO", {"A": "INP", "B": "INN", "Z": "ADC_ZERO", "ZB": "ZB0",
+                                          "VDD": "AVDD", "VSS": "AVSS"})
+    for name, x, cmap in (("C2P", 868.0 + DX_BAND, {"TOP": "I2P", "BOT": "O2N"}),
+                          ("C2N", 1002.5 + DX_BAND, {"TOP": "I2N", "BOT": "O2P"})):
         p = cell_at(c2, x, 800.0, name, cmap)
         k3, k4 = c2.keepout, c2.keepout4
         keep.append(((p.x + k3[0], p.y + k3[1], p.x + k3[2], p.y + k3[3]),
                      (p.x + k4[0], p.y + k4[1], p.x + k4[2], p.y + k4[3])))
-    cell_at(tg, 1050.0, 760.0, "XR2P", {"A": "O2N", "B": "I2P", "G": "RST", "GN": "NRST",
-                                         "VDD": "AVDD", "VSS": "AVSS"})
-    cell_at(tg, 1050.0, 730.0, "XR2N", {"A": "O2P", "B": "I2N", "G": "RST", "GN": "NRST",
-                                         "VDD": "AVDD", "VSS": "AVSS"})
+    cell_at(tg, 1050.0 + DX_BAND, 760.0, "XR2P", {"A": "O2N", "B": "I2P", "G": "RST", "GN": "NRST",
+                                                  "VDD": "AVDD", "VSS": "AVSS"})
+    cell_at(tg, 1050.0 + DX_BAND, 730.0, "XR2N", {"A": "O2P", "B": "I2N", "G": "RST", "GN": "NRST",
+                                                  "VDD": "AVDD", "VSS": "AVSS"})
 
     # ---- hand-drawn wiring and ports
     for n, pins in stage1(a, I).items():
@@ -397,6 +523,9 @@ def build():
     for n, pins in power(a, I).items():
         conn(n, pins)
     for n, pins in ports(a).items():
+        conn(n, pins)
+    tun_pins, tun_obs = tunnel(a, I)
+    for n, pins in tun_pins.items():
         conn(n, pins)
 
     # ---- routing
@@ -407,6 +536,8 @@ def build():
         r.obstacle("metal3", *k3)
         r.obstacle("metal4", *k4)
     a.give(r)
+    for lay, box in tun_obs:
+        r.obstacle(lay, *box)
     # nets with one pin (ports of unused functions) are dropped; the rest must connect
     single = sorted(n for n, p in nets.items() if len(p) < 2)
     if single:

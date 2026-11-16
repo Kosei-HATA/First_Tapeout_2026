@@ -47,6 +47,13 @@ pex_afe.py transients, which start from a solved operating point with ideal bias
   - The electrodes: a differential source (0, or --vin mV with the offset DAC set for it,
     pex_afe.xline) on the board's VCM (the body on the reference electrode) through 100 ohm
     per leg and one bond wire per electrode pad.
+  - Common mode (--cm A, 11/17, for CMRR): the body moves against the board's VCM by a sine of A
+    mV pk at --fcm (the mains pickup that the reference electrode leaves on the body), switched in
+    at --t-cm with a raised-cosine envelope over --cm-ramp (a B source: no breakpoints), and a
+    0 V probe in each leg whose current is integrated like qo (qip, qin: the legs' chopper-period
+    mean currents are exact differences). --cm 0 gives the same deck with the source at 0 V, the
+    baseline that a common-mode run is subtracted from. --zp / --zn set each leg's impedance:
+    terms joined by '+', each a resistance or 'R|C' (in parallel), e.g. 100+51k|47n.
 Output (tr.csv, on a 100 ns grid by linearize): qo and qa, the running integrals of OUTP - OUTN
 and of the amplifier output OPI - ONI (chopper-period means are exact differences of
 them), and the saved node voltages and supply currents; run.log prints vamax, the largest
@@ -89,6 +96,8 @@ for pex) get it past the ramp (all three are needed), but it still stops at 1.33
 Usage: python3 afe_startup.py power --cvcm 100n [--tstop 0.1]
        python3 afe_startup.py start --cvcm 10n --t-afe 5e-3 [--vdd 3.3] [--corner ss] [--mc 1]
        python3 afe_startup.py start --cvcm 10n --sine 0.943 [--variant sch]
+       python3 afe_startup.py start --cvcm 10n --ibias 3 --cm 100 --fcm 50 --zp '100+51k|47n' --tstop 26e-3
+           (common mode on the body; the same with --cm 0 is its baseline; cmrr.py compares them)
        (several --cvcm / --mc values run in parallel)
 """
 import argparse
@@ -339,6 +348,51 @@ def digital(name, node, unit):
     return f"B{name} {node} 0 V=v(DVSSC)+v(DVDDC,DVSSC)*v({unit})\n"
 
 
+SI = {"f": 1e-15, "p": 1e-12, "n": 1e-9, "u": 1e-6, "m": 1e-3, "k": 1e3, "M": 1e6, "G": 1e9}
+
+
+def si(x):
+    """'51k' -> 51000.0, '47n' -> 4.7e-08"""
+    return float(x[:-1]) * SI[x[-1]] if x[-1] in SI else float(x)
+
+
+def leg(name, a_, b_, spec):
+    """one electrode leg from a_ to b_: spec is terms joined by '+', each R or R|C (in parallel)"""
+    terms = spec.split("+")
+    out = []
+    for k, t in enumerate(terms):
+        n0 = a_ if k == 0 else f"{name}_Z{k}"
+        n1 = b_ if k == len(terms) - 1 else f"{name}_Z{k + 1}"
+        r, _, c = t.partition("|")
+        out.append(f"RZ{name}{k} {n0} {n1} {si(r):g}\n")
+        if c:
+            out.append(f"CZ{name}{k} {n0} {n1} {si(c):g}\n")
+    return "".join(out)
+
+
+def probes(a):
+    """the legs carry current probes (and the deck differs from the one before 11/17)"""
+    return not (a.cm is None and a.zp == a.zn == "100")
+
+
+def electrodes(a):
+    """the body, the differential source on it and the two legs. Without --cm this is the deck as
+    before 11/17 (the body is the board's VCM, 100 ohm per leg); with it, the body is the board's
+    VCM plus the common-mode sine, and each leg starts with a 0 V probe (VPRBP / VPRBN)."""
+    if a.cm is None:
+        body, out = "VCM_BRD", ""
+    else:
+        t0, tr = a.t_cm, a.cm_ramp
+        body = "BODY"
+        out = (f"BCMB BODY VCM_BRD V={a.cm * 1e-3:.9g}*sin(2*pi*{a.fcm:.9g}*(time-{t0:.9e}))"
+               f"*0.5*(1-cos(pi*min(max(time-{t0:.9e},0),{tr:.9e})/{tr:.9e}))\n")
+    out += f"EP SRC_P {body} SRC 0 0.5\nEN SRC_N {body} SRC 0 -0.5\n"
+    if not probes(a):
+        return out + "RSP SRC_P ELP_BRD 100\nRSN SRC_N ELN_BRD 100\n"
+    return (out + "VPRBP SRC_P ELP_Z0 0\nVPRBN SRC_N ELN_Z0 0\n" + leg("ELP", "ELP_Z0", "ELP_BRD", a.zp)
+            + leg("ELN", "ELN_Z0", "ELN_BRD", a.zn))
+
+
 def deck(a, mode, seed):
     mc = seed is not None
     pex = a.variant == "pex"
@@ -397,11 +451,7 @@ VZERO ZERO 0 0
 {digital('BN1', 'BN1', 'ZERO')}{digital('BN0', 'BN0', 'ONE')}{digital('CHEN', 'CHOP_EN', 'ONE')}\
 {units}{digital('CHOP', 'CHOP', 'UCHOP')}{digital('CHOPO', 'CHOP_OUT', 'UCHOPO')}{digital('BLK', 'CHOP_BLANK', 'UBLK')}\
 {digital('RST', 'AFE_RST', 'URST')}VSRC SRC 0 DC {a.vin * 1e-3:.6g}{sine}
-EP SRC_P VCM_BRD SRC 0 0.5
-EN SRC_N VCM_BRD SRC 0 -0.5
-RSP SRC_P ELP_BRD 100
-RSN SRC_N ELN_BRD 100
-{''.join(wire(f'{n}{k}', f'{n}_BRD', f'{n}_P{k}') for n in ('ELP', 'ELN') for k in PADS[n])}\
+{electrodes(a)}{''.join(wire(f'{n}{k}', f'{n}_BRD', f'{n}_P{k}') for n in ('ELP', 'ELN') for k in PADS[n])}\
 RECHP ELP_AFE ELP {max(e[0], 1e-3):g}
 RECHN ELN_AFE ELN {max(e[1], 1e-3):g}
 EVG VG AVSS_ADC VCM_ADC AVSS_ADC 1
@@ -410,14 +460,15 @@ RLOADN OUTN_ADC VG {P.RIN:g}
 {dut_line((vos, rng) if rng else None)}
 .control
 set noaskquit
-save {SAVE}
+save {SAVE}{" i(vprbp) i(vprbn)" if probes(a) else ""}{" v(body)" if a.cm is not None else ""}
 tran {tstep:.3e} {a.tstop:.6e} 0 {tmax:.3e} uic
 let qo = integ(v(outp_adc) - v(outn_adc))
 let qa = integ(v(xdut.opi) - v(xdut.oni))
+{"let qip = integ(i(vprbp))" + chr(10) + "let qin = integ(i(vprbn))" + chr(10) if probes(a) else ""}\
 let vamax = vecmax(abs(v(xdut.opi) - v(xdut.oni)))
 print vamax
-linearize qo qa {SAVE}
-wrdata tr.csv qo qa {SAVE}
+linearize qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}
+wrdata tr.csv qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}
 quit
 .endc
 .end
@@ -438,14 +489,19 @@ def run(a, mode, cvcm, seed):
             f"_{a.vin:+g}mV" + (f"_m{a.dac_mag}" if a.dac_mag is not None else "") +
             (f"_sine{a.sine:g}mV{a.fsig:g}Hz" if a.sine else "") +
             (f"_afe{a.t_afe0 * 1e3:g}ms" if mode == "start" else "") + ("_pdkcap" if a.moscap == "pdk" else "") +
-            (f"_chip{a.chip}" if a.chip != "fill" else "") + (f"_ib{a.ibias}" if a.ibias != 2 else "") + a.tag)
+            (f"_chip{a.chip}" if a.chip != "fill" else "") + (f"_ib{a.ibias}" if a.ibias != 2 else "") +
+            (f"_cm{a.cm:g}mV{a.fcm:g}Hz" if a.cm is not None else "") +
+            "".join(f"_{k}{getattr(a, k).replace('|', '_')}" for k in ("zp", "zn") if getattr(a, k) != "100") + a.tag)
     d = os.path.join(RUNS, name)
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "tb.spice"), "w").write(deck(a, mode, seed))
+    vecs = (["qo", "qa"] + (["qip", "qin"] if probes(a) else []) + [vec_name(v) for v in SAVE.split()]
+            + (["body"] if a.cm is not None else []))
     json.dump({k: getattr(a, k) for k in ("cvcm", "vdd", "corner", "temp", "vin", "variant", "sine", "fsig", "tramp",
                                           "t_afe", "t_reset", "tstop", "tmax", "moscap", "chip", "rafe", "iadc", "ibias",
-                                          "t_write", "mim_a", "res_a", "dac_mag")}
-              | {"mode": mode, "seed": seed, "vectors": ["qo", "qa"] + [vec_name(v) for v in SAVE.split()]},
+                                          "t_write", "mim_a", "res_a", "dac_mag", "cm", "fcm", "t_cm", "cm_ramp", "zp",
+                                          "zn")}
+              | {"mode": mode, "seed": seed, "vectors": vecs},
               open(os.path.join(d, "meta.json"), "w"), indent=1)
     t = time.time()
     r = subprocess.run(["ngspice", "-b", "tb.spice"], cwd=d, capture_output=True, text=True)
@@ -486,6 +542,13 @@ def main():
     ap.add_argument("--moscap", choices=["lin", "pdk"], default="lin")
     ap.add_argument("--mim-a", type=float, default=1.41, help="Monte Carlo: MIM mismatch, pair coefficient (%%·um; a stand-in)")
     ap.add_argument("--res-a", type=float, default=3.0, help="Monte Carlo: poly-resistor mismatch, pair coefficient (%%·um; a stand-in)")
+    ap.add_argument("--cm", type=float, default=None,
+                    help="common-mode sine on the body against the board's VCM (mV pk); 0 is the baseline deck")
+    ap.add_argument("--fcm", type=float, default=50.0, help="common-mode frequency (Hz)")
+    ap.add_argument("--t-cm", type=float, default=2.5e-3, help="common mode switched in (s)")
+    ap.add_argument("--cm-ramp", type=float, default=2e-3, help="its raised-cosine envelope (s)")
+    ap.add_argument("--zp", default="100", help="ELP leg: terms joined by '+', each R or R|C (parallel), e.g. 100+51k|47n")
+    ap.add_argument("--zn", default="100", help="ELN leg, the same way")
     ap.add_argument("--tag", default="", help="suffix of the run folder")
     ap.add_argument("--jobs", type=int, default=8)
     a = ap.parse_args()

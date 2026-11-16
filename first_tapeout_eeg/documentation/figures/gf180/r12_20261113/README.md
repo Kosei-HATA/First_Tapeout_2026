@@ -13,7 +13,7 @@
   - 最新の precheck（10/20 版。11/13 にも最新と確かめた）を、事務局の指定どおり `--slot 1x0p5 --cob` で回して通った（pre_20261113_r12）。
 - GDS（穴埋めのあと、precheck に出した形）は `gf180/tapeout/chip/gds/chip_top_fill_r12_20261113.gds.gz`（gzip、41,882,152 バイト）。展開した `chip_top_fill.gds` の sha256 は 6b832e0e…。
 - ここの図は、すべてこの版の図として描いた（11/14）。ファイル名と図の右上に版（r12）を書いた。
-  - **まだ描いていない図：** 31（デジタル側。12 回目の通しのチャンク 14 で、11/16 の 3 時 49 分から E コアで回している。1 日ほどかかる）。32（電極の入力と DATA の対応）は、12 回目の通しが 11/16 の 12 時 3 分に終わったので描いた。
+  - 31（デジタル側）は、12 回目の通しのチャンク 14 での 4 本（11/16 の 3 時 49 分から）が 23 時 44 分に終わってから描いた。これで 42 枚がそろった（39 は途中の版）。32（電極の入力と DATA の対応）は、12 回目の通しが 11/16 の 12 時 3 分に終わったので描いた。
   - 図 25〜28 は、起動のバッチ（50 本）が 11/16 の 3 時 44 分に終わってから描いた。
   - 図 34（敏感な網とスイッチする網の交差）、図 35（フルスケールの正弦波から出した ENOB、11/14）、図 36（ADC の OTA の非線形と DAC1 のジッタ、11/15）、図 37（電源投入のプロセスの角と電源の立ち上がりの速さ、11/15）は、この版で足した図。
   - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。図 42（AFE の雑音：AVDD と BOOST_TRIM）も 11/16 に足した図で、typical の BTRIM_P 4 のチップの HD3 の 3 本（21 時 37 分にそろった）を入れて仕上げた。39 は 300 mV の 11 ms までのランを回している。
@@ -28,7 +28,7 @@
   - ブロックのモンテカルロ（図 29）：OTA1 の利得のばらつきが 0.09 → 0.46 dB に増えた。負荷（RIN、R21）が ppolyf_u になり、OTA1 のバイアス電流を決める eeg_bias の ppolyf_u_1k と別々にばらつくため（6 回目との差が 2 つの抵抗の比と相関 0.999）。最悪の 69.26 dB でも、行動モデルの 68.7 dB より高い。30 ダイの SNDR は 114.8〜153.8 dB。
 - 比べるために前の値を並べた列（回路図、10/23 の抽出、B7 の前の DC 経路など）は、図の中にそう書いてある。
 
-## `viz/`：可視化（41 枚、残り 1 枚はまだ）
+## `viz/`：可視化（42 枚。39 は途中の版）
 
 | 番号 | 図 | 元にしたもの |
 |---|---|---|
@@ -46,7 +46,7 @@
 | 25〜28 | 電源投入、解除、電極の DC オフセット、フルスケールの正弦波 | `afe_startup.py`（`runs/startup/*_chip_r12`：12 回目のチップの配線、AFE_IBIAS 3、モンテカルロ 30、AVDD ±5 %。バッチ `runs/startup/batch_20261113_r12.txt`）と `startup_probe.py`（図 26 の計算点） |
 | 29 | ADC のブロックのばらつきと SNDR | `adc_block_mc.py`（`runs/adc_mc_r11/`。12 回目のブロックは同じ）、`adc_beh_mc.py`（`runs/adc_beh_mc_r11/`、C1・C2 ×1.25、ELD 0.22） |
 | 30 | ADC のトランジスタのループのばらつき | `adc_loop_mc.py`（`runs/adc_mc_loop_r12/`：12 回目の抽出、typical、モンテカルロ 10、R と MIM の角 6、入力なしの角 2） |
-| 31 | デジタル側：9 個のパッドとデジタルブロックの電源電流 | **まだ**（`digital_noise.py --chain r12`：12 回目の通しのチャンク 14 の写しで b1、b1iso、b2、b3 を回している。`runs/digital_noise_r12/`） |
+| 31 | デジタル側：9 個のパッドとデジタルブロックの電源電流 | `figs_perf.py` の `fig_digital_noise`：`digital_noise.py --chain r12`（`runs/digital_noise_r12/`：12 回目の通しのチャンク 14 の写しで b1、b1iso、b2、b3。基準は通しのチャンクそのもの、`compare --chain r12` が書く `compare.json`） |
 | 32 | 電極の入力と DATA の対応 | `figs_perf.py` の `fig_input_output`（`runs/e2e_startup/…_r12_chain/`：12 回目の通し、11/16 に終わった。起動のラン `runs/startup/*_chip_r12`。値の表は `gf180_input_output_20261112.md`） |
 | 33 | ADC のポリ抵抗のフリッカ雑音 | `figs_perf.py` の `fig_adc_flicker`：`adc_flicker.py`（`runs/adc_flicker_r11/`：作ったままの 1 単位、ppolyf_u 2 本の直列） |
 | 34 | 敏感な網とスイッチする網の交差 | `crossings_fig.py`（`gf180/tapeout/viz/data_r12/crossings.json`：`crossings.py` を 11 回目と 12 回目の LVS のデータベースで回したもの、抽出の結合） |
@@ -69,7 +69,7 @@
 - **DAC1 の偶成分：** 11 回目の抽出での `dac1_check.py`（1 素子 −0.00090 fC、31 素子 −0.00138 fC）と、ppolyf_u の回路図（11/12 の調べ、+0.00009／−0.00001 fC）。
 - **行動モデルの SNDR：** `runs/adc_beh_mc_r11/even_points_eld0.22.log`（1 素子の偶成分を全素子に入れた。回路図 146.6 dB、抽出 126.5 dB）。
 
-ログと CSV は `gf180/tapeout/pex/runs/` にある（git の対象外）。`vizstyle.py` の `CHIP = "r12"` で描く。図 18 は `runs/e2e_r12/summary.json` を読むので、`plot_e2e.py` を先に回す。
+ログと CSV は `gf180/tapeout/pex/runs/` にある（git の対象外）。`vizstyle.py` の `CHIP = "r12"` で描く。図 18 は `runs/e2e_r12/summary.json` を読むので、`plot_e2e.py` を先に回す。図 31 は `digital_noise.py compare --chain r12` が書く `runs/digital_noise_r12/compare.json` を読む。
 
 ```bash
 gf180/tools/venv310/bin/python gf180/tapeout/viz/figs.py gf180/tapeout/viz/data_r12 documentation/figures/gf180/r12_20261113/viz

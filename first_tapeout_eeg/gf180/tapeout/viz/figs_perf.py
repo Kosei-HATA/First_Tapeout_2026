@@ -1646,9 +1646,10 @@ LSB_DATA = 1 / (306.6 * 2 ** 24)          # V at the electrode per LSB of DATA (
 def fig_digital_noise():
     """digital_noise.py's cases on chunk 14 of the r9 chain: the pad ring, the blocks' rails, the AFE's input and the
     AFE output per chopper period (runs/digital_noise/compare.json and the cases' raw files). r10: the same cases with
-    r10's eeg_adc and their own A (digital_noise.py --adc r10, runs/digital_noise_r10/)."""
-    if vizstyle.CHIP not in ("r9", "r10"):
-        print("fig_digital_noise: its runs are on the r9 chain")
+    r10's eeg_adc and their own A (digital_noise.py --adc r10, runs/digital_noise_r10/). r12: the same cases on r12's
+    own chain, A = that chain's chunk 14 (digital_noise.py --chain r12, runs/digital_noise_r12/)."""
+    if vizstyle.CHIP not in ("r9", "r10", "r12"):
+        print("fig_digital_noise: its runs are on the r9, r10 and r12 chains")
         return
     spec = importlib.util.spec_from_file_location("digital_noise", os.path.join(PEX, "digital_noise.py"))
     dn = importlib.util.module_from_spec(spec)
@@ -1656,6 +1657,9 @@ def fig_digital_noise():
     own = vizstyle.CHIP == "r10"            # its own runs: chunk 14 with r10's eeg_adc, A = that deck alone
     if own:
         dn.use_adc("r10")
+    chain = "r12" if vizstyle.CHIP == "r12" else "r9"     # whose chain's chunk 14 the cases are on
+    if chain != "r9":
+        dn.use_chain(chain)
     ref = "A" if own else "the chain"
     p = os.path.join(dn.RUNS, "compare.json")
     if not os.path.exists(p):
@@ -1685,14 +1689,15 @@ def fig_digital_noise():
     fig = figure(
         12.8, 12.8, "The digital side on the chip wiring: what the pads and the digital current do to the AFE and the ADC",
         "The nine bi_24t pads, the two digital macros' supply current (gate-level activity, typical) and the chip-level "
-        "DVDD / DVSS added to chunk 14 of the r9 chain (6.17–6.22 ms from power-on, AFE and ADC running, electrode 0.3 mV "
-        "DC + 0.5 mV 16 kHz; " + ("its ADC: r10's extraction" if own else
-                                  "its ADC is r7's extraction, whose analog nets r10's matches within 0.03 fF")
+        f"DVDD / DVSS added to chunk 14 of the {chain} chain (6.17–6.22 ms from power-on, AFE and ADC running, electrode "
+        "0.3 mV DC + 0.5 mV 16 kHz; " + ("its ADC: r10's extraction" if own else
+                                         "afe_top and eeg_adc of r12's extraction on its own chip nets" if chain == "r12"
+                                         else "its ADC is r7's extraction, whose analog nets r10's matches within 0.03 fF")
         + ") · 47.3 µs · typical, 27 °C",
         note=("A: the chunk's deck alone over the same window. " if own else "")
              + "b1: MCLK running, host idle, raw stream off. b1iso: the same sources and pads on a separate copy of the ring "
              "(the simulator's extra events without the coupling). b2: b1 with an SPI read (2 MHz, 48 bits, 8–34 µs"
-             + ("; MISO and DRDY_N 0.125 ns after the chip's clock grid" if own else "") + "). "
+             + ("; MISO and DRDY_N 0.125 ns after the chip's clock grid" if own or chain == "r12" else "") + "). "
              "b3: b1 with the raw debug stream on (RAW_CLK = MCLK / 4, RAW_DATA random; its edges 0.125 ns after the chip's "
              "clock grid). b2 − b1 and b3 − b1 hold the numerical difference of their extra events too. Periods start a "
              "quarter period after each CHOP falling edge; electrode-referred = AFE output / "

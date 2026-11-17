@@ -18,8 +18,16 @@ AFE_RST too, which this bench does not model). Tagged _sat<ms>_rst<pulse in us>u
 The ADC is afe_startup's: its input resistors into a virtual ground that follows its VCM pin, so this shows the AFE
 alone; the ADC's own overload is a separate check (adc_overload.py).
 
+11/18: --zp / --zn, the electrodes' impedances (afe_startup's; the offset sits in series with them). --chop-hold:
+CHOP_EN low whenever AFE_RST is high (CONTROL[5] and [4] in the same write: the host clears CHOP_EN as it raises
+AFE_RST and sets it as it releases; at power-on as if CONTROL's reset value had CHOP_EN 0), so the input chopper
+stays in phase A while the amplifier is held. While held with the chopper running, the pins look like the chopped
+input capacitors alone, about 5.4 kohm differential (cmrr.py's runs, 4.8-5.0 ms), and an electrode's offset charges
+its capacitance. Tagged _chophold. Without these options the deck is the same as before.
+
 Usage: EEG_PEX_REV=r12 gf180/tools/venv310/bin/python gf180/tapeout/pex/afe_saturation.py --vin 30 --dac-mag 100
            [--t-dac 6e-3] [--tstop 8e-3] [--corner ss] [--vdd 3.135] [--ibias 3] [--rst-pulse 20e-6 [--rst-gap 20e-6]]
+           [--zp '100+51k|47n'] [--chop-hold]
 """
 import argparse
 import json
@@ -37,9 +45,10 @@ import pex_afe as P  # noqa: E402
 OF = re.compile(r"OF(S|M\d|EN\d)_[NP]$")
 
 
-def patch(text, t_dac, rst=None):
+def patch(text, t_dac, rst=None, chop_hold=False):
     """the deck with the DAC's lines and the blanking switched at t_dac, and with rst = (t_on, t_off) AFE_RST
-    re-asserted from t_on to t_off; (text, number of lines switched)"""
+    re-asserted from t_on to t_off; with chop_hold, CHOP_EN low whenever AFE_RST is high; (text, number of lines
+    switched)"""
     lines = text.split("\n")
     i = next(k for k, s in enumerate(lines) if s.startswith("XDUT "))
     toks = lines[i].split()
@@ -67,6 +76,10 @@ def patch(text, t_dac, rst=None):
         assert len(v) == 6 and v[5] == "0", lines[k]                          # 1 until the release, then 0
         lines[k] = (f"VURST URST 0 PWL({' '.join(v)} {rst[0]:.9e} 0 {rst[0] + 2e-9:.9e} 1 {rst[1]:.9e} 1 "
                     f"{rst[1] + 2e-9:.9e} 0)")
+    if chop_hold:
+        old = "BCHEN CHOP_EN 0 V=v(DVSSC)+v(DVDDC,DVSSC)*v(ONE)"
+        k = lines.index(old)
+        lines[k] = "BCHEN CHOP_EN 0 V=v(DVSSC)+v(DVDDC,DVSSC)*(1-v(URST))"
     return "\n".join(lines), n
 
 
@@ -84,6 +97,9 @@ def main():
     ap.add_argument("--tag", default=None, help="default _sat<t_dac ms>[_rst<us>us]_chip_<rev>")
     ap.add_argument("--rst-pulse", type=float, default=0.0, help="AFE_RST re-asserted for this long after the write (s)")
     ap.add_argument("--rst-gap", type=float, default=20e-6, help="from the write to the re-assertion, at least (s)")
+    ap.add_argument("--zp", default="100", help="ELP leg (afe_startup's), e.g. 100+51k|47n")
+    ap.add_argument("--zn", default="100", help="ELN leg")
+    ap.add_argument("--chop-hold", action="store_true", help="CHOP_EN low whenever AFE_RST is high")
     s = ap.parse_args()
     if not s.vin:
         sys.exit("--vin: an offset is the point")
@@ -98,9 +114,9 @@ def main():
         rst = (t_afe + n * P.TCH - s.rst_pulse, t_afe + n * P.TCH)
     tstop = s.tstop if s.tstop else (rst[1] + 1.5e-3 if rst else t_dac + 2e-3)
     tag = s.tag if s.tag is not None else (f"_sat{t_dac * 1e3:.0f}ms" + (f"_rst{s.rst_pulse * 1e6:g}us" if rst else "") +
-                                           (f"_chip_{rev}" if rev else "_chip"))
+                                           ("_chophold" if s.chop_hold else "") + (f"_chip_{rev}" if rev else "_chip"))
     args = ["start", "--vin", f"{s.vin:g}", "--corner", s.corner, "--vdd", f"{s.vdd:g}", "--ibias", str(s.ibias),
-            "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag]
+            "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag, "--zp", s.zp, "--zn", s.zn]
     if s.dac_mag is not None:
         args += ["--dac-mag", str(s.dac_mag)]
     if s.mc is not None:
@@ -109,7 +125,7 @@ def main():
     switched = []
 
     def deck(a, mode, seed):
-        text, n = patch(deck0(a, mode, seed), t_dac, rst)
+        text, n = patch(deck0(a, mode, seed), t_dac, rst, s.chop_hold)
         switched.append(n)
         return text
 
@@ -130,7 +146,7 @@ def main():
         p = os.path.join(A.RUNS, name, "meta.json")
         m = json.load(open(p, encoding="utf-8"))
         m.update(t_dac=t_dac, dac_lines_switched=switched[0] if switched else None, blank_before="7 MCLK", blank_after="15 MCLK",
-                 afe_rst_again=list(rst) if rst else None)
+                 afe_rst_again=list(rst) if rst else None, chop_hold=s.chop_hold)
         json.dump(m, open(p, "w"), indent=1)
         real_print(f"{name}: t_dac {t_dac * 1e3:.6f} ms, {switched[0] if switched else 0} DAC lines switched", flush=True)
 

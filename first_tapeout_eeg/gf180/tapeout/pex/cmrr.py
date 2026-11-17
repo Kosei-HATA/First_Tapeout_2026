@@ -6,10 +6,15 @@ legs' impedances set by --zp / --zn (e.g. ELP 100 ohm + 51 kohm || 47 nF, the el
 standards' common-mode test).
 
 Each common-mode run is compared with its baseline, the same deck with --cm 0 (the same legs, seed and release), so
-that the start-up's own drift drops out exactly; a run whose baseline has not finished is fitted alone (a polynomial
-of order 4 takes the drift; 2 with fewer than 3 periods). Over a whole number of the common mode's periods from
-T0 = 6 ms, on chopper-period means (edges a quarter period after the chopper's; exact differences of the running
-integrals qo, qip, qin):
+that the start-up's own drift drops out exactly (a polynomial of order 2 takes what the common mode itself leaves
+slowly, through the input's common-mode loop); a run whose baseline has not finished is fitted alone (order 4; 2 with
+fewer than 3 periods). A leg with a capacitor (R|C) also gets an exponential with that RC's time constant and its
+first-order correction, (t - t0) / tau x exp(-(t - t0) / tau), from the window's start: until the release the
+amplifier's inputs are held, so the body sees far more capacitance through each leg (about 795 pF instead of 139),
+and the charge that leaves on the capacitor drains through the leg's resistor (51 kohm x 47 nF = 2.4 ms) into the
+window; the baseline has none of it. Over a whole number of the common mode's periods from T0 = 6 ms, on
+chopper-period means (edges a quarter period after the chopper's; exact differences of the running integrals qo,
+qip, qin):
   - Vcm is the body's own movement against ground, v(body): the legs' currents return through the board's VCM (the
     reference electrode's node), which moves with them (CVCM; 2.5 % of the source, -165 deg, at 1 kHz), so the body
     moves by a little less than the source's formula (kept as a check, body_ratio);
@@ -20,7 +25,9 @@ integrals qo, qip, qin):
   - the amplifier's input common mode (INP + INN) / 2 against Vcm, and the board VCM's movement;
   - the electrodes' share of the conversion: the legs' currents through their own impedances, -(Ip Zp - In Zn), as a
     differential voltage at the pins (the chip's own conversion is the rest).
-Phasors are complex amplitudes against Vcm (a phase of 0 moves with the body). Besides, switches(): the input
+Phasors are complex amplitudes against Vcm (a phase of 0 moves with the body). Against the baseline, also the
+admittance through each leg while the AFE is still held (from 0.5 ms after the common mode starts to just before the
+chopper does): the legs' charge regressed on the body's movement and its integral. Besides, switches(): the input
 chopper's eight switches alone in a small AC deck (the PDK's models): their share of each leg's capacitance, and the
 conductance ngspice's default gmin (1 pS x M per junction) puts on each leg through them. The start deck keeps the
 default gmin, so the legs' conductance from these runs carries it; silicon does not.
@@ -83,18 +90,42 @@ def means(t, q, edges):
     return np.diff(np.interp(edges, t, q)) / TCH
 
 
-def fit(tc, y, f, nh=3, poly=1):
-    """least squares: polynomial (order poly) + harmonics 1..nh of f; returns the complex amplitudes (a - j b for
-    a cos + b sin, the period average's sinc taken out) and the residual rms"""
+def basis(tc, f, nh=3, poly=1, taus=(), t0=None):
+    """the fit's columns: a polynomial (order poly) about the window's middle; for each time constant tau,
+    exp(-x) and x exp(-x) with x = (t - t0) / tau (t0: the window's start); then cos and sin of harmonics 1..nh of f.
+    Returns the matrix and the number of columns before the harmonics."""
     tm = tc - tc.mean()
     cols = [tm ** p for p in range(poly + 1)]
+    for tau in taus:
+        x = (tc - (tc[0] if t0 is None else t0)) / tau
+        cols += [np.exp(-x), x * np.exp(-x)]
+    nb = len(cols)
     for h in range(1, nh + 1):
         w = 2 * np.pi * h * f * tc
         cols += [np.cos(w), np.sin(w)]
-    A = np.column_stack(cols)
+    return np.column_stack(cols), nb
+
+
+def fit(tc, y, f, nh=3, poly=1, taus=(), t0=None, full=False):
+    """least squares on basis(): returns the complex amplitudes of harmonics 1..nh (a - j b for a cos + b sin, the
+    period average's sinc taken out) and the residual rms (and, with full, the coefficients and the number of
+    columns before the harmonics)"""
+    A, nb = basis(tc, f, nh, poly, taus, t0)
     c, *_ = np.linalg.lstsq(A, y, rcond=None)
-    ph = np.array([(c[poly + 1 + 2 * h] - 1j * c[poly + 2 + 2 * h]) / np.sinc((h + 1) * f * TCH) for h in range(nh)])
-    return ph, float(np.std(y - A @ c))
+    ph = np.array([(c[nb + 2 * h] - 1j * c[nb + 1 + 2 * h]) / np.sinc((h + 1) * f * TCH) for h in range(nh)])
+    r = float(np.std(y - A @ c))
+    return (ph, r, c, nb) if full else (ph, r)
+
+
+def taus_of(m):
+    """the legs' RC time constants (each R|C term of --zp / --zn), s"""
+    out = []
+    for spec in (m["zp"], m["zn"]):
+        for t in spec.split("+"):
+            r, _, c = t.partition("|")
+            if c and not any(abs(si(r) * si(c) - x) < 1e-12 for x in out):
+                out.append(si(r) * si(c))
+    return out
 
 
 def sine_means(tc, amp, f, td, ramp=None):
@@ -142,6 +173,29 @@ def source(m, tc):
     return sine_means(tc, m["cm"] * 1e-3, m["fcm"], m["t_cm"], m["cm_ramp"])
 
 
+def held(v, vb, m):
+    """the admittance through each leg while the AFE is still held, against the baseline: from 0.5 ms after the common
+    mode starts to 50 us before the chopper starts, on a 100 ns grid, each leg's charge regressed on the body's
+    movement and its integral (C, G and a constant); and the amplifier's input common mode against the body"""
+    tg = np.arange(m["t_cm"] + 0.5e-3, m["t_reset"] - 50e-6, 1e-7)
+
+    def on(vv, k):
+        return np.interp(tg, vv["t"], vv[k])
+
+    db = on(v, "body") - on(vb, "body")
+    A = np.column_stack([db, integral(tg, db), np.ones_like(tg)])
+    out = dict(held_window=[float(tg[0]), float(tg[-1])], held_swing_mv=float(np.ptp(db) * 1e3))
+    for leg, k in (("p", "qip"), ("n", "qin")):
+        q = on(v, k) - on(vb, k)
+        c, *_ = np.linalg.lstsq(A, q, rcond=None)
+        out[f"held_c{leg}_pf"], out[f"held_g{leg}_ns"] = float(c[0] * 1e12), float(c[1] * 1e9)
+        out[f"held_resid{leg}_fc"] = float(np.std(q - A @ c) * 1e15)
+    dcm = 0.5 * (on(v, "inp") + on(v, "inn") - on(vb, "inp") - on(vb, "inn"))
+    c, *_ = np.linalg.lstsq(np.column_stack([db, np.ones_like(tg)]), dcm, rcond=None)
+    out["held_incm_ratio"] = float(c[0])
+    return out
+
+
 def baseline_of(m, runs):
     for d, mb in runs:
         if mb.get("cm") == 0 and all(mb.get(k) == m.get(k) for k in MATCH):
@@ -159,6 +213,7 @@ def analyse(d, m, base, g):
         return None
     s = series(v, m, t_end)
     poly = 4 if n >= 3 else 2
+    vb = None
     if base is not None:
         vb, mb = load(base, names)
         if vb["t"][-1] >= t_end - 1e-12:
@@ -166,22 +221,30 @@ def analyse(d, m, base, g):
             k = min(len(s["tc"]), len(sb["tc"]))
             assert np.allclose(s["tc"][:k], sb["tc"][:k])
             s = {key: (s[key][:k] - sb[key][:k] if key != "tc" else s[key][:k]) for key in s if key in sb}
-            poly = 1
+            poly = 2
         else:
-            base = None
+            base, vb = None, None
     we = min(T0 + n / f, s["tc"][-1] + TCH / 2 + 1e-12)          # the window: n whole periods, inside the run
-    a = (s["tc"] >= we - n / f) & (s["tc"] < we)
+    t0 = we - n / f
+    a = (s["tc"] >= t0) & (s["tc"] < we)
     tc = s["tc"][a]
+    taus = taus_of(m)
+
+    def F(y, full=False):
+        return fit(tc, y, f, poly=poly, taus=taus, t0=t0, full=full)
+
     xcm, _ = fit(tc, source(m, tc), f)
     vcm = xcm[0]
     body = None
     if "body" in s:                                                     # the body's own movement against ground
-        xb, _ = fit(tc, s["body"][a], f, poly=poly)
+        xb, _ = F(s["body"][a])
         body, vcm = xb[0] / vcm, xb[0]
-    po, ro = fit(tc, s["out"][a], f, poly=poly)
+    po, ro, co, nb = F(s["out"][a], full=True)
     vdm = po[0] / g                                                     # at the electrodes
     r = dict(run=os.path.basename(d), base=os.path.basename(base) if base else None, fcm=f, cm_mv=m["cm"], zp=m["zp"],
-             zn=m["zn"], corner=m["corner"], seed=m["seed"], periods=n, window=[we - n / f, we], poly=poly, gain=g,
+             zn=m["zn"], corner=m["corner"], seed=m["seed"], periods=n, window=[t0, we], poly=poly, gain=g,
+             taus_ms=[x * 1e3 for x in taus],
+             trans_uv=[float(co[poly + 1 + 2 * i] / g * 1e6) for i in range(len(taus))],   # at the window's start
              vcm_mv=abs(vcm) * 1e3, out_uv=abs(po[0]) * 1e6, out_phase=float(np.degrees(np.angle(po[0] / vcm))),
              vdm_uv=abs(vdm) * 1e6, cmrr_db=float(20 * np.log10(abs(vcm) / abs(vdm))),
              hd2_db=float(20 * np.log10(abs(po[1]) / abs(po[0]))), hd3_db=float(20 * np.log10(abs(po[2]) / abs(po[0]))),
@@ -189,13 +252,16 @@ def analyse(d, m, base, g):
     if body is not None:
         r["body_ratio"], r["body_phase"] = float(abs(body)), float(np.degrees(np.angle(body)))
     if "vcm_p9" in s:
-        xv, _ = fit(tc, s["vcm_p9"][a], f, poly=poly)
+        xv, _ = F(s["vcm_p9"][a])
         r["vcm_ratio"], r["vcm_phase"] = float(abs(xv[0] / vcm)), float(np.degrees(np.angle(xv[0] / vcm)))
-    ic, _ = fit(tc, s["icm"][a], f, poly=poly)
+    ic, _ = F(s["icm"][a])
     r["incm_ratio"], r["incm_phase"] = float(abs(ic[0] / vcm)), float(np.degrees(np.angle(ic[0] / vcm)))
+    if vb is not None and "qip" in v:
+        r.update(held(v, vb, m))
     if "qip" in s:
-        ip, _ = fit(tc, s["qip"][a], f, poly=poly)
-        im, _ = fit(tc, s["qin"][a], f, poly=poly)
+        ip, rip = F(s["qip"][a])
+        im, rin = F(s["qin"][a])
+        r["leg_resid_na"] = [rip * 1e9, rin * 1e9]
         yp, yn = ip[0] / vcm, im[0] / vcm
         w = 2 * np.pi * f
         r.update(gp_ns=yp.real * 1e9, cp_pf=yp.imag / w * 1e12, gn_ns=yn.real * 1e9, cn_pf=yn.imag / w * 1e12)
@@ -282,10 +348,18 @@ def main():
             print(f"  the body against the source {r['body_ratio']:.4f} ({r['body_phase']:+.2f} deg); the board VCM / Vcm"
                   f" {r['vcm_ratio']:.4f} ({r['vcm_phase']:+.1f} deg)")
         print(f"  input CM / Vcm {r['incm_ratio']:.4f} ({r['incm_phase']:+.2f} deg)")
+        for tau, x in zip(r["taus_ms"], r["trans_uv"]):
+            print(f"  the leg's RC ({tau:.3f} ms): {x:+.2f} uV at the electrodes at the window's start")
         if "gp_ns" in r:
-            print(f"  legs: P {r['gp_ns']:.3f} nS + {r['cp_pf']:.2f} pF, N {r['gn_ns']:.3f} nS + {r['cn_pf']:.2f} pF;"
+            print(f"  legs: P {r['gp_ns']:.3f} nS + {r['cp_pf']:.2f} pF, N {r['gn_ns']:.3f} nS + {r['cn_pf']:.2f} pF"
+                  f" (resid {r['leg_resid_na'][0]:.4f}, {r['leg_resid_na'][1]:.4f} nA);"
                   f" the legs' drops {r['elec_uv']:.4f} uV ({r['elec_phase']:+.1f} deg), the chip's own {r['own_uv']:.4f} uV"
                   f" ({r['own_phase']:+.1f} deg)")
+        if "held_cp_pf" in r:
+            print(f"  while held ({r['held_window'][0] * 1e3:.2f}-{r['held_window'][1] * 1e3:.2f} ms, the body over"
+                  f" {r['held_swing_mv']:.1f} mV): P {r['held_gp_ns']:.1f} nS + {r['held_cp_pf']:.1f} pF, N"
+                  f" {r['held_gn_ns']:.1f} nS + {r['held_cn_pf']:.1f} pF (resid {r['held_residp_fc']:.0f},"
+                  f" {r['held_residn_fc']:.0f} fC); input CM / body {r['held_incm_ratio']:+.4f}")
     os.makedirs(OUT, exist_ok=True)
     json.dump(dict(gain=g, switches=sw, runs=res), open(os.path.join(OUT, "results.json"), "w"), indent=1)
 

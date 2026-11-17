@@ -6,8 +6,8 @@ the extracted afe_top, eeg_bias and eeg_ref on the chip wiring with the pads, bo
 27 C, AFE_IBIAS 3, the AFE released at 5 ms) with the body moving against the board's VCM, balanced legs (100 ohm
 each) or ELP 100 ohm + 51 kohm || 47 nF. Vcm is the body's own movement against ground.
   (a), (b) the AFE's output referred to the electrodes over the fitted window, with its drift taken out (minus the
-           baseline run, or the fitted polynomial while the baseline is still running), against the legs' currents
-           through their own impedances (the electrodes' share, -(Ip Zp - In Zn));
+           baseline run, then cmrr.py's fitted polynomial and, for a leg with a capacitor, the RC's exponential tail),
+           against the legs' currents through their own impedances (the electrodes' share, -(Ip Zp - In Zn));
   (c) the admittance the body sees through each leg against frequency: these runs, and the chopped transients of
       the AFE alone (runs/viz_r12/afe_zin.csv, figures 23 and 24);
   (d) the conversion through an electrode imbalance: |Vdm / Vcm| = |Y| |dZ| per frequency, with the runs' points
@@ -45,18 +45,9 @@ def minus(s):
     return s.replace("-", "−")
 
 
-def design(tc, f, poly, nh=3):
-    tm = tc - tc.mean()
-    cols = [tm ** p for p in range(poly + 1)]
-    for h in range(1, nh + 1):
-        w = 2 * np.pi * h * f * tc
-        cols += [np.cos(w), np.sin(w)]
-    return np.column_stack(cols)
-
-
 def trace(r):
-    """the output at the electrodes (uV) over the run's window without its drift, the fitted harmonics, and the
-    electrodes' share as a sinusoid (uV); chopper-period means"""
+    """the output at the electrodes (uV) over the run's window without its drift (cmrr.py's polynomial and RC tails),
+    the fitted harmonics, and the electrodes' share as a sinusoid (uV); chopper-period means"""
     names = ["qo", "qip", "qin", "inp", "inn", "body"]
     v, m = C.load(os.path.join(C.RUNS, r["run"]), names)
     s = C.series(v, m, v["t"][-1])
@@ -66,13 +57,14 @@ def trace(r):
         k = min(len(s["tc"]), len(sb["tc"]))
         s = {key: (s[key][:k] - sb[key][:k] if key != "tc" else s[key][:k]) for key in s if key in sb}
     a = (s["tc"] >= r["window"][0]) & (s["tc"] < r["window"][1])
-    tc, f, p = s["tc"][a], r["fcm"], r["poly"]
+    tc, f, p, t0 = s["tc"][a], r["fcm"], r["poly"], r["window"][0]
+    taus = [x * 1e-3 for x in r["taus_ms"]]
     y = s["out"][a] / r["gain"] * 1e6
-    A = design(tc, f, p)
+    A, nb = C.basis(tc, f, poly=p, taus=taus, t0=t0)
     c, *_ = np.linalg.lstsq(A, y, rcond=None)
-    y_d = y - A[:, :p + 1] @ c[:p + 1]
-    fitted = A[:, p + 1:] @ c[p + 1:]
-    vb_ph, _ = C.fit(tc, s["body"][a], f, poly=p)
+    y_d = y - A[:, :nb] @ c[:nb]
+    fitted = A[:, nb:] @ c[nb:]
+    vb_ph, _ = C.fit(tc, s["body"][a], f, poly=p, taus=taus, t0=t0)
     el = r["elec_uv"] * np.exp(1j * np.radians(r["elec_phase"])) * vb_ph[0] / abs(vb_ph[0])
     el_t = (el * np.exp(2j * np.pi * f * tc)).real
     return tc, y_d, fitted, el_t
@@ -117,7 +109,7 @@ def main():
     tag = "measured" if (50.0, BAL) in runs else "projected from 1 kHz"
     waiting = []
     if not have50:
-        waiting.append("the 50 Hz runs (to 26 ms) finish in the early morning of 18 Nov")
+        waiting.append("the 50 Hz runs (to 26 ms) are still running")
     if not based:
         waiting.append("the baselines (the common mode at 0) are still running, so the runs are fitted alone with a polynomial")
 
@@ -131,7 +123,14 @@ def main():
                         f"moves with them ({r1b['vcm_ratio'] * 100:.1f} % of Vcm at 1 kHz, {r1b['vcm_phase']:+.0f}°, "
                         "through CVCM 10 nF), so the body moves by "
                         f"{r1b['body_ratio']:.4f} of the source. The electrodes' share is each leg's measured current "
-                        "through its own impedance; the chip's own conversion is what is left. The start deck keeps "
+                        "through its own impedance; the chip's own conversion is what is left. "
+                        + (f"Until the release the amplifier's inputs are held (their common mode moves "
+                           f"{r1b['held_incm_ratio']:+.2f} of the body), so each leg carries "
+                           f"{0.5 * (r1b['held_cp_pf'] + r1b['held_cn_pf']):.0f} pF (balanced legs); the charge this "
+                           f"leaves on the 47 nF drains through the 51 kΩ ({r1i['taus_ms'][0]:.2f} ms) into the window "
+                           f"and is fitted as an exponential ({r1i['trans_uv'][0]:+.0f} µV at the electrodes at "
+                           f"{r1i['window'][0] * 1e3:.0f} ms, 1 kHz). " if "held_cp_pf" in r1b else "")
+                        + "The start deck keeps "
                         "ngspice's default gmin, which puts 1 pS × M across every junction: "
                         f"{sw['g_gmin_ns_leg']:.1f} nS per leg through the input chopper's switches, not in silicon "
                         "(the switches alone in a small AC deck with the PDK's models). The AFE alone's chopped "

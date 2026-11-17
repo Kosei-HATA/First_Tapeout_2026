@@ -48,7 +48,6 @@ ZP = "_zp100+51k_47n"
 RUNS = [
     ("E", f"_m94_afe5ms_ib3{ZP}_sat6ms_rst1000us", "51 k || 47 n, M 94, AFE_RST 1 ms", TEAL, "-", 1.4),
     ("F", f"_m94_afe5ms_ib3{ZP}_sat6ms_rst100us", "51 k || 47 n, M 94, AFE_RST 100 µs", AMBER, "-", 1.4),
-    ("A", f"_m983_afe5ms_ib3{ZP}_sat6ms_rst100us", "51 k || 47 n, M 983, AFE_RST 100 µs", PLUM, (0, (4, 2)), 1.2),
     ("B", f"_m983_afe5ms_ib3{ZP}_sat6ms_rst100us_chophold", "51 k || 47 n, M 983, 100 µs, CHOP_EN low", PLUM, "-", 1.4),
     ("P", "_m997_afe5ms_ib3_sat6ms_rst100us", "100 Ω legs, M 997, 100 µs (figure 39)", INK2, "-", 0.9),
     ("D", "_m997_afe5ms_ib3_sat6ms_rst100us_chophold", "100 Ω legs, M 997, 100 µs, CHOP_EN low", INK2, (0, (1, 1.4)), 1.1),
@@ -125,7 +124,7 @@ def main():
     have = [k for k in runs if runs[k][0] is not None]
     S = {k: series(*runs[k]) for k in have}
     F = {k: facts(*runs[k], S[k]) for k in have}
-    interim = len(have) < len(RUNS) or ("A" in F and F["A"]["tend"] < 19.9e-3)
+    interim = len(have) < len(RUNS)
     for k in have:
         f = F[k]
         bk = "never" if f["back"] is None else f"{f['back'] * 1e3:.3f} ms"

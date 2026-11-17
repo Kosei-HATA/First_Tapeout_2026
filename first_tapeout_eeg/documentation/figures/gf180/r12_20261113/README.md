@@ -19,6 +19,7 @@
   - 図 38（角での AFE の解除）、図 39（電極オフセットがある最初の電源投入）、図 40（ADC の過負荷）、図 41（AFE の線形性の窓）は 11/16 に足した図。図 40（8 時 52 分）と図 38（9 時 31 分）は、回していた計算がそろったので描き直した。39 と 41 はまだ途中（回している計算があり、そろったら描き直す）。11 時 7〜9 分に終わった 100 µs のパルスと ±1 % の 2 本を入れて、39 と 41 を描き直した（39 は 4 段にして、パルスの中と図 27 との差を足した）。41 は 12 時 52 分に終わった窓の端の 2 本を入れて仕上げた。図 42（AFE の雑音：AVDD と BOOST_TRIM）も 11/16 に足した図で、typical の BTRIM_P 4 のチップの HD3 の 3 本（21 時 37 分にそろった）を入れて仕上げた。39 は、300 mV をパルスなしで 11 ms まで回したラン（11/17 の 2 時 30 分に終わった）を入れて仕上げた。
   - 図 43（PDK にない係数への余裕）は 11/17 に足した図。
   - 図 44（同相の除去と電極の不釣り合い）は 11/17 に途中の版（1 kHz の 2 本）を足し、11/18 の朝に 50 Hz の 2 本（26 ms まで、1 周期）が終わってから仕上げた。上の段の時間の波形は 50 Hz。
+  - 図 45（電極に抵抗とコンデンサがあるときの起動）は 11/18 に途中の版（B と、電極 100 Ω の 2 本）を足した。E、F、A が終わったら仕上げる。
 - **12 回目で変わっていないものは、最後に変わった版の結果を使った**（変わっていないことは XOR かデッキの比べで確かめた）。
   - adc_rdac、OTA、量子化器、eeg_bias、eeg_ref は 11 回目と同じなので、ブロックのモンテカルロ（図 29）とポリ抵抗のフリッカ（図 33）は 11 回目のもの。行動モデル（図 29）も 11 回目のブロックのモンテカルロから回した（`runs/adc_beh_mc_r11/`）。
   - 寄生込みの E2E（図 16〜18）の d4 と sch は、11 回目の実行の写し。回路図のデッキは版によらず、`pex_e2e.deck_text()` が 11 回目のものと 1 文字も違わず、読み込むファイルもその実行より前のまま（`runs/e2e_r12/README.md`）。
@@ -30,7 +31,7 @@
   - ブロックのモンテカルロ（図 29）：OTA1 の利得のばらつきが 0.09 → 0.46 dB に増えた。負荷（RIN、R21）が ppolyf_u になり、OTA1 のバイアス電流を決める eeg_bias の ppolyf_u_1k と別々にばらつくため（6 回目との差が 2 つの抵抗の比と相関 0.999）。最悪の 69.26 dB でも、行動モデルの 68.7 dB より高い。30 ダイの SNDR は 114.8〜153.8 dB。
 - 比べるために前の値を並べた列（回路図、10/23 の抽出、B7 の前の DC 経路など）は、図の中にそう書いてある。
 
-## `viz/`：可視化（44 枚）
+## `viz/`：可視化（45 枚）
 
 | 番号 | 図 | 元にしたもの |
 |---|---|---|
@@ -62,6 +63,7 @@
 | 42 | AFE の雑音：AVDD と BOOST_TRIM | `afe_noise_avdd_fig.py`（`gf180/tapeout/pex/afe_chip_noise.py --avdd --boost --corner`：`runs/chip_noise_r12/chip_A_ib3_*`、凍結した相 A、AFE_IBIAS 3、各角の typical のモデル。PMOS 入力対の余裕は `afe_chip_noise.op_margins`。typical の BTRIM_P 4 のチップの HD3 は `runs/startup/start_c1e-08_v{3.4,3.45}_typical_*_bt4-4_chip_r12` と `start_c1e-08_v3.4_typical_*_bt4-2_chip_r12`（`afe_trim_start.py`）を図 41 と同じ方法で。4/4 の 2 本（11/16 の 21 時 11 分）と 4/2（21 時 37 分）がそろったので仕上げた） |
 | 43 | PDK にない係数への余裕 | `margin_fig.py`（`gf180/tapeout/pex/enob_sine.py --margin mm`、`mmlow`、`vc`：`runs/enob_sine_r12/enob_sine_margin_*.json`。DAC1 の素子のばらつきは Monte Carlo の 30 ダイの誤差を 1〜8 倍、入力抵抗の電圧係数は typical。オフセット DAC は `figs_perf.dac_weights` の抽出のビットの重みに MIM の乱数の誤差を足した 20,000 ダイ） |
 | 44 | 同相の除去と電極の不釣り合い | `cmrr_fig.py`（`gf180/tapeout/pex/cmrr.py`：`runs/cmrr_r12/results.json` と `runs/startup/start_*_cm*Hz*_chip_r12`。`afe_startup.py` の start に `--cm 100 --fcm 1000`（10 ms まで）と `--fcm 50`（26 ms まで）、それぞれ `--zp '100+51k\|47n'` あり・なし。基準は同じデッキの `--cm 0`（26 ms まで）で、差し引いたあと多項式 2 次と、コンデンサのある脚の RC の指数（出力とピンの差動だけ）を当てはめる。入力スイッチだけの AC は `runs/cmrr_r12/switches/`。AFE だけの値は `runs/viz_r12/afe_zin.csv`） |
+| 45 | 電極に抵抗とコンデンサがあるときの起動 | `electrode_start_fig.py`（`gf180/tapeout/pex/afe_saturation.py --vin 300 --zp '100+51k\|47n'` に `--dac-mag 983` か `94`、`--rst-pulse 100e-6` か `1e-3`、`--chop-hold` あり・なし：`runs/startup/start_c1e-08_v3.3_typical_+300mV_m*_afe5ms_ib3_zp100+51k_47n_sat6ms_rst*_chip_r12`。電極 100 Ω は図 39 の 100 µs のパルスのランと、その `_chophold`。電極の電流は脚に保存した電荷 qip から、100 Ω のランは (300 mV − ピン) / 200 Ω。平均は 8 周期（62.5 µs）で、1 周期ずつずらす） |
 
 ### 図 11 の元
 

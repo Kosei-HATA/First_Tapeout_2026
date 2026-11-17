@@ -50,12 +50,21 @@ OTA1 and OTA2 on their stage loads, per die where the die has a bench, typical o
 the change against the run without it is the OTAs' (and the loop's chaotic code sequence; see ota_distortion.py for
 the OTAs' error term alone).
 
+--margin (11/17): what the PDK does not give, swept to where it would matter. mm: the 30 Monte Carlo dies with DAC1's
+element mismatch (its static element errors and the random part of its even charge; these come from the block
+Monte Carlo with the stand-in poly mismatch, 3 %·um) times 1, 2, 4, 8, each die with its own AFE noise as in the
+Monte Carlo columns, and the first 6 also without noise. mmlow: those 6 without noise at -60 dBFS and without
+input, where DWA's idle tones would show. vc: typical with a voltage coefficient on the input resistors,
+R(v) = RIN (1 + vc1 v + vc2 v^2) for the voltage v across each (Stim), vc2 to 30,000 ppm/V^2 with and without
+noise, vc1 to 10,000 ppm/V without noise (in the differential pair vc1 enters only as vc1^2 against vc2).
+
 usage: [EEG_PEX_REV=r12] gf180/tools/venv310/bin/python gf180/tapeout/pex/enob_sine.py [--nrec 8192 --cycles 83] [--quick]
-           [--ota-nl]
+           [--ota-nl] [--margin mm|mmlow|vc]
 writes runs/enob_sine_<rev>/: enob_sine.json (every column), spectra.npz (typical's DATA spectra for the figure);
-with --ota-nl enob_sine_otanl.json and spectra_otanl.npz
+with --ota-nl enob_sine_otanl.json and spectra_otanl.npz; with --margin enob_sine_margin_<mm|mmlow|vc>.json
 """
 import argparse
+import copy
 import json
 import math
 import os
@@ -89,6 +98,22 @@ STATIC_LOG = os.path.join(HERE, "runs", f"final_static_pex_{REV}.log")
 NOISE = os.path.join(HERE, "runs", f"chip_noise_{REV}")
 FLICKER = os.path.join(HERE, "runs", "adc_flicker_r11", "adc_flicker.json")
 SWEEP_DB = [-100, -80, -60, -40, -20, -10, -6, -3, -1]
+# --margin (11/17): the PDK has no per-device mismatch for the poly resistors (the block Monte Carlo's 3 %·um is a
+# stand-in) and no voltage coefficient for them
+MM_SCALES = [1, 2, 4, 8]            # DAC1's element mismatch, times
+MM_NOISELESS = 6                    # dies also run without noise, per scale
+VC2_PPM = [0, 30, 100, 300, 1000, 3000, 10000, 30000]       # ppm/V^2 on the input resistors
+VC1_PPM = [1000, 3000, 10000]                               # ppm/V (vc2 0)
+
+
+def scaled(d, k):
+    """die d with DAC1's element mismatch times k: the static element errors (w1 - 1, already summing to 0) and
+    the random part of the even charge per toggle about its mean; DAC2, the thresholds and the rest as they are"""
+    dk = copy.copy(d)
+    dk.w1 = 1.0 + k * (d.w1 - 1.0)
+    e = d.e1.mean()
+    dk.e1 = e + k * (d.e1 - e)
+    return dk
 
 
 def afe_transfer():
@@ -140,11 +165,16 @@ def pink(n, s1, fs, rng):
 
 class Stim:
     """u[i] for adc_beh_mc.simulate: the ADC input (V, differential) of every column at clock i, made block by
-    block: (gain FS_PK P(x / FS_PK) + white noise) (1 + gain noise held over DEC_G clocks)."""
+    block: (gain FS_PK P(x / FS_PK) + white noise) (1 + gain noise held over DEC_G clocks). With vc1 / vc2 (per
+    column, 1/V and 1/V^2), the input resistors have a voltage coefficient, R(v) = RIN (1 + vc1 v + vc2 v^2) with v
+    the voltage across each (u / 2 and -u / 2 into the virtual ground): u becomes f(u / 2) - f(-u / 2),
+    f(v) = v / (1 + vc1 v + vc2 v^2), the current the pair sends into the integrator, in volts."""
 
-    def __init__(self, n, f0, amp, gain, apoly, sig, gnoise, seed, blk=1 << 16):
+    def __init__(self, n, f0, amp, gain, apoly, sig, gnoise, seed, blk=1 << 16, vc1=None, vc2=None):
         self.shape = (n, len(amp))
         self.f0, self.amp, self.gain, self.apoly, self.sig, self.g = f0, amp, gain, apoly, sig, gnoise
+        self.vc1 = np.zeros(len(amp)) if vc1 is None else np.asarray(vc1, float)
+        self.vc2 = np.zeros(len(amp)) if vc2 is None else np.asarray(vc2, float)
         self.rng = np.random.default_rng(seed)
         self.blk, self.i0, self.buf = blk, -(1 << 62), None
 
@@ -155,6 +185,9 @@ class Stim:
         p = xn + sum(self.apoly[None, :, k] * xn ** (k + 2) for k in range(4))
         u = self.gain[None, :] * FS_PK * p + self.sig[None, :] * self.rng.standard_normal((i1 - i0, self.shape[1]))
         u *= 1.0 + self.g[np.arange(i0, i1) // DEC_G]
+        if self.vc1.any() or self.vc2.any():
+            c1, c2, h = self.vc1[None, :], self.vc2[None, :], 0.5 * u
+            u = h / (1 + c1 * h + c2 * h * h) + h / (1 - c1 * h + c2 * h * h)
         self.buf, self.i0 = u, i0
 
     def __getitem__(self, i):
@@ -227,6 +260,11 @@ def main():
     ap.add_argument("--quick", action="store_true", help="typical, its repeats, no input and the noiseless columns only")
     ap.add_argument("--repeat", type=int, default=8, help="typical again with its own noise, N more records")
     ap.add_argument("--ota-nl", action="store_true", help="the OTAs' static nonlinearity in the loop (ota_static.py)")
+    ap.add_argument("--margin", choices=["mm", "mmlow", "vc"], default=None,
+                    help="margins on what the PDK does not give (11/17): mm, the Monte Carlo dies with DAC1's element "
+                         "mismatch (static errors and the random part of the even charge) scaled by MM_SCALES; "
+                         "mmlow, 6 of them without noise at -60 dBFS and without input (idle tones); vc, typical "
+                         "with a voltage coefficient on the input resistors (VC2_PPM, VC1_PPM)")
     a = ap.parse_args()
     os.makedirs(OUT, exist_ok=True)
     if not check_cic():
@@ -246,26 +284,47 @@ def main():
     mcd, nod, _ = B.mc_dies(j)
     cols = []
 
-    def col(label, group, die, amp_db=0.0, afe=None, noise=True, poly=True, flick=True):
+    def col(label, group, die, amp_db=0.0, afe=None, noise=True, poly=True, flick=True, vc1=0.0, vc2=0.0):
         afe = afe or typ_afe
         cols.append(dict(label=label, group=group, die=die, amp_db=amp_db,
                          amp=FS_PK * 10 ** (amp_db / 20) if amp_db is not None else 0.0,
                          gain=G_AFE * afe["gain"] / typ_afe["gain"], afe_nv=afe["nv"], noise=noise, poly=poly,
-                         flick=flick))
+                         flick=flick, vc1=vc1, vc2=vc2))
 
-    col("typical", "typical", typ)
-    for k in range(a.repeat):
-        col(f"typical, record {k + 2}", "repeat", typ)
-    col("typical, no input", "noinput", typ, amp_db=None)
-    if not a.quick:
-        for d in mcd:
-            col(d.label, "mc", d, afe=mc_afe.get(int(d.label[2:])))
-        for d in corners[1:]:
-            col(d.label, "corner", d)
-        for db in SWEEP_DB:
-            col(f"typical, {db:+d} dBFS", "sweep", typ, amp_db=db)
-    col("typical, no noise", "noiseless", typ, noise=False, flick=False)
-    col("typical, no noise, AFE linear", "noiseless", typ, noise=False, poly=False, flick=False)
+    if a.margin == "mm":
+        for k in MM_SCALES:
+            for i, d in enumerate(mcd):
+                col(f"{d.label}, DAC1 mismatch x{k:g}", f"mm{k:g}", scaled(d, k), afe=mc_afe.get(int(d.label[2:])))
+                if i < MM_NOISELESS:
+                    col(f"{d.label}, DAC1 mismatch x{k:g}, no noise", f"mm{k:g}_nl", scaled(d, k), noise=False,
+                        flick=False)
+    elif a.margin == "mmlow":
+        for k in MM_SCALES:
+            for d in mcd[:MM_NOISELESS]:
+                col(f"{d.label}, DAC1 mismatch x{k:g}, -60 dBFS, no noise", f"mmlow{k:g}", scaled(d, k), amp_db=-60,
+                    noise=False, flick=False)
+                col(f"{d.label}, DAC1 mismatch x{k:g}, no input, no noise", f"mmzero{k:g}", scaled(d, k), amp_db=None,
+                    noise=False, flick=False)
+    elif a.margin == "vc":
+        for c2 in VC2_PPM:
+            col(f"typical, RIN vc2 {c2:g} ppm/V2", "vc2", typ, vc2=c2 * 1e-6)
+            col(f"typical, RIN vc2 {c2:g} ppm/V2, no noise", "vc2_nl", typ, noise=False, flick=False, vc2=c2 * 1e-6)
+        for c1 in VC1_PPM:
+            col(f"typical, RIN vc1 {c1:g} ppm/V, no noise", "vc1_nl", typ, noise=False, flick=False, vc1=c1 * 1e-6)
+    else:
+        col("typical", "typical", typ)
+        for k in range(a.repeat):
+            col(f"typical, record {k + 2}", "repeat", typ)
+        col("typical, no input", "noinput", typ, amp_db=None)
+        if not a.quick:
+            for d in mcd:
+                col(d.label, "mc", d, afe=mc_afe.get(int(d.label[2:])))
+            for d in corners[1:]:
+                col(d.label, "corner", d)
+            for db in SWEEP_DB:
+                col(f"typical, {db:+d} dBFS", "sweep", typ, amp_db=db)
+        col("typical, no noise", "noiseless", typ, noise=False, flick=False)
+        col("typical, no noise, AFE linear", "noiseless", typ, noise=False, poly=False, flick=False)
     S = len(cols)
     n = (G.NSKIP + SETTLE + a.nrec + 1) * G.R
     adc2 = sum(v * v for v in N_ADC.values())
@@ -284,7 +343,7 @@ def main():
     st = lambda at: np.array([getattr(d, at) for d in dies])  # noqa: E731
     u = Stim(n, f0, np.array([c["amp"] for c in cols]), np.array([c["gain"] for c in cols]),
              np.array([apoly if c["poly"] else np.zeros(4) for c in cols]), np.array([c["sig_u"] for c in cols]),
-             gnoise, seed=11)
+             gnoise, seed=11, vc1=[c["vc1"] for c in cols], vc2=[c["vc2"] for c in cols])
     print(f"{S} columns, {n} clocks ({n / m.FS:.2f} s), f0 {f0:.6f} Hz, record {a.nrec} DATA samples; "
           f"ADC dies from {os.path.relpath(B.BLOCK, HERE)}; DAC1 typical for MC seeds {nod}", flush=True)
     t = time.time()
@@ -302,7 +361,7 @@ def main():
     for s, c in enumerate(cols):
         r = dict(label=c["label"], group=c["group"], amp_db=c["amp_db"], amp_mv=c["amp"] * 1e3, gain=c["gain"],
                  afe_nv=c["afe_nv"], inj_nv=c["inj_nv"], noise=c["noise"], afe_poly=c["poly"], flicker=c["flick"],
-                 x1max=float(x1m[s]), x2max=float(x2m[s]))
+                 x1max=float(x1m[s]), x2max=float(x2m[s]), vc1=c["vc1"], vc2=c["vc2"])
         if a.ota_nl:
             r["ota_bench"] = c["ota_bench"]
         if (codes[:, s] < 0).any():
@@ -322,17 +381,21 @@ def main():
             if c["group"] in ("typical", "noiseless"):
                 spec[c["label"]] = p
         rows.append(r)
-    for r in rows:                                          # no input: DATA counts to the electrodes by typical's slope
-        if r["group"] == "noinput" and "nad_counts" in r:
-            r["noise_nv"] = r["nad_counts"] / rows[0]["counts_per_uv"] * 1e3
+    slope = next((r["counts_per_uv"] for r in rows if r["amp_db"] == 0 and "counts_per_uv" in r),  # typical's, or the
+                 next((r["counts_per_uv"] for r in rows if "counts_per_uv" in r), None))          # first with a tone
+    for r in rows:                                          # no input: DATA counts to the electrodes by that slope
+        if r["amp_db"] is None and "nad_counts" in r and slope:
+            r["noise_nv"] = r["nad_counts"] / slope * 1e3
     f = np.arange(a.nrec // 2 + 1) * FS_DATA / a.nrec
-    sfx = "_otanl" if a.ota_nl else ""
-    np.savez_compressed(os.path.join(OUT, f"spectra{sfx}.npz"), f=f, k0=a.cycles,
-                        **{k.replace(", ", "_").replace(" ", "_"): v for k, v in spec.items()})
+    sfx = ("_otanl" if a.ota_nl else "") + (f"_margin_{a.margin}" if a.margin else "")
+    if not a.margin:
+        np.savez_compressed(os.path.join(OUT, f"spectra{sfx}.npz"), f=f, k0=a.cycles,
+                            **{k.replace(", ", "_").replace(" ", "_"): v for k, v in spec.items()})
     meta = dict(rev=REV, fs_pk_v=FS_PK, f0_hz=f0, nrec=a.nrec, cycles=a.cycles, band_hz=BAND, g_afe=G_AFE, eld=ELD,
                 n_blank_nv=N_BLANK, n_adc_nv=N_ADC, gain_noise_s1=s_g, afe_static=dict(a2_a5=list(map(float, apoly)),
                 gain=g_static, resid_v=resid, hd2_hd5_dbc=hds), afe_typical=typ_afe, block=B.BLOCK, loop_s=dt,
-                dac1_typical_seeds=nod, ota_nl=a.ota_nl)
+                dac1_typical_seeds=nod, ota_nl=a.ota_nl, margin=a.margin,
+                margin_sweeps=dict(mm_scales=MM_SCALES, vc2_ppm=VC2_PPM, vc1_ppm=VC1_PPM) if a.margin else None)
     with open(os.path.join(OUT, f"enob_sine{sfx}.json"), "w", encoding="utf-8") as fo:
         json.dump(dict(meta=meta, rows=rows), fo, indent=1)
     print("\n| column | input (dBFS) | SINAD (dB) | ENOB (bit) | ENOB, droop equalized (bit) | SNR (dB) | THD (dBc) "
@@ -342,14 +405,17 @@ def main():
         lvl = "none" if r["amp_db"] is None else f"{r['amp_db']:+.0f}"
         if r.get("note") == "runaway":
             print(f"| {r['label']} | {lvl} | runaway | | | | | | | | |")
-        elif r["group"] == "noinput":
-            print(f"| {r['label']} | {lvl} | | | | | | | {r['noise_nv']:.3f} (noise alone) | {r['inj_nv']:.3f} "
-                  f"| {r['x2max'] * 1e3:.1f} |")
+        elif r["amp_db"] is None:
+            print(f"| {r['label']} | {lvl} | | | | | | | {r['noise_nv']:.3f} "
+                  f"({'noise alone' if r['noise'] else 'the loop alone'}) | {r['inj_nv']:.3f} | {r['x2max'] * 1e3:.1f} |")
         else:
             print(f"| {r['label']} | {lvl} | {r['sinad']:.2f} | {r['enob']:.3f} | {r['enob_eq']:.3f} | {r['snr']:.2f} "
                   f"| {r['thd']:.1f} | {r['hd'][0]:.1f} / {r['hd'][1]:.1f} | {r['nad_nv']:.3f} | {r['inj_nv']:.3f} "
                   f"| {r['x2max'] * 1e3:.1f} |")
-    for name, gs in (("typical, every record", ("typical", "repeat")), ("Monte Carlo", ("mc",)), ("corners", ("corner",))):
+    groups = [("typical, every record", ("typical", "repeat")), ("Monte Carlo", ("mc",)), ("corners", ("corner",))]
+    groups += [(f"DAC1 mismatch x{k:g}", (f"mm{k:g}",)) for k in MM_SCALES]
+    groups += [(f"DAC1 mismatch x{k:g}, no noise", (f"mm{k:g}_nl",)) for k in MM_SCALES]
+    for name, gs in groups:
         ok = [r for r in rows if r["group"] in gs and "enob" in r]
         if len(ok) > 1:
             e, q = np.array([r["enob"] for r in ok]), np.array([r["enob_eq"] for r in ok])

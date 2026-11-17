@@ -12,9 +12,13 @@ fewer than 3 periods). A leg with a capacitor (R|C) also gets an exponential wit
 first-order correction, (t - t0) / tau x exp(-(t - t0) / tau), from the window's start: until the release the
 amplifier's inputs are held, so the body sees far more capacitance through each leg (about 795 pF instead of 139),
 and the charge that leaves on the capacitor drains through the leg's resistor (51 kohm x 47 nF = 2.4 ms) into the
-window; the baseline has none of it. Over a whole number of the common mode's periods from T0 = 6 ms, on
-chopper-period means (edges a quarter period after the chopper's; exact differences of the running integrals qo,
-qip, qin):
+window; the baseline has none of it. That tail is fitted on the output and the pins only (11/18): the chip's side (the
+body, the board VCM, the amplifier's input common mode, the legs' currents) carries none of it (the capacitor's
+discharge stays inside the electrode; its tens of uV at the pins drive a few pA through a leg), and with a single
+period (50 Hz in 6-26 ms) the extra columns let those fits trade the sine for slow drift (a leg's admittance moved by
+up to 30 %, the body by 0.2 %). With fewer than 3 periods the polynomial stays at order 2 (a cubic follows one period
+of the sine). Over a whole number of the common mode's periods from T0 = 6 ms, on chopper-period means (edges a quarter
+period after the chopper's; exact differences of the running integrals qo, qip, qin):
   - Vcm is the body's own movement against ground, v(body): the legs' currents return through the board's VCM (the
     reference electrode's node), which moves with them (CVCM; 2.5 % of the source, -165 deg, at 1 kHz), so the body
     moves by a little less than the source's formula (kept as a check, body_ratio);
@@ -24,7 +28,13 @@ qip, qin):
   - each leg's current: the admittance the body sees through it, Y = I / Vcm (conductance and capacitance);
   - the amplifier's input common mode (INP + INN) / 2 against Vcm, and the board VCM's movement;
   - the electrodes' share of the conversion: the legs' currents through their own impedances, -(Ip Zp - In Zn), as a
-    differential voltage at the pins (the chip's own conversion is the rest).
+    differential voltage at the pins (the chip's own conversion is the rest; not taken for legs that differ with
+    fewer than 3 periods, where the legs' phase is a few degrees loose: the balanced run gives the chip's own);
+  - for legs that differ, the pins' differential v(ELP) - v(ELN) as simulated (the electrodes' drop, fitted like the
+    output), and the output over it: the AFE's gain at fcm (with balanced legs the pins carry only the input
+    chopper's switching, which the amplifier does not take with that gain, so neither is kept);
+  - the output's spread over variants of the fit (the polynomial one order lower; the RC time constants x 0.9 and
+    x 1.1): vdm_span_uv, cmrr_span_db.
 Phasors are complex amplitudes against Vcm (a phase of 0 moves with the body). Against the baseline, also the
 admittance through each leg while the AFE is still held (from 0.5 ms after the common mode starts to just before the
 chopper does): the legs' charge regressed on the body's movement and its integral. Besides, switches(): the input
@@ -162,6 +172,8 @@ def series(v, m, t_end):
         if k in v:
             s[k] = means(t, v[k], edges)
     s["icm"] = means(t, integral(t, 0.5 * (v["inp"] + v["inn"])), edges)
+    if "elp" in v and "eln" in v:
+        s["pins"] = means(t, integral(t, v["elp"] - v["eln"]), edges)
     for k in ("body", "vcm_p9"):
         if k in v:
             s[k] = means(t, integral(t, v[k]), edges)
@@ -204,7 +216,7 @@ def baseline_of(m, runs):
 
 
 def analyse(d, m, base, g):
-    names = ["qo", "qip", "qin", "inp", "inn", "body", "vcm_p9"]
+    names = ["qo", "qip", "qin", "inp", "inn", "body", "vcm_p9", "elp", "eln"]
     v, _ = load(d, names)
     f = m["fcm"]
     t_end = v["t"][-1]
@@ -230,17 +242,23 @@ def analyse(d, m, base, g):
     tc = s["tc"][a]
     taus = taus_of(m)
 
-    def F(y, full=False):
+    def F(y, full=False):                                               # the output and the pins: with the RC tails
         return fit(tc, y, f, poly=poly, taus=taus, t0=t0, full=full)
+
+    def Fc(y):                                                          # the chip's side: without them
+        return fit(tc, y, f, poly=poly)
 
     xcm, _ = fit(tc, source(m, tc), f)
     vcm = xcm[0]
     body = None
     if "body" in s:                                                     # the body's own movement against ground
-        xb, _ = F(s["body"][a])
+        xb, _ = Fc(s["body"][a])
         body, vcm = xb[0] / vcm, xb[0]
     po, ro, co, nb = F(s["out"][a], full=True)
     vdm = po[0] / g                                                     # at the electrodes
+    span = [abs(vdm)]
+    for pv, tv in ((poly - 1, taus), (poly, tuple(x * 0.9 for x in taus)), (poly, tuple(x * 1.1 for x in taus))):
+        span.append(abs(fit(tc, s["out"][a], f, poly=pv, taus=tv, t0=t0)[0][0] / g))
     r = dict(run=os.path.basename(d), base=os.path.basename(base) if base else None, fcm=f, cm_mv=m["cm"], zp=m["zp"],
              zn=m["zn"], corner=m["corner"], seed=m["seed"], periods=n, window=[t0, we], poly=poly, gain=g,
              taus_ms=[x * 1e3 for x in taus],
@@ -248,27 +266,33 @@ def analyse(d, m, base, g):
              vcm_mv=abs(vcm) * 1e3, out_uv=abs(po[0]) * 1e6, out_phase=float(np.degrees(np.angle(po[0] / vcm))),
              vdm_uv=abs(vdm) * 1e6, cmrr_db=float(20 * np.log10(abs(vcm) / abs(vdm))),
              hd2_db=float(20 * np.log10(abs(po[1]) / abs(po[0]))), hd3_db=float(20 * np.log10(abs(po[2]) / abs(po[0]))),
-             out_resid_uv=ro * 1e6)
+             out_resid_uv=ro * 1e6, vdm_span_uv=[min(span) * 1e6, max(span) * 1e6],
+             cmrr_span_db=[float(20 * np.log10(abs(vcm) / max(span))), float(20 * np.log10(abs(vcm) / min(span)))])
     if body is not None:
         r["body_ratio"], r["body_phase"] = float(abs(body)), float(np.degrees(np.angle(body)))
     if "vcm_p9" in s:
-        xv, _ = F(s["vcm_p9"][a])
+        xv, _ = Fc(s["vcm_p9"][a])
         r["vcm_ratio"], r["vcm_phase"] = float(abs(xv[0] / vcm)), float(np.degrees(np.angle(xv[0] / vcm)))
-    ic, _ = F(s["icm"][a])
+    ic, _ = Fc(s["icm"][a])
     r["incm_ratio"], r["incm_phase"] = float(abs(ic[0] / vcm)), float(np.degrees(np.angle(ic[0] / vcm)))
+    if "pins" in s and m["zp"] != m["zn"]:
+        pp, rpn = F(s["pins"][a])
+        r.update(pins_uv=abs(pp[0]) * 1e6, pins_phase=float(np.degrees(np.angle(pp[0] / vcm))), pins_resid_uv=rpn * 1e6,
+                 gain_fcm=float(abs(po[0] / pp[0])), gain_fcm_phase=float(np.degrees(np.angle(po[0] / pp[0]))))
     if vb is not None and "qip" in v:
         r.update(held(v, vb, m))
     if "qip" in s:
-        ip, rip = F(s["qip"][a])
-        im, rin = F(s["qin"][a])
+        ip, rip = Fc(s["qip"][a])
+        im, rin = Fc(s["qin"][a])
         r["leg_resid_na"] = [rip * 1e9, rin * 1e9]
         yp, yn = ip[0] / vcm, im[0] / vcm
         w = 2 * np.pi * f
         r.update(gp_ns=yp.real * 1e9, cp_pf=yp.imag / w * 1e12, gn_ns=yn.real * 1e9, cn_pf=yn.imag / w * 1e12)
         el = -(ip[0] * zleg(m["zp"], f) - im[0] * zleg(m["zn"], f))       # the legs' drops, differential at the pins
         r["elec_uv"], r["elec_phase"] = abs(el) * 1e6, float(np.degrees(np.angle(el / vcm)))
-        own = vdm - el
-        r["own_uv"], r["own_phase"] = abs(own) * 1e6, float(np.degrees(np.angle(own / vcm)))
+        if n >= 3 or m["zp"] == m["zn"]:      # one period leaves the legs' phase a few degrees loose: no remainder
+            own = vdm - el
+            r["own_uv"], r["own_phase"] = abs(own) * 1e6, float(np.degrees(np.angle(own / vcm)))
     r["done"] = bool(v["done"])
     return r
 
@@ -344,6 +368,11 @@ def main():
               f" (polynomial {r['poly']}): Vcm {r['vcm_mv']:.3f} mV pk; out {r['out_uv']:.2f} uV pk ({r['out_phase']:+.1f} deg),"
               f" at the electrodes {r['vdm_uv']:.4f} uV pk, CMRR {r['cmrr_db']:.1f} dB; HD2 {r['hd2_db']:.1f}, HD3"
               f" {r['hd3_db']:.1f} dB; resid {r['out_resid_uv']:.2f} uV")
+        print(f"  over the fit's variants {r['vdm_span_uv'][0]:.4f}-{r['vdm_span_uv'][1]:.4f} uV, CMRR"
+              f" {r['cmrr_span_db'][0]:.2f}-{r['cmrr_span_db'][1]:.2f} dB")
+        if "pins_uv" in r:
+            print(f"  the pins' differential {r['pins_uv']:.4f} uV ({r['pins_phase']:+.2f} deg, resid {r['pins_resid_uv']:.2f}"
+                  f" uV); the output over it {r['gain_fcm']:.3f} ({r['gain_fcm_phase']:+.2f} deg)")
         if "body_ratio" in r:
             print(f"  the body against the source {r['body_ratio']:.4f} ({r['body_phase']:+.2f} deg); the board VCM / Vcm"
                   f" {r['vcm_ratio']:.4f} ({r['vcm_phase']:+.1f} deg)")
@@ -353,8 +382,8 @@ def main():
         if "gp_ns" in r:
             print(f"  legs: P {r['gp_ns']:.3f} nS + {r['cp_pf']:.2f} pF, N {r['gn_ns']:.3f} nS + {r['cn_pf']:.2f} pF"
                   f" (resid {r['leg_resid_na'][0]:.4f}, {r['leg_resid_na'][1]:.4f} nA);"
-                  f" the legs' drops {r['elec_uv']:.4f} uV ({r['elec_phase']:+.1f} deg), the chip's own {r['own_uv']:.4f} uV"
-                  f" ({r['own_phase']:+.1f} deg)")
+                  f" the legs' drops {r['elec_uv']:.4f} uV ({r['elec_phase']:+.1f} deg)"
+                  + (f", the chip's own {r['own_uv']:.4f} uV ({r['own_phase']:+.1f} deg)" if "own_uv" in r else ""))
         if "held_cp_pf" in r:
             print(f"  while held ({r['held_window'][0] * 1e3:.2f}-{r['held_window'][1] * 1e3:.2f} ms, the body over"
                   f" {r['held_swing_mv']:.1f} mV): P {r['held_gp_ns']:.1f} nS + {r['held_cp_pf']:.1f} pF, N"

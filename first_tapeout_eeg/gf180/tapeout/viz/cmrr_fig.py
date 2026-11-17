@@ -5,9 +5,10 @@ cmrr.py's results (gf180/tapeout/pex/runs/cmrr_r12/results.json) and its runs: a
 the extracted afe_top, eeg_bias and eeg_ref on the chip wiring with the pads, bond wires and the board; typical,
 27 C, AFE_IBIAS 3, the AFE released at 5 ms) with the body moving against the board's VCM, balanced legs (100 ohm
 each) or ELP 100 ohm + 51 kohm || 47 nF. Vcm is the body's own movement against ground.
-  (a), (b) the AFE's output referred to the electrodes over the fitted window, with its drift taken out (minus the
-           baseline run, then cmrr.py's fitted polynomial and, for a leg with a capacitor, the RC's exponential tail),
-           against the legs' currents through their own impedances (the electrodes' share, -(Ip Zp - In Zn));
+  (a), (b) the AFE's output referred to the electrodes over the fitted window (50 Hz, one period, from 11/18), with
+           its drift taken out (minus the baseline run, then cmrr.py's fitted polynomial and, for a leg with a
+           capacitor, the RC's exponential tail), against the pins' differential v(ELP) - v(ELN) as simulated (its
+           drift taken out the same way) and the legs' currents through their own impedances (-(Ip Zp - In Zn));
   (c) the admittance the body sees through each leg against frequency: these runs, and the chopped transients of
       the AFE alone (runs/viz_r12/afe_zin.csv, figures 23 and 24);
   (d) the conversion through an electrode imbalance: |Vdm / Vcm| = |Y| |dZ| per frequency, with the runs' points
@@ -48,7 +49,7 @@ def minus(s):
 def trace(r):
     """the output at the electrodes (uV) over the run's window without its drift (cmrr.py's polynomial and RC tails),
     the fitted harmonics, and the electrodes' share as a sinusoid (uV); chopper-period means"""
-    names = ["qo", "qip", "qin", "inp", "inn", "body"]
+    names = ["qo", "qip", "qin", "inp", "inn", "body", "elp", "eln"]
     v, m = C.load(os.path.join(C.RUNS, r["run"]), names)
     s = C.series(v, m, v["t"][-1])
     if r["base"]:
@@ -64,10 +65,15 @@ def trace(r):
     c, *_ = np.linalg.lstsq(A, y, rcond=None)
     y_d = y - A[:, :nb] @ c[:nb]
     fitted = A[:, nb:] @ c[nb:]
-    vb_ph, _ = C.fit(tc, s["body"][a], f, poly=p, taus=taus, t0=t0)
+    vb_ph, _ = C.fit(tc, s["body"][a], f, poly=p)                    # the chip's side: no RC tail (cmrr.py)
     el = r["elec_uv"] * np.exp(1j * np.radians(r["elec_phase"])) * vb_ph[0] / abs(vb_ph[0])
     el_t = (el * np.exp(2j * np.pi * f * tc)).real
-    return tc, y_d, fitted, el_t
+    pins = None
+    if "pins_uv" in r:                                                  # the pins, their drift taken out alike
+        yp = s["pins"][a] * 1e6
+        cp, *_ = np.linalg.lstsq(A, yp, rcond=None)
+        pins = yp - A[:, :nb] @ cp[:nb]
+    return tc, y_d, fitted, el_t, pins
 
 
 def afe_alone():
@@ -107,6 +113,18 @@ def main():
     y50r = y50 - sw["g_gmin_ns_leg"] * 1e-9                     # without ngspice's gmin on the switches' junctions
     conv50r = abs(y50r) * z50
     tag = "measured" if (50.0, BAL) in runs else "projected from 1 kHz"
+    r50i = runs.get((50.0, IMB))
+    if r50i is not None:                                       # the run itself, per 100 mV pk; without the gmin, scaled
+        uv50 = r50i["vdm_uv"] / r50i["vcm_mv"] * 100
+        db50, uv50r = r50i["cmrr_db"], uv50 * conv50r / conv50
+    else:
+        uv50, db50, uv50r = 100e3 * conv50, -20 * np.log10(conv50), 100e3 * conv50r
+    db50r = 20 * np.log10(100e3 / uv50r)
+    # the input common mode follows the body through a high-pass: its lead at 50 Hz gives the time constant, and
+    # through Cin each leg then also carries a conductance, (high-frequency ratio) x Cin / tau
+    r50b = runs.get((50.0, BAL))
+    tau_cm = 1 / (2 * np.pi * 50 * np.tan(np.radians(r50b["incm_phase"]))) if r50b else None
+    g_cin = r1b["incm_ratio"] * CIN / tau_cm if tau_cm else None
     waiting = []
     if not have50:
         waiting.append("the 50 Hz runs (to 26 ms) are still running")
@@ -122,14 +140,24 @@ def main():
                    note=minus("The legs' currents return through the board's VCM node (the reference electrode's), which "
                         f"moves with them ({r1b['vcm_ratio'] * 100:.1f} % of Vcm at 1 kHz, {r1b['vcm_phase']:+.0f}°, "
                         "through CVCM 10 nF), so the body moves by "
-                        f"{r1b['body_ratio']:.4f} of the source. The electrodes' share is each leg's measured current "
-                        "through its own impedance; the chip's own conversion is what is left. "
+                        f"{r1b['body_ratio']:.4f} of the source. "
                         + (f"Until the release the amplifier's inputs are held (their common mode moves "
                            f"{r1b['held_incm_ratio']:+.2f} of the body), so each leg carries "
-                           f"{0.5 * (r1b['held_cp_pf'] + r1b['held_cn_pf']):.0f} pF (balanced legs); the charge this "
-                           f"leaves on the 47 nF drains through the 51 kΩ ({r1i['taus_ms'][0]:.2f} ms) into the window "
-                           f"and is fitted as an exponential ({r1i['trans_uv'][0]:+.0f} µV at the electrodes at "
-                           f"{r1i['window'][0] * 1e3:.0f} ms, 1 kHz). " if "held_cp_pf" in r1b else "")
+                           f"{0.5 * (r1b['held_cp_pf'] + r1b['held_cn_pf']):.0f} pF (balanced legs, 1 kHz); the charge "
+                           f"this leaves on the 47 nF drains through the 51 kΩ ({r1i['taus_ms'][0]:.2f} ms) into the "
+                           f"window and is fitted as an exponential on the output and the pins ({r1i['trans_uv'][0]:+.0f} µV "
+                           f"at the electrodes at {r1i['window'][0] * 1e3:.0f} ms, 1 kHz); the chip's side (the legs' "
+                           "currents, the body, the input CM) carries none of it and is fitted without. "
+                           if "held_cp_pf" in r1b else "")
+                        + (f"At 50 Hz the window ({r50i['window'][0] * 1e3:.0f}–{r50i['window'][1] * 1e3:.0f} ms) holds "
+                           "one period, so the polynomial stays at order 2 (a cubic follows one period of the sine); the "
+                           f"fit's variants (order 1, the RC × 0.9 and × 1.1) give {r50i['cmrr_span_db'][0]:.2f}–"
+                           f"{r50i['cmrr_span_db'][1]:.2f} dB, and the legs' admittance is good to a few % there. "
+                           if r50i is not None else "")
+                        + (f"The amplifier's inputs follow the body by {r1b['incm_ratio']:.3f} above a high-pass of "
+                           f"{tau_cm * 1e3:.0f} ms (their lead at 50 Hz, {r50b['incm_phase']:.2f}°; figure 39's recovery), "
+                           f"so through Cin each leg also carries {r1b['incm_ratio']:.3f} × 636 pF / {tau_cm * 1e3:.0f} ms "
+                           f"= {g_cin * 1e9:.1f} nS. " if g_cin else "")
                         + "The start deck keeps "
                         "ngspice's default gmin, which puts 1 pS × M across every junction: "
                         f"{sw['g_gmin_ns_leg']:.1f} nS per leg through the input chopper's switches, not in silicon "
@@ -138,34 +166,41 @@ def main():
                         + (" Interim: " + "; ".join(waiting) + "." if waiting else "")))
     gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.4])
 
-    # (a) the imbalanced legs: the output against the legs' currents through the imbalance
+    # (a) the imbalanced legs: the output against the pins and the legs' currents through the imbalance
     ax = fig.add_subplot(gs[0, 0])
     r = runs[(f_show, IMB)]
-    tc, y, fitted, el_t = trace(r)
+    tc, y, fitted, el_t, pins = trace(r)
     t_ms = tc * 1e3
     ax.plot(t_ms, y, ".", ms=2.2, color=ACCENT, alpha=0.5, label="AFE output at the electrodes (chopper-period means)")
+    if pins is not None:
+        ax.plot(t_ms, pins, color=TEAL, lw=0.7, alpha=0.85, label="the pins' differential, simulated")
     ax.plot(t_ms, el_t, color=INK, lw=1.1, ls=(0, (4, 2)), label="the legs' currents through their impedances")
     ax.set_xlabel("time from power-on (ms)")
     ax.set_ylabel("differential at the electrodes (µV)")
     ax.legend(loc="upper right", fontsize=7.6)
-    ax.set_title(f"ELP with 51 kΩ || 47 nF, {f_show:g} Hz: {r['vdm_uv']:.1f} µV pk for {r['vcm_mv']:.1f} mV pk, "
-                 f"CMRR {r['cmrr_db']:.1f} dB\nthe legs' currents through the imbalance give {r['elec_uv']:.1f} µV, "
-                 f"the chip's own part {r['own_uv']:.2f} µV", loc="left")
+    head = (f"ELP with 51 kΩ || 47 nF, {f_show:g} Hz: {r['vdm_uv']:.1f} µV pk for {r['vcm_mv']:.1f} mV pk, "
+            f"CMRR {r['cmrr_db']:.1f} dB\n")
+    if "pins_uv" in r:
+        head += (f"the pins {r['pins_uv']:.1f} µV (the output over them {r['gain_fcm']:.2f}, {r['gain_fcm_phase']:+.2f}°); "
+                 f"the legs' currents {r['elec_uv']:.1f} µV")
+    else:
+        head += f"the legs' currents through the imbalance give {r['elec_uv']:.1f} µV"
+    ax.set_title(minus(head), loc="left")
     lim = 1.25 * max(abs(y).max(), abs(el_t).max())
     ax.set_ylim(-lim, 1.35 * lim)
 
     # (b) the balanced legs: the chip's own conversion
     ax = fig.add_subplot(gs[0, 1])
     r = runs[(f_show, BAL)]
-    tc, y, fitted, el_t = trace(r)
+    tc, y, fitted, el_t, _ = trace(r)
     t_ms = tc * 1e3
     ax.plot(t_ms, y * 1e3, ".", ms=2.2, color=TEAL, alpha=0.5, label="AFE output at the electrodes (chopper-period means)")
     ax.plot(t_ms, fitted * 1e3, color=INK, lw=1.1, label="fitted: fcm, 2 fcm, 3 fcm")
     ax.set_xlabel("time from power-on (ms)")
     ax.set_ylabel("differential at the electrodes (nV)")
     ax.legend(loc="upper right", fontsize=7.6)
-    ax.set_title(f"Balanced legs (100 Ω each), {f_show:g} Hz: {r['vdm_uv'] * 1e3:.0f} nV pk for {r['vcm_mv']:.1f} mV pk,"
-                 f" CMRR {r['cmrr_db']:.1f} dB\n(the chip's own conversion; through the 100 Ω legs "
+    ax.set_title(f"Balanced legs (100 Ω each), {f_show:g} Hz: {r['vdm_uv'] * 1e3:.1f} nV pk for {r['vcm_mv']:.1f} mV pk,"
+                 f" CMRR {r['cmrr_db']:.0f} dB\n(the chip's own conversion with the 100 Ω legs' drops, "
                  f"{r['elec_uv'] * 1e3:.0f} nV)", loc="left")
     lim = 1.25 * abs(y * 1e3).max()
     ax.set_ylim(-lim, 1.35 * lim)
@@ -218,14 +253,15 @@ def main():
         rr = runs[(f, IMB)]
         ax.semilogx([abs(C.zleg("51k|47n", f)) / 1e3], [rr["cmrr_db"]], "o", color=FCOL[f], ms=6.5)
         rb = runs[(f, BAL)]
-        ax.axhline(rb["cmrr_db"], color=FCOL[f], lw=0.9, ls=(0, (1, 2)))
-        ax.text(0.12, rb["cmrr_db"] + 1.2, f"balanced legs, {f:g} Hz: {rb['cmrr_db']:.1f} dB (the chip's own)",
-                fontsize=7.8, color=FCOL[f])
-    if (50.0, IMB) not in runs:
-        ax.semilogx([z50 / 1e3], [-20 * np.log10(conv50)], "o", mfc="white", mec=ACCENT, ms=6.5, mew=1.3)
-    ax.annotate(f"51 kΩ || 47 nF at 50 Hz: {z50 / 1e3:.1f} kΩ,\n{-20 * np.log10(conv50):.1f} dB; 100 mV pk on the body"
-                f"\ngives {100e3 * conv50:.0f} µV pk ({100e3 * conv50 / FS_UV * 100:.0f} % of the full scale)",
-                (z50 / 1e3, -20 * np.log10(conv50)), (60, 72), fontsize=7.8, color=INK2,
+        ax.axhline(min(rb["cmrr_db"], 113), color=FCOL[f], lw=0.9, ls=(0, (1, 2)))
+        ax.text(0.12, min(rb["cmrr_db"], 113) - (3.6 if rb["cmrr_db"] > 113 else -1.2),
+                f"balanced legs, {f:g} Hz: {rb['cmrr_db']:.0f} dB (the chip's own"
+                + ("; off the scale)" if rb["cmrr_db"] > 113 else ")"), fontsize=7.8, color=FCOL[f])
+    if r50i is None:
+        ax.semilogx([z50 / 1e3], [db50], "o", mfc="white", mec=ACCENT, ms=6.5, mew=1.3)
+    ax.annotate(f"51 kΩ || 47 nF at 50 Hz: {z50 / 1e3:.1f} kΩ,\n{db50:.1f} dB ({'run' if r50i else tag}); 100 mV pk on "
+                f"the body\ngives {uv50:.0f} µV pk ({uv50 / FS_UV * 100:.0f} % of the full scale)",
+                (z50 / 1e3, db50), (60, 72), fontsize=7.8, color=INK2,
                 arrowprops=dict(arrowstyle="-", color=LIGHT, lw=0.8))
     z1 = abs(C.zleg("51k|47n", 1000.0))
     ax.annotate(f"51 kΩ || 47 nF at 1 kHz: {z1 / 1e3:.2f} kΩ, {r1i['cmrr_db']:.1f} dB (run)",
@@ -236,8 +272,8 @@ def main():
     ax.set_xlabel("|ΔZ|, the legs' impedances' difference at that frequency (kΩ)")
     ax.set_ylabel("CMRR at the electrodes (dB)")
     ax.legend(loc="lower left", fontsize=7.6)
-    ax.set_title(f"Through an imbalance: |Vdm / Vcm| = |Y| · |ΔZ|\n50 Hz, 51 kΩ || 47 nF: "
-                 f"{-20 * np.log10(conv50):.1f} dB ({tag})", loc="left")
+    ax.set_title(f"Through an imbalance: |Vdm / Vcm| = |Y| · |ΔZ|\n50 Hz, 51 kΩ || 47 nF: {db50:.1f} dB "
+                 f"({'run' if r50i else tag}); without the gmin {db50r:.1f} dB", loc="left")
 
     # (e) the numbers
     ax = fig.add_subplot(gs[2, :])
@@ -247,12 +283,15 @@ def main():
         rb, ri = runs[(f, BAL)], runs[(f, IMB)]
         how = "minus the baseline" if rb["base"] else f"fitted alone (polynomial {rb['poly']})"
         left.append(f"{f:g} Hz, {rb['periods']} period(s), {how}:")
-        left.append(f"  balanced: Vcm {rb['vcm_mv']:.2f} mV pk, {rb['vdm_uv'] * 1e3:.0f} nV pk, CMRR {rb['cmrr_db']:.1f} dB;"
-                    f" HD2 of the output {rb['hd2_db']:.0f} dBc")
-        left.append(f"  51 kΩ || 47 nF: {ri['vdm_uv']:.2f} µV pk, CMRR {ri['cmrr_db']:.1f} dB; the legs' currents "
-                    f"{ri['elec_uv']:.2f} µV ({ri['elec_phase']:+.1f}°)")
+        left.append(f"  balanced: Vcm {rb['vcm_mv']:.2f} mV pk, {rb['vdm_uv'] * 1e3:.1f} nV pk, CMRR {rb['cmrr_db']:.1f} dB")
+        line = f"  51 kΩ || 47 nF: {ri['vdm_uv']:.2f} µV pk, CMRR {ri['cmrr_db']:.2f} dB"
+        if ri["periods"] < 3:
+            line += f" ({ri['cmrr_span_db'][0]:.2f}–{ri['cmrr_span_db'][1]:.2f})"
+        if "pins_uv" in ri:
+            line += f"; the pins {ri['pins_uv']:.2f} µV, gain {ri['gain_fcm']:.2f}"
+        left.append(line)
         left.append(f"  legs P {rb['gp_ns']:.2f} nS + {rb['cp_pf']:.2f} pF, N {rb['gn_ns']:.2f} nS + {rb['cn_pf']:.2f} pF;"
-                    f" the amplifier's input CM {rb['incm_ratio']:.3f} of Vcm")
+                    f" the input CM {rb['incm_ratio']:.4f} of Vcm ({rb['incm_phase']:+.2f}°)")
     via_cin = (1 - r1b["incm_ratio"]) * CIN
     right.append(f"Of the {c_ref * 1e12:.1f} pF per leg (1 kHz):")
     right.append(f"  {via_cin * 1e12:.1f} pF through Cin (636 pF; the amplifier's inputs follow the body by "
@@ -260,11 +299,13 @@ def main():
     right.append(f"  {sw['c_pf_leg']:.1f} pF the input chopper's switches (PMOS 10.24 mm, NMOS 5.12 mm wide each;")
     right.append("    alone with the PDK's models, one phase on, at the electrodes' 1.648 V)")
     right.append(f"  {(c_ref - via_cin) * 1e12 - sw['c_pf_leg']:.1f} pF the rest: pads and bond wires, wiring, Cin's lower plate")
+    if g_cin:
+        right.append(f"Of the {g_ref * 1e9:.1f} nS: {sw['g_gmin_ns_leg']:.1f} gmin, {g_cin * 1e9:.1f} through Cin "
+                     f"(the input CM's {tau_cm * 1e3:.0f} ms), {g_ref * 1e9 - sw['g_gmin_ns_leg'] - g_cin * 1e9:.1f} the rest")
     right.append(f"The AFE alone (chopped transient, extracted): {alone['pex'][1][1]:.1f} nS, "
                  f"{alone['pex'][1][2] / (2 * np.pi * 1e3) * 1e3:.1f} pF at 1 kHz; DC {1e3 / alone['pex'][0][1]:.1f} MΩ")
-    right.append(minus(f"50 Hz, 51 kΩ || 47 nF ({tag}): {-20 * np.log10(conv50):.1f} dB, "
-                       f"{100e3 * conv50:.0f} µV pk per 100 mV pk;"))
-    right.append(minus(f"  without the gmin {-20 * np.log10(conv50r):.1f} dB, {100e3 * conv50r:.0f} µV pk"))
+    right.append(minus(f"50 Hz, 51 kΩ || 47 nF ({'run' if r50i else tag}): {db50:.1f} dB, {uv50:.0f} µV pk per 100 mV pk;"
+                       f" without the gmin {db50r:.1f} dB, {uv50r:.0f} µV pk"))
     ax.text(0.0, 0.98, minus("\n".join(left)), transform=ax.transAxes, va="top", fontsize=8.5, color=INK, linespacing=1.5)
     ax.text(0.55, 0.98, "\n".join(right), transform=ax.transAxes, va="top", fontsize=8.5, color=INK, linespacing=1.5)
 
@@ -274,8 +315,10 @@ def main():
     plt.close(fig)
     print("wrote", path, "(interim)" if interim else "")
     print(f"legs at 1 kHz: {g_ref * 1e9:.2f} nS + {c_ref * 1e12:.2f} pF; 50 Hz |Y| {abs(y50) * 1e9:.2f} nS ({tag}); "
-          f"51k||47n at 50 Hz {z50 / 1e3:.2f} kohm -> {-20 * np.log10(conv50):.2f} dB, {100e3 * conv50:.1f} uV pk per 100 mV; "
-          f"without the gmin |Y| {abs(y50r) * 1e9:.2f} nS, {-20 * np.log10(conv50r):.2f} dB, {100e3 * conv50r:.1f} uV pk")
+          f"51k||47n at 50 Hz {z50 / 1e3:.2f} kohm -> line {-20 * np.log10(conv50):.2f} dB; run {db50:.2f} dB, "
+          f"{uv50:.1f} uV pk per 100 mV; without the gmin |Y| {abs(y50r) * 1e9:.2f} nS, {db50r:.2f} dB, {uv50r:.1f} uV pk")
+    if g_cin:
+        print(f"input CM high-pass {tau_cm * 1e3:.2f} ms; through Cin {g_cin * 1e9:.2f} nS per leg")
 
 
 if __name__ == "__main__":

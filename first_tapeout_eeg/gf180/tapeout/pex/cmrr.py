@@ -6,23 +6,32 @@ legs' impedances set by --zp / --zn (e.g. ELP 100 ohm + 51 kohm || 47 nF, the el
 standards' common-mode test).
 
 Each common-mode run is compared with its baseline, the same deck with --cm 0 (the same legs, seed and release), so
-that the start-up's own drift drops out exactly; a run whose baseline has not finished is fitted alone (a quadratic
-takes the drift). Over a whole number of the common mode's periods from T0 = 6 ms, on chopper-period means (edges a
-quarter period after the chopper's; exact differences of the running integrals qo, qip, qin):
+that the start-up's own drift drops out exactly; a run whose baseline has not finished is fitted alone (a polynomial
+of order 4 takes the drift; 2 with fewer than 3 periods). Over a whole number of the common mode's periods from
+T0 = 6 ms, on chopper-period means (edges a quarter period after the chopper's; exact differences of the running
+integrals qo, qip, qin):
+  - Vcm is the body's own movement against ground, v(body): the legs' currents return through the board's VCM (the
+    reference electrode's node), which moves with them (CVCM; 2.5 % of the source, -165 deg, at 1 kHz), so the body
+    moves by a little less than the source's formula (kept as a check, body_ratio);
   - OUTP - OUTN at the ADC's input: its component at fcm (and 2 fcm, 3 fcm), referred to the electrodes by the AFE's
     gain on this deck (the typical 2 kHz full-scale run of figure 38, fitted the same way), and the CMRR,
     20 log10(Vcm / Vdm);
   - each leg's current: the admittance the body sees through it, Y = I / Vcm (conductance and capacitance);
-  - the amplifier's input common mode (INP + INN) / 2 against Vcm;
+  - the amplifier's input common mode (INP + INN) / 2 against Vcm, and the board VCM's movement;
   - the electrodes' share of the conversion: the legs' currents through their own impedances, -(Ip Zp - In Zn), as a
     differential voltage at the pins (the chip's own conversion is the rest).
-Phasors are complex amplitudes against the common mode's own (a phase of 0 moves with the body).
+Phasors are complex amplitudes against Vcm (a phase of 0 moves with the body). Besides, switches(): the input
+chopper's eight switches alone in a small AC deck (the PDK's models): their share of each leg's capacitance, and the
+conductance ngspice's default gmin (1 pS x M per junction) puts on each leg through them. The start deck keeps the
+default gmin, so the legs' conductance from these runs carries it; silicon does not.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/cmrr.py      (every common-mode run of r12; runs/cmrr_r12/results.json)
 """
 import glob
 import json
 import os
+import re
+import subprocess
 
 import numpy as np
 import pandas as pd
@@ -122,6 +131,9 @@ def series(v, m, t_end):
         if k in v:
             s[k] = means(t, v[k], edges)
     s["icm"] = means(t, integral(t, 0.5 * (v["inp"] + v["inn"])), edges)
+    for k in ("body", "vcm_p9"):
+        if k in v:
+            s[k] = means(t, integral(t, v[k]), edges)
     return s
 
 
@@ -138,7 +150,7 @@ def baseline_of(m, runs):
 
 
 def analyse(d, m, base, g):
-    names = ["qo", "qip", "qin", "inp", "inn"]
+    names = ["qo", "qip", "qin", "inp", "inn", "body", "vcm_p9"]
     v, _ = load(d, names)
     f = m["fcm"]
     t_end = v["t"][-1]
@@ -146,7 +158,7 @@ def analyse(d, m, base, g):
     if n < 1:
         return None
     s = series(v, m, t_end)
-    poly = 2
+    poly = 4 if n >= 3 else 2
     if base is not None:
         vb, mb = load(base, names)
         if vb["t"][-1] >= t_end - 1e-12:
@@ -162,14 +174,23 @@ def analyse(d, m, base, g):
     tc = s["tc"][a]
     xcm, _ = fit(tc, source(m, tc), f)
     vcm = xcm[0]
+    body = None
+    if "body" in s:                                                     # the body's own movement against ground
+        xb, _ = fit(tc, s["body"][a], f, poly=poly)
+        body, vcm = xb[0] / vcm, xb[0]
     po, ro = fit(tc, s["out"][a], f, poly=poly)
     vdm = po[0] / g                                                     # at the electrodes
     r = dict(run=os.path.basename(d), base=os.path.basename(base) if base else None, fcm=f, cm_mv=m["cm"], zp=m["zp"],
-             zn=m["zn"], corner=m["corner"], seed=m["seed"], periods=n, window=[we - n / f, we], gain=g,
-             out_uv=abs(po[0]) * 1e6, out_phase=float(np.degrees(np.angle(po[0] / vcm))),
+             zn=m["zn"], corner=m["corner"], seed=m["seed"], periods=n, window=[we - n / f, we], poly=poly, gain=g,
+             vcm_mv=abs(vcm) * 1e3, out_uv=abs(po[0]) * 1e6, out_phase=float(np.degrees(np.angle(po[0] / vcm))),
              vdm_uv=abs(vdm) * 1e6, cmrr_db=float(20 * np.log10(abs(vcm) / abs(vdm))),
              hd2_db=float(20 * np.log10(abs(po[1]) / abs(po[0]))), hd3_db=float(20 * np.log10(abs(po[2]) / abs(po[0]))),
              out_resid_uv=ro * 1e6)
+    if body is not None:
+        r["body_ratio"], r["body_phase"] = float(abs(body)), float(np.degrees(np.angle(body)))
+    if "vcm_p9" in s:
+        xv, _ = fit(tc, s["vcm_p9"][a], f, poly=poly)
+        r["vcm_ratio"], r["vcm_phase"] = float(abs(xv[0] / vcm)), float(np.degrees(np.angle(xv[0] / vcm)))
     ic, _ = fit(tc, s["icm"][a], f, poly=poly)
     r["incm_ratio"], r["incm_phase"] = float(abs(ic[0] / vcm)), float(np.degrees(np.angle(ic[0] / vcm)))
     if "qip" in s:
@@ -186,11 +207,63 @@ def analyse(d, m, base, g):
     return r
 
 
+def switches(deck, vcm=1.648, f=1e3):
+    """the input chopper's switches alone under the common mode: the run's extracted afe_top devices whose drain and
+    source are both on ELP / ELN / WPT / WNT, with every source and drain on one node at vcm (the electrodes' DC), the
+    gates as in one phase (CIA, NCIB high) and the PDK's typical models; AC at f, with ngspice's default gmin and with
+    1e-15. Per leg: the capacitance, and the conductance the default gmin puts across their junctions (1 pS x M each,
+    in every deck that keeps the default, such as the start deck; not in silicon)."""
+    txt = open(deck, encoding="utf-8").read()
+    head = [ln for ln in txt.splitlines()[:12] if re.match(r"\.(include .*design\.ngspice|lib .*sm141064\.ngspice typical)$", ln)]
+    sub = txt[txt.index(".subckt afe_top"):]
+    sub = sub[:sub.index("\n.ends")]
+    pins = {"ELP", "ELN", "WPT", "WNT"}
+    dev = []
+    for ln in sub.splitlines():
+        t = ln.split()
+        if len(t) > 5 and t[0].startswith("X") and t[5] in ("pfet_03v3", "nfet_03v3") and {t[1], t[3]} <= pins:
+            dev.append(" ".join([t[0], "N", t[2], "N", "0" if t[4] == "AVSS" else t[4]] + t[5:]))
+    assert len(dev) == 8, dev
+    out = {}
+    d = os.path.join(OUT, "switches")
+    os.makedirs(d, exist_ok=True)
+    for tag, opt in (("default", ""), ("gmin1e-15", ".options gmin=1e-15")):
+        deckf = os.path.join(d, f"sw_{tag}.cir")
+        open(deckf, "w").write("\n".join(
+            ["* the input chopper's switches under the common mode (cmrr.py switches)"] + head
+            + ["VAVDD AVDD 0 3.3", "VCIA CIA 0 3.3", "VNCIA NCIA 0 0", "VCIB CIB 0 0", "VNCIB NCIB 0 3.3",
+               f"VCM N 0 DC {vcm} AC 1"] + dev + [opt, ".temp 27", ".control", f"ac lin 1 {f:g} {f:g}",
+                                                   "let y = -i(vcm)", "print real(y) imag(y)", ".endc", ".end", ""]))
+        log = subprocess.run(["ngspice", "-b", deckf], capture_output=True, text=True, cwd=d).stdout
+        re_ = float(re.search(r"real\(y\)\s*=\s*(\S+)", log).group(1))
+        im_ = float(re.search(r"imag\(y\)\s*=\s*(\S+)", log).group(1))
+        out[tag] = (re_, im_ / (2 * np.pi * f))
+    # the on-resistance of one conducting pair (a PMOS and an NMOS of them, gates on) at vcm, +-1 mV
+    pm = next(x for x in dev if " pfet_03v3 " in x).split()
+    nm = next(x for x in dev if " nfet_03v3 " in x).split()
+    deckf = os.path.join(d, "sw_ron.cir")
+    open(deckf, "w").write("\n".join(
+        ["* one conducting pair of the input chopper (cmrr.py switches)"] + head
+        + ["VAVDD AVDD 0 3.3", "VGP GP 0 0", "VGN GN 0 3.3", f"VA A 0 {vcm}", f"VC C 0 {vcm}",
+           " ".join([pm[0], "A", "GP", "C", "AVDD"] + pm[5:]), " ".join([nm[0], "A", "GN", "C", "0"] + nm[5:]),
+           ".options gmin=1e-15", ".temp 27", ".control", f"dc VC {vcm - 1e-3} {vcm + 1e-3} 1e-3",
+           "let r = abs(0.002 / (i(vc)[2] - i(vc)[0]))", "print r", ".endc", ".end", ""]))
+    log = subprocess.run(["ngspice", "-b", deckf], capture_output=True, text=True, cwd=d).stdout
+    ron = float(re.search(r"\br\s*=\s*(\S+)", log).group(1))
+    return dict(devices=len(dev), vcm=vcm, f=f, c_pf_leg=out["default"][1] / 2 * 1e12,
+                g_gmin_ns_leg=(out["default"][0] - out["gmin1e-15"][0]) / 2 * 1e9, g_real_ns_leg=out["gmin1e-15"][0] / 2 * 1e9,
+                ron_ohm=ron)
+
+
 def main():
     runs = []
     for d in sorted(glob.glob(os.path.join(RUNS, f"start_*_cm*Hz*_chip_{REV}"))):
         if os.path.exists(os.path.join(d, "tr.csv")):
             runs.append((d, json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))))
+    sw = switches(os.path.join(runs[0][0], "tb.spice"))
+    print(f"the input chopper's switches alone ({sw['devices']} devices, one phase on, {sw['vcm']} V, {sw['f']:g} Hz): "
+          f"{sw['c_pf_leg']:.2f} pF per leg; ngspice's default gmin puts {sw['g_gmin_ns_leg']:.3f} nS per leg across their "
+          f"junctions (with gmin 1e-15: {sw['g_real_ns_leg']:.4f} nS); a conducting pair's on-resistance {sw['ron_ohm']:.3f} ohm")
     g = gain()
     res = []
     for d, m in runs:
@@ -201,16 +274,20 @@ def main():
         if r is None:
             continue
         res.append(r)
-        print(f"{r['run']}\n  {r['periods']} period(s) of {r['fcm']:g} Hz, {'minus ' + r['base'] if r['base'] else 'fitted alone'}:"
-              f" out {r['out_uv']:.2f} uV pk ({r['out_phase']:+.1f} deg), at the electrodes {r['vdm_uv']:.4f} uV pk,"
-              f" CMRR {r['cmrr_db']:.1f} dB; HD2 {r['hd2_db']:.1f}, HD3 {r['hd3_db']:.1f} dB; resid {r['out_resid_uv']:.2f} uV")
+        print(f"{r['run']}\n  {r['periods']} period(s) of {r['fcm']:g} Hz, {'minus ' + r['base'] if r['base'] else 'fitted alone'}"
+              f" (polynomial {r['poly']}): Vcm {r['vcm_mv']:.3f} mV pk; out {r['out_uv']:.2f} uV pk ({r['out_phase']:+.1f} deg),"
+              f" at the electrodes {r['vdm_uv']:.4f} uV pk, CMRR {r['cmrr_db']:.1f} dB; HD2 {r['hd2_db']:.1f}, HD3"
+              f" {r['hd3_db']:.1f} dB; resid {r['out_resid_uv']:.2f} uV")
+        if "body_ratio" in r:
+            print(f"  the body against the source {r['body_ratio']:.4f} ({r['body_phase']:+.2f} deg); the board VCM / Vcm"
+                  f" {r['vcm_ratio']:.4f} ({r['vcm_phase']:+.1f} deg)")
         print(f"  input CM / Vcm {r['incm_ratio']:.4f} ({r['incm_phase']:+.2f} deg)")
         if "gp_ns" in r:
             print(f"  legs: P {r['gp_ns']:.3f} nS + {r['cp_pf']:.2f} pF, N {r['gn_ns']:.3f} nS + {r['cn_pf']:.2f} pF;"
                   f" the legs' drops {r['elec_uv']:.4f} uV ({r['elec_phase']:+.1f} deg), the chip's own {r['own_uv']:.4f} uV"
                   f" ({r['own_phase']:+.1f} deg)")
     os.makedirs(OUT, exist_ok=True)
-    json.dump(dict(gain=g, runs=res), open(os.path.join(OUT, "results.json"), "w"), indent=1)
+    json.dump(dict(gain=g, switches=sw, runs=res), open(os.path.join(OUT, "results.json"), "w"), indent=1)
 
 
 if __name__ == "__main__":

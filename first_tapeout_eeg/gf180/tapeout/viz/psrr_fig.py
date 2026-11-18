@@ -137,7 +137,8 @@ def main():
                        "50 Hz. (d) a flat noise S in band gives S·√(∫|T|² df) at the electrodes; next to harmonic k "
                        "both sides fold, S·h·√(2 × 99.5 Hz); 5 % on top of the AFE's own "
                        f"{S.NOISE_NV} nVrms is {ADD5:.2f} nVrms. No noise in the runs; the board's values are "
-                       "assumptions (0.05 Ω regulator, 10 µF + 100 nF)."))
+                       "assumptions (0.05 Ω regulator, 10 µF + 100 nF). AVDD's regulator at 3.3 V in every run (the "
+                       "chip's AVDD is set per die near 3.4 V; not run there)."))
     gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 0.62, 0.5])
 
     # (a) the output in band: the folded tones
@@ -329,6 +330,10 @@ def main():
                      for n, r in stat.items())
         right.append(f"  AVDD, legs 100 Ω, the lowest of the dies and corners: {density(wv)} "
                      f"({'mc ' + str(wn) if isinstance(wn, int) else wn})")
+        # the odd harmonics above 3 fold (2/pi)/k of the same conversion (taken as flat): their powers add
+        a1 = next(x for x in stat[wn]["tones"] if x["harmonic"] == 1)["allowed_nv_rthz"]
+        hi = 1 / np.sqrt(1 / wv ** 2 + sum(1 / k ** 2 for k in range(5, 2001, 2)) / a1 ** 2)
+        right.append(f"    with the odd harmonics above 3 too ((2/π)/k each): {density(hi)}")
     ax.text(0.0, 0.98, minus("\n".join(left)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,
             linespacing=1.45)
     ax.text(0.63, 0.98, minus("\n".join(right)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,

@@ -54,6 +54,8 @@ keep only their sum (the split between P and N takes +-3 pF, +-7 nS of the start
 capacitance is done on the typical runs only. Monte Carlo dies 1-8 (11/19): 52.1-52.8 dB next to 128 kHz (sd 0.24 dB)
 and 60.9-61.6 dB next to 384 kHz, the conversion between the choppers 1.05-1.13 V/V, each die's fold the same multiple
 of its (2 / pi) / k prediction (1.02 for k = 1, 1.11-1.12 for k = 3): not mismatch; the legs' mean 58.6-59.4 pF.
+MOS corners (11/19): ff 51.5 dB (1.23 V/V), ss 53.2 dB (0.99 V/V), sf and fs as typical; the 1 kHz conversion moves by
+the same ratio. The lowest (ff) allows 43 nV/rtHz next to 128 and 384 kHz together (41 with the odd harmonics above 3).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py      (every ripple run of r12; runs/psrr_r12/results.json)
 """

@@ -32,6 +32,7 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 PEX = os.path.join(REPO, "gf180", "tapeout", "pex")
 sys.path.insert(0, PEX)
 import cmrr as C  # noqa: E402
+import psrr as S  # noqa: E402  (the in-band boxcars)
 
 OUT = os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP_DATE}", "viz")
 ZIN = os.path.join(PEX, "runs", f"viz_{V.CHIP}", "afe_zin.csv")
@@ -74,6 +75,35 @@ def trace(r):
         cp, *_ = np.linalg.lstsq(A, yp, rcond=None)
         pins = yp - A[:, :nb] @ cp[:nb]
     return tc, y_d, fitted, el_t, pins
+
+
+def trace_inband(r):
+    """the output at the electrodes (nV) in band (psrr.py's three 62.5 us boxcars, as the chip's CIC sees it) over the
+    run's window, its drift taken out by cmrr.py's in-band fit, and the fitted harmonics; the times moved back by the
+    boxcars' delay (1.5 x 62.5 us)"""
+    v, _ = C.load(os.path.join(C.RUNS, r["run"]), ["qo"])
+    t, q = v["t"], v["qo"]
+    if r["base"]:
+        vb, _ = C.load(os.path.join(C.RUNS, r["base"]), ["qo"])
+        n = min(len(t), len(vb["t"]))
+        t, q = t[:n], q[:n] - vb["qo"][:n]
+    tt, mm = S.boxcar3(t, q)
+    t0, t1 = r["window"]
+    a = (tt >= t0) & (tt < t1)
+    tt, mm = tt[a][::S.DEC], mm[a][::S.DEC]
+    u = (tt - 0.5 * (tt[0] + tt[-1])) / (0.5 * (tt[-1] - tt[0]))
+    cols = [u ** p for p in range(r["poly"] + 1)]
+    for tau in (x * 1e-3 for x in r["taus_ms"]):
+        x = (tt - t0) / tau
+        cols += [np.exp(-x), x * np.exp(-x)]
+    nb = len(cols)
+    for h in (1, 2, 3):
+        w = 2 * np.pi * h * r["fcm"] * tt
+        cols += [np.cos(w), np.sin(w)]
+    A = np.column_stack(cols)
+    y = mm / r["gain"] * 1e9
+    c, *_ = np.linalg.lstsq(A, y, rcond=None)
+    return tt - 1.5 * S.LBOX, y - A[:, :nb] @ c[:nb], A[:, nb:] @ c[nb:]
 
 
 def afe_alone():
@@ -158,6 +188,14 @@ def main():
                            f"{tau_cm * 1e3:.0f} ms (their lead at 50 Hz, {r50b['incm_phase']:.2f}°; figure 39's recovery), "
                            f"so through Cin each leg also carries {r1b['incm_ratio']:.3f} × 636 pF / {tau_cm * 1e3:.0f} ms "
                            f"= {g_cin * 1e9:.1f} nS. " if g_cin else "")
+                        + ("The balanced legs are given in band (11/18), as the chip's CIC sees them (three 62.5 µs "
+                           "boxcars on the exact running integral): chopper-period means alias onto fcm the conversion "
+                           "between the choppers, which the output chopper turns into a square wave at the ADC's input "
+                           f"(out of band: {r1b['inband']['chopped_mv']:.1f} mV pk for {r1b['inband']['vcm_mv']:.1f} mV pk "
+                           "at 1 kHz" + (f", {r50b['inband']['chopped_mv']:.1f} mV for {r50b['inband']['vcm_mv']:.1f} mV at "
+                                         "50 Hz" if r50b else "")
+                           + f"), and gave {r1b['vdm_uv']:.2f} µV ({r1b['cmrr_db']:.0f} dB) for them at 1 kHz until then; "
+                           f"with 51 kΩ || 47 nF the two agree to {abs(r1i['inband']['vdm_uv'] / r1i['vdm_uv'] - 1) * 100:.2f} %. ")
                         + "The start deck keeps "
                         "ngspice's default gmin, which puts 1 pS × M across every junction: "
                         f"{sw['g_gmin_ns_leg']:.1f} nS per leg through the input chopper's switches, not in silicon "
@@ -189,20 +227,22 @@ def main():
     lim = 1.25 * max(abs(y).max(), abs(el_t).max())
     ax.set_ylim(-lim, 1.35 * lim)
 
-    # (b) the balanced legs: the chip's own conversion
+    # (b) the balanced legs: the chip's own conversion, in band (the chopper-period means alias the conversion between
+    # the choppers onto fcm: 11/18)
     ax = fig.add_subplot(gs[0, 1])
     r = runs[(f_show, BAL)]
-    tc, y, fitted, el_t, _ = trace(r)
-    t_ms = tc * 1e3
-    ax.plot(t_ms, y * 1e3, ".", ms=2.2, color=TEAL, alpha=0.5, label="AFE output at the electrodes (chopper-period means)")
-    ax.plot(t_ms, fitted * 1e3, color=INK, lw=1.1, label="fitted: fcm, 2 fcm, 3 fcm")
+    xb = r["inband"]
+    tb, y, fitted = trace_inband(r)
+    t_ms = tb * 1e3
+    ax.plot(t_ms, y, color=TEAL, lw=3.2, alpha=0.45, label="AFE output at the electrodes, in band (three 62.5 µs boxcars)")
+    ax.plot(t_ms, fitted, color=INK, lw=0.9, ls=(0, (4, 2)), label="fitted: fcm, 2 fcm, 3 fcm")
     ax.set_xlabel("time from power-on (ms)")
     ax.set_ylabel("differential at the electrodes (nV)")
     ax.legend(loc="upper right", fontsize=7.6)
-    ax.set_title(f"Balanced legs (100 Ω each), {f_show:g} Hz: {r['vdm_uv'] * 1e3:.1f} nV pk for {r['vcm_mv']:.1f} mV pk,"
-                 f" CMRR {r['cmrr_db']:.0f} dB\n(the chip's own conversion with the 100 Ω legs' drops, "
-                 f"{r['elec_uv'] * 1e3:.0f} nV)", loc="left")
-    lim = 1.25 * abs(y * 1e3).max()
+    ax.set_title(f"Balanced legs (100 Ω each), {f_show:g} Hz: {xb['vdm_uv'] * 1e3:.1f} nV pk for {xb['vcm_mv']:.1f} mV pk,"
+                 f" CMRR {xb['cmrr_db']:.0f} dB\n(the chip's own conversion with the 100 Ω legs' drops, "
+                 f"{xb['elec_uv'] * 1e3:.0f} nV; in band, as the CIC sees it)", loc="left")
+    lim = 1.25 * abs(y).max()
     ax.set_ylim(-lim, 1.35 * lim)
 
     # (c) the legs' admittance against frequency
@@ -249,14 +289,19 @@ def main():
     for f, yy, ls, lab in ((50.0, y50, "-", f"50 Hz: |Y| = {abs(y50) * 1e9:.1f} nS ({tag})"),
                            (1000.0, y1k, (0, (4, 2)), f"1 kHz: |Y| = {abs(y1k) * 1e9:.0f} nS")):
         ax.semilogx(dz / 1e3, -20 * np.log10(abs(yy) * dz), color=FCOL[f], lw=1.3, ls=ls, label=lab)
+    bal = [(f, runs[(f, BAL)]["inband"]["cmrr_db"]) for f in freqs]
     for f in freqs:
         rr = runs[(f, IMB)]
         ax.semilogx([abs(C.zleg("51k|47n", f)) / 1e3], [rr["cmrr_db"]], "o", color=FCOL[f], ms=6.5)
-        rb = runs[(f, BAL)]
-        ax.axhline(min(rb["cmrr_db"], 113), color=FCOL[f], lw=0.9, ls=(0, (1, 2)))
-        ax.text(0.12, min(rb["cmrr_db"], 113) - (3.6 if rb["cmrr_db"] > 113 else -1.2),
-                f"balanced legs, {f:g} Hz: {rb['cmrr_db']:.0f} dB (the chip's own"
-                + ("; off the scale)" if rb["cmrr_db"] > 113 else ")"), fontsize=7.8, color=FCOL[f])
+    if all(db > 113 for _, db in bal):
+        ax.axhline(113, color=MUTED, lw=0.9, ls=(0, (1, 2)))
+        ax.text(0.12, 113 - 3.6, "balanced legs, in band: " + ", ".join(f"{db:.0f} dB at {f:g} Hz" for f, db in bal)
+                + " (the chip's own; off the scale)", fontsize=7.8, color=INK2)
+    else:
+        for f, db in bal:
+            ax.axhline(min(db, 113), color=FCOL[f], lw=0.9, ls=(0, (1, 2)))
+            ax.text(0.12, min(db, 113) - (3.6 if db > 113 else -1.2), f"balanced legs, {f:g} Hz, in band: {db:.0f} dB "
+                    "(the chip's own" + ("; off the scale)" if db > 113 else ")"), fontsize=7.8, color=INK2)
     if r50i is None:
         ax.semilogx([z50 / 1e3], [db50], "o", mfc="white", mec=ACCENT, ms=6.5, mew=1.3)
     ax.annotate(f"51 kΩ || 47 nF at 50 Hz: {z50 / 1e3:.1f} kΩ,\n{db50:.1f} dB ({'run' if r50i else tag}); 100 mV pk on "
@@ -283,7 +328,9 @@ def main():
         rb, ri = runs[(f, BAL)], runs[(f, IMB)]
         how = "minus the baseline" if rb["base"] else f"fitted alone (polynomial {rb['poly']})"
         left.append(f"{f:g} Hz, {rb['periods']} period(s), {how}:")
-        left.append(f"  balanced: Vcm {rb['vcm_mv']:.2f} mV pk, {rb['vdm_uv'] * 1e3:.1f} nV pk, CMRR {rb['cmrr_db']:.1f} dB")
+        xb = rb["inband"]
+        left.append(f"  balanced: Vcm {rb['vcm_mv']:.2f} mV pk, in band {xb['vdm_uv'] * 1e3:.1f} nV pk, CMRR {xb['cmrr_db']:.1f} dB"
+                    f" (chopper-period means {rb['vdm_uv'] * 1e3:.1f} nV)")
         line = f"  51 kΩ || 47 nF: {ri['vdm_uv']:.2f} µV pk, CMRR {ri['cmrr_db']:.2f} dB"
         if ri["periods"] < 3:
             line += f" ({ri['cmrr_span_db'][0]:.2f}–{ri['cmrr_span_db'][1]:.2f})"

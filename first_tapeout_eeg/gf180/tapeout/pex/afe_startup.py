@@ -54,6 +54,14 @@ pex_afe.py transients, which start from a solved operating point with ideal bias
     mean currents are exact differences). --cm 0 gives the same deck with the source at 0 V, the
     baseline that a common-mode run is subtracted from. --zp / --zn set each leg's impedance:
     terms joined by '+', each a resistance or 'R|C' (in parallel), e.g. 100+51k|47n.
+  - Supply ripple (--rip AVDD | DVDD, 11/18, for PSRR): that regulator's output carries tones of
+    --rip-mv mV pk each at --rip-f (a B source in series with it, switched in at --t-rip under a
+    raised-cosine envelope over --rip-ramp), ahead of its output resistance and the board's
+    decoupling; the board nodes AVDD_BRD and DVDD_BRD are saved as well. The default tones are
+    1 kHz and 128 kHz x k + (1 + k / 4) kHz for k = 1, 2, 3: the chopper's harmonic k folds each
+    onto its own frequency at the output, and all are whole numbers of periods in 4 ms. With
+    --cm 0 --fcm 50 the deck is the common-mode baseline's plus the ripple source, so that baseline
+    is the ripple run's too (psrr.py).
 Output (tr.csv, on a 100 ns grid by linearize): qo and qa, the running integrals of OUTP - OUTN
 and of the amplifier output OPI - ONI (chopper-period means are exact differences of
 them), and the saved node voltages and supply currents; run.log prints vamax, the largest
@@ -98,6 +106,8 @@ Usage: python3 afe_startup.py power --cvcm 100n [--tstop 0.1]
        python3 afe_startup.py start --cvcm 10n --sine 0.943 [--variant sch]
        python3 afe_startup.py start --cvcm 10n --ibias 3 --cm 100 --fcm 50 --zp '100+51k|47n' --tstop 26e-3
            (common mode on the body; the same with --cm 0 is its baseline; cmrr.py compares them)
+       python3 afe_startup.py start --cvcm 10n --ibias 3 --cm 0 --fcm 50 --rip AVDD --tstop 10e-3
+           (ripple tones on the AVDD regulator; the --cm 0 run is its baseline; psrr.py compares them)
        (several --cvcm / --mc values run in parallel)
 """
 import argparse
@@ -146,6 +156,9 @@ CHIP_PORT = {"VCM": "VCM_AFE", "VCM_N": "VCMN_AFE", "VCM_P": "VCMP_AFE", "AVDD":
 SAVE = ("v(avdd_afei) v(avss_afei) v(avdd_bias) v(avss_bias) v(dvddc) v(dvssc) v(vcm_afe) v(vcm_p9) v(vrefp_adc) "
         "v(vrefn_adc) v(vbn_bias) v(vbn_afe) v(vbcm_afe) v(bln_afe) v(blp_afe) v(xb.gp) v(afe_rst) v(outp_adc) "
         "v(outn_adc) v(xdut.opi) v(xdut.oni) v(xdut.inp) v(xdut.inn) v(elp) v(eln) i(vavdd) i(vdvdd)")
+# --rip: the default tones (Hz) and the board nodes saved besides SAVE
+RIP_F = [1e3, 129.25e3, 257.5e3, 385.75e3]
+RIP_SAVE = " v(avdd_brd) v(dvdd_brd)"
 CAP06 = """.subckt cap_nmos_06v0 1 2 c_length=1e-6 c_width=1e-6
 C1 1 2 {moscap_corner*c_length*c_width*2.177e-3}
 .ends cap_nmos_06v0
@@ -305,10 +318,20 @@ def dut_line(dac):
     return " ".join(out + [toks[-1]])
 
 
+def ripple(a):
+    """the ripple tones (B-source expression): rip_mv mV pk each, from t_rip under a raised-cosine envelope"""
+    t0, tr = a.t_rip, a.rip_ramp
+    tones = "+".join(f"sin(2*pi*{f:.9g}*(time-{t0:.9e}))" for f in a.rip_f)
+    return f"{a.rip_mv * 1e-3:.9g}*({tones})*0.5*(1-cos(pi*min(max(time-{t0:.9e},0),{tr:.9e})/{tr:.9e}))"
+
+
 def supply(name, reg, brd, a):
-    """regulator -> board decoupling for one supply"""
+    """regulator -> board decoupling for one supply (with --rip on it, the regulator's output carries the ripple)"""
     b = BOARD
-    return (f"V{name} {reg} 0 PWL(0 0 {a.tramp:.6e} {a.vdd})\nRLDO{name} {reg} {brd} {b['r_ldo']:g}\n"
+    rip = getattr(a, "rip", None) == name
+    src = f"{reg}0" if rip else reg
+    return (f"V{name} {src} 0 PWL(0 0 {a.tramp:.6e} {a.vdd})\n" + (f"BRIP{name} {reg} {src} V={ripple(a)}\n" if rip else "")
+            + f"RLDO{name} {reg} {brd} {b['r_ldo']:g}\n"
             f"CBK{name} {brd} {brd}_bk {b['c_bulk']:g}\nRBK{name} {brd}_bk 0 {b['esr_bulk']:g}\n"
             f"CHF{name} {brd} {brd}_hf {b['c_hf']:g}\nRHF{name} {brd}_hf {brd}_hl {b['esr_hf']:g}\n"
             f"LHF{name} {brd}_hl 0 {b['esl_hf']:g}\n")
@@ -427,6 +450,7 @@ def deck(a, mode, seed):
         tmax = a.tmax
         tstep = 100e-9                     # output grid; the integrals keep the chopper-period means exact
     tag = "typical" if not mc else f"mc{seed}"
+    rs = RIP_SAVE if getattr(a, "rip", None) else ""
     return f"""* afe_top {a.variant} from power-on: {mode}, C_VCM {a.cvcm:g} F, AVDD {a.vdd} V, {a.corner if not mc else tag}, {a.vin:+g} mV
 {head(a.corner, seed, a.moscap, a.mim_a, a.res_a)}.include {REF_PEX if pex else REF}
 .include {IO}
@@ -460,15 +484,15 @@ RLOADN OUTN_ADC VG {P.RIN:g}
 {dut_line((vos, rng) if rng else None)}
 .control
 set noaskquit
-save {SAVE}{" i(vprbp) i(vprbn)" if probes(a) else ""}{" v(body)" if a.cm is not None else ""}
+save {SAVE}{" i(vprbp) i(vprbn)" if probes(a) else ""}{" v(body)" if a.cm is not None else ""}{rs}
 tran {tstep:.3e} {a.tstop:.6e} 0 {tmax:.3e} uic
 let qo = integ(v(outp_adc) - v(outn_adc))
 let qa = integ(v(xdut.opi) - v(xdut.oni))
 {"let qip = integ(i(vprbp))" + chr(10) + "let qin = integ(i(vprbn))" + chr(10) if probes(a) else ""}\
 let vamax = vecmax(abs(v(xdut.opi) - v(xdut.oni)))
 print vamax
-linearize qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}
-wrdata tr.csv qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}
+linearize qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}{rs}
+wrdata tr.csv qo qa{" qip qin" if probes(a) else ""} {SAVE}{" v(body)" if a.cm is not None else ""}{rs}
 quit
 .endc
 .end
@@ -491,16 +515,18 @@ def run(a, mode, cvcm, seed):
             (f"_afe{a.t_afe0 * 1e3:g}ms" if mode == "start" else "") + ("_pdkcap" if a.moscap == "pdk" else "") +
             (f"_chip{a.chip}" if a.chip != "fill" else "") + (f"_ib{a.ibias}" if a.ibias != 2 else "") +
             (f"_cm{a.cm:g}mV{a.fcm:g}Hz" if a.cm is not None else "") +
-            "".join(f"_{k}{getattr(a, k).replace('|', '_')}" for k in ("zp", "zn") if getattr(a, k) != "100") + a.tag)
+            "".join(f"_{k}{getattr(a, k).replace('|', '_')}" for k in ("zp", "zn") if getattr(a, k) != "100") +
+            (f"_rip{a.rip}{a.rip_mv:g}mV" + ("" if list(a.rip_f) == RIP_F else "_f" + "_".join(f"{f:g}" for f in a.rip_f))
+             if a.rip else "") + a.tag)
     d = os.path.join(RUNS, name)
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "tb.spice"), "w").write(deck(a, mode, seed))
     vecs = (["qo", "qa"] + (["qip", "qin"] if probes(a) else []) + [vec_name(v) for v in SAVE.split()]
-            + (["body"] if a.cm is not None else []))
+            + (["body"] if a.cm is not None else []) + (["avdd_brd", "dvdd_brd"] if a.rip else []))
     json.dump({k: getattr(a, k) for k in ("cvcm", "vdd", "corner", "temp", "vin", "variant", "sine", "fsig", "tramp",
                                           "t_afe", "t_reset", "tstop", "tmax", "moscap", "chip", "rafe", "iadc", "ibias",
                                           "t_write", "mim_a", "res_a", "dac_mag", "cm", "fcm", "t_cm", "cm_ramp", "zp",
-                                          "zn")}
+                                          "zn", "rip", "rip_mv", "rip_f", "t_rip", "rip_ramp")}
               | {"mode": mode, "seed": seed, "vectors": vecs},
               open(os.path.join(d, "meta.json"), "w"), indent=1)
     t = time.time()
@@ -549,6 +575,12 @@ def main():
     ap.add_argument("--cm-ramp", type=float, default=2e-3, help="its raised-cosine envelope (s)")
     ap.add_argument("--zp", default="100", help="ELP leg: terms joined by '+', each R or R|C (parallel), e.g. 100+51k|47n")
     ap.add_argument("--zn", default="100", help="ELN leg, the same way")
+    ap.add_argument("--rip", choices=["AVDD", "DVDD"], default=None,
+                    help="ripple tones on that supply's regulator output (PSRR); without it the deck is unchanged")
+    ap.add_argument("--rip-mv", type=float, default=10.0, help="each ripple tone's amplitude at the regulator (mV pk)")
+    ap.add_argument("--rip-f", type=float, nargs="+", default=RIP_F, help="the ripple tones (Hz)")
+    ap.add_argument("--t-rip", type=float, default=2.5e-3, help="ripple switched in (s)")
+    ap.add_argument("--rip-ramp", type=float, default=2e-3, help="its raised-cosine envelope (s)")
     ap.add_argument("--tag", default="", help="suffix of the run folder")
     ap.add_argument("--jobs", type=int, default=8)
     a = ap.parse_args()

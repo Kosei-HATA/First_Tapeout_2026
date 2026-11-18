@@ -34,7 +34,11 @@ period after the chopper's; exact differences of the running integrals qo, qip, 
     output), and the output over it: the AFE's gain at fcm (with balanced legs the pins carry only the input
     chopper's switching, which the amplifier does not take with that gain, so neither is kept);
   - the output's spread over variants of the fit (the polynomial one order lower; the RC time constants x 0.9 and
-    x 1.1): vdm_span_uv, cmrr_span_db.
+    x 1.1): vdm_span_uv, cmrr_span_db;
+  - inband (11/18): the output, the body, the legs' drops and the pins in band, as the chip's CIC sees them (psrr.py's
+    three 62.5 us boxcars), and the conversion between the choppers, which the output chopper turns into a square
+    wave at the ADC's input (fc -+ f). Chopper-period means alias that square wave onto f (x 0.0078 at 1 kHz): the
+    balanced 1 kHz run's 0.52 uV above is that; where the in-band part dominates the two agree.
 Phasors are complex amplitudes against Vcm (a phase of 0 moves with the body). Against the baseline, also the
 admittance through each leg while the AFE is still held (from 0.5 ms after the common mode starts to just before the
 chopper does): the legs' charge regressed on the body's movement and its integral. Besides, switches(): the input
@@ -62,7 +66,7 @@ T0 = 6e-3
 SINE_RUN = f"start_c1e-08_v3.3_typical_+0mV_sine0.943mV2000Hz_afe5ms_ib3_chip_{REV}"     # figure 38's typical run
 SI = {"f": 1e-15, "p": 1e-12, "n": 1e-9, "u": 1e-6, "m": 1e-3, "k": 1e3, "M": 1e6, "G": 1e9}
 MATCH = ("vdd", "corner", "temp", "vin", "variant", "cvcm", "t_afe", "t_reset", "ibias", "chip", "rafe", "iadc", "seed",
-         "mim_a", "res_a", "dac_mag", "zp", "zn", "tmax", "moscap", "t_write", "tramp")
+         "mim_a", "res_a", "dac_mag", "zp", "zn", "tmax", "moscap", "t_write", "tramp", "rip")     # rip: psrr.py's runs
 
 
 def si(x):
@@ -216,7 +220,7 @@ def baseline_of(m, runs):
 
 
 def analyse(d, m, base, g):
-    names = ["qo", "qip", "qin", "inp", "inn", "body", "vcm_p9", "elp", "eln"]
+    names = ["qo", "qip", "qin", "inp", "inn", "body", "vcm_p9", "elp", "eln", "outp_adc", "outn_adc"]
     v, _ = load(d, names)
     f = m["fcm"]
     t_end = v["t"][-1]
@@ -293,8 +297,45 @@ def analyse(d, m, base, g):
         if n >= 3 or m["zp"] == m["zn"]:      # one period leaves the legs' phase a few degrees loose: no remainder
             own = vdm - el
             r["own_uv"], r["own_phase"] = abs(own) * 1e6, float(np.degrees(np.angle(own / vcm)))
+    r["inband"] = inband(v, vb, m, r, g, taus)
     r["done"] = bool(v["done"])
     return r
+
+
+def inband(v, vb, m, r, g, taus):
+    """11/18: the same quantities in band, as the chip's CIC sees them: psrr.py's three boxcars of 62.5 us on the 100 ns
+    grid from the running integrals (zeros at every multiple of 16 kHz), the harmonics f, 2f, 3f fitted. Chopper-period
+    means alias the output chopper's square wave (the conversion between the choppers, at fc -+ f, 3 fc -+ f) onto f, x
+    0.0078 at 1 kHz: the balanced 1 kHz run's 0.52 uV was that. Also that square wave's amplitude at the ADC's input
+    (pi / 2 x the fc -+ f pair on the raw grid): out of band, but it takes the ADC's range."""
+    import psrr as S                                  # psrr.py imports this module
+    f = m["fcm"]
+    t0, t1 = r["window"]
+    n = len(v["t"]) if vb is None else min(len(v["t"]), len(vb["t"]))
+    t = v["t"][:n]
+
+    def d(k):
+        return v[k][:n] - (vb[k][:n] if vb is not None else 0)
+
+    fh = [f, 2 * f, 3 * f]
+    po, ro = S.inband(t, d("qo"), fh, taus, r["poly"], t0, t1)
+    pb, _ = S.inband(t, integral(t, d("body")), fh, (), r["poly"], t0, t1)
+    ip, _ = S.inband(t, d("qip"), fh, (), r["poly"], t0, t1)
+    im, _ = S.inband(t, d("qin"), fh, (), r["poly"], t0, t1)
+    vcm, vdm = pb[0], po[0] / g
+    el = -(ip[0] * zleg(m["zp"], f) - im[0] * zleg(m["zn"], f))
+    w = (t >= t0) & (t < t1)
+    pq, _ = S.fit_tones(t[w], d("outp_adc")[w] - d("outn_adc")[w], [1 / TCH - f, 1 / TCH + f], poly=2)
+    sq = np.pi / 2 * 0.5 * (abs(pq[0]) + abs(pq[1]))
+    x = dict(vcm_mv=abs(vcm) * 1e3, vdm_uv=abs(vdm) * 1e6, cmrr_db=float(20 * np.log10(abs(vcm) / abs(vdm))),
+             out_resid_uv=ro * 1e6, elec_uv=abs(el) * 1e6, chopped_mv=sq * 1e3, chopped_ratio=sq / abs(vcm),
+             chopped_sidebands_mv=[abs(y) * 1e3 for y in pq])
+    if r["periods"] >= 3 or m["zp"] == m["zn"]:      # one period leaves the legs' phase loose (as above)
+        x["own_uv"] = abs(vdm - el) * 1e6
+    if m["zp"] != m["zn"]:
+        pp, _ = S.inband(t, integral(t, d("elp") - d("eln")), fh, taus, r["poly"], t0, t1)
+        x.update(pins_uv=abs(pp[0]) * 1e6, gain_fcm=float(abs(po[0] / pp[0])))
+    return {k: float(y) if not isinstance(y, list) else y for k, y in x.items()}
 
 
 def switches(deck, vcm=1.648, f=1e3):
@@ -384,6 +425,12 @@ def main():
                   f" (resid {r['leg_resid_na'][0]:.4f}, {r['leg_resid_na'][1]:.4f} nA);"
                   f" the legs' drops {r['elec_uv']:.4f} uV ({r['elec_phase']:+.1f} deg)"
                   + (f", the chip's own {r['own_uv']:.4f} uV ({r['own_phase']:+.1f} deg)" if "own_uv" in r else ""))
+        x = r["inband"]
+        print(f"  in band (the CIC's view; three 62.5 us boxcars): {x['vdm_uv']:.4f} uV pk, CMRR {x['cmrr_db']:.2f} dB; the"
+              f" legs' drops {x['elec_uv']:.4f} uV" + (f", the chip's own {x['own_uv']:.4f} uV" if "own_uv" in x else "")
+              + (f"; the pins {x['pins_uv']:.4f} uV, gain {x['gain_fcm']:.3f}" if "pins_uv" in x else "")
+              + f"; between the choppers a square wave of {x['chopped_mv']:.2f} mV pk at the ADC's input"
+              f" ({x['chopped_ratio']:.4f} x Vcm)")
         if "held_cp_pf" in r:
             print(f"  while held ({r['held_window'][0] * 1e3:.2f}-{r['held_window'][1] * 1e3:.2f} ms, the body over"
                   f" {r['held_swing_mv']:.1f} mV): P {r['held_gp_ns']:.1f} nS + {r['held_cp_pf']:.1f} pF, N"

@@ -51,9 +51,9 @@ amplifier's OPI - ONI carries 1.10 V/V of the ripple between the choppers; (2 / 
 corners have no baselines and are fitted alone: on the typical runs the folded tones agree to 1e-5, but the 1 kHz and
 257.5 kHz tones sit near the method's floor (legs of 100 ohm, 1 kHz: 142.9 against 139.1 dB) and the legs' admittances
 keep only their sum (the split between P and N takes +-3 pF, +-7 nS of the start-up's drift); the split of the
-capacitance is done on the typical runs only. Monte Carlo dies 1-4 (11/19): 52.1-52.8 dB next to 128 kHz and
-60.9-61.6 dB next to 384 kHz, the conversion between the choppers 1.05-1.13 V/V, each die's fold the same multiple of
-its (2 / pi) / k prediction (1.02 for k = 1, 1.11-1.12 for k = 3): not mismatch; the legs' mean 58.7-59.4 pF.
+capacitance is done on the typical runs only. Monte Carlo dies 1-8 (11/19): 52.1-52.8 dB next to 128 kHz (sd 0.24 dB)
+and 60.9-61.6 dB next to 384 kHz, the conversion between the choppers 1.05-1.13 V/V, each die's fold the same multiple
+of its (2 / pi) / k prediction (1.02 for k = 1, 1.11-1.12 for k = 3): not mismatch; the legs' mean 58.6-59.4 pF.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py      (every ripple run of r12; runs/psrr_r12/results.json)
 """

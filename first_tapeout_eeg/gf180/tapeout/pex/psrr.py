@@ -31,17 +31,32 @@ T0-T1 (6-10 ms):
   - the output's spread over variants of the fit (the polynomial one order lower and higher; the RC time constants
     x 0.9 and x 1.1) and the same tones fitted on the baseline alone (the method's floor without ripple);
   - the 1 kHz tone's conversion between the choppers, which the output chopper turns into a square wave at the ADC's
-    input (fc -+ 1 kHz, 3 fc -+ 1 kHz on the raw grid): out of band, but it takes the ADC's range.
+    input (fc -+ 1 kHz, 3 fc -+ 1 kHz on the raw grid): out of band, but it takes the ADC's range;
+  - for every tone the conversion between the choppers itself: the amplifier's own OPI - ONI (before the output
+    chopper) at the tone's frequency per V of the board's ripple; the output chopper's odd harmonic k brings (2 / pi) / k
+    of it into band (fold_pred_uv), which is how the tones next to 128 and 384 kHz come back;
+  - for the 1 kHz tone on AVDD, each leg's capacitance to AVDD split: the input switches' PMOS wells (switches_supply(),
+    AVDD against the pins), through Cin (CIN_PF, the amplifier's input common mode against the pins) and the rest;
+  - in band (BAND) from the typical runs: the 1 kHz transfer carried down (band_transfer()), and the flat regulator
+    noise that adds 5 % to the AFE's own NOISE_NV, in band and next to each chopper harmonic (both sides fold).
 Checked on cmrr.py's runs (11/18): the three boxcars give cmrr.py's numbers wherever the in-band part dominates (51 kohm
 || 47 nF: 286.20 against 285.84 uV at 1 kHz, 194.15 against 193.97 uV at 50 Hz, the harmonics 2f and 3f fitted too),
 but the balanced 1 kHz run's 0.52 uV was the chopped conversion (fc -+ 1 kHz, 66.7 mV each at the output) that
 chopper-period means alias onto 1 kHz (x 0.0078): in band it is 0.0038 uV.
+
+Results (11/19, typical, figure 46): legs of 100 ohm, AVDD 139 dB at 1 kHz but 52.4 dB next to 128 kHz (the
+amplifier's OPI - ONI carries 1.10 V/V of the ripple between the choppers; (2 / pi) of it predicts 20.70 uV against
+21.08 uV in band) and 61.2 dB next to 384 kHz; DVDD 197 / 114 dB. ELP 51 kohm || 47 nF: AVDD 62.5 dB in band at 50 Hz
+(each leg's 59.0 pF to AVDD = the switches' wells 23.7 + through Cin 23.9 + 11.4 not split). The Monte Carlo dies and
+corners have no baselines and are fitted alone (on the typical runs the folded tones agree to 1e-5).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py      (every ripple run of r12; runs/psrr_r12/results.json)
 """
 import glob
 import json
 import os
+import re
+import subprocess
 
 import numpy as np
 
@@ -57,7 +72,8 @@ LBOX = 8 * C.TCH                      # 62.5 us
 DEC = 10                              # the filtered output is fitted every 1 us
 SUPPLY = {"AVDD": ("avdd_brd", ("avdd_afei", "avss_afei")), "DVDD": ("dvdd_brd", ("dvddc", "dvssc"))}
 NAMES = ["qo", "qip", "qin", "outp_adc", "outn_adc", "elp", "eln", "avdd_afei", "avss_afei", "dvddc", "dvssc",
-         "avdd_brd", "dvdd_brd", "body", "vcm_p9"]
+         "avdd_brd", "dvdd_brd", "body", "vcm_p9", "opi", "oni", "inp", "inn"]
+CIN_PF = 636.0                        # each side's input capacitor (the 11/17 split of the legs' 138.5 pF common mode)
 
 
 def out_freq(f):
@@ -172,6 +188,9 @@ def analyse(d, m, base, g):
         floor = np.abs(pf / g)
     # the direct components at the output (raw grid, against the baseline), for the ADC's sampling
     pd_, _ = fit_tones(tw, (diff("outp_adc") - diff("outn_adc"))[w], freqs, poly=2)
+    # between the choppers: the amplifier's differential output OPI - ONI at each tone's own frequency (the output
+    # chopper's harmonic k, (4 / pi) / k for odd k, brings it to f_out: (2 / pi) / k of it in band)
+    pa, _ = fit_tones(tw, (diff("opi") - diff("oni"))[w], freqs, poly=2)
     tones = []
     for i, f in enumerate(freqs):
         ripple_b, ripple_c = abs(pb[i]), abs(pc[i])
@@ -181,7 +200,8 @@ def analyse(d, m, base, g):
                           vdm_span_uv=[float(span[:, i].min() * 1e6), float(span[:, i].max() * 1e6)],
                           psrr_board_db=float(20 * np.log10(ripple_b / x)), psrr_chip_db=float(20 * np.log10(ripple_c / x)),
                           floor_uv=float(floor[i] * 1e6) if floor is not None else None,
-                          direct_out_uv=float(abs(pd_[i]) * 1e6)))
+                          direct_out_uv=float(abs(pd_[i]) * 1e6), between_vv=float(abs(pa[i]) / ripple_b),
+                          fold_pred_uv=(float(2 / np.pi / ks[i] * abs(pa[i]) / abs(g) * 1e6) if ks[i] % 2 else None)))
     r = dict(run=os.path.basename(d), base=os.path.basename(base) if vb is not None else None, supply=sup, zp=m["zp"],
              zn=m["zn"], corner=m["corner"], seed=m["seed"], rip_mv=m["rip_mv"], window=[T0, T1], poly=poly, gain=g,
              taus_ms=[x * 1e3 for x in taus], board_resid_uv=rb * 1e6, chip_resid_uv=rc * 1e6, out_resid_uv=ro * 1e6,
@@ -197,6 +217,8 @@ def analyse(d, m, base, g):
         yp, yn = ip[0] / vr, im[0] / vr
         wf = 2 * np.pi * f
         el = -(ip[0] * C.zleg(m["zp"], f) - im[0] * C.zleg(m["zn"], f))
+        icm, _ = inband(t, C.integral(t, 0.5 * (diff("inp") + diff("inn"))), [f], (), poly)
+        pcm, _ = inband(t, C.integral(t, 0.5 * (diff("elp") + diff("eln"))), [f], (), poly)
         body, _ = inband(t, C.integral(t, diff("body")), [f], (), poly)
         vcm, _ = inband(t, C.integral(t, diff("vcm_p9")), [f], (), poly)
         # its conversion between the choppers: the output chopper's square wave, at fc -+ f and 3 fc -+ f (out of band,
@@ -210,8 +232,66 @@ def analyse(d, m, base, g):
                            gp_ns=float(yp.real * 1e9), cp_pf=float(yp.imag / wf * 1e12),
                            gn_ns=float(yn.real * 1e9), cn_pf=float(yn.imag / wf * 1e12),
                            elec_uv=float(abs(el) * 1e6), own_uv=float(abs(vdm[i0] - el) * 1e6),
-                           body_uv=float(abs(body[0]) * 1e6), vcm_uv=float(abs(vcm[0]) * 1e6))
+                           body_uv=float(abs(body[0]) * 1e6), vcm_uv=float(abs(vcm[0]) * 1e6),
+                           icm_re=float((icm[0] / vr).real), icm_im=float((icm[0] / vr).imag),
+                           pcm_re=float((pcm[0] / vr).real), pcm_im=float((pcm[0] / vr).imag))
     return r
+
+
+def switches_supply(deck, vcm=1.648, f=1e3):
+    """the input chopper's switches alone (cmrr.switches()' small AC deck, the run's extracted devices, every source and
+    drain on one node at vcm, the gates as in one phase) with the AC source on AVDD (the PMOS wells) instead: each
+    leg's admittance to AVDD through them, with ngspice's default gmin (1 pS x M across every junction, as in the start
+    deck) and with 1e-15 (silicon). Returns C (F) and G (S) per leg for both."""
+    txt = open(deck, encoding="utf-8").read()
+    head = [ln for ln in txt.splitlines()[:12] if ln.startswith((".include", ".lib")) and ("design.ngspice" in ln or "typical" in ln)]
+    sub = txt[txt.index(".subckt afe_top"):]
+    sub = sub[:sub.index("\n.ends")]
+    pins = {"ELP", "ELN", "WPT", "WNT"}
+    dev = []
+    for ln in sub.splitlines():
+        t = ln.split()
+        if len(t) > 5 and t[0].startswith("X") and t[5] in ("pfet_03v3", "nfet_03v3") and {t[1], t[3]} <= pins:
+            dev.append(" ".join([t[0], "N", t[2], "N", "0" if t[4] == "AVSS" else t[4]] + t[5:]))
+    assert len(dev) == 8, dev
+    d = os.path.join(OUT, "switches")
+    os.makedirs(d, exist_ok=True)
+    out = {}
+    for tag, opt in (("default", ""), ("gmin1e-15", ".options gmin=1e-15")):
+        deckf = os.path.join(d, f"sw_avdd_{tag}.cir")
+        open(deckf, "w").write("\n".join(
+            ["* the input chopper's switches, AVDD moving (psrr.py switches_supply)"] + head
+            + ["VAVDD AVDD 0 DC 3.3 AC 1", "VCIA CIA 0 3.3", "VNCIA NCIA 0 0", "VCIB CIB 0 0", "VNCIB NCIB 0 3.3",
+               f"VCM N 0 DC {vcm}"] + dev + [opt, ".temp 27", ".control", f"ac lin 1 {f:g} {f:g}",
+                                              "let y = i(vcm)", "print real(y) imag(y)", ".endc", ".end", ""]))
+        # i(vcm): the current that AVDD drives into the node (it enters the source at its + end)
+        log = subprocess.run(["ngspice", "-b", deckf], capture_output=True, text=True, cwd=d).stdout
+        re_ = float(re.search(r"real\(y\)\s*=\s*(\S+)", log).group(1))
+        im_ = float(re.search(r"imag\(y\)\s*=\s*(\S+)", log).group(1))
+        out[tag] = (re_ / 2, im_ / (2 * np.pi * f) / 2)              # per leg
+    return dict(f=f, vcm=vcm, c_pf_leg=out["gmin1e-15"][1] * 1e12, g_ns_leg=out["gmin1e-15"][0] * 1e9,
+                g_gmin_ns_leg=(out["default"][0] - out["gmin1e-15"][0]) * 1e9)
+
+
+BAND = (0.5, 100.0)                  # the EEG band, Hz
+NOISE_NV = 5.341                     # the AFE's own noise at the electrodes in BAND, nVrms (chip wiring, AFE_IBIAS 3)
+
+
+def band_transfer(r, sw):
+    """the 1 kHz tone's transfer carried into BAND (V at the electrodes per V of the board's ripple), per Hz on a log
+    grid: the legs' currents through their own impedances, from each leg's admittance to the supply at 1 kHz (G + j w
+    C; for AVDD without the gmin that the switches' PMOS wells carry in the deck, switches_supply()), plus the chip's
+    own conversion from the balanced run at 1 kHz, taken as flat and added in magnitude (no phase assumed)"""
+    x = r["direct"]
+    # the legs' currents count toward the chip, so the supply's passive paths come out negative (cp_pf < 0); the gmin
+    # across the switches' junctions is one of them: -g_gmin per leg, taken out
+    gfix = -sw["g_gmin_ns_leg"] if r["supply"] == "AVDD" else 0.0
+    f = np.logspace(np.log10(BAND[0]), np.log10(BAND[1]), 400)
+    w = 2 * np.pi * f
+    yp = (x["gp_ns"] - gfix) * 1e-9 + 1j * w * x["cp_pf"] * 1e-12
+    yn = (x["gn_ns"] - gfix) * 1e-9 + 1j * w * x["cn_pf"] * 1e-12
+    el = np.abs(yp * np.array([C.zleg(r["zp"], v) for v in f]) - yn * np.array([C.zleg(r["zn"], v) for v in f]))
+    return f, el
 
 
 def main():
@@ -220,6 +300,9 @@ def main():
         if os.path.exists(os.path.join(d, "tr.csv")):
             runs.append((d, json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))))
     g = C.gain()
+    sw = switches_supply(os.path.join(runs[0][0], "tb.spice"))
+    print(f"the input chopper's switches alone, AVDD moving (their PMOS wells): {sw['c_pf_leg']:.2f} pF and "
+          f"{sw['g_ns_leg']:.4f} nS per leg; ngspice's default gmin adds {sw['g_gmin_ns_leg']:.3f} nS per leg")
     res = []
     for d, m in runs:
         if not m.get("rip"):
@@ -239,7 +322,8 @@ def main():
                   f"({x['vdm_span_uv'][0]:.4f}-{x['vdm_span_uv'][1]:.4f}; floor "
                   + (f"{x['floor_uv']:.4f}" if x["floor_uv"] is not None else "-") +
                   f"); PSRR {x['psrr_board_db']:.1f} dB (board), {x['psrr_chip_db']:.1f} dB (chip); direct at the output "
-                  f"{x['direct_out_uv']:.2f} uV")
+                  f"{x['direct_out_uv']:.2f} uV; between the choppers OPI - ONI {x['between_vv']:.4g} V/V"
+                  + (f" (folded by the chopper: {x['fold_pred_uv']:.4f} uV)" if x["fold_pred_uv"] is not None else ""))
         if "direct" in r:
             x = r["direct"]
             print(f"  1 kHz: output phase against the board's ripple {x['out_phase']:+.1f} deg; pins {x['pins_uv']:.4f} uV"
@@ -248,8 +332,50 @@ def main():
                   f"{x['elec_uv']:.4f} uV, the rest {x['own_uv']:.4f} uV; body {x['body_uv']:.3f} uV, board VCM "
                   f"{x['vcm_uv']:.3f} uV; between the choppers: a square wave of {x['chopped_mv']:.3f} mV pk at the "
                   f"ADC's input ({x['chopped_ratio']:.4f} x the board's ripple)")
+    # in band (0.5-100 Hz): the legs' share from their 1 kHz admittances, plus the balanced run's own conversion
+    def h0(r):                                          # the 1 kHz tone's transfer, V at the electrodes per V
+        x = next(x for x in r["tones"] if x["harmonic"] == 0)
+        return x["vdm_uv"] / x["board_mv"] * 1e-3
+
+    def typical(r):
+        return r["corner"] == "typical" and r["seed"] is None
+
+    for r in res:                                       # each leg's capacitance to AVDD at 1 kHz, split
+        x = r.get("direct")
+        if x and r["supply"] == "AVDD":
+            a, p = complex(x["icm_re"], x["icm_im"]), complex(x["pcm_re"], x["pcm_im"])
+            c_sw = sw["c_pf_leg"] * (1 - p).real        # the switches' PMOS wells: AVDD against the pin
+            c_cin = CIN_PF * (a - p).real               # Cin: the amplifier's input common mode against the pin
+            x["split"] = dict(c_sw_pf=float(c_sw), c_cin_pf=float(c_cin),
+                              c_rest_pf=float(-0.5 * (x["cp_pf"] + x["cn_pf"]) - c_sw - c_cin))
+            print(f"  {r['run']}: legs to AVDD at 1 kHz {-0.5 * (x['cp_pf'] + x['cn_pf']):.2f} pF = the switches' wells "
+                  f"{c_sw:.2f} + through Cin {c_cin:.2f} (the input common mode {abs(a):.4f} x the ripple, the pins "
+                  f"{abs(p):.4f}) + the rest {x['split']['c_rest_pf']:.2f}")
+    own = {r["supply"]: h0(r) for r in res if r["zp"] == r["zn"] and "direct" in r and typical(r)}
+    for r in res:                                       # the folded tones: the flat noise next to k fc (both sides)
+        for x in r["tones"]:                            # that adds 5 % to the AFE's own noise
+            if x["harmonic"] > 0 and x["vdm_uv"] > 0:
+                h = x["vdm_uv"] / x["board_mv"] * 1e-3
+                x["allowed_nv_rthz"] = float(NOISE_NV * np.sqrt(1.05 ** 2 - 1) / (h * np.sqrt(2 * (BAND[1] - BAND[0]))))
+    for r in res:
+        if "direct" not in r or not typical(r):
+            continue
+        f, el = band_transfer(r, sw)
+        tot = el + own.get(r["supply"], 0.0) if r["zp"] != r["zn"] else np.full_like(f, own.get(r["supply"], 0.0))
+        rms = float(np.sqrt(np.trapz(tot ** 2, f) / (f[-1] - f[0])))
+        # a flat regulator noise S (V / sqrt Hz) gives S x sqrt(int T^2 df) at the electrodes: the S that adds 5 %
+        # to the AFE's own noise (sqrt(1.05^2 - 1) = 0.32 of it)
+        allow = NOISE_NV * 1e-9 * np.sqrt(1.05 ** 2 - 1) / np.sqrt(np.trapz(tot ** 2, f)) if rms > 0 else None
+        k50 = int(np.argmin(abs(f - 50)))
+        sel = np.unique(np.r_[np.arange(0, len(f), 8), len(f) - 1])     # every 8th point and the band's top
+        r["band"] = dict(f_hz=[float(v) for v in f[sel]], transfer=[float(v) for v in tot[sel]], legs_max=float(el.max()),
+                         at50=float(tot[k50]), rms=rms, psrr50_db=float(-20 * np.log10(tot[k50])) if tot[k50] > 0 else None,
+                         allowed_nv_rthz=float(allow * 1e9) if allow else None)
+        print(f"{r['supply']}, legs {r['zp']}: in band (0.5-100 Hz) {tot[k50]:.3e} V/V at 50 Hz ("
+              f"{r['band']['psrr50_db']:.1f} dB), rms over the band {rms:.3e}; a flat regulator noise of "
+              f"{r['band']['allowed_nv_rthz']:.0f} nV/rtHz adds 5 % to the AFE's {NOISE_NV} nVrms")
     os.makedirs(OUT, exist_ok=True)
-    json.dump(dict(gain=g, runs=res), open(os.path.join(OUT, "results.json"), "w"), indent=1)
+    json.dump(dict(gain=g, switches_avdd=sw, runs=res), open(os.path.join(OUT, "results.json"), "w"), indent=1)
 
 
 if __name__ == "__main__":

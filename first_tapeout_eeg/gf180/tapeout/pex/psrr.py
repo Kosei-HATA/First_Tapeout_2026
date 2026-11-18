@@ -48,7 +48,12 @@ Results (11/19, typical, figure 46): legs of 100 ohm, AVDD 139 dB at 1 kHz but 5
 amplifier's OPI - ONI carries 1.10 V/V of the ripple between the choppers; (2 / pi) of it predicts 20.70 uV against
 21.08 uV in band) and 61.2 dB next to 384 kHz; DVDD 197 / 114 dB. ELP 51 kohm || 47 nF: AVDD 62.5 dB in band at 50 Hz
 (each leg's 59.0 pF to AVDD = the switches' wells 23.7 + through Cin 23.9 + 11.4 not split). The Monte Carlo dies and
-corners have no baselines and are fitted alone (on the typical runs the folded tones agree to 1e-5).
+corners have no baselines and are fitted alone: on the typical runs the folded tones agree to 1e-5, but the 1 kHz and
+257.5 kHz tones sit near the method's floor (legs of 100 ohm, 1 kHz: 142.9 against 139.1 dB) and the legs' admittances
+keep only their sum (the split between P and N takes +-3 pF, +-7 nS of the start-up's drift); the split of the
+capacitance is done on the typical runs only. Monte Carlo dies 1-4 (11/19): 52.1-52.8 dB next to 128 kHz and
+60.9-61.6 dB next to 384 kHz, the conversion between the choppers 1.05-1.13 V/V, each die's fold the same multiple of
+its (2 / pi) / k prediction (1.02 for k = 1, 1.11-1.12 for k = 3): not mismatch; the legs' mean 58.7-59.4 pF.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py      (every ripple run of r12; runs/psrr_r12/results.json)
 """
@@ -300,7 +305,12 @@ def main():
         if os.path.exists(os.path.join(d, "tr.csv")):
             runs.append((d, json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))))
     g = C.gain()
-    sw = switches_supply(os.path.join(runs[0][0], "tb.spice"))
+
+    def typical(r):
+        return r["corner"] == "typical" and r["seed"] is None
+
+    # the switches' small deck takes its models from the typical deck (the Monte Carlo and corner decks load others)
+    sw = switches_supply(os.path.join(next(d for d, m in runs if typical(m)), "tb.spice"))
     print(f"the input chopper's switches alone, AVDD moving (their PMOS wells): {sw['c_pf_leg']:.2f} pF and "
           f"{sw['g_ns_leg']:.4f} nS per leg; ngspice's default gmin adds {sw['g_gmin_ns_leg']:.3f} nS per leg")
     res = []
@@ -337,12 +347,9 @@ def main():
         x = next(x for x in r["tones"] if x["harmonic"] == 0)
         return x["vdm_uv"] / x["board_mv"] * 1e-3
 
-    def typical(r):
-        return r["corner"] == "typical" and r["seed"] is None
-
-    for r in res:                                       # each leg's capacitance to AVDD at 1 kHz, split
-        x = r.get("direct")
-        if x and r["supply"] == "AVDD":
+    for r in res:                                       # each leg's capacitance to AVDD at 1 kHz, split (typical:
+        x = r.get("direct")                             # the switches' wells come from the typical deck)
+        if x and r["supply"] == "AVDD" and typical(r):
             a, p = complex(x["icm_re"], x["icm_im"]), complex(x["pcm_re"], x["pcm_im"])
             c_sw = sw["c_pf_leg"] * (1 - p).real        # the switches' PMOS wells: AVDD against the pin
             c_cin = CIN_PF * (a - p).real               # Cin: the amplifier's input common mode against the pin

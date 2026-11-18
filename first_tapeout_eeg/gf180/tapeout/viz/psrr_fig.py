@@ -12,7 +12,9 @@ the chopper's harmonics 1-3, which fold them onto 1.25, 1.5 and 1.75 kHz), legs 
       supply at 1 kHz (without ngspice's gmin on the switches' PMOS wells), plus the balanced run's own conversion;
   (d) the regulator noise (flat, at the board next to the chip) that adds 5 % to the AFE's own 5.341 nVrms, in band and
       next to each chopper harmonic;
-  (e) the numbers behind them: the conversion between the choppers, the legs' capacitance to AVDD, the board's ripple.
+  (e) the Monte Carlo dies (process + mismatch) and the MOS corners on the AVDD deck with legs of 100 ohm (no
+      baselines: each fitted alone): the folded tones, and the conversion between the choppers behind them;
+  (f) the numbers behind them: the conversion between the choppers, the legs' capacitance to AVDD, the board's ripple.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_fig.py     (after gf180/tapeout/pex/psrr.py)
 """
@@ -25,7 +27,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import vizstyle as V  # noqa: E402
-from vizstyle import ACCENT, INK, INK2, MUTED, plt  # noqa: E402
+from vizstyle import ACCENT, HAIR, INK, INK2, MUTED, plt  # noqa: E402
 
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 PEX = os.path.join(REPO, "gf180", "tapeout", "pex")
@@ -40,6 +42,8 @@ IMB, BAL = "100+51k|47n", "100"
 LEGS = {BAL: "legs 100 Ω each", IMB: "ELP 100 Ω + 51 kΩ || 47 nF"}
 ADD5 = S.NOISE_NV * np.sqrt(1.05 ** 2 - 1)            # nVrms that adds 5 % to the AFE's own noise
 XMAX = 1e6                                            # (d)'s right edge, nV/rtHz
+SEEDS = range(1, 9)                                   # (e): the Monte Carlo dies and the MOS corners run_psrr_mc.sh runs
+CORNERS = ("ss", "ff", "sf", "fs")
 
 
 def minus(s):
@@ -101,24 +105,31 @@ def main():
     runs = {(r["supply"], r["zp"]): r for r in allres["runs"]
             if r["zn"] == BAL and r["corner"] == "typical" and r["seed"] is None}
     keys = [k for k in (("AVDD", BAL), ("AVDD", IMB), ("DVDD", BAL), ("DVDD", IMB)) if k in runs]
-    interim = len(keys) < 4 or not all(runs[k]["base"] for k in keys)
+    stat = {(r["seed"] if r["seed"] is not None else r["corner"]): r for r in allres["runs"]
+            if r["supply"] == "AVDD" and r["zp"] == BAL and r["zn"] == BAL
+            and (r["seed"] is not None or r["corner"] != "typical")}
+    nstat = len(SEEDS) + len(CORNERS)
+    interim = len(keys) < 4 or not all(runs[k]["base"] for k in keys) or len(stat) < nstat
     r0 = runs[keys[0]]
     tones = r0["tones"]
 
-    fig = V.figure(12.8, 12.6, "Supply rejection: ripple on the AVDD and DVDD regulators" + (" (interim)" if interim else ""),
+    fig = V.figure(12.8, 15.4, "Supply rejection: ripple on the AVDD and DVDD regulators" + (" (interim)" if interim else ""),
                    f"Ripple tones of {r0['rip_mv']:g} mV pk each at one regulator's output (1 kHz, and next to the "
                    "chopper's harmonics 1–3, which fold them into the band at the output) in the start deck: power-on, "
                    "the extracted AFE, bias and reference on the chip wiring with the pads, bond wires and board · "
                    "typical, 27 °C, AFE_IBIAS 3, the AFE released at 5 ms · minus the same deck without ripple · the "
                    "output in band as the chip's CIC sees it (three 62.5 µs boxcars), referred to the electrodes by the "
-                   f"AFE's gain ({r0['gain']:.2f})",
+                   f"AFE's gain ({r0['gain']:.2f}) · (e) Monte Carlo dies (process + mismatch) and MOS corners",
                    note=minus(
                        "The ripple runs are cmrr.py's common-mode baselines (the common mode at 0) plus the ripple source, "
                        "so those baselines are theirs; the window is 6–10 ms (every tone a whole number of periods; the "
                        "chopper's harmonics too). In band: the CIC (sinc³, zeros every 1 kHz) passes only what the "
                        "output chopper leaves there; the boxcars (zeros every 16 kHz) take out the tones' direct "
-                       "components next to a chopper harmonic as the CIC does. Fitted without the baselines "
-                       "(polynomial 4), the folded tones agree to 1e−5. (c) carries the 1 kHz tone into 0.5–100 Hz: "
+                       "components next to a chopper harmonic as the CIC does. (e)'s dies and corners have no "
+                       "baselines and are fitted alone (polynomial 4): on the typical run the folded tones agree with the "
+                       "baseline fit to 1e−5, while the 1 kHz and 257.5 kHz tones sit near the method's floor (139 against "
+                       "143 dB) and the legs' admittances keep only their mean (the split between P and N takes ±3 pF of "
+                       "the start-up's drift). (c) carries the 1 kHz tone into 0.5–100 Hz: "
                        "each leg's admittance to the supply at 1 kHz (conductance and capacitance; for AVDD without the "
                        f"{sw['g_gmin_ns_leg']:.2f} nS per leg that ngspice's default gmin puts across the input switches' "
                        "PMOS wells, not in silicon) through the legs' own impedances, plus the balanced run's own "
@@ -127,7 +138,7 @@ def main():
                        "both sides fold, S·h·√(2 × 99.5 Hz); 5 % on top of the AFE's own "
                        f"{S.NOISE_NV} nVrms is {ADD5:.2f} nVrms. No noise in the runs; the board's values are "
                        "assumptions (0.05 Ω regulator, 10 µF + 100 nF)."))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.5])
+    gs = fig.add_gridspec(4, 2, height_ratios=[1, 1, 0.62, 0.5])
 
     # (a) the output in band: the folded tones
     ax = fig.add_subplot(gs[0, 0])
@@ -224,8 +235,44 @@ def main():
     ax.set_title(f"The regulator noise that adds 5 % to the AFE's own {S.NOISE_NV} nVrms\n(0.5–100 Hz at the electrodes; "
                  "markers as in (b))", loc="left")
 
-    # (e) the numbers
+    # (e) the dies and the corners
     ax = fig.add_subplot(gs[2, :])
+    ref = runs.get(("AVDD", BAL))
+    cols = [("typical", ref)] + [(f"mc {s_}", stat.get(s_)) for s_ in SEEDS] + [(c, stat.get(c)) for c in CORNERS]
+    xs = [0.0] + [1.4 + i for i in range(len(SEEDS))] + [1.4 + len(SEEDS) + 0.4 + j for j in range(len(CORNERS))]
+    lo_hi = []
+    for (name, r), xx in zip(cols, xs):
+        if r is None:
+            ax.text(xx, 56.6, "running", rotation=90, ha="center", va="center", fontsize=7.4, color=MUTED)
+            continue
+        by = {x["harmonic"]: x for x in r["tones"]}
+        big = 8 if name == "typical" else 6.5
+        ax.plot([xx], [by[1]["psrr_board_db"]], "o", ms=big, mec=COL["AVDD"], mew=1.4, mfc=COL["AVDD"],
+                label=minus(f"{by[1]['f'] / 1e3:g} kHz, out at {by[1]['f_out'] / 1e3:g} kHz (k = 1)") if xx == 0 else None)
+        ax.plot([xx], [by[3]["psrr_board_db"]], "o", ms=big, mec=COL["AVDD"], mew=1.4, mfc="white",
+                label=minus(f"{by[3]['f'] / 1e3:g} kHz, out at {by[3]['f_out'] / 1e3:g} kHz (k = 3)") if xx == 0 else None)
+        ax.text(xx, by[1]["psrr_board_db"] - 1.25, f"{by[1]['between_vv']:.2f}", ha="center", va="top", fontsize=7.2,
+                color=INK2)
+        if name != "typical":
+            lo_hi.append((name, by[1]["psrr_board_db"], by[3]["psrr_board_db"],
+                          min(by[0]["psrr_board_db"], by[2]["psrr_board_db"])))
+    if ref:
+        for kk in (1, 3):
+            yv = next(x for x in ref["tones"] if x["harmonic"] == kk)["psrr_board_db"]
+            ax.axhline(yv, color=HAIR, lw=1.0, ls=(0, (4, 2)), zorder=0)
+    ax.set_xticks(xs)
+    ax.set_xticklabels([c[0] for c in cols], fontsize=8)
+    ax.set_xlim(-0.7, xs[-1] + 0.7)
+    ax.set_ylim(49.0, 64.0)
+    ax.set_ylabel("supply rejection (dB)")
+    ax.legend(loc="center left", bbox_to_anchor=(0.06, 0.5), fontsize=7.6)
+    ax.set_title("Monte Carlo dies (process + mismatch) and MOS corners, AVDD, legs 100 Ω each, each fitted alone"
+                 + (f" (interim: {len(stat)} of {nstat})" if len(stat) < nstat else "")
+                 + ":\nthe fold is the same on every die and follows the conversion between the choppers "
+                 "(OPI − ONI in V/V under the filled markers; dashed: typical)", loc="left")
+
+    # (f) the numbers
+    ax = fig.add_subplot(gs[3, :])
     ax.set_axis_off()
     left, right = [], []
     a, d = runs.get(("AVDD", BAL)), runs.get(("DVDD", BAL))
@@ -257,6 +304,14 @@ def main():
                         f"{icm * 100:.1f} % of the ripple, the pins {pcm * 100:.1f} %) + {s['c_rest_pf']:.1f} pF not split")
         if d:
             left.append(f"  To DVDD: {-0.5 * (d['direct']['cp_pf'] + d['direct']['cn_pf']):.1f} pF per leg")
+        if lo_hi:
+            left.append(f"The dies and corners in (e), {len(lo_hi)} of {nstat}: {min(x[1] for x in lo_hi):.1f}–"
+                        f"{max(x[1] for x in lo_hi):.1f} dB at 1.25 kHz, {min(x[2] for x in lo_hi):.1f}–"
+                        f"{max(x[2] for x in lo_hi):.1f} dB at 1.75 kHz; 1 kHz and 257.5 kHz "
+                        f"{min(x[3] for x in lo_hi):.0f} dB and above")
+        cl = [-0.5 * (r["direct"]["cp_pf"] + r["direct"]["cn_pf"]) for r in stat.values() if "direct" in r]
+        if cl:
+            left.append(f"  each leg's capacitance to AVDD there {min(cl):.1f}–{max(cl):.1f} pF (the legs' mean)")
     rb = runs[keys[0]]
     right.append("The ripple for 10 mV pk at the regulator,")
     right.append("on the board / on the chip (AVDD, mV pk):")
@@ -269,6 +324,11 @@ def main():
         r = runs[k]
         by = {x["harmonic"]: x for x in r["tones"] if x.get("allowed_nv_rthz")}
         right.append(f"  {k[0]}, {LEGS[k[1]]}: {density(together([by[1], by[3]]))}")
+    if stat:
+        wv, wn = min((together([next(x for x in r["tones"] if x["harmonic"] == kk) for kk in (1, 3)]), n)
+                     for n, r in stat.items())
+        right.append(f"  AVDD, legs 100 Ω, the lowest of the dies and corners: {density(wv)} "
+                     f"({'mc ' + str(wn) if isinstance(wn, int) else wn})")
     ax.text(0.0, 0.98, minus("\n".join(left)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,
             linespacing=1.45)
     ax.text(0.63, 0.98, minus("\n".join(right)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,

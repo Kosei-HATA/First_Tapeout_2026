@@ -14,16 +14,20 @@ settled pins less what the DAC cancels, M x 300/997 mV (figure 27's 300 mV run);
 input, +-1.63 mV at the AFE's input (gain 297.5).
 
 After the release, Cpf's positive feedback supplies the charge for what the amplifier's output carries, so the
-electrode current is the DAC-cancelled part's, M step / R_sc (R_sc about 5.6 kohm, the switched capacitor of Cin),
-and the electrode's drop moves with M: each step of M moves the AFE's input by step x (1 + R_e / R_sc), about 3 mV
-behind 51 kohm, nearly the ADC's whole range. In reset with the chopper running the whole pin voltage sees about
-5.7 kohm, so the pulse charges the electrode to about 30 mV whatever M is.
+electrode current is the DAC-cancelled part's, M step / R_sc (R_sc 5.67 kohm at these pins, 5.56 kohm at 300 mV: the
+switched capacitor of Cin), the chip is a current sink to the electrode (it relaxes with R_e C_e = 2.4 ms), and the
+electrode's drop moves with M: each step of M moves the AFE's input by step x (1 + R_e / R_sc), 3.0 mV behind
+51 kohm, nearly the ADC's whole range (G, 11/18 afternoon). Near the range's edge the AFE compresses and Cpf no longer
+supplies the whole residual, so the chip draws a little more current and the electrode's drop pulls the pins back
+(M 98 and M 94 settle with tau 0.4 ms). In reset with the chopper running the whole pin voltage sees about 5.7 kohm,
+so the pulse charges the electrode to about 30 mV whatever M is.
   E, F: M 94, from the pins' plain mean (28.4 mV), 1 ms and 100 us pulses;
-  G98, G99, G100: M 98-100, 1 ms pulses (11/18 noon), to find the code that lands in range;
+  G98, G99, G100: M 98-100, 1 ms pulses, to find the code that lands in range (M 100);
   B: M 983, the whole offset, as the 11/16 procedure would set it if the electrode saw megaohms, CHOP_EN low.
   (a) the settled pins; (b) the ADC's input; (c) the electrode current into ELP (from the saved charge qip; the
-  100 ohm runs: (300 mV - pins) / 200 ohm), all as 8-period means; (d) the AFE's input after the 1 ms pulse, M 94-100,
-  with exponential fits carried on; (e) the runs.
+  100 ohm runs: (300 mV - pins) / 200 ohm), all as 8-period means; (d) the ADC's input / 297.5 after the 1 ms pulse
+  (the AFE's input as the host reads it, the chip's own offset included), M 94-100, with exponential fits carried on;
+  (e) the runs.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/electrode_start_fig.py
 """
@@ -55,6 +59,7 @@ I_LIMIT = 10e-6                      # IEC 60601-1, patient auxiliary current, D
 STEP = 0.300 / 997                   # V per step of M at range 4 (figure 27's 300 mV run)
 VG_SAT = 1e-3                        # the amplifier's virtual-ground error above which it is saturated (V)
 T_WRITE = 6.0012e-3
+FIT_FROM = 1.0e-3                    # fits start this long after the release (the first ms carries VCM_AFE's return)
 ZP = "_zp100+51k_47n"
 # key, the run's name between the offset and the chip, label, colour, line style, line width, panels
 RUNS = [
@@ -145,13 +150,21 @@ def back_in_range(s, t0):
     return 0.0 if not len(bad) else s["c"][a][bad[-1] + 1] - 4 * TCH - t0
 
 
-def fit_tail(s, m, t0):
-    """the AFE's input after t0, fitted with r_inf + A exp(-(t - t0) / tau): (r_inf, tau, rms)"""
+def fit_tail(s, m, t0, host=False):
+    """the AFE's input after t0 (settled pins - M step, or with host=True the ADC's input / GAIN, what the host reads),
+    fitted with r_inf + A exp(-(t - t0) / tau): (r_inf, tau, rms, f, p)"""
     a = s["c"] > t0
-    tt, r = s["c"][a] - t0, s["set"][a] - vdac(m, s["c"][a])
+    tt = s["c"][a] - t0
+    r = s["vo"][a] / GAIN if host else s["set"][a] - vdac(m, s["c"][a])
     f = lambda x, rinf, amp, tau: rinf + amp * np.exp(-x / tau)   # noqa: E731
-    p, _ = curve_fit(f, tt, r, p0=(r[-1], r[0] - r[-1], R_E * C_E))
-    return p[0], p[2], float(np.sqrt(np.mean((f(tt, *p) - r) ** 2))), f, p
+    best = None
+    for tau0 in (0.4e-3, R_E * C_E):                     # out of range the chip loads the residual (tau about 0.4 ms)
+        p, _ = curve_fit(f, tt, r, p0=(r[-1], r[0] - r[-1], tau0), bounds=([-1, -1, 1e-5], [1, 1, 0.1]),
+                         maxfev=20000)
+        rms = float(np.sqrt(np.mean((f(tt, *p) - r) ** 2)))
+        if best is None or rms < best[2]:
+            best = (p[0], p[2], rms, f, p)
+    return best
 
 
 def facts(v, m, s):
@@ -166,7 +179,9 @@ def facts(v, m, s):
              vgend=s["vg"][end].mean(), back=back_in_range(s, t2), imax=np.abs(s["cur"][c > 5.0e-3]).max())
     f["rrel"] = f["prel"] - m["dac_mag"] * STEP
     f["rend"] = f["pend"] - m["dac_mag"] * STEP
-    f["fit"] = fit_tail(s, m, t2 + 0.15e-3) if t2 - t1 > 0.5e-3 else None
+    long = t2 - t1 > 0.5e-3                              # the 1 ms pulses: fitted from 1 ms after the release
+    f["fit"] = fit_tail(s, m, t2 + FIT_FROM) if long else None
+    f["fith"] = fit_tail(s, m, t2 + FIT_FROM, host=True) if long else None
     return f
 
 
@@ -180,7 +195,10 @@ def main():
         f = F[k]
         bk = "never" if f["back"] is None else f"{f['back'] * 1e3:.3f} ms"
         ft = "" if f["fit"] is None else (f"; fit after the release: AFE input -> {f['fit'][0] * 1e3:+.3f} mV, "
-                                          f"tau {f['fit'][1] * 1e3:.3f} ms (rms {f['fit'][2] * 1e6:.1f} uV)")
+                                          f"tau {f['fit'][1] * 1e3:.3f} ms (rms {f['fit'][2] * 1e6:.1f} uV); "
+                                          f"ADC input / {GAIN} -> {f['fith'][0] * 1e3:+.3f} mV "
+                                          f"({f['fith'][0] * GAIN:+.4f} V), tau {f['fith'][1] * 1e3:.3f} ms "
+                                          f"(rms {f['fith'][2] * 1e6:.1f} uV)")
         print(f"{k}: to {f['tend'] * 1e3:.3f} ms; settled pins at the write {f['pw'] * 1e3:.2f} mV, at the release "
               f"{f['prel'] * 1e3:.2f} mV (AFE input {f['rrel'] * 1e3:+.3f} mV), end {f['pend'] * 1e3:.3f} mV (AFE input "
               f"{f['rend'] * 1e3:+.3f} mV); ADC input at the end {f['voend']:+.3f} V (/{GAIN} = "
@@ -197,17 +215,20 @@ def main():
                         "to Cin; the plain mean is lower by the chopper's spikes in the legs (about 1.4 mV behind "
                         "51 kΩ, 11 mV with the 100 Ω legs at 300 mV). The AFE's input: settled pins − M × 300/997 mV. "
                         "After the release Cpf's positive feedback supplies the charge for what the amplifier's output "
-                        "carries, so the electrode current is the DAC-cancelled part's, M × step / R_sc (R_sc about "
-                        "5.6 kΩ: the switched capacitor of Cin, figure 27's runs), and the electrode's drop moves with "
-                        "M: each step moves the AFE's input by step × (1 + 51 k / R_sc), about 3 mV, against the ADC's "
-                        "±1.63 mV. In reset with the chopper running the whole pin voltage sees about 5.7 kΩ, so the "
+                        "carries, so the electrode current is the DAC-cancelled part's, M × step / R_sc (R_sc 5.67 kΩ "
+                        "at these pins, 5.56 kΩ at 300 mV: the switched capacitor of Cin): the chip is a current sink "
+                        "to the electrode, which relaxes with 51 k × 47 n = 2.4 ms, and each step of M moves the AFE's "
+                        "input by step × (1 + 51 k / R_sc) = 3.0 mV, against the ADC's ±1.63 mV. Near the range's edge "
+                        "the AFE compresses and Cpf no longer supplies the whole residual: the chip draws a little more "
+                        "current, the electrode's drop pulls the pins back, and M 98 and M 94 settle with τ about "
+                        "0.4 ms. In reset with the chopper running the whole pin voltage sees about 5.7 kΩ, so the "
                         "pulse charges the electrode to about 30 mV whatever M is; with CHOP_EN low the pins see "
                         "capacitance only and the electrode drifts back towards 300 mV. In range: ADC input inside "
                         "±0.484 V with the amplifier's virtual-ground error under 1 mV (F's mean dips into range at "
-                        "6.6 ms while the amplifier is still saturated, 14 mV). Fits in (d): r∞ + A·exp(−t/τ) from "
-                        "0.15 ms after the release, carried on dashed. 10 µA: IEC 60601-1's patient auxiliary current, "
-                        "DC, normal condition (10/23's requirement for the chip: 1 nA per electrode). Means over 8 "
-                        "chopper periods (62.5 µs, sliding by one period).")
+                        "6.6 ms while the amplifier is still saturated, 14 mV). Fits in (d) and the table: "
+                        "r∞ + A·exp(−t/τ) from 1 ms after the release, carried on dashed. 10 µA: IEC 60601-1's patient "
+                        "auxiliary current, DC, normal condition (10/23's requirement for the chip: 1 nA per "
+                        "electrode). Means over 8 chopper periods (62.5 µs, sliding by one period).")
     gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.78])
 
     def mark(ax):
@@ -253,7 +274,7 @@ def main():
         dip = (c > 6.3e-3) & (c < 7.0e-3)
         i = np.argmin(S["F"]["vo"][dip])
         ax.annotate(f"F: amplifier still saturated\n(virtual ground {S['F']['vg'][dip][i] * 1e3:.0f} mV)",
-                    xy=(c[dip][i] * 1e3, S["F"]["vo"][dip][i]), xytext=(7.3, -0.75), fontsize=7.2, color=AMBER,
+                    xy=(c[dip][i] * 1e3, S["F"]["vo"][dip][i]), xytext=(7.3, -0.75), fontsize=7.2, color=INK2,
                     arrowprops=dict(arrowstyle="-", color=AMBER, lw=0.7))
     mark(ax)
     ax.set_xlim(4.5, 10.0)
@@ -279,11 +300,11 @@ def main():
                                             f"with M 983\nlatched the other way, {p['iend'] * 1e6:.0f} µA with 100 Ω legs"
                                             if e and b and p else ""), loc="left")
 
-    # (d) the AFE's input after the 1 ms pulse, M 94-100
+    # (d) the AFE's input as the host reads it (ADC input / GAIN) after the 1 ms pulse, M 94-100
     ax = fig.add_subplot(gs[1, 1])
     ax.axhspan(-win * 1e3, win * 1e3, color=ACCENT, alpha=0.07, lw=0)
-    ax.text(6.95, win * 1e3 + 0.15, f"the ADC's range at the AFE's input, ±{win * 1e3:.2f} mV", fontsize=7.4,
-            color=ACCENT, va="bottom")
+    ax.text(15.9, -win * 1e3 - 0.12, f"the ADC's range at the AFE's input, ±{win * 1e3:.2f} mV", fontsize=7.4,
+            color=ACCENT, va="top", ha="right")
     X1 = 16.0e-3
     for k, tail, lab, col, ls, lw, panels in RUNS:
         if "d" not in panels:
@@ -293,31 +314,40 @@ def main():
             continue
         s, m, f = S[k], runs[k][1], F[k]
         a = s["c"] > f["t2"] + 2 * TCH
-        ax.plot(s["c"][a] * 1e3, (s["set"][a] - vdac(m, s["c"][a])) * 1e3, color=col, lw=lw, label=f"M {f['M']}")
-        if f["fit"]:
-            rinf, tau, rms, fn, par = f["fit"]
-            t0 = f["t2"] + 0.15e-3
+        ax.plot(s["c"][a] * 1e3, s["vo"][a] / GAIN * 1e3, color=col, lw=lw, label=f"M {f['M']}")
+        if f["fith"]:
+            rinf, tau, rms, fn, par = f["fith"]
+            t0 = f["t2"] + FIT_FROM
             x = np.linspace(s["c"][-1], X1, 200)
             ax.plot(x * 1e3, fn(x - t0, *par) * 1e3, color=col, lw=1.0, ls=(0, (3, 2)))
-            ax.text(X1 * 1e3 + 0.1, rinf * 1e3, f"M {f['M']}: {rinf * 1e3:+.2f} mV", fontsize=7.4, color=col,
+            ax.text(X1 * 1e3 + 0.1, rinf * 1e3, f"M {f['M']}: {rinf * 1e3:+.2f} mV", fontsize=7.4, color=INK2,
                     va="center")
+    g99, g100 = F.get("G99"), F.get("G100")
+    if g99 and g100:                                     # one step of M, as the host reads it after settling
+        y0, y1 = g100["fith"][0] * 1e3, g99["fith"][0] * 1e3
+        xs = 14.6
+        ax.annotate("", xy=(xs, y1), xytext=(xs, y0), arrowprops=dict(arrowstyle="<->", color=INK2, lw=0.8))
+        ax.text(xs - 0.12, 0.5 * (y0 + y1), f"one step of M:\n{y1 - y0:.2f} mV\n(0.30 mV with\n100 Ω legs)",
+                fontsize=7.2, color=INK2, ha="right", va="center")
     ax.axhline(0, color=LIGHT, lw=0.7)
     ax.axvline(10.0, color=LIGHT, lw=0.7, ls=(0, (1, 2)))
-    ax.text(10.05, 0.02, "the runs end; fits carried on", transform=ax.get_xaxis_transform(), fontsize=7.2,
+    ax.text(10.05, 0.02, "the runs end;\nfits carried on", transform=ax.get_xaxis_transform(), fontsize=7.2,
             color=MUTED, va="bottom")
     ax.set_xlim(6.9, X1 * 1e3)
+    ax.set_ylim(-2.1, 3.6)
     ax.set_xlabel("Time from power-on (ms)")
-    ax.set_ylabel("The AFE's input: settled pins − M × step (mV)")
-    ax.legend(loc="center right", bbox_to_anchor=(1.0, 0.66), fontsize=7.2)
-    ax.set_title(f"After the 1 ms pulse: the electrode relaxes with 51 k × 47 n = {R_E * C_E * 1e3:.1f} ms, and each "
-                 "step of M\nmoves the AFE's input by about 3 mV" + (" (M 98–100 running)" if interim else ""),
+    ax.set_ylabel("ADC input / 297.5: the AFE's input as the host reads it (mV)")
+    ax.legend(loc="lower left", bbox_to_anchor=(0.01, 0.1), fontsize=7.2)
+    ax.set_title("After the 1 ms pulse: only M 100 settles inside the range, M 99 at its edge;\nin range the electrode "
+                 f"relaxes with 51 k × 47 n = {R_E * C_E * 1e3:.1f} ms" + (" (M 98–100 running)" if interim else ""),
                  loc="left")
 
     # (e) the runs
     ax = fig.add_subplot(gs[2, :])
     ax.axis("off")
-    head = ["", "M", "AFE_RST again", "CHOP_EN in resets", "Settled pins at the write", "at the release",
-            "AFE input at the release", "In range", "At the end: AFE input", "ADC input", "Current into ELP"]
+    head = ["", "M", "AFE_RST\nagain", "CHOP_EN\nin resets", "Settled pins\nat the write", "Settled pins\nat the release",
+            "AFE input\nat the release", "In range", "At the end:\nAFE input", "ADC input\nat the end",
+            "ADC input\nsettles at (fit)", "Current\ninto ELP"]
     rows, colours = [], []
     for k, tail, lab, col, ls, lw, panels in RUNS:
         mag = tail.split("_m")[1].split("_")[0]
@@ -325,23 +355,27 @@ def main():
         hold = "low" if "chophold" in tail else "running"
         leg = "100 Ω legs" if ZP not in tail else "51 k || 47 n"
         if k not in F:
-            rows.append([f"{k}: {leg}", mag, pulse, hold, "running", "", "", "", "", "", ""])
+            rows.append([f"{k}: {leg}", mag, pulse, hold, "running", "", "", "", "", "", "", ""])
         else:
             f = F[k]
             bk = ("not by the end" if f["back"] is None else
                   ("at the release" if f["back"] < 1e-6 else f"{f['back'] * 1e3:.2f} ms after the release"))
+            settle = "" if f["fith"] is None else f"{f['fith'][0] * GAIN:+.3f} V (τ {f['fith'][1] * 1e3:.2f} ms)"
+            if f["fith"] is not None and f["back"] is not None and abs(f["fith"][0] * GAIN) > 0.98 * ADC_FS:
+                bk += "; ends at edge"
             rows.append([f"{k}: {leg}", mag, pulse, hold, f"{f['pw'] * 1e3:.1f} mV", f"{f['prel'] * 1e3:.1f} mV",
                          f"{f['rrel'] * 1e3:+.2f} mV", bk, f"{f['rend'] * 1e3:+.2f} mV ({f['tend'] * 1e3:.1f} ms)",
-                         f"{f['voend']:+.3f} V", f"{f['iend'] * 1e6:.2f} µA"])
+                         f"{f['voend']:+.3f} V", settle, f"{f['iend'] * 1e6:.2f} µA"])
         colours.append(col)
     tb = ax.table(cellText=rows, colLabels=head, loc="center", cellLoc="center", colLoc="center",
-                  colWidths=[0.12, 0.045, 0.075, 0.09, 0.1, 0.08, 0.1, 0.12, 0.12, 0.07, 0.085])
+                  colWidths=[0.11, 0.035, 0.06, 0.07, 0.08, 0.08, 0.08, 0.15, 0.1, 0.07, 0.11, 0.065])
     tb.auto_set_font_size(False)
     tb.set_fontsize(7.6)
     tb.scale(1, 1.28)
     for (r, cc), cell in tb.get_celld().items():
         cell.set_edgecolor("#e2e8f0")
         if r == 0:
+            cell.set_height(cell.get_height() * 1.8)
             cell.set_text_props(color=INK2, fontweight="medium")
         elif cc == 0:
             cell.set_text_props(color=colours[r - 1], fontweight="medium")

@@ -313,7 +313,9 @@ eeg_digital_top を、チップの負荷（結合 2 倍、5.2 の C の右の値
 - **ゲートレベルで見ていないもの**：SDF のタイミング込みのシミュレーション（STA で代える）、20 s 分のゲートレベル、同期化の FF のメタステーブル、i1 の折り返し（2·10⁹ 入力以上）。
   - 11/19：ユーザーから、遅延込み（SDF）のゲートレベルを代表して数本回すよう言われた。f2／f3 の SDF（9 コーナー）は LibreLane のランの `final/sdf/` にあり、ランは外付けの SSD（mukiebi）に移してある（目録 `gf180/tools/archive/MANIFEST_20261113e.tsv`）。
   - 11/19：同じ設定、PDK、nix shell で 2 つのマクロを回し直した（`gf180/tapeout/digital/README_rerun_20261119.md`）。ネットリスト、DEF、タイミングモデルは目録の sha256 と同じ。SDF と SPEF は頭の日付の行だけが違い、元の時刻に戻すと sha256 が一致した。GDS は XOR で同じ。回し直しの SDF は、チップのマクロの SDF そのもの。
-  - その SDF で、tb_spi、tb_top（DAC_LOAD_CYCLE 2）、tb_e2e の短い版を、max_ss_125C_3v00、nom_tt_025C_3v30、min_ff_n40C_3v60 の 3 コーナーで回している（`run_tests.sh --gl-only`、`run_e2e.sh --gl`、`GL_SDF_CORNER`。下ごしらえは `gl_sdf_prep.sh`）。Icarus は SDF の経路と配線の遅延を当てるが、タイミング検査（setup／hold）はしないので、その分は STA で見る。
+  - その SDF で、tb_spi、tb_top（DAC_LOAD_CYCLE 2）、tb_e2e を、max_ss_125C_3v00、nom_tt_025C_3v30、min_ff_n40C_3v60 の 3 コーナーで回している（`run_tests.sh --gl-only`、`run_e2e.sh --gl`、`GL_SDF_CORNER`。下ごしらえは `gl_sdf_prep.sh`）。Icarus は SDF の経路と配線の遅延を当てるが、タイミング検査（setup／hold）はしないので、その分は STA で見る。
+  - 遅延込みは遅い。遅い側のコーナーで毎秒約 75 MCLK サイクル（効率コア、ほかのランと並べて）、SDF の読み込みに約 170 秒。tb_e2e は、100 サンプルの短い版（335 万サイクル、1 コーナー約 12 時間）の代わりに、s4 のコード列の 200 分の 1 の区間（`s4:0/200`、21 サンプル、約 70 万サイクル）にした（11/19 のユーザーの返事「縮めて」）。
+  - 遅い側のコーナーの tb_spi の最初の 300 µs（9,830 サイクル）は RTL と一致し、出力がいちばん遅く落ち着いたのは MCLK の立ち上がりから 13.8 ns 後（周期 30.5 ns）。
 
 ## 7. 再現の手順
 

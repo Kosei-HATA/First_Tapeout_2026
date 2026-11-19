@@ -94,6 +94,7 @@ for c in "$@"; do
             gen s4 > $B/s4.gen.log 2>&1 || { echo "FAIL  $c: stream generation"; nfail=$((nfail + 1)); continue; }
             s=s4_${k}of$n
             nsamp=$($PYTHON - "$B" "$k" "$n" <<'PY'
+import os
 import sys
 sys.path.insert(0, "model")
 import cic_golden as g
@@ -101,10 +102,14 @@ b, k, n = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 codes = open(f"{b}/s4.codes", "rb").read()
 size = len(codes) // n
 part = codes[k * size:(k + 1) * size + 4096]
-open(f"{b}/s4_{k}of{n}.codes", "wb").write(part)
 outs, _ = g.cic3_run(part)
 valid = [d for d, v in outs if v]
-open(f"{b}/s4_{k}of{n}.gold", "w").write("".join(f"{d & 0xFFFFFF:06x}\n" for d in valid))
+# written to a temporary file and renamed: runs of the same chunk side by side (the SDF corners)
+# write the same bytes, and a reader never sees a file being written
+for ext, data, mode in (("codes", part, "wb"), ("gold", "".join(f"{d & 0xFFFFFF:06x}\n" for d in valid), "w")):
+    tmp = f"{b}/s4_{k}of{n}.{ext}.tmp{os.getpid()}"
+    open(tmp, mode).write(data)
+    os.replace(tmp, f"{b}/s4_{k}of{n}.{ext}")
 print(min(len(valid) - 1, (len(part) - 4096) // 1024))
 PY
 )

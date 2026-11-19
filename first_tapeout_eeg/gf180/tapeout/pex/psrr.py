@@ -57,7 +57,15 @@ of its (2 / pi) / k prediction (1.02 for k = 1, 1.11-1.12 for k = 3): not mismat
 MOS corners (11/19): ff 51.5 dB (1.23 V/V), ss 53.2 dB (0.99 V/V), sf and fs as typical; the 1 kHz conversion moves by
 the same ratio. The lowest (ff) allows 43 nV/rtHz next to 128 and 384 kHz together (41 with the odd harmonics above 3).
 
+r13 (11/19 evening, the first four runs; afe_top's summing nodes interdigitated, SYM_GATES; no baselines, each fitted
+alone): next to 128 kHz typical 68.7 dB, ff 67.7, ss 69.3, ELP 51 kohm || 47 nF 64.4 dB (r12: 52.4, 51.5, 53.2, 47.5);
+next to 384 kHz typical 77.5 dB; the conversion between the choppers 0.169 V/V (ff 0.189, ss 0.156; r12 1.10), as
+expected from the remaining 256 fF of difference plus diagnostics B / D's 0.058 V/V. The noise allowed next to 128 and
+384 kHz together with the odd harmonics above 3: ff 264 nV/rtHz (r12 41); in band (51 kohm || 47 nF) unchanged,
+62.4 dB at 50 Hz, 232 nV/rtHz.
+
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py      (every ripple run of r12; runs/psrr_r12/results.json)
+       EEG_PEX_REV=r13 gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr.py     (the runs tagged _chip_r13; runs/psrr_r13)
 """
 import glob
 import json
@@ -71,8 +79,8 @@ import cmrr as C
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNS = os.path.join(HERE, "runs", "startup")
-OUT = os.path.join(HERE, "runs", "psrr_r12")
-REV = "r12"
+REV = os.environ.get("EEG_PEX_REV") or "r12"      # the chip of the runs (tag _chip_<REV>); r13: EEG_PEX_REV=r13
+OUT = os.path.join(HERE, "runs", f"psrr_{REV}")
 T0, T1 = 6e-3, 10e-3
 FCH = 1 / C.TCH                       # 128 kHz
 LBOX = 8 * C.TCH                      # 62.5 us

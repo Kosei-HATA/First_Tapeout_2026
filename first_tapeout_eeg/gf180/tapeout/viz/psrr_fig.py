@@ -17,6 +17,7 @@ the chopper's harmonics 1-3, which fold them onto 1.25, 1.5 and 1.75 kHz), legs 
   (f) the numbers behind them: the conversion between the choppers, the legs' capacitance to AVDD, the board's ripple.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_fig.py     (after gf180/tapeout/pex/psrr.py)
+       EEG_PEX_REV=r13 ... psrr_fig.py: r13's runs (runs/psrr_r13/results.json) into figures/gf180/r13_20261119/viz
 """
 import json
 import os
@@ -35,6 +36,8 @@ sys.path.insert(0, PEX)
 import cmrr as C  # noqa: E402
 import psrr as S  # noqa: E402
 
+if S.REV == "r13":                                    # EEG_PEX_REV=r13: the thirteenth chip's runs and figure folder
+    V.CHIP, V.CHIP_DATE, V.CHIP_LABEL = "r13", "20261119", "Chip r13 (thirteenth assembly, 19 Nov 2026)"
 OUT = os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP_DATE}", "viz")
 TEAL = "#0d9488"
 COL = {"AVDD": ACCENT, "DVDD": TEAL}                  # checked with the dataviz validator (CVD, light)
@@ -112,12 +115,14 @@ def main():
     interim = len(keys) < 4 or not all(runs[k]["base"] for k in keys) or len(stat) < nstat
     r0 = runs[keys[0]]
     tones = r0["tones"]
+    based = all(runs[k]["base"] for k in keys)          # r13: no baselines were run, every run is fitted alone
 
     fig = V.figure(12.8, 15.4, "Supply rejection: ripple on the AVDD and DVDD regulators" + (" (interim)" if interim else ""),
                    f"Ripple tones of {r0['rip_mv']:g} mV pk each at one regulator's output (1 kHz, and next to the "
                    "chopper's harmonics 1–3, which fold them into the band at the output) in the start deck: power-on, "
                    "the extracted AFE, bias and reference on the chip wiring with the pads, bond wires and board · "
-                   "typical, 27 °C, AFE_IBIAS 3, the AFE released at 5 ms · minus the same deck without ripple · the "
+                   "typical, 27 °C, AFE_IBIAS 3, the AFE released at 5 ms · "
+                   + ("minus the same deck without ripple" if based else "each run fitted alone (no baselines)") + " · the "
                    "output in band as the chip's CIC sees it (three 62.5 µs boxcars), referred to the electrodes by the "
                    f"AFE's gain ({r0['gain']:.2f}) · (e) Monte Carlo dies (process + mismatch) and MOS corners",
                    note=minus(
@@ -125,8 +130,11 @@ def main():
                        "so those baselines are theirs; the window is 6–10 ms (every tone a whole number of periods; the "
                        "chopper's harmonics too). In band: the CIC (sinc³, zeros every 1 kHz) passes only what the "
                        "output chopper leaves there; the boxcars (zeros every 16 kHz) take out the tones' direct "
-                       "components next to a chopper harmonic as the CIC does. (e)'s dies and corners have no "
-                       "baselines and are fitted alone (polynomial 4): on the typical run the folded tones agree with the "
+                       "components next to a chopper harmonic as the CIC does. "
+                       + ("(e)'s dies and corners have no baselines and are fitted alone (polynomial 4): on the typical "
+                          "run" if based else "No run of this chip has a baseline; all are fitted alone (polynomial 4): "
+                          "on r12's typical run") +
+                       " the folded tones agree with the "
                        "baseline fit to 1e−5, while the 1 kHz and 257.5 kHz tones sit near the method's floor (139 against "
                        "143 dB) and the legs' admittances keep only their mean (the split between P and N takes ±3 pF of "
                        "the start-up's drift). (c) carries the 1 kHz tone into 0.5–100 Hz: "
@@ -242,9 +250,12 @@ def main():
     cols = [("typical", ref)] + [(f"mc {s_}", stat.get(s_)) for s_ in SEEDS] + [(c, stat.get(c)) for c in CORNERS]
     xs = [0.0] + [1.4 + i for i in range(len(SEEDS))] + [1.4 + len(SEEDS) + 0.4 + j for j in range(len(CORNERS))]
     lo_hi = []
+    yv_all = [x["psrr_board_db"] for _, r in cols if r is not None for x in r["tones"] if x["harmonic"] in (1, 3)]
+    ylo, yhi = np.floor(min(yv_all)) - 6.0, np.ceil(max(yv_all)) + 2.0
     for (name, r), xx in zip(cols, xs):
         if r is None:
-            ax.text(xx, 56.6, "running", rotation=90, ha="center", va="center", fontsize=7.4, color=MUTED)
+            ax.text(xx, ylo + 0.62 * (yhi - ylo), "running", rotation=90, ha="center", va="center", fontsize=7.4,
+                    color=MUTED)
             continue
         by = {x["harmonic"]: x for x in r["tones"]}
         big = 8 if name == "typical" else 6.5
@@ -264,9 +275,9 @@ def main():
     ax.set_xticks(xs)
     ax.set_xticklabels([c[0] for c in cols], fontsize=8)
     ax.set_xlim(-0.7, xs[-1] + 0.7)
-    ax.set_ylim(49.0, 64.0)
+    ax.set_ylim(ylo, yhi)
     ax.set_ylabel("supply rejection (dB)")
-    ax.legend(loc="center left", bbox_to_anchor=(0.06, 0.5), fontsize=7.6)
+    ax.legend(loc="lower left", bbox_to_anchor=(0.06, 0.02), fontsize=7.6)
     ax.set_title("Monte Carlo dies (process + mismatch) and MOS corners, AVDD, legs 100 Ω each, each fitted alone"
                  + (f" (interim: {len(stat)} of {nstat})" if len(stat) < nstat else "")
                  + ":\nthe fold is the same on every die and follows the conversion between the choppers "

@@ -8,15 +8,20 @@ INP's (A: AVDD; B: also VBP and BLP; C: B with ELP 100 ohm + 51 kohm || 47 nF). 
   (b) the conversion between the choppers next to 128 kHz, measured and from the static scan;
   (c) what the output chopper folds into band, at the electrodes;
   (d) the MOS corners of figure 46 against the PDK's MIM corner that comes with them;
-  (e) the numbers behind them.
+  (e) where: the summing nodes' Metal3-5 over the amplifier's core, with AVDD's n-wells and Metal5 and VBP's poly
+      (psrr_diag.py --layout: afe_top's LVS database);
+  (f) the numbers behind them.
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_diag_fig.py     (after gf180/tapeout/pex/psrr_diag.py)
+Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_diag_fig.py     (after gf180/tapeout/pex/psrr_diag.py,
+       and psrr_diag.py --layout)
 """
 import json
 import os
 import sys
 
 import numpy as np
+from matplotlib.collections import PolyCollection
+from matplotlib.patches import Patch
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -53,7 +58,7 @@ def main():
     mc = [tone(r, 1)["between_vv"] for r in res["runs"] if r["supply"] == "AVDD" and r["seed"] is not None
           and r["zp"] == "100" and r["zn"] == "100"]
 
-    fig = V.figure(12.8, 12.2, "Supply rejection: where the conversion between the choppers comes from (diagnostic"
+    fig = V.figure(12.8, 15.6, "Supply rejection: where the conversion between the choppers comes from (diagnostic"
                    + (", interim)" if interim else ")"),
                    "Figure 46's typical AVDD-ripple deck (10 mV pk at the regulator; legs 100 Ω each) with INN's extracted "
                    "couplings to the nets that carry the AVDD ripple scaled to INP's — A: AVDD; B: also VBP and BLP; C: B "
@@ -71,7 +76,7 @@ def main():
                        "chopper's harmonics scales with the folded tone from figure 46's value for the same legs. (d): the "
                        "corners' conversion from figure 46 (e); the gain from the corner sine runs at 3.3 V (figure 41) "
                        "the way figure 38's typical run gives it."))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.5])
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 1.25])
 
     # (a) the static scan
     ax = fig.add_subplot(gs[0, 0])
@@ -107,12 +112,12 @@ def main():
                 ha="center", va="bottom", fontsize=6.9, color=MUTED, linespacing=1.3)
         p = d["static_pred_vv"].get(n)
         if p is not None:
-            ax.plot([i + 0.34], [p], marker="D", ms=6.5, mfc="white", mec=INK, mew=1.2,
+            ax.plot([i - 0.36], [p], marker="D", ms=6.5, mfc="white", mec=INK, mew=1.2,
                     label="the static scan's estimate" if i == 0 else None)
-            ax.text(i + 0.43, p, f"{p:.2f}", va="center", fontsize=7.2, color=INK2)
+            ax.text(i - 0.45, p, f"{p:.2f}", va="center", ha="right", fontsize=7.2, color=INK2)
     ax.set_xticks(range(len(names)))
     ax.set_xticklabels([LABEL[n] for n in names], fontsize=8)
-    ax.set_xlim(-0.6, len(names) - 0.25)
+    ax.set_xlim(-0.85, len(names) - 0.4)
     ax.set_ylim(0, 1.55)
     ax.set_ylabel("OPI − ONI per V of the board's ripple (V/V)")
     ax.legend(loc="upper right", fontsize=7.6)
@@ -144,7 +149,7 @@ def main():
     ax.set_xlim(40, 105)
     ax.set_xlabel("supply rejection at the electrodes, in band (dB, against the board's ripple)")
     ax.legend(loc="upper left", fontsize=7.4)
-    ax.set_title("(c) Folded into band by the output chopper, at the electrodes; right: the\nregulator noise there that adds 5 % "
+    ax.set_title("(c) Folded into band, at the electrodes; right: the regulator noise there\nthat adds 5 % "
                  f"to the AFE's own {S.NOISE_NV} nVrms (k = 1 and 3 together)", loc="left")
 
     # (d) the corners against the MIM corner
@@ -172,45 +177,72 @@ def main():
     ax.set_title("(d) MOS corners (figure 46): the corner also sets the MIM capacitors; Cf is\nMIM, the wiring is not: the "
                  "conversion goes as 1 / MIM, the gain (Cin / Cf) stays", loc="left")
 
-    # (e) the numbers
-    ax = fig.add_subplot(gs[2, :])
+    # (e) where: the summing nodes' wiring over the amplifier core
+    ax = fig.add_subplot(gs[2, 0])
+    lp = os.path.join(S.OUT, "diag_layout.json")
+    if os.path.exists(lp):
+        lay = json.load(open(lp, encoding="utf-8"))
+        sty = [("AVDD nwell", dict(facecolor="#fef3c7", edgecolor="#f59e0b", linewidth=0.5), "AVDD's n-wells"),
+               ("INN M3", dict(facecolor="#a5b4fc", edgecolor="none"), "INN Metal3"),
+               ("INN M4", dict(facecolor=ACCENT, edgecolor=ACCENT, alpha=0.45, linewidth=0.6), "INN Metal4"),
+               ("VBP poly", dict(facecolor="#b45309", edgecolor="none", alpha=0.75), "VBP's poly (current-source\ngates, under INN's Metal4)"),
+               ("AVDD M5", dict(facecolor="none", edgecolor="#b45309", linewidth=1.1, linestyle=(0, (3, 2))), "AVDD Metal5"),
+               ("INP M5", dict(facecolor="none", edgecolor=INK, linewidth=1.0), "INP Metal5")]
+        hs = []
+        for z, (k, kw, lab) in enumerate(sty):
+            ax.add_collection(PolyCollection(lay["polygons"][k], zorder=2 + z, **kw))
+            hs.append(Patch(label=lab, **kw))
+        ax.text(640, 372, "INN's Cin array below", ha="center", va="bottom", fontsize=7.4, color=MUTED,
+                bbox=dict(facecolor="white", edgecolor="none", pad=1.5), zorder=20)
+        ax.text(640, 1068, "INP's Cin array above", ha="center", va="top", fontsize=7.4, color=MUTED,
+                bbox=dict(facecolor="white", edgecolor="none", pad=1.5), zorder=20)
+        ax.set_xlim(180, 1100)
+        ax.set_ylim(360, 1080)
+        ax.set_aspect("equal")
+        ax.grid(False)
+        ax.set_xlabel("x in afe_top (µm)")
+        ax.set_ylabel("y (µm)")
+        ax.legend(handles=hs, loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=3, fontsize=7.4)
+        ov = lay["overlap_um2"]
+        ax.set_title("(e) Where: over the core, INN runs on Metal3 and Metal4,\nnearer AVDD's n-wells and VBP's gates than "
+                     f"INP on Metal5\n(INN's Metal4 over the n-wells {ov['INN M4 / AVDD nwell'] / 1e3:.0f} k µm², "
+                     f"INP's {ov['INP M4 / AVDD nwell'] / 1e3:.0f} k)", loc="left")
+    else:
+        ax.set_axis_off()
+
+    # (f) the numbers
+    ax = fig.add_subplot(gs[2, 1])
     ax.set_axis_off()
-    left, right = [], []
+    items = []
     st = d["static_ff"]
     dav = (st["AVDD/AVDD"][1] - st["AVDD/AVDD"][0]) / 1e3
     dvb = (st["VBP/VBP"][1] - st["VBP/VBP"][0]) / 1e3
+    dbl = (st["BLP/BLN"][1] - st["BLP/BLN"][0]) / 1e3
     tot = d["static_total_pf"]
-    left.append(f"Static scan of r12's afe_top (explicit capacitance on the summing nodes, in all INP {tot['INP']:.2f}, "
-                f"INN {tot['INN']:.2f} pF):")
-    left.append(f"  INN {dav:+.2f} pF to AVDD, {dvb:+.2f} pF to VBP, {(st['BLP/BLN'][1] - st['BLP/BLN'][0]) / 1e3:+.2f} pF "
-                f"to BLP; through Cf_eff {d['cf_eff_pf']:.2f} pF that is {d['static_pred_vv']['typical']:.2f} V/V")
-    left.append(f"  if VBP follows AVDD fully (measured {tone(runs['typical'], 1)['between_vv']:.2f}).")
+    items.append(f"Static scan of r12's afe_top (explicit capacitance on the summing nodes, in all INP {tot['INP']:.2f}, "
+                 f"INN {tot['INN']:.2f} pF): INN {dav:+.2f} pF to AVDD, {dvb:+.2f} pF to VBP, {dbl:+.2f} pF to BLP; "
+                 f"through Cf_eff {d['cf_eff_pf']:.2f} pF that is {d['static_pred_vv']['typical']:.2f} V/V if VBP follows "
+                 f"AVDD fully (measured {tone(runs['typical'], 1)['between_vv']:.2f}).")
     if "A" in runs and "B" in runs:
         a1, b1, t1v = (tone(runs[n], 1)["between_vv"] for n in ("A", "B", "typical"))
-        left.append(f"A takes out {t1v - a1:.2f} V/V (static {dav / d['cf_eff_pf']:.2f}); B a further {a1 - b1:.2f} V/V; "
-                    f"left {b1:.3f} V/V ({b1 / t1v:.0%} of the typical).")
-        left.append(f"Next differences, not scaled: AVSS {(st['AVSS/AVSS'][1] - st['AVSS/AVSS'][0]) / 1e3:+.2f} pF, the "
-                    f"input pair's common source")
-        left.append(f"  {(st['CORE.SP/CORE.SP'][1] - st['CORE.SP/CORE.SP'][0]) / 1e3:+.2f} pF (both carry less of the "
-                    "ripple than AVDD).")
+        items.append(f"A takes out {t1v - a1:.2f} V/V (static {dav / d['cf_eff_pf']:.2f}); B a further {a1 - b1:.2f} V/V; "
+                     f"left {b1:.3f} V/V ({b1 / t1v:.0%} of the typical). Next differences, not scaled: AVSS "
+                     f"{(st['AVSS/AVSS'][1] - st['AVSS/AVSS'][0]) / 1e3:+.2f} pF, the input pair's common source "
+                     f"{(st['CORE.SP/CORE.SP'][1] - st['CORE.SP/CORE.SP'][0]) / 1e3:+.2f} pF (both carry less of the "
+                     "ripple than AVDD).")
     ff, ss = cs.get("ff"), cs.get("ss")
     if ff and ss:
-        left.append(f"Corners: ff {ff['between_vv']:.3f} V/V against {ff['pred_vv']:.3f} (typical / 0.9), ss "
-                    f"{ss['between_vv']:.3f} against {ss['pred_vv']:.3f} (/ 1.1);")
-        left.append(f"  the AFE's gain ff {ff['gain_ratio'] - 1:+.2%}, ss {ss['gain_ratio'] - 1:+.2%}: the input-referred "
-                    "fold moves with the conversion.")
-    right.append("Noise next to 128 and 384 kHz together that adds 5 %")
-    right.append("(with the odd harmonics above 3, (2/π)/k each):")
-    for n in ("typical", "A", "B", "typical, ELP 51k||47n", "C"):
-        if n in runs:
-            right.append(f"  {LABEL[n].replace(chr(10), ' ')}: {density(runs[n]['allowed_13'])} "
-                         f"({density(runs[n]['allowed_odd'])})")
-    right.append("Typical die only; the diagnostic decks were not run on")
-    right.append("Monte Carlo dies or corners.")
-    ax.text(0.0, 0.98, minus("\n".join(left)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,
-            linespacing=1.45)
-    ax.text(0.66, 0.98, minus("\n".join(right)), transform=ax.transAxes, va="top", fontsize=8.2, color=INK,
-            linespacing=1.45)
+        items.append(f"Corners: ff {ff['between_vv']:.3f} V/V against {ff['pred_vv']:.3f} (typical / 0.9), ss "
+                     f"{ss['between_vv']:.3f} against {ss['pred_vv']:.3f} (/ 1.1); the AFE's gain ff "
+                     f"{ff['gain_ratio'] - 1:+.2%}, ss {ss['gain_ratio'] - 1:+.2%}, so the input-referred fold moves "
+                     "with the conversion.")
+    items.append("Noise next to 128 and 384 kHz together that adds 5 % (with the odd harmonics above 3, (2/π)/k each):")
+    rows = [f"  {LABEL[n].replace(chr(10), ' ')}: {density(runs[n]['allowed_13'])} ({density(runs[n]['allowed_odd'])})"
+            for n in ("typical", "A", "B", "typical, ELP 51k||47n", "C") if n in runs]
+    items.append("\n".join(rows))
+    items.append("Typical die only; the diagnostic decks were not run on Monte Carlo dies or corners.")
+    txt = "\n".join(V.wrap(minus(x), 6.0, 8.2) for x in items)
+    ax.text(0.0, 1.0, txt, transform=ax.transAxes, va="top", fontsize=8.2, color=INK, linespacing=1.45)
 
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"gf180_viz_{V.CHIP}_47_psrr_diag.png")

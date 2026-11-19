@@ -23,8 +23,9 @@ PDK's mimcap_ff 0.9, mimcap_ss 1.1 for the 2 fF/um2 MIM): Cf is MIM, the wiring 
 1 / (the MIM factor) (ff 1.228 against 1.100 / 0.9 = 1.222, ss 0.994 against 1.000), while the AFE's gain (Cin / Cf,
 both MIM) moves 1 % or less (the corner sine runs at 3.3 V: ff +0.9 %, ss -1.0 %).
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --make   (writes runs/psrr_r12/diag_A, _B, _C)
-       gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py          (runs/psrr_r12/diag.json)
+Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --make     (writes runs/psrr_r12/diag_A, _B, _C)
+       gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --layout   (runs/psrr_r12/diag_layout.json)
+       gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py            (runs/psrr_r12/diag.json)
 """
 import json
 import os
@@ -78,6 +79,50 @@ def make_decks():
         m["diag"] = {"from": src, "scaled": note}
         json.dump(m, open(os.path.join(d, "meta.json"), "w"), indent=1)
         print(v, "; ".join(note))
+
+
+# afe_top's KLayout LVS database (the run pex.py maps the r12 extraction with) and its layers, from the connectivity
+# records: contact 33/0 (l8) - Metal1 l13 - via1 35/0 (l14) - Metal2 l15 - l16 - Metal3 l17 (label 42/10) - l19 - Metal4 l20
+# (label 46/10) - l22 - Metal5 l23 (label 81/10); the n-well l6 (with its n-tap l7); poly l12
+LVSDB = os.path.join(P.HERE, "..", "layout", "runs", "afe_top", "afe_top.lvsdb")
+LVS_LAYERS = {"M3": "l17", "M4": "l20", "M5": "l23", "nwell": "l6", "poly": "l12"}
+SHOW = (("INN", "M3"), ("INN", "M4"), ("INN", "M5"), ("INP", "M3"), ("INP", "M4"), ("INP", "M5"), ("AVDD", "nwell"),
+        ("AVDD", "M5"), ("VBP", "poly"))
+
+
+def layout_scan():
+    """where the summing nodes' extra couplings sit: their Metal3-5 shapes, AVDD's n-wells and Metal5, VBP's poly
+    (merged polygons, um) and the overlap areas between them, from afe_top's LVS database (runs/psrr_r12/diag_layout.json)"""
+    import klayout.db as kdb
+    lv = kdb.LayoutVsSchematic()
+    lv.read(LVSDB)
+    xr = lv.xref()
+    nets = {}
+    for cp in xr.each_circuit_pair():
+        if cp.first() is None or cp.second() is None or cp.first().name.upper() != "AFE_TOP":
+            continue
+        for npair in xr.each_net_pair(cp):
+            if npair.first() is not None and npair.second() is not None and npair.second().name in ("INN", "INP", "AVDD", "VBP"):
+                nets[npair.second().name] = npair.first()
+    dbu = lv.internal_layout().dbu
+    reg = {(n, x): lv.shapes_of_net(nets[n], lv.layer_by_name(LVS_LAYERS[x]), True).merged() for n, x in SHOW}
+    out = dict(bbox_um=list(lv.internal_layout().top_cell().dbbox().to_s().replace(";", ",").replace("(", "").replace(")", "").split(",")),
+               area_um2={f"{n} {x}": r.area() * dbu * dbu for (n, x), r in reg.items()}, overlap_um2={}, polygons={})
+    out["bbox_um"] = [float(v) for v in out["bbox_um"]]
+    for s in ("INN", "INP"):
+        for m in ("M3", "M4", "M5"):
+            for t in (("AVDD", "nwell"), ("AVDD", "M5"), ("VBP", "poly")):
+                if m == "M5" and t == ("AVDD", "M5"):
+                    continue
+                out["overlap_um2"][f"{s} {m} / {t[0]} {t[1]}"] = (reg[(s, m)] & reg[t]).area() * dbu * dbu
+    for (n, x), r in reg.items():
+        out["polygons"][f"{n} {x}"] = [[[round(pt.x * dbu, 2), round(pt.y * dbu, 2)] for pt in p.resolved_holes().each_point_hull()]
+                                       for p in r.each()]          # holes cut to the hull
+    json.dump(out, open(os.path.join(P.OUT, "diag_layout.json"), "w"))
+    for k, v in out["area_um2"].items():
+        print(f"{k}: {v:,.0f} um2 in {len(out['polygons'][k])} pieces")
+    for k, v in out["overlap_um2"].items():
+        print(f"  overlap {k}: {v:,.0f} um2")
 
 
 def static_scan(deck):
@@ -191,4 +236,9 @@ def main():
 
 
 if __name__ == "__main__":
-    make_decks() if "--make" in sys.argv[1:] else main()
+    if "--make" in sys.argv[1:]:
+        make_decks()
+    elif "--layout" in sys.argv[1:]:
+        layout_scan()
+    else:
+        main()

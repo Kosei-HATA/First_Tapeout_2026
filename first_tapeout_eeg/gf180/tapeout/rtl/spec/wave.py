@@ -181,30 +181,39 @@ def render(name, src, width):
                 "<body onload='WaveDrom.ProcessAll()'><script type='WaveDrom'>"
                 + json.dumps(src, ensure_ascii=False) + "</script></body></html>")
     out = os.path.join(HERE, f"wave_{name}.png")
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
-                    f"--window-size={width},900", "--virtual-time-budget=10000", f"--screenshot={out}",
-                    "file://" + os.path.abspath(page)], check=True, capture_output=True)
-    try:                                            # trim the white margin
-        from PIL import Image, ImageChops
-        im = Image.open(out).convert("RGB")
-        bg = Image.new("RGB", im.size, (255, 255, 255))
-        box = ImageChops.difference(im, bg).getbbox()
+    raw = os.path.join(os.path.dirname(page), f"wave_{name}.raw.png")
+    from PIL import Image, ImageChops               # trim the white margin; keep the JSON's SHA-256 ('fresh')
+    for budget in (10000, 30000, 60000):            # WaveDrom draws nothing until it ran: a blank capture is retried
+        if os.path.exists(raw):
+            os.remove(raw)
+        subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
+                        f"--window-size={width},900", f"--virtual-time-budget={budget}", f"--screenshot={raw}",
+                        "file://" + os.path.abspath(page)], check=True, capture_output=True)
+        im = Image.open(raw).convert("RGB")
+        box = ImageChops.difference(im, Image.new("RGB", im.size, (255, 255, 255))).getbbox()
         if box:
             pad = 16
-            im.crop((max(box[0] - pad, 0), max(box[1] - pad, 0), min(box[2] + pad, im.width),
-                     min(box[3] + pad, im.height))).save(out)
-    except ImportError:
-        pass
-    return out
+            im = im.crop((max(box[0] - pad, 0), max(box[1] - pad, 0), min(box[2] + pad, im.width),
+                          min(box[3] + pad, im.height)))
+            FS.save_tagged_png(im, out, json_text(src))
+            return out
+    raise RuntimeError(f"wave_{name}: WaveDrom drew nothing (blank capture); not written")
+
+
+def json_text(src):
+    """The wave_*.json file's text for a diagram source (what the PNG's SHA-256 is taken over)."""
+    return json.dumps(src, ensure_ascii=False, indent=1)
 
 
 def fresh():
-    """The wave_*.json equal what the source gives now (the PNGs are rendered from them)."""
+    """The wave_*.json equal what the source gives now, and each PNG was rendered from that JSON (its SHA-256)."""
     stale = []
     for name, (fn, width) in DIAGRAMS.items():
         p = os.path.join(HERE, f"wave_{name}.json")
         if not os.path.exists(p) or json.load(open(p, encoding="utf-8")) != json.loads(json.dumps(fn())):
             stale.append(os.path.basename(p))
+        if FS.png_source_sha(p[:-5] + ".png") != FS.source_sha(json_text(fn())):
+            stale.append(os.path.basename(p[:-5] + ".png"))
     print("timing diagrams up to date" if not stale else "STALE (run wave.py): " + ", ".join(stale))
     return 1 if stale else 0
 
@@ -215,7 +224,7 @@ def main():
     for name, (fn, width) in DIAGRAMS.items():
         src = fn()
         with open(os.path.join(HERE, f"wave_{name}.json"), "w", encoding="utf-8") as f:
-            json.dump(src, f, ensure_ascii=False, indent=1)
+            f.write(json_text(src))
         print("wrote", os.path.relpath(render(name, src, width), FS.REPO))
     return 0
 

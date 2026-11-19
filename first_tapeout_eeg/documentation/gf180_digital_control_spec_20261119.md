@@ -14,7 +14,7 @@
 - 検査の結果（11/19）：
   - `fsm_spec.py check`：違反 0。
   - `regmap.py check`：違反 0。
-  - 自己試験：`fsm_spec.py` は 60 種類（11/19 の 28 種類に、RTL の作成時に 4 種類、11/20 の監査の第 1 回で 18 種類、第 2 回で 10 種類を加えた）、`regmap.py` は 15 種類の誤りを入れ、すべて検出。
+  - 自己試験：`fsm_spec.py` は 71 種類（11/19 の 28 種類に、RTL の作成時に 4 種類、11/20 の監査の第 1 回で 18 種類、第 2 回で 10 種類、第 3 回で 9 種類、第 4 回で 2 種類を加えた）、`regmap.py` は 15 種類の誤りを入れ、すべて検出。
   - `regmap.py` の自己試験で、検査器自身の弱点を 1 件見つけて直した。範囲の上限の表を、その表自身で確かめていた点である。DAC の群の構成と範囲の電圧から、独立に確かめる形に改めた。
 
 ## 1. 全体の構成
@@ -98,12 +98,12 @@
 | STATE | [3:0] | STATE | 0 | 0〜8 | 読み出し専用 | — | シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 RUN、7 PRE、8 PULSE） |
 | FIFO_LEVEL | [3:0] | LEVEL | 0 | 0〜8 | 読み出し専用 | — | FIFO のサンプルの数 |
 | ERR | [7] | CMD_ERR | 0 | 0、1 | W1C | — | 未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値 |
-| ERR | [6] | STATE_ERR | 0 | 0、1 | W1C | — | その状態で受け付けない命令、未処理の命令への上書き、または未処理の命令がある間のシャドウとタイマへの書き込み（SOFT_RESET は常に受け付ける） |
+| ERR | [6] | STATE_ERR | 0 | 0、1 | W1C | — | その状態で受け付けない命令、未処理の命令への上書き、または未処理の命令がある間のシャドウとタイマへの書き込み（SOFT_RESET は常に受け付ける）、シーケンサの不正な状態の値（直ちに IDLE へ。NFR-05） |
 | ERR | [5] | CFG_ERR | 0 | 0、1 | W1C | — | 整合しない設定（cfg_ok でない）での START、APPLY、APPLY_NR、または AFE の動作中の nr_ok でない APPLY_NR |
 | ERR | [4] | RANGE_ERR | 0 | 0、1 | W1C | — | 範囲外の値の書き込み（書かない） |
 | ERR | [3] | ADDR_ERR | 0 | 0、1 | W1C | — | 未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み |
 | ERR | [2] | CRC_ERR | 0 | 0、1 | W1C | — | 書き込みの CRC の不一致（書かない） |
-| ERR | [1] | FRAME_ERR | 0 | 0、1 | W1C | — | バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル |
+| ERR | [1] | FRAME_ERR | 0 | 0、1 | W1C | — | バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のバイトのない読み出し（先頭バイトだけのフレームを除く）と 8 バイトでないサンプル、SPI の状態機械の不正な状態の値（何も確定しない。NFR-05） |
 | ERR | [0] | RESET_FLAG | 1 | 0、1 | W1C | — | リセットが起きた（既定値 1） |
 | DFLAG | [1] | OVL | 0 | 0、1 | W1C | — | FILL または RUN の間に過負荷を検出した |
 | DFLAG | [0] | OVERRUN | 0 | 0、1 | W1C | — | FIFO が満杯でサンプルを捨てた |
@@ -212,7 +212,7 @@
 ### 3.3 DRDY_N
 
 - レベル（IF_CFG.DRDY_MODE ＝ 0、既定）：FIFO が空でない間 Low（レジスタの出力）。最後のサンプルを取り出した読み出しの CS_N の立ち上がりから、コアで最大 5 MCLK（端子ではパッドの遅れ約 15 ns を加える）遅れて High に戻る（その間に読むと空の語（VALID ＝ 0）が返る）（11/20 の監査）。
-- DRDY_N のパッドは、どちらの設定でも 1 個のレジスタの出力（設定の切り替えでもグリッチがない。NFR-06）（11/20 の監査）。
+- DRDY_N のパッドは、どちらの設定でも 1 個のレジスタの出力（設定の切り替えでもグリッチがない。NFR-06）（11/20 の監査）。SOFT_RESET の確定のサイクルでは High とする（その直前の格納で Low に変わり、直後のリセットで戻る短いパルスを防ぐ。11/20 の監査の第 4 回）。
 - パルス（DRDY_MODE ＝ 1）：格納の MCLK から 128 MCLK（4 フレーム、3.906 µs）の Low（専用のレジスタの出力）。FIFO の中身によらない。格納は 1 ms に 1 回であり、パルスは重ならない。満杯で捨てた出力ではパルスは出ない。
 - ホストの扱い：DRDY_N の立ち下がり（パルスのモードではパルス）ごとに、VALID ＝ 0 の語が返るまで（または STATUS の DATA ＝ 0 まで）続けて読む。1 個ずつ読むと滞留が減らず、満杯の間はパルスも出ないので、パルスを取りこぼすと満杯のまま止まる。パルスのモードでは、定期的に STATUS の DATA も確かめる（11/20 の監査の第 2 回）。
 
@@ -319,24 +319,25 @@
 
 - 置き場所：`gf180/tapeout/rtl_r14/`。チップに入っている現行の `gf180/tapeout/rtl/` は、r13（保険）の元として変えない。
 - モジュール：eeg_seq（シーケンサ）、eeg_clkgen（tick を追加。CHOP_DLY は 0 に固定）、eeg_cic3（FILTER_CLEAR を廃止し、ALIGN の間の出力の時刻にクリア）、eeg_ovl（過負荷の検出）、eeg_regs、eeg_spi_slave、eeg_fifo、eeg_digital_top（端子は現行と同じ）。eeg_chop1、eeg_raw、eeg_rnd_sat は `rtl/` のものを使う。レジスタの定数、範囲の表（cfg_ok の M の上限）、OFEN の温度計の符号、DAC を使うときの BLANK は、`regmap.py` が生成する `eeg_regs_defs.svh` から使う（11/20 の監査の第 2 回で手書きの表を廃止）。
-- 実行：`gf180/tapeout/rtl_r14/run_tests_r14.sh`（13 群）。全ての段を終了の状態で判定し（コンパイルの失敗、検査器と自己試験の失敗、入力の欠落、記録の「ERROR」は不合格）、仕様の段は全ての検査器と自己試験の成功と、生成した全てのファイル（図、文書の表、パッケージと定義、タイミング図の JSON）が仕様源と一致することでのみ合格とする（11/20 の監査の第 2・3 回）。
-  1. 仕様の検査と自己試験：`fsm_spec.py check`（シーケンサの tick の組み合わせ 1,344 通り、出口の一覧との照合、RESET の行、SPI の分岐 13,056 通りとフレーム 3,520 通り、FIFO 144 通り）、`fsm_spec.py selftest`（69 種）、`regmap.py check`（端子の規則を含む）、`regmap.py selftest`（15 種）、`fsm_spec.py fresh`、`regmap.py fresh`、`wave.py fresh`（生成したファイルが仕様源と一致）。
+- 実行：`gf180/tapeout/rtl_r14/run_tests_r14.sh`（14 群）。全ての段を終了の状態で判定し（コンパイルの失敗、検査器と自己試験の失敗、入力の欠落、記録の「ERROR」は不合格）、仕様の段は全ての検査器と自己試験の成功と、生成した全てのファイル（図、文書の表、パッケージと定義、タイミング図の JSON）が仕様源と一致することでのみ合格とする（11/20 の監査の第 2・3 回）。
+  1. 仕様の検査と自己試験：`fsm_spec.py check`（シーケンサの tick の組み合わせ 1,344 通りと、同じサイクルのリセットを加えた 1,344 通り、出口の一覧との照合、RESET の行、SPI の分岐 13,056 通りとフレーム 3,520 通り、FIFO 144 通り）、`fsm_spec.py selftest`（71 種）、`regmap.py check`（端子の規則を含む）、`regmap.py selftest`（15 種）、`fsm_spec.py fresh`、`regmap.py fresh`、`wave.py fresh`（生成したファイルが仕様源と一致）。
   2. 符号列：`tb/gen_codes.py` が `build/top_r14.codes`（行動モデルのフルスケールの s4）と `build/ovl.codes`（抽出した ADC の過負荷のラン 2 本と s4）を生成。
   3. シーケンサ（`tb_seq.sv` と `check_seq_trace.py`）：乱数の事象 262,497 個を、仕様源の `fsm_spec.seq_tick` にそのまま通して、次の状態と動作を比較（不一致 0、状態遷移表の 77 欄の全て）。タイマは照合器が独立に模擬し（設定は主に短く、ときに 0〜255 の全範囲）、事象の前後の値を比べる。状態は事象から事象へつなぐ。試験台が直接確かめるもの：事象のないサイクルでは状態も動作も変わらないこと、cmd_ack は tick と未処理の命令のときのみ、AFE_RST は状態の値で tick でのみ変わること、不正な状態の全ての値（9〜15）は STATE_ERR とともに IDLE へ戻ること。
-  4. tick（`tb_tick.sv`）、フレームの時刻（`rtl/tb/tb_clkgen.sv` を r14 の eeg_clkgen に。比較器、TH、DAC、CIC の入力の時刻、チョッパの両方の速さと切り替え、ブランキング、RAW のクロック）、CIC のクリア（`tb_cic_arm.sv`、黄金モデル `rtl/model/cic_golden.py`）。
+  4. tick（`tb_tick.sv`）、フレームの時刻（`rtl/tb/tb_clkgen.sv` を r14 の eeg_clkgen に。比較器、TH、DAC、CIC の入力の時刻、チョッパの両方の速さと切り替え、ブランキング、RAW のクロック）、CHOP1（`rtl/tb/tb_chop1.sv` を r14 の eeg_clkgen に。速さ、e16 の縁、相の長さ、速さを 1 ms の境界（出力の格子の上）で取り込むこと。ANA-04。11/20 の監査の第 4 回で実行器に追加。フレームの数の初期値を変えて境界を 512 フレームずらした変異は、それまでの全ての r14 の試験を通っていた）、CIC のクリア（`tb_cic_arm.sv`、黄金モデル `rtl/model/cic_golden.py`）。
   4a. レジスタの W1C（`tb_regs.sv`）：外から立つ ERR の 5 ビットと DFLAG の 2 ビットの全てで、同じサイクルの事象とクリアでは事象が勝つこと、ビットごとのクリア（11/20 の監査の第 3 回）。
   5. 過負荷の検出（`tb_ovl.sv`）：全てのフレームを規則（regmap.OVL_RULE）と比較。抽出した過負荷のランでは必ず検出し、フルスケール（窓が過負荷のランを出たあと）では 0。
   6. FIFO（`tb_fifo.sv` と `check_fifo_trace.py`、深さ 8 と 4）：乱数の 40 万サイクル（同じサイクルの格納・取り出しの要求・フラッシュ・写しの全ての組み合わせ。満杯への取り出しと格納の同時、空の写し、フラッシュと格納の同時を含む）を、`fsm_spec.fifo_step` と項目の同一性の模型に通して、push_ok、占有数、写しの印、先頭の項目（または空の語）、OVERRUN、nonempty を全てのサイクルで比較。
   7. ブロック全体（`tb_top_r14.sv`、`check_top_r14.py`、FIFO 8 段と 4 段）：刺激は端子から（SPI、MCLK、RESET_N、CODE）。A〜N の段：レジスタの表から生成した試験 320 項目、CRC とフレームの誤り、START から RUN、APPLY、APPLY_NR と CHANGED（3 ＋ T_ELEC 個、RUN を出ると取り消し、長い方を保つ）、エラー、64 kHz の未処理の命令と守る書き込み、FLUSH とオーバーラン、DRDY_N、SOFT_RESET（格子、SEQ、CHOP1、ADC_RST_N が続くこと）、STATUS の全ビット、WARMUP の数え直し、過負荷（サンプルの OVL、DFLAG.OVL は FILL と RUN のみ）、SEQ の折り返し、サンプルの ERR と予約のビット、ALERT のマスク、空の語、SPI の時間の最小値と 1 MHz、アナログの制御端子の全て（`regmap.pins_from_active` から生成した 31 通りの設定）、範囲をまたぐ APPLY_NR、タイマの長さ（RECOVER、WAIT_E、T_PRE・T_RST・T_REC の最大、T_REC の最小）。読み出したサンプルは黄金の CIC とビット単位で比較。シーケンサの全ての事象を記録し、3. と同じ照合器で比較する（通し試験、VER-09）。
      - 第 3 回で加えたもの：レジスタの全ての番地をリセット直後に 1 回の連続読み出し（136 バイト、0x7F から 0x00 への折り返しを含む）で読み、仕様源の既定値と比較（未定義の番地、書き込み専用、連続読み出しの途中の 0x40 は 0x00）。完了したフレームのあとの MISO は 0x00。SPI の不正な状態の値は FRAME_ERR で何も書かない。SOFT_RESET は FIFO を空にする。シャドウだけの書き込みはチョッパ、CHOP1、CHOP_BLANK を変えない。STATE を WARMUP、RUN、PRE、PULSE、RECOVER で読む。過負荷のあとの空の語の OVERRUN。満杯で捨てた出力には DRDY_N のパルスがない。フレームの時刻の端子（CMP_STROBE は 32 MCLK ごと、TH_CAPTURE はサイクル 1、DAC_LOAD は 2、DAC_CLK は 4）。N5：APPLY_NR の 1 段の規則（`regmap.nr_ok` から生成：他の全ての反映する設定の変化は CFG_ERR、符号を含む歩み）。O：RAW_DATA と RAW_CLK（RAW_EN の符号の列と、DBG_SEL の 3 組の時刻の信号）。
-     - 判定に内部の信号を使うもの：状態の待ちと状態の確認（`dut.seq_state`）、アナログの制御端子の監視の基準の tick（`dut.tick`）と 64 kHz の確認（`dut.a_chop_fast`）、黄金の CIC のクリアの位置（`dut.cic_arm`）、CHANGED の計数（`dut.chg_cnt`）、FIFO の占有数（`dut.fifo_level`、G3、H、M5）、G2 の時刻（`dut.smp_snap`、`dut.seq_flush`、`dut.push_ok`）、I の未処理の命令（`dut.soft_req`、`dut.cmd_valid`）、SOFT_RESET の前後のフレームの計数と SEQ（`dut.u_clkgen.cnt`、`dut.seq_cnt`。J7 と K の SEQ も）、SPI の不正な状態の注入（`dut.u_spi.st`）、シーケンサの事象の記録（`dut.u_seq`）。端子の値、SPI のバイト、DRDY_N、サンプル、AFE_RST とアナログの制御端子の値、フレームの時刻の端子、RAW は端子で判定する。
-  8. SPI（`tb_spi_r14.sv` と `check_spi_trace.py`）：乱数のフレーム 1,775 個を端子から入れ、各フレームを `fsm_spec` の SPI の状態遷移表、`regmap.py`、CRC-8 で再現して比較（不一致 0、33 分岐の全て）。独立に再現するもの：フレームの意味（確定、エラーの種類、取り出しの要求と条件 head）、MISO の固定ビット、0x00 のバイト、CRC、読み出しのアドレスの進み。読み値の中身、先頭バイトの STATUS、サンプルの語の中身は RTL の内部の値と比べる（その中身は 7. で端子から確かめる：リセット値の全番地の連続読み出し、書いた値の読み戻し、STATUS の全ビット、サンプルの黄金の比較）（11/20 の監査の第 3 回で記述を訂正）。
+     - 第 4 回で加えたもの：SPI の不正な状態の値 11〜15 の全て。P：64 kHz で、未処理の命令がある間に拒否した命令（STATE_ERR）は、未処理の命令を変えない（IDLE の START に FLUSH を拒否して WARMUP へ、RUN の FLUSH に START を拒否して FIFO が空になり RUN のまま）。S：要件の手順 9 の SOFT_RESET の確認（IF_CFG の 3 バイトの読み出しによる CRC のモードの判定、RESET_FLAG、CRC 有効で CRC を誤った SOFT_RESET と CRC 無効で途中で止めた SOFT_RESET からの出し直し）。R：SOFT_RESET の確定を、WARMUP の満了の tick、RUN の APPLY の tick、RUN の出力の時刻、空の FIFO への格納の直後の各サイクルに置き（`dut.soft_req` を 1 サイクルだけ強制）、AFE_RST、反映の端子、DRDY_N が変わらないこと。全ての段で、レジスタの出力の端子（AFE_RST、OFM、OFS、OFEN、CPF_TRIM、AFE_IBIAS、BTRIM、TEST_CFG の各レジスタ、CHOP_EN、DWA_EN、DRDY_N）が同じ時刻に 2 回変わらないこと（短いパルス、NFR-06）を監視する。
+     - 判定に内部の信号を使うもの：状態の待ちと状態の確認（`dut.seq_state`）、アナログの制御端子の監視の基準の tick（`dut.tick`）と 64 kHz の確認（`dut.a_chop_fast`）、黄金の CIC のクリアの位置（`dut.cic_arm`）、CHANGED の計数（`dut.chg_cnt`）、FIFO の占有数（`dut.fifo_level`、G3、H、M5）、G2 の時刻（`dut.smp_snap`、`dut.seq_flush`、`dut.push_ok`）、I の未処理の命令（`dut.soft_req`、`dut.cmd_valid`）、SOFT_RESET の前後のフレームの計数と SEQ（`dut.u_clkgen.cnt`、`dut.seq_cnt`。J7 と K の SEQ も）、SPI の不正な状態の注入（`dut.u_spi.st`）、シーケンサの事象の記録（`dut.u_seq`）、R の SOFT_RESET の確定の強制（`dut.soft_req`）とその時刻の選択（`dut.tick`、`dut.u_seq.timer`、`dut.cmd_valid`、`dut.cmd_code`、`dut.cic_stb`、`dut.push_ok`、`dut.fifo_level`、`dut.fifo_nonempty`）と、その周期に格納しないことの確認（`dut.seq_store`、`dut.push_ok`）。端子の値、SPI のバイト、DRDY_N、サンプル、AFE_RST とアナログの制御端子の値、フレームの時刻の端子、RAW は端子で判定する。
+  8. SPI（`tb_spi_r14.sv` と `check_spi_trace.py`）：乱数のフレーム 1,775 個を端子から入れ、各フレームを `fsm_spec` の SPI の状態遷移表、`regmap.py`、CRC-8 で再現して比較（不一致 0、33 分岐の全て）。独立に再現するもの：フレームの意味（確定、エラーの種類、取り出しの要求と条件 head）、MISO の固定ビット、0x00 のバイト、CRC、読み出しのアドレスの進み。RTL から取るもの：busy（未処理の命令。レジスタとシーケンサのもの。その規則は 7. の F、J2、P で端子から確かめる）と、写しから取り出しの要求までのフラッシュの数（条件 head は、照合器がそれと写した語から導き、FIFO の写しの印と比べる）（11/20 の監査の第 4 回で記述を訂正）。読み値の中身、先頭バイトの STATUS、サンプルの語の中身は RTL の内部の値と比べる（その中身は 7. で端子から確かめる：リセット値の全番地の連続読み出し、書いた値の読み戻し、STATUS の全ビット、サンプルの黄金の比較）（11/20 の監査の第 3 回で記述を訂正）。
 - 試験の自己試験（変異、`tb/mutate_top_r14.py`）：RTL に誤りを 1 個ずつ入れた写しを、ブロック全体、SPI、シーケンサ、FIFO、レジスタの各試験に通し、全てを検出することを確かめる。誤りのない写しの基準も各試験で走らせる（ブロック全体は b00）。種類の数と結果は監査の記録（`gf180_digital_control_audit_20261120.md`）に記す。
 
 - RTL の作成の過程で確定した仕様の細部（仕様源と本書に反映済み）：
   - 試験の鍵：0x00 で施錠、0x3C と 0x00 以外の値は施錠して CMD_ERR（「鍵の誤り」の定義が曖昧であったため）。
   - SOFT_RESET は、未処理の命令があっても受け付ける。未定義のコードは、未処理の命令の有無によらず CMD_ERR（SPI の条件 busy の定義を明確化）。
-  - サンプルの取り出しは、写した語が先頭のままの場合のみ（SPI の条件 head と、FIFO の写しの印を新設）。読み出しの途中の FLUSH のあとに格納されたサンプルを、送らずに捨てる穴を修正。`fsm_spec` の FIFO の検査を、項目の同一性を持つ独立のモデルとの比較に強化（144 通り）。仕様の自己試験は 32 種類すべて検出（11/19 の時点。11/20 の監査のあとは 60 種類）。
+  - サンプルの取り出しは、写した語が先頭のままの場合のみ（SPI の条件 head と、FIFO の写しの印を新設）。読み出しの途中の FLUSH のあとに格納されたサンプルを、送らずに捨てる穴を修正。`fsm_spec` の FIFO の検査を、項目の同一性を持つ独立のモデルとの比較に強化（144 通り）。仕様の自己試験は 32 種類すべて検出（11/19 の時点。11/20 の監査の第 4 回のあとは 71 種類）。
   - DRDY_N のパルスの幅を 128 MCLK（4 フレーム、3.906 µs）と規定（当初の実装は 119 MCLK であったため、格納のサイクルで数えるよう変更）。
 
 ## 8. 残っている確認（並行して進める）

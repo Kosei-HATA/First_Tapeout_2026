@@ -62,7 +62,8 @@ module eeg_digital_top #(
 
     // ------------------------------------------------------------------ resets
     logic [1:0] rst_sync;
-    logic       pin_rst_n, rst_n, soft_req;
+    logic       pin_rst_n, rst_n;
+    wire        soft_req;                             // SOFT_RESET's commit cycle (eeg_regs; a net, so tests can force it)
     logic [2:0] soft_cnt;
 
     always_ff @(posedge MCLK or negedge RESET_N) begin
@@ -164,8 +165,16 @@ module eeg_digital_top #(
         .dflag_overrun(dflag_overrun));
 
     // ------------------------------------------------------------------ sequencer
+    // The commit cycle of SOFT_RESET (soft_req; rst_n falls at the next edge): the sequencer takes neither the tick
+    // nor an output time in it (fsm_spec: RST wins over every event of its cycle; RESET/OUT only counts SEQ). Without
+    // this, a tick in that cycle would give AFE_RST and the applied pins (OFM, OFS, OFEN, trims, TEST_CFG, CHOP_EN,
+    // DWA_EN) their new value at the edge, and the asynchronous reset would take it back one reset-tree delay later:
+    // a runt on the pads (NFR-06; audit round 4, 11/20)
+    logic tick_s, out_s;
+    assign tick_s = tick & ~soft_req;
+    assign out_s  = cic_stb & ~soft_req;
     eeg_seq u_seq (
-        .clk(MCLK), .rst_n(rst_n), .tick(tick), .frame_stb(frame_stb), .out_stb(cic_stb), .out_valid(cic_valid),
+        .clk(MCLK), .rst_n(rst_n), .tick(tick_s), .frame_stb(frame_stb), .out_stb(out_s), .out_valid(cic_valid),
         .cmd_valid(cmd_valid), .cmd_code(cmd_code), .cmd_ack(cmd_ack), .cfg_ok(cfg_ok), .nr_ok(nr_ok),
         .t_warm(t_warm), .t_elec(t_elec), .t_rec(t_rec), .t_pre(t_pre), .t_rst(t_rst), .state(seq_state),
         .afe_rst(seq_afe_rst), .apply(apply), .flush(seq_flush), .cic_arm(cic_arm), .store(seq_store),
@@ -204,8 +213,10 @@ module eeg_digital_top #(
         .nonempty(fifo_nonempty), .level(fifo_level));
 
     // DRDY_N: level mode = FIFO not empty (a register, as before); pulse mode = low for exactly 128 MCLK (4 frames)
-    // from each stored sample, from its own register (no decode glitch on the pad). A sample is stored only at the
-    // CIC output cycle (frame cycle 8), so counting that cycle's edges counts whole frames from the store.
+    // from each stored sample, from its own register (no decode glitch on the pad). In the commit cycle of SOFT_RESET
+    // it is set high (its reset value), so a store in the cycle before cannot make it fall for a reset-tree delay.
+    // A sample is stored only at the CIC output cycle (frame cycle 8), so counting that cycle's edges counts whole
+    // frames from the store.
     localparam logic [4:0] STORE_CYCLE = 5'd8;
     logic [2:0] drdy_cnt, drdy_nxt;
     logic       drdy_pulse;
@@ -220,7 +231,7 @@ module eeg_digital_top #(
         end else begin
             drdy_cnt   <= drdy_nxt;
             drdy_pulse <= (drdy_nxt != 3'd0);
-            drdy_n_q   <= drdy_mode ? ~drdy_pulse : ~fifo_nonempty;
+            drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);   // high into a SOFT_RESET
         end
     end
     assign DRDY_N = drdy_n_q;

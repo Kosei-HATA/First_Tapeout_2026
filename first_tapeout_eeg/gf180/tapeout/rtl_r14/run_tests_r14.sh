@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# r14 digital control: the specification checks and every RTL test, with a summary.
-#   1. gf180/tapeout/rtl/spec: fsm_spec.py check + selftest, regmap.py check + selftest
-#   2. tb_seq    the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table; the
-#                timer modelled independently: every load, decrement and restart)
-#   3. tb_tick   the tick in the middle of chopper phase A, once per period, both rates, rate changes
-#   4. tb_cic_arm the CIC cleared at an output time == golden CIC (four positions), output grid kept
-#   5. tb_ovl    the overload detector == the rule (overload runs + full-scale stream)
-#   6. tb_top_r14 the whole block through its pins: generated register tests (regmap.py), CRC and frame errors,
-#                START timing, APPLY pulse, APPLY_NR, errors, pending command at 64 kHz, FLUSH, overrun,
-#                a read across a FLUSH, DRDY_N pulses, SOFT_RESET (also with a command pending), analog pins only
-#                at ticks; samples == golden CIC (check_top_r14.py)
-#   7. tb_spi_r14 random SPI frames into the whole block, replayed through fsm_spec's SPI table (every frame, every
-#                branch covered; check_spi_trace.py)
-#   8. tb_top_r14 again with a 4-deep FIFO (FIFO4)
+# r14 digital control: the specification checks and every RTL test, with a summary. A group passes only if every
+# command in it exits 0 (a failed compile included) and its log has PASS and no FAIL or ERROR.
+#   spec        gf180/tapeout/rtl/spec: fsm_spec.py check, selftest, fresh; regmap.py check, selftest, fresh;
+#               wave.py fresh (the generated diagrams, tables and timing diagrams equal what the sources give)
+#   codes       the CT loop model's code streams (tb/gen_codes.py)
+#   tb_seq      the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table; the
+#               timer modelled independently: every load, decrement and restart)
+#   tb_tick     the tick in the middle of chopper phase A, once per period, both rates, rate changes
+#   tb_clkgen   the frame timing and the chopper clocks (rtl/tb/tb_clkgen.sv with the r14 clock generator)
+#   tb_chop1    CHOP1: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary on the output grid
+#               (rtl/tb/tb_chop1.sv with the r14 clock generator; ANA-04)
+#   tb_cic_arm  the CIC cleared at an output time == golden CIC (four positions), output grid kept
+#   tb_ovl      the overload detector == the rule (overload runs + full-scale stream)
+#   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear
+#   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
+#   tb_top_r14  the whole block through its pins (phases A to S, listed in the bench's header); samples == golden
+#               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
+#   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
+#   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 # usage: ./run_tests_r14.sh
 set -u
@@ -51,6 +56,8 @@ seq_t() { comp build/tb_seq.vvp eeg_seq.sv tb/tb_seq.sv &&
           vvp -n build/tb_seq.vvp +n=600000 +seed=11 +trace=build/seq_trace.txt && $PY tb/check_seq_trace.py build/seq_trace.txt; }
 tick_t() { comp build/tb_tick.vvp eeg_clkgen.sv tb/tb_tick.sv && vvp -n build/tb_tick.vvp; }
 clkgen_t() { comp build/tb_clkgen.vvp eeg_clkgen.sv ../rtl/tb/tb_clkgen.sv && vvp -n build/tb_clkgen.vvp; }
+# CHOP1 with the r14 clock generator: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary (ANA-04)
+chop1_t() { comp build/tb_chop1.vvp eeg_clkgen.sv ../rtl/eeg_chop1.sv ../rtl/tb/tb_chop1.sv && vvp -n build/tb_chop1.vvp; }
 cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3.sv ../rtl/eeg_rnd_sat.sv tb/tb_cic_arm.sv &&
           for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done; }
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
@@ -84,6 +91,7 @@ run codes codes
 run tb_seq seq_t
 run tb_tick tick_t
 run tb_clkgen clkgen_t
+run tb_chop1 chop1_t
 run tb_cic_arm cic_t
 run tb_ovl ovl_t
 run tb_regs regs_t

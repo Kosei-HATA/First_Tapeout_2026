@@ -38,6 +38,13 @@
 //      length or hold, the chopper's and CHOP1's half periods, the active copies; M above the range's top -> CFG_ERR
 //      and nothing applied), DFLAG.OVL not set by an overload in WARMUP, RECOVER, PRE and PULSE but set in FILL, an
 //      APPLY_NR across a range -> CFG_ERR
+//   P  audit round 4: a command refused because another is pending leaves the pending one (64 kHz: FLUSH pending in
+//      RUN + START refused -> the FIFO is emptied, RUN stays; START pending in IDLE + FLUSH refused -> WARMUP)
+//   S  audit round 4: the host's SOFT_RESET check (requirements 5.4 step 9) in both CRC modes: the mode probe (a 3-byte
+//      read of IF_CFG, legal in both), RESET_FLAG, and the recovery from a spoiled SOFT_RESET frame
+//   R  audit round 4: SOFT_RESET committed in the cycle of a tick that releases AFE_RST (WARMUP's end), of a tick that
+//      applies (APPLY in RUN: CPF_TRIM, OFM, OFEN), of an output time, and in the cycle after a store into an empty
+//      FIFO (DRDY_N): no runt on any register-driven pin (soft_req forced for that one cycle)
 //   N5 audit round 3: APPLY_NR's step rule (regmap.nr_ok, generated): every other applied setting changed -> CFG_ERR,
 //      the sign walk; O: RAW_DATA / RAW_CLK (the code stream, the three timing pairs)
 // Also (audit round 3): shadow writes alone leave the chopper, CHOP1 and CHOP_BLANK; STATE read in WARMUP, RUN, PRE,
@@ -49,7 +56,8 @@
 // fsm_spec.seq_tick by check_seq_trace.py --no-cover (VER-09 end to end).
 // Define FIFO4 for the 4-deep FIFO (CAPS and the overrun test follow).
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
-// CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); the SPI timing (spi_bfm_r14.svh).
+// CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); no register-driven pin (those and
+// DRDY_N, TEST_CFG[7:6]) changes twice at one simulation time (a runt: NFR-06); the SPI timing (spi_bfm_r14.svh).
 // A watchdog ends the run as FAIL if it has not finished by 400 ms of simulated time (about twice the normal length),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
@@ -193,6 +201,34 @@ module tb_top_r14;
         prev_tick = dut.tick;
     end
 
+    // ------------------------------------------------------------------ no runt on a register-driven pin (NFR-06)
+    // Each of these pins is one register (or one register's inverse): a value change at an edge is one event. Two
+    // changes at one simulation time are an update at the edge taken back by the asynchronous reset right after it,
+    // a zero-width runt in RTL and one of the reset tree's delay on the pad (phase R forces the cases)
+    integer n_runt = 0;
+    task automatic runt(input string pin);
+        n_runt = n_runt + 1;
+        fail($sformatf("runt on %s: two changes at one time", pin));
+    endtask
+    real rt_afe = -1.0, rt_ofm = -1.0, rt_ofs = -1.0, rt_ofen = -1.0, rt_cpf = -1.0, rt_ib = -1.0, rt_btp = -1.0,
+         rt_btn = -1.0, rt_dbg = -1.0, rt_az = -1.0, rt_atpen = -1.0, rt_atpsel = -1.0, rt_chen = -1.0, rt_dwa = -1.0,
+         rt_drdy = -1.0;
+    always @(AFE_RST)        begin if ($realtime == rt_afe)    runt("AFE_RST");      rt_afe    = $realtime; end
+    always @(OFM)            begin if ($realtime == rt_ofm)    runt("OFM");          rt_ofm    = $realtime; end
+    always @(OFS)            begin if ($realtime == rt_ofs)    runt("OFS");          rt_ofs    = $realtime; end
+    always @(OFEN)           begin if ($realtime == rt_ofen)   runt("OFEN");         rt_ofen   = $realtime; end
+    always @(CPF_TRIM)       begin if ($realtime == rt_cpf)    runt("CPF_TRIM");     rt_cpf    = $realtime; end
+    always @(AFE_IBIAS)      begin if ($realtime == rt_ib)     runt("AFE_IBIAS");    rt_ib     = $realtime; end
+    always @(BTRIM_P)        begin if ($realtime == rt_btp)    runt("BTRIM_P");      rt_btp    = $realtime; end
+    always @(BTRIM_N)        begin if ($realtime == rt_btn)    runt("BTRIM_N");      rt_btn    = $realtime; end
+    always @(TEST_CFG[7:6])  begin if ($realtime == rt_dbg)    runt("TEST_CFG[7:6]"); rt_dbg   = $realtime; end
+    always @(TEST_CFG[5])    begin if ($realtime == rt_az)     runt("TEST_CFG[5]");  rt_az     = $realtime; end
+    always @(TEST_CFG[4])    begin if ($realtime == rt_atpen)  runt("TEST_CFG[4]");  rt_atpen  = $realtime; end
+    always @(TEST_CFG[3:0])  begin if ($realtime == rt_atpsel) runt("TEST_CFG[3:0]"); rt_atpsel = $realtime; end
+    always @(CHOP_EN)        begin if ($realtime == rt_chen)   runt("CHOP_EN");      rt_chen   = $realtime; end
+    always @(DWA_EN)         begin if ($realtime == rt_dwa)    runt("DWA_EN");       rt_dwa    = $realtime; end
+    always @(DRDY_N)         begin if ($realtime == rt_drdy)   runt("DRDY_N");       rt_drdy   = $realtime; end
+
     // ------------------------------------------------------------------ AFE_RST pin edges
     real t_afe_fall = 0.0, t_afe_rise = 0.0;
     integer afe_falls = 0, afe_rises = 0;
@@ -296,6 +332,38 @@ module tb_top_r14;
     always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
     integer n_rawclk = 0;
     always @(posedge RAW_CLK) n_rawclk = n_rawclk + 1;
+
+    // ------------------------------------------------------------------ R: SOFT_RESET committed in this cycle
+    // called 1 ns after a rising MCLK edge (before the falling edge where the sequencer trace samples its inputs):
+    // soft_req (the register block's commit of 0xA5) is forced high until just after the next rising edge, where
+    // rst_n falls
+    task automatic soft_now();
+        force dut.soft_req = 1'b1;
+        @(posedge MCLK); #1;
+        release dut.soft_req;
+        repeat (8) @(posedge MCLK);                     // the soft reset (rst_n low for 5 MCLK) is over
+    endtask
+
+    // ------------------------------------------------------------------ S: the CRC-mode probe (requirements step 9)
+    // a 3-byte read of IF_CFG (header 0xD5, MOSI 0x00): with CRC on it is the read with its CRC (byte 2 = CRC-8 of the
+    // header and byte 1); with CRC off a burst (byte 2 = the undefined 0x56 = 0x00, while CRC-8 of 0xD5 and any byte is
+    // never 0). Legal, no error, in both modes.
+    task automatic soft_reset_probe(output bit crc_on, input string name);
+        logic [7:0] c;
+        bit save;
+        save = bfm_crc_en;
+        bfm_crc_en = 1'b0;                              // the raw 3-byte frame, checked here
+        spi_tx[0] = 8'hD5; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
+        spi_xfer(3, 0);
+        bfm_crc_en = save;
+        c = tb_crc8_update(tb_crc8_update(8'h00, 8'hD5), spi_rx[1]);
+        if (spi_rx[2] === c && spi_rx[1][0] === 1'b1)      crc_on = 1'b1;
+        else if (spi_rx[2] === 8'h00 && spi_rx[1][0] === 1'b0) crc_on = 1'b0;
+        else begin
+            fail($sformatf("%s: the probe read %02h %02h (neither mode)", name, spi_rx[1], spi_rx[2]));
+            crc_on = 1'b0;
+        end
+    endtask
 
     // ------------------------------------------------------------------ N5: one generated nr_ok case (pin_tests.svh)
     task automatic nr_base(input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62);
@@ -528,20 +596,28 @@ module tb_top_r14;
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM unchanged after an overlong write");
         CS_N = 1'b0; #500; CS_N = 1'b1; #600;                        // empty frame
         expect_noerr("empty frame");
-        // an illegal state value in the SPI state machine (NFR-05): FRAME_ERR at CS_N rising, nothing written
-        fork
-            begin
-                spi_tx[0] = 8'h24; spi_tx[1] = 8'h0E; spi_xfer(2, 0);
-            end
-            begin
-                #(6000.0);                              // inside the data byte
-                force dut.u_spi.st = 4'd12;
-                @(posedge MCLK);
-                release dut.u_spi.st;
-            end
-        join
-        expect_err_now(8'h02, "FRAME_ERR for an illegal SPI state value");
-        rt_read_expect(7'h24, 8'h08, "CPF_TRIM not written by a frame with an illegal SPI state");
+        // every illegal state value of the SPI state machine (NFR-05): FRAME_ERR at CS_N rising, nothing written
+        for (int bad = 11; bad < 16; bad++) begin
+            fork
+                begin
+                    spi_tx[0] = 8'h24; spi_tx[1] = 8'h0E; spi_xfer(2, 0);
+                end
+                begin
+                    #(6000.0);                          // inside the data byte (constant forces: Icarus
+                    case (bad)                          // evaluates a forced expression only once)
+                        11:      force dut.u_spi.st = 4'd11;
+                        12:      force dut.u_spi.st = 4'd12;
+                        13:      force dut.u_spi.st = 4'd13;
+                        14:      force dut.u_spi.st = 4'd14;
+                        default: force dut.u_spi.st = 4'd15;
+                    endcase
+                    @(posedge MCLK);
+                    release dut.u_spi.st;
+                end
+            join
+            expect_err_now(8'h02, $sformatf("FRAME_ERR for the illegal SPI state value %0d", bad));
+            rt_read_expect(7'h24, 8'h08, $sformatf("CPF_TRIM not written by a frame with the illegal SPI state %0d", bad));
+        end
         r14_cmd(8'h77);
         expect_err_now(8'h80, "CMD_ERR (unknown code)");
         r14_write(7'h11, 8'h3D);                        // TEST_KEY one bit off: locks and flags CMD_ERR
@@ -1251,6 +1327,159 @@ module tb_top_r14;
             r14_write(7'h11, 8'h00);
         end
         $display("O  RAW stream and timing pairs (errors %0d)", errors);
+
+        // ---------------- P: a refused command leaves the pending one (64 kHz, where two frames fit between ticks)
+        phase = "P";
+        begin
+            logic [7:0] lv0;
+            r14_cmd(8'h22);                             // STOP
+            wait_state(4'd0, 50.0, "P IDLE");
+            r14_write(7'h26, 8'h00);                    // CHOP_FAST 0 (64 kHz), APPLY in IDLE
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            if (dut.a_chop_fast !== 1'b0) fail("P: 64 kHz not applied");
+            r14_write(7'h06, 8'hFF);
+            // START pending in IDLE, a FLUSH refused before the tick: START must still be taken (WARMUP)
+            @(posedge dut.tick); #(8000.0); spi_tidle = 125.0;
+            r14_cmd(8'h11);
+            r14_cmd(8'h55);
+            spi_tidle = 600.0;
+            repeat (1500) @(posedge MCLK);
+            expect_err_now(8'h40, "P STATE_ERR for a FLUSH refused while START is pending");
+            if (dut.seq_state !== 4'd1) fail($sformatf("P: the pending START was not taken (state %0d)", dut.seq_state));
+            wait_state(4'd6, 12000.0, "P RUN at 64 kHz");
+            while (dut.fifo_level < 4'd3) @(posedge MCLK);
+            r14_read(7'h05, lv0);
+            // FLUSH pending in RUN, a START refused before the tick: the FLUSH must still empty the FIFO, RUN stays
+            @(posedge dut.tick); #(8000.0); spi_tidle = 125.0;
+            r14_cmd(8'h55);
+            r14_cmd(8'h11);
+            spi_tidle = 600.0;
+            repeat (1500) @(posedge MCLK);
+            expect_err_now(8'h40, "P STATE_ERR for a START refused while FLUSH is pending");
+            r14_read(7'h05, v);
+            if (lv0 < 8'd3 || v > 8'd1) fail($sformatf("P: FIFO %0d -> %0d, the pending FLUSH was not executed", lv0, v));
+            if (dut.seq_state !== 4'd6) fail($sformatf("P: state %0d after the refused START, expected RUN", dut.seq_state));
+            r14_cmd(8'h22);                             // back to 128 kHz
+            wait_state(4'd0, 50.0, "P IDLE again");
+            r14_write(7'h26, 8'h01);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+        end
+        $display("P  a refused command leaves the pending one (errors %0d)", errors);
+
+        // ---------------- S: the host's SOFT_RESET check (requirements 5.4 step 9) in both CRC modes
+        phase = "S";
+        begin
+            logic [7:0] e;
+            bit crc_on;
+            // case 1: CRC on, a spoiled SOFT_RESET frame (wrong CRC): the probe says CRC on, ERR has CRC_ERR and no
+            // RESET_FLAG -> clear with a CRC frame and send SOFT_RESET again; then the probe says CRC off and RESET_FLAG
+            r14_write(7'h55, 8'h01);
+            bfm_crc_en = 1'b1;
+            r14_write(7'h06, 8'hFF);
+            spi_tx[0] = 8'h10; spi_tx[1] = 8'hA5; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // SOFT_RESET, wrong CRC
+            #(1000.0);
+            soft_reset_probe(crc_on, "S1 after a spoiled SOFT_RESET");
+            if (!crc_on) fail("S1: the probe says CRC off after a SOFT_RESET frame that must have been refused");
+            r14_read(7'h06, e);
+            if (e[0] !== 1'b0 || e[2] !== 1'b1) fail($sformatf("S1: ERR 0x%02h, expected CRC_ERR without RESET_FLAG", e));
+            r14_write(7'h06, e);
+            r14_cmd(8'hA5);                             // SOFT_RESET again, with its CRC
+            bfm_crc_en = 1'b0;                          // the host does not yet know whether it was executed
+            #(1500.0);
+            soft_reset_probe(crc_on, "S1 after the SOFT_RESET");
+            if (crc_on) fail("S1: the probe says CRC on after an executed SOFT_RESET");
+            r14_read(7'h06, e);
+            if (e !== 8'h01) fail($sformatf("S1: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
+            r14_write(7'h06, e);
+            // case 2: CRC off, a spoiled SOFT_RESET frame (a partial byte): the probe says CRC off, ERR has FRAME_ERR and
+            // no RESET_FLAG -> clear without CRC and send SOFT_RESET again
+            spi_tx[0] = 8'h10; spi_tx[1] = 8'hA5; spi_xfer(1, 5);                      // 13 bits: refused
+            #(1000.0);
+            soft_reset_probe(crc_on, "S2 after a spoiled SOFT_RESET");
+            if (crc_on) fail("S2: the probe says CRC on with CRC off");
+            r14_read(7'h06, e);
+            if (e[0] !== 1'b0 || e[1] !== 1'b1) fail($sformatf("S2: ERR 0x%02h, expected FRAME_ERR without RESET_FLAG", e));
+            r14_write(7'h06, e);
+            r14_cmd(8'hA5);
+            #(1500.0);
+            r14_read(7'h06, e);
+            if (e !== 8'h01) fail($sformatf("S2: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
+            r14_write(7'h06, e);
+        end
+        $display("S  the SOFT_RESET check in both CRC modes (errors %0d)", errors);
+
+        // ---------------- R: SOFT_RESET in the cycle of a tick, of an output time, after a store (NFR-06)
+        phase = "R";
+        begin
+            integer k, runt0, falls0;
+            logic [7:0] e;
+            runt0 = n_runt;
+            // R1: the tick that ends WARMUP (AFE_RST would be released at its edge; T_WARM 5 ms, its minimum)
+            r14_cmd(8'h11);
+            wait_state(4'd1, 50.0, "R1 WARMUP");
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.tick === 1'b1 && dut.seq_state === 4'd1 && dut.u_seq.timer === 18'd0 && !dut.cmd_valid) &&
+                   k < 200000) begin @(posedge MCLK); #1; k++; end
+            if (k >= 200000 || AFE_RST !== 1'b1) fail("R1 not exercised: no WARMUP-ending tick found");
+            soft_now();
+            if (dut.seq_state !== 4'd0 || AFE_RST !== 1'b1) fail($sformatf("R1: state %0d, AFE_RST %b after the SOFT_RESET",
+                                                                         dut.seq_state, AFE_RST));
+            r14_read(7'h06, e);
+            if (e !== 8'h01) fail($sformatf("R1: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
+            r14_write(7'h06, 8'hFF);
+            // R2: the tick of an APPLY in RUN (CPF_TRIM, OFM and OFEN would take the new shadow at its edge)
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "R2 RUN");
+            r14_write(7'h24, 8'h0C);                    // CPF_TRIM 0x0C, range 1, M 10 (the reset values: 0x08, 0, 0)
+            r14_write(7'h22, 8'h01);
+            r14_write(7'h21, 8'h0A);
+            @(posedge dut.tick); #(100.0);
+            r14_cmd(8'h33);                             // pending until the tick after the next (the frame is longer)
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.tick === 1'b1 && dut.cmd_valid === 1'b1 && dut.cmd_code === 8'h33) && k < 2000) begin
+                @(posedge MCLK); #1; k++;
+            end
+            if (k >= 2000 || CPF_TRIM !== 4'h8 || OFM !== 10'd0) fail("R2 not exercised: no APPLY tick found");
+            soft_now();
+            if (dut.seq_state !== 4'd0 || CPF_TRIM !== 4'h8 || OFM !== 10'd0 || OFEN !== 4'b0000 || AFE_RST !== 1'b1)
+                fail($sformatf("R2: state %0d CPF_TRIM %h OFM %0d OFEN %b AFE_RST %b after the SOFT_RESET",
+                               dut.seq_state, CPF_TRIM, OFM, OFEN, AFE_RST));
+            r14_write(7'h06, 8'hFF);
+            // R3: an output time in RUN (the sequencer would store it); R4: the cycle after a store into an empty
+            // FIFO (DRDY_N would fall at its edge)
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "R3 RUN");
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.cic_stb === 1'b1 && dut.seq_state === 4'd6) && k < 40000) begin @(posedge MCLK); #1; k++; end
+            if (k >= 40000) fail("R3 not exercised: no output time in RUN found");
+            force dut.soft_req = 1'b1;
+            #1;
+            if (dut.seq_store !== 1'b0 || dut.push_ok !== 1'b0) fail("R3: the sequencer stores in the commit cycle of SOFT_RESET");
+            soft_now();                                 // still in that cycle: forced until just after its end
+            r14_write(7'h06, 8'hFF);
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "R4 RUN");
+            r14_cmd(8'h55);                             // FLUSH: the FIFO is empty until the next output
+            repeat (600) @(posedge MCLK);
+            falls0 = n_drdy_fall;
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.push_ok === 1'b1 && dut.fifo_level === 4'd0) && k < 40000) begin @(posedge MCLK); #1; k++; end
+            @(posedge MCLK); #1;                        // the cycle after the store: not empty, DRDY_N still high
+            if (k >= 40000 || dut.fifo_nonempty !== 1'b1 || DRDY_N !== 1'b1) fail("R4 not exercised: no store into an empty FIFO");
+            soft_now();
+            if (DRDY_N !== 1'b1 || n_drdy_fall != falls0) fail($sformatf("R4: DRDY_N fell (%0d falls) at the SOFT_RESET",
+                                                                        n_drdy_fall - falls0));
+            r14_write(7'h06, 8'hFF);
+            if (n_runt != runt0) fail($sformatf("R: %0d runts", n_runt - runt0));
+        end
+        $display("R  SOFT_RESET in the cycle of a tick, an output time, after a store: no runt (errors %0d)", errors);
 
         $fclose(flog);
         $fclose(fsmp);

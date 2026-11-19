@@ -194,6 +194,24 @@ MUTATIONS = [
      "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & ~a_azero;"),
     ("最上位：空の語の OVERRUN が 0", "eeg_digital_top.sv",
      ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status({1'b0, 1'b0, ovl_now, 1'b0, alert, 3'b000})"),
+    # audit round 4, auditor B
+    ("レジスタ：拒否した命令が未処理の命令を置き換える", "eeg_regs.sv",
+     "            if (w_ok && addr == A_COMMAND) begin",
+     "            if (we && addr == A_COMMAND && is_cmd_code && pend && !cmd_ack) pcode <= wdata;\n            if (w_ok && addr == A_COMMAND) begin"),
+    ("レジスタ：拒否した命令が未処理の命令を取り消す", "eeg_regs.sv",
+     "            end else if (cmd_ack) begin\n                pend  <= 1'b0;",
+     "            end else if (cmd_ack || (we && addr == A_COMMAND && is_cmd_code)) begin\n                pend  <= 1'b0;"),
+    ("SPI：不正な状態の判定が 12 以上（11 を見逃す）", "eeg_spi_slave.sv",
+     "(crc_en && (st == S_RCRC || st == S_RSMP)) || st > S_OVF) begin",
+     "(crc_en && (st == S_RCRC || st == S_RSMP)) || st > 4'd11) begin"),
+    # audit round 4, auditor A: SOFT_RESET committed in the cycle of a tick, an output time, after a store (NFR-06)
+    ("最上位：SOFT_RESET の確定の周期にも tick を通す（AFE_RST と反映の端子に短いパルス）", "eeg_digital_top.sv",
+     "assign tick_s = tick & ~soft_req;", "assign tick_s = tick;"),
+    ("最上位：SOFT_RESET の確定の周期にも出力の時刻を通す（RESET の行に反して格納）", "eeg_digital_top.sv",
+     "assign out_s  = cic_stb & ~soft_req;", "assign out_s  = cic_stb;"),
+    ("最上位：SOFT_RESET の確定の周期に DRDY_N を High にしない", "eeg_digital_top.sv",
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
+     "drdy_n_q   <= drdy_mode ? ~drdy_pulse : ~fifo_nonempty;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -293,13 +311,30 @@ SPI_MUTATIONS = [
 ]
 
 
+# CHOP1 alone (rtl/tb/tb_chop1.sv with the r14 eeg_clkgen: a reference from a count of MCLK edges; audit round 4,
+# auditor A: the 1 ms rate boundary on the output grid was not checked by the r14 tests)
+CHOP1_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("CHOP1：フレームの数の初期値が 511（1 ms の境界が出力の格子から 512 フレームずれる）", "eeg_chop1.sv",
+     "fcnt   <= 10'h3FF;", "fcnt   <= 10'h1FF;"),
+    ("CHOP1：速さを 1 ms の境界でなく毎フレーム取り込む", "eeg_chop1.sv",
+     "if (fcnt == 10'h3FF) begin", "if (1'b1) begin"),
+    ("CHOP1：e16 でなく e17 で変える", "eeg_chop1.sv",
+     "if (cycle == 5'd15) begin     // this edge is e16", "if (cycle == 5'd16) begin     // this edge is e16"),
+]
+
+TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c")
+
+
 def run(i, m, bench="top"):
     name, f, old, new = m
-    d = os.path.join(BUILD, "mut", "b00" if i < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(bench, 'm')}{i:02d}")
+    d = os.path.join(BUILD, "mut", "b00" if i < 0 else f"{TAG.get(bench, 'm')}{i:02d}")
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "build"))
     for s in SRC:
         shutil.copy(os.path.join(R14, s), d)
+    for s in OLD:                                    # the blocks kept from r13 (rtl/), copied so they can be mutated
+        shutil.copy(os.path.join(RTL_OLD, s), d)
     if f is not None:
         p = os.path.join(d, f)
         text = open(p, encoding="utf-8").read()
@@ -308,10 +343,11 @@ def run(i, m, bench="top"):
         open(p, "w", encoding="utf-8").write(text.replace(old, new))
     os.symlink(os.path.join(BUILD, "top_r14.codes"), os.path.join(d, "build", "top_r14.codes"))
     tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv"}.get(bench, "tb_top_r14.sv")
-    srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"]}.get(bench) or
-            SRC + [os.path.join(RTL_OLD, x) for x in OLD])   # pin_tests.svh: found through -I build
+    tbp = os.path.join(RTL_OLD, "tb", "tb_chop1.sv") if bench == "chop1" else os.path.join(R14, "tb", tb)
+    srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"],
+             "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"]}.get(bench) or SRC + OLD)   # pin_tests.svh: through -I build
     cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
-           + [os.path.join(R14, "tb", tb)])
+           + [tbp])
     c = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
     if c.returncode:
         return i, name, "COMPILE ERROR", c.stderr.strip().splitlines()[-1][:150]
@@ -335,6 +371,16 @@ def run(i, m, bench="top"):
         if f is None:
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
+    if bench == "chop1":
+        try:
+            v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
+        except subprocess.TimeoutExpired:
+            return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 1200 s"
+        passed = "PASS: chop1" in v.stdout and "FAIL" not in v.stdout
+        first = next((ln for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), "")
+        if f is None:
+            return i, name, ("baseline ok" if passed else "BASELINE FAILS"), first
+        return i, name, ("detected" if not passed else "MISSED"), first
     if bench == "regs":
         try:
             v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=600)
@@ -395,7 +441,7 @@ def main():
     for need in ("top_r14.codes", "reg_tests.svh"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
-    which = next((w for w in ("spi", "top", "seq", "fifo", "regs") if f"--{w}" in sys.argv), "all")
+    which = next((w for w in ("spi", "top", "seq", "fifo", "regs", "chop1") if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []
     if which in ("top", "all"):
@@ -408,21 +454,23 @@ def main():
         tasks += [(i, m, "fifo") for i, m in enumerate(FIFO_MUTATIONS)]
     if which in ("regs", "all"):
         tasks += [(i, m, "regs") for i, m in enumerate(REGS_MUTATIONS)]
+    if which in ("chop1", "all"):
+        tasks += [(i, m, "chop1") for i, m in enumerate(CHOP1_MUTATIONS)]
     if only:
-        tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(t[2], 'm')}{t[0]:02d}") in only]
+        tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}") in only]
     with cf.ThreadPoolExecutor(jobs) as ex:
         res = list(ex.map(lambda a: (a[2],) + run(*a), tasks))
     ok = True
     title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
-             "regs": "tb_regs (W1C: the set wins)"}
-    for bench in ("top", "spi", "seq", "fifo", "regs"):
+             "regs": "tb_regs (W1C: the set wins)", "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)"}
+    for bench in ("top", "spi", "seq", "fifo", "regs", "chop1"):
         rs = sorted(r for r in res if r[0] == bench)
         if not rs:
             continue
         print(f"--- {title[bench]}")
         for _, i, name, verdict, first in rs:
-            tag = "b00" if i < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(bench, 'm')}{i:02d}"
+            tag = "b00" if i < 0 else f"{TAG.get(bench, 'm')}{i:02d}"
             print(f"{verdict:8s} {tag} {name}" + (f"  ({first[:120]})" if first else ""))
         muts = [r for r in rs if r[3] != "baseline ok" and r[3] != "BASELINE FAILS"]
         n_det = sum(1 for r in muts if r[3] == "detected")

@@ -12,7 +12,9 @@ Machines:
         so AFE_RST and every analog setting change at one fixed chopper phase, away from every ADC and chopper edge.
         At most one command is pending (a second one is rejected at the SPI write); a tick resolves that command
         and the state's timer by SEQ_PRIORITY. OUT (a CIC output time, frame cycle 8) is handled at its own MCLK
-        cycle, which never coincides with a tick. RST is asynchronous.
+        cycle, which never coincides with a tick. RST is asynchronous (RESET_N) or SOFT_RESET's commit cycle, after
+        which the reset follows at the next edge: RST wins over every event of its cycle (the tick and the output time
+        of that cycle are not taken, so no output takes a value that the reset withdraws right after).
   SPI   one SPI transaction at byte level (CS_N low ... CS_N high).
   FIFO  the sample FIFO's occupancy with push, pop and flush in the same MCLK cycle (depth DEPTH).
 
@@ -71,7 +73,7 @@ SEQ_COMPOSITES = {           # name: (parent, initial substate, meaning)
     "AFE_ON": ("ACTIVE", "RECOVER", "AFE が動作している状態（APPLY で PRE へ）"),
 }
 SEQ_EVENTS = [
-    ("RST", "RESET_N = 0、または SOFT_RESET（非同期。どの時点でも）"),
+    ("RST", "RESET_N = 0、または SOFT_RESET（どの時点でも。SOFT_RESET の確定のサイクルの tick と出力の時刻は取らない：RST はそのサイクルの全ての事象に勝つ）"),
     ("REL", "リセットの解除"),
     ("STOP", "命令 STOP"),
     ("START", "命令 START"),
@@ -416,7 +418,7 @@ SEQ_STATE = {s[0]: s for s in SEQ_STATES}
 
 
 def seq_tick(s, present, env):
-    """Next state and executed actions for the events present in one tick (RST excluded: asynchronous)."""
+    """Next state and executed actions for the events present in one tick (with RST: the reset alone)."""
     nxt, acts, _ = seq_resolve(s, present, env)
     return nxt, acts
 
@@ -438,6 +440,9 @@ SEQ_EXITS.update({(s, "APPLY"): {"PRE"} for s in SEQ_AFE_ON})
 def seq_resolve(s, present, env):
     """seq_tick, and the event whose branch decided the next state (None if none moved)."""
     t = SEQ["table"]
+    if "RST" in present:                         # a reset takes nothing else of its cycle (SOFT_RESET's commit cycle)
+        b = pick(t.get((s, "RST")), env)
+        return (b["next"], list(b["actions"]), "RST") if isinstance(b, dict) else (s, [], None)
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
     if "TMR" in br and any(isinstance(b, dict) and "restart" in b["actions"] for e, b in br.items() if e != "TMR"):
         del br["TMR"]                            # the wait starts again: the expiry of this tick no longer holds
@@ -556,6 +561,12 @@ def check_seq_ticks():
                 n += 1
                 for p in seq_properties(s, present, env, nxt, acts, winner):
                     errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
+                # the same events with a reset in their cycle (SOFT_RESET's commit cycle): the reset alone
+                nxt, acts, _ = seq_resolve(s, ["RST"] + present, env)
+                n += 1
+                if nxt != "RESET" or acts:
+                    errs.append(f"SEQ {s} {['RST'] + present} {env}: a reset that does not win over the events of "
+                                f"its cycle -> {nxt} {acts}")
     # RESET (RESET_N low or a SOFT_RESET): only the release leaves it, commands are ignored, an output time is only
     # counted (the CIC and SEQ run on RESET_N), the timer cannot expire
     for e, _ in SEQ_EVENTS:
@@ -882,6 +893,7 @@ CHECKS = [
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
     "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
     "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
+    "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET のみ（動作なし。SOFT_RESET の確定のサイクルの tick と出力の時刻は取らない）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
@@ -1144,7 +1156,11 @@ def fresh():
         return 1
     stale = [os.path.relpath(p, REPO) for p, text in want.items()
              if not os.path.exists(p) or open(p, encoding="utf-8").read() != text]
-    print("generated files up to date" if not stale else "STALE (run fsm_spec.py gen): " + ", ".join(stale))
+    # the PNGs: drawn from the .mmd that the source gives now (the SHA-256 kept in each PNG)
+    stale += [os.path.relpath(p[:-4] + ".png", REPO) for p, text in want.items()
+              if p.endswith(".mmd") and png_source_sha(p[:-4] + ".png") != source_sha(text)]
+    print("generated files up to date" if not stale else
+          "STALE (run fsm_spec.py gen, and render for a .png): " + ", ".join(stale))
     return 1 if stale else 0
 
 
@@ -1201,6 +1217,9 @@ def selftest():
         ("RUN の APPLY_NR が印を付けるだけ", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         ("RESET の出力の時刻で格納する", lambda t: t.__setitem__(("RESET", "OUT"), [B(ALWAYS, ["store", "seq_inc"])])),
         ("RESET の APPLY を反映する", lambda t: t.__setitem__(("RESET", "APPLY"), [B(ALWAYS, ["apply"])])),
+        # audit round 4 (11/20)
+        ("RUN のリセットで、そのサイクルの出力を格納する", lambda t: t.__setitem__(("RUN", "RST"), [B(ALWAYS, ["store"], "RESET")])),
+        ("PULSE のリセットで RECOVER へ（AFE_RST を解除）", lambda t: t.__setitem__(("PULSE", "RST"), [B(ALWAYS, [], "RECOVER")])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -1282,41 +1301,79 @@ def selftest():
     return 0 if ok and not rep else 1
 
 
+def source_sha(text):
+    """The SHA-256 of a diagram's source text, kept in its PNG (tEXt 'source-sha256') so that 'fresh' can tell a PNG
+    drawn from an older source (audit round 4)."""
+    import hashlib
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def png_source_sha(path):
+    """The 'source-sha256' text of a PNG, or None."""
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return im.text.get("source-sha256")
+    except (OSError, ImportError, AttributeError):
+        return None
+
+
+def save_tagged_png(im, out, src_text):
+    from PIL.PngImagePlugin import PngInfo
+    info = PngInfo()
+    info.add_text("source-sha256", source_sha(src_text))
+    im.save(out, pnginfo=info)
+
+
 def render():
     """PNG of each generated diagram (headless Google Chrome; Mermaid 11.4.1 from jsDelivr). The Markdown keeps the
-    Mermaid source, which GitHub draws itself; the PNGs are for viewing elsewhere."""
+    Mermaid source, which GitHub draws itself; the PNGs are for viewing elsewhere. Each PNG keeps the SHA-256 of its
+    .mmd ('fresh' compares it). A drawing that Mermaid did not finish is never written: the source text stays hidden
+    until Mermaid marks it processed (a blank capture is retried with more time, then an error), and the page's DOM
+    must hold the drawing's SVG without a syntax error (audit round 4: a slow load once captured the raw text)."""
     import html
     import subprocess
     chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     if not os.path.exists(chrome):
         print("Google Chrome not found; skipped")
         return 1
+    from PIL import Image, ImageChops
     build = os.path.join(HERE, "..", "build")
     os.makedirs(build, exist_ok=True)
-    for name, size in (("seq_fsm", "720,2500"), ("spi_fsm", "1080,1150")):
+    for name, size, kind in (("seq_fsm", "720,2500", "stateDiagram"), ("spi_fsm", "1080,1150", "stateDiagram")):
         src = open(os.path.join(HERE, name + ".mmd"), encoding="utf-8").read()
         page = os.path.join(build, name + ".html")
         with open(page, "w", encoding="utf-8") as f:
-            f.write("<!doctype html><html><head><meta charset='utf-8'><style>body{margin:8px;background:#fff}</style>"
+            f.write("<!doctype html><html><head><meta charset='utf-8'><style>body{margin:8px;background:#fff}"
+                    "pre.mermaid:not([data-processed]){visibility:hidden}</style>"
                     f"</head><body><pre class='mermaid'>{html.escape(src)}</pre><script type='module'>"
                     "import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';"
                     "mermaid.initialize({startOnLoad:false, theme:'default'});"
                     "await mermaid.run({querySelector:'.mermaid'});</script></body></html>")
+        raw = os.path.join(build, name + ".raw.png")
         out = os.path.join(HERE, name + ".png")
-        subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
-                        f"--window-size={size}", "--virtual-time-budget=15000", f"--screenshot={out}",
-                        "file://" + os.path.abspath(page)], check=True, capture_output=True)
-        try:                                     # trim the empty page below and right of the drawing
-            from PIL import Image, ImageChops
-            im = Image.open(out).convert("RGB")
-            box = ImageChops.difference(im, Image.new("RGB", im.size, (255, 255, 255))).getbbox()
-            if box:
-                im.crop((0, 0, min(im.width, box[2] + 32), min(im.height, box[3] + 32))).save(out)
-        except ImportError:
-            pass
-        print("wrote", os.path.relpath(out, REPO))
+        im = None
+        for budget in (15000, 30000, 60000):
+            args = [chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars", f"--virtual-time-budget={budget}"]
+            dom = subprocess.run(args + ["--dump-dom", "file://" + os.path.abspath(page)], capture_output=True,
+                                 text=True).stdout
+            if f'aria-roledescription="{kind}' not in dom or "Syntax error" in dom:
+                continue
+            if os.path.exists(raw):
+                os.remove(raw)
+            subprocess.run(args + ["--force-device-scale-factor=2", f"--window-size={size}", f"--screenshot={raw}",
+                                   "file://" + os.path.abspath(page)], check=True, capture_output=True)
+            shot = Image.open(raw).convert("RGB")
+            box = ImageChops.difference(shot, Image.new("RGB", shot.size, (255, 255, 255))).getbbox()
+            if box:                              # trim the empty page below and right of the drawing
+                im = shot.crop((0, 0, min(shot.width, box[2] + 32), min(shot.height, box[3] + 32)))
+                break
+        if im is None:
+            print(f"{name}: Mermaid did not draw the diagram (DOM without its SVG, or a blank capture); not written")
+            return 1
+        save_tagged_png(im, out, src)
+        print("wrote", os.path.relpath(out, REPO), f"({im.width} x {im.height})")
     return 0
-
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"

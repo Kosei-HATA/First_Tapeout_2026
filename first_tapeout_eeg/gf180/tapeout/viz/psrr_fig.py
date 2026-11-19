@@ -112,7 +112,10 @@ def main():
             if r["supply"] == "AVDD" and r["zp"] == BAL and r["zn"] == BAL
             and (r["seed"] is not None or r["corner"] != "typical")}
     nstat = len(SEEDS) + len(CORNERS)
-    interim = len(keys) < 4 or not all(runs[k]["base"] for k in keys) or len(stat) < nstat
+    if S.REV == "r13":     # r13's plan (runs/psrr_r13/run_psrr_r13.sh): AVDD only (afe_top changed; DVDD as r12), no baselines
+        interim = len(keys) < 2 or len(stat) < nstat
+    else:
+        interim = len(keys) < 4 or not all(runs[k]["base"] for k in keys) or len(stat) < nstat
     r0 = runs[keys[0]]
     tones = r0["tones"]
     based = all(runs[k]["base"] for k in keys)          # r13: no baselines were run, every run is fitted alone

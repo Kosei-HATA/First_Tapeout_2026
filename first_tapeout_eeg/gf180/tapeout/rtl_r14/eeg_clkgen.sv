@@ -89,7 +89,7 @@ module eeg_clkgen #(
     output logic       tick               // r14: the sequencer's tick (see above)
 );
 
-    localparam logic [4:0] DLC = DAC_LOAD_CYCLE;
+    localparam logic [4:0] DLC = 5'(DAC_LOAD_CYCLE);
 
     logic [8:0] cnt;
     logic       fast;                     // chop rate of the current superperiod
@@ -126,9 +126,11 @@ module eeg_clkgen #(
     logic [3:0] blank_rem;                // chop_blank cycles left after the current one
 
     // chop waveform from a counter value: high in the first half of each period
-    function automatic logic chop_wave(input logic [8:0] c, input logic f);
+    /* verilator lint_off UNUSEDSIGNAL */
+    function automatic logic chop_wave(input logic [8:0] c, input logic f);   // only c[8:7] matter
         chop_wave = f ? ~c[7] : ~c[8];
     endfunction
+    /* verilator lint_on UNUSEDSIGNAL */
 
     assign cnt_nxt       = cnt + 9'd1;
     assign wrap          = (cnt_nxt == 9'd0);

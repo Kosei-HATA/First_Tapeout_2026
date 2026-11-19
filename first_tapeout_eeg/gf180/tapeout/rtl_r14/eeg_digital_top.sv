@@ -98,7 +98,10 @@ module eeg_digital_top #(
 
     // ------------------------------------------------------------------ decimation and overload
     logic [23:0] cic_data;
-    logic        cic_stb, cic_valid, cic_settling, cic_arm;
+    logic        cic_stb, cic_valid, cic_arm;
+    /* verilator lint_off UNUSEDSIGNAL */
+    logic        cic_settling;                    // not used by r14 (the sequencer counts the outputs)
+    /* verilator lint_on UNUSEDSIGNAL */
 
     eeg_cic3 u_cic (.clk(MCLK), .rst_n(rst_n), .arm(cic_arm), .en(cic_en), .code(CODE), .dout(cic_data),
                     .dout_stb(cic_stb), .dout_valid(cic_valid), .settling(cic_settling));
@@ -203,7 +206,7 @@ module eeg_digital_top #(
     assign CHOP_BLANK = gen_blank | a_azero;
     assign TEST_CFG   = {dbg_sel, a_azero, a_atpen, a_atpsel};
 
-    localparam logic [4:0] DAC_CLK_CYCLE = DAC_LOAD_CYCLE + 1;
+    localparam logic [4:0] DAC_CLK_CYCLE = 5'(DAC_LOAD_CYCLE + 1);
     always_ff @(posedge MCLK or negedge rst_n) begin
         if (!rst_n) DAC_CLK <= 1'b0;
         else        DAC_CLK <= (cycle == DAC_CLK_CYCLE);

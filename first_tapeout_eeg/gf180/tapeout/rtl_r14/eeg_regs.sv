@@ -84,7 +84,7 @@ module eeg_regs #(
 
 `include "eeg_regs_defs.svh"
 
-    localparam logic [3:0] DEPTH4 = FIFO_DEPTH;
+    localparam logic [3:0] DEPTH4 = 4'(FIFO_DEPTH);
 
     // ---------------- storage
     // shadows (s_) and actives (a_) of the analog settings

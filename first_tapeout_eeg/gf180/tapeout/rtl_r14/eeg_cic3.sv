@@ -56,15 +56,15 @@ module eeg_cic3 #(
 
     localparam int CW = $clog2(R);               // decimation counter width
     localparam int SW = $clog2(NSKIP + 2);       // strobe counter width
-    localparam logic [CW-1:0] CNT_LAST = R - 1;
-    localparam logic [SW-1:0] NSKIP_P  = NSKIP;
-    localparam logic [SW-1:0] NSTB_MAX = NSKIP + 1;
+    localparam logic [CW-1:0] CNT_LAST = CW'(R - 1);
+    localparam logic [SW-1:0] NSKIP_P  = SW'(NSKIP);
+    localparam logic [SW-1:0] NSTB_MAX = SW'(NSKIP + 1);
 
     // x = 2c - 31 = (2c + 1) - 32, as a 6-bit two's complement value
     logic [5:0]   x6;
     logic [W-1:0] x;
 
-    assign x6 = {1'b0, code, 1'b1} - 6'd32;
+    assign x6 = {code, 1'b1} - 6'd32;                 // modulo 64, as before
     assign x  = {{(W - 6){x6[5]}}, x6};
 
     logic [W-1:0]  i1, i2, i3;           // integrators

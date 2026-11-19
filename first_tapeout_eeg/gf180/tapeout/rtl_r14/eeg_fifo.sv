@@ -33,7 +33,7 @@ module eeg_fifo #(
 );
 
     localparam int AW = $clog2(DEPTH);
-    localparam logic [3:0] LEVEL_FULL = DEPTH;
+    localparam logic [3:0] LEVEL_FULL = 4'(DEPTH);
 
     logic [47:0]   mem [0:DEPTH-1];
     logic [AW-1:0] wr_ptr, rd_ptr;

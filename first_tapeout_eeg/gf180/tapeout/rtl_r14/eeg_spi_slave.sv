@@ -13,7 +13,8 @@
 //     the header completes (smp_snap) and the pop is requested at CS_N rising only after exactly 8 bytes; the FIFO
 //     removes the head only if the copy is still the head (eeg_fifo `held`).
 //   * a bit after a completed fixed frame -> OVF (FRAME_ERR at CS_N rising); CS_N rising inside a byte -> FRAME_ERR;
-//     an empty frame (no SCLK) is no error.
+//     with CRC on, a read that stops before its CRC byte or a sample read shorter than 8 bytes -> FRAME_ERR (a
+//     header-only read, the status poll, stays legal); an empty frame (no SCLK) is no error.
 // Synchronizers as in rtl/eeg_spi_slave.sv (MCLK oversampling, SCLK <= 2 MHz). MISO_OE = ~CS_N (pad) & the
 // synchronized CS (turns on 1..2 MCLK after the fall, off at once at the rise).
 `timescale 1ns / 1ps
@@ -160,8 +161,10 @@ module eeg_spi_slave (
                 tx_sh   <= status_byte;                  // STATUS during the header byte
             end else if (cs_end) begin
                 if (st != S_IDLE) begin
-                    if (bit_cnt != 3'd0 || st == S_OVF || st == S_WDAT || st == S_WCRC) begin
-                        frame_err <= 1'b1;               // inside a byte, overlong, or an incomplete write
+                    if (bit_cnt != 3'd0 || st == S_OVF || st == S_WDAT || st == S_WCRC ||
+                        (crc_en && (st == S_RCRC || st == S_RSMP))) begin
+                        frame_err <= 1'b1;               // inside a byte, overlong, an incomplete write, or (CRC
+                                                         // on) a read without its CRC or a short sample
                     end else if (st == S_WDONE) begin
                         if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;
                         else                                                            reg_we  <= 1'b1;

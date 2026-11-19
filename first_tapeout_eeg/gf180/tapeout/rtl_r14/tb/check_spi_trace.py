@@ -32,6 +32,7 @@ RO = {a for a, r in REGS.items() if r[2] == "RO"} | MIRRORS
 TESTREG = {a for a, r in REGS.items() if r[3]}
 A_CMD, A_KEY, A_IFCFG, A_SAMPLE = 0x10, 0x11, 0x55, 0x40
 CODES = set(RM.COMMANDS.values())
+GUARDED = set(RM.guarded_addrs())             # shadows and timers: refused while a command is pending
 SOFT = RM.COMMANDS["SOFT_RESET"]
 ST = {0: "IDLE", 1: "HDR", 2: "RREG", 3: "RCRC", 4: "RDONE", 5: "RSMP", 6: "SDONE", 7: "WDAT", 8: "WCRC",
       9: "WDONE", 10: "OVF"}
@@ -112,7 +113,7 @@ def main():
             env["crc_ok"] = int(tx[2] == crc8(tx[:2]))
         env["wr_ok"] = int(addr in DEFINED and addr not in RO and (addr not in TESTREG or model["unl"]))
         data = tx[1] if len(tx) >= 2 else None
-        if addr == A_CMD and data is not None and data in CODES and data != SOFT:
+        if data is not None and ((addr == A_CMD and data in CODES and data != SOFT) or addr in GUARDED):
             env["busy"] = fr["busy"]
         # walk the table
         state, acts, exp_bytes = "IDLE", [], []      # exp_bytes[j]: expectation for MISO byte j

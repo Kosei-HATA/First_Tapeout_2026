@@ -4,13 +4,15 @@
 # 440 x 700 um does not place, 92 % utilization). In the chip like the r13 macro, in the east digital column of the
 # core, with the DVDD decoupling above it moved 200 um up.
 # Settings of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
-# excluded cells), plus, so that the macro finishes without design-rule warnings:
-#   - the design repair after global routing (the trial's reset tree reached a 4.76 ns slew once routed, limit 3 ns);
-#   - clock-tree clusters of at most 10 sinks and 0.2 pF (the SDC's max fanout and max capacitance; the r13 macro's
-#     clock leaf buffers drive 22 sinks and its root buffers up to 0.5 pF);
-#   - a placement target density above the utilization (GPL-0302 with 55 %);
+# excluded cells, placement density 55 %, CTS defaults), plus:
+#   - the design repair after global routing, with a slew margin that covers the routed wires (the trial's reset tree
+#     reached 4.76 ns once routed, limit 3 ns; r14m1 repaired it, a few logic nets still reached 3.33 ns at ss);
+#   - setup margins for the timing repair after placement and after global routing, so that the routed CIC output
+#     path (comb -> round and saturate, about 29.6 ns of a 30.5 ns period at ss / 125 C) keeps a positive slack;
 #   - TIMESCALEMOD off for the PDK cells' blackbox stubs only (they carry no `timescale; the RTL lints clean with
 #     Verilator -Wall).
+# r14m1 (11/20) also tried CTS clusters of 10 sinks / 0.2 pF and 80 % placement density: the clock buffers tripled and
+# setup failed by 0.436 ns at ss, so those are back at the r13 values.
 # Run with run_r14_macro.sh from a Terminal panel tab.
 meta:
   version: 3
@@ -39,7 +41,7 @@ CLOCK_PERIOD: 30.5          # 32.768 MHz
 
 FP_SIZING: absolute
 DIE_AREA: [0, 0, 440, 900]
-PL_TARGET_DENSITY_PCT: 80
+PL_TARGET_DENSITY_PCT: 55
 FP_PIN_ORDER_CFG: dir::../eeg_digital_top/pin_order.cfg
 
 VDD_NETS: [VDD]
@@ -71,8 +73,9 @@ STA_CORNERS:
 - max_ff_n40C_3v60
 DEFAULT_CORNER: nom_tt_025C_3v30
 
-CTS_SINK_CLUSTERING_SIZE: 10
-CTS_MAX_CAP: 0.2
+PL_RESIZER_SETUP_SLACK_MARGIN: 1.0
+GRT_RESIZER_SETUP_SLACK_MARGIN: 1.5
+GRT_DESIGN_REPAIR_MAX_SLEW_PCT: 30
 
 RUN_POST_GRT_RESIZER_TIMING: true
 RUN_POST_GRT_DESIGN_REPAIR: true

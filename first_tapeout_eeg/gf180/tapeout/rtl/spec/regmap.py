@@ -62,7 +62,7 @@ REGS = [
      "シーケンサの状態"),
     (0x05, "FIFO_LEVEL", "RO", False, [F("LEVEL", 3, 0, 0, rng(0, 8), "ro", "FIFO のサンプルの数")], "FIFO の占有数"),
     (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値"),
-                                 F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、または未処理の命令への上書き（SOFT_RESET は常に受け付ける）"),
+                                 F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、未処理の命令への上書き、または未処理の命令がある間のシャドウとタイマへの書き込み（SOFT_RESET は常に受け付ける）"),
                                  F("CFG_ERR", 5, 5, 0, [0, 1], "w1c", "整合しない設定での START／APPLY、または nr_ok でない APPLY_NR"),
                                  F("RANGE_ERR", 4, 4, 0, [0, 1], "w1c", "範囲外の値の書き込み（書かない）"),
                                  F("ADDR_ERR", 3, 3, 0, [0, 1], "w1c", "未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み"),
@@ -126,10 +126,18 @@ SEQ_DRIVEN = {"AFE_RST"}
 DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}       # pads and debug: no analog effect (11/16: +0.64 nV)
 
 SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
-                 ("OVL", 5, "この出力の直前の 1 ms に過負荷を検出した"), ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓（反映の直後の 3 個）"),
+                 ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかで過負荷を検出した"),
+                 ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓と電極の整定（反映の直後の 3 ＋ T_ELEC 個。RUN を出ると残りは取り消す）"),
                  ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
 OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
 RANGE_MAX_M = {0: 1023, 1: 127, 2: 255, 3: 511, 4: 1023}       # range 0: the DAC is off and OFM/OFS are driven 0
+
+
+def guarded_addrs():
+    """Writes refused (STATE_ERR) while a command is pending: the registers with fields applied at the tick (the
+    shadows) and the timers (loaded at the tick), so that the command uses the values present when it was written."""
+    return sorted({a for a, n, acc, lock, fields, _ in REGS
+                   if any(f["cls"] == "apply" for f in fields) or n in ("T_WARM", "T_ELEC", "T_REC", "T_PRE", "T_RST")})
 
 
 def cfg_ok(sh):
@@ -146,10 +154,11 @@ def nr_ok(sh, ac):
 
 CHECKS = [
     "アドレスの重なりがない。アクティブの写しのアドレス（＋0x10）が他のレジスタと重ならない",
-    "各レジスタのフィールドは 8 ビットに収まり、重ならない。未使用のビットは 0 を返す",
+    "各レジスタのフィールドは 8 ビットに収まり、重ならない（未使用のビットが 0 を返すことは、レジスタ表から生成した試験 tb_top_r14 で確かめる）",
     "既定値はフィールドの幅に収まり、合法な値。推奨の動作値（AFE_IBIAS 3、BOOST_TRIM 4/2、BLANK 7、CHOP_FAST 1、CHOP1 4 kHz、DWA_EN 1）",
     "アナログ側が受ける制御の全て（17 項目）が、ちょうど 1 つのフィールド（apply）かシーケンサ（AFE_RST）から出る。アナログに効く設定に、即時に効くもの（imm）はない",
-    "タイマの最小値と既定値は、tick の格子に切り上げてもアナログの最小値（fsm_spec.TIMING）以上",
+    "タイマの最小値と既定値は、tick の格子に切り上げても（フレームの整数で計算）アナログの最小値（fsm_spec.TIMING）以上。タイマの最大値（255 × 単位）は TIMING の最大と一致",
+    "未処理の命令がある間に書き込みを止めるレジスタ（GUARDED）は、一括反映のフィールドを持つレジスタとタイマのレジスタに一致",
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
@@ -216,17 +225,25 @@ def check(verbose=True):
         if pin not in ANALOG_CONTROLS and pin not in DIGITAL_ONLY:
             errs.append(f"{pin}: a pin that is in neither list of controls")
     # timers against the analog minimums (fsm_spec.TIMING) on both tick grids
-    unit = {"T_REC": TICK_UNIT_S, "T_PRE": TICK_UNIT_S, "T_RST": TICK_UNIT_S, "T_WARM": 1e-3}
+    unit = {"T_REC": 8, "T_PRE": 8, "T_RST": 8, "T_WARM": 1024}                   # frames per register step
+    frame_s = FS.FRAME / FS.MCLK
     for tn, u in unit.items():
         f = next(f for *_, f in all_fields() if f["name"] == tn)
         mn, df, mx = FS.TIMING["timers"][tn]
         for label, code in (("minimum", min(f["legal"])), ("default", f["reset"])):
             for rate, r in FS.TIMING["rates"].items():
-                tick = r["period_frames"] * FS.FRAME / FS.MCLK
-                actual = -(-(code * u) // tick) * tick
-                if actual < mn - 1e-12:
-                    errs.append(f"{tn} {label} code {code}: {actual * 1e6:.2f} us at {rate} is below {mn * 1e6:g} us")
-            notes.append(f"{tn} {label}: code {code} = {code * u * 1e6:.2f} us")
+                per = r["period_frames"]                                          # the expiry waits for a tick
+                frames = -(-(code * u) // per) * per                              # integers: exact
+                if frames * frame_s < mn - 1e-12:
+                    errs.append(f"{tn} {label} code {code}: {frames * frame_s * 1e6:.2f} us at {rate} is below {mn * 1e6:g} us")
+            notes.append(f"{tn} {label}: code {code} = {code * u * frame_s * 1e6:.4f} us")
+        if abs(max(f["legal"]) * u * frame_s - mx) > 1e-12:
+            errs.append(f"{tn}: the register reaches {max(f['legal']) * u * frame_s * 1e3:.4f} ms, TIMING says {mx * 1e3:.4f} ms")
+    g = guarded_addrs()
+    want = sorted({a for a, n, acc, lock, fields, _ in REGS if any(f["cls"] == "apply" for f in fields)} |
+                  {a for a, n, *_ in REGS if n.startswith("T_")})
+    if g != want or not g:
+        errs.append(f"guarded addresses {g}, expected {want}")
     # STATE codes
     st = next(f for *_, f in all_fields() if f["name"] == "STATE")
     codes = sorted(x[1] for x in FS.SEQ_STATES if x[1] is not None)
@@ -312,8 +329,10 @@ def md_tables():
     cmd = ["| 命令 | コード | 受け付ける状態（fsm_spec の状態遷移表） |", "|---|---|---|"]
     acc_states = {}
     for c in ("START", "STOP", "APPLY", "APPLY_NR", "FLUSH"):
-        ok = [x[0] for x in FS.SEQ_STATES if x[0] != "RESET" and FS.SEQ["table"][(x[0], c)] not in (FS.IGN, FS.IMP)
-              and not all(b["actions"] == ["STATE_ERR"] for b in FS.SEQ["table"][(x[0], c)])]
+        ok = [x[0] + ("（何もしない）" if FS.SEQ["table"][(x[0], c)] == FS.IGN else "")
+              for x in FS.SEQ_STATES if x[0] != "RESET" and FS.SEQ["table"][(x[0], c)] != FS.IMP
+              and (FS.SEQ["table"][(x[0], c)] == FS.IGN or
+                   not all(b["actions"] == ["STATE_ERR"] for b in FS.SEQ["table"][(x[0], c)]))]
         acc_states[c] = "、".join(ok)
     acc_states["SOFT_RESET"] = "全て（未処理の命令があっても受け付け、CS_N の立ち上がりで直ちにリセット）"
     for c, v in COMMANDS.items():
@@ -347,6 +366,8 @@ def sv_package():
     for c, v in COMMANDS.items():
         out.append(f"    localparam logic [7:0] CMD_{c} = 8'h{v:02X};")
     out.append(f"    localparam logic [7:0] TEST_KEY_VALUE = 8'h{TEST_KEY:02X};")
+    mask = sum(1 << a for a in guarded_addrs())
+    out.append(f"    localparam logic [127:0] GUARDED_ADDRS = 128'h{mask:032X};   // writes refused while a command is pending")
     for x in FS.SEQ_STATES:
         if x[1] is not None:
             out.append(f"    localparam logic [3:0] ST_{x[0]} = 4'd{x[1]};")

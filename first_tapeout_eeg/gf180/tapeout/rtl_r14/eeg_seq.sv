@@ -10,7 +10,8 @@
 //            by the priority STOP > START > APPLY > APPLY_NR > FLUSH > TMR. Registered outputs change at e25.
 //   out_stb  a CIC output time (frame cycle 8); never in the same MCLK cycle as tick.
 //   rst_n    asynchronous (RESET_N or SOFT_RESET): the reset state is IDLE with AFE_RST = 1.
-// Timer: one down-counter in frames, loaded on entering a timed state (T_WARM, T_ELEC in 1024-frame units of 1 ms,
+// Timer: one down-counter in frames, loaded on entering a timed state and on a restart (APPLY or APPLY_NR in
+// WARMUP: AFE_RST is never released sooner than T_WARM after a change) (T_WARM, T_ELEC in 1024-frame units of 1 ms,
 // T_REC, T_PRE, T_RST in 8-frame units of 7.8125 us), decremented once per frame (frame_stb); TMR = 0. The expiry is
 // taken at the first tick after it, so every duration is a whole number of chopper periods at 128 kHz.
 // An illegal state value returns to IDLE (AFE_RST = 1) with STATE_ERR.
@@ -55,7 +56,7 @@ module eeg_seq (
     logic [17:0] timer;
     logic        tmr;
     logic [3:0]  nxt;
-    logic        a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_ack;
+    logic        a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_ack, a_restart;
     logic        is_start, is_stop, is_apply, is_nr, is_flush;
 
     assign tmr      = (timer == 18'd0);
@@ -75,9 +76,10 @@ module eeg_seq (
     endfunction
 
     always_comb begin
-        nxt     = state;
-        a_apply = 1'b0;
-        a_flush = 1'b0;
+        nxt       = state;
+        a_apply   = 1'b0;
+        a_restart = 1'b0;
+        a_flush   = 1'b0;
         a_store = 1'b0;
         a_mark  = 1'b0;
         a_serr  = 1'b0;
@@ -106,14 +108,19 @@ module eeg_seq (
             end else if (is_apply || is_nr) begin
                 case (state)
                     S_IDLE, S_WARMUP: begin                 // AFE held in reset: any consistent change, no pulse
-                        if (cfg_ok) a_apply = 1'b1;
-                        else        a_cerr  = 1'b1;
+                        if (cfg_ok) begin
+                            a_apply   = 1'b1;
+                            a_restart = (state == S_WARMUP);    // WARMUP: the wait before the release starts again
+                        end else begin
+                            a_cerr = 1'b1;
+                        end
                     end
                     S_PRE, S_PULSE: a_serr = 1'b1;          // a further change waits for READY
                     default: begin                          // RECOVER, WAIT_E, ALIGN, FILL, RUN: the AFE runs
                         if (is_apply) begin
                             if (cfg_ok) begin
                                 a_apply = 1'b1;
+                                a_flush = 1'b1;                 // the data restart: no sample of the old setting
                                 nxt     = S_PRE;
                             end else begin
                                 a_cerr = 1'b1;
@@ -121,8 +128,14 @@ module eeg_seq (
                         end else begin                      // APPLY_NR: one offset-DAC step only
                             if (cfg_ok && nr_ok) begin
                                 a_apply = 1'b1;
-                                if (state == S_FILL) nxt    = S_ALIGN;      // restart the clear
-                                if (state == S_RUN)  a_mark = 1'b1;
+                                // before RUN the electrode settles again (T_ELEC) before the clear
+                                case (state)
+                                    S_WAIT_E: a_restart = 1'b1;
+                                    S_ALIGN:  if (t_elec != 8'd0) nxt = S_WAIT_E;
+                                    S_FILL:   nxt = (t_elec != 8'd0) ? S_WAIT_E : S_ALIGN;   // restart the clear
+                                    S_RUN:    a_mark = 1'b1;    // CHANGED on the next 3 + T_ELEC outputs
+                                    default:  ;                 // RECOVER: WAIT_E follows anyway
+                                endcase
                             end else begin
                                 a_cerr = 1'b1;
                             end
@@ -132,8 +145,8 @@ module eeg_seq (
             end else if (is_flush) begin
                 a_flush = 1'b1;
             end
-            // the timer (lower priority): only if the command left the state unchanged
-            if (nxt == state && timed(state) && tmr) begin
+            // the timer (lower priority): only if the command left the state unchanged and did not restart it
+            if (nxt == state && timed(state) && tmr && !a_restart) begin
                 case (state)
                     S_WARMUP:  nxt = S_RECOVER;
                     S_RECOVER: nxt = (t_elec == 8'd0) ? S_ALIGN : S_WAIT_E;
@@ -186,7 +199,7 @@ module eeg_seq (
         end else begin
             state   <= nxt;
             afe_rst <= afe_rst_of(nxt);
-            if (nxt != state) begin
+            if (nxt != state || a_restart) begin
                 timer <= load_of(nxt);
             end else if (frame_stb && timer != 18'd0) begin
                 timer <= timer - 18'd1;

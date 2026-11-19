@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # r14 digital control: the specification checks and every RTL test, with a summary.
 #   1. gf180/tapeout/rtl/spec: fsm_spec.py check + selftest, regmap.py check + selftest
-#   2. tb_seq    the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table)
+#   2. tb_seq    the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table; the
+#                timer modelled independently: every load, decrement and restart)
 #   3. tb_tick   the tick in the middle of chopper phase A, once per period, both rates, rate changes
 #   4. tb_cic_arm the CIC cleared at an output time == golden CIC (four positions), output grid kept
 #   5. tb_ovl    the overload detector == the rule (overload runs + full-scale stream)
@@ -11,6 +12,7 @@
 #                at ticks; samples == golden CIC (check_top_r14.py)
 #   7. tb_spi_r14 random SPI frames into the whole block, replayed through fsm_spec's SPI table (every frame, every
 #                branch covered; check_spi_trace.py)
+#   8. tb_top_r14 again with a 4-deep FIFO (FIFO4)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 # usage: ./run_tests_r14.sh
 set -u
@@ -57,5 +59,8 @@ run tb_cic_arm cic_t
 [ -f build/ovl.codes ] && run tb_ovl ovl_t
 run tb_top_r14 top_t
 run tb_spi_r14 spi_t
+top4_t() { $IV -DFIFO4 -o build/tb_top_r14_f4.vvp $RTL tb/tb_top_r14.sv 2>&1 | grep -v "sorry: constant" ;
+           vvp -n build/tb_top_r14_f4.vvp && $PY tb/check_top_r14.py; }
+run tb_top_r14_fifo4 top4_t
 printf '%s\n' "${RES[@]}"
 ! printf '%s\n' "${RES[@]}" | grep -q FAIL

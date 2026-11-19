@@ -32,6 +32,14 @@ def reset_byte(fields):
     return v
 
 
+def caps4(r):
+    """CAPS with a 4-deep FIFO."""
+    v = 0
+    for f in r[4]:
+        v |= (4 if f["name"] == "FIFO_DEPTH" else f["reset"]) << f["lsb"]
+    return v
+
+
 def field_mask(f):
     return ((1 << (f["msb"] - f["lsb"] + 1)) - 1) << f["lsb"]
 
@@ -52,6 +60,9 @@ def main():
             r = regs[a]
             if r[2] == "WO":
                 L.append(f"    rt_read_expect(7'h{a:02X}, 8'h00, \"{r[1]} (write only)\");")
+            elif r[1] == "CAPS":                               # the FIFO depth is chosen at synthesis (4 or 8)
+                L += ["`ifdef FIFO4", f"    rt_read_expect(7'h{a:02X}, 8'h{caps4(r):02X}, \"CAPS (FIFO 4)\");", "`else",
+                      f"    rt_read_expect(7'h{a:02X}, 8'h{reset_byte(r[4]):02X}, \"CAPS\");", "`endif"]
             else:
                 L.append(f"    rt_read_expect(7'h{a:02X}, 8'h{reset_byte(r[4]):02X}, \"{r[1]}\");")
         elif a in mirrors:
@@ -109,6 +120,11 @@ def main():
     L.append("    // 4. read-only registers and undefined addresses")
     for a, r in sorted(regs.items()):
         if r[2] == "RO" and a not in (0x03, 0x40):
+            if r[1] == "CAPS":
+                L += ["`ifdef FIFO4", f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{caps4(r):02X}, 8'h{E_ADDR:02X}, \"CAPS read only\");",
+                      "`else", f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"CAPS read only\");",
+                      "`endif"]
+                continue
             L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"{r[1]} read only\");")
     for a in sorted(mirrors):
         L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, 8'h{E_ADDR:02X}, \"{regs[mirrors[a]][1]} active (read only)\");")

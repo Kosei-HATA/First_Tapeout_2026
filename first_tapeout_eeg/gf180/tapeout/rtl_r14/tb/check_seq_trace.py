@@ -4,9 +4,12 @@
 For every tick (T) and output time (O) of the trace, fsm_spec.seq_tick gives the next state and the actions from the
 state, the events present (the pending command and the timer at a tick, OUT at an output time) and the conditions;
 the RTL's next state and actions must be the same. Compared actions: apply, flush, store, mark, STATE_ERR, CFG_ERR,
-cic_clear. The FIFO decides OVERRUN, so the specification's store and OVERRUN both map to the RTL's store request;
-'cancel', 'discard' and 'seq_inc' belong to other blocks. Coverage: every (state, event, branch) of the
-transition table that a tick or an output time can reach must have been hit.
+cic_clear, restart ('discard' and 'seq_inc' belong to other blocks; the FIFO decides OVERRUN).
+The timer is modelled here, not taken from the RTL: loaded with the state's setting (T_WARM, T_ELEC x 1024 frames;
+T_REC, T_PRE, T_RST x 8 frames) on entering a timed state and on a restart, decremented once per frame, clamped at 0;
+TMR is present at a tick when the model is 0. The RTL's timer before and after every event must equal the model.
+Coverage: every (state, event, branch) of the transition table that a tick or an output time can reach must have been
+hit.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/check_seq_trace.py build/seq_trace.txt
 """
@@ -20,31 +23,52 @@ import fsm_spec as FS  # noqa: E402
 NAME = {x[1]: x[0] for x in FS.SEQ_STATES if x[1] is not None}
 CMD = {0x11: "START", 0x22: "STOP", 0x33: "APPLY", 0x44: "APPLY_NR", 0x55: "FLUSH"}
 TIMED = {x[0] for x in FS.SEQ_STATES if x[4]}
-RTL_ACTS = ["apply", "flush", "store", "mark", "STATE_ERR", "CFG_ERR", "cic_clear"]
+RTL_ACTS = ["apply", "flush", "store", "mark", "STATE_ERR", "CFG_ERR", "cic_clear", "restart"]
+UNIT = {"WARMUP": (0, 1024), "WAIT_E": (1, 1024), "RECOVER": (2, 8), "PRE": (3, 8), "PULSE": (4, 8)}   # setting, frames
+
+
+def load(s, tset):
+    if s not in UNIT:
+        return 0
+    k, unit = UNIT[s]
+    return tset[k] * unit
 
 
 def main(path):
-    errs, n, cover = [], 0, set()
+    errs, n, cover, model, nload, nrestart = [], 0, set(), 0, 0, 0
     for ln, line in enumerate(open(path), 1):
         f = line.split()
-        if not f or f[0] == "R":
+        if not f:
+            continue
+        if f[0] == "R":
+            model = 0                                       # reset: IDLE, timer 0
             continue
         kind, st, cv, cc, tm, cfg, nr, te0, valid, nxt, acts = f[0], *map(int, f[1:10]), f[10]
+        t_before, t_after, frames, fs, *tset = map(int, f[11:20])
         s = NAME[st]
+        exp_before = max(0, model - frames)                 # the frames since the previous traced event
+        if t_before != exp_before:
+            errs.append(f"line {ln}: timer before the event {t_before}, model {exp_before}")
         if kind == "T":
-            present = ([CMD[cc]] if cv else []) + (["TMR"] if (tm and s in TIMED) else [])
+            present = ([CMD[cc]] if cv else []) + (["TMR"] if (exp_before == 0 and s in TIMED) else [])
         else:
             present = ["OUT"]
-        env = dict(cfg_ok=cfg, nr_ok=nr, t_elec0=te0, valid=valid, full=0)
+        env = dict(cfg_ok=cfg, nr_ok=nr, t_elec0=te0, valid=valid)
         exp_nxt, exp_acts = FS.seq_tick(s, present, env)
-        exp = {a for a in exp_acts if a in RTL_ACTS or a == "OVERRUN"}
-        if "OVERRUN" in exp:
-            exp = (exp - {"OVERRUN"}) | {"store"}
+        exp = {a for a in exp_acts if a in RTL_ACTS}
         got = {a for a, b in zip(RTL_ACTS, acts) if b == "1"}
         n += 1
         if NAME.get(nxt) != exp_nxt or got != exp:
             errs.append(f"line {ln}: {s} {present} {env}: RTL -> {NAME.get(nxt, nxt)} {sorted(got)}, "
                         f"specification -> {exp_nxt} {sorted(exp)}")
+        if exp_nxt != s or "restart" in exp:
+            model = load(exp_nxt, tset)
+            nload += 1
+            nrestart += "restart" in exp
+        else:
+            model = max(0, exp_before - fs)
+        if t_after != model:
+            errs.append(f"line {ln}: timer after the event {t_after}, model {model} ({s} -> {exp_nxt}, {sorted(exp)})")
         for e in present:
             cell = FS.SEQ["table"][(s, e)]
             b = FS.pick(cell, env)
@@ -56,12 +80,10 @@ def main(path):
         if s == "RESET" or e in ("RST", "REL") or not isinstance(cell, list):
             continue
         for b in cell:
-            if b["guard"] == "full":                        # RUN/OUT when full: the FIFO's decision, tested there
-                continue
             want.add((s, e, b["guard"]))
     missing = sorted(want - cover)
     print(f"{n} events replayed through fsm_spec.seq_tick: {len(errs)} mismatches; "
-          f"table cells covered {len(want & cover)} of {len(want)}")
+          f"table cells covered {len(want & cover)} of {len(want)}; timer modelled ({nload} loads, {nrestart} restarts)")
     for e in errs[:20]:
         print("  " + e)
     for m in missing:

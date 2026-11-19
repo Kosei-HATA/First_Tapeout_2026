@@ -88,20 +88,18 @@ SEQ_CONDS = {
     "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段のみ（範囲は同じ）",
     "t_elec0": "T_ELEC = 0",
     "valid": "CIC の出力が有効（クリアのあと 3 個目以降）",
-    "full": "FIFO が満杯",
 }
 SEQ_ACTIONS = {
     "apply": "シャドウからアクティブへ一括反映（オフセット DAC、トリム、チョッパ、BLANK、試験の設定）",
     "flush": "FIFO を空にする",
     "cic_clear": "CIC をクリアする（出力の時刻に合わせて行うので、格子は変わらない）",
-    "store": "出力を FIFO へ格納する（DRDY）",
+    "store": "出力を FIFO へ格納する（DRDY）。満杯なら FIFO が新しいサンプルを捨てて OVERRUN を立てる（第 5.3 節、fifo_step）",
     "discard": "出力を捨てる",
     "seq_inc": "SEQ に 1 を加える（SEQ はリセットの解除からの出力の時刻の番号）",
-    "mark": "このあとの 3 個の出力（反映をまたぐ窓）に CHANGED を付ける",
-    "cancel": "同じ tick の START を取り消す（IDLE に留まる）",
+    "mark": "このあとの 3 ＋ T_ELEC 個の出力に CHANGED を付ける（反映をまたぐ sinc³ の窓 3 個と、電極の整定 T_ELEC（1 ms ＝ 出力 1 個の単位））。RUN を出ると残りは取り消す（次の RUN はクリアした CIC から始まり、その窓は反映をまたがない）",
     "CFG_ERR": "エラー CFG_ERR を立てる（命令は実行しない）",
     "STATE_ERR": "エラー STATE_ERR を立てる（命令は実行しない）",
-    "OVERRUN": "エラー OVERRUN を立てる（出力は捨てる）",
+    "restart": "その状態のタイマを最初から数え直す（同じ tick のタイマの満了は取り消す）",
 }
 
 
@@ -115,7 +113,8 @@ def _seq_table():
         t[(s, "REL")] = IMP
         t[(s, "START")] = [B(ALWAYS, ["STATE_ERR"])]
         t[(s, "STOP")] = [B(ALWAYS, [], "IDLE")]
-        t[(s, "APPLY")] = [B("cfg_ok", ["apply"], "PRE"), B("not cfg_ok", ["CFG_ERR"])]
+        # with a pulse: the data restart (like START), so the FIFO is emptied of the samples of the old setting
+        t[(s, "APPLY")] = [B("cfg_ok", ["apply", "flush"], "PRE"), B("not cfg_ok", ["CFG_ERR"])]
         # AFE running: without a pulse only a one-step change of the offset DAC (the operating 1-step tracking)
         t[(s, "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
         t[(s, "FLUSH")] = [B(ALWAYS, ["flush"])]
@@ -130,22 +129,32 @@ def _seq_table():
     # IDLE
     t[("IDLE", "START")] = [B("cfg_ok", ["apply", "flush"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])]
     t[("IDLE", "STOP")] = IGN
-    # IDLE and WARMUP hold the AFE in reset: any consistent change is applied without a pulse
+    # IDLE and WARMUP hold the AFE in reset: any consistent change is applied without a pulse. In WARMUP the wait
+    # starts again, so that AFE_RST is never released less than T_WARM (>= T_RST) after a change
     for st in ("IDLE", "WARMUP"):
-        t[(st, "APPLY")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
-        t[(st, "APPLY_NR")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
+        acts = ["apply"] if st == "IDLE" else ["apply", "restart"]
+        t[(st, "APPLY")] = [B("cfg_ok", acts), B("not cfg_ok", ["CFG_ERR"])]
+        t[(st, "APPLY_NR")] = [B("cfg_ok", acts), B("not cfg_ok", ["CFG_ERR"])]
     t[("WARMUP", "TMR")] = [B(ALWAYS, [], "RECOVER")]
     # RECOVER / WAIT_E
     t[("RECOVER", "TMR")] = [B("t_elec0", [], "ALIGN"), B("not t_elec0", [], "WAIT_E")]
     t[("WAIT_E", "TMR")] = [B(ALWAYS, [], "ALIGN")]
+    # an offset step before RUN: the electrode settles again (T_ELEC) before the clear (one step at a high-impedance
+    # electrode is about 3 mV at the input and settles with Re x Ce; gf180_electrode_dc_20261022.md)
+    t[("WAIT_E", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply", "restart"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
+    t[("ALIGN", "APPLY_NR")] = [B("cfg_ok and nr_ok and t_elec0", ["apply"]),
+                                B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"),
+                                B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
     # ALIGN: the CIC is cleared at the next output time, keeping the output grid
     t[("ALIGN", "OUT")] = [B(ALWAYS, ["cic_clear", "discard", "seq_inc"], "FILL")]
     # FILL: an unpulsed APPLY_NR restarts the clear, so no stored window ever straddles a change
-    t[("FILL", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
+    t[("FILL", "APPLY_NR")] = [B("cfg_ok and nr_ok and t_elec0", ["apply"], "ALIGN"),
+                               B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"),
+                               B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
     t[("FILL", "OUT")] = [B("valid", ["store", "seq_inc"], "RUN"), B("not valid", ["discard", "seq_inc"])]
     # RUN
     t[("RUN", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply", "mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
-    t[("RUN", "OUT")] = [B("not full", ["store", "seq_inc"]), B("full", ["OVERRUN", "discard", "seq_inc"])]
+    t[("RUN", "OUT")] = [B(ALWAYS, ["store", "seq_inc"])]
     # PRE / PULSE: a further APPLY waits for READY (rejected), the pulse is not stretched
     for s, nxt in (("PRE", "PULSE"), ("PULSE", "RECOVER")):
         t[(s, "APPLY")] = [B(ALWAYS, ["STATE_ERR"])]
@@ -203,7 +212,7 @@ SPI_CONDS = {
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
     "crc_ok": "受信した CRC が一致",
     "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み）",
-    "busy": "命令レジスタへの定義済みの命令（SOFT_RESET を除く）の書き込みで、前の命令がまだ tick で処理されていない",
+    "busy": "前の命令がまだ tick で処理されていない間の、命令レジスタへの定義済みの命令（SOFT_RESET を除く）、またはシャドウ（一括反映の対象）とタイマのレジスタへの書き込み（命令が読む値を tick まで変えない）",
     "head": "写した語が FIFO に格納されたサンプルで、写してから取り出しもフラッシュもなく、まだ先頭",
 }
 SPI_ACTIONS = {
@@ -243,6 +252,11 @@ def _spi_table():
                           B("not rw", ["latch_addr"], "WDAT")]
     t[("RREG", "BYTE")] = [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])]
     t[("RCRC", "BYTE")] = [B(ALWAYS, [], "RDONE")]
+    # CRC on: a read that stops before its CRC byte, or a sample read shorter than its 8 bytes, is a frame error, so
+    # that a one-bit header error that changes the kind of frame is flagged both ways (a header-only read, the status
+    # poll, stays legal)
+    t[("RCRC", "CSR")] = [B(ALWAYS, ["FRAME_ERR"], "IDLE")]
+    t[("RSMP", "CSR")] = [B("mid or crc_en", ["FRAME_ERR"], "IDLE"), B("not mid and not crc_en", [], "IDLE")]
     t[("RSMP", "BYTE")] = [B("not last", ["next_byte"]), B("last", [], "SDONE")]
     t[("WDAT", "BYTE")] = [B("crc_en", ["latch_data"], "WCRC"), B("not crc_en", ["latch_data"], "WDONE")]
     t[("WCRC", "BYTE")] = [B(ALWAYS, ["latch_crc"], "WDONE")]
@@ -343,6 +357,19 @@ def check_tables(F):
     return errs
 
 
+def check_vocab(F):
+    """Every action and condition of the machine's lists is used in its table (no stale entries)."""
+    used_a, used_c = set(), set()
+    for cell in F["table"].values():
+        if isinstance(cell, list):
+            for b in cell:
+                used_a |= set(b["actions"])
+                used_c |= set(guard_vars(b["guard"]))
+    errs = [f"{F['name']}: action {a} is defined but never used" for a in F["actions"] if a not in used_a]
+    errs += [f"{F['name']}: condition {c} is defined but never used" for c in F["conds"] if c not in used_c]
+    return errs
+
+
 def edges(F):
     out = []
     for (s, e), cell in F["table"].items():
@@ -390,6 +417,9 @@ def seq_tick(s, present, env):
     """Next state and executed actions for the events present in one tick (RST excluded: asynchronous)."""
     t = SEQ["table"]
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
+    if "TMR" in br and any(isinstance(b, dict) and "restart" in b["actions"] for e, b in br.items() if e != "TMR"):
+        del br["TMR"]                            # the wait starts again: the expiry of this tick no longer holds
+        present = [e for e in present if e != "TMR"]
     winner = None
     if "STOP" in present and br["STOP"] is not None and br["STOP"] != IMP:
         winner = "STOP"                          # STOP always wins: it cancels every other transition of the tick
@@ -421,6 +451,12 @@ def seq_properties(s, present, env, nxt, acts):
     P = []
     if afe(s) == 1 and afe(nxt) == 0 and nxt != "RECOVER":
         P.append("AFE_RST is released without passing RECOVER (ADC recovery wait)")
+    if "apply" in acts and afe(s) == 1 and afe(nxt) == 0:
+        P.append("settings applied in the tick that releases AFE_RST (no reset after the change)")
+    if "apply" in acts and nxt == s and afe(s) == 1 and SEQ_STATE[s][4] and "restart" not in acts:
+        P.append("settings applied while AFE_RST is held, without restarting the wait before its release")
+    if "restart" in acts and not SEQ_STATE[s][4]:
+        P.append("restart in a state without a timer")
     if "store" in acts and not (s == "RUN" or (s == "FILL" and nxt == "RUN")):
         P.append("a sample is stored outside RUN")
     if nxt == "RUN" and s != "RUN" and not (s == "FILL" and "store" in acts):
@@ -445,8 +481,16 @@ def seq_properties(s, present, env, nxt, acts):
         P.append("RECOVER entered other than after AFE_RST")
     if "apply" in acts and afe(s) == 0 and nxt != "PRE" and not env.get("nr_ok", 1):
         P.append("a change beyond one offset-DAC step is applied while the AFE runs, without AFE_RST")
-    if "flush" in acts and not ((s == "IDLE" and nxt == "WARMUP") or "FLUSH" in present):
-        P.append("FIFO flushed by something other than START or FLUSH")
+    if "flush" in acts and not ((s == "IDLE" and nxt == "WARMUP") or "FLUSH" in present or
+                                ("APPLY" in present and nxt == "PRE")):
+        P.append("FIFO flushed by something other than START, APPLY (with its pulse) or FLUSH")
+    if nxt == "PRE" and s != "PRE" and "flush" not in acts:
+        P.append("APPLY with a pulse keeps the samples of the old setting in the FIFO")
+    if ("apply" in acts and nxt != "PRE" and s in ("WAIT_E", "ALIGN", "FILL") and not env.get("t_elec0", 1)
+            and not (nxt == "WAIT_E" and (s != "WAIT_E" or "restart" in acts))):
+        P.append("an offset step before RUN does not wait for the electrode again (T_ELEC)")
+    if nxt == "WAIT_E" and s != "WAIT_E" and not (s == "RECOVER" or ("apply" in acts and s in ("ALIGN", "FILL"))):
+        P.append("WAIT_E entered other than after RECOVER or an offset step before RUN")
     if "STOP" in present and nxt != "IDLE":
         P.append("STOP does not lead to IDLE")
     if s == "RUN" and nxt not in ("RUN", "IDLE", "PRE"):
@@ -477,8 +521,8 @@ def check_seq_ticks():
     if len(codes) != len(set(codes)):
         errs.append("SEQ: STATE codes are not unique")
     for x in SEQ_STATES:
-        if x[4] and all(b["next"] in (None, x[0]) for b in SEQ["table"][(x[0], "TMR")]):
-            errs.append(f"SEQ {x[0]}: the timer's expiry does not leave the state")
+        if x[4] and any(b["next"] in (None, x[0]) for b in SEQ["table"][(x[0], "TMR")]):
+            errs.append(f"SEQ {x[0]}: the timer's expiry does not always leave the state")
     return errs, n
 
 
@@ -519,6 +563,105 @@ def check_spi_props():
     for s in [x[0] for x in SPI_STATES if x[0] != "IDLE"]:
         if not isinstance(t[(s, "CSR")], list):
             errs.append(f"SPI {s}: no exit on CS_N rising")
+    return errs, n
+
+
+def spi_walk(nbytes, extra, env):
+    """One frame through the SPI table: CSF, one BIT or BYTE per SCLK rising edge (BYTE on every 8th), CSR.
+    Returns (actions in order, the state at CS_N rising) or None if an impossible or undecided cell is met."""
+    t = SPI["table"]
+    state, acts, k = "IDLE", [], 0
+    e_env = dict(env, mid=int(extra > 0), last=0)
+    events = ["CSF"] + ["BYTE" if n % 8 == 0 else "BIT" for n in range(1, 8 * nbytes + extra + 1)] + ["CSR"]
+    at_csr = None
+    for e in events:
+        if e == "CSR":
+            at_csr = state
+        if e == "BYTE" and state == "RSMP":
+            e_env["last"] = int(k == 6)
+        cell = t[(state, e)]
+        if cell == IMP:
+            return None
+        if cell == IGN:
+            continue
+        b = pick(cell, e_env)
+        if b is None:
+            return None
+        acts += b["actions"]
+        k += "next_byte" in b["actions"]
+        if b["next"] is not None:
+            state = b["next"]
+    return acts, at_csr
+
+
+def spi_expect(kind, crc_en, nbytes, mid, env):
+    """What a frame must do, written from the frame definitions (spec section 3.2), independently of the table:
+    the effects (commit, the error flags, the copy, the pop) and the MISO loads after the header."""
+    E, hdr = set(), nbytes >= 1
+    if nbytes == 0 and not mid:
+        return E, None                                   # an empty frame
+    if kind == "write":
+        if mid or nbytes != 2 + crc_en:
+            E.add("FRAME_ERR")
+        elif crc_en and not env["crc_ok"]:
+            E.add("CRC_ERR")
+        elif not env["wr_ok"]:
+            E.add("ADDR_ERR")
+        elif env["busy"]:
+            E.add("STATE_ERR")
+        else:
+            E.add("commit")
+        loads = None
+    elif kind == "read":
+        if hdr and not env["addr_ok"]:
+            E.add("ADDR_ERR")
+        if mid or (crc_en and nbytes not in (1, 3)):
+            E.add("FRAME_ERR")
+        # a data byte (or 0x00) after every completed byte; with CRC one data byte, then the CRC
+        loads = dict(data=min(nbytes, 1) if crc_en else nbytes, crc=int(crc_en and nbytes >= 2))
+    else:
+        if hdr:
+            E.add("snapshot")
+        if mid or nbytes > 8 or (crc_en and hdr and nbytes != 8):
+            E.add("FRAME_ERR")
+        elif nbytes == 8 and env["head"]:
+            E.add("pop")
+        loads = dict(next=max(0, min(nbytes, 7) - 1))
+    return E, loads
+
+
+def check_spi_frames():
+    """Every kind of frame, CRC mode, condition value and length 0..10 bytes (with and without a partial byte) walked
+    through the table and compared with spi_expect."""
+    errs, n = [], 0
+    effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
+    for kind in ("write", "read", "sample"):
+        for crc_en in (0, 1):
+            for vals in itertools.product((0, 1), repeat=5):
+                env = dict(zip(("addr_ok", "wr_ok", "busy", "crc_ok", "head"), vals))
+                env.update(rw=int(kind != "write"), smp=int(kind == "sample"), crc_en=crc_en)
+                if kind == "sample" and not env["addr_ok"]:
+                    continue                             # the sample window is a defined address
+                for nbytes in range(11):
+                    for extra in (0, 3):
+                        n += 1
+                        w = spi_walk(nbytes, extra, env)
+                        tag = f"SPI frame {kind} crc_en={crc_en} {nbytes} bytes + {extra} bits {env}"
+                        if w is None:
+                            errs.append(f"{tag}: the walk meets an impossible or undecided cell")
+                            continue
+                        acts, _ = w
+                        exp, loads = spi_expect(kind, crc_en, nbytes, extra > 0, env)
+                        got = {a for a in acts if a in effects}
+                        if got != exp:
+                            errs.append(f"{tag}: {sorted(got)}, expected {sorted(exp)}")
+                        if loads and not extra:
+                            if kind == "read":
+                                d = acts.count("load_data") + acts.count("load_zero")
+                                if d != loads["data"] or acts.count("load_crc") != loads["crc"]:
+                                    errs.append(f"{tag}: {d} data and {acts.count('load_crc')} CRC loads, expected {loads}")
+                            elif acts.count("next_byte") != loads["next"]:
+                                errs.append(f"{tag}: {acts.count('next_byte')} sample bytes loaded, expected {loads['next']}")
     return errs, n
 
 
@@ -602,8 +745,9 @@ TIMING = dict(
     blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame .. BLANK_LEN (<= 15)
     tick_cycle=24,
     rates={"128k": dict(period_frames=8, tick_frame=1), "64k": dict(period_frames=16, tick_frame=3)},
-    timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 4e-3), T_PRE=(20e-6, 20e-6, 255e-6),
-                T_RST=(100e-6, 100e-6, 4e-3)),          # (analog minimum, default, maximum)
+    timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 255 * 256 / MCLK),
+                T_PRE=(20e-6, 20e-6, 255 * 256 / MCLK), T_RST=(100e-6, 100e-6, 255 * 256 / MCLK)),
+    # (analog minimum, nominal, the longest the register can give: 255 ms, 255 x 7.8125 us = 1.99 ms)
     decimation=1024, cic_order=3,
     chop1_periods_frames=[1024, 512, 256, 128, 64],    # 1, 2, 4, 8, 16 kHz full periods
     spi_sclk_max=2e6, spi_write_bits=16,
@@ -626,12 +770,7 @@ def check_timing():
         notes.append(f"{name}: tick {r['tick_frame'] * FRAME + tc} MCLK after the phase-A edge "
                      f"({pos:.3f} of the half period), every {r['period_frames'] * FRAME / MCLK * 1e6:.4f} us")
         tick_s = r["period_frames"] * FRAME / MCLK
-        for tn, (mn, df, mx) in T["timers"].items():
-            for label, v in (("default", df), ("minimum", mn)):
-                actual = -(-v // tick_s) * tick_s if v > 0 else tick_s
-                if actual < mn - 1e-12:
-                    errs.append(f"{name} {tn} {label}: {actual * 1e6:.2f} us is below the analog minimum")
-            notes.append(f"{name} {tn}: default {df * 1e6:g} us -> {(-(-df // tick_s)) * tick_s * 1e6:.2f} us on the tick grid")
+        # the timer registers against these analog minimums: regmap.py check (the register codes, in whole frames)
         # SPI: a second command can arrive before the tick when a write frame is shorter than the tick period
         frame_s = T["spi_write_bits"] / T["spi_sclk_max"]
         if frame_s < tick_s and "busy" not in SPI_CONDS:
@@ -666,9 +805,11 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）",
+    "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  AFE_RST の解除は必ず RECOVER（ADC の復帰待ち）に入る",
+    "  AFE_RST の解除と同じ tick で設定を反映しない。AFE_RST を保っている間（WARMUP）の反映は、解除までの待ちを最初から数え直す（変更から解除まで T_WARM 以上）",
     "  START は必ず一括反映し、FIFO を空にする",
     "  AFE の動作中に AFE_RST なしで反映するのは、オフセット DAC の ±1 段の変更（nr_ok）のみ",
     "  FILL へは CIC のクリアとともにのみ入る",
@@ -679,21 +820,25 @@ CHECKS = [
     "  CIC のクリアは出力の時刻の格子の上（ALIGN から FILL）でのみ",
     "  AFE_RST のパルスの前には必ず PRE（T_PRE の待ち）がある。PRE へは設定の反映とともにのみ入る",
     "  RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る",
-    "  FIFO を空にするのは START と FLUSH のみ",
+    "  FIFO を空にするのは START、APPLY（パルスあり）、FLUSH のみ。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）",
+    "  RUN の前のオフセットの 1 段（APPLY_NR）は、T_ELEC > 0 なら電極の整定を待ち直す（WAIT_E、WAIT_E では数え直し）。WAIT_E へは RECOVER の満了か、その 1 段からのみ入る",
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、7 バイトちょうど読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
+    "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
-    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。タイマの既定値と最小値を tick の格子に切り上げてもアナログの最小値以上。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
+    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
 
 
 def run_checks(verbose=True):
     report, total = [], 0
     for F, must, excl in ((SEQ, ["IDLE", "RUN"], ("RST",)), (SPI, ["IDLE"], ())):
-        report += check_tables(F) + check_graph(F, must, excl)
+        report += check_tables(F) + check_graph(F, must, excl) + check_vocab(F)
     e, n1 = check_seq_ticks()
     report += e
     e, n2 = check_spi_props()
+    report += e
+    e, n2b = check_spi_frames()
     report += e
     e, n3 = check_fifo()
     report += e
@@ -702,7 +847,7 @@ def run_checks(verbose=True):
     total = n1 + n2 + n3
     if verbose:
         print(f"checked: SEQ {len(SEQ_STATES)} states x {len(SEQ_EVENTS)} events, {n1} tick combinations; "
-              f"SPI {len(SPI_STATES)} states x {len(SPI_EVENTS)} events, {n2} branches; FIFO {n3} cases")
+              f"SPI {len(SPI_STATES)} states x {len(SPI_EVENTS)} events, {n2} branches, {n2b} frames; FIFO {n3} cases")
         for t_ in tnotes:
             print("  timing: " + t_)
         if report:
@@ -927,6 +1072,16 @@ def selftest():
         ("RUN へ入れない", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["discard", "seq_inc"])])),
         ("START で FIFO を空にしない", lambda t: t.__setitem__(("IDLE", "START"), [B("cfg_ok", ["apply"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])])),
         ("RUN から SETTLE へ黙って戻る", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        # audit round 1 (11/20)
+        ("WARMUP の APPLY で解除までの待ちを数え直さない", lambda t: t.__setitem__(("WARMUP", "APPLY"), [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])])),
+        ("WARMUP の APPLY_NR で解除までの待ちを数え直さない", lambda t: t.__setitem__(("WARMUP", "APPLY_NR"), [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])])),
+        ("APPLY（パルスあり）で FIFO を空にしない", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_ok", ["apply"], "PRE"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("WAIT_E の APPLY_NR で電極の待ちを数え直さない", lambda t: t.__setitem__(("WAIT_E", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("FILL の APPLY_NR で電極を待たない", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("ALIGN の APPLY_NR で電極を待たない", lambda t: t.__setitem__(("ALIGN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("PULSE の満了の一部の分岐が状態を出ない", lambda t: t.__setitem__(("PULSE", "TMR"), [B("t_elec0", [], "RECOVER"), B("not t_elec0", [])])),
+        ("FILL/OUT で有効の条件を使わない（条件 valid が未使用）", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["store", "seq_inc"], "RUN")])),
+        ("ALIGN から WAIT_E へ黙って戻る", lambda t: t.__setitem__(("ALIGN", "FLUSH"), [B(ALWAYS, ["flush"], "WAIT_E")])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -939,6 +1094,16 @@ def selftest():
         ("未処理の命令を上書き", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
         ("先頭でなくなった写しでも取り出す", lambda t: t.__setitem__(("SDONE", "CSR"), [B(ALWAYS, ["pop"], "IDLE")])),
         ("読み終えたサンプルを取り出さない", lambda t: t.__setitem__(("SDONE", "CSR"), [B(ALWAYS, [], "IDLE")])),
+        # audit round 1 (11/20): the cases the per-cell properties could not see (byte counts, missing flags)
+        ("2 バイト目でサンプルを終える", lambda t: t.__setitem__(("RSMP", "BYTE"), [B(ALWAYS, [], "SDONE")])),
+        ("CRC 無効でも CRC のバイトを待つ（3 バイトの書き込み）", lambda t: t.__setitem__(("WDAT", "BYTE"), [B(ALWAYS, ["latch_data"], "WCRC")])),
+        ("未処理の間の書き込みを STATE_ERR なしで捨てる", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and wr_ok and busy", [], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
+        ("書き込めないアドレスへの書き込みを ADDR_ERR なしで捨てる", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and wr_ok and busy", ["STATE_ERR"], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", [], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
+        ("未定義のアドレスの読み出しで ADDR_ERR を立てない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("サンプルの読み出しで FIFO の先頭を写さない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", [], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("CRC 有効時の短いサンプルを通す", lambda t: t.__setitem__(("RSMP", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
+        ("CRC のバイトのない読み出しを通す", lambda t: t.__setitem__(("RCRC", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
+        ("CRC 有効時も連続読み出しを続ける", lambda t: t.__setitem__(("RREG", "BYTE"), [B(ALWAYS, ["addr_inc", "load_data"])])),
     ]
     global fifo_step
     fifo_orig = fifo_step

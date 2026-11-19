@@ -12,8 +12,11 @@
 //     number since reset release (every output time counts).
 //   * eeg_ovl (new): overload from the extreme quantizer codes.
 //   * CHOP_DLY is gone (tied to 0 in eeg_clkgen); eeg_adc_dig, eeg_chop1, eeg_raw are unchanged (../rtl/).
-// Resets: RESET_N (asynchronous assert, 2-FF release) and SOFT_RESET (the command; a registered reset of the whole
-// block, including eeg_adc_dig through ADC_RST_N, for 5 MCLK; the counter itself is reset only by RESET_N).
+// Resets: RESET_N (asynchronous assert, 2-FF release) resets everything. SOFT_RESET (the command; a registered reset
+// for 5 MCLK) resets only the control side: registers, sequencer, SPI, FIFO, flags, CHANGED, DRDY_N. The timing and
+// the data path keep running from RESET_N: frame counter and choppers (eeg_clkgen), CHOP1, the CIC, the overload
+// detector, SEQ, the raw stream and eeg_adc_dig (ADC_RST_N), so chips sharing MCLK and RESET_N stay aligned (same SEQ
+// = same time) through a SOFT_RESET of one of them.
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -77,7 +80,9 @@ module eeg_digital_top #(
             rst_n <= !(soft_req || (soft_cnt != 3'd0));
         end
     end
-    assign ADC_RST_N = rst_n;
+    logic tm_rst_n;                                   // timing and data path: RESET_N only
+    assign tm_rst_n  = pin_rst_n;
+    assign ADC_RST_N = tm_rst_n;
 
     // ------------------------------------------------------------------ frame timing
     logic [4:0] cycle;
@@ -86,7 +91,7 @@ module eeg_digital_top #(
     logic [3:0] a_blank_len;
 
     eeg_clkgen #(.DAC_LOAD_CYCLE(DAC_LOAD_CYCLE)) u_clkgen (
-        .clk(MCLK), .rst_n(rst_n), .chop_fast(a_chop_fast), .chop_dly(8'd0), .blank_len(a_blank_len),
+        .clk(MCLK), .rst_n(tm_rst_n), .chop_fast(a_chop_fast), .chop_dly(8'd0), .blank_len(a_blank_len),
         .cycle(cycle), .cmp_strobe(CMP_STROBE), .th_capture(th_capture), .dac_load(dac_load), .cic_en(cic_en),
         .chop(CHOP), .chop_out(CHOP_OUT), .chop_blank(gen_blank), .raw_clk(raw_clk), .tick(tick));
 
@@ -103,12 +108,22 @@ module eeg_digital_top #(
     logic        cic_settling;                    // not used by r14 (the sequencer counts the outputs)
     /* verilator lint_on UNUSEDSIGNAL */
 
-    eeg_cic3 u_cic (.clk(MCLK), .rst_n(rst_n), .arm(cic_arm), .en(cic_en), .code(CODE), .dout(cic_data),
+    eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n), .arm(cic_arm), .en(cic_en), .code(CODE), .dout(cic_data),
                     .dout_stb(cic_stb), .dout_valid(cic_valid), .settling(cic_settling));
 
     logic ovl_now, ovl_seen;
-    eeg_ovl u_ovl (.clk(MCLK), .rst_n(rst_n), .en(cic_en), .code(CODE), .out_stb(cic_stb), .ovl_now(ovl_now),
+    eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n), .en(cic_en), .code(CODE), .out_stb(cic_stb), .ovl_now(ovl_now),
                    .ovl_seen(ovl_seen));
+
+    // a sample's OVL: an overload in any of the three output intervals of its sinc^3 window (this one and the two
+    // before; the detection lags by at most 4 frames, whose weight in a window is below 1e-8)
+    logic       ovl_iv;                               // this output interval
+    logic [1:0] ovl_hist;                             // the two previous intervals
+    assign ovl_iv = ovl_now | ovl_seen;
+    always_ff @(posedge MCLK or negedge tm_rst_n) begin
+        if (!tm_rst_n)    ovl_hist <= 2'b00;
+        else if (cic_stb) ovl_hist <= {ovl_hist[0], ovl_iv};
+    end
 
     // ------------------------------------------------------------------ registers and SPI
     logic [6:0]  reg_addr;
@@ -158,25 +173,28 @@ module eeg_digital_top #(
     assign AFE_RST = seq_afe_rst;
 
     // ------------------------------------------------------------------ SEQ, CHANGED, FIFO, DRDY_N
-    logic [15:0] seq_cnt;                        // output times since reset release
-    logic [1:0]  chg_cnt;                        // outputs still to mark CHANGED
+    logic [15:0] seq_cnt;                        // output times since RESET_N release (wraps after 65.536 s)
+    logic [8:0]  chg_cnt;                        // outputs still to mark CHANGED
     logic        chg_now;
-    assign chg_now = (chg_cnt != 2'd0);
+    assign chg_now = (chg_cnt != 9'd0);
 
+    always_ff @(posedge MCLK or negedge tm_rst_n) begin
+        if (!tm_rst_n)    seq_cnt <= 16'd0;
+        else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;
+    end
+    // APPLY_NR in RUN: the windows that straddle the step (3) and the electrode's settling (T_ELEC, 1 ms = 1 output).
+    // Leaving RUN cancels the rest (APPLY, STOP: the data starts again with a cleared CIC after the waits, so no window
+    // of the next RUN straddles the step; samples are stored only in RUN)
     always_ff @(posedge MCLK or negedge rst_n) begin
-        if (!rst_n) begin
-            seq_cnt <= 16'd0;
-            chg_cnt <= 2'd0;
-        end else begin
-            if (cic_stb) seq_cnt <= seq_cnt + 16'd1;
-            if (seq_mark)                    chg_cnt <= 2'd3;
-            else if (cic_stb && chg_now)     chg_cnt <= chg_cnt - 2'd1;
-        end
+        if (!rst_n)                   chg_cnt <= 9'd0;
+        else if (seq_mark)            chg_cnt <= 9'd3 + {1'b0, t_elec};
+        else if (seq_state != ST_RUN) chg_cnt <= 9'd0;
+        else if (cic_stb && chg_now)  chg_cnt <= chg_cnt - 9'd1;
     end
 
     eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (
         .clk(MCLK), .rst_n(rst_n), .flush(seq_flush), .push(seq_store),
-        .status_in({1'b1, dflag_overrun, ovl_now | ovl_seen, chg_now, alert, 3'b000}),
+        .status_in({1'b1, dflag_overrun, ovl_iv | ovl_hist[0] | ovl_hist[1], chg_now, alert, 3'b000}),
         .seq_in(seq_cnt), .data_in(cic_data), .ovr_set(ovr_set), .push_ok(push_ok), .snap(smp_snap), .pop(smp_pop),
         .empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000}), .rd_word(smp_word),
         .nonempty(fifo_nonempty), .level(fifo_level));
@@ -189,16 +207,19 @@ module eeg_digital_top #(
     logic       drdy_pulse;
     assign drdy_nxt = push_ok ? 3'd4 :
                       ((cycle == STORE_CYCLE && drdy_cnt != 3'd0) ? drdy_cnt - 3'd1 : drdy_cnt);
+    logic       drdy_n_q;                        // the pad is driven by a register in both modes (NFR-06)
     always_ff @(posedge MCLK or negedge rst_n) begin
         if (!rst_n) begin
             drdy_cnt   <= 3'd0;
             drdy_pulse <= 1'b0;
+            drdy_n_q   <= 1'b1;
         end else begin
             drdy_cnt   <= drdy_nxt;
             drdy_pulse <= (drdy_nxt != 3'd0);
+            drdy_n_q   <= drdy_mode ? ~drdy_pulse : ~fifo_nonempty;
         end
     end
-    assign DRDY_N = drdy_mode ? ~drdy_pulse : ~fifo_nonempty;
+    assign DRDY_N = drdy_n_q;
 
     // ------------------------------------------------------------------ analog controls and the rest
     assign DWA_EN     = a_dwa;
@@ -207,14 +228,14 @@ module eeg_digital_top #(
     assign TEST_CFG   = {dbg_sel, a_azero, a_atpen, a_atpsel};
 
     localparam logic [4:0] DAC_CLK_CYCLE = 5'(DAC_LOAD_CYCLE + 1);
-    always_ff @(posedge MCLK or negedge rst_n) begin
-        if (!rst_n) DAC_CLK <= 1'b0;
-        else        DAC_CLK <= (cycle == DAC_CLK_CYCLE);
+    always_ff @(posedge MCLK or negedge tm_rst_n) begin
+        if (!tm_rst_n) DAC_CLK <= 1'b0;
+        else           DAC_CLK <= (cycle == DAC_CLK_CYCLE);
     end
 
-    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));
+    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));
 
-    eeg_raw u_raw (.clk(MCLK), .rst_n(rst_n), .raw_en(raw_en), .cycle(cycle), .raw_clk(raw_clk), .code(CODE),
+    eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n), .raw_en(raw_en), .cycle(cycle), .raw_clk(raw_clk), .code(CODE),
                    .dbg_sel(dbg_sel), .dbg_clk({CHOP_BLANK, CHOP, CMP_STROBE}), .dbg_data({CHOP1, CHOP_OUT, DAC_CLK}),
                    .raw_data_o(RAW_DATA), .raw_clk_o(RAW_CLK));
 

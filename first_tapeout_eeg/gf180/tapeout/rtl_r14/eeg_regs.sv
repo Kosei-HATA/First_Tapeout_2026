@@ -7,7 +7,8 @@
 //   * a write is committed by the SPI slave (we) only after the frame and CRC checks; here: an undefined or
 //     read-only address, or a locked test register -> ADDR_ERR; a value outside the field's legal range ->
 //     RANGE_ERR (nothing written); COMMAND while a command is pending -> STATE_ERR; an unknown code -> CMD_ERR
-//     (pending or not); SOFT_RESET is always taken. TEST_KEY: 0x3C unlocks, 0x00 locks, any other value locks and
+//     (pending or not); SOFT_RESET is always taken. While a command is pending, a write to a shadow (a register
+//     with fields applied at the tick) or a timer (GUARDED_ADDRS) -> STATE_ERR, nothing written. TEST_KEY: 0x3C unlocks, 0x00 locks, any other value locks and
 //     flags CMD_ERR (a one-bit error neither unlocks nor locks silently).
 //   * ERR and DFLAG are W1C; a set event in the same cycle as its clear wins. RESET_FLAG resets to 1.
 //   * cfg_ok: the shadow M fits the shadow range (range 0: the DAC is off, M is not looked at).
@@ -157,6 +158,8 @@ module eeg_regs #(
         if (we) begin
             if (!wr_def || wr_ro || wr_locked) begin
                 ev_err[ERR_ADDR_ERR_LSB] = 1'b1;
+            end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin
+                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick
             end else if (wr_range_bad) begin
                 ev_err[ERR_RANGE_ERR_LSB] = 1'b1;
             end else if (addr == A_COMMAND) begin

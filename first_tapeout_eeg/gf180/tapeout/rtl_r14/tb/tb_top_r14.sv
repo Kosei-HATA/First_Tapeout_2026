@@ -10,15 +10,25 @@
 //      samples (VALID, SEQ, CRC); a sample read stopped after 4 bytes neither pops nor flags an error
 //   C  APPLY in RUN: the settings at the tick, AFE_RST high after T_PRE for exactly T_RST, the re-settling, samples
 //      again with the SEQ gap of the outputs not stored
-//   D  APPLY_NR: one step accepted, CHANGED on the next three samples; two steps rejected (CFG_ERR)
+//   D  APPLY_NR with T_ELEC = 2: one step accepted, CHANGED on the next 3 + T_ELEC samples; two steps rejected;
+//      D2: leaving RUN (an APPLY) cancels the rest of a long CHANGED mark (T_ELEC = 30): no CHANGED in the next RUN
 //   E  START with an inconsistent configuration (CFG_ERR), STOP, START in RUN (STATE_ERR)
 //   F  one pending command: at 64 kHz a second command before the tick gets STATE_ERR, an unknown code CMD_ERR only
 //   G  FLUSH, overrun (OVERRUN in DFLAG and in the next sample's status); a sample read across a FLUSH: the sample
 //      stored after the flush is not popped by the read of the old head; DRDY_N pulse mode (128 MCLK per store)
-//   H  SOFT_RESET: back to the reset values (RESET_FLAG)
+//   H  SOFT_RESET: back to the reset values (RESET_FLAG); SEQ, the frame counter and the choppers keep running
 //   I  SOFT_RESET while a command is pending (64 kHz): taken at once, no STATE_ERR
+//   J  audit round 1 (11/20): every STATUS bit; at 64 kHz a write to a shadow or a timer while a command is pending
+//      gets STATE_ERR (other registers are written); CRC on: a header-only read is legal, a read without its CRC
+//      byte and a short sample read are FRAME_ERR; APPLY in WARMUP restarts T_WARM (AFE_RST released T_WARM after
+//      the change); APPLY empties the FIFO; an injected overload sets OVL_NOW, DFLAG.OVL (only in FILL / RUN) and
+//      the OVL bit of exactly the three samples whose window contains it
+//   K  SEQ wraps from 0xFFFF to 0 (forced near the end, samples outside the golden comparison)
+// Define FIFO4 for the 4-deep FIFO (CAPS and the overrun test follow).
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); the SPI timing (spi_bfm_r14.svh).
+// A watchdog ends the run as FAIL if it has not finished by 250 ms of simulated time (about twice the normal length),
+// so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -33,7 +43,12 @@ module tb_top_r14;
     wire [1:0] AFE_IBIAS, BTRIM_P, BTRIM_N;
     wire [9:0] OFM;
 
-    eeg_digital_top #(.DAC_LOAD_CYCLE(2), .FIFO_DEPTH(8)) dut (.*);
+`ifdef FIFO4
+    localparam int FD = 4;
+`else
+    localparam int FD = 8;
+`endif
+    eeg_digital_top #(.DAC_LOAD_CYCLE(2), .FIFO_DEPTH(FD)) dut (.*);
 
     always #(TMCLK / 2.0) MCLK = ~MCLK;
 
@@ -88,6 +103,15 @@ module tb_top_r14;
         if (e !== 8'h00) fail($sformatf("%s: unexpected ERR 0x%02h", name, e));
         if (e !== 8'h00) r14_write(7'h06, 8'hFF);
     endtask
+    // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
+    string phase = "start";
+    initial begin
+        #(250.0e6);
+        fail($sformatf("watchdog: not finished after 250 ms of simulated time (phase %s)", phase));
+        $display("FAIL: tb_top_r14");
+        $finish;
+    end
+
     task automatic wait_state(input logic [3:0] s, input real timeout_us, input string name);
         real t0;
         t0 = $realtime;
@@ -109,13 +133,15 @@ module tb_top_r14;
         flog = $fopen("build/top_r14_cic.log", "w");
         fsmp = $fopen("build/top_r14_samples.log", "w");
     end
+    logic ovl_force = 1'b0;                       // J: drive the extreme code 31 (an ADC overload)
+    logic log_on = 1'b1;                          // K: no logging once SEQ is forced
     always @(posedge MCLK) begin
         if (dut.cycle == 5'd16 && RESET_N) begin
-            CODE <= codes[cidx % ncodes];
+            CODE <= ovl_force ? 5'd31 : codes[cidx % ncodes];
             cidx <= cidx + 1;
         end
-        if (dut.cic_en) $fdisplay(flog, "I %0d", CODE);
-        if (dut.cic_stb) $fdisplay(flog, "O %0d %0d", dut.seq_cnt, dut.cic_arm);
+        if (log_on && dut.cic_en) $fdisplay(flog, "I %0d", CODE);
+        if (log_on && dut.cic_stb) $fdisplay(flog, "O %0d %0d", dut.seq_cnt, dut.cic_arm);
     end
 
     // ------------------------------------------------------------------ analog control pins change only after a tick
@@ -147,6 +173,8 @@ module tb_top_r14;
     always @(posedge AFE_RST) begin t_afe_rise = $realtime; afe_rises = afe_rises + 1; end
     real t_chop_rise = 0.0;
     always @(posedge CHOP) t_chop_rise = $realtime;
+    real t_cpf = 0.0;                             // J4: the time of the last CPF_TRIM pin change
+    always @(CPF_TRIM) t_cpf = $realtime;
     always @(negedge AFE_RST or posedge AFE_RST) begin
         // every AFE_RST edge: 57 MCLK after a rising CHOP edge (the tick, outputs at e25) at 128 kHz
         if (RESET_N && dut.rst_n && dut.a_chop_fast &&
@@ -166,11 +194,23 @@ module tb_top_r14;
     end
     always @(posedge CS_N) t_csr = $realtime;
 
+    integer mclk_count = 0;
+    always @(posedge MCLK) mclk_count = mclk_count + 1;
+
+    // ------------------------------------------------------------------ STATUS against what the pins and state show
+    task automatic check_status(input logic [7:0] exp, input logic [7:0] mask, input string name);
+        logic [7:0] st;
+        r14_read(7'h03, st);
+        if ((st & mask) !== (exp & mask))
+            fail($sformatf("%s: STATUS 0x%02h, expected 0x%02h under mask 0x%02h", name, st, exp, mask));
+    endtask
+
     // ------------------------------------------------------------------ samples
     integer nsamples = 0;
     logic [15:0] last_seq;
     bit          have_last = 1'b0;
-    task automatic read_samples(input integer n, input logic expect_changed_first3, input string name);
+    // nchg: the first nchg samples must carry CHANGED and the others not; -1: not checked
+    task automatic read_samples(input integer n, input integer nchg, input string name);
         logic [7:0] st;
         logic [15:0] sq;
         logic [23:0] d;
@@ -180,8 +220,8 @@ module tb_top_r14;
             r14_sample(st, sq, d, ok);
             if (!ok) fail($sformatf("%s: sample CRC", name));
             if (st[7] !== 1'b1) fail($sformatf("%s: sample not VALID (status 0x%02h)", name, st));
-            if (expect_changed_first3 && i < 3 && st[4] !== 1'b1) fail($sformatf("%s: sample %0d without CHANGED", name, i));
-            if (expect_changed_first3 && i >= 3 && st[4] !== 1'b0) fail($sformatf("%s: sample %0d with CHANGED", name, i));
+            if (nchg >= 0 && i < nchg && st[4] !== 1'b1) fail($sformatf("%s: sample %0d without CHANGED", name, i));
+            if (nchg >= 0 && i >= nchg && st[4] !== 1'b0) fail($sformatf("%s: sample %0d with CHANGED", name, i));
             if (have_last && sq <= last_seq) fail($sformatf("%s: SEQ %0d after %0d", name, sq, last_seq));
             last_seq  = sq;
             have_last = 1'b1;
@@ -202,6 +242,7 @@ module tb_top_r14;
         ana_q = ana;
 
         // ---------------- A: registers
+        phase = "A";
         run_reg_tests();
         $display("A1 register tests done (errors so far %0d)", errors);
         // CRC
@@ -265,6 +306,7 @@ module tb_top_r14;
         $display("A  registers, CRC and frame errors done (errors %0d)", errors);
 
         // ---------------- B: START
+        phase = "B";
         r14_cmd(8'h11);
         wait_state(4'd1, 50.0, "WARMUP after START");
         t_start_tick = $realtime - TMCLK;               // the state changed at e25 of the tick
@@ -276,7 +318,7 @@ module tb_top_r14;
         wait_state(4'd6, 3100.0, "RUN after three outputs");
         r14_read(7'h03, v);
         if (v[3] !== 1'b1) fail("STATUS.READY not set in RUN");
-        read_samples(6, 1'b0, "B samples");
+        read_samples(6, -1, "B samples");
         begin
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
             while (DRDY_N !== 1'b0) @(posedge MCLK);
@@ -292,6 +334,7 @@ module tb_top_r14;
         $display("B  START to RUN, T_WARM %0.3f us, 6 samples (errors %0d)", t0, errors);
 
         // ---------------- C: APPLY in RUN
+        phase = "C";
         r14_write(7'h24, 8'h0B);                        // CPF_TRIM shadow
         seq_before = last_seq;
         r14_cmd(8'h33);
@@ -305,32 +348,56 @@ module tb_top_r14;
         if ((t_afe_rise - t0) / 1000.0 < 23.40 || (t_afe_rise - t0) / 1000.0 > 23.47)
             fail($sformatf("T_PRE %0.4f us, expected 23.4375", (t_afe_rise - t0) / 1000.0));
         wait_state(4'd6, 5000.0, "RUN again");
-        read_samples(4, 1'b0, "C samples");
+        read_samples(4, -1, "C samples");
         $display("C  APPLY: pulse %0.4f us, SEQ %0d -> %0d (errors %0d)", t1, seq_before, last_seq, errors);
 
         // ---------------- D: APPLY_NR
+        phase = "D";
+        r14_write(7'h51, 8'd2);                         // T_ELEC = 2 ms
         r14_write(7'h22, 8'h01);                        // range 1 (needs APPLY with a pulse)
         r14_write(7'h21, 8'h0A);                        // M = 10
         r14_cmd(8'h33);
         wait_state(4'd7, 50.0, "PRE after APPLY of range 1");     // RUN until the tick
         if (OFEN !== 4'b0001 || OFM !== 10'd10 || OFS !== 1'b0) fail("offset DAC pins after APPLY");
-        wait_state(4'd6, 6000.0, "RUN after APPLY of range 1");
-        while (DRDY_N === 1'b0) read_samples(1, 1'b0, "D drain");
-        read_samples(1, 1'b0, "D sync");                // right after an output: the next one is 1 ms away
+        wait_state(4'd3, 400.0, "WAIT_E after RECOVER (T_ELEC = 2)");
+        wait_state(4'd6, 9000.0, "RUN after APPLY of range 1");
+        while (DRDY_N === 1'b0) read_samples(1, -1, "D drain");
+        read_samples(1, -1, "D sync");                // right after an output: the next one is 1 ms away
         r14_write(7'h21, 8'h0B);                        // M = 11: one step
         r14_cmd(8'h44);
         repeat (300) @(posedge MCLK);
         if (dut.seq_state !== 4'd6 || OFM !== 10'd11) fail("APPLY_NR of one step");
-        read_samples(5, 1'b1, "D CHANGED");
+        read_samples(7, 5, "D CHANGED (3 + T_ELEC)");
         r14_write(7'h21, 8'h0D);                        // M = 13: two steps
         r14_cmd(8'h44);
         repeat (300) @(posedge MCLK);
         expect_err_now(8'h20, "CFG_ERR for an APPLY_NR of two steps");
         if (OFM !== 10'd11) fail("two-step APPLY_NR applied");
         r14_write(7'h21, 8'h0B);
-        $display("D  APPLY_NR (errors %0d)", errors);
+        // D2: a long mark (T_ELEC = 30: 33 outputs), then an APPLY: leaving RUN cancels the rest of the mark, so the
+        // samples of the next RUN (a cleared CIC, after the waits) carry no CHANGED
+        phase = "D2";
+        r14_write(7'h51, 8'd30);                        // T_ELEC = 30 ms
+        r14_write(7'h21, 8'h0C);                        // M = 12: one step
+        r14_cmd(8'h44);
+        repeat (300) @(posedge MCLK);
+        if (dut.seq_state !== 4'd6 || OFM !== 10'd12) fail("D2 APPLY_NR of one step");
+        while (DRDY_N === 1'b0) read_samples(1, -1, "D2 drain");
+        read_samples(2, 2, "D2 CHANGED of the long mark");
+        r14_write(7'h51, 8'd0);                         // T_ELEC = 0: the APPLY's path is short (about 4.4 ms)
+        r14_cmd(8'h33);
+        wait_state(4'd7, 50.0, "D2 PRE after APPLY");
+        wait_state(4'd6, 6000.0, "D2 RUN after APPLY");
+        if (dut.chg_cnt !== 9'd0) fail($sformatf("D2 CHANGED count %0d in the new RUN, expected 0", dut.chg_cnt));
+        read_samples(3, 0, "D2 no CHANGED after leaving RUN");
+        r14_write(7'h21, 8'h0B);
+        r14_cmd(8'h44);                                 // back to M = 11 (one step)
+        repeat (300) @(posedge MCLK);
+        if (OFM !== 10'd11) fail("D2 APPLY_NR back to M = 11");
+        $display("D  APPLY_NR, CHANGED cancelled on leaving RUN (errors %0d)", errors);
 
         // ---------------- E: START in RUN, STOP, START with an inconsistent configuration
+        phase = "E";
         r14_cmd(8'h11);
         repeat (300) @(posedge MCLK);
         expect_err_now(8'h40, "STATE_ERR for START in RUN");
@@ -346,6 +413,7 @@ module tb_top_r14;
         $display("E  STATE_ERR, STOP, CFG_ERR (errors %0d)", errors);
 
         // ---------------- F: one pending command (64 kHz)
+        phase = "F";
         r14_write(7'h26, 8'h00);                        // CHOP_FAST 0
         r14_cmd(8'h33);                                 // APPLY in IDLE: no pulse
         repeat (2000) @(posedge MCLK);
@@ -373,6 +441,7 @@ module tb_top_r14;
         $display("F  pending command (errors %0d)", errors);
 
         // ---------------- G: FLUSH and overrun
+        phase = "G";
         r14_cmd(8'h11);
         wait_state(4'd6, 10000.0, "RUN for G");
         have_last = 1'b0;
@@ -418,7 +487,7 @@ module tb_top_r14;
             r14_read(7'h05, v);
             if (v !== 8'd1) fail($sformatf("G2: FIFO level %0d after the read, expected 1 (the sample stored after the flush)", v));
             have_last = 1'b0;
-            read_samples(1, 1'b0, "G2 next");
+            read_samples(1, -1, "G2 next");
             if (last_seq <= sq) fail($sformatf("G2: the next sample has SEQ %0d after %0d", last_seq, sq));
         end
         // G3: DRDY_N pulse mode: low for exactly 128 MCLK from each stored sample, whatever the FIFO holds
@@ -444,16 +513,28 @@ module tb_top_r14;
         end
         $display("G  FLUSH, overrun, a read across a FLUSH, DRDY_N pulses (errors %0d)", errors);
 
-        // ---------------- H: SOFT_RESET
-        r14_write(7'h24, 8'h03);
-        r14_cmd(8'hA5);
-        repeat (50) @(posedge MCLK);
-        if (dut.seq_state !== 4'd0 || AFE_RST !== 1'b1) fail("SOFT_RESET: not IDLE");
+        // ---------------- H: SOFT_RESET (the control side only)
+        phase = "H";
+        begin
+            integer seq0, cnt0, n0;
+            r14_write(7'h24, 8'h03);
+            @(posedge MCLK); #1;
+            seq0 = dut.seq_cnt;  cnt0 = dut.u_clkgen.cnt;  n0 = mclk_count;
+            r14_cmd(8'hA5);
+            repeat (50) @(posedge MCLK);
+            #1;
+            if (dut.seq_state !== 4'd0 || AFE_RST !== 1'b1) fail("SOFT_RESET: not IDLE");
+            if (dut.u_clkgen.cnt !== 9'((cnt0 + mclk_count - n0) % 512))
+                fail($sformatf("SOFT_RESET moved the frame counter: %0d, expected %0d", dut.u_clkgen.cnt,
+                               (cnt0 + mclk_count - n0) % 512));
+            if (dut.seq_cnt < seq0) fail($sformatf("SOFT_RESET reset SEQ: %0d after %0d", dut.seq_cnt, seq0));
+        end
         rt_read_expect(7'h06, 8'h01, "ERR after SOFT_RESET (RESET_FLAG)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM after SOFT_RESET");
         $display("H  SOFT_RESET (errors %0d)", errors);
 
         // ---------------- I: SOFT_RESET while a command is pending (64 kHz)
+        phase = "I";
         r14_write(7'h06, 8'hFF);
         r14_write(7'h26, 8'h00);                        // CHOP_FAST 0
         r14_cmd(8'h33);                                 // APPLY in IDLE
@@ -471,12 +552,162 @@ module tb_top_r14;
         rt_read_expect(7'h06, 8'h01, "I: ERR after SOFT_RESET with a pending command (RESET_FLAG only)");
         $display("I  SOFT_RESET with a pending command (errors %0d)", errors);
 
+        // ---------------- J: audit round 1 (11/20)
+        phase = "J";
+        // J1: STATUS in IDLE right after phase I's SOFT_RESET (RESET_FLAG and the default mask give ALERT)
+        check_status(8'hA1, 8'hFF, "J1 STATUS in IDLE after SOFT_RESET");
+        r14_write(7'h06, 8'hFF);
+        check_status(8'h81, 8'hFF, "J1 STATUS in IDLE, errors cleared");
+        // J2: at 64 kHz a frame fits between two ticks: CMD_PENDING, and the writes guarded while a command waits
+        begin
+            logic [7:0] mask0;
+            r14_write(7'h26, 8'h00);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            if (dut.a_chop_fast !== 1'b0) fail("J2: 64 kHz not applied");
+            @(posedge dut.tick); #(8000.0); spi_tidle = 100.0;
+            r14_cmd(8'h55);                             // FLUSH: pending until the next tick
+            check_status(8'h91, 8'hD9, "J2 CMD_PENDING after a command, before its tick");
+            spi_tidle = 600.0;
+            repeat (700) @(posedge MCLK);
+            check_status(8'h81, 8'hD9, "J2 CMD_PENDING cleared by the tick");
+            @(posedge dut.tick); #(8000.0); spi_tidle = 100.0;
+            r14_cmd(8'h55);
+            r14_write(7'h24, 8'h0D);                    // CPF_TRIM shadow while FLUSH waits
+            spi_tidle = 600.0;
+            expect_err_now(8'h40, "J2 STATE_ERR for a shadow write while a command is pending");
+            rt_read_expect(7'h24, 8'h08, "J2 CPF_TRIM shadow not written");
+            @(posedge dut.tick); #(8000.0); spi_tidle = 100.0;
+            r14_cmd(8'h55);
+            r14_write(7'h52, 8'd40);                    // T_REC while FLUSH waits
+            spi_tidle = 600.0;
+            expect_err_now(8'h40, "J2 STATE_ERR for a timer write while a command is pending");
+            rt_read_expect(7'h52, 8'd32, "J2 T_REC not written");
+            r14_read(7'h08, mask0);
+            @(posedge dut.tick); #(8000.0); spi_tidle = 100.0;
+            r14_cmd(8'h55);
+            r14_write(7'h08, 8'hFD);                    // ALERT_MASK: not guarded
+            spi_tidle = 600.0;
+            expect_noerr("J2 ALERT_MASK written while a command is pending");
+            rt_read_expect(7'h08, 8'hFD, "J2 ALERT_MASK written");
+            r14_write(7'h08, mask0);
+            r14_write(7'h26, 8'h01);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+        end
+        // J3: CRC on: a header-only read (the status poll) is legal; a read without its CRC byte and a sample read
+        // shorter than 8 bytes are frame errors
+        r14_write(7'h55, 8'h01);
+        bfm_crc_en = 1'b1;
+        spi_tx[0] = 8'h83; spi_xfer(1, 0);
+        expect_noerr("J3 header-only read with CRC on");
+        spi_tx[0] = 8'h84; spi_tx[1] = 8'h00; spi_xfer(2, 0);
+        expect_err_now(8'h02, "J3 FRAME_ERR for a read without its CRC byte");
+        spi_tx[0] = 8'hC0;
+        for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
+        spi_xfer(4, 0);
+        expect_err_now(8'h02, "J3 FRAME_ERR for a sample read of 4 bytes with CRC on");
+        spi_tx[0] = 8'hC0;
+        spi_xfer(8, 0);
+        expect_noerr("J3 complete sample read with CRC on");
+        r14_write(7'h55, 8'h00);
+        bfm_crc_en = 1'b0;
+        // J4: APPLY in WARMUP restarts the wait: AFE_RST is released T_WARM after the change
+        r14_cmd(8'h11);
+        wait_state(4'd1, 50.0, "J4 WARMUP");
+        repeat (4 * 32768) @(posedge MCLK);
+        r14_write(7'h24, 8'h0E);
+        r14_cmd(8'h33);
+        t0 = $realtime;
+        while (CPF_TRIM !== 4'hE && ($realtime - t0) < 100000.0) @(posedge MCLK);
+        if (CPF_TRIM !== 4'hE) fail("J4 CPF_TRIM not applied by the APPLY in WARMUP");
+        t0 = t_cpf;                                     // the tick that applied it
+        if (dut.seq_state !== 4'd1) fail("J4 APPLY in WARMUP left WARMUP");
+        wait_state(4'd2, 5100.0, "J4 RECOVER after the restarted T_WARM");
+        t1 = (t_afe_fall - t0) / 1000.0;
+        if (t1 < 4999.0 || t1 > 5001.0)
+            fail($sformatf("J4 AFE_RST released %0.3f us after the change in WARMUP, expected 5000", t1));
+        // J5: APPLY in RUN empties the FIFO; J6: STATUS in RUN
+        wait_state(4'd6, 10000.0, "J5 RUN");
+        repeat (3 * 32768) @(posedge MCLK);
+        r14_read(7'h05, v);
+        if (v < 8'd2) fail($sformatf("J5 FIFO level %0d before APPLY", v));
+        check_status(8'h8C, 8'hDF, "J6 STATUS in RUN (READY, DATA, AFE_RST 0)");
+        r14_cmd(8'h33);
+        wait_state(4'd7, 50.0, "J5 PRE");
+        r14_read(7'h05, v);
+        if (v !== 8'd0) fail($sformatf("J5 FIFO level %0d after APPLY, expected 0", v));
+        wait_state(4'd6, 10000.0, "J5 RUN again");
+        // J7: an overload of about 40 us in RUN: OVL_NOW, DFLAG.OVL, and OVL on exactly the three samples whose window
+        // contains it
+        have_last = 1'b0;
+        while (DRDY_N === 1'b0) read_samples(1, -1, "J7 drain");
+        @(posedge dut.cic_stb);
+        repeat (300 * 33) @(posedge MCLK);
+        begin
+            integer k;
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+            k = dut.seq_cnt;                            // the SEQ of the next output
+            ovl_force = 1'b1;
+            repeat (20 * 32) @(posedge MCLK);
+            check_status(8'h02, 8'h02, "J7 OVL_NOW during the overload");
+            repeat (20 * 32) @(posedge MCLK);
+            ovl_force = 1'b0;
+            r14_read(7'h07, v);
+            if (v[1] !== 1'b1) fail("J7 DFLAG.OVL after an overload in RUN");
+            for (int i = 0; i < 5; i++) begin
+                while (DRDY_N !== 1'b0) @(posedge MCLK);
+                r14_sample(st, sq, d, ok);
+                if (!ok || st[7] !== 1'b1) fail("J7 sample CRC or VALID");
+                if (st[5] !== (16'(sq - 16'(k)) < 16'd3))
+                    fail($sformatf("J7 sample SEQ %0d (overload before SEQ %0d): OVL %b", sq, k, st[5]));
+                $fdisplay(fsmp, "%0d %0d %0d", sq, $signed(d), st);
+                nsamples = nsamples + 1;
+            end
+        end
+        r14_write(7'h07, 8'hFF);
+        r14_write(7'h06, 8'hFF);
+        // J8: an overload in IDLE shows in OVL_NOW but does not set DFLAG.OVL (only FILL and RUN)
+        r14_cmd(8'h22);
+        wait_state(4'd0, 50.0, "J8 IDLE");
+        r14_write(7'h07, 8'hFF);
+        ovl_force = 1'b1;
+        repeat (20 * 32) @(posedge MCLK);
+        check_status(8'h03, 8'h03, "J8 OVL_NOW and AFE_RST in IDLE during an overload");
+        repeat (20 * 32) @(posedge MCLK);
+        ovl_force = 1'b0;
+        repeat (64 * 32) @(posedge MCLK);
+        r14_read(7'h07, v);
+        if (v[1] !== 1'b0) fail("J8 DFLAG.OVL set by an overload in IDLE");
+        $display("J  STATUS bits, guarded writes, CRC frames, WARMUP restart, APPLY flush, overload (errors %0d)", errors);
+
+        // ---------------- K: SEQ wraps from 0xFFFF to 0 (forced; outside the golden comparison)
+        phase = "K";
+        log_on = 1'b0;
+        r14_cmd(8'h11);
+        wait_state(4'd6, 10000.0, "K RUN");
+        begin
+            logic [7:0] st; logic [15:0] sq, prev; logic [23:0] d; bit ok;
+            @(posedge dut.cic_stb);
+            @(posedge MCLK); #1;                        // after the edge that stored this output and counted it
+            dut.seq_cnt = 16'hFFFE;                     // deposit: the next output takes 0xFFFE
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);
+            for (int i = 0; i < 4; i++) begin
+                while (DRDY_N !== 1'b0) @(posedge MCLK);
+                r14_sample(st, sq, d, ok);
+                if (i == 0 && sq !== 16'hFFFE) fail($sformatf("K first SEQ %0d, expected 65534", sq));
+                if (i > 0 && sq !== 16'(prev + 16'd1)) fail($sformatf("K SEQ %0d after %0d", sq, prev));
+                prev = sq;
+            end
+        end
+        $display("K  SEQ wraps (errors %0d)", errors);
+
         $fclose(flog);
         $fclose(fsmp);
         if (ana_afe_rst !== afe_falls + afe_rises) fail($sformatf("monitor saw %0d AFE_RST changes, the pin %0d edges",
                                                                   ana_afe_rst, afe_falls + afe_rises));
-        $display("tb_top_r14: %0d SPI transfers, %0d samples, %0d analog pin changes (%0d of AFE_RST), %0d SPI errors, %0d errors",
-                 spi_xfers, nsamples, ana_changes, ana_afe_rst, spi_errors, errors);
+        $display("tb_top_r14: %0d SPI transfers, %0d samples, %0d analog pin changes (%0d of AFE_RST), %0d SPI errors, %0d errors, ended at %0.3f ms",
+                 spi_xfers, nsamples, ana_changes, ana_afe_rst, spi_errors, errors, $realtime / 1.0e6);
         if (errors == 0 && spi_errors == 0) $display("PASS: tb_top_r14");
         else                                $display("FAIL: tb_top_r14");
         $finish;

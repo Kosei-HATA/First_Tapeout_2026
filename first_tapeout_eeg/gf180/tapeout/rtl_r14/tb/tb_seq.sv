@@ -1,6 +1,8 @@
 // tb_seq - eeg_seq on random event streams; every tick and output time is written to a trace that
 // tb/check_seq_trace.py replays through the specification (gf180/tapeout/rtl/spec/fsm_spec.py, seq_tick) and
 // compares: next state and actions, cell by cell, with the coverage of the transition table.
+// Every traced line also carries the RTL's timer before and after the event, the frames since the previous traced
+// event and the timer settings, so that the checker models every load, decrement and restart of the timer.
 // Checked here directly: AFE_RST equals the state's value after every edge and changes only at a tick or reset;
 // an illegal state value returns to IDLE with STATE_ERR.
 // Plusargs: +n=<events> +seed=<seed> +trace=<file>
@@ -33,7 +35,10 @@ module tb_seq;
         endcase
     endfunction
 
-    integer fd, n, seed, i, errors, ev, nticks, nouts, nresets, quiet;
+    integer fd, n, seed, i, errors, ev, nticks, nouts, nresets, quiet, frames;
+    logic [17:0] tmr_before;
+    logic        a_rs, fs0;
+    logic [7:0]  tw0, te0x, tr0, tp0, tq0;
     logic [3:0] st0;
     logic       tm0, cv0, ev_tick, ev_out, prev_afe, prev_tick, after_reset;
     logic [7:0] cc0;
@@ -50,6 +55,7 @@ module tb_seq;
         if (!$value$plusargs("trace=%s", trace)) trace = "build/seq_trace.txt";
         fd = $fopen(trace, "w");
         errors = 0; nticks = 0; nouts = 0; nresets = 0; quiet = 0;
+        frames = 0;
         repeat (3) @(negedge clk);
         rst_n = 1'b1;
         after_reset = 1'b1;
@@ -87,6 +93,7 @@ module tb_seq;
                 @(negedge clk);
                 rst_n = 1'b1;
                 $fdisplay(fd, "R");
+                frames = 0;
                 nresets = nresets + 1;
                 cmd_valid = 1'b0;
                 tick = 1'b0; out_stb = 1'b0;
@@ -96,6 +103,8 @@ module tb_seq;
             end
             #1;
             st0 = state;  tm0 = (dut.timer == 18'd0);  cv0 = cmd_valid;  cc0 = cmd_code;
+            tmr_before = dut.timer;  a_rs = dut.a_restart;  fs0 = frame_stb;
+            tw0 = t_warm;  te0x = t_elec;  tr0 = t_rec;  tp0 = t_pre;  tq0 = t_rst;
             ev_tick = tick;  ev_out = out_stb;
             a_apply = apply; a_flush = flush; a_store = store; a_mark = mark;
             a_serr = state_err; a_cerr = cfg_err; a_clr = cic_arm && out_stb;
@@ -113,10 +122,14 @@ module tb_seq;
             prev_afe = afe_rst;
             after_reset = 1'b0;
             if (ev_tick || ev_out) begin
-                $fdisplay(fd, "%s %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d%0d%0d%0d%0d%0d%0d",
+                $fdisplay(fd, "%s %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d%0d%0d%0d%0d%0d%0d%0d %0d %0d %0d %0d %0d %0d %0d %0d %0d",
                           ev_tick ? "T" : "O", st0, cv0, cc0, tm0, cfg_ok, nr_ok, (t_elec == 8'd0), out_valid, state,
-                          a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_clr);
+                          a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_clr, a_rs,
+                          tmr_before, dut.timer, frames, fs0, tw0, te0x, tr0, tp0, tq0);
                 if (ev_tick) nticks = nticks + 1; else nouts = nouts + 1;
+                frames = 0;
+            end else if (fs0) begin
+                frames = frames + 1;                        // frames between traced events (the timer's clock)
             end
             if (ev_tick && cv0) cmd_valid = 1'b0;             // taken at this tick (cmd_ack)
             if (ev_tick && (cmd_ack !== 1'b0)) ;              // cmd_ack is combinational, already sampled

@@ -135,6 +135,7 @@
     localparam logic [7:0] CMD_FLUSH = 8'h55;
     localparam logic [7:0] CMD_SOFT_RESET = 8'hA5;
     localparam logic [7:0] TEST_KEY_VALUE = 8'h3C;
+    localparam logic [127:0] GUARDED_ADDRS = 128'h00000003001F0000000001FF00000000;   // writes refused while a command is pending
     localparam logic [3:0] ST_IDLE = 4'd0;
     localparam logic [3:0] ST_WARMUP = 4'd1;
     localparam logic [3:0] ST_RECOVER = 4'd2;

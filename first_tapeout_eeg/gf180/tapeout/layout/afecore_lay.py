@@ -36,6 +36,9 @@ the signal, input-referred one to one; tracker D6, documentation/gf180_pex_20261
   - INN: Metal4 straps on through the tails between the supply segments, via4 below the
     tails onto Metal5 that runs down over the boosters to the bottom edge (joined to the
     Cin_N bus the same way).
+  - r13 (SYM_GATES): both nets' straps go on over the whole core, interdigitated as over the
+    pairs (INP's through the tails and over the boosters, INN's over the cascodes, each ending
+    short of the other net's bar), so that INP and INN see the same supplies and biases.
 Ports: INP (Metal5, top edge), INN (Metal5, bottom edge), VBN, VBP, BLP, BLN on the east
 edge. The other gates and the boosters' nets: route.Router.
 
@@ -72,6 +75,16 @@ INP_PAD, INN_PAD = 4.0, 3.4           # tap pads (Metal2): below the INP gate ba
 ROUTER_X = {"N": 5.0, "P": 9.0}       # router access left free on the east of each tail (VBN, VBP)
 EDGE_BAR = 4.0                        # Metal5 bars joining the INP strips (top edge), INN (bottom)
 STUB_X = 26.0                         # the AFE's offdac_p INP stub lands on the INP bar west of here
+# r13 (11/19, tracker D7: supply rejection): the summing nodes' wiring interdigitated over the whole core as over the
+# pairs. Every strap goes on as its own strip, INP and INN alike: through the tail and over the boosters' top (Metal4)
+# and over the boosters (Metal5) below, over the cascodes and the output band (Metal5) above; INP's strips join the
+# top edge's bar, INN's the bottom edge's, the other net's strips end short of the bar. Through r12 INN alone covered
+# the tails and the boosters' top (Metal4 pieces over whole strap cells, Metal3 strips under them) and the boosters
+# (Metal5 tiles), INP alone the band: INN had 1.96 pF more to AVDD (the P tail's VDD lanes and rows, the AFE's AVDD
+# rails over it), 0.53 pF more to VBP (the P tail's gates) and 0.16 pF to BLP, which the output chopper folds into band
+# (52 dB next to 128 kHz; psrr_diag.py). The router still sees r12's obstacles there (the pieces, their links, the
+# Metal3 strips and their via3, not drawn), so every other net stays as routed in r12.
+SYM_GATES = True
 
 
 def split(total, per):
@@ -233,7 +246,7 @@ def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, heigh
     (fixed shapes [(layer, box, net)] for the router, via3 boxes, {column: INN pieces
     (x1, x2) through the tail}, {net: label point})."""
     fixed, vias3, pieces = [], [], {}
-    inp_x, tops = [], {}
+    inp_x, tops, tails = [], {}, []
     y_tb = rail_bot - 7.24                         # INN Metal4 down to here, via4 above it
     for side, pk, tk in (("N", "NPAIR", "NTAIL"), ("P", "PPAIR", "PTAIL")):
         p, t = pd[pk], pd[tk]
@@ -265,7 +278,7 @@ def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, heigh
                 inp_x.append((x1, x2))
             else:
                 m4 = (x1, y_lo, x2, max(top + 0.5, max(q[2] for q in p.pins["INN"]) + INN_PAD))
-                m5 = (x1, m5y1, x2, top)
+                m5 = (x1, m5y1, x2, height - EDGE_BAR - 0.6 if SYM_GATES else top)   # r13: on over the cascodes
             b.box("metal4", *m4)
             b.box("metal5", *m5)
             fixed.append(("metal4", m4, net))
@@ -292,8 +305,10 @@ def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, heigh
                 if min(run[-1][2], t_hi) - run[0][1] >= 2.0:
                     pcs.append((run[0][1], min(run[-1][2], t_hi)))
                 run = [s] if s is not None else []
+        draw = not SYM_GATES                            # r13: r12's INN pieces only as router obstacles
         for a, c in pcs:
-            b.box("metal4", a, y_tb, c, y_lo + 0.5)
+            if draw:
+                b.box("metal4", a, y_tb, c, y_lo + 0.5)
             fixed.append(("metal4", (a, y_tb, c, y_lo + 0.5), "INN"))
         sr = sorted(rows[side])
         spans = [(y_tb, sr[0] - SEG_KEEP)] + [(sr[k] + PWR_W + SEG_KEEP, sr[k + 1] - SEG_KEEP)
@@ -304,7 +319,8 @@ def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, heigh
                     if y2 - y1 >= 2.0:
                         ym = (y1 + y2) / 2
                         lk = (c1, max(y1, ym - 5.0), a2, min(y2, ym + 5.0))
-                        b.box("metal4", *lk)
+                        if draw:
+                            b.box("metal4", *lk)
                         fixed.append(("metal4", lk, "INN"))
         tail_lanes = [(s[1] - WIDE_KEEP, s[3] + WIDE_KEEP) for segs in lanes.values() for s in segs
                       if s[1] < t_hi and s[3] > t.x and s[2] < y_lo and s[4] > t.y]
@@ -315,30 +331,47 @@ def gate_network(b, pd, lanes, supply, rows, rail_bot, rail_mid, rail_top, heigh
                 if x2 - x1 < 0.9:
                     continue
                 m3 = (x1, t.y, x2, y_lo - 0.6)
-                b.box("metal3", *m3)
+                if draw:
+                    b.box("metal3", *m3)
                 fixed.append(("metal3", m3, "INN"))
                 y = t.y + 0.5
                 while y + 2.0 < y_lo - 1.0:
-                    b.vias_fit("via3", x1, y, x2, y + 2.0)
+                    if draw:
+                        b.vias_fit("via3", x1, y, x2, y + 2.0)
                     vias3.append((x1, y, x2, y + 2.0))
                     y += 10.0
         pieces[side] = pcs
+        # r13: each strap on through the tail as its own strip (Metal4), within r12's pieces
+        if SYM_GATES:
+            for net, x1, x2, cell, sites in plan:
+                xb = min(x2, t_hi)
+                if xb - x1 < 2.0 or not any(a - 1e-6 <= x1 and xb <= c + 1e-6 for a, c in pcs):
+                    continue
+                b.box("metal4", x1, y_tb, xb, y_lo + (0.5 if net == "INN" else 1.5))
+                tails.append((net, x1, xb))
     # INN Metal5 over the boosters, from the bottom edge up to the via4 rows on the pieces,
     # the strips joined by a bar along the edge (the AFE joins the bar to the Cin_N bus)
     allp = pieces["N"] + pieces["P"]
     bot = tile(min(a for a, _ in allp), max(c for _, c in allp))
-    for a, c in bot:
-        b.box("metal5", a, 0.0, c, rail_bot)
-    b.box("metal5", bot[0][0], 0.0, bot[-1][1], EDGE_BAR)
-    for pa, pc in allp:
+    if SYM_GATES:
+        # r13: each tail strip on over the boosters as its own Metal5 strip; INP's end short of the INN bar
+        for net, a, c in tails:
+            b.box("metal5", a, 0.0 if net == "INN" else EDGE_BAR + 0.6, c, rail_bot)
+            b.vias_fit("via4", a, y_tb, c, rail_bot - 0.24)
+    else:
         for a, c in bot:
-            if min(c, pc) - max(a, pa) >= 0.9:
-                b.vias_fit("via4", max(a, pa), y_tb, min(c, pc), rail_bot - 0.24)
+            b.box("metal5", a, 0.0, c, rail_bot)
+        for pa, pc in allp:
+            for a, c in bot:
+                if min(c, pc) - max(a, pa) >= 0.9:
+                    b.vias_fit("via4", max(a, pa), y_tb, min(c, pc), rail_bot - 0.24)
+    b.box("metal5", bot[0][0], 0.0, bot[-1][1], EDGE_BAR)
     # INP Metal5 over the cascodes, from above the pairs to the top edge; the strips join
-    # the INP straps (gaps never cut one) and keep clear of the INN straps' tops
+    # the INP straps (gaps never cut one) and keep clear of the INN straps' tops (r13: the
+    # straps' own Metal5 only, INP's and INN's, up to the band: gate_network's straps)
     x_mid = (pd["NPAIR"].x + pd["NPAIR"].cell.width + pd["PPAIR"].x) / 2
     top_strips = tile(pd["NPAIR"].x + 0.4, pd["PPAIR"].x + pd["PPAIR"].cell.width - 0.4, avoid=inp_x)
-    for a, c in top_strips:
+    for a, c in top_strips if not SYM_GATES else ():
         y1 = (tops["N"] if a < x_mid else tops["P"]) + 1.0
         if a < x_mid < c:
             y1 = max(tops.values()) + 1.0

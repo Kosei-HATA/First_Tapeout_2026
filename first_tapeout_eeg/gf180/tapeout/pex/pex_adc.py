@@ -31,6 +31,7 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 ADC_LOOP = os.path.join(REPO, "gf180", "tapeout", "sim", "adc_loop")
 SCH = os.path.join(REPO, "gf180", "tapeout", "adc", "eeg_adc.spice")
 _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
+_REV = {"r13": "r12"}.get(_REV, _REV)                 # r13 changed only afe_top (xor_r12_r13_chip_top_20261119.log)
 PEXDIR = os.path.join(HERE, "runs", "adc_top_c" + (f"_{_REV}" if _REV else ""))
 
 

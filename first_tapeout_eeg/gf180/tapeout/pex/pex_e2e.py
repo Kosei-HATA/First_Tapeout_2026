@@ -48,7 +48,8 @@ import pex_afe as pa  # noqa: E402
 
 ADC_SCH = os.path.join(ed.ad.ADC, "eeg_adc.spice")
 _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
-_ADC_REV = {"r8": "r7", "r9": "r7"}.get(_REV, _REV)    # adc_top last changed in r7 (r8, r9: the same cell by XOR)
+_ADC_REV = {"r8": "r7", "r9": "r7", "r13": "r12"}.get(_REV, _REV)    # adc_top last changed in r7 (r8, r9: the same
+# cell by XOR); r13 changed only afe_top (layout/runs/chip_top/xor_r12_r13_chip_top_20261119.log): r12's adc_top
 ADC_PEX = os.path.join(HERE, "runs", "adc_top_c" + (f"_{_ADC_REV}" if _ADC_REV else ""), "eeg_adc_pex.spice")
 AFE_PEX = os.path.join(pa.PEXDIR, "afe_top_pex.spice")
 RUNS = os.path.join(HERE, "runs", "e2e" + (f"_{_REV}" if _REV else ""))     # r7: runs/e2e_r7

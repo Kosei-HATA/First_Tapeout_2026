@@ -130,7 +130,9 @@ BIAS_PEX = os.path.join(HERE, "runs", "eeg_bias_c", "eeg_bias_pex.spice")
 _REV = os.environ.get("EEG_PEX_REV", "")              # pex.py: the extraction of a changed layout
 # r10 (11/9) changed only adc_top (a Via4 / Metal5 strap): the chip-level shapes are r9's by XOR
 # (layout/runs/chip_top/xor_r9_r10_chip_top_20261109.log), so r10's chip wiring is chipnets_r9
-_NET_REV = {"r10": "r9"}.get(_REV, _REV)
+# r13 (11/19) changed only afe_top's core (the summing nodes' Metal3-5, via3, via4): outside afe_top the chip is r12's
+# by XOR (layout/runs/chip_top/xor_r12_r13_chip_top_20261119.log), so r13's chip wiring is chipnets_r12
+_NET_REV = {"r10": "r9", "r13": "r12"}.get(_REV, _REV)
 CHIPNETS = os.path.join(HERE, "runs", "chipnets" + (f"_{_NET_REV}" if _NET_REV else ""))
 IO = os.path.normpath(os.path.join(P.PDK, "..", "..", "libs.ref", "gf180mcu_fd_io", "spice", "gf180mcu_fd_io.spice"))
 RUNS = os.path.join(HERE, "runs", "startup")

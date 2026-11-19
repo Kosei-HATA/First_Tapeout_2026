@@ -96,6 +96,11 @@ RIN_EXTRACTED = {"E": (0.168, 0.211), "W": (0.347, 0.357), "T": (0.119, 0.124)}
 # and WP unchanged
 if _AFE_REV:
     RIN_EXTRACTED = dict(RIN_EXTRACTED, W=(0.347, 0.359))
+# r13 (11/19): the summing nodes interdigitated over the whole core (afecore_lay.SYM_GATES): T 129 / 170 mohm against
+# r12's 119 / 124 (pex_rin.py --afe --nets AFE.INP AFE.INN on the block's lvsdb, the same for both: runs/rin_afe_r13_T.log).
+# INN crosses the tails on its own straps now (Metal4 56 against 21 mohm), INP reaches its straps without the band's tiles
+if _AFE_REV not in ("", "r12"):
+    RIN_EXTRACTED = dict(RIN_EXTRACTED, T=(0.129, 0.170))
 
 
 def split_signal_path(text, variant):

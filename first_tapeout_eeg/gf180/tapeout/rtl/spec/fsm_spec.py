@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""The digital control's state machines as one machine-readable specification (11/19, requirements draft r2).
+"""The digital control's state machines as one machine-readable specification (11/19, requirements draft r3).
 
 The transition tables below are the specification; the diagrams (Mermaid) and the tables in
 documentation/gf180_digital_control_requirements_20261119.md are generated from them, and `check` proves the
 properties listed in CHECKS on them, so the drawings, the tables and the checked logic cannot drift apart.
 
 Machines:
-  SEQ   the sequencer (start-up, data start, applying settings, AFE_RST). It is evaluated once per frame at a fixed
-        frame cycle (the tick); all its events in one tick are resolved by PRIORITY (below). RST is asynchronous.
+  SEQ   the sequencer (start-up, data start, applying settings, AFE_RST). Its tick is once per chopper period, at
+        frame cycle 24 of the frame in the middle of chopper phase A (frame 1 of 8 at 128 kHz, 3 of 16 at 64 kHz),
+        so AFE_RST and every analog setting change at one fixed chopper phase, away from every ADC and chopper edge.
+        At most one command is pending (a second one is rejected at the SPI write); a tick resolves that command
+        and the state's timer by SEQ_PRIORITY. OUT (a CIC output time, frame cycle 8) is handled at its own MCLK
+        cycle, which never coincides with a tick. RST is asynchronous.
   SPI   one SPI transaction at byte level (CS_N low ... CS_N high).
   FIFO  the sample FIFO's occupancy with push, pop and flush in the same MCLK cycle (depth DEPTH).
 
@@ -70,17 +74,17 @@ SEQ_EVENTS = [
     ("REL", "リセットの解除"),
     ("STOP", "命令 STOP"),
     ("START", "命令 START"),
-    ("SYNC", "SYNC 入力の立ち上がり"),
     ("APPLY", "命令 APPLY（AFE_RST のパルスを伴う一括反映）"),
     ("APPLY_NR", "命令 APPLY_NR（パルスなしの一括反映）"),
     ("FLUSH", "命令 FLUSH（FIFO を空にする）"),
     ("TMR", "その状態のタイマの満了"),
     ("OUT", "CIC の出力の時刻（1 ms ごと）"),
 ]
-SEQ_PRIORITY = ["STOP", "START", "SYNC", "APPLY", "APPLY_NR", "FLUSH", "TMR", "OUT"]   # within one tick, high first
+SEQ_PRIORITY = ["STOP", "START", "APPLY", "APPLY_NR", "FLUSH", "TMR"]                  # within one tick, high first
 SEQ_COMMANDS = ["START", "STOP", "APPLY", "APPLY_NR", "FLUSH"]                        # at most one per tick
 SEQ_CONDS = {
     "cfg_ok": "シャドウの設定が整合（オフセット DAC の M が、選んだ範囲の上限以下）",
+    "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段のみ（範囲は同じ）",
     "t_elec0": "T_ELEC = 0",
     "valid": "CIC の出力が有効（クリアのあと 3 個目以降）",
     "full": "FIFO が満杯",
@@ -88,15 +92,12 @@ SEQ_CONDS = {
 SEQ_ACTIONS = {
     "apply": "シャドウからアクティブへ一括反映（オフセット DAC、トリム、チョッパ、BLANK、試験の設定）",
     "flush": "FIFO を空にする",
-    "seq_reset": "SEQ を 0 にする",
-    "phase_reset": "間引きの計数を 0 にする（出力の時刻の格子の原点）",
-    "frame_align": "フレームの計数を 0 にする（SYNC を共有するチップの間でフレームをそろえる）",
     "cic_clear": "CIC をクリアする（出力の時刻に合わせて行うので、格子は変わらない）",
     "store": "出力を FIFO へ格納する（DRDY）",
     "discard": "出力を捨てる",
-    "seq_inc": "SEQ に 1 を加える",
+    "seq_inc": "SEQ に 1 を加える（SEQ はリセットの解除からの出力の時刻の番号）",
     "mark": "このあとの 3 個の出力（反映をまたぐ窓）に CHANGED を付ける",
-    "cancel": "同じ tick の START と SYNC を取り消す（IDLE に留まる）",
+    "cancel": "同じ tick の START を取り消す（IDLE に留まる）",
     "CFG_ERR": "エラー CFG_ERR を立てる（命令は実行しない）",
     "STATE_ERR": "エラー STATE_ERR を立てる（命令は実行しない）",
     "OVERRUN": "エラー OVERRUN を立てる（出力は捨てる）",
@@ -112,10 +113,10 @@ def _seq_table():
         t[(s, "RST")] = [B(ALWAYS, [], "RESET")]
         t[(s, "REL")] = IMP
         t[(s, "START")] = [B(ALWAYS, ["STATE_ERR"])]
-        t[(s, "SYNC")] = IGN
         t[(s, "STOP")] = [B(ALWAYS, [], "IDLE")]
         t[(s, "APPLY")] = [B("cfg_ok", ["apply"], "PRE"), B("not cfg_ok", ["CFG_ERR"])]
-        t[(s, "APPLY_NR")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
+        # AFE running: without a pulse only a one-step change of the offset DAC (the operating 1-step tracking)
+        t[(s, "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
         t[(s, "FLUSH")] = [B(ALWAYS, ["flush"])]
         t[(s, "TMR")] = IMP if s not in timed else None
         t[(s, "OUT")] = [B(ALWAYS, ["discard", "seq_inc"])]
@@ -126,15 +127,12 @@ def _seq_table():
     t[("RESET", "TMR")] = IMP
     t[("RESET", "OUT")] = IMP
     # IDLE
-    t[("IDLE", "START")] = [B("cfg_ok", ["apply", "flush", "seq_reset", "phase_reset"], "WARMUP"),
-                            B("not cfg_ok", ["CFG_ERR"])]
-    t[("IDLE", "SYNC")] = [B("cfg_ok", ["apply", "flush", "seq_reset", "phase_reset", "frame_align"], "WARMUP"),
-                           B("not cfg_ok", ["CFG_ERR"])]
-    t[("IDLE", "STOP")] = [B(ALWAYS, ["cancel"])]                     # stays; cancels START / SYNC of the tick
-    t[("IDLE", "APPLY")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
-    t[("IDLE", "OUT")] = [B(ALWAYS, ["discard"])]                     # SEQ does not count before START
-    # WARMUP: AFE held in reset, so APPLY needs no pulse
-    t[("WARMUP", "APPLY")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
+    t[("IDLE", "START")] = [B("cfg_ok", ["apply", "flush"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])]
+    t[("IDLE", "STOP")] = IGN
+    # IDLE and WARMUP hold the AFE in reset: any consistent change is applied without a pulse
+    for st in ("IDLE", "WARMUP"):
+        t[(st, "APPLY")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
+        t[(st, "APPLY_NR")] = [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])]
     t[("WARMUP", "TMR")] = [B(ALWAYS, [], "RECOVER")]
     # RECOVER / WAIT_E
     t[("RECOVER", "TMR")] = [B("t_elec0", [], "ALIGN"), B("not t_elec0", [], "WAIT_E")]
@@ -142,10 +140,10 @@ def _seq_table():
     # ALIGN: the CIC is cleared at the next output time, keeping the output grid
     t[("ALIGN", "OUT")] = [B(ALWAYS, ["cic_clear", "discard", "seq_inc"], "FILL")]
     # FILL: an unpulsed APPLY_NR restarts the clear, so no stored window ever straddles a change
-    t[("FILL", "APPLY_NR")] = [B("cfg_ok", ["apply"], "ALIGN"), B("not cfg_ok", ["CFG_ERR"])]
+    t[("FILL", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
     t[("FILL", "OUT")] = [B("valid", ["store", "seq_inc"], "RUN"), B("not valid", ["discard", "seq_inc"])]
     # RUN
-    t[("RUN", "APPLY_NR")] = [B("cfg_ok", ["apply", "mark"]), B("not cfg_ok", ["CFG_ERR"])]
+    t[("RUN", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply", "mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
     t[("RUN", "OUT")] = [B("not full", ["store", "seq_inc"]), B("full", ["OVERRUN", "discard", "seq_inc"])]
     # PRE / PULSE: a further APPLY waits for READY (rejected), the pulse is not stretched
     for s, nxt in (("PRE", "PULSE"), ("PULSE", "RECOVER")):
@@ -163,7 +161,7 @@ def seq_possible(s, e):
         return s in timed
     if e == "OUT":
         return s != "RESET"
-    return True                       # RST, commands and SYNC can arrive at any time
+    return True                       # RST and commands can arrive at any time
 
 
 SEQ = dict(name="SEQ", states=SEQ_STATES, composites=SEQ_COMPOSITES, events=SEQ_EVENTS, conds=SEQ_CONDS,
@@ -204,6 +202,7 @@ SPI_CONDS = {
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
     "crc_ok": "受信した CRC が一致",
     "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でない）",
+    "busy": "命令レジスタへの書き込みで、前の命令がまだ tick で処理されていない",
 }
 SPI_ACTIONS = {
     "load_status": "STATUS を送信のシフトレジスタへ（その時点の値を写す）",
@@ -221,6 +220,7 @@ SPI_ACTIONS = {
     "FRAME_ERR": "エラー FRAME_ERR を立てる",
     "CRC_ERR": "エラー CRC_ERR を立てる（書かない）",
     "ADDR_ERR": "エラー ADDR_ERR を立てる（書かない。読み出しは 0x00）",
+    "STATE_ERR": "エラー STATE_ERR を立てる（前の命令が未処理のため、この命令を受け付けない）",
 }
 
 
@@ -250,7 +250,8 @@ def _spi_table():
         t[(s, "BYTE")] = IMP                                   # the first further bit already left the state
     t[("RDONE", "CSR")] = [B(ALWAYS, [], "IDLE")]
     t[("SDONE", "CSR")] = [B(ALWAYS, ["pop"], "IDLE")]
-    t[("WDONE", "CSR")] = [B("(crc_ok or not crc_en) and wr_ok", ["commit"], "IDLE"),
+    t[("WDONE", "CSR")] = [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"),
+                           B("(crc_ok or not crc_en) and wr_ok and busy", ["STATE_ERR"], "IDLE"),
                            B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"),
                            B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")]
     # an incomplete write (header only, or a missing data / CRC byte) is a frame error even on a byte boundary
@@ -387,10 +388,10 @@ def seq_tick(s, present, env):
     t = SEQ["table"]
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
     winner = None
-    if "STOP" in present and isinstance(br["STOP"], dict):
+    if "STOP" in present and br["STOP"] is not None and br["STOP"] != IMP:
         winner = "STOP"                          # STOP always wins: it cancels every other transition of the tick
     else:
-        for e in SEQ_PRIORITY:
+        for e in SEQ_PRIORITY + ["OUT"]:        # OUT never shares a cycle with a tick event (checked alone)
             b = br.get(e)
             if isinstance(b, dict) and b["next"] is not None and b["next"] != s:
                 winner = e
@@ -401,15 +402,13 @@ def seq_tick(s, present, env):
         if not isinstance(b, dict):
             continue
         moves = b["next"] is not None and b["next"] != s
-        if winner == "STOP" and e in ("START", "SYNC"):
-            acts += [a for a in b["actions"] if a in FLAGS]
-        elif e == winner or not moves:
+        if e == winner or not moves:
             acts += b["actions"]
         else:                                    # a transition that lost: only its flags and data bookkeeping
             acts += [a for a in b["actions"] if a in FLAGS or a in DATA]
     nxt = s
-    if winner:
-        nxt = br[winner]["next"] if br[winner]["next"] is not None else s
+    if winner and isinstance(br[winner], dict) and br[winner]["next"] is not None:
+        nxt = br[winner]["next"]
     return nxt, acts
 
 
@@ -433,21 +432,16 @@ def seq_properties(s, present, env, nxt, acts):
         P.append("the CIC is cleared off the output grid")
     if nxt == "FILL" and s != "FILL" and "cic_clear" not in acts:
         P.append("FILL entered without clearing the CIC")
-    if s == "IDLE" and nxt == "WARMUP" and not {"apply", "flush", "seq_reset", "phase_reset"} <= set(acts):
-        P.append("START without apply, flush, SEQ reset and phase reset")
-    if s == "IDLE" and nxt == "WARMUP" and "SYNC" in present and "START" not in present and "frame_align" not in acts:
-        P.append("SYNC start without frame alignment")
+    if s == "IDLE" and nxt == "WARMUP" and not {"apply", "flush"} <= set(acts):
+        P.append("START without applying the settings and emptying the FIFO")
     if nxt == "PULSE" and s != "PULSE" and s != "PRE":
         P.append("AFE_RST pulse not preceded by PRE")
     if nxt == "PRE" and s != "PRE" and "apply" not in acts:
         P.append("PRE entered without applying settings")
     if nxt == "RECOVER" and s != "RECOVER" and s not in ("WARMUP", "PULSE"):
         P.append("RECOVER entered other than after AFE_RST")
-    for a in ("seq_reset", "phase_reset"):
-        if a in acts and not (s == "IDLE" and nxt == "WARMUP"):
-            P.append(f"{a} outside START")
-    if "frame_align" in acts and not (s == "IDLE" and nxt == "WARMUP" and "SYNC" in present):
-        P.append("frame_align outside SYNC in IDLE")
+    if "apply" in acts and afe(s) == 0 and nxt != "PRE" and not env.get("nr_ok", 1):
+        P.append("a change beyond one offset-DAC step is applied while the AFE runs, without AFE_RST")
     if "flush" in acts and not ((s == "IDLE" and nxt == "WARMUP") or "FLUSH" in present):
         P.append("FIFO flushed by something other than START or FLUSH")
     if "STOP" in present and nxt != "IDLE":
@@ -466,17 +460,15 @@ def check_seq_ticks():
     errs, n = [], 0
     timed = {x[0] for x in SEQ_STATES if x[4]}
     for s in [x[0] for x in SEQ_STATES if x[0] != "RESET"]:
-        for cmd in [None] + SEQ_COMMANDS:
-            for sync, tmr, out in itertools.product([0, 1], [0, 1], [0, 1]):
-                if tmr and s not in timed:
-                    continue
-                present = ([cmd] if cmd else []) + (["SYNC"] if sync else []) + (["TMR"] if tmr else []) + \
-                          (["OUT"] if out else [])
-                for env in all_envs(list(SEQ_CONDS), lambda e: True):
-                    nxt, acts = seq_tick(s, present, env)
-                    n += 1
-                    for p in seq_properties(s, present, env, nxt, acts):
-                        errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
+        cases = [[c] + (["TMR"] if t else []) for c in SEQ_COMMANDS for t in (0, 1) if t == 0 or s in timed]
+        cases += [["TMR"]] if s in timed else []
+        cases += [["OUT"]]                      # handled at its own MCLK cycle, never together with a tick
+        for present in cases:
+            for env in all_envs(list(SEQ_CONDS), lambda e: True):
+                nxt, acts = seq_tick(s, present, env)
+                n += 1
+                for p in seq_properties(s, present, env, nxt, acts):
+                    errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
     # STATE and AFE_RST are Moore outputs of the state; READY = (state == RUN)
     codes = [x[1] for x in SEQ_STATES if x[1] is not None]
     if len(codes) != len(set(codes)):
@@ -506,7 +498,7 @@ def check_spi_props():
                 continue                            # reported by check_tables
             n += 1
             a, nxt = b["actions"], b["next"]
-            if "commit" in a and not (s == "WDONE" and e == "CSR" and env["wr_ok"]
+            if "commit" in a and not (s == "WDONE" and e == "CSR" and env["wr_ok"] and not env["busy"]
                                       and (env["crc_ok"] or not env["crc_en"])):
                 errs.append(f"SPI {s}/{e} {env}: commit outside a complete, checked write to a writable address")
             if "pop" in a and not (s == "SDONE" and e == "CSR"):
@@ -562,6 +554,76 @@ def check_fifo():
     return errs, n
 
 
+# =====================================================================================================================
+# Timing against the analog side (frame-cycle map, timers, CHOP1, SPI) - the numbers behind SEQ's tick
+# =====================================================================================================================
+MCLK = 32.768e6
+FRAME = 32                                     # MCLK per frame (fs = 1.024 MHz)
+TIMING = dict(
+    # frame cycles (MCLK edge e_n starts cycle n) of the existing frame (eeg_clkgen, eeg_adc_dig, eeg_chop1, eeg_cic3)
+    busy_cycles={0: "CMP_STROBE（比較器）", 1: "TH の確定待ち", 2: "TH の取り込み（e2）", 3: "SEL1／SEL2（DAC2、e3）",
+                 4: "DAC_CLK（DAC1、e4）", 5: "DAC_CLK の立ち下がり（e5）", 8: "CIC の出力（OUT）",
+                 16: "CHOP1 の縁（e16）"},
+    blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame .. BLANK_LEN (<= 15)
+    tick_cycle=24,
+    rates={"128k": dict(period_frames=8, tick_frame=1), "64k": dict(period_frames=16, tick_frame=3)},
+    timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 4e-3), T_PRE=(20e-6, 20e-6, 255e-6),
+                T_RST=(100e-6, 100e-6, 4e-3)),          # (analog minimum, default, maximum)
+    decimation=1024, cic_order=3,
+    chop1_periods_frames=[1024, 512, 256, 128, 64],    # 1, 2, 4, 8, 16 kHz full periods
+    spi_sclk_max=2e6, spi_write_bits=16,
+)
+
+
+def check_timing():
+    T, errs, notes = TIMING, [], []
+    tc = T["tick_cycle"]
+    if tc in T["busy_cycles"]:
+        errs.append(f"tick at frame cycle {tc} coincides with {T['busy_cycles'][tc]}")
+    if tc <= T["blank_max"] or tc == 31:
+        errs.append(f"tick at frame cycle {tc} can fall inside an output-chopper blanking window")
+    for name, r in T["rates"].items():
+        half = r["period_frames"] // 2
+        pos = (r["tick_frame"] * FRAME + tc) / (half * FRAME)          # fraction of phase A from its rising edge
+        if not 0.25 <= pos <= 0.75:
+            errs.append(f"{name}: tick at {pos:.2f} of chopper phase A, not in its middle half")
+        notes.append(f"{name}: tick {r['tick_frame'] * FRAME + tc} MCLK after the phase-A edge "
+                     f"({pos:.3f} of the half period), every {r['period_frames'] * FRAME / MCLK * 1e6:.4f} us")
+        tick_s = r["period_frames"] * FRAME / MCLK
+        for tn, (mn, df, mx) in T["timers"].items():
+            for label, v in (("default", df), ("minimum", mn)):
+                actual = -(-v // tick_s) * tick_s if v > 0 else tick_s
+                if actual < mn - 1e-12:
+                    errs.append(f"{name} {tn} {label}: {actual * 1e6:.2f} us is below the analog minimum")
+            notes.append(f"{name} {tn}: default {df * 1e6:g} us -> {(-(-df // tick_s)) * tick_s * 1e6:.2f} us on the tick grid")
+        # SPI: a second command can arrive before the tick when a write frame is shorter than the tick period
+        frame_s = T["spi_write_bits"] / T["spi_sclk_max"]
+        if frame_s < tick_s and "busy" not in SPI_CONDS:
+            errs.append(f"{name}: two commands can arrive between ticks ({frame_s * 1e6:.1f} < {tick_s * 1e6:.2f} us) "
+                        "but the SPI specification has no 'busy' rule")
+        if frame_s < tick_s:
+            notes.append(f"{name}: a write frame ({frame_s * 1e6:.1f} us) is shorter than the tick period: "
+                         "one pending command, a second one gets STATE_ERR (SPI 'busy')")
+        # the output grid holds a whole number of chopper periods: every output time sees the same chopper phase
+        if T["decimation"] % r["period_frames"]:
+            errs.append(f"{name}: 1 ms is not a whole number of chopper periods")
+        if T["decimation"] % r["period_frames"] == 0:
+            out_frame = (T["decimation"] - 1) % r["period_frames"]
+            if out_frame == r["tick_frame"]:
+                notes.append(f"{name}: OUT and the tick share a frame (different cycles {8} and {tc})")
+    # CHOP1: every period divides the decimation ratio (sinc^3 zeros null its square wave); a rate change applies at
+    # e16 of frame 1024 k, one input into the CIC window that starts there: weight of that input h[0] / R^3
+    for p_ in T["chop1_periods_frames"]:
+        if T["decimation"] % p_:
+            errs.append(f"CHOP1 period {p_} frames does not divide the decimation ratio")
+    R = T["decimation"]
+    w0 = 1 / R ** T["cic_order"]
+    notes.append(f"CHOP1 rate change: one input of the new window still sees the old phase, sinc^3 weight {w0:.1e}")
+    if w0 > 1e-6:
+        errs.append("CHOP1 rate change leaves a visible part of a CIC window on the old rate")
+    return errs, notes
+
+
 CHECKS = [
     "完全性：全ての（状態、イベント）の欄が定義されている",
     "起こり得ない事象（IMP）の正しさ：IMP はその状態で起こり得ない事象にのみ使われている",
@@ -569,9 +631,10 @@ CHECKS = [
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
     "タイマ：タイマを持つ状態は、満了で必ずその状態を出る",
-    "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）、SYNC、タイマ、出力の時刻の全ての組み合わせと、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
+    "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  AFE_RST の解除は必ず RECOVER（ADC の復帰待ち）に入る",
-    "  START（SYNC を含む）は必ず一括反映、FIFO を空に、SEQ と間引きの計数を 0 にする。SYNC による開始はフレームの計数もそろえる",
+    "  START は必ず一括反映し、FIFO を空にする",
+    "  AFE の動作中に AFE_RST なしで反映するのは、オフセット DAC の ±1 段の変更（nr_ok）のみ",
     "  FILL へは CIC のクリアとともにのみ入る",
     "  FIFO への格納は RUN と、FILL から RUN への遷移（最初の有効な出力）のみ",
     "  RUN へ入るのは最初の有効な出力のときのみ。RUN を出るのは STOP と APPLY（と RST）のみ",
@@ -580,10 +643,11 @@ CHECKS = [
     "  CIC のクリアは出力の時刻の格子の上（ALIGN から FILL）でのみ",
     "  AFE_RST のパルスの前には必ず PRE（T_PRE の待ち）がある。PRE へは設定の反映とともにのみ入る",
     "  RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る",
-    "  SEQ と間引きの計数の 0 は START のみ、フレームの計数の 0 は IDLE での SYNC のみ、FIFO を空にするのは START と FLUSH のみ",
-    "  STOP は必ず IDLE へ（同じ tick の START と SYNC を取り消す）。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
-    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ。CRC の不一致は CRC_ERR。取り出しは 7 バイトちょうどのサンプルの読み出しのみ。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
+    "  FIFO を空にするのは START と FLUSH のみ",
+    "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
+    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは 7 バイトちょうどのサンプルの読み出しのみ。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出し・クリアの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない",
+    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。タイマの既定値と最小値を tick の格子に切り上げてもアナログの最小値以上。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
 
 
@@ -597,10 +661,14 @@ def run_checks(verbose=True):
     report += e
     e, n3 = check_fifo()
     report += e
+    e, tnotes = check_timing()
+    report += e
     total = n1 + n2 + n3
     if verbose:
         print(f"checked: SEQ {len(SEQ_STATES)} states x {len(SEQ_EVENTS)} events, {n1} tick combinations; "
               f"SPI {len(SPI_STATES)} states x {len(SPI_EVENTS)} events, {n2} branches; FIFO {n3} cases")
+        for t_ in tnotes:
+            print("  timing: " + t_)
         if report:
             print(f"{len(report)} violations:")
             for r in report:
@@ -765,7 +833,7 @@ def generate():
     seq_mmd = mermaid(SEQ, "sequencer", hide=("RST",),
                       notes=[("RESET", ["RST (RESET_N = 0 or SOFT_RESET) from any state leads to RESET.",
                                         "Self-loops and errors: see the transition table."])],
-                      self_loops=[("RUN", "APPLY_NR [cfg_ok] / apply, mark<br/>OUT / store")])
+                      self_loops=[("RUN", "APPLY_NR [cfg_ok & nr_ok] / apply, mark<br/>OUT / store")])
     spi_mmd = mermaid(SPI, "SPI transaction", lump=[("FRAME", "CSR", "CSR / commit, pop or error (see the table)")],
                       self_loops=[("RREG", "BYTE [!crc_en] / addr_inc, load_data"),
                                   ("RSMP", "BYTE [!last] / next_byte")])
@@ -806,23 +874,23 @@ def selftest():
     import copy
     seq_mut = [
         ("RUN/STOP の欄の欠落", lambda t: t.pop(("RUN", "STOP"))),
-        ("起こり得る SYNC を IMP にする", lambda t: t.__setitem__(("RUN", "SYNC"), IMP)),
+        ("起こり得る FLUSH を IMP にする", lambda t: t.__setitem__(("RUN", "FLUSH"), IMP)),
         ("FILL/OUT の条件が網羅的でない", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid", ["store", "seq_inc"], "RUN")])),
         ("RECOVER/TMR の条件の重なり", lambda t: t.__setitem__(("RECOVER", "TMR"), [B("t_elec0", [], "ALIGN"), B(ALWAYS, [], "WAIT_E")])),
         ("WARMUP から RUN へ直行", lambda t: t.__setitem__(("WARMUP", "TMR"), [B(ALWAYS, [], "RUN")])),
-        ("RUN の APPLY_NR に印なし", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])])),
-        ("FILL のまま APPLY_NR", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])])),
+        ("RUN の APPLY_NR に印なし", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("FILL のまま APPLY_NR", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("AFE 動作中の APPLY_NR で段数を検査しない", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok", ["apply"]), B("not cfg_ok", ["CFG_ERR"])])),
         ("APPLY で整合を検査しない", lambda t: t.__setitem__(("RUN", "APPLY"), [B(ALWAYS, ["apply"], "PRE")])),
         ("PRE から PULSE を飛ばす", lambda t: t.__setitem__(("PRE", "TMR"), [B(ALWAYS, [], "RECOVER")])),
-        ("IDLE の STOP が START・SYNC を取り消さない", lambda t: t.__setitem__(("IDLE", "STOP"), IGN)),
+        ("STOP で IDLE に戻らない", lambda t: t.__setitem__(("PRE", "STOP"), [B(ALWAYS, [], "PULSE")])),
         ("ALIGN で CIC をクリアしない", lambda t: t.__setitem__(("ALIGN", "OUT"), [B(ALWAYS, ["discard", "seq_inc"], "FILL")])),
         ("PULSE のタイマが状態を出ない", lambda t: t.__setitem__(("PULSE", "TMR"), [B(ALWAYS, [])])),
         ("WAIT_E の STOP を黙って捨てる", lambda t: t.__setitem__(("WAIT_E", "STOP"), [B(ALWAYS, [])])),
         ("RUN の START を黙って捨てる", lambda t: t.__setitem__(("RUN", "START"), [B(ALWAYS, [])])),
         ("RUN へ入れない", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["discard", "seq_inc"])])),
-        ("START で SEQ を 0 にしない", lambda t: t.__setitem__(("IDLE", "START"), [B("cfg_ok", ["apply", "flush", "phase_reset"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])])),
-        ("SYNC でフレームをそろえない", lambda t: t.__setitem__(("IDLE", "SYNC"), [B("cfg_ok", ["apply", "flush", "seq_reset", "phase_reset"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])])),
-        ("RUN から SETTLE へ黙って戻る", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok", ["apply"], "ALIGN"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("START で FIFO を空にしない", lambda t: t.__setitem__(("IDLE", "START"), [B("cfg_ok", ["apply"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("RUN から SETTLE へ黙って戻る", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -832,6 +900,7 @@ def selftest():
         ("CS_N の立ち上がりで IDLE に戻らない", lambda t: t.__setitem__(("OVF", "CSR"), [B(ALWAYS, ["FRAME_ERR"], "OVF")])),
         ("バイトの途中の CS_N を通知しない", lambda t: t.__setitem__(("RREG", "CSR"), [B(ALWAYS, [], "IDLE")])),
         ("読み出し専用への書き込みを確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("crc_ok or not crc_en", ["commit"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
+        ("未処理の命令を上書き", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
     ]
     global fifo_step
     fifo_orig = fifo_step

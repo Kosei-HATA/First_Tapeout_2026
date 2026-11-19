@@ -19,9 +19,9 @@ stateDiagram-v2
             RECOVER --> WAIT_E : TMR(T_REC) [!t_elec0]
             WAIT_E --> ALIGN : TMR(T_ELEC)
             ALIGN --> FILL : OUT / cic_clear
-            FILL --> ALIGN : APPLY_NR [cfg_ok] / apply
+            FILL --> ALIGN : APPLY_NR [cfg_ok & nr_ok] / apply
             FILL --> RUN : OUT [valid] / store
-            RUN --> RUN : APPLY_NR [cfg_ok] / apply, mark<br/>OUT / store
+            RUN --> RUN : APPLY_NR [cfg_ok & nr_ok] / apply, mark<br/>OUT / store
         }
         AFE_ON --> PRE : APPLY [cfg_ok] / apply
         WARMUP --> AFE_ON : TMR(T_WARM)
@@ -30,7 +30,7 @@ stateDiagram-v2
     }
     ACTIVE --> IDLE : STOP
     RESET --> IDLE : REL
-    IDLE --> ACTIVE : START [cfg_ok] / apply, flush, seq_reset, phase_reset<br/>SYNC [cfg_ok] / apply, flush, seq_reset, phase_reset, frame_align
+    IDLE --> ACTIVE : START [cfg_ok] / apply, flush
     note right of RESET
         RST (RESET_N = 0 or SOFT_RESET) from any state leads to RESET.
         Self-loops and errors: see the transition table.

@@ -1,0 +1,150 @@
+// tb_seq - eeg_seq on random event streams; every tick and output time is written to a trace that
+// tb/check_seq_trace.py replays through the specification (gf180/tapeout/rtl/spec/fsm_spec.py, seq_tick) and
+// compares: next state and actions, cell by cell, with the coverage of the transition table.
+// Checked here directly: AFE_RST equals the state's value after every edge and changes only at a tick or reset;
+// an illegal state value returns to IDLE with STATE_ERR.
+// Plusargs: +n=<events> +seed=<seed> +trace=<file>
+`timescale 1ns / 1ps
+`default_nettype none
+
+module tb_seq;
+    logic       clk = 1'b0;
+    logic       rst_n = 1'b0;
+    logic       tick = 1'b0, frame_stb = 1'b0, out_stb = 1'b0, out_valid = 1'b0;
+    logic       cmd_valid = 1'b0;
+    logic [7:0] cmd_code = 8'h00;
+    logic       cmd_ack;
+    logic       cfg_ok = 1'b1, nr_ok = 1'b1;
+    logic [7:0] t_warm = 8'd1, t_elec = 8'd0, t_rec = 8'd1, t_pre = 8'd1, t_rst = 8'd1;
+    logic [3:0] state;
+    logic       afe_rst, apply, flush, cic_arm, store, mark, state_err, cfg_err;
+
+    eeg_seq dut (.*);
+
+    always #15.259 clk = ~clk;
+
+    function automatic logic [7:0] code_of(input integer k);   // START x2, STOP, APPLY x2, APPLY_NR x3, FLUSH
+        case (k)
+            0, 1:    code_of = 8'h11;
+            2:       code_of = 8'h22;
+            3, 4:    code_of = 8'h33;
+            5, 6, 7: code_of = 8'h44;
+            default: code_of = 8'h55;
+        endcase
+    endfunction
+
+    integer fd, n, seed, i, errors, ev, nticks, nouts, nresets, quiet;
+    logic [3:0] st0;
+    logic       tm0, cv0, ev_tick, ev_out, prev_afe, prev_tick, after_reset;
+    logic [7:0] cc0;
+    logic       a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_clr;
+    reg [8*256-1:0] trace;
+
+    function automatic logic afe_of(input logic [3:0] s);
+        afe_of = (s == 4'd0) || (s == 4'd1) || (s == 4'd8) || (s > 4'd8);
+    endfunction
+
+    initial begin
+        if (!$value$plusargs("n=%d", n)) n = 200000;
+        if (!$value$plusargs("seed=%d", seed)) seed = 1;
+        if (!$value$plusargs("trace=%s", trace)) trace = "build/seq_trace.txt";
+        fd = $fopen(trace, "w");
+        errors = 0; nticks = 0; nouts = 0; nresets = 0; quiet = 0;
+        repeat (3) @(negedge clk);
+        rst_n = 1'b1;
+        after_reset = 1'b1;
+        prev_tick = 1'b0;
+        prev_afe = afe_rst;
+        for (i = 0; i < n; i = i + 1) begin
+            @(negedge clk);
+            // stimulus
+            ev = $urandom(seed) % 16;
+            seed = seed + 1;
+            tick      = (ev < 5);
+            out_stb   = (ev == 5) || (ev == 6);
+            frame_stb = ($urandom % 2) == 0;
+            out_valid = ($urandom % 2) == 0;
+            cfg_ok    = ($urandom % 6) != 0;
+            nr_ok     = ($urandom % 3) != 0;
+            // quiet stretches without commands, so that the long timers (x 1024 frames) also expire
+            if (quiet > 0) quiet = quiet - 1;
+            else if (($urandom % 3000) == 0) quiet = 6000;
+            if (!cmd_valid && quiet == 0 && ($urandom % 3) == 0) begin
+                cmd_valid = 1'b1;
+                cmd_code  = code_of($urandom % 9);
+            end
+            if (($urandom % 40) == 0) begin
+                t_warm = $urandom % 3; t_elec = $urandom % 3; t_rec = $urandom % 3;
+                t_pre  = $urandom % 3; t_rst  = $urandom % 3;
+            end
+            if (($urandom % 20000) == 0) begin               // asynchronous reset in the middle of anything
+                rst_n = 1'b0;
+                #3;
+                if (state !== 4'd0 || afe_rst !== 1'b1) begin
+                    $display("ERROR: reset does not give IDLE with AFE_RST = 1");
+                    errors = errors + 1;
+                end
+                @(negedge clk);
+                rst_n = 1'b1;
+                $fdisplay(fd, "R");
+                nresets = nresets + 1;
+                cmd_valid = 1'b0;
+                tick = 1'b0; out_stb = 1'b0;
+                after_reset = 1'b1;
+                prev_afe = afe_rst;
+                continue;
+            end
+            #1;
+            st0 = state;  tm0 = (dut.timer == 18'd0);  cv0 = cmd_valid;  cc0 = cmd_code;
+            ev_tick = tick;  ev_out = out_stb;
+            a_apply = apply; a_flush = flush; a_store = store; a_mark = mark;
+            a_serr = state_err; a_cerr = cfg_err; a_clr = cic_arm && out_stb;
+            @(posedge clk);
+            #1;
+            // AFE_RST: the state's value, changing only at a tick
+            if (afe_rst !== afe_of(state)) begin
+                $display("ERROR: AFE_RST %b in state %0d", afe_rst, state);
+                errors = errors + 1;
+            end
+            if (afe_rst !== prev_afe && !ev_tick && !after_reset) begin
+                $display("ERROR: AFE_RST changed without a tick (state %0d -> %0d)", st0, state);
+                errors = errors + 1;
+            end
+            prev_afe = afe_rst;
+            after_reset = 1'b0;
+            if (ev_tick || ev_out) begin
+                $fdisplay(fd, "%s %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d%0d%0d%0d%0d%0d%0d",
+                          ev_tick ? "T" : "O", st0, cv0, cc0, tm0, cfg_ok, nr_ok, (t_elec == 8'd0), out_valid, state,
+                          a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_clr);
+                if (ev_tick) nticks = nticks + 1; else nouts = nouts + 1;
+            end
+            if (ev_tick && cv0) cmd_valid = 1'b0;             // taken at this tick (cmd_ack)
+            if (ev_tick && (cmd_ack !== 1'b0)) ;              // cmd_ack is combinational, already sampled
+        end
+        // an illegal state value: back to IDLE with STATE_ERR
+        @(negedge clk);
+        tick = 1'b0; out_stb = 1'b0;
+        force dut.state = 4'd12;
+        #1;
+        if (state_err !== 1'b1) begin
+            $display("ERROR: illegal state without STATE_ERR");
+            errors = errors + 1;
+        end
+        @(negedge clk);
+        release dut.state;
+        @(posedge clk);
+        #1;
+        if (state !== 4'd0 || afe_rst !== 1'b1) begin
+            $display("ERROR: illegal state not returned to IDLE (state %0d, AFE_RST %b)", state, afe_rst);
+            errors = errors + 1;
+        end
+        $fclose(fd);
+        $display("tb_seq: %0d ticks, %0d output times, %0d resets traced; %0d direct errors", nticks, nouts, nresets,
+                 errors);
+        if (errors == 0) $display("PASS: tb_seq direct checks (trace in %0s)", trace);
+        else             $display("FAIL: tb_seq");
+        $finish;
+    end
+endmodule
+
+`default_nettype wire

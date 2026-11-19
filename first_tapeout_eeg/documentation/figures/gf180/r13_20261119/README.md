@@ -10,5 +10,5 @@
 - 発注の候補は、r13 の評価が通るまで r12 のまま。
 - ここの図
   - 48（クロックとデータの線と敏感な網、11/19）：`gf180/tapeout/viz/clocklines_fig.py extract` のあと `plot`。データは `gf180/tapeout/viz/data_r13/clock_lines.json`。(e) の波形は r12 の typical の起動のラン（チップの配線は r13 と同じ形）。
-  - 46（電源の除去、途中の版、11/19 夜）：`EEG_PEX_REV=r13 gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_fig.py`（`psrr.py` を同じ環境変数で回したあと）。ランは `gf180/tapeout/pex/runs/psrr_r13/`（`run_psrr_r13.sh`）。最初の 4 本（typical の釣り合いと ELP に 51 kΩ ∥ 47 nF、ff、ss）のみ。モンテカルロと sf、fs は実行中、DVDD は未実行。
+  - 46（電源の除去、途中の版、11/19 夜）：`EEG_PEX_REV=r13 gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_fig.py`（`psrr.py` を同じ環境変数で回したあと）。ランは `gf180/tapeout/pex/runs/psrr_r13/`（`run_psrr_r13.sh`）。最初の 4 本（typical の釣り合いと ELP に 51 kΩ ∥ 47 nF、ff、ss）とモンテカルロ 1〜4（11/19 21 時 51 分に更新）。モンテカルロ 5〜8 と sf、fs は実行中、DVDD は未実行。
   - ほかの番号は、r13 の評価（PSRR から）がそろってから、この版の図としてひとそろい描く。

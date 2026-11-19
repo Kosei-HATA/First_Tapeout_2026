@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "..", "rtl", "model"))
 import cic_golden as G  # noqa: E402
 
 R = 1024
-B = os.path.join(HERE, "..", "build")
+B = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "build")     # the build folder (mutation runs)
 
 
 def main():

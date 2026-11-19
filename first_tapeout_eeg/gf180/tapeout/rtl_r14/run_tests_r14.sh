@@ -7,7 +7,11 @@
 #   5. tb_ovl    the overload detector == the rule (overload runs + full-scale stream)
 #   6. tb_top_r14 the whole block through its pins: generated register tests (regmap.py), CRC and frame errors,
 #                START timing, APPLY pulse, APPLY_NR, errors, pending command at 64 kHz, FLUSH, overrun,
-#                SOFT_RESET, analog pins only at ticks; samples == golden CIC (check_top_r14.py)
+#                a read across a FLUSH, DRDY_N pulses, SOFT_RESET (also with a command pending), analog pins only
+#                at ticks; samples == golden CIC (check_top_r14.py)
+#   7. tb_spi_r14 random SPI frames into the whole block, replayed through fsm_spec's SPI table (every frame, every
+#                branch covered; check_spi_trace.py)
+#   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 # usage: ./run_tests_r14.sh
 set -u
 cd "$(dirname "$0")"
@@ -44,11 +48,14 @@ EOF
 }
 top_t() { $PY tb/gen_reg_tests.py && $IV -o build/tb_top_r14.vvp $RTL tb/tb_top_r14.sv 2>&1 | grep -v "sorry: constant" ;
           vvp -n build/tb_top_r14.vvp && $PY tb/check_top_r14.py; }
+spi_t() { $IV -o build/tb_spi_r14.vvp $RTL tb/tb_spi_r14.sv 2>&1 | grep -v "sorry: constant" ;
+          vvp -n build/tb_spi_r14.vvp +n=1500 +seed=5 +log=build/spi_trace.txt && $PY tb/check_spi_trace.py build/spi_trace.txt; }
 run spec spec
 run tb_seq seq_t
 run tb_tick tick_t
 run tb_cic_arm cic_t
 [ -f build/ovl.codes ] && run tb_ovl ovl_t
 run tb_top_r14 top_t
+run tb_spi_r14 spi_t
 printf '%s\n' "${RES[@]}"
 ! printf '%s\n' "${RES[@]}" | grep -q FAIL

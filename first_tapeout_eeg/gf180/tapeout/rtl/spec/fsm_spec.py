@@ -202,8 +202,9 @@ SPI_CONDS = {
     "last": "サンプルの 7 バイト目",
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
     "crc_ok": "受信した CRC が一致",
-    "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でない）",
-    "busy": "命令レジスタへの書き込みで、前の命令がまだ tick で処理されていない",
+    "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み）",
+    "busy": "命令レジスタへの定義済みの命令（SOFT_RESET を除く）の書き込みで、前の命令がまだ tick で処理されていない",
+    "head": "写した語が FIFO に格納されたサンプルで、写してから取り出しもフラッシュもなく、まだ先頭",
 }
 SPI_ACTIONS = {
     "load_status": "STATUS を送信のシフトレジスタへ（その時点の値を写す）",
@@ -216,8 +217,8 @@ SPI_ACTIONS = {
     "latch_addr": "アドレスを保持",
     "latch_data": "データを保持",
     "latch_crc": "CRC を保持",
-    "commit": "書き込みを確定（値の範囲が不正なら RANGE_ERR として書かない。命令レジスタなら命令を次の tick に渡す）",
-    "pop": "FIFO の先頭を取り出す（空なら何もしない）",
+    "commit": "書き込みを確定（値の範囲が不正なら RANGE_ERR として書かない。命令レジスタなら命令を次の tick に渡す。ただし SOFT_RESET は直ちにリセット、未定義のコードは CMD_ERR。TEST_KEY は 0x3C で解錠、0x00 で施錠、その他の値は施錠して CMD_ERR）",
+    "pop": "FIFO の先頭（送ったサンプル）を取り出す",
     "FRAME_ERR": "エラー FRAME_ERR を立てる",
     "CRC_ERR": "エラー CRC_ERR を立てる（書かない）",
     "ADDR_ERR": "エラー ADDR_ERR を立てる（書かない。読み出しは 0x00）",
@@ -250,7 +251,8 @@ def _spi_table():
         t[(s, "BIT")] = [B(ALWAYS, [], "OVF")]
         t[(s, "BYTE")] = IMP                                   # the first further bit already left the state
     t[("RDONE", "CSR")] = [B(ALWAYS, [], "IDLE")]
-    t[("SDONE", "CSR")] = [B(ALWAYS, ["pop"], "IDLE")]
+    # only the entry that was sent: not the empty word, and not after a flush (a later sample may be the head by then)
+    t[("SDONE", "CSR")] = [B("head", ["pop"], "IDLE"), B("not head", [], "IDLE")]
     t[("WDONE", "CSR")] = [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"),
                            B("(crc_ok or not crc_en) and wr_ok and busy", ["STATE_ERR"], "IDLE"),
                            B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"),
@@ -502,8 +504,10 @@ def check_spi_props():
             if "commit" in a and not (s == "WDONE" and e == "CSR" and env["wr_ok"] and not env["busy"]
                                       and (env["crc_ok"] or not env["crc_en"])):
                 errs.append(f"SPI {s}/{e} {env}: commit outside a complete, checked write to a writable address")
-            if "pop" in a and not (s == "SDONE" and e == "CSR"):
-                errs.append(f"SPI {s}/{e} {env}: pop outside a complete sample read")
+            if "pop" in a and not (s == "SDONE" and e == "CSR" and env["head"]):
+                errs.append(f"SPI {s}/{e} {env}: pop outside a complete read of the entry still at the head")
+            if s == "SDONE" and e == "CSR" and env["head"] and "pop" not in a:
+                errs.append(f"SPI {s}/{e} {env}: a sample read completely is not removed (it would be read twice)")
             if e == "CSR" and nxt != "IDLE":
                 errs.append(f"SPI {s}/{e} {env}: CS_N rising does not end the transaction")
             if e == "CSR" and env["mid"] and "FRAME_ERR" not in a:
@@ -524,34 +528,64 @@ def check_spi_props():
 DEPTH = 4                     # the smallest depth allowed (DAT-05); the rules do not depend on it
 
 
-def fifo_step(count, push, pop, flush):
-    """Order inside a cycle: flush, then pop, then push (a new sample is never lost to a flush or a pop)."""
-    ovr = False
+def fifo_step(count, push, pop, flush, held=0, snap=0):
+    """Order inside a cycle: flush, then pop, then push (a new sample is never lost to a flush or a pop).
+    pop is the SPI's request (SDONE, CS_N rising); held: the SPI's copy is a stored entry that is still the head (the
+    SPI condition `head`). snap: the SPI copies the head this cycle (the copy is the head before this cycle's flush,
+    pop and push). Returns (count, overrun, popped, held)."""
+    ovr, popped, c0 = False, False, count
     if flush:
         count = 0
-    elif pop and count > 0:
+    elif pop and held and count > 0:
         count -= 1
+        popped = True
     if push:
         if count < DEPTH:
             count += 1
         else:
             ovr = True
-    return count, ovr
+    if flush or popped:
+        held = 0                                       # the copy is no longer the head
+    elif snap:
+        held = int(c0 > 0)                             # copied a stored entry (not the empty word)
+    return count, ovr, popped, held
 
 
 def check_fifo():
+    """Against an independent model with identities: the FIFO holds entries 0..count-1 (0 at the head), the SPI's copy
+    is the head entry (held) or not in the FIFO, a pushed entry is 99. Expected: flush, then a pop of the head only if
+    it is the copy, then the push; the new copy (snap) is the head before the cycle or None (the empty word); held
+    afterwards means the copy is the head."""
     errs, n = [], 0
     for count in range(DEPTH + 1):
-        for push, pop, flush in itertools.product([0, 1], repeat=3):
-            n += 1
-            c2, ovr = fifo_step(count, push, pop, flush)
-            if not 0 <= c2 <= DEPTH:
-                errs.append(f"FIFO {count} {push}{pop}{flush}: occupancy {c2} out of range")
-            expect_ovr = push and count == DEPTH and not pop and not flush
-            if ovr != bool(expect_ovr):
-                errs.append(f"FIFO {count} push={push} pop={pop} flush={flush}: OVERRUN {ovr}, expected {expect_ovr}")
-            if push and not ovr and c2 == 0:
-                errs.append(f"FIFO {count}: a pushed sample was lost")
+        for held in ((0, 1) if count else (0,)):       # invariant: held -> not empty
+            for push, pop, flush, snap in itertools.product([0, 1], repeat=4):
+                n += 1
+                tag = f"FIFO {count} held={held} push={push} pop={pop} flush={flush} snap={snap}"
+                c2, ovr, popped, h2 = fifo_step(count, push, pop, flush, held, snap)
+                fifo = list(range(count))
+                copy = 0 if held else None
+                e_pop = bool(pop and not flush and copy is not None and fifo and fifo[0] == copy)
+                q = [] if flush else (fifo[1:] if e_pop else fifo[:])
+                e_ovr = bool(push and len(q) == DEPTH)
+                if push and not e_ovr:
+                    q.append(99)
+                copy2 = (fifo[0] if fifo else None) if snap else copy
+                e_held = int(copy2 is not None and bool(q) and q[0] == copy2)
+                if not 0 <= c2 <= DEPTH:
+                    errs.append(f"{tag}: occupancy {c2} out of range")
+                if c2 != len(q):
+                    errs.append(f"{tag}: occupancy {c2}, expected {len(q)}")
+                if ovr != e_ovr:
+                    errs.append(f"{tag}: OVERRUN {ovr}, expected {e_ovr}")
+                if push and not ovr and c2 == 0:
+                    errs.append(f"{tag}: a pushed sample was lost")
+                if popped and not e_pop:
+                    errs.append(f"{tag}: removed an entry the SPI did not send")
+                if e_pop and not popped:
+                    errs.append(f"{tag}: the entry sent is not removed")
+                if h2 != e_held:
+                    errs.append(f"{tag}: the copy is marked {'' if h2 else 'not '}as the head; it is {'' if e_held else 'not '}the head")
     return errs, n
 
 
@@ -647,8 +681,8 @@ CHECKS = [
     "  RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る",
     "  FIFO を空にするのは START と FLUSH のみ",
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
-    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは 7 バイトちょうどのサンプルの読み出しのみ。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
-    f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出し・クリアの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない",
+    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、7 バイトちょうど読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
+    f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。タイマの既定値と最小値を tick の格子に切り上げてもアナログの最小値以上。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
 
@@ -903,17 +937,19 @@ def selftest():
         ("バイトの途中の CS_N を通知しない", lambda t: t.__setitem__(("RREG", "CSR"), [B(ALWAYS, [], "IDLE")])),
         ("読み出し専用への書き込みを確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("crc_ok or not crc_en", ["commit"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
         ("未処理の命令を上書き", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
+        ("先頭でなくなった写しでも取り出す", lambda t: t.__setitem__(("SDONE", "CSR"), [B(ALWAYS, ["pop"], "IDLE")])),
+        ("読み終えたサンプルを取り出さない", lambda t: t.__setitem__(("SDONE", "CSR"), [B(ALWAYS, [], "IDLE")])),
     ]
     global fifo_step
     fifo_orig = fifo_step
 
-    def fifo_bad_flush_drops_push(count, push, pop, flush):
+    def fifo_bad_flush_drops_push(count, push, pop, flush, held=0, snap=0):
         if flush:
-            return 0, False
-        return fifo_orig(count, push, pop, flush)
+            return 0, False, False, 0
+        return fifo_orig(count, push, pop, flush, held, snap)
 
-    def fifo_bad_pop_after_push(count, push, pop, flush):
-        ovr = False
+    def fifo_bad_pop_after_push(count, push, pop, flush, held=0, snap=0):
+        ovr, popped, c0 = False, False, count
         if flush:
             count = 0
         if push:
@@ -921,12 +957,23 @@ def selftest():
                 count += 1
             else:
                 ovr = True
-        if pop and count > 0 and not flush:
+        if pop and held and count > 0 and not flush:
             count -= 1
-        return count, ovr
+            popped = True
+        return count, ovr, popped, 0 if (flush or popped) else (int(c0 > 0) if snap else held)
+
+    def fifo_bad_flush_keeps_held(count, push, pop, flush, held=0, snap=0):
+        c2, ovr, popped, h2 = fifo_orig(count, push, pop, flush, held, snap)
+        return c2, ovr, popped, (held if flush and c2 else h2)
+
+    def fifo_bad_snap_empty(count, push, pop, flush, held=0, snap=0):
+        c2, ovr, popped, h2 = fifo_orig(count, push, pop, flush, held, snap)
+        return c2, ovr, popped, (1 if snap and not flush and not popped and c2 else h2)
 
     fifo_mut = [("FLUSH と同じサイクルの格納を捨てる", fifo_bad_flush_drops_push),
-                ("取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）", fifo_bad_pop_after_push)]
+                ("取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）", fifo_bad_pop_after_push),
+                ("フラッシュで写しの印を消さない（送っていない語を取り出しうる）", fifo_bad_flush_keeps_held),
+                ("空の語の写しにも印を付ける（あとの格納を取り出しうる）", fifo_bad_snap_empty)]
     results, ok = [], True
     for F, muts in ((SEQ, seq_mut), (SPI, spi_mut)):
         orig = F["table"]

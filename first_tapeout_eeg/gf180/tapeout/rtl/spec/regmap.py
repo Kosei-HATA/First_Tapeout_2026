@@ -61,8 +61,8 @@ REGS = [
                                     "シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 RUN、7 PRE、8 PULSE）")],
      "シーケンサの状態"),
     (0x05, "FIFO_LEVEL", "RO", False, [F("LEVEL", 3, 0, 0, rng(0, 8), "ro", "FIFO のサンプルの数")], "FIFO の占有数"),
-    (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または鍵の誤り"),
-                                 F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、または未処理の命令への上書き"),
+    (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値"),
+                                 F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、または未処理の命令への上書き（SOFT_RESET は常に受け付ける）"),
                                  F("CFG_ERR", 5, 5, 0, [0, 1], "w1c", "整合しない設定での START／APPLY、または nr_ok でない APPLY_NR"),
                                  F("RANGE_ERR", 4, 4, 0, [0, 1], "w1c", "範囲外の値の書き込み（書かない）"),
                                  F("ADDR_ERR", 3, 3, 0, [0, 1], "w1c", "未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み"),
@@ -77,7 +77,7 @@ REGS = [
     (0x0B, "ODR_L", "RO", False, [F("ODR_L", 7, 0, 0xE8, [0xE8], "ro", "同下位")], "出力データレート"),
     (0x0C, "FORMAT", "RO", False, [F("QBITS", 3, 0, 5, [5], "ro", "量子化器のビット数")], "形式"),
     (0x10, "COMMAND", "WO", False, [F("CMD", 7, 0, 0, None, "cmd", "命令コード（表 2-3）。次の tick で処理")], "命令"),
-    (0x11, "TEST_KEY", "WO", False, [F("KEY", 7, 0, 0, None, "cmd", "0x3C で試験のレジスタを解錠、それ以外で施錠")], "試験の鍵"),
+    (0x11, "TEST_KEY", "WO", False, [F("KEY", 7, 0, 0, None, "cmd", "0x3C で試験のレジスタを解錠、0x00 で施錠。その他の値は施錠し、CMD_ERR")], "試験の鍵"),
     # analog configuration (shadow; the active copies are read at addr + 0x10)
     (0x20, "OFF_M_H", "RW", False, [F("M_H", 1, 0, 0, rng(0, 3), "apply", "オフセット DAC の大きさ M[9:8]", "OFM[9:8]")], "オフセット DAC（上位）"),
     (0x21, "OFF_M_L", "RW", False, [F("M_L", 7, 0, 0, rng(0, 255), "apply", "M[7:0]", "OFM[7:0]")], "オフセット DAC（下位）"),
@@ -103,7 +103,7 @@ REGS = [
     (0x52, "T_REC", "RW", False, [F("T_REC", 7, 0, 32, rng(29, 255), "imm", "RECOVER（7.8125 µs 単位。既定 32 ＝ 250 µs）")], "タイマ"),
     (0x53, "T_PRE", "RW", False, [F("T_PRE", 7, 0, 3, rng(3, 255), "imm", "PRE（7.8125 µs 単位。既定 3 ＝ 23.4 µs）")], "タイマ"),
     (0x54, "T_RST", "RW", False, [F("T_RST", 7, 0, 13, rng(13, 255), "imm", "PULSE（7.8125 µs 単位。既定 13 ＝ 101.6 µs）")], "タイマ"),
-    (0x55, "IF_CFG", "RW", False, [F("DRDY_MODE", 1, 1, 0, [0, 1], "imm", "DRDY_N（0 ＝ レベル、1 ＝ サンプルごとのパルス）"),
+    (0x55, "IF_CFG", "RW", False, [F("DRDY_MODE", 1, 1, 0, [0, 1], "imm", "DRDY_N（0 ＝ FIFO が空でない間 Low のレベル、1 ＝ 格納ごとに 128 MCLK（4 フレーム、3.906 µs）の Low のパルス）"),
                                    F("CRC_EN", 0, 0, 0, [0, 1], "imm", "書き込みと読み出しの CRC")], "インターフェース"),
     # test (locked by TEST_KEY)
     (0x60, "TEST_MUX", "RW", True, [F("ATP_EN", 4, 4, 0, [0, 1], "apply", "試験用マルチプレクサを ATP へ", "TEST_CFG[4]"),
@@ -315,10 +315,10 @@ def md_tables():
         ok = [x[0] for x in FS.SEQ_STATES if x[0] != "RESET" and FS.SEQ["table"][(x[0], c)] not in (FS.IGN, FS.IMP)
               and not all(b["actions"] == ["STATE_ERR"] for b in FS.SEQ["table"][(x[0], c)])]
         acc_states[c] = "、".join(ok)
-    acc_states["SOFT_RESET"] = "全て（CS_N の立ち上がりで直ちにリセット）"
+    acc_states["SOFT_RESET"] = "全て（未処理の命令があっても受け付け、CS_N の立ち上がりで直ちにリセット）"
     for c, v in COMMANDS.items():
         cmd.append(f"| {c} | 0x{v:02X} | {acc_states[c]} |")
-    cmd.append(f"| （試験の鍵） | 0x{TEST_KEY:02X}（TEST_KEY へ） | — |")
+    cmd.append(f"| （試験の鍵） | 0x{TEST_KEY:02X}（TEST_KEY へ。0x00 で施錠、その他の値は施錠して CMD_ERR） | — |")
     ss = ["| ビット | 名前 | 内容 |", "|---|---|---|"] + [f"| {b} | {n} | {d} |" for n, b, d in SAMPLE_STATUS]
     return "\n".join(reg), "\n".join(fld), "\n".join(cmd), "\n".join(ss)
 

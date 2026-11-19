@@ -820,9 +820,9 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
   - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。大きさ（3932 × 2531 µm）とパッドマスクも一致し、ID を入れた。Magic DRC は最後まで走った。
   - LibreLane の `warning.log` と `error.log` は空。Magic の出力の警告は、GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、r12 と同じ。
 - **GDS**：穴埋めした `chip_top_fill.gds`（222,305,900 バイト、sha256 67891f40…）の gz を `gf180/tapeout/chip/gds/chip_top_fill_r13_20261119.gds.gz` に置いた（41,572,001 バイト、sha256 172873dd…）。展開すると 67891f40… に戻る。
-- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`）**：15 時 17 分から回している（`runs/chip_top/run_netgen_r13.sh`）。
+- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`）：一致**（15 時 17 分〜21 時 23 分、`runs/chip_top/run_netgen_r13.sh`）。IO セルの中の 863 セルを平坦化して比較し、「Circuits match uniquely」（対称性 3,153 個を属性の値で解決）。統合の損失（no such node）は 0。端子の一覧も同等。デバイスのセルを黒箱として扱う旨の警告（placeholder）は、r12 と同じ定型のもの。
 - `runs/chip_top` と `runs/precheck` には、外付けの SSD（mukiebi、今はつながっていない）を指すリンクが残っていて、書き出しが失敗した。リンクは消さずに、それぞれの `archived_links_mukiebi/` に移した。r12 の `chip_top.gds` と `chip_top_fill.gds` は `runs/chip_top/r12_20261113/` に写した。
-- 13 回目は、KLayout のチップ全体の LVS、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）が通った。**発注の候補は、Magic／Netgen の LVS と、r13 での性能の回し直し（PSRR から）が通るまで r12 のまま。**
+- 13 回目は、KLayout のチップ全体の LVS、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）、Magic／Netgen のチップ全体の LVS が通った。**発注の候補は、r13 での性能の回し直し（PSRR から）が通るまで r12 のまま。**
 
 **クロックの線と敏感な網（11/19、目視の確認、図 48）**
 

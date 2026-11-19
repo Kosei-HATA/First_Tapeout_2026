@@ -4,16 +4,19 @@
 // and every output time are logged (build/top_r14_cic.log) and every sample read over SPI (build/top_r14_samples.log)
 // so that tb/check_top_r14.py compares the samples bit-exactly with the golden CIC (rtl/model/cic_golden.py).
 // Phases (each reports its checks; errors counted):
-//   A  registers: the generated tests (build/reg_tests.svh, from regmap.py), CRC, frame errors, unknown command
+//   A  registers: the generated tests (build/reg_tests.svh, from regmap.py), CRC, frame errors, unknown command,
+//      a wrong key, a burst read (address incrementing, CRC off)
 //   B  START: WARMUP exactly T_WARM, RECOVER T_REC, ALIGN to the next output time, FILL three outputs, RUN;
-//      samples (VALID, SEQ, CRC)
+//      samples (VALID, SEQ, CRC); a sample read stopped after 4 bytes neither pops nor flags an error
 //   C  APPLY in RUN: the settings at the tick, AFE_RST high after T_PRE for exactly T_RST, the re-settling, samples
 //      again with the SEQ gap of the outputs not stored
 //   D  APPLY_NR: one step accepted, CHANGED on the next three samples; two steps rejected (CFG_ERR)
 //   E  START with an inconsistent configuration (CFG_ERR), STOP, START in RUN (STATE_ERR)
-//   F  one pending command: at 64 kHz a second command before the tick gets STATE_ERR
-//   G  FLUSH, overrun (OVERRUN in DFLAG and in the next sample's status)
+//   F  one pending command: at 64 kHz a second command before the tick gets STATE_ERR, an unknown code CMD_ERR only
+//   G  FLUSH, overrun (OVERRUN in DFLAG and in the next sample's status); a sample read across a FLUSH: the sample
+//      stored after the flush is not popped by the read of the old head; DRDY_N pulse mode (128 MCLK per store)
 //   H  SOFT_RESET: back to the reset values (RESET_FLAG)
+//   I  SOFT_RESET while a command is pending (64 kHz): taken at once, no STATE_ERR
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); the SPI timing (spi_bfm_r14.svh).
 `timescale 1ns / 1ps
@@ -152,6 +155,17 @@ module tb_top_r14;
                            ($realtime - t_chop_rise) / TMCLK));
     end
 
+    // ------------------------------------------------------------------ G2 and I: event times
+    real t_snap = 0.0, t_flush = 0.0, t_store = 0.0, t_csr = 0.0;
+    logic soft_pend = 1'b0;
+    always @(posedge MCLK) begin
+        if (dut.smp_snap)  t_snap  = $realtime;
+        if (dut.seq_flush) t_flush = $realtime;
+        if (dut.push_ok)   t_store = $realtime;
+        if (dut.soft_req)  soft_pend = dut.cmd_valid;
+    end
+    always @(posedge CS_N) t_csr = $realtime;
+
     // ------------------------------------------------------------------ samples
     integer nsamples = 0;
     logic [15:0] last_seq;
@@ -213,6 +227,12 @@ module tb_top_r14;
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM unchanged after a partial byte");
         spi_tx[0] = 8'h24; spi_xfer(1, 0);                           // header only
         expect_err_now(8'h02, "FRAME_ERR (header only)");
+        spi_tx[0] = 8'hA4; spi_xfer(1, 4);                           // a read stopped inside its data byte
+        expect_err_now(8'h02, "FRAME_ERR (read stopped inside a byte)");
+        spi_tx[0] = 8'hA4; spi_xfer(0, 5);                           // five bits of a header
+        expect_err_now(8'h02, "FRAME_ERR (partial header)");
+        spi_tx[0] = 8'hC0; spi_xfer(3, 2);                           // a sample read stopped inside a byte
+        expect_err_now(8'h02, "FRAME_ERR (sample read stopped inside a byte)");
         spi_tx[0] = 8'h24; spi_tx[1] = 8'h03; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // too long
         expect_err_now(8'h02, "FRAME_ERR (overlong write)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM unchanged after an overlong write");
@@ -220,6 +240,28 @@ module tb_top_r14;
         expect_noerr("empty frame");
         r14_cmd(8'h77);
         expect_err_now(8'h80, "CMD_ERR (unknown code)");
+        r14_write(7'h11, 8'h3D);                        // TEST_KEY one bit off: locks and flags CMD_ERR
+        expect_err_now(8'h80, "CMD_ERR for a wrong key");
+        r14_write(7'h60, 8'h05);
+        expect_err_now(8'h08, "TEST_MUX locked after a wrong key");
+        rt_read_expect(7'h60, 8'h00, "TEST_MUX unchanged after a wrong key");
+        r14_write(7'h11, 8'h3C);
+        r14_write(7'h11, 8'h00);                        // unlock, then lock with 0x00: no error
+        expect_noerr("TEST_KEY 0x3C, then 0x00");
+        // burst read 0x20..0x27 in one frame (CRC off): the same bytes as eight single reads
+        begin
+            logic [7:0] single [0:7];
+            r14_write(7'h21, 8'h5A);  r14_write(7'h24, 8'h0C);       // shadows away from their reset values
+            for (int i = 0; i < 8; i++) r14_read(7'h20 + i, single[i]);
+            spi_tx[0] = 8'hA0;
+            for (int i = 1; i <= 8; i++) spi_tx[i] = 8'h00;
+            spi_xfer(9, 0);
+            for (int i = 0; i < 8; i++)
+                if (spi_rx[1 + i] !== single[i])
+                    fail($sformatf("burst read of 0x%02h: 0x%02h, single read 0x%02h", 7'h20 + i, spi_rx[1 + i], single[i]));
+            expect_noerr("burst read");
+            r14_write(7'h21, 8'h00);  r14_write(7'h24, 8'h08);
+        end
         $display("A  registers, CRC and frame errors done (errors %0d)", errors);
 
         // ---------------- B: START
@@ -235,6 +277,18 @@ module tb_top_r14;
         r14_read(7'h03, v);
         if (v[3] !== 1'b1) fail("STATUS.READY not set in RUN");
         read_samples(6, 1'b0, "B samples");
+        begin
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+            while (DRDY_N !== 1'b0) @(posedge MCLK);
+            spi_tx[0] = 8'hC0; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_tx[3] = 8'h00;
+            spi_xfer(4, 0);                             // header, STATUS, SEQ: stopped on a byte boundary
+            expect_noerr("a sample read stopped after 4 bytes");
+            r14_sample(st, sq, d, ok);
+            if (sq !== {spi_rx[2], spi_rx[3]}) fail($sformatf("partial sample read popped: SEQ %0d, then %0d",
+                                                             {spi_rx[2], spi_rx[3]}, sq));
+            if (!ok || st[7] !== 1'b1) fail("sample after a partial read");
+            last_seq = sq;
+        end
         $display("B  START to RUN, T_WARM %0.3f us, 6 samples (errors %0d)", t0, errors);
 
         // ---------------- C: APPLY in RUN
@@ -304,6 +358,15 @@ module tb_top_r14;
         r14_cmd(8'h55);                                 // before the next tick (15.6 us)
         spi_tidle = 600.0;
         expect_err_now(8'h40, "STATE_ERR for a second command before the tick (64 kHz)");
+        @(posedge dut.tick);
+        #(8000.0);
+        spi_tidle = 100.0;
+        r14_cmd(8'h55);                                 // FLUSH
+        r14_cmd(8'h77);                                 // an unknown code while FLUSH is pending
+        spi_tidle = 600.0;
+        r14_read(7'h06, v);
+        if (v !== 8'h80) fail($sformatf("unknown code while a command is pending: ERR 0x%02h, expected 0x80", v));
+        r14_write(7'h06, 8'hFF);
         r14_write(7'h26, 8'h01);
         r14_cmd(8'h33);
         repeat (2000) @(posedge MCLK);
@@ -332,8 +395,54 @@ module tb_top_r14;
             if (st[6] !== 1'b1) fail("sample status without OVERRUN while DFLAG.OVERRUN is set");
         end
         r14_write(7'h07, 8'hFF);
+        r14_read(7'h07, v);
+        if (v !== 8'h00) fail($sformatf("DFLAG 0x%02h after writing 0xFF (W1C)", v));
         r14_write(7'h06, 8'hFF);
-        $display("G  FLUSH and overrun (errors %0d)", errors);
+        // G2: a sample read whose header copies the old head, a FLUSH taken during the read, a sample stored after
+        // the flush and before CS_N rises: the read must not pop the new sample
+        begin
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok; real t_out;
+            @(posedge dut.cic_stb);
+            t_out = $realtime + 1.0e6;                  // the next output time (1024 frames = 1 ms)
+            @(posedge dut.tick);
+            while (t_out - $realtime > 31000.0) @(posedge dut.tick);    // a tick 23.2..31 us before it
+            #(500.0);
+            spi_tidle = 100.0;
+            r14_cmd(8'h55);                             // FLUSH: committed ~8.9 us after that tick
+            r14_sample(st, sq, d, ok);                  // header ~12.8 us, CS_N rising ~41 us after that tick
+            spi_tidle = 600.0;
+            if (!(t_snap < t_flush && t_flush < t_store && t_store < t_csr && t_csr - t_snap < 40000.0))
+                fail($sformatf("G2 not exercised: copy %0.1f, flush %0.1f, store %0.1f, CS_N %0.1f us",
+                               t_snap / 1000.0, t_flush / 1000.0, t_store / 1000.0, t_csr / 1000.0));
+            if (st[7] !== 1'b1 || !ok) fail("G2: the copy of the old head is not a valid sample");
+            r14_read(7'h05, v);
+            if (v !== 8'd1) fail($sformatf("G2: FIFO level %0d after the read, expected 1 (the sample stored after the flush)", v));
+            have_last = 1'b0;
+            read_samples(1, 1'b0, "G2 next");
+            if (last_seq <= sq) fail($sformatf("G2: the next sample has SEQ %0d after %0d", last_seq, sq));
+        end
+        // G3: DRDY_N pulse mode: low for exactly 128 MCLK from each stored sample, whatever the FIFO holds
+        begin
+            real tf, tr;
+            r14_write(7'h55, 8'h02);                    // DRDY_MODE 1
+            for (int k = 0; k < 3; k++) begin
+                @(negedge DRDY_N);
+                tf = $realtime;
+                if (t_store < tf - 1.5 * TMCLK || t_store > tf) fail("G3: DRDY_N pulse not started by a store");
+                @(posedge DRDY_N);
+                tr = $realtime;
+                if ((tr - tf) / TMCLK < 127.5 || (tr - tf) / TMCLK > 128.5)
+                    fail($sformatf("G3: DRDY_N pulse %0.2f MCLK, expected 128", (tr - tf) / TMCLK));
+                r14_read(7'h05, v);
+                if (v < 8'd1) fail("G3: no sample in the FIFO after the pulse");
+                if (k == 2 && DRDY_N !== 1'b1) fail("G3: DRDY_N low between pulses with a non-empty FIFO");
+            end
+            r14_write(7'h55, 8'h00);                    // level mode again
+            r14_cmd(8'h55);                             // empty the FIFO
+            repeat (400) @(posedge MCLK);
+            have_last = 1'b0;
+        end
+        $display("G  FLUSH, overrun, a read across a FLUSH, DRDY_N pulses (errors %0d)", errors);
 
         // ---------------- H: SOFT_RESET
         r14_write(7'h24, 8'h03);
@@ -343,6 +452,24 @@ module tb_top_r14;
         rt_read_expect(7'h06, 8'h01, "ERR after SOFT_RESET (RESET_FLAG)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM after SOFT_RESET");
         $display("H  SOFT_RESET (errors %0d)", errors);
+
+        // ---------------- I: SOFT_RESET while a command is pending (64 kHz)
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h26, 8'h00);                        // CHOP_FAST 0
+        r14_cmd(8'h33);                                 // APPLY in IDLE
+        repeat (2000) @(posedge MCLK);
+        if (dut.a_chop_fast !== 1'b0) fail("I: 64 kHz not applied");
+        @(posedge dut.tick);
+        #(8000.0);
+        spi_tidle = 100.0;
+        r14_cmd(8'h55);                                 // FLUSH, pending until the next tick
+        r14_cmd(8'hA5);                                 // SOFT_RESET while FLUSH is pending
+        spi_tidle = 600.0;
+        repeat (50) @(posedge MCLK);
+        if (soft_pend !== 1'b1) fail("I not exercised: no command pending when SOFT_RESET was taken");
+        if (dut.seq_state !== 4'd0 || dut.a_chop_fast !== 1'b1) fail("I: SOFT_RESET with a pending command not taken");
+        rt_read_expect(7'h06, 8'h01, "I: ERR after SOFT_RESET with a pending command (RESET_FLAG only)");
+        $display("I  SOFT_RESET with a pending command (errors %0d)", errors);
 
         $fclose(flog);
         $fclose(fsmp);

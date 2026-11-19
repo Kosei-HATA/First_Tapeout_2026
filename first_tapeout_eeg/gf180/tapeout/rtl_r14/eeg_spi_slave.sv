@@ -10,7 +10,8 @@
 //   * read: header + data bytes, the address incrementing (crc_en: header + one data byte + CRC over the header as
 //     received and the data byte as sent). An undefined header address flags ADDR_ERR (data 0x00).
 //   * sample: header address 0x40, then STATUS, SEQ (2), DATA (3), CRC (over those 6): the FIFO head is copied when
-//     the header completes and popped at CS_N rising only after exactly 8 bytes.
+//     the header completes (smp_snap) and the pop is requested at CS_N rising only after exactly 8 bytes; the FIFO
+//     removes the head only if the copy is still the head (eeg_fifo `held`).
 //   * a bit after a completed fixed frame -> OVF (FRAME_ERR at CS_N rising); CS_N rising inside a byte -> FRAME_ERR;
 //     an empty frame (no SCLK) is no error.
 // Synchronizers as in rtl/eeg_spi_slave.sv (MCLK oversampling, SCLK <= 2 MHz). MISO_OE = ~CS_N (pad) & the
@@ -34,6 +35,7 @@ module eeg_spi_slave (
     output logic [7:0]  reg_wdata,
     input  logic        crc_en,
     input  logic [47:0] smp_word,
+    output logic        smp_snap,
     output logic        smp_pop,
     output logic        frame_err,
     output logic        crc_err,
@@ -121,6 +123,11 @@ module eeg_spi_slave (
     logic done_st;
     assign done_st = (st == S_RDONE) || (st == S_SDONE) || (st == S_WDONE);
 
+    // the cycle in which the header of a sample read completes and `shadow` copies smp_word (same conditions as the
+    // copy below; combinational, so that the FIFO sees the copy in the cycle it is taken)
+    assign smp_snap = !cs_start && !cs_end && sclk_rise && (st == S_HDR) && (bit_cnt == 3'd7) && rx_byte[7] &&
+                      (rx_byte[6:0] == A_SAMPLE);
+
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             st        <= S_IDLE;
@@ -159,7 +166,7 @@ module eeg_spi_slave (
                         if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;
                         else                                                            reg_we  <= 1'b1;
                     end else if (st == S_SDONE) begin
-                        smp_pop <= shadow[47];           // a stored entry (VALID)
+                        smp_pop <= 1'b1;                 // the FIFO pops only if the copy is still its head
                     end
                 end
                 st    <= S_IDLE;

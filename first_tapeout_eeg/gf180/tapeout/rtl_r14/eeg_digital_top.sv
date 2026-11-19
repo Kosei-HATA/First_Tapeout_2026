@@ -28,7 +28,7 @@ module eeg_digital_top #(
     input  logic        MOSI,
     output logic        MISO,
     output logic        MISO_OE,
-    output logic        DRDY_N,               // level: FIFO not empty; pulse mode: 4 frames per sample
+    output logic        DRDY_N,               // level: FIFO not empty; pulse mode: 128 MCLK (4 frames) per sample
     output logic        RAW_DATA,
     output logic        RAW_CLK,
     output logic        ADC_RST_N,
@@ -119,13 +119,14 @@ module eeg_digital_top #(
     logic [7:0]  t_warm, t_elec, t_rec, t_pre, t_rst;
     logic [3:0]  seq_state, fifo_level;
     logic        seq_afe_rst, seq_flush, seq_store, seq_mark, seq_serr, seq_cerr;
-    logic        fifo_nonempty, ovr_set, push_ok, smp_pop;
+    logic        fifo_nonempty, ovr_set, push_ok, smp_snap, smp_pop;
     logic [47:0] smp_word;
 
     eeg_spi_slave u_spi (
         .clk(MCLK), .rst_n(rst_n), .sclk(SCLK), .cs_n(CS_N), .mosi(MOSI), .miso(MISO), .miso_oe(MISO_OE),
         .status_byte(status_byte), .reg_addr(reg_addr), .reg_rdata(reg_rdata), .reg_addr_ok(reg_addr_ok),
-        .reg_we(reg_we), .reg_wdata(reg_wdata), .crc_en(crc_en), .smp_word(smp_word), .smp_pop(smp_pop),
+        .reg_we(reg_we), .reg_wdata(reg_wdata), .crc_en(crc_en), .smp_word(smp_word), .smp_snap(smp_snap),
+        .smp_pop(smp_pop),
         .frame_err(frame_err), .crc_err(crc_err), .addr_err(addr_err));
 
     eeg_regs #(.FIFO_DEPTH(FIFO_DEPTH)) u_regs (
@@ -173,15 +174,18 @@ module eeg_digital_top #(
     eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (
         .clk(MCLK), .rst_n(rst_n), .flush(seq_flush), .push(seq_store),
         .status_in({1'b1, dflag_overrun, ovl_now | ovl_seen, chg_now, alert, 3'b000}),
-        .seq_in(seq_cnt), .data_in(cic_data), .ovr_set(ovr_set), .push_ok(push_ok), .pop(smp_pop),
+        .seq_in(seq_cnt), .data_in(cic_data), .ovr_set(ovr_set), .push_ok(push_ok), .snap(smp_snap), .pop(smp_pop),
         .empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000}), .rd_word(smp_word),
         .nonempty(fifo_nonempty), .level(fifo_level));
 
-    // DRDY_N: level mode = FIFO not empty (a register, as before); pulse mode = low for 4 frames after each stored
-    // sample, from its own register (no decode glitch on the pad)
+    // DRDY_N: level mode = FIFO not empty (a register, as before); pulse mode = low for exactly 128 MCLK (4 frames)
+    // from each stored sample, from its own register (no decode glitch on the pad). A sample is stored only at the
+    // CIC output cycle (frame cycle 8), so counting that cycle's edges counts whole frames from the store.
+    localparam logic [4:0] STORE_CYCLE = 5'd8;
     logic [2:0] drdy_cnt, drdy_nxt;
     logic       drdy_pulse;
-    assign drdy_nxt = push_ok ? 3'd4 : ((frame_stb && drdy_cnt != 3'd0) ? drdy_cnt - 3'd1 : drdy_cnt);
+    assign drdy_nxt = push_ok ? 3'd4 :
+                      ((cycle == STORE_CYCLE && drdy_cnt != 3'd0) ? drdy_cnt - 3'd1 : drdy_cnt);
     always_ff @(posedge MCLK or negedge rst_n) begin
         if (!rst_n) begin
             drdy_cnt   <= 3'd0;

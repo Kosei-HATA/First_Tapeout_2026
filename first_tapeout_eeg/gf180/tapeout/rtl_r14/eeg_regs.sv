@@ -6,7 +6,9 @@
 //     sequencer's START / APPLY / APPLY_NR, at a tick). The active copy reads at address + 0x10.
 //   * a write is committed by the SPI slave (we) only after the frame and CRC checks; here: an undefined or
 //     read-only address, or a locked test register -> ADDR_ERR; a value outside the field's legal range ->
-//     RANGE_ERR (nothing written); COMMAND while a command is pending -> STATE_ERR; an unknown code -> CMD_ERR.
+//     RANGE_ERR (nothing written); COMMAND while a command is pending -> STATE_ERR; an unknown code -> CMD_ERR
+//     (pending or not); SOFT_RESET is always taken. TEST_KEY: 0x3C unlocks, 0x00 locks, any other value locks and
+//     flags CMD_ERR (a one-bit error neither unlocks nor locks silently).
 //   * ERR and DFLAG are W1C; a set event in the same cycle as its clear wins. RESET_FLAG resets to 1.
 //   * cfg_ok: the shadow M fits the shadow range (range 0: the DAC is off, M is not looked at).
 //     nr_ok: shadow and active differ only by one step of the signed offset-DAC value, in the same range.
@@ -159,14 +161,17 @@ module eeg_regs #(
                 ev_err[ERR_RANGE_ERR_LSB] = 1'b1;
             end else if (addr == A_COMMAND) begin
                 if (is_soft) begin
-                    ;                                            // handled by soft_reset
+                    ;                                            // handled by soft_reset (pending or not)
                 end else if (!is_cmd_code) begin
-                    ev_err[ERR_CMD_ERR_LSB] = 1'b1;
+                    ev_err[ERR_CMD_ERR_LSB] = 1'b1;              // unknown code, pending or not
                 end else if (pend && !cmd_ack) begin
                     ev_err[ERR_STATE_ERR_LSB] = 1'b1;            // one command at a time
                 end else begin
                     w_ok = 1'b1;
                 end
+            end else if (addr == A_TEST_KEY) begin
+                w_ok = 1'b1;                                     // 0x3C unlocks, anything else locks
+                if (wdata != TEST_KEY_VALUE && wdata != 8'h00) ev_err[ERR_CMD_ERR_LSB] = 1'b1;
             end else begin
                 w_ok = 1'b1;
             end

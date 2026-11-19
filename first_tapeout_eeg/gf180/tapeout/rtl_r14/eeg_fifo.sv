@@ -5,6 +5,10 @@
 // One MCLK cycle: flush, then pop, then push (gf180/tapeout/rtl/spec/fsm_spec.py fifo_step: a new sample is never
 // lost to a flush or a pop in the same cycle). A push into a full FIFO without a pop in the same cycle drops the
 // new sample and pulses ovr_set. Empty: rd_word = {empty_status, 16'h0, 24'h0}.
+// The SPI copies rd_word at the header of a sample read (snap) and requests the pop at CS_N rising after exactly 8
+// bytes. `held` (fsm_spec SPI condition `head`, fifo_step): the copy is a stored entry that is still the head - set by
+// a snap of a non-empty FIFO, cleared by a flush or a pop - and a pop removes the head only then (never the empty
+// word's place, never a sample stored after a flush that came during the read).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -20,7 +24,8 @@ module eeg_fifo #(
     input  logic [23:0] data_in,
     output logic        ovr_set,                  // the pushed sample was dropped (FIFO full)
     output logic        push_ok,                  // the pushed sample was stored
-    input  logic        pop,                      // the SPI read the head entry (exactly 8 bytes)
+    input  logic        snap,                     // the SPI copied rd_word (header of a sample read)
+    input  logic        pop,                      // the SPI's request: the copy was read out (exactly 8 bytes)
     input  logic [7:0]  empty_status,             // status byte for an empty FIFO (VALID = 0)
     output logic [47:0] rd_word,
     output logic        nonempty,                 // registered
@@ -32,10 +37,10 @@ module eeg_fifo #(
 
     logic [47:0]   mem [0:DEPTH-1];
     logic [AW-1:0] wr_ptr, rd_ptr;
-    logic          pop_ok;
+    logic          pop_ok, held;
     logic [3:0]    lvl0, level_nxt;
 
-    assign pop_ok    = pop && (level != 4'd0) && !flush;
+    assign pop_ok    = pop && held && !flush;     // held implies level != 0
     assign lvl0      = flush ? 4'd0 : (level - {3'd0, pop_ok});
     assign push_ok   = push && (lvl0 != LEVEL_FULL);
     assign level_nxt = lvl0 + {3'd0, push_ok};
@@ -53,12 +58,15 @@ module eeg_fifo #(
             level    <= '0;
             nonempty <= 1'b0;
             ovr_set  <= 1'b0;
+            held     <= 1'b0;
         end else begin
             wr_ptr   <= wr_ptr + {{(AW-1){1'b0}}, push_ok};
             rd_ptr   <= flush ? wr_ptr : (rd_ptr + {{(AW-1){1'b0}}, pop_ok});
             level    <= level_nxt;
             nonempty <= (level_nxt != 4'd0);
             ovr_set  <= push && !push_ok;
+            if (flush || pop_ok) held <= 1'b0;   // the copy is no longer the head
+            else if (snap)       held <= (level != 4'd0);   // the copy is a stored entry, not the empty word
         end
     end
 

@@ -6,11 +6,11 @@ psrr.py found that AVDD ripple appears between the AFE's two choppers as a diffe
 corners), which the output chopper folds into band (52.4 dB next to 128 kHz on the typical die, 51.5 dB at ff). A static
 scan of afe_top's extraction (explicit capacitances on the amplifier's summing nodes, in the typical AVDD-ripple deck)
 shows INN with more capacitance than INP to nets that carry the AVDD ripple: AVDD 4528.07 against 2571.42 fF
-(+1.957 pF), VBP 534.58 against 0.12 fF (+0.534 pF), BLP 155.84 fF against INP-BLN 0 fF; through the feedback
+(+1.957 pF), VBP 534.58 against 0.12 fF (+0.534 pF), BLP (the PMOS boosters' bias, on AVDD) 155.84 against 0 fF; through the feedback
 capacitance (Cin / gain = 636 pF / 297.47 = 2.14 pF) the first two give (1.957 + 0.534) / 2.14 = 1.17 V/V.
 
 The diagnostic decks (runs/psrr_r12/diag_*, made by scaling those capacitances in a copy of a typical AVDD-ripple deck;
-run_psrr_diag.sh, run_psrr_diag_c.sh): A matches INN-AVDD to INP's, B also INN-VBP and INN-BLP (to INP-BLN's), both
+run_psrr_diag.sh, run_psrr_diag_c.sh): A matches INN-AVDD to INP's, B also INN-VBP and INN-BLP, both
 with legs of 100 ohm; C is B with ELP 100 ohm + 51 kohm || 47 nF. They are not a design change. Each is fitted alone
 (no baselines; on the typical run the folded tones agree with the baseline fit to 1e-5) and compared with the typical
 run of the same legs. The noise allowance (the regulator noise next to the chopper's harmonics that adds 5 % to the AFE's
@@ -45,20 +45,24 @@ import psrr as P
 CIN_PF = P.CIN_PF
 TYP = "start_c1e-08_v3.3_typical_+0mV_afe5ms_ib3_cm0mV50Hz_ripAVDD10mV_chip_r12"
 TYP_IMB = "start_c1e-08_v3.3_typical_+0mV_afe5ms_ib3_cm0mV50Hz_zp100+51k_47n_ripAVDD10mV_chip_r12"
-PAIRS = (("AVDD", "AVDD"), ("VBP", "VBP"), ("BLP", "BLN"), ("AVSS", "AVSS"), ("CORE.SP", "CORE.SP"))  # INN's, INP's
-DIAG = (("A", TYP), ("B", TYP), ("C", TYP_IMB))
+PAIRS = (("AVDD", "AVDD"), ("VBP", "VBP"), ("BLP", "BLP"), ("AVSS", "AVSS"), ("CORE.SP", "CORE.SP"))  # INN's, INP's
+DIAG = (("A", TYP), ("B", TYP), ("C", TYP_IMB), ("D", TYP))
 CORNERS = ("ff", "ss", "sf", "fs")
 SINE = "start_c1e-08_v3.3_{}_+0mV_sine0.943mV2000Hz_afe5ms_ib3_chip_r12"       # figure 41's corner runs (3.3 V)
 HI = sum(1 / k ** 2 for k in range(5, 2001, 2))                                  # the odd harmonics above 3, (2/pi)/k each
 
 
 SCALE = {"A": ("AVDD",), "B": ("AVDD", "VBP", "BLP"), "C": ("AVDD", "VBP", "BLP")}
-MATE = {"AVDD": "AVDD", "VBP": "VBP", "BLP": "BLN"}                             # INN's net -> INP's counterpart
+ADD = {"D": ("AVDD", "VBP", "BLP")}           # D: INP gets INN's excess on these nets instead (one capacitor each)
+# INN's net -> INP's counterpart: the same net (BLP is the PMOS boosters' bias, on AVDD like VBP; BLN the NMOS boosters',
+# on AVSS: not a P / N pair. Until 11/19 noon BLP was paired with INP-BLN, also 0 fF: the A-C decks are the same)
+MATE = {"AVDD": "AVDD", "VBP": "VBP", "BLP": "BLP"}
 
 
 def make_decks():
     """the diagnostic decks: a copy of the typical deck (of the same legs) with the explicit capacitors between INN and
-    each net of SCALE scaled to INP's counterpart (11/19: A and B at 03:14, C at 09:57)"""
+    each net of SCALE scaled to INP's counterpart (11/19: A and B at 03:14, C at 09:57), or (ADD) one capacitor more
+    from INP to each net, INN's excess there (D, 11/19 13:30: what an r13 fix that adds to INP would do)"""
     for v, src in DIAG:
         lines = open(os.path.join(P.RUNS, src, "tb.spice")).read().splitlines()
         i0 = next(i for i, x in enumerate(lines) if x.startswith(".subckt afe_top"))
@@ -68,7 +72,7 @@ def make_decks():
             return sum(float(t[3]) for t in (x.split() for x in ls[i0 + 1:i1]) if t and t[0][0] == "C" and {t[1], t[2]} == {a, b})
 
         out, note = list(lines), []
-        for x in SCALE[v]:
+        for x in SCALE.get(v, ()):
             want, have = total("INP", MATE[x], lines), total("INN", x, lines)
             for i in range(i0 + 1, i1):
                 t = out[i].split()
@@ -76,6 +80,12 @@ def make_decks():
                     t[3] = f"{float(t[3]) * want / have:.6e}"
                     out[i] = " ".join(t)
             note.append(f"INN-{x} {have * 1e15:.2f} -> {total('INN', x, out) * 1e15:.2f} fF (INP's {want * 1e15:.2f})")
+        extra = []
+        for k, x in enumerate(ADD.get(v, ())):
+            inn, inp = total("INN", x, lines), total("INP", MATE[x], lines)
+            extra.append(f"CDIAG{v}{k} INP {MATE[x]} {inn - inp:.6e}")
+            note.append(f"INP-{MATE[x]} {inp * 1e15:.2f} -> {inn * 1e15:.2f} fF (INN's)")
+        out[i1:i1] = extra
         d = os.path.join(P.OUT, f"diag_{v}")
         os.makedirs(d, exist_ok=True)
         out[0] += f" [psrr diagnostic {v}: " + "; ".join(note) + "]"
@@ -185,7 +195,7 @@ def main():
     print(f"static (fF, INP / INN): " + ", ".join(f"{k} {a:.2f} / {b:.2f}" for k, (a, b) in static.items())
           + f"; in all INP {sum(per['INP'].values()) / 1e3:.2f} pF, INN {sum(per['INN'].values()) / 1e3:.2f} pF")
     dc = {k: (b - a) * 1e-3 for k, (a, b) in static.items()}
-    pred = {"typical": (dc["AVDD/AVDD"] + dc["VBP/VBP"]) / cf, "A": dc["VBP/VBP"] / cf, "B": 0.0}
+    pred = {"typical": (dc["AVDD/AVDD"] + dc["VBP/VBP"]) / cf, "A": dc["VBP/VBP"] / cf, "B": 0.0, "D": 0.0}
     out = dict(gain=g, cf_eff_pf=cf, static_ff=static, static_pred_vv=pred, runs=[], corners=[],
                static_total_pf={k: round(sum(v.values()) / 1e3, 3) for k, v in per.items()})
 

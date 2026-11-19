@@ -34,7 +34,7 @@ sys.path.insert(0, PEX)
 import psrr as S  # noqa: E402
 
 OUT = os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP_DATE}", "viz")
-NETS = [("AVDD/AVDD", "AVDD"), ("VBP/VBP", "VBP"), ("BLP/BLN", "BLP (INP: BLN)"), ("AVSS/AVSS", "AVSS"),
+NETS = [("AVDD/AVDD", "AVDD"), ("VBP/VBP", "VBP"), ("BLP/BLP", "BLP (the PMOS\nboosters' bias)"), ("AVSS/AVSS", "AVSS"),
         ("CORE.SP/CORE.SP", "CORE.SP (the input\npair's common source)")]
 SCALED = 3                                            # the first three are the ones A / B scale
 LABEL = {"typical": "typical", "A": "A: INN–AVDD\nas INP's", "B": "B: also INN–VBP,\nINN–BLP",
@@ -67,7 +67,7 @@ def main():
                    note=minus(
                        "The diagnostic decks are copies of the typical decks (r12 extraction, chip wiring, AFE_IBIAS 3, "
                        "typical, 27 °C, AVDD's regulator at 3.3 V) with the explicit capacitors between INN and AVDD, VBP "
-                       "and BLP scaled to INP's counterparts (INP–BLN for BLP); nothing else changes. Without baselines "
+                       "and BLP scaled to INP's; nothing else changes. Without baselines "
                        "(their time grids differ) each is fitted alone (polynomial 4); on the typical run the folded tones "
                        "agree with the baseline fit to 1e−5. With ELP 51 kΩ || 47 nF the start-up drift leaks into the fit "
                        "between the choppers (1.60 V/V alone against 1.47 with the baseline; C 0.04 against 0.09) while "
@@ -218,7 +218,7 @@ def main():
     st = d["static_ff"]
     dav = (st["AVDD/AVDD"][1] - st["AVDD/AVDD"][0]) / 1e3
     dvb = (st["VBP/VBP"][1] - st["VBP/VBP"][0]) / 1e3
-    dbl = (st["BLP/BLN"][1] - st["BLP/BLN"][0]) / 1e3
+    dbl = (st["BLP/BLP"][1] - st["BLP/BLP"][0]) / 1e3
     tot = d["static_total_pf"]
     items.append(f"Static scan of r12's afe_top (explicit capacitance on the summing nodes, in all INP {tot['INP']:.2f}, "
                  f"INN {tot['INN']:.2f} pF): INN {dav:+.2f} pF to AVDD, {dvb:+.2f} pF to VBP, {dbl:+.2f} pF to BLP; "

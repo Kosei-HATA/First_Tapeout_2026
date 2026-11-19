@@ -100,6 +100,10 @@ def main():
     ap.add_argument("--zp", default="100", help="ELP leg (afe_startup's), e.g. 100+51k|47n")
     ap.add_argument("--zn", default="100", help="ELN leg")
     ap.add_argument("--chop-hold", action="store_true", help="CHOP_EN low whenever AFE_RST is high")
+    ap.add_argument("--seq", action="store_true",
+                    help="11/19: the new sequencer's timing (gf180/tapeout/rtl/spec): the first release, the write and "
+                         "the pulse at its tick (frame cycle 24 of the frame in the middle of chopper phase A, outputs "
+                         "at e25), T_PRE and T_RST its defaults (regmap.py); --rst-pulse / --rst-gap are ignored")
     s = ap.parse_args()
     if not s.vin:
         sys.exit("--vin: an offset is the point")
@@ -108,15 +112,35 @@ def main():
     half = P.TCH / 2
     t_dac = t_reset + (round((s.t_dac - t_reset) / half - 0.5) + 0.5) * half
     rst = None
-    if s.rst_pulse:
+    t_afe_arg = []
+    if s.seq:
+        sys.path.insert(0, os.path.join(HERE, "..", "rtl", "spec"))
+        import fsm_spec as FS
+        import regmap as RM
+        r = FS.TIMING["rates"]["128k"]
+        phase = (r["tick_frame"] * FS.FRAME + FS.TIMING["tick_cycle"] + 1) / FS.MCLK      # after the phase-A edge
+        assert abs(r["period_frames"] * FS.FRAME / FS.MCLK - P.TCH) < 1e-15
+        t_afe = t_reset + 26 * P.TCH + phase                     # the first tick after 0.2 ms (as the default 5 ms)
+        t_dac = t_reset + round((s.t_dac - t_reset - phase) / P.TCH) * P.TCH + phase      # APPLY's tick (PRE entry)
+        unit = RM.TICK_UNIT_S
+        pre = RM.REGS[[x[1] for x in RM.REGS].index("T_PRE")][4][0]["reset"] * unit
+        pulse = RM.REGS[[x[1] for x in RM.REGS].index("T_RST")][4][0]["reset"] * unit
+        rst = (t_dac + pre, t_dac + pre + pulse)
+        s.rst_pulse = pulse
+        t_afe_arg = ["--t-afe", f"{t_afe:.9e}", "--t-reset", f"{t_reset:.9e}"]
+        print(f"--seq: first release {t_afe * 1e3:.6f} ms, write (APPLY tick) {t_dac * 1e3:.6f} ms, AFE_RST "
+              f"{rst[0] * 1e3:.6f}-{rst[1] * 1e3:.6f} ms (T_PRE {pre * 1e6:.4f} us, T_RST {pulse * 1e6:.4f} us), "
+              f"each {phase * 1e9:.1f} ns after a phase-A edge", flush=True)
+    elif s.rst_pulse:
         t_afe = 5e-3
         n = int(np.ceil((t_dac + s.rst_gap + s.rst_pulse - t_afe) / P.TCH - 1e-9))
         rst = (t_afe + n * P.TCH - s.rst_pulse, t_afe + n * P.TCH)
     tstop = s.tstop if s.tstop else (rst[1] + 1.5e-3 if rst else t_dac + 2e-3)
     tag = s.tag if s.tag is not None else (f"_sat{t_dac * 1e3:.0f}ms" + (f"_rst{s.rst_pulse * 1e6:g}us" if rst else "") +
+                                           ("_seq" if s.seq else "") +
                                            ("_chophold" if s.chop_hold else "") + (f"_chip_{rev}" if rev else "_chip"))
     args = ["start", "--vin", f"{s.vin:g}", "--corner", s.corner, "--vdd", f"{s.vdd:g}", "--ibias", str(s.ibias),
-            "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag, "--zp", s.zp, "--zn", s.zn]
+            "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag, "--zp", s.zp, "--zn", s.zn] + t_afe_arg
     if s.dac_mag is not None:
         args += ["--dac-mag", str(s.dac_mag)]
     if s.mc is not None:

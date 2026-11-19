@@ -1,0 +1,68 @@
+# LibreLane (v3, Classic flow) area trial of the r14 digital control (11/19): eeg_digital_top from
+# gf180/tapeout/rtl_r14/ (the new sequencer, registers, SPI, FIFO; the same ports as the r13 macro) with every
+# setting of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
+# excluded cells), in a taller outline 440 x 900 um (config.yaml: the r13 macro's outline 440 x 700 um).
+# A trial for the area (NFR-02), not a release: the chip still uses ../eeg_digital_top. Run with run_trial_20261119.sh.
+meta:
+  version: 3
+  flow: Classic
+
+DESIGN_NAME: eeg_digital_top
+VERILOG_FILES:
+- dir::../../rtl_r14/eeg_digital_top.sv
+- dir::../../rtl_r14/eeg_seq.sv
+- dir::../../rtl_r14/eeg_regs.sv
+- dir::../../rtl_r14/eeg_spi_slave.sv
+- dir::../../rtl_r14/eeg_fifo.sv
+- dir::../../rtl_r14/eeg_ovl.sv
+- dir::../../rtl_r14/eeg_cic3.sv
+- dir::../../rtl_r14/eeg_clkgen.sv
+- dir::../../rtl/eeg_chop1.sv
+- dir::../../rtl/eeg_rnd_sat.sv
+- dir::../../rtl/eeg_raw.sv
+VERILOG_INCLUDE_DIRS:
+- dir::../../rtl/spec
+USE_SLANG: true
+
+CLOCK_PORT: MCLK
+CLOCK_PERIOD: 30.5          # 32.768 MHz
+
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 440, 900]
+PL_TARGET_DENSITY_PCT: 55
+FP_PIN_ORDER_CFG: dir::../eeg_digital_top/pin_order.cfg
+
+VDD_NETS: [VDD]
+GND_NETS: [VSS]
+PDN_MULTILAYER: false
+PDN_VPITCH: 40
+PDN_VWIDTH: 3
+
+RT_MAX_LAYER: Metal4
+
+PNR_SDC_FILE: dir::../eeg_digital_top/eeg_digital_top.sdc
+SIGNOFF_SDC_FILE: dir::../eeg_digital_top/eeg_digital_top.sdc
+CELL_LIBS:
+  "*_tt_025C_3v30":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_3v30.lib
+  "*_ss_125C_3v00":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ss_125C_3v00.lib
+  "*_ff_n40C_3v60":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ff_n40C_3v60.lib
+STA_CORNERS:
+- nom_tt_025C_3v30
+- nom_ss_125C_3v00
+- nom_ff_n40C_3v60
+- min_tt_025C_3v30
+- min_ss_125C_3v00
+- min_ff_n40C_3v60
+- max_tt_025C_3v30
+- max_ss_125C_3v00
+- max_ff_n40C_3v60
+DEFAULT_CORNER: nom_tt_025C_3v30
+
+RUN_POST_GRT_RESIZER_TIMING: true
+EXTRA_EXCLUDED_CELLS:
+- gf180mcu_fd_sc_mcu9t5v0__xnor3_4
+- gf180mcu_fd_sc_mcu9t5v0__dffrnq_4
+- gf180mcu_fd_sc_mcu9t5v0__dly*

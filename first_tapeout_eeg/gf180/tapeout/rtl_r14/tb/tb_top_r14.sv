@@ -41,12 +41,19 @@
 //   P  audit round 4: a command refused because another is pending leaves the pending one (64 kHz: FLUSH pending in
 //      RUN + START refused -> the FIFO is emptied, RUN stays; START pending in IDLE + FLUSH refused -> WARMUP)
 //   S  audit round 4: the host's SOFT_RESET check (requirements 5.4 step 9) in both CRC modes: the mode probe (a 3-byte
-//      read of IF_CFG, legal in both), RESET_FLAG, and the recovery from a spoiled SOFT_RESET frame
+//      read of IF_CFG, legal in both), RESET_FLAG, and the recovery from a spoiled SOFT_RESET frame. Audit round 5
+//      (one-bit header errors against the host procedure): S3 a sample read whose header lost bit 7 (a write to the
+//      window) fails the sample CRC, which covers the header 0xC0 (CRC off and on); S4 the step-9 check repeated until
+//      RESET_FLAG = 1 in a probe-confirmed mode converges after a corrupted probe (0xD5 -> 0x55) and a spoiled
+//      SOFT_RESET; S5 step 3 undoes an enabling IF_CFG write that landed on T_ELEC (0x55 -> 0x51)
 //   R  audit round 4: SOFT_RESET committed in the cycle of a tick that releases AFE_RST (WARMUP's end), of a tick that
 //      applies (APPLY in RUN: CPF_TRIM, OFM, OFEN), of an output time, and in the cycle after a store into an empty
 //      FIFO (DRDY_N): no runt on any register-driven pin (soft_req forced for that one cycle); R5: a SOFT_RESET over
 //      frame cycles 1..5 leaves the frame strobes (DAC_CLK in cycle 4); R6: an overload that ends just before a
-//      SOFT_RESET is still in the detector's window after it (the detector runs from RESET_N: RST-02)
+//      SOFT_RESET is still in the detector's window after it (the detector runs from RESET_N: RST-02); R3 also: SEQ
+//      counts the output time of the commit cycle (DAT-03); R7: a SOFT_RESET in the cycle where the CIC decides
+//      ALIGN's clear (its step 3) cancels the clear; R8: one in the output-time cycle of ALIGN comes after the clear
+//      (audit round 5)
 // Also (audit round 4): every applied pin (OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, DWA_EN, CHOP_EN, TEST_CFG[5:0])
 // equals regmap.pins_from_active of the active copies at every MCLK in every state (CHOP_EN was seen only in IDLE and
 // RUN); STATUS's READY and AFE_RST bits in WARMUP, PRE, PULSE, RECOVER and ALIGN (N4); APPLY_NR across M's byte
@@ -378,20 +385,48 @@ module tb_top_r14;
     // header and byte 1); with CRC off a burst (byte 2 = the undefined 0x56 = 0x00, while CRC-8 of 0xD5 and any byte is
     // never 0). Legal, no error, in both modes.
     task automatic soft_reset_probe(output bit crc_on, input string name);
+        bit known;
+        probe_hdr(8'hD5, crc_on, known);
+        if (!known) fail($sformatf("%s: the probe read %02h %02h (neither mode)", name, spi_rx[1], spi_rx[2]));
+    endtask
+    // the probe as the host judges it (it means the header 0xD5); hdr is what reaches the chip (a bit error)
+    task automatic probe_hdr(input logic [7:0] hdr, output bit crc_on, output bit known);
         logic [7:0] c;
         bit save;
         save = bfm_crc_en;
         bfm_crc_en = 1'b0;                              // the raw 3-byte frame, checked here
-        spi_tx[0] = 8'hD5; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
+        spi_tx[0] = hdr; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
         spi_xfer(3, 0);
         bfm_crc_en = save;
         c = tb_crc8_update(tb_crc8_update(8'h00, 8'hD5), spi_rx[1]);
+        known = 1'b1;
         if (spi_rx[2] === c && spi_rx[1][0] === 1'b1)      crc_on = 1'b1;
         else if (spi_rx[2] === 8'h00 && spi_rx[1][0] === 1'b0) crc_on = 1'b0;
-        else begin
-            fail($sformatf("%s: the probe read %02h %02h (neither mode)", name, spi_rx[1], spi_rx[2]));
-            crc_on = 1'b0;
+        else begin known = 1'b0; crc_on = 1'b0; end
+    endtask
+    // requirements 5.4 step 9 as the host runs it: probe, ERR in the probed mode, and while RESET_FLAG is 0: clear
+    // ERR and send SOFT_RESET again in that mode, then repeat the whole check (audit round 5). bad_hdr: the header
+    // of the first probe as it reaches the chip. Returns the number of checks (0 if it did not converge in 6)
+    task automatic host_soft_reset_check(input logic [7:0] bad_hdr, output integer rounds);
+        bit crc_on, known, done;
+        logic [7:0] e;
+        integer n;
+        done = 1'b0; n = 0;
+        while (!done && n < 6) begin
+            n = n + 1;
+            #(1000.0);                                  // CS_N high for 1 us after a SOFT_RESET
+            probe_hdr((n == 1) ? bad_hdr : 8'hD5, crc_on, known);
+            if (known) begin
+                bfm_crc_en = crc_on;
+                r14_read(7'h06, e);
+                if (e[0] === 1'b1) done = 1'b1;
+                else begin
+                    r14_write(7'h06, e);
+                    r14_cmd(8'hA5);
+                end
+            end
         end
+        rounds = done ? n : 0;
     endtask
 
     // ------------------------------------------------------------------ N5: one generated nr_ok case (pin_tests.svh)
@@ -1449,12 +1484,70 @@ module tb_top_r14;
             if (e !== 8'h01) fail($sformatf("S2: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
             r14_write(7'h06, e);
         end
-        $display("S  the SOFT_RESET check in both CRC modes (errors %0d)", errors);
+        begin
+            logic [7:0] c, e;
+            integer rounds;
+            bit crc_on;
+            // S3: a sample read whose header lost bit 7 (0xC0 -> 0x40, a write to the read-only window) returns STATUS
+            // and zeros; its sample CRC (over the header 0xC0 and the six bytes) does not match, so the host cannot
+            // take it for an empty word (an all-zero response matched the CRC of the six bytes alone)
+            for (int crc = 0; crc < 2; crc++) begin
+                if (crc) begin r14_write(7'h55, 8'h01); bfm_crc_en = 1'b1; end
+                r14_write(7'h06, 8'hFF);
+                bfm_crc_en = 1'b0;
+                spi_tx[0] = 8'h40;
+                for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
+                spi_xfer(8, 0);
+                bfm_crc_en = crc[0];
+                c = tb_crc8_update(8'h00, 8'hC0);
+                for (int i = 1; i <= 6; i++) c = tb_crc8_update(c, spi_rx[i]);
+                if (c === spi_rx[7])
+                    fail($sformatf("S3: a sample read with its header turned into a write passes the sample CRC (CRC %0d)", crc));
+                r14_read(7'h06, e);
+                if (e[1] !== 1'b1) fail($sformatf("S3: ERR 0x%02h without FRAME_ERR for the corrupted sample read", e));
+                r14_write(7'h06, 8'hFF);
+                if (crc) begin r14_write(7'h55, 8'h00); bfm_crc_en = 1'b0; end
+            end
+            // S4: CRC on, a spoiled SOFT_RESET frame (wrong CRC), and the first probe's header loses its R/W bit
+            // (0xD5 -> 0x55: a write of IF_CFG with a wrong CRC; the probe reads "CRC off"): the repeated check
+            // converges (the second probe reads "CRC on", the SOFT_RESET is sent again with its CRC)
+            r14_write(7'h55, 8'h01);
+            bfm_crc_en = 1'b1;
+            r14_write(7'h06, 8'hFF);
+            spi_tx[0] = 8'h10; spi_tx[1] = 8'hA5; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // SOFT_RESET, wrong CRC
+            host_soft_reset_check(8'h55, rounds);
+            if (rounds == 0) fail("S4: the repeated SOFT_RESET check did not converge");
+            soft_reset_probe(crc_on, "S4 after the check");
+            if (crc_on || bfm_crc_en) fail("S4: CRC still on after the check (the SOFT_RESET not executed)");
+            r14_read(7'h06, e);
+            if (e[0] !== 1'b1) fail($sformatf("S4: ERR 0x%02h after the check, expected RESET_FLAG", e));
+            r14_write(7'h06, 8'hFF);
+            // S5 (step 3): the unprotected enabling write lands on T_ELEC (header 0x55 -> 0x51; a legal value, no
+            // flag, MISO 0x00). The CRC read-back of IF_CFG shows CRC off, IF_CFG is written again in that mode, and
+            // T_ELEC is written explicitly once CRC is on: T_ELEC ends at the host's value (0)
+            spi_tx[0] = 8'h51; spi_tx[1] = 8'h01; spi_xfer(2, 0);
+            if (spi_rx[1] !== 8'h00) fail("S5: MISO of the corrupted enabling write not 0x00");
+            soft_reset_probe(crc_on, "S5 read-back");
+            if (crc_on) fail("S5: CRC on although the enabling write went to T_ELEC");
+            r14_write(7'h55, 8'h01);
+            bfm_crc_en = 1'b1;
+            soft_reset_probe(crc_on, "S5 read-back after the rewrite");
+            if (!crc_on) fail("S5: CRC not on after the rewrite");
+            r14_write(7'h51, 8'h00);                    // T_ELEC written explicitly (step 3)
+            r14_read(7'h06, e);
+            if (e !== 8'h00) fail($sformatf("S5: ERR 0x%02h after step 3", e));
+            rt_read_expect(7'h51, 8'h00, "S5 T_ELEC after step 3");
+            r14_write(7'h55, 8'h00);
+            bfm_crc_en = 1'b0;
+            r14_write(7'h06, 8'hFF);
+        end
+        $display("S  the SOFT_RESET check in both CRC modes; host checks under one-bit header errors (errors %0d)", errors);
 
         // ---------------- R: SOFT_RESET in the cycle of a tick, of an output time, after a store (NFR-06)
         phase = "R";
         begin
             integer k, runt0, falls0;
+            logic [15:0] seq_r;
             logic [7:0] e;
             runt0 = n_runt;
             // R1: the tick that ends WARMUP (AFE_RST would be released at its edge; T_WARM 5 ms, its minimum)
@@ -1498,10 +1591,13 @@ module tb_top_r14;
             @(posedge MCLK); #1;
             while (!(dut.cic_stb === 1'b1 && dut.seq_state === 4'd6) && k < 40000) begin @(posedge MCLK); #1; k++; end
             if (k >= 40000) fail("R3 not exercised: no output time in RUN found");
+            seq_r = dut.seq_cnt;
             force dut.soft_req = 1'b1;
             #1;
             if (dut.seq_store !== 1'b0 || dut.push_ok !== 1'b0) fail("R3: the sequencer stores in the commit cycle of SOFT_RESET");
             soft_now();                                 // still in that cycle: forced until just after its end
+            if (dut.seq_cnt !== seq_r + 16'd1)          // the data path runs on: the output time is counted (DAT-03)
+                fail($sformatf("R3: SEQ %0d -> %0d over a SOFT_RESET at an output time, expected one more", seq_r, dut.seq_cnt));
             r14_write(7'h06, 8'hFF);
             r14_cmd(8'h11);
             wait_state(4'd6, 10000.0, "R4 RUN");
@@ -1539,6 +1635,32 @@ module tb_top_r14;
                 fail($sformatf("R6: STATUS 0x%02h without OVL_NOW right after a SOFT_RESET (the overload detector must run on RESET_N)", spi_rx[0]));
             r14_read(7'h06, e);
             if (e !== 8'h01) fail($sformatf("R6: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
+            r14_write(7'h06, 8'hFF);
+            // R7: SOFT_RESET in the cycle where the CIC decides ALIGN's clear (its step 3, the cycle before the output
+            // time): the clear is not taken (fsm_spec: the sequencer is in RESET at that output time)
+            r14_cmd(8'h11);
+            wait_state(4'd4, 7000.0, "R7 ALIGN");
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.u_cic.step[3] === 1'b1 && dut.seq_state === 4'd4) && k < 40000) begin @(posedge MCLK); #1; k++; end
+            if (k >= 40000 || dut.u_cic.nstb === '0) fail("R7 not exercised: no CIC decision cycle in ALIGN (or the CIC already cleared)");
+            soft_now();
+            if (dut.u_cic.nstb === '0) fail("R7: the CIC cleared by ALIGN although SOFT_RESET was committed in its decision cycle");
+            if (dut.seq_state !== 4'd0) fail($sformatf("R7: state %0d after the SOFT_RESET", dut.seq_state));
+            r14_write(7'h06, 8'hFF);
+            // R8: SOFT_RESET in the output-time cycle of ALIGN: the clear was taken at the edge that started the cycle
+            // (fsm_spec: cic_clear with the reset), the state goes to RESET, not FILL; SEQ counts the output time
+            r14_cmd(8'h11);
+            wait_state(4'd4, 7000.0, "R8 ALIGN");
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.cic_stb === 1'b1 && dut.seq_state === 4'd4) && k < 40000) begin @(posedge MCLK); #1; k++; end
+            if (k >= 40000) fail("R8 not exercised: no output time in ALIGN");
+            seq_r = dut.seq_cnt;
+            soft_now();
+            if (dut.u_cic.nstb !== '0 && dut.u_cic.nstb !== 1) fail($sformatf("R8: the CIC not cleared at the output time of ALIGN (nstb %0d)", dut.u_cic.nstb));
+            if (dut.seq_state !== 4'd0) fail($sformatf("R8: state %0d after the SOFT_RESET, expected IDLE (not FILL)", dut.seq_state));
+            if (dut.seq_cnt !== seq_r + 16'd1) fail($sformatf("R8: SEQ %0d -> %0d, expected one more", seq_r, dut.seq_cnt));
             r14_write(7'h06, 8'hFF);
             if (n_runt != runt0) fail($sformatf("R: %0d runts", n_runt - runt0));
         end

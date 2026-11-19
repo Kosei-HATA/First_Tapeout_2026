@@ -82,9 +82,13 @@ module eeg_spi_slave (
         end
         crc8_step = x;
     endfunction
-    function automatic logic [7:0] crc8_48(input logic [47:0] d);
+    // A sample's CRC starts from its header 0xC0 (CRC_SMP_HDR = CRC-8 of 0xC0), like a register read's CRC, which
+    // covers the received header. Over the six bytes alone, an all-zero response (a header turned into a write by a
+    // bit error, or a MISO nobody drives) read as an empty word with a valid CRC (audit round 5, 11/20).
+    localparam logic [7:0] CRC_SMP_HDR = 8'h4E;
+    function automatic logic [7:0] crc8_48(input logic [7:0] c0, input logic [47:0] d);
         logic [7:0] c;
-        c = 8'h00;
+        c = c0;
         for (int b = 5; b >= 0; b = b - 1) c = crc8_step(c, d[8*b +: 8]);
         crc8_48 = c;
     endfunction
@@ -114,7 +118,7 @@ module eeg_spi_slave (
                     3'd3:    tx_next = shadow[23:16];
                     3'd4:    tx_next = shadow[15:8];
                     3'd5:    tx_next = shadow[7:0];
-                    default: tx_next = crc8_48(shadow);
+                    default: tx_next = crc8_48(CRC_SMP_HDR, shadow);
                 endcase
             end
             default: tx_next = 8'h00;

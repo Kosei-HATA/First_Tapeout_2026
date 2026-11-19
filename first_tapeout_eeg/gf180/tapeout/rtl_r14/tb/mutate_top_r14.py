@@ -235,6 +235,14 @@ MUTATIONS = [
     ("レジスタ：解錠のあとの誤った鍵が解錠を保つ", "eeg_regs.sv",
      "A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE);",
      "A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE) || (unlocked && wdata != 8'h00);"),
+    # audit round 5, auditor A
+    ("最上位：CIC のクリアの判断を SOFT_RESET の確定のサイクルでも取る", "eeg_digital_top.sv",
+     ".arm(cic_arm & ~soft_req)", ".arm(cic_arm)"),
+    ("SPI：サンプルの CRC に先頭バイトを含めない（全て 0 の応答が CRC の合う空の語になる）", "eeg_spi_slave.sv",
+     "default: tx_next = crc8_48(CRC_SMP_HDR, shadow);", "default: tx_next = crc8_48(8'h00, shadow);"),
+    ("最上位：SEQ を SOFT_RESET で戻す", "eeg_digital_top.sv",
+     "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;",
+     "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)       seq_cnt <= 16'd0;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

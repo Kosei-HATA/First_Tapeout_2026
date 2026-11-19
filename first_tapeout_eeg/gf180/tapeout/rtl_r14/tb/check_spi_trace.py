@@ -222,7 +222,7 @@ def main():
             elif x[0] == "crc_rd":
                 want = crc8([tx[0], rx[j - 1]])
             elif x[0] == "smp":
-                want = sbytes[x[1]] if x[1] < 6 else crc8(sbytes)
+                want = sbytes[x[1]] if x[1] < 6 else crc8([0xC0] + list(sbytes))   # the header 0xC0 and the 6 bytes
             elif x[0] == "data":
                 ld = loads[j - 1] if j - 1 < len(loads) else None
                 if ld is None or ST[ld[0]] != "RREG" or ld[1] != x[1]:

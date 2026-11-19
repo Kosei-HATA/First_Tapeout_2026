@@ -110,8 +110,12 @@ module eeg_digital_top #(
     logic        cic_settling;                    // not used by r14 (the sequencer counts the outputs)
     /* verilator lint_on UNUSEDSIGNAL */
 
-    eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n), .arm(cic_arm), .en(cic_en), .code(CODE), .dout(cic_data),
-                    .dout_stb(cic_stb), .dout_valid(cic_valid), .settling(cic_settling));
+    // The CIC takes ALIGN's clear at the edge that starts the output-time cycle, from cic_arm in the cycle before
+    // (its step 3). A SOFT_RESET committed in that cycle cancels the clear like every other event of its commit
+    // cycle (the sequencer is reset from the next edge; fsm_spec RESET/OUT: no clear). One committed in the output-time
+    // cycle itself comes after the clear (audit round 5, 11/20)
+    eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n), .arm(cic_arm & ~soft_req), .en(cic_en), .code(CODE),
+                    .dout(cic_data), .dout_stb(cic_stb), .dout_valid(cic_valid), .settling(cic_settling));
 
     logic ovl_now, ovl_seen;
     eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n), .en(cic_en), .code(CODE), .out_stb(cic_stb), .ovl_now(ovl_now),

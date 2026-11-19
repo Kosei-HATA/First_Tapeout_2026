@@ -13,8 +13,11 @@ Machines:
         At most one command is pending (a second one is rejected at the SPI write); a tick resolves that command
         and the state's timer by SEQ_PRIORITY. OUT (a CIC output time, frame cycle 8) is handled at its own MCLK
         cycle, which never coincides with a tick. RST is asynchronous (RESET_N) or SOFT_RESET's commit cycle, after
-        which the reset follows at the next edge: RST wins over every event of its cycle (the tick and the output time
-        of that cycle are not taken, so no output takes a value that the reset withdraws right after).
+        which the reset follows at the next edge: in that cycle the tick and the output time change no state and take
+        no control action (no output takes a value that the reset withdraws right after). The data path runs on
+        RESET_N alone: that output time is still counted (SEQ) and discarded, and in ALIGN the CIC's clear, which the
+        CIC takes at the edge that starts the output-time cycle (from cic_arm in the cycle before, where a commit
+        cancels it), has already been taken (audit round 5).
   SPI   one SPI transaction at byte level (CS_N low ... CS_N high).
   FIFO  the sample FIFO's occupancy with push, pop and flush in the same MCLK cycle (depth DEPTH).
 
@@ -73,7 +76,7 @@ SEQ_COMPOSITES = {           # name: (parent, initial substate, meaning)
     "AFE_ON": ("ACTIVE", "RECOVER", "AFE が動作している状態（APPLY で PRE へ）"),
 }
 SEQ_EVENTS = [
-    ("RST", "RESET_N = 0、または SOFT_RESET（どの時点でも。SOFT_RESET の確定のサイクルの tick と出力の時刻は取らない：RST はそのサイクルの全ての事象に勝つ）"),
+    ("RST", "RESET_N = 0、または SOFT_RESET（どの時点でも。SOFT_RESET の確定のサイクルでは、tick と出力の時刻による状態の変化と制御の動作を取らない。その出力の時刻もデータの経路として数えて捨て、ALIGN の CIC のクリアは出力の時刻のサイクルの始まりの縁で済んでいる）"),
     ("REL", "リセットの解除"),
     ("STOP", "命令 STOP"),
     ("START", "命令 START"),
@@ -190,7 +193,7 @@ SPI_STATES = [
     ("RREG", None, "FRAME", None, None, "レジスタの読み出し（CRC 無効時はアドレスを自動加算して連続）"),
     ("RCRC", None, "FRAME", None, None, "CRC 有効時、データ 1 バイトのあとの CRC"),
     ("RDONE", None, "FRAME", None, None, "CRC 付きの読み出しの完了"),
-    ("RSMP", None, "FRAME", None, None, "サンプルの窓の読み出し（先頭バイトのあとの 7 バイト：サンプルの状態、SEQ 2、DATA 3、CRC。フレームは 8 バイト）"),
+    ("RSMP", None, "FRAME", None, None, "サンプルの窓の読み出し（先頭バイトのあとの 7 バイト：サンプルの状態、SEQ 2、DATA 3、CRC（先頭バイト 0xC0 と 6 バイトの CRC-8）。フレームは 8 バイト）"),
     ("SDONE", None, "FRAME", None, None, "サンプルの 8 バイト（先頭バイトと 7 バイト）の完了（CS_N の立ち上がりで FIFO から取り出す）"),
     ("WDAT", None, "FRAME", None, None, "書き込みのデータ 1 バイト"),
     ("WCRC", None, "FRAME", None, None, "CRC 有効時の CRC の受信"),
@@ -440,9 +443,15 @@ SEQ_EXITS.update({(s, "APPLY"): {"PRE"} for s in SEQ_AFE_ON})
 def seq_resolve(s, present, env):
     """seq_tick, and the event whose branch decided the next state (None if none moved)."""
     t = SEQ["table"]
-    if "RST" in present:                         # a reset takes nothing else of its cycle (SOFT_RESET's commit cycle)
+    if "RST" in present:                         # a reset: no state change, no control action of its cycle
         b = pick(t.get((s, "RST")), env)
-        return (b["next"], list(b["actions"]), "RST") if isinstance(b, dict) else (s, [], None)
+        if not isinstance(b, dict):
+            return s, [], None
+        acts = list(b["actions"])
+        if "OUT" in present:                     # the data path (RESET_N): the output time counted and discarded;
+            o = pick(t.get((s, "OUT")), env)     # ALIGN's clear was taken at the edge that started this cycle
+            acts += (["cic_clear"] if isinstance(o, dict) and "cic_clear" in o["actions"] else []) + ["discard", "seq_inc"]
+        return b["next"], acts, "RST"
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
     if "TMR" in br and any(isinstance(b, dict) and "restart" in b["actions"] for e, b in br.items() if e != "TMR"):
         del br["TMR"]                            # the wait starts again: the expiry of this tick no longer holds
@@ -561,12 +570,14 @@ def check_seq_ticks():
                 n += 1
                 for p in seq_properties(s, present, env, nxt, acts, winner):
                     errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
-                # the same events with a reset in their cycle (SOFT_RESET's commit cycle): the reset alone
+                # the same events with a reset in their cycle (SOFT_RESET's commit cycle): RESET, no control action;
+                # an output time only counted and discarded (and ALIGN's clear, taken at the start of the cycle)
                 nxt, acts, _ = seq_resolve(s, ["RST"] + present, env)
                 n += 1
-                if nxt != "RESET" or acts:
+                want = ((["cic_clear"] if s == "ALIGN" else []) + ["discard", "seq_inc"]) if "OUT" in present else []
+                if nxt != "RESET" or sorted(acts) != sorted(want):
                     errs.append(f"SEQ {s} {['RST'] + present} {env}: a reset that does not win over the events of "
-                                f"its cycle -> {nxt} {acts}")
+                                f"its cycle -> {nxt} {acts} (allowed: RESET {want})")
     # RESET (RESET_N low or a SOFT_RESET): only the release leaves it, commands are ignored, an output time is only
     # counted (the CIC and SEQ run on RESET_N), the timer cannot expire
     for e, _ in SEQ_EVENTS:
@@ -894,7 +905,7 @@ CHECKS = [
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
     "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
     "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
-    "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET のみ（動作なし。SOFT_RESET の確定のサイクルの tick と出力の時刻は取らない）",
+    "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET で、状態の変化と制御の動作はない（SOFT_RESET の確定のサイクルの tick と出力の時刻）。その出力の時刻はデータの経路として数えて捨て（seq_inc、discard）、ALIGN では CIC のクリアが出力の時刻のサイクルの始まりの縁で済んでいる（cic_clear）",
     "分岐ごとの性質（シーケンサ）：拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",

@@ -110,7 +110,7 @@ task automatic r14_sample(output logic [7:0] sstat, output logic [15:0] seq, out
     sstat = spi_rx[1];
     seq   = {spi_rx[2], spi_rx[3]};
     data  = {spi_rx[4], spi_rx[5], spi_rx[6]};
-    crc   = 8'h00;
+    crc   = tb_crc8_update(8'h00, 8'hC0);           // the sample's CRC covers its header 0xC0 and the six bytes
     for (int i = 1; i <= 6; i++) crc = tb_crc8_update(crc, spi_rx[i]);
     crc_ok = (crc === spi_rx[7]);
 endtask

@@ -1,8 +1,17 @@
-# LibreLane (v3, Classic flow) area trial of the r14 digital control (11/19): eeg_digital_top from
-# gf180/tapeout/rtl_r14/ (the new sequencer, registers, SPI, FIFO; the same ports as the r13 macro) with every
-# setting of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
-# excluded cells), in the r13 macro's outline 440 x 700 um. config_h900.yaml is the same at 440 x 900 um.
-# A trial for the area (NFR-02), not a release: the chip still uses ../eeg_digital_top. Run with run_trial_20261119.sh.
+# LibreLane (v3, Classic flow) hard macro: eeg_digital_top r14 (gf180/tapeout/rtl_r14/): the new digital control
+# (sequencer, registers with shadow and active copies, SPI, FIFO, overload detection; the same ports as the r13 macro).
+# Outline 440 x 900 um: the user's decision "Yes, 440 x 900" (11/19) after the area trial (README_trial_20261119.md:
+# 440 x 700 um does not place, 92 % utilization). In the chip like the r13 macro, in the east digital column of the
+# core, with the DVDD decoupling above it moved 200 um up.
+# Settings of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
+# excluded cells), plus, so that the macro finishes without design-rule warnings:
+#   - the design repair after global routing (the trial's reset tree reached a 4.76 ns slew once routed, limit 3 ns);
+#   - clock-tree clusters of at most 10 sinks and 0.2 pF (the SDC's max fanout and max capacitance; the r13 macro's
+#     clock leaf buffers drive 22 sinks and its root buffers up to 0.5 pF);
+#   - a placement target density above the utilization (GPL-0302 with 55 %);
+#   - TIMESCALEMOD off for the PDK cells' blackbox stubs only (they carry no `timescale; the RTL lints clean with
+#     Verilator -Wall).
+# Run with run_r14_macro.sh from a Terminal panel tab.
 meta:
   version: 3
   flow: Classic
@@ -23,13 +32,14 @@ VERILOG_FILES:
 VERILOG_INCLUDE_DIRS:
 - dir::../../rtl/spec
 USE_SLANG: true
+LINTER_DISABLE_WARNINGS_BLACKBOX: [UNDRIVEN, UNUSEDSIGNAL, TIMESCALEMOD]
 
 CLOCK_PORT: MCLK
 CLOCK_PERIOD: 30.5          # 32.768 MHz
 
 FP_SIZING: absolute
-DIE_AREA: [0, 0, 440, 700]
-PL_TARGET_DENSITY_PCT: 55
+DIE_AREA: [0, 0, 440, 900]
+PL_TARGET_DENSITY_PCT: 80
 FP_PIN_ORDER_CFG: dir::../eeg_digital_top/pin_order.cfg
 
 VDD_NETS: [VDD]
@@ -61,7 +71,11 @@ STA_CORNERS:
 - max_ff_n40C_3v60
 DEFAULT_CORNER: nom_tt_025C_3v30
 
+CTS_SINK_CLUSTERING_SIZE: 10
+CTS_MAX_CAP: 0.2
+
 RUN_POST_GRT_RESIZER_TIMING: true
+RUN_POST_GRT_DESIGN_REPAIR: true
 EXTRA_EXCLUDED_CELLS:
 - gf180mcu_fd_sc_mcu9t5v0__xnor3_4
 - gf180mcu_fd_sc_mcu9t5v0__dffrnq_4

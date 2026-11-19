@@ -1,8 +1,8 @@
 # LibreLane (v3, Classic flow) area trial of the r14 digital control (11/19): eeg_digital_top from
 # gf180/tapeout/rtl_r14/ (the new sequencer, registers, SPI, FIFO; the same ports as the r13 macro) with every
 # setting of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
-# excluded cells), in a taller outline 440 x 900 um (config.yaml: the r13 macro's outline 440 x 700 um).
-# A trial for the area (NFR-02), not a release: the chip still uses ../eeg_digital_top. Run with run_trial_20261119.sh.
+# excluded cells), in a taller outline 440 x 900 um (trial_h700.yaml: the r13 macro's outline 440 x 700 um).
+# A trial for the area (NFR-02), not a release (run as config_h900.yaml, tag t14_h900_20261119; the r14 macro is config.yaml).
 meta:
   version: 3
   flow: Classic

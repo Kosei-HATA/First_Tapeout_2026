@@ -2,8 +2,9 @@
 """The r14 area trial (11/19) against the r13 macro: LibreLane's metrics of each run side by side.
 
 Runs: the r13 macro's 11/19 rerun (../eeg_digital_top/runs/f2_rerun_20261119, identical to f2, the chip's macro) and the
-r14 trials in runs/ (t14_h700_20261119: the r13 outline 440 x 700 um; t14_h900_20261119: 440 x 900 um). A run that did
-not finish is read from the metrics of its last step that has them (and said so).
+r14 trials in runs/ (t14_h700_20261119: the r13 outline 440 x 700 um; t14_h900_20261119: 440 x 900 um) and the r14 macro
+(config.yaml, 440 x 900 um with the clean-up settings; run tag r14m1_20261119, or $R14_TAG). A run that did not finish is
+read from the metrics of its last step that has them (and said so).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/eeg_digital_top_r14/compare_trial.py
 """
@@ -14,7 +15,8 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNS = [("r13 macro (f2 rerun)", os.path.join(HERE, "..", "eeg_digital_top", "runs", "f2_rerun_20261119")),
         ("r14, 440 x 700", os.path.join(HERE, "runs", "t14_h700_20261119")),
-        ("r14, 440 x 900", os.path.join(HERE, "runs", "t14_h900_20261119"))]
+        ("r14, 440 x 900", os.path.join(HERE, "runs", "t14_h900_20261119")),
+        ("r14 macro (config.yaml)", os.path.join(HERE, "runs", os.environ.get("R14_TAG", "r14m1_20261119")))]
 
 ROWS = [
     ("die area (um^2)", "design__die__area", "{:,.0f}"),
@@ -75,7 +77,7 @@ def value(m, key):
 def main():
     cols = [(name,) + metrics(run) for name, run in RUNS]
     w0 = max(len(r[0]) for r in ROWS) + 2
-    print(" " * w0 + "".join(f"{c[0]:>24s}" for c in cols))
+    print(" " * w0 + "".join(f"{c[0][:23]:>24s}" for c in cols))
     print(" " * w0 + "".join(f"{c[2][:23]:>24s}" for c in cols))
     for label, key, fmt in ROWS:
         line = f"{label:<{w0}s}"

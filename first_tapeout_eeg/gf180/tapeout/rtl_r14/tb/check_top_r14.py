@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""tb_top_r14's samples against the golden CIC (rtl/model/cic_golden.py).
+
+build/top_r14_cic.log: every CIC input ('I code') and every output time ('O seq armed'); a clear (armed) at the
+output with SEQ s restarts the filter from the next input, (s + 1) * R. build/top_r14_samples.log: 'seq data status'
+of every sample read over SPI. Each sample must equal the golden output with its SEQ, bit for bit, and be valid.
+"""
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, "..", "..", "rtl", "model"))
+import cic_golden as G  # noqa: E402
+
+R = 1024
+B = os.path.join(HERE, "..", "build")
+
+
+def main():
+    codes, clears = [], []
+    for line in open(os.path.join(B, "top_r14_cic.log")):
+        f = line.split()
+        if f[0] == "I":
+            codes.append(int(f[1]))
+        elif f[0] == "O" and f[2] == "1":
+            clears.append(int(f[1]))
+    # golden per segment between clears; seq s closes inputs [s R, (s + 1) R)
+    gold = {}
+    starts = [0] + [s + 1 for s in clears]
+    for k, s0 in enumerate(starts):
+        s1 = starts[k + 1] if k + 1 < len(starts) else len(codes) // R
+        out, _ = G.cic3_run(codes[s0 * R: s1 * R])
+        for j, (d, valid) in enumerate(out):
+            gold[s0 + j] = (d, valid)
+    n, bad = 0, []
+    for line in open(os.path.join(B, "top_r14_samples.log")):
+        seq, data, st = map(int, line.split())
+        n += 1
+        g = gold.get(seq)
+        if g is None or g[0] != data or not g[1]:
+            bad.append((seq, data, g))
+    print(f"{n} samples compared with the golden CIC ({len(clears)} clears at SEQ {clears}): {len(bad)} mismatches")
+    for b in bad[:10]:
+        print(f"  SEQ {b[0]}: RTL {b[1]}, golden {b[2]}")
+    ok = n > 0 and not bad
+    print("PASS: every sample == golden CIC output of its SEQ" if ok else "FAIL")
+    return 0 if ok else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

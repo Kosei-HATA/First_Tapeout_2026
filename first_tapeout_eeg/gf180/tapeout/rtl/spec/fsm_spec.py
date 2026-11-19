@@ -211,7 +211,7 @@ SPI_CONDS = {
     "crc_en": "CRC が有効",
     "last": "サンプルの最後のバイト（先頭バイトのあとの 7 バイト目、フレームの 8 バイト目）",
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
-    "crc_ok": "受信した CRC が一致",
+    "crc_ok": "受信した CRC のバイトが、受け取った先頭バイトとデータの CRC-8 と一致",
     "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み）",
     "busy": "前の命令がまだ tick で処理されていない間の、命令レジスタへの定義済みの命令（SOFT_RESET を除く）、またはシャドウ（一括反映の対象）とタイマのレジスタへの書き込み（命令が読む値を tick まで変えない）",
     "head": "写した語が FIFO に格納されたサンプルで、写してから取り出しもフラッシュもなく、まだ先頭",
@@ -222,7 +222,7 @@ SPI_ACTIONS = {
     "load_data": "アドレスのデータを送信のシフトレジスタへ",
     "load_zero": "0x00 を送信のシフトレジスタへ",
     "addr_inc": "アドレスに 1 を加える",
-    "load_crc": "送ったバイトの CRC を送信のシフトレジスタへ",
+    "load_crc": "受け取った先頭バイトと送ったデータのバイトの CRC-8 を送信のシフトレジスタへ",
     "next_byte": "サンプルの次のバイトを送信のシフトレジスタへ",
     "latch_addr": "アドレスを保持",
     "latch_data": "データを保持",
@@ -232,7 +232,7 @@ SPI_ACTIONS = {
     "FRAME_ERR": "エラー FRAME_ERR を立てる",
     "CRC_ERR": "エラー CRC_ERR を立てる（書かない）",
     "ADDR_ERR": "エラー ADDR_ERR を立てる（書かない。読み出しは 0x00）",
-    "STATE_ERR": "エラー STATE_ERR を立てる（前の命令が未処理のため、この命令を受け付けない）",
+    "STATE_ERR": "エラー STATE_ERR を立てる（前の命令が未処理のため、この命令、またはシャドウとタイマへの書き込みを受け付けない）",
 }
 
 
@@ -520,6 +520,21 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
         P.append("STOP does not lead to IDLE")
     if s == "RUN" and nxt not in ("RUN", "IDLE", "PRE"):
         P.append("RUN left other than by STOP or APPLY")
+    if s == "RECOVER" and nxt == "ALIGN" and not env.get("t_elec0", 1):
+        P.append("T_ELEC > 0 but RECOVER goes to the clear without the electrode wait (WAIT_E)")
+    if s == "RECOVER" and nxt == "WAIT_E" and env.get("t_elec0", 0) and "apply" not in acts:
+        P.append("T_ELEC = 0 but RECOVER goes to WAIT_E")
+    if s == "RUN" and present == ["OUT"] and "store" not in acts:
+        P.append("an output time in RUN is not stored")
+    if "FLUSH" in present and "flush" not in acts:
+        P.append("FLUSH does not empty the FIFO")
+    if s == "FILL" and nxt == "RUN" and not env.get("valid", 1):
+        P.append("RUN entered with an output that is not valid (the window not yet full)")
+    for c in ("APPLY", "APPLY_NR"):                  # an accepted change is applied (flagged ones are not)
+        if c in present:
+            b = pick(SEQ["table"].get((s, c)), env)
+            if isinstance(b, dict) and not ({"CFG_ERR", "STATE_ERR"} & set(b["actions"])) and "apply" not in b["actions"]:
+                P.append(f"{c} accepted without applying the settings")
     for c in SEQ_COMMANDS:                          # a command is executed, ignored by definition, or flagged
         if c in present:
             b = pick(SEQ["table"].get((s, c)), env)
@@ -541,6 +556,22 @@ def check_seq_ticks():
                 n += 1
                 for p in seq_properties(s, present, env, nxt, acts, winner):
                     errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
+    # RESET (RESET_N low or a SOFT_RESET): only the release leaves it, commands are ignored, an output time is only
+    # counted (the CIC and SEQ run on RESET_N), the timer cannot expire
+    for e, _ in SEQ_EVENTS:
+        cell = SEQ["table"].get(("RESET", e))
+        if e == "REL":
+            ok = isinstance(cell, list) and all(b["next"] == "IDLE" and not b["actions"] for b in cell)
+        elif e == "OUT":
+            ok = isinstance(cell, list) and all(b["next"] in (None, "RESET") and set(b["actions"]) <= DATA
+                                                for b in cell)
+        elif e == "TMR":
+            ok = cell == IMP
+        else:
+            ok = cell == IGN
+        if not ok:
+            errs.append(f"SEQ RESET/{e}: not what a reset allows (release to IDLE; output times only counted; "
+                        f"commands ignored; no timer)")
     # STATE and AFE_RST are Moore outputs of the state; READY = (state == RUN)
     codes = [x[1] for x in SEQ_STATES if x[1] is not None]
     if len(codes) != len(set(codes)):
@@ -849,6 +880,8 @@ CHECKS = [
     "  FIFO を空にするのは START、APPLY（パルスあり、すなわち AFE の動作中の APPLY）、FLUSH のみ（ほかはリセット）。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）。IDLE と WARMUP の APPLY はパルスなしで、FIFO を空にしない",
     "  RUN の前のオフセットの 1 段（APPLY_NR）は、T_ELEC > 0 なら電極の整定を待ち直す（WAIT_E、WAIT_E では数え直し）。WAIT_E へは RECOVER の満了か、その 1 段からのみ入る",
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
+    "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
+    "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
@@ -1056,8 +1089,9 @@ def tables_md(F, moore_cols):
     return "\n".join(st), trans, "\n".join(ev_md), "\n".join(cond_md), "\n".join(act_md)
 
 
-def generate():
-    rep, _ = run_checks(verbose=True)
+def generate(write=True):
+    """Writes the diagrams and the document's generated blocks; write=False returns them instead ({path: text})."""
+    rep, _ = run_checks(verbose=write)
     if rep:
         print("not generating: fix the violations first")
         return 1
@@ -1076,9 +1110,7 @@ def generate():
                                ("タイマ", lambda x: x[4] or "—"),
                                ("上位の状態", lambda x: " ⊂ ".join(parent_chain(SEQ, x[0])) or "—")])
     spi_tabs = tables_md(SPI, [("上位の状態", lambda x: " ⊂ ".join(parent_chain(SPI, x[0])) or "—")])
-    for k, v in files.items():
-        with open(os.path.join(HERE, k), "w", encoding="utf-8") as f:
-            f.write(v)
+    out = {os.path.join(HERE, k): v for k, v in files.items()}
     blocks = {
         "seq_mermaid": "```mermaid\n" + seq_mmd + "```",
         "seq_states": seq_tabs[0], "seq_table": seq_tabs[1], "seq_events": seq_tabs[2], "seq_conds": seq_tabs[3],
@@ -1095,10 +1127,25 @@ def generate():
         if a in doc:
             i, j = doc.index(a) + len(a), doc.index(b)
             doc = doc[:i] + "\n" + v + "\n" + doc[j:]
-    with open(DOC, "w", encoding="utf-8") as f:
-        f.write(doc)
+    out[DOC] = doc
+    if not write:
+        return out
+    for p, text in out.items():
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(text)
     print("wrote", ", ".join(files), "and the generated blocks of", os.path.relpath(DOC, REPO))
     return 0
+
+
+def fresh():
+    """The generated files (the two .mmd and the document's generated blocks) equal what the source gives now."""
+    want = generate(write=False)
+    if not isinstance(want, dict):
+        return 1
+    stale = [os.path.relpath(p, REPO) for p, text in want.items()
+             if not os.path.exists(p) or open(p, encoding="utf-8").read() != text]
+    print("generated files up to date" if not stale else "STALE (run fsm_spec.py gen): " + ", ".join(stale))
+    return 1 if stale else 0
 
 
 def selftest():
@@ -1144,6 +1191,16 @@ def selftest():
         ("PULSE の START でパルスを短くする", lambda t: t.__setitem__(("PULSE", "START"), [B(ALWAYS, [], "RECOVER")])),
         ("RECOVER の APPLY_NR で復帰待ちを飛ばす", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         ("SOFT_RESET の間の出力の時刻を数えない（RESET/OUT を IMP）", lambda t: t.__setitem__(("RESET", "OUT"), IMP)),
+        # audit round 3 (11/20)
+        ("RECOVER の満了の分岐の入れ違い（T_ELEC ＞ 0 で電極の待ちを飛ばす）", lambda t: t.__setitem__(("RECOVER", "TMR"), [B("t_elec0", [], "WAIT_E"), B("not t_elec0", [], "ALIGN")])),
+        ("RUN の出力を格納しない", lambda t: t.__setitem__(("RUN", "OUT"), [B(ALWAYS, ["discard", "seq_inc"])])),
+        ("IDLE の FLUSH を無視する", lambda t: t.__setitem__(("IDLE", "FLUSH"), IGN)),
+        ("有効でない出力で RUN に入る", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid", ["store", "seq_inc"], "RUN"), B("not valid", ["store", "seq_inc"], "RUN")])),
+        ("WARMUP の APPLY が数え直すだけで反映しない", lambda t: t.__setitem__(("WARMUP", "APPLY"), [B("cfg_ok", ["restart"]), B("not cfg_ok", ["CFG_ERR"])])),
+        ("RECOVER の APPLY_NR が反映しない", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", []), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("RUN の APPLY_NR が印を付けるだけ", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("RESET の出力の時刻で格納する", lambda t: t.__setitem__(("RESET", "OUT"), [B(ALWAYS, ["store", "seq_inc"])])),
+        ("RESET の APPLY を反映する", lambda t: t.__setitem__(("RESET", "APPLY"), [B(ALWAYS, ["apply"])])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -1271,4 +1328,6 @@ if __name__ == "__main__":
         sys.exit(selftest())
     if cmd == "render":
         sys.exit(render())
+    if cmd == "fresh":
+        sys.exit(fresh())
     print(__doc__)

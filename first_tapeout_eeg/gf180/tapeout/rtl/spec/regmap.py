@@ -334,7 +334,7 @@ def check(verbose=True):
     for name in ("s4", "s20"):
         pth = os.path.join(HERE, "..", "build", "e2e", f"{name}.codes")
         if not os.path.exists(pth):
-            notes.append(f"{name}.codes not found; overload false-alarm check skipped")
+            errs.append(f"{name}.codes not found: the overload false-alarm check cannot run")
             continue
         c = np.fromfile(pth, dtype=np.uint8)[256000:]
         ext = np.isin(c, OVL_RULE["codes"]).astype(np.int32)
@@ -449,14 +449,12 @@ def sv_defs():
                       "/* verilator lint_off UNUSEDPARAM */"] + body + ["/* verilator lint_on UNUSEDPARAM */"]) + "\n"
 
 
-def generate():
-    if check(verbose=True):
+def generate(write=True):
+    """Writes the package, the defs and the document's generated blocks; write=False returns them ({path: text})."""
+    if check(verbose=write):
         print("not generating: fix the violations first")
         return 1
-    with open(PKG, "w", encoding="utf-8") as f:
-        f.write(sv_package())
-    with open(DEFS, "w", encoding="utf-8") as f:
-        f.write(sv_defs())
+    out = {PKG: sv_package(), DEFS: sv_defs()}
     blocks = dict(zip(("reg_summary", "reg_fields", "commands", "sample_status"), md_tables()))
     blocks["reg_checks"] = "\n".join(f"- {c}" for c in CHECKS)
     if os.path.exists(DOC):
@@ -467,10 +465,25 @@ def generate():
             if a in doc:
                 i, j = doc.index(a) + len(a), doc.index(b)
                 doc = doc[:i] + "\n" + v + "\n" + doc[j:]
-        with open(DOC, "w", encoding="utf-8") as f:
-            f.write(doc)
+        out[DOC] = doc
+    if not write:
+        return out
+    for p, text in out.items():
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(text)
     print("wrote", os.path.relpath(PKG, REPO), "and the generated blocks of", os.path.relpath(DOC, REPO))
     return 0
+
+
+def fresh():
+    """The generated files (package, defs, the document's generated blocks) equal what the map gives now."""
+    want = generate(write=False)
+    if not isinstance(want, dict):
+        return 1
+    stale = [os.path.relpath(p, REPO) for p, text in want.items()
+             if not os.path.exists(p) or open(p, encoding="utf-8").read() != text]
+    print("generated files up to date" if not stale else "STALE (run regmap.py gen): " + ", ".join(stale))
+    return 1 if stale else 0
 
 
 def selftest():
@@ -564,4 +577,6 @@ if __name__ == "__main__":
         sys.exit(generate())
     if cmd == "selftest":
         sys.exit(selftest())
+    if cmd == "fresh":
+        sys.exit(fresh())
     print(__doc__)

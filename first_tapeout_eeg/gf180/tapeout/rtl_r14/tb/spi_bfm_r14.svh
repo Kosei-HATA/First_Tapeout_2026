@@ -12,8 +12,8 @@
 // must be 0x00 after the header, also at the CRC position (a write turned into a read by a flipped R/W bit returns
 // data and a nonzero CRC).
 
-logic [7:0] spi_tx [0:15];
-logic [7:0] spi_rx [0:15];
+logic [7:0] spi_tx [0:143];         // up to a burst of the whole map and its wrap (header + 136 bytes)
+logic [7:0] spi_rx [0:143];
 real        spi_high  = 250.0;      // SCLK high [ns] (>= 4 MCLK = 122 ns)
 real        spi_low   = 250.0;      // SCLK low [ns] (>= 5 MCLK = 153 ns); 2 MHz at most
 localparam real SPI_TPAD = 15.0;    // MISO / MISO_OE pad delay [ns]
@@ -105,7 +105,7 @@ task automatic r14_sample(output logic [7:0] sstat, output logic [15:0] seq, out
                           output bit crc_ok);
     logic [7:0] crc;
     spi_tx[0] = 8'hC0;
-    for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;
+    for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
     spi_xfer(8, 0);
     sstat = spi_rx[1];
     seq   = {spi_rx[2], spi_rx[3]};

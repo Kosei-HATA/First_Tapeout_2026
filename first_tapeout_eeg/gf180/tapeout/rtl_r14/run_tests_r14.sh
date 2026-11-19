@@ -36,7 +36,7 @@ comp() {   # out.vvp, iverilog arguments...
 run() {   # name, command
     local name=$1; shift
     local t0=$SECONDS
-    if "$@" > "build/$name.log" 2>&1 && grep -q "PASS" "build/$name.log" && ! grep -q "FAIL" "build/$name.log"; then
+    if "$@" > "build/$name.log" 2>&1 && grep -q "PASS" "build/$name.log" && ! grep -qE "FAIL|ERROR" "build/$name.log"; then
         RES+=("PASS  $name  $((SECONDS - t0)) s")
     else
         RES+=("FAIL  $name  (build/$name.log)")
@@ -44,11 +44,13 @@ run() {   # name, command
 }
 # spec: every checker and self-test must exit 0 (PASS is printed only then)
 spec() { (cd ../rtl/spec && $PY fsm_spec.py check && $PY fsm_spec.py selftest && $PY regmap.py check &&
-          $PY regmap.py selftest) && echo "PASS: spec checks and self-tests"; }
+          $PY regmap.py selftest && $PY fsm_spec.py fresh && $PY regmap.py fresh && $PY wave.py fresh) &&
+        echo "PASS: spec checks, self-tests, generated files up to date"; }
 codes() { $PY tb/gen_codes.py && echo "PASS: code streams"; }
 seq_t() { comp build/tb_seq.vvp eeg_seq.sv tb/tb_seq.sv &&
           vvp -n build/tb_seq.vvp +n=600000 +seed=11 +trace=build/seq_trace.txt && $PY tb/check_seq_trace.py build/seq_trace.txt; }
 tick_t() { comp build/tb_tick.vvp eeg_clkgen.sv tb/tb_tick.sv && vvp -n build/tb_tick.vvp; }
+clkgen_t() { comp build/tb_clkgen.vvp eeg_clkgen.sv ../rtl/tb/tb_clkgen.sv && vvp -n build/tb_clkgen.vvp; }
 cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3.sv ../rtl/eeg_rnd_sat.sv tb/tb_cic_arm.sv &&
           for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done; }
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
@@ -64,6 +66,7 @@ print(f"{len(g)} of {len(c)} frames compared, {bad} mismatches; detections: over
 print("PASS" if bad == 0 and g[:split].sum() > 0 and g[split:].sum() == 0 else "FAIL")
 EOF
 }
+regs_t() { comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }
 fifo_t() { comp build/tb_fifo.vvp eeg_fifo.sv tb/tb_fifo.sv &&
            vvp -n build/tb_fifo.vvp +n=400000 +trace=build/fifo_trace.txt && $PY tb/check_fifo_trace.py build/fifo_trace.txt; }
 fifo4_t() { comp build/tb_fifo4.vvp -DDEPTH4 eeg_fifo.sv tb/tb_fifo.sv &&
@@ -80,8 +83,10 @@ run spec spec
 run codes codes
 run tb_seq seq_t
 run tb_tick tick_t
+run tb_clkgen clkgen_t
 run tb_cic_arm cic_t
 run tb_ovl ovl_t
+run tb_regs regs_t
 run tb_fifo fifo_t
 run tb_fifo4 fifo4_t
 run tb_top_r14 top_t

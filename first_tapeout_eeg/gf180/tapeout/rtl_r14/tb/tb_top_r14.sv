@@ -30,11 +30,20 @@
 //      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
 //   L  SPI at the specification's limits (VER-02): 2 MHz with the minimum high (4 MCLK) or the minimum low (5 MCLK),
 //      and 1 MHz; CS_N setup 5 MCLK, hold 3 MCLK, high 4 MCLK; MISO through the 15 ns pad delay; CRC off and on
+//   A also (audit round 3): a burst read of the whole map at reset against the map's reset values (generated), MISO
+//      0x00 after a completed frame, an illegal SPI state value -> FRAME_ERR and nothing written; H: SOFT_RESET with
+//      samples in the FIFO empties it (level 0, DRDY_N high, the next read is the empty word)
 //   N  audit round 2 (auditor C): every analog control pin against the specification (build/pin_tests.svh, generated
 //      from regmap.pins_from_active: OFM / OFS / OFEN per range, trims, CHOP_EN, DWA_EN, TEST_CFG, the CHOP_BLANK
 //      length or hold, the chopper's and CHOP1's half periods, the active copies; M above the range's top -> CFG_ERR
 //      and nothing applied), DFLAG.OVL not set by an overload in WARMUP, RECOVER, PRE and PULSE but set in FILL, an
 //      APPLY_NR across a range -> CFG_ERR
+//   N5 audit round 3: APPLY_NR's step rule (regmap.nr_ok, generated): every other applied setting changed -> CFG_ERR,
+//      the sign walk; O: RAW_DATA / RAW_CLK (the code stream, the three timing pairs)
+// Also (audit round 3): shadow writes alone leave the chopper, CHOP1 and CHOP_BLANK; STATE read in WARMUP, RUN, PRE,
+// PULSE, RECOVER; the empty word with OVERRUN; no DRDY_N pulse for an output dropped by a full FIFO; the frame strobes
+// at the pins (CMP_STROBE every 32 MCLK; TH_CAPTURE in frame cycle 1, DAC_LOAD in 2, DAC_CLK in 4 (rises at e4), each
+// one MCLK)
 // Also: RECOVER lasts T_REC (B) and WAIT_E T_ELEC (D); through a SOFT_RESET (H) CHOP1 keeps its phase and ADC_RST_N
 // stays high; every sequencer event of the run is written to build/top_seq_trace.txt and replayed through
 // fsm_spec.seq_tick by check_seq_trace.py --no-cover (VER-09 end to end).
@@ -81,6 +90,9 @@ module tb_top_r14;
         logic [7:0] v;
         r14_read(a, v);
         if (v !== exp) fail($sformatf("read 0x%02h (%s): 0x%02h, expected 0x%02h", a, name, v, exp));
+    endtask
+    task automatic rt_burst_expect(input integer k, input logic [7:0] exp, input string name);
+        if (spi_rx[k] !== exp) fail($sformatf("%s: 0x%02h, expected 0x%02h", name, spi_rx[k], exp));
     endtask
     task automatic rt_write(input logic [6:0] a, input logic [7:0] v);
         r14_write(a, v);
@@ -215,8 +227,11 @@ module tb_top_r14;
     real t_state [0:15];
     initial for (int i = 0; i < 16; i++) t_state[i] = 0.0;
     always @(dut.seq_state) t_state[dut.seq_state] = $realtime;
+    integer mclk_count = 0;
+    always @(posedge MCLK) mclk_count = mclk_count + 1;
     real t_chop1_edge = 0.0;
-    always @(CHOP1) t_chop1_edge = $realtime;
+    integer n_chop1_edge = 0;                     // the MCLK count at the last CHOP1 edge (exact over long spans)
+    always @(CHOP1) begin t_chop1_edge = $realtime; n_chop1_edge = mclk_count; end
     always @(negedge ADC_RST_N)                   // the ADC's reset follows RESET_N only (RST-02), never SOFT_RESET
         if (RESET_N === 1'b1) fail("ADC_RST_N fell while RESET_N is high");
 
@@ -258,6 +273,70 @@ module tb_top_r14;
         end
     end
 
+    // ------------------------------------------------------------------ the frame strobes at the pins
+    integer fcyc = -1, nstrobe_err = 0;
+    always @(posedge MCLK) begin
+        #0.2;
+        if (!RESET_N) begin
+            fcyc = -1;
+        end else begin
+            if (CMP_STROBE === 1'b1) begin
+                if (fcyc != -1 && fcyc != 31) begin nstrobe_err++; if (nstrobe_err < 5) fail($sformatf("CMP_STROBE after %0d MCLK, expected 32", fcyc + 1)); end
+                fcyc = 0;
+            end else if (fcyc >= 0) begin
+                fcyc = fcyc + 1;
+            end
+            if (fcyc >= 0 && (TH_CAPTURE !== (fcyc == 1) || DAC_LOAD !== (fcyc == 2) || DAC_CLK !== (fcyc == 4) || fcyc > 31)) begin
+                nstrobe_err++;
+                if (nstrobe_err < 5) fail($sformatf("frame strobes at cycle %0d: TH_CAPTURE %b DAC_LOAD %b DAC_CLK %b", fcyc, TH_CAPTURE, DAC_LOAD, DAC_CLK));
+            end
+        end
+    end
+    integer n_drdy_fall = 0;
+    always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
+    integer n_rawclk = 0;
+    always @(posedge RAW_CLK) n_rawclk = n_rawclk + 1;
+
+    // ------------------------------------------------------------------ N5: one generated nr_ok case (pin_tests.svh)
+    task automatic nr_base(input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62);
+        logic [6:0] A [0:11];
+        logic [7:0] sh [0:11];
+        A = '{7'h20, 7'h21, 7'h22, 7'h23, 7'h24, 7'h25, 7'h26, 7'h27, 7'h28, 7'h60, 7'h61, 7'h62};
+        sh = '{s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62};
+        r14_write(7'h11, 8'h3C);
+        for (int i = 0; i < 12; i++) r14_write(A[i], sh[i]);
+        r14_write(7'h11, 8'h00);
+        r14_cmd(8'h33);                                 // APPLY (with its pulse) to the base
+        wait_state(4'd7, 50.0, "N5 PRE (base)");
+        wait_state(4'd6, 6000.0, "N5 RUN (base)");
+        expect_noerr("N5 base");
+    endtask
+    task automatic nr_case(input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62,
+                           input logic ok, input logic [9:0] e_ofm, input logic e_ofs, input logic [3:0] e_ofen,
+                           input logic [3:0] e_cpf, input logic [1:0] e_ib, input logic e_dwa, input logic e_chen,
+                           input logic [7:0] e_tcfg, input string name);
+        logic [6:0] A [0:11];
+        logic [7:0] sh [0:11];
+        logic [7:0] e;
+        A = '{7'h20, 7'h21, 7'h22, 7'h23, 7'h24, 7'h25, 7'h26, 7'h27, 7'h28, 7'h60, 7'h61, 7'h62};
+        sh = '{s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62};
+        r14_write(7'h11, 8'h3C);
+        for (int i = 0; i < 12; i++) r14_write(A[i], sh[i]);
+        r14_write(7'h11, 8'h00);
+        r14_cmd(8'h44);                                 // APPLY_NR in RUN
+        repeat (700) @(posedge MCLK);
+        r14_read(7'h06, e);
+        if (ok && e !== 8'h00) fail($sformatf("%s: ERR 0x%02h, expected none (accepted)", name, e));
+        if (!ok && e !== 8'h20) fail($sformatf("%s: ERR 0x%02h, expected CFG_ERR (rejected)", name, e));
+        if (e !== 8'h00) r14_write(7'h06, 8'hFF);
+        if (dut.seq_state !== 4'd6) fail($sformatf("%s: state %0d, expected RUN (no pulse)", name, dut.seq_state));
+        if (OFM !== e_ofm || OFS !== e_ofs || OFEN !== e_ofen || CPF_TRIM !== e_cpf || AFE_IBIAS !== e_ib ||
+            DWA_EN !== e_dwa || CHOP_EN !== e_chen || TEST_CFG !== e_tcfg)
+            fail($sformatf("%s: pins OFM %0d OFS %b OFEN %b CPF %0d IBIAS %0d DWA %b CHOP_EN %b TEST_CFG %02h; expected %0d %b %b %0d %0d %b %b %02h",
+                           name, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, DWA_EN, CHOP_EN, TEST_CFG,
+                           e_ofm, e_ofs, e_ofen, e_cpf, e_ib, e_dwa, e_chen, e_tcfg));
+    endtask
+
     // ------------------------------------------------------------------ N: one generated pin case (pin_tests.svh)
     task automatic pin_case(input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61, s62,
                             input logic ok, input logic [9:0] e_ofm, input logic e_ofs,
@@ -292,6 +371,24 @@ module tb_top_r14;
                 if (v !== sh[i]) fail($sformatf("%s: active 0x%02h = 0x%02h, shadow 0x%02h", name, A[i] + 7'h10, v, sh[i]));
             end
         repeat (1100) @(posedge MCLK);                  // a new chopper rate applies at the 512-MCLK wrap
+        measure_chop(e_bw, e_bheld, e_chalf, e_c1half, meas_c1, name);
+        // shadow writes alone (no APPLY) must leave the chopper's rate, CHOP1 and CHOP_BLANK: other rate, CHOP1 rate,
+        // length and range in the shadows, then the same measurements
+        r14_write(7'h26, sh[6] ^ 8'h01);
+        r14_write(7'h27, (sh[7] & 8'hF8) | 8'(((sh[7] & 8'h07) + 1) % 6));
+        r14_write(7'h28, 8'(((sh[8] & 8'h0F) % 15) + 1));
+        r14_write(7'h22, (sh[2] & 8'hF8) | 8'(((sh[2] & 8'h07) + 1) % 5));
+        repeat (1100) @(posedge MCLK);
+        measure_chop(e_bw, e_bheld, e_chalf, e_c1half, meas_c1, {name, " after shadow writes alone"});
+        r14_write(7'h22, sh[2]);                        // the case's shadows again (a later START applies them)
+        r14_write(7'h26, sh[6]);
+        r14_write(7'h27, sh[7]);
+        r14_write(7'h28, sh[8]);
+    endtask
+
+    task automatic measure_chop(input integer e_bw, input logic e_bheld, input integer e_chalf, input integer e_c1half,
+                                input logic meas_c1, input string name);
+        real t0, t1, w;
         // CHOP_BLANK: held by ADC_ZERO, or high for its length + 1 MCLK at each output-chopper edge
         t0 = $realtime;
         if (e_bheld) begin
@@ -346,8 +443,6 @@ module tb_top_r14;
         r14_write(7'h07, 8'hFF);
     endtask
 
-    integer mclk_count = 0;
-    always @(posedge MCLK) mclk_count = mclk_count + 1;
 
     // ------------------------------------------------------------------ STATUS against what the pins and state show
     task automatic check_status(input logic [7:0] exp, input logic [7:0] mask, input string name);
@@ -427,10 +522,26 @@ module tb_top_r14;
         spi_tx[0] = 8'hC0; spi_xfer(3, 2);                           // a sample read stopped inside a byte
         expect_err_now(8'h02, "FRAME_ERR (sample read stopped inside a byte)");
         spi_tx[0] = 8'h24; spi_tx[1] = 8'h03; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // too long
+        if (spi_rx[1] !== 8'h00 || spi_rx[2] !== 8'h00)
+            fail($sformatf("MISO after the header of an overlong write: %02h %02h, expected 00 00", spi_rx[1], spi_rx[2]));
         expect_err_now(8'h02, "FRAME_ERR (overlong write)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM unchanged after an overlong write");
         CS_N = 1'b0; #500; CS_N = 1'b1; #600;                        // empty frame
         expect_noerr("empty frame");
+        // an illegal state value in the SPI state machine (NFR-05): FRAME_ERR at CS_N rising, nothing written
+        fork
+            begin
+                spi_tx[0] = 8'h24; spi_tx[1] = 8'h0E; spi_xfer(2, 0);
+            end
+            begin
+                #(6000.0);                              // inside the data byte
+                force dut.u_spi.st = 4'd12;
+                @(posedge MCLK);
+                release dut.u_spi.st;
+            end
+        join
+        expect_err_now(8'h02, "FRAME_ERR for an illegal SPI state value");
+        rt_read_expect(7'h24, 8'h08, "CPF_TRIM not written by a frame with an illegal SPI state");
         r14_cmd(8'h77);
         expect_err_now(8'h80, "CMD_ERR (unknown code)");
         r14_write(7'h11, 8'h3D);                        // TEST_KEY one bit off: locks and flags CMD_ERR
@@ -462,6 +573,7 @@ module tb_top_r14;
         r14_cmd(8'h11);
         wait_state(4'd1, 50.0, "WARMUP after START");
         t_start_tick = $realtime - TMCLK;               // the state changed at e25 of the tick
+        rt_read_expect(7'h04, 8'd1, "STATE in WARMUP");
         wait_state(4'd2, 5100.0, "RECOVER after T_WARM");
         t0 = (t_afe_fall - t_start_tick) / 1000.0;
         if (t0 < 4999.0 || t0 > 5001.0) fail($sformatf("T_WARM %0.3f us, expected 5000", t0));
@@ -472,6 +584,7 @@ module tb_top_r14;
         wait_state(4'd6, 3100.0, "RUN after three outputs");
         r14_read(7'h03, v);
         if (v[3] !== 1'b1) fail("STATUS.READY not set in RUN");
+        rt_read_expect(7'h04, 8'd6, "STATE in RUN");
         read_samples(6, -1, "B samples");
         begin
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
@@ -632,6 +745,12 @@ module tb_top_r14;
         if (v[0] !== 1'b1) fail("DFLAG.OVERRUN after the FIFO overflowed");
         r14_cmd(8'h55);
         repeat (400) @(posedge MCLK);
+        begin                                           // the empty word carries DFLAG.OVERRUN too
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+            r14_sample(st, sq, d, ok);
+            if (st[7] !== 1'b0 || st[6] !== 1'b1 || !ok)
+                fail($sformatf("the empty word after an overrun: status 0x%02h, expected VALID 0 and OVERRUN 1", st));
+        end
         while (DRDY_N !== 1'b0) @(posedge MCLK);
         begin
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
@@ -681,6 +800,15 @@ module tb_top_r14;
                 if (v < 8'd1) fail("G3: no sample in the FIFO after the pulse");
                 if (k == 2 && DRDY_N !== 1'b1) fail("G3: DRDY_N low between pulses with a non-empty FIFO");
             end
+            while (dut.fifo_level != 4'(FD)) @(posedge MCLK);   // full: the next outputs are dropped
+            repeat (200) @(posedge MCLK);               // past the pulse of the sample that filled it
+            begin
+                integer nf0;
+                nf0 = n_drdy_fall;
+                repeat (3 * 32768) @(posedge MCLK);
+                if (n_drdy_fall != nf0) fail($sformatf("G3: %0d DRDY_N pulses for outputs dropped by a full FIFO", n_drdy_fall - nf0));
+            end
+            r14_write(7'h07, 8'hFF);                    // the overrun of this test
             r14_write(7'h55, 8'h00);                    // level mode again
             r14_cmd(8'h55);                             // empty the FIFO
             repeat (400) @(posedge MCLK);
@@ -692,8 +820,9 @@ module tb_top_r14;
         phase = "H";
         begin
             integer seq0, cnt0, n0;
-            real tc0;
-            tc0 = t_chop1_edge;                         // CHOP1 at 4 kHz (half period 4096 MCLK) since START
+            integer tc0;
+            tc0 = n_chop1_edge;                         // CHOP1 at 4 kHz (half period 4096 MCLK) since START
+            while (dut.fifo_level < 4'd2) @(posedge MCLK);  // samples in the FIFO (RUN since G)
             r14_write(7'h24, 8'h03);
             @(posedge MCLK); #1;
             seq0 = dut.seq_cnt;  cnt0 = dut.u_clkgen.cnt;  n0 = mclk_count;
@@ -706,12 +835,19 @@ module tb_top_r14;
                                (cnt0 + mclk_count - n0) % 512));
             if (dut.seq_cnt < seq0) fail($sformatf("SOFT_RESET reset SEQ: %0d after %0d", dut.seq_cnt, seq0));
             repeat (9000) @(posedge MCLK);              // past the next CHOP1 edges
-            if (t_chop1_edge <= tc0 || ($rtoi((t_chop1_edge - tc0) / TMCLK + 0.5) % 4096) != 0)
-                fail($sformatf("SOFT_RESET moved CHOP1: an edge %0.2f MCLK after the one before it",
-                               (t_chop1_edge - tc0) / TMCLK));
+            if (n_chop1_edge <= tc0 || ((n_chop1_edge - tc0) % 4096) != 0)
+                fail($sformatf("SOFT_RESET moved CHOP1: an edge %0d MCLK after the one before it", n_chop1_edge - tc0));
         end
         rt_read_expect(7'h06, 8'h01, "ERR after SOFT_RESET (RESET_FLAG)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM after SOFT_RESET");
+        rt_read_expect(7'h05, 8'h00, "FIFO level after SOFT_RESET");
+        if (DRDY_N !== 1'b1) fail("DRDY_N low after SOFT_RESET");
+        begin
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+            r14_sample(st, sq, d, ok);
+            if (st[7] !== 1'b0 || sq !== 16'd0 || d !== 24'd0 || !ok)
+                fail($sformatf("sample read after SOFT_RESET: status 0x%02h SEQ %0d (the empty word expected)", st, sq));
+        end
         $display("H  SOFT_RESET (errors %0d)", errors);
 
         // ---------------- I: SOFT_RESET while a command is pending (64 kHz)
@@ -791,6 +927,9 @@ module tb_top_r14;
         spi_tx[0] = 8'hC0;
         spi_xfer(8, 0);
         expect_noerr("J3 complete sample read with CRC on");
+        spi_tx[0] = 8'h84; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_tx[3] = 8'h00; spi_xfer(4, 0);
+        if (spi_rx[3] !== 8'h00) fail($sformatf("J3 MISO after a completed CRC read: %02h, expected 00", spi_rx[3]));
+        expect_err_now(8'h02, "J3 FRAME_ERR for a CRC read with an extra byte");
         r14_write(7'h55, 8'h00);
         bfm_crc_en = 1'b0;
         // J4: APPLY in WARMUP restarts the wait: AFE_RST is released T_WARM after the change
@@ -1031,8 +1170,11 @@ module tb_top_r14;
         r14_write(7'h52, 8'd255);
         r14_cmd(8'h33);
         wait_state(4'd7, 50.0, "N4 PRE");
+        rt_read_expect(7'h04, 8'd7, "STATE in PRE");
         wait_state(4'd8, 2100.0, "N4 PULSE");
+        rt_read_expect(7'h04, 8'd8, "STATE in PULSE");
         wait_state(4'd2, 2100.0, "N4 RECOVER");
+        rt_read_expect(7'h04, 8'd2, "STATE in RECOVER");
         wait_state(4'd4, 2100.0, "N4 ALIGN");
         if ((t_state[8] - t_state[7]) / 1000.0 < 1992.13 || (t_state[8] - t_state[7]) / 1000.0 > 1992.25 ||
             (t_afe_fall - t_afe_rise) / 1000.0 < 1992.13 || (t_afe_fall - t_afe_rise) / 1000.0 > 1992.25 ||
@@ -1051,7 +1193,64 @@ module tb_top_r14;
             fail($sformatf("N4 RECOVER %0.3f us at T_REC 29, expected 226.5625", (t_state[4] - t_state[2]) / 1000.0));
         wait_state(4'd6, 5000.0, "N4 RUN again");
         r14_write(7'h52, 8'd32);
-        $display("N  analog pins (generated cases), DFLAG.OVL gating, APPLY_NR across a range, timer limits (errors %0d)", errors);
+        run_nr_tests();                                 // N5: generated from regmap.nr_ok (ends at the reset values)
+        $display("N  analog pins (generated cases), DFLAG.OVL gating, APPLY_NR across a range, timer limits, nr_ok cases (errors %0d)", errors);
+
+        // ---------------- O: RAW_DATA / RAW_CLK: the code stream (RAW_EN) and the three timing pairs (DBG_SEL)
+        phase = "O";
+        begin
+            logic [7:0] word;
+            logic [4:0] want;
+            logic       pc, pd;
+            integer nw, nbad, fo;
+            r14_write(7'h11, 8'h3C);
+            r14_write(7'h62, 8'h01);                    // RAW_EN
+            r14_write(7'h11, 8'h00);
+            repeat (3 * 32) @(posedge MCLK);
+            nw = 0; nbad = 0;
+            fo = n_rawclk;
+            repeat (64) @(posedge MCLK);                // RAW_CLK runs (8 rises per frame) before decoding
+            if (n_rawclk - fo < 14) begin
+                fail($sformatf("O RAW_CLK not running with RAW_EN (%0d rises in 2 frames)", n_rawclk - fo));
+                nw = 20;                                // no decoding: it would wait for RAW_CLK forever
+            end
+            while (nw < 20) begin                       // one word per frame: bits at RAW_CLK's rises, MSB first
+                @(posedge CMP_STROBE);
+                want = CODE;                            // the code of the frame that ends here
+                word = 8'h00;
+                for (int b = 0; b < 8; b++) begin
+                    @(posedge RAW_CLK);
+                    word = {word[6:0], RAW_DATA};
+                end
+                if (word !== {3'b101, want}) begin
+                    nbad = nbad + 1;
+                    if (nbad < 4) fail($sformatf("O RAW word 0x%02h, expected 0x%02h (code %0d)", word, {3'b101, want}, want));
+                end
+                nw = nw + 1;
+            end
+            for (int s = 1; s < 4; s++) begin           // RAW_EN 0, DBG_SEL s: the pads follow a pair one MCLK later
+                r14_write(7'h11, 8'h3C);
+                r14_write(7'h62, 8'(s << 1));
+                r14_write(7'h11, 8'h00);
+                repeat (3 * 32) @(posedge MCLK);
+                fo = 0;
+                pc = 1'bx; pd = 1'bx;
+                repeat (600) begin
+                    @(posedge MCLK); #0.2;
+                    if (pc !== 1'bx && (RAW_CLK !== pc || RAW_DATA !== pd)) fo = fo + 1;
+                    case (s)
+                        1: begin pc = CMP_STROBE; pd = DAC_CLK; end
+                        2: begin pc = CHOP;       pd = CHOP_OUT; end
+                        default: begin pc = CHOP_BLANK; pd = CHOP1; end
+                    endcase
+                end
+                if (fo != 0) fail($sformatf("O DBG_SEL %0d: RAW_CLK / RAW_DATA differ from their pair in %0d cycles", s, fo));
+            end
+            r14_write(7'h11, 8'h3C);
+            r14_write(7'h62, 8'h00);
+            r14_write(7'h11, 8'h00);
+        end
+        $display("O  RAW stream and timing pairs (errors %0d)", errors);
 
         $fclose(flog);
         $fclose(fsmp);

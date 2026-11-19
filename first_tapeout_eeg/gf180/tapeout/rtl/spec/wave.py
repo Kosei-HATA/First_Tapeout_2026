@@ -198,13 +198,27 @@ def render(name, src, width):
     return out
 
 
+def fresh():
+    """The wave_*.json equal what the source gives now (the PNGs are rendered from them)."""
+    stale = []
+    for name, (fn, width) in DIAGRAMS.items():
+        p = os.path.join(HERE, f"wave_{name}.json")
+        if not os.path.exists(p) or json.load(open(p, encoding="utf-8")) != json.loads(json.dumps(fn())):
+            stale.append(os.path.basename(p))
+    print("timing diagrams up to date" if not stale else "STALE (run wave.py): " + ", ".join(stale))
+    return 1 if stale else 0
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "fresh":
+        return fresh()
     for name, (fn, width) in DIAGRAMS.items():
         src = fn()
         with open(os.path.join(HERE, f"wave_{name}.json"), "w", encoding="utf-8") as f:
             json.dump(src, f, ensure_ascii=False, indent=1)
         print("wrote", os.path.relpath(render(name, src, width), FS.REPO))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

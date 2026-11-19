@@ -12,7 +12,10 @@
 #   - TIMESCALEMOD off for the PDK cells' blackbox stubs only (they carry no `timescale; the RTL lints clean with
 #     Verilator -Wall).
 # r14m1 (11/20) also tried CTS clusters of 10 sinks / 0.2 pF and 80 % placement density: the clock buffers tripled and
-# setup failed by 0.436 ns at ss, so those are back at the r13 values.
+# setup failed by 0.436 ns at ss; r14m2 (r13's CTS, 55 %, the margins below) met timing (ss +1.007 ns) but kept the
+# clock tree's design-rule warnings of the r13 macro (leaf buffers driving 20-22 sinks against the SDC's fanout 10,
+# the root and level-3 buffers 0.26-0.53 pF against 0.2 pF). r14m3: the CTS limits of r14m1 with the density and
+# margins of r14m2.
 # Run with run_r14_macro.sh from a Terminal panel tab.
 meta:
   version: 3
@@ -72,6 +75,9 @@ STA_CORNERS:
 - max_ss_125C_3v00
 - max_ff_n40C_3v60
 DEFAULT_CORNER: nom_tt_025C_3v30
+
+CTS_SINK_CLUSTERING_SIZE: 10          # the SDC's MAX_FANOUT_CONSTRAINT
+CTS_MAX_CAP: 0.2                      # the SDC's MAX_CAPACITANCE_CONSTRAINT (pF)
 
 PL_RESIZER_SETUP_SLACK_MARGIN: 1.0
 GRT_RESIZER_SETUP_SLACK_MARGIN: 1.5

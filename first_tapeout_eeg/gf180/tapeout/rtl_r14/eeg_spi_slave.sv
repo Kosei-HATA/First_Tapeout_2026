@@ -162,9 +162,10 @@ module eeg_spi_slave (
             end else if (cs_end) begin
                 if (st != S_IDLE) begin
                     if (bit_cnt != 3'd0 || st == S_OVF || st == S_WDAT || st == S_WCRC ||
-                        (crc_en && (st == S_RCRC || st == S_RSMP))) begin
-                        frame_err <= 1'b1;               // inside a byte, overlong, an incomplete write, or (CRC
-                                                         // on) a read without its CRC or a short sample
+                        (crc_en && (st == S_RCRC || st == S_RSMP)) || st > S_OVF) begin
+                        frame_err <= 1'b1;               // inside a byte, overlong, an incomplete write, (CRC on)
+                                                         // a read without its CRC or a short sample, or an illegal
+                                                         // state value (NFR-05: nothing committed, flagged)
                     end else if (st == S_WDONE) begin
                         if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;
                         else                                                            reg_we  <= 1'b1;

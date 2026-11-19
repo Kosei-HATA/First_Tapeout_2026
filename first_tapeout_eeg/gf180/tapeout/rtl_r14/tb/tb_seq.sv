@@ -58,6 +58,82 @@ module tb_seq;
         endcase
     endfunction
 
+    // one cycle with a tick, an optional command, frame_stb and out_stb as given
+    task automatic step(input logic tk, input logic [7:0] cmd, input logic fs, input logic os, input logic ov);
+        @(negedge clk);
+        tick = tk; out_stb = os; out_valid = ov; frame_stb = fs; cfg_ok = 1'b1; nr_ok = 1'b1;
+        cmd_valid = (cmd != 8'h00); cmd_code = cmd;
+        @(negedge clk);
+        tick = 1'b0; out_stb = 1'b0; frame_stb = 1'b0; cmd_valid = 1'b0;
+    endtask
+    task automatic expect_load(input logic [3:0] st, input logic [17:0] v, input string name);
+        if (state !== st || dut.timer !== v) begin
+            $display("ERROR: %s: state %0d timer %0d, expected state %0d timer %0d", name, state, dut.timer, st, v);
+            errors = errors + 1;
+        end
+    endtask
+    task automatic sweep_timers();
+        integer nf;
+        for (int v = 0; v < 256; v++) begin
+            rst_n = 1'b0; @(negedge clk); rst_n = 1'b1;
+            t_warm = 8'(v); t_elec = 8'(v); t_rec = 8'(v); t_pre = 8'(v); t_rst = 8'(v);
+            step(1'b1, 8'h11, 1'b0, 1'b0, 1'b0);             // START: WARMUP loads T_WARM x 1024
+            expect_load(4'd1, 18'(v * 1024), $sformatf("T_WARM %0d", v));
+            t_warm = 8'd0;
+            step(1'b1, 8'h33, 1'b0, 1'b0, 1'b0);             // APPLY in WARMUP restarts with T_WARM 0
+            step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);             // expiry: RECOVER loads T_REC x 8
+            expect_load(4'd2, 18'(v * 8), $sformatf("T_REC %0d", v));
+            t_rec = 8'd0;
+            step(1'b1, 8'h22, 1'b0, 1'b0, 1'b0);             // STOP, START again to reach RECOVER with T_REC 0
+            step(1'b1, 8'h11, 1'b0, 1'b0, 1'b0);
+            step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);             // WARMUP (T_WARM 0) expires
+            step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);             // RECOVER (T_REC 0) expires: WAIT_E or ALIGN
+            if (v != 0) expect_load(4'd3, 18'(v * 1024), $sformatf("T_ELEC %0d", v));
+            t_elec = 8'd0;
+            if (v != 0) step(1'b1, 8'h44, 1'b0, 1'b0, 1'b0); // APPLY_NR in WAIT_E restarts with T_ELEC 0
+            if (v != 0) step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0); // WAIT_E expires: ALIGN
+            step(1'b0, 8'h00, 1'b0, 1'b1, 1'b0);             // output time: FILL
+            step(1'b0, 8'h00, 1'b0, 1'b1, 1'b1);             // a valid output: RUN
+            step(1'b1, 8'h33, 1'b0, 1'b0, 1'b0);             // APPLY: PRE loads T_PRE x 8
+            expect_load(4'd7, 18'(v * 8), $sformatf("T_PRE %0d", v));
+            if (v == 0) begin
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);         // PRE (0) expires: PULSE loads T_RST x 8
+                expect_load(4'd8, 18'(0), "T_RST 0");
+            end else begin
+                t_pre = 8'd0;
+                step(1'b1, 8'h22, 1'b0, 1'b0, 1'b0);         // STOP and the path again with T_PRE 0
+                step(1'b1, 8'h11, 1'b0, 1'b0, 1'b0);
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);
+                step(1'b0, 8'h00, 1'b0, 1'b1, 1'b0);
+                step(1'b0, 8'h00, 1'b0, 1'b1, 1'b1);
+                step(1'b1, 8'h33, 1'b0, 1'b0, 1'b0);
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);         // PRE expires: PULSE loads T_RST x 8
+                expect_load(4'd8, 18'(v * 8), $sformatf("T_RST %0d", v));
+            end
+        end
+        // the longest waits to expiry: T_WARM 255 and T_ELEC 255 (261,120 frames), a tick every 8 frames
+        for (int w = 0; w < 2; w++) begin
+            rst_n = 1'b0; @(negedge clk); rst_n = 1'b1;
+            t_warm = (w == 0) ? 8'd255 : 8'd0; t_elec = (w == 0) ? 8'd0 : 8'd255; t_rec = 8'd0;
+            step(1'b1, 8'h11, 1'b0, 1'b0, 1'b0);
+            if (w == 1) begin
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);         // WARMUP (0) expires
+                step(1'b1, 8'h00, 1'b0, 1'b0, 1'b0);         // RECOVER (0) expires: WAIT_E 255 ms
+            end
+            nf = 0;
+            while (state == ((w == 0) ? 4'd1 : 4'd3) && nf < 270000) begin
+                step(((nf % 8) == 7), 8'h00, 1'b1, 1'b0, 1'b0);
+                nf = nf + 1;
+            end
+            if (nf < 261120 || nf > 261128) begin
+                $display("ERROR: %s 255 expired after %0d frames, expected 261,120 (+ the tick)", (w == 0) ? "T_WARM" : "T_ELEC", nf);
+                errors = errors + 1;
+            end
+        end
+        $display("timer sweep: settings 0..255 of all five timers loaded; T_WARM and T_ELEC 255 run to expiry");
+    endtask
+
     function automatic logic afe_of(input logic [3:0] s);
         afe_of = (s == 4'd0) || (s == 4'd1) || (s == 4'd8) || (s > 4'd8);
     endfunction
@@ -156,6 +232,9 @@ module tb_seq;
             end
             if (ev_tick && cv0) cmd_valid = 1'b0;             // taken at this tick (cmd_ack)
         end
+        // every timer setting 0..255: the value loaded on entering its state (T_WARM, T_ELEC x 1024 frames; T_REC,
+        // T_PRE, T_RST x 8 frames), and the longest T_WARM and T_ELEC (255 ms) run to expiry
+        sweep_timers();
         // every illegal state value: back to IDLE with STATE_ERR (and AFE_RST = 1 while it lasts)
         for (int bad = 9; bad < 16; bad++) begin
             @(negedge clk);

@@ -108,7 +108,7 @@ MUTATIONS = [
     ("レジスタ：STATUS の AFE_RST が 1 のまま", "eeg_regs.sv",
      "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state == ST_RUN), fifo_nonempty, ovl_now, 1'b1};"),
     ("SPI：CRC 有効時の CRC のない読み出しと短いサンプルを通す", "eeg_spi_slave.sv",
-     "(crc_en && (st == S_RCRC || st == S_RSMP))) begin", "1'b0) begin"),
+     "(crc_en && (st == S_RCRC || st == S_RSMP)) || st > S_OVF) begin", "st > S_OVF) begin"),
     ("最上位：RUN を出ても CHANGED の残りを消さない", "eeg_digital_top.sv",
      "else if (seq_state != ST_RUN) chg_cnt <= 9'd0;", "else if (1'b0)                chg_cnt <= 9'd0;"),
     # audit round 2 (11/20)
@@ -155,7 +155,49 @@ MUTATIONS = [
      "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(rst_n),"),
     ("最上位：SOFT_RESET で ADC_RST_N を下げる", "eeg_digital_top.sv",
      "assign ADC_RST_N = tm_rst_n;", "assign ADC_RST_N = rst_n;"),
+    # audit round 3, auditor B
+    ("最上位：SOFT_RESET で FIFO を空にしない", "eeg_digital_top.sv",
+     ".clk(MCLK), .rst_n(rst_n), .flush(seq_flush), .push(seq_store),",
+     ".clk(MCLK), .rst_n(tm_rst_n), .flush(seq_flush), .push(seq_store),"),
+    ("レジスタ：連続読み出しの途中の未定義のアドレスが 0xFF", "eeg_regs.sv",
+     "default:          addr_ok = 1'b0;", "default:          begin addr_ok = 1'b0; rdata = 8'hFF; end"),
+    ("SPI：不正な状態の値を FRAME_ERR にしない", "eeg_spi_slave.sv",
+     "(crc_en && (st == S_RCRC || st == S_RSMP)) || st > S_OVF) begin",
+     "(crc_en && (st == S_RCRC || st == S_RSMP))) begin"),
+    # audit round 3, auditor C
+    ("レジスタ：nr_ok がトリム（IBIAS、CPF、BTRIM）の変化を見ない", "eeg_regs.sv",
+     "(s_ibias == a_ibias) && (s_cpf == a_cpf) && (s_bp == a_bp) && (s_bn == a_bn) &&", "1'b1 &&"),
+    ("レジスタ：nr_ok が速さ・DWA・CHOP1・BLANK の変化を見ない", "eeg_regs.sv",
+     "(s_fast == a_fast) && (s_dwa == a_dwa) && (s_c1 == a_c1) && (s_blank == a_blank) &&", "1'b1 &&"),
+    ("レジスタ：nr_ok が試験の設定の変化を見ない", "eeg_regs.sv",
+     "(s_atpen == a_atpen) && (s_atpsel == a_atpsel) && (s_cstop == a_cstop) && (s_azero == a_azero);", "1'b1;"),
+    ("レジスタ：nr_ok が符号を無視する", "eeg_regs.sv",
+     "assign sv_s   = s_sign ? -$signed({2'b00, s_m}) : $signed({2'b00, s_m});", "assign sv_s   = $signed({2'b00, s_m});"),
+    ("レジスタ：チョッパの速さがシャドウに従う", "eeg_regs.sv", "assign chop_fast  = a_fast;", "assign chop_fast  = s_fast;"),
+    ("レジスタ：CHOP1 の速さがシャドウに従う", "eeg_regs.sv", "assign chop1_rate = a_c1;", "assign chop1_rate = s_c1;"),
+    ("レジスタ：BLANK がシャドウに従う", "eeg_regs.sv",
+     "assign blank_len  = (a_range != 3'd0) ? BLANK_WITH_DAC : a_blank;", "assign blank_len  = (s_range != 3'd0) ? BLANK_WITH_DAC : s_blank;"),
+    ("最上位：RAW_EN が効かない", "eeg_digital_top.sv", ".raw_en(raw_en), .cycle(cycle)", ".raw_en(1'b0), .cycle(cycle)"),
+    ("最上位：DBG_SEL が効かない", "eeg_digital_top.sv",
+     ".dbg_sel(dbg_sel), .dbg_clk({CHOP_BLANK", ".dbg_sel(2'b00), .dbg_clk({CHOP_BLANK"),
+    ("クロック：TH_CAPTURE がサイクル 2", "eeg_clkgen.sv",
+     "th_capture <= (cnt_nxt[4:0] == 5'd1);", "th_capture <= (cnt_nxt[4:0] == 5'd2);"),
+    ("最上位：DAC_CLK がサイクル 5（e5 で立ち上がる）", "eeg_digital_top.sv",
+     "localparam logic [4:0] DAC_CLK_CYCLE = 5'(DAC_LOAD_CYCLE + 1);", "localparam logic [4:0] DAC_CLK_CYCLE = 5'(DAC_LOAD_CYCLE + 2);"),
+    ("SPI：MISO_OE が CS_N の立ち上がりで直ちに切れない", "eeg_spi_slave.sv",
+     "assign miso_oe   = ~cs_n & cs_act;", "assign miso_oe   = cs_act;"),
+    ("レジスタ：STATE が下位 3 ビットのみ", "eeg_regs.sv",
+     "A_STATE:          rdata = {4'h0, state};", "A_STATE:          rdata = {5'h00, state[2:0]};"),
+    ("最上位：DRDY_N のパルスを捨てた出力にも出す", "eeg_digital_top.sv",
+     "assign drdy_nxt = push_ok ? 3'd4 :", "assign drdy_nxt = seq_store ? 3'd4 :"),
+    ("最上位：CHOP_EN が ADC_ZERO でも 0", "eeg_digital_top.sv",
+     "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & ~a_azero;"),
+    ("最上位：空の語の OVERRUN が 0", "eeg_digital_top.sv",
+     ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status({1'b0, 1'b0, ovl_now, 1'b0, alert, 3'b000})"),
 ]
+
+# the unmutated block, run as the top bench's baseline (b00)
+TOP_BASELINE = ("（基準：変更なし）", None, None, None)
 
 # the sequencer alone (tb_seq + check_seq_trace, the timer modelled): what only the trace can see
 SEQ_MUTATIONS = [
@@ -183,6 +225,21 @@ SEQ_MUTATIONS = [
      "if (state > S_PULSE) begin", "if (state > 4'd9) begin"),
     ("シーケンサ：tick でなくても命令の受け取りを返す", "eeg_seq.sv",
      "assign cmd_ack   = a_ack;", "assign cmd_ack   = cmd_valid;"),
+]
+
+
+# the register block alone (tb_regs: a W1C flag set in the cycle of its clear survives)
+REGS_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("レジスタ：ERR の W1C でクリアが同じサイクルの事象に勝つ", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00)) | ev_err;",
+     "err   <= (err | ev_err) & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00);"),
+    ("レジスタ：ERR の W1C で書いた値によらず全てのビットを消す", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00)) | ev_err;",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? 8'hFF : 8'h00)) | ev_err;"),
+    ("レジスタ：DFLAG の W1C でクリアが同じサイクルの事象に勝つ", "eeg_regs.sv",
+     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};",
+     "dflag <= (dflag | {ovl_set, ovr_set}) & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00);"),
 ]
 
 
@@ -238,7 +295,7 @@ SPI_MUTATIONS = [
 
 def run(i, m, bench="top"):
     name, f, old, new = m
-    d = os.path.join(BUILD, "mut", f"{dict(spi='s', seq='q', fifo='f').get(bench, 'm')}{i:02d}")
+    d = os.path.join(BUILD, "mut", "b00" if i < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(bench, 'm')}{i:02d}")
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "build"))
     for s in SRC:
@@ -250,8 +307,8 @@ def run(i, m, bench="top"):
             return i, name, "NOT APPLIED", f"the text occurs {text.count(old)} times in {f}"
         open(p, "w", encoding="utf-8").write(text.replace(old, new))
     os.symlink(os.path.join(BUILD, "top_r14.codes"), os.path.join(d, "build", "top_r14.codes"))
-    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv"}.get(bench, "tb_top_r14.sv")
-    srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"]}.get(bench) or
+    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv"}.get(bench, "tb_top_r14.sv")
+    srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"]}.get(bench) or
             SRC + [os.path.join(RTL_OLD, x) for x in OLD])   # pin_tests.svh: found through -I build
     cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
            + [os.path.join(R14, "tb", tb)])
@@ -278,6 +335,16 @@ def run(i, m, bench="top"):
         if f is None:
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
+    if bench == "regs":
+        try:
+            v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 600 s"
+        head = next((ln for ln in v.stdout.splitlines() if ln.startswith("tb_regs:")), "no summary")
+        first = next((ln for ln in v.stdout.splitlines() if ln.startswith("ERROR")), head)
+        if f is None:
+            return i, name, ("baseline ok" if "PASS: tb_regs" in v.stdout else "BASELINE FAILS"), head
+        return i, name, ("detected" if "PASS: tb_regs" not in v.stdout else "MISSED"), first
     if bench == "fifo":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_fifo_trace.py"),
                             os.path.join(d, "build", "fifo_trace.txt")], capture_output=True, text=True)
@@ -312,6 +379,11 @@ def run(i, m, bench="top"):
                        capture_output=True, text=True)
     tb_pass = "PASS: tb_top_r14" in out
     gold_pass = k.returncode == 0
+    if f is None:
+        k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
+                             os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
+        ok = tb_pass and gold_pass and k2.returncode == 0
+        return i, name, ("baseline ok" if ok else "BASELINE FAILS"), next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
     first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
     if tb_pass and not gold_pass:
         first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL")
@@ -323,31 +395,35 @@ def main():
     for need in ("top_r14.codes", "reg_tests.svh"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
-    which = next((w for w in ("spi", "top", "seq", "fifo") if f"--{w}" in sys.argv), "all")
+    which = next((w for w in ("spi", "top", "seq", "fifo", "regs") if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []
     if which in ("top", "all"):
-        tasks += [(i, m, "top") for i, m in enumerate(MUTATIONS)]
+        tasks += [(i, m, "top") for i, m in enumerate(MUTATIONS)] + [(-1, TOP_BASELINE, "top")]
     if which in ("spi", "all"):
         tasks += [(i, m, "spi") for i, m in enumerate(SPI_MUTATIONS)]
     if which in ("seq", "all"):
         tasks += [(i, m, "seq") for i, m in enumerate(SEQ_MUTATIONS)]
     if which in ("fifo", "all"):
         tasks += [(i, m, "fifo") for i, m in enumerate(FIFO_MUTATIONS)]
+    if which in ("regs", "all"):
+        tasks += [(i, m, "regs") for i, m in enumerate(REGS_MUTATIONS)]
     if only:
-        tasks = [t for t in tasks if f"{dict(spi='s', seq='q', fifo='f').get(t[2], 'm')}{t[0]:02d}" in only]
+        tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(t[2], 'm')}{t[0]:02d}") in only]
     with cf.ThreadPoolExecutor(jobs) as ex:
         res = list(ex.map(lambda a: (a[2],) + run(*a), tasks))
     ok = True
     title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
-             "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)"}
-    for bench in ("top", "spi", "seq", "fifo"):
+             "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
+             "regs": "tb_regs (W1C: the set wins)"}
+    for bench in ("top", "spi", "seq", "fifo", "regs"):
         rs = sorted(r for r in res if r[0] == bench)
         if not rs:
             continue
         print(f"--- {title[bench]}")
         for _, i, name, verdict, first in rs:
-            print(f"{verdict:8s} {dict(spi='s', seq='q', fifo='f').get(bench, 'm')}{i:02d} {name}" + (f"  ({first[:120]})" if first else ""))
+            tag = "b00" if i < 0 else f"{dict(spi='s', seq='q', fifo='f', regs='r').get(bench, 'm')}{i:02d}"
+            print(f"{verdict:8s} {tag} {name}" + (f"  ({first[:120]})" if first else ""))
         muts = [r for r in rs if r[3] != "baseline ok" and r[3] != "BASELINE FAILS"]
         n_det = sum(1 for r in muts if r[3] == "detected")
         base_ok = all(r[3] == "baseline ok" for r in rs if r[3] in ("baseline ok", "BASELINE FAILS"))

@@ -151,6 +151,27 @@ package eeg_regs_pkg;
     localparam logic [3:0] ST_RUN = 4'd6;
     localparam logic [3:0] ST_PRE = 4'd7;
     localparam logic [3:0] ST_PULSE = 4'd8;
+    localparam logic [3:0] BLANK_WITH_DAC = 4'd15;   // CHOP_BLANK length, DAC on
+    function automatic logic [9:0] range_max_m(input logic [2:0] r);   // cfg_ok: the largest M
+        case (r)
+            3'd0: range_max_m = 10'd1023;
+            3'd1: range_max_m = 10'd127;
+            3'd2: range_max_m = 10'd255;
+            3'd3: range_max_m = 10'd511;
+            3'd4: range_max_m = 10'd1023;
+            default: range_max_m = 10'd0;    // ranges 5..7 are never stored (RANGE_ERR)
+        endcase
+    endfunction
+    function automatic logic [3:0] ofen_of_range(input logic [2:0] r);   // the DAC's group enables
+        case (r)
+            3'd0: ofen_of_range = 4'b0000;
+            3'd1: ofen_of_range = 4'b0001;
+            3'd2: ofen_of_range = 4'b0011;
+            3'd3: ofen_of_range = 4'b0111;
+            3'd4: ofen_of_range = 4'b1111;
+            default: ofen_of_range = 4'b0000;
+        endcase
+    endfunction
     localparam int OVL_WINDOW = 32;  localparam logic [5:0] OVL_THRESHOLD = 6'd4;
 
 endpackage

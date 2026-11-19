@@ -9,7 +9,9 @@ The timer is modelled here, not taken from the RTL: loaded with the state's sett
 T_REC, T_PRE, T_RST x 8 frames) on entering a timed state and on a restart, decremented once per frame, clamped at 0;
 TMR is present at a tick when the model is 0. The RTL's timer before and after every event must equal the model.
 Coverage: every (state, event, branch) of the transition table that a tick or an output time can reach must have been
-hit.
+hit (not asked with --no-cover: the end-to-end replay of tb_top_r14's trace, build/top_seq_trace.txt). The state is
+chained: each event starts in the state the previous one left (or IDLE after a reset), so no change between events
+goes unseen.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/check_seq_trace.py build/seq_trace.txt
 """
@@ -35,17 +37,20 @@ def load(s, tset):
 
 
 def main(path):
-    errs, n, cover, model, nload, nrestart = [], 0, set(), 0, 0, 0
+    errs, n, cover, model, nload, nrestart, prev = [], 0, set(), 0, 0, 0, 0
     for ln, line in enumerate(open(path), 1):
         f = line.split()
         if not f:
             continue
         if f[0] == "R":
-            model = 0                                       # reset: IDLE, timer 0
+            model, prev = 0, 0                              # reset: IDLE, timer 0
             continue
         kind, st, cv, cc, tm, cfg, nr, te0, valid, nxt, acts = f[0], *map(int, f[1:10]), f[10]
         t_before, t_after, frames, fs, *tset = map(int, f[11:20])
         s = NAME[st]
+        if st != prev:
+            errs.append(f"line {ln}: the event starts in {s}, the previous one left {NAME.get(prev, prev)}")
+        prev = nxt
         exp_before = max(0, model - frames)                 # the frames since the previous traced event
         if t_before != exp_before:
             errs.append(f"line {ln}: timer before the event {t_before}, model {exp_before}")
@@ -88,10 +93,13 @@ def main(path):
         print("  " + e)
     for m in missing:
         print(f"  not covered: {m}")
-    ok = not errs and not missing
-    print("PASS: sequencer RTL == specification on every traced event, all cells covered" if ok else "FAIL")
+    ok = not errs and (NO_COVER or not missing) and n > 0
+    print(("PASS: sequencer RTL == specification on every traced event" +
+           ("" if NO_COVER else ", all cells covered")) if ok else "FAIL")
     return 0 if ok else 1
 
 
+NO_COVER = "--no-cover" in sys.argv
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else "build/seq_trace.txt"))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    sys.exit(main(args[0] if args else "build/seq_trace.txt"))

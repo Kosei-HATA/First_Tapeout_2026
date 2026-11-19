@@ -131,6 +131,37 @@ SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み�
                  ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
 OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
 RANGE_MAX_M = {0: 1023, 1: 127, 2: 255, 3: 511, 4: 1023}       # range 0: the DAC is off and OFM/OFS are driven 0
+BLANK_WITH_DAC = 15                    # CHOP_BLANK's length (MCLK) with the offset DAC on (range >= 1): its settling
+
+
+def ofen_of_range(r):
+    """OFEN[3:0]: range r turns on the DAC's groups G0 .. G(r-1) (a thermometer); range 0 turns all off."""
+    return (1 << r) - 1
+
+
+# every analog control (ANALOG_CONTROLS) and the key of pins_from_active that gives it (AFE_RST: the sequencer)
+PIN_OF_CONTROL = {"CHOP_EN": "CHOP_EN", "OFM[9:8]": "OFM", "OFM[7:0]": "OFM", "OFS": "OFS", "OFEN[3:0]": "OFEN",
+                  "CPF_TRIM[3:0]": "CPF_TRIM", "AFE_IBIAS[1:0]": "AFE_IBIAS", "BTRIM_P[1:0]": "BTRIM_P",
+                  "BTRIM_N[1:0]": "BTRIM_N", "CHOP／CHOP_OUT／CHOP_BLANK の速さ": "CHOP_HALF",
+                  "CHOP_BLANK の幅": "BLANK_W", "CHOP1": "CHOP1_HALF", "DWA_EN": "DWA_EN", "TEST_CFG[4]": "TEST_CFG",
+                  "TEST_CFG[3:0]": "TEST_CFG", "TEST_CFG[5]": "TEST_CFG"}
+
+
+def pins_from_active(ac):
+    """The analog control pins for the active settings ac (field name -> value; DBG_SEL from the DEBUG register,
+    which takes effect at once). OFM / OFS are driven 0 with the DAC off; OFEN is the range's thermometer; CHOP_BLANK
+    is high for its length + 1 MCLK around each output-chopper edge (eeg_clkgen), BLANK_WITH_DAC with the DAC on, and
+    held high by ADC_ZERO; the chopper's and CHOP1's half periods in MCLK (CHOP1 0 = off)."""
+    dac = ac["RANGE"] != 0
+    m = (ac["M_H"] << 8) | ac["M_L"]
+    c1 = ac["CHOP1_RATE"]
+    return dict(OFM=m if dac else 0, OFS=ac["SIGN"] if dac else 0, OFEN=ofen_of_range(ac["RANGE"]),
+                AFE_IBIAS=ac["AFE_IBIAS"], CPF_TRIM=ac["CPF_TRIM"], BTRIM_P=ac["BTRIM_P"], BTRIM_N=ac["BTRIM_N"],
+                DWA_EN=ac["DWA_EN"], CHOP_EN=1 - ac["CHOP_STOP"],
+                TEST_CFG=(ac["DBG_SEL"] << 6) | (ac["ADC_ZERO"] << 5) | (ac["ATP_EN"] << 4) | ac["ATP_SEL"],
+                BLANK_W=(BLANK_WITH_DAC if dac else ac["BLANK_LEN"]) + 1, BLANK_HELD=ac["ADC_ZERO"],
+                CHOP_HALF=128 if ac["CHOP_FAST"] else 256,
+                CHOP1_HALF=0 if c1 == 0 else FS.TIMING["chop1_periods_frames"][c1 - 1] * FS.FRAME // 2)
 
 
 def guarded_addrs():
@@ -157,6 +188,7 @@ CHECKS = [
     "各レジスタのフィールドは 8 ビットに収まり、重ならない（未使用のビットが 0 を返すことは、レジスタ表から生成した試験 tb_top_r14 で確かめる）",
     "既定値はフィールドの幅に収まり、合法な値。推奨の動作値（AFE_IBIAS 3、BOOST_TRIM 4/2、BLANK 7、CHOP_FAST 1、CHOP1 4 kHz、DWA_EN 1）",
     "アナログ側が受ける制御の全て（17 項目）が、ちょうど 1 つのフィールド（apply）かシーケンサ（AFE_RST）から出る。アナログに効く設定に、即時に効くもの（imm）はない",
+    "端子の規則（pins_from_active）：OFEN は範囲 r で DAC の群 G0〜G(r−1) を入れる温度計の符号（RANGE_MAX_M の群の構成と一致）、範囲 0 では OFM と OFS を 0、DAC を使うときの CHOP_BLANK は 15 MCLK（フレームの最長のブランキング）。アナログの全ての制御が、この規則のいずれかの端子に対応する。RTL はこの範囲の表と OFEN の表を生成した eeg_regs_defs.svh から使い、tb_top_r14 は同じ規則から生成した端子の試験（build/pin_tests.svh）で端子を確かめる",
     "タイマの最小値と既定値は、tick の格子に切り上げても（フレームの整数で計算）アナログの最小値（fsm_spec.TIMING）以上。タイマの最大値（255 × 単位）は TIMING の最大と一致",
     "未処理の命令がある間に書き込みを止めるレジスタ（GUARDED）は、一括反映のフィールドを持つレジスタとタイマのレジスタに一致",
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
@@ -267,6 +299,21 @@ def check(verbose=True):
     for r_, mv in {1: 39, 2: 79, 3: 159, 4: 318}.items():
         if RANGE_MAX_M.get(r_) != 2 ** (6 + r_) - 1 or abs(RANGE_MAX_M[r_] * 0.311 - mv) > 1.0:
             errs.append(f"range {r_}: largest M {RANGE_MAX_M.get(r_)}, the DAC groups give {2 ** (6 + r_) - 1} (+-{mv} mV)")
+    # the pins of the active settings: OFEN switches on exactly the groups G0 .. G(r-1) that RANGE_MAX_M assumes;
+    # every analog control maps to a pin of pins_from_active; CHOP_BLANK's length with the DAC on is the longest
+    # blanking the frame allows (fsm_spec.TIMING blank_max)
+    for r_ in range(5):
+        if ofen_of_range(r_) != sum(1 << k for k in range(r_)) or (r_ and RANGE_MAX_M[r_] != 2 ** (6 + r_) - 1):
+            errs.append(f"range {r_}: OFEN {ofen_of_range(r_):04b} does not switch on the groups G0..G{r_ - 1}")
+    if set(PIN_OF_CONTROL) != set(ANALOG_CONTROLS) - SEQ_DRIVEN:
+        errs.append("PIN_OF_CONTROL does not list exactly the analog controls")
+    probe = pins_from_active(dict(M_H=0, M_L=0, SIGN=0, RANGE=0, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0,
+                                  CHOP_FAST=1, CHOP1_RATE=3, DWA_EN=1, BLANK_LEN=7, ATP_EN=0, ATP_SEL=0, CHOP_STOP=0,
+                                  ADC_ZERO=0, DBG_SEL=0))
+    if set(PIN_OF_CONTROL.values()) - set(probe):
+        errs.append("pins_from_active lacks " + ", ".join(sorted(set(PIN_OF_CONTROL.values()) - set(probe))))
+    if BLANK_WITH_DAC != FS.TIMING["blank_max"]:
+        errs.append(f"BLANK_WITH_DAC {BLANK_WITH_DAC} is not the frame's longest blanking {FS.TIMING['blank_max']}")
     # cfg_ok / nr_ok at the boundaries
     base = dict(M=0, SIGN=0, RANGE=1, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0, CHOP_FAST=1, CHOP1_RATE=3,
                 DWA_EN=1, BLANK_LEN=7, ATP_EN=0, ATP_SEL=0, CHOP_STOP=0, ADC_ZERO=0)
@@ -371,6 +418,19 @@ def sv_package():
     for x in FS.SEQ_STATES:
         if x[1] is not None:
             out.append(f"    localparam logic [3:0] ST_{x[0]} = 4'd{x[1]};")
+    out.append(f"    localparam logic [3:0] BLANK_WITH_DAC = 4'd{BLANK_WITH_DAC};   // CHOP_BLANK length, DAC on")
+    out.append("    function automatic logic [9:0] range_max_m(input logic [2:0] r);   // cfg_ok: the largest M")
+    out.append("        case (r)")
+    out += [f"            3'd{r_}: range_max_m = 10'd{mx};" for r_, mx in sorted(RANGE_MAX_M.items())]
+    out.append("            default: range_max_m = 10'd0;    // ranges 5..7 are never stored (RANGE_ERR)")
+    out.append("        endcase")
+    out.append("    endfunction")
+    out.append("    function automatic logic [3:0] ofen_of_range(input logic [2:0] r);   // the DAC's group enables")
+    out.append("        case (r)")
+    out += [f"            3'd{r_}: ofen_of_range = 4'b{ofen_of_range(r_):04b};" for r_ in range(5)]
+    out.append("            default: ofen_of_range = 4'b0000;")
+    out.append("        endcase")
+    out.append("    endfunction")
     wc = OVL_RULE["window"].bit_length()               # the width of a count 0 .. window
     out.append(f"    localparam int OVL_WINDOW = {OVL_RULE['window']};"
                f"  localparam logic [{wc - 1}:0] OVL_THRESHOLD = {wc}'d{OVL_RULE['threshold']};")
@@ -381,7 +441,9 @@ def sv_package():
 def sv_defs():
     """The package's constants as module-scope localparams (synthesis without package support): `include it in the
     body of every module that needs them."""
-    body = [l for l in sv_package().split("\n") if l.strip().startswith("localparam")]
+    lines = sv_package().split("\n")
+    body = lines[lines.index("package eeg_regs_pkg;") + 1: lines.index("endpackage")]
+    body = [l for l in body if l.strip()]
     return "\n".join(["// eeg_regs_defs.svh - the register map's constants (GENERATED by gf180/tapeout/rtl/spec/regmap.py;",
                       "// do not edit by hand). `include inside a module body; each module uses only some of them.",
                       "/* verilator lint_off UNUSEDPARAM */"] + body + ["/* verilator lint_on UNUSEDPARAM */"]) + "\n"

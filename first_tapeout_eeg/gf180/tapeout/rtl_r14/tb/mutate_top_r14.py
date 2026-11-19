@@ -128,6 +128,33 @@ MUTATIONS = [
     ("SPI：MISO が 2 MCLK 遅れる（最小の Low で間に合わない）", "eeg_spi_slave.sv",
      "assign miso      = tx_sh[7];",
      "logic [1:0] miso_d; always_ff @(posedge clk) miso_d <= {miso_d[0], tx_sh[7]}; assign miso = miso_d[1];"),
+    # audit round 2, auditor C: the mutants that passed every bench (values and mapping of the analog pins, timers,
+    # cfg_ok / nr_ok, the overload flag's gating, the reset domains)
+    ("最上位：CHOP_EN が AFE_RST の間 0（組み合わせ）", "eeg_digital_top.sv",
+     "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & ~seq_afe_rst;"),
+    ("最上位：CHOP_EN が反転（チョッパが止まる）", "eeg_digital_top.sv",
+     "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = a_cstop;"),
+    ("最上位：BTRIM の P と N の入れ違い", "eeg_digital_top.sv",
+     ".btrim_p(BTRIM_P), .btrim_n(BTRIM_N)", ".btrim_p(BTRIM_N), .btrim_n(BTRIM_P)"),
+    ("レジスタ：OFEN が範囲の 2 進（温度計でない）", "eeg_regs.sv",
+     "o_ofen <= ofen_of_range(s_range);", "o_ofen <= {1'b0, s_range};"),
+    ("レジスタ：DAC を使うときの BLANK 15 がない", "eeg_regs.sv",
+     "assign blank_len  = (a_range != 3'd0) ? BLANK_WITH_DAC : a_blank;", "assign blank_len  = a_blank;"),
+    ("レジスタ：一括反映で AFE_IBIAS を写さない", "eeg_regs.sv", "a_ibias <= s_ibias;", ";"),
+    ("レジスタ：一括反映で DWA_EN を写さない", "eeg_regs.sv", "a_dwa <= s_dwa;", ";"),
+    ("レジスタ：一括反映で CHOP1_RATE を写さない", "eeg_regs.sv", "a_c1 <= s_c1;", ";"),
+    ("レジスタ：T_REC に T_PRE を出す（RECOVER 23.4 µs）", "eeg_regs.sv",
+     "assign t_rec      = r_trec;", "assign t_rec      = r_tpre;"),
+    ("レジスタ：nr_ok が範囲の違いを許す", "eeg_regs.sv",
+     "assign nr_ok  = (s_range == a_range) && ", "assign nr_ok  = "),
+    ("レジスタ：cfg_ok が範囲 2 で M の上限を見ない", "eeg_regs.sv",
+     "assign cfg_ok = (s_m <= range_max_m(s_range));", "assign cfg_ok = (s_m <= range_max_m(s_range)) || (s_range == 3'd2);"),
+    ("最上位：DFLAG.OVL を IDLE 以外の全ての状態で立てる", "eeg_digital_top.sv",
+     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),", ".ovl_set(ovl_now && (seq_state != ST_IDLE)),"),
+    ("最上位：SOFT_RESET で CHOP1 を戻す", "eeg_digital_top.sv",
+     "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(rst_n),"),
+    ("最上位：SOFT_RESET で ADC_RST_N を下げる", "eeg_digital_top.sv",
+     "assign ADC_RST_N = tm_rst_n;", "assign ADC_RST_N = rst_n;"),
 ]
 
 # the sequencer alone (tb_seq + check_seq_trace, the timer modelled): what only the trace can see
@@ -149,6 +176,30 @@ SEQ_MUTATIONS = [
      "S_PULSE:   load_of = {7'd0, t_rst, 3'd0};", "S_PULSE:   load_of = {8'd0, t_rst, 2'd0};"),
     ("シーケンサ：APPLY で FIFO を空にしない", "eeg_seq.sv",
      "a_flush = 1'b1;                 // the data restart: no sample of the old setting", ";"),
+    # audit round 2, auditor C
+    ("シーケンサ：タイマが 16 ビット（64 ms 以上で折り返す）", "eeg_seq.sv",
+     "logic [17:0] timer;", "logic [15:0] timer;"),
+    ("シーケンサ：不正な状態の判定が 10 以上（9 を見逃す）", "eeg_seq.sv",
+     "if (state > S_PULSE) begin", "if (state > 4'd9) begin"),
+    ("シーケンサ：tick でなくても命令の受け取りを返す", "eeg_seq.sv",
+     "assign cmd_ack   = a_ack;", "assign cmd_ack   = cmd_valid;"),
+]
+
+
+# the FIFO alone (tb_fifo + check_fifo_trace: fsm_spec.fifo_step and an identity model), depth 8
+FIFO_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("FIFO：満杯で同じサイクルの取り出しを見ずに格納を捨てる", "eeg_fifo.sv",
+     "assign push_ok   = push && (lvl0 != LEVEL_FULL);", "assign push_ok   = push && (level != LEVEL_FULL);"),
+    ("FIFO：フラッシュと同じサイクルの格納を捨てる", "eeg_fifo.sv",
+     "assign lvl0      = flush ? 4'd0 : (level - {3'd0, pop_ok});", "assign lvl0      = flush ? LEVEL_FULL : (level - {3'd0, pop_ok});"),
+    ("FIFO：取り出しで写しの印を消さない", "eeg_fifo.sv",
+     "if (flush || pop_ok) held <= 1'b0;", "if (flush) held <= 1'b0;"),
+    ("FIFO：空の語の状態を出さない", "eeg_fifo.sv",
+     "assign rd_word = (level == 4'd0) ? {empty_status, 16'h0000, 24'h000000} : mem[rd_ptr];",
+     "assign rd_word = mem[rd_ptr];"),
+    ("FIFO：nonempty が 1 サイクル遅い", "eeg_fifo.sv",
+     "nonempty <= (level_nxt != 4'd0);", "nonempty <= (level != 4'd0);"),
 ]
 
 
@@ -187,7 +238,7 @@ SPI_MUTATIONS = [
 
 def run(i, m, bench="top"):
     name, f, old, new = m
-    d = os.path.join(BUILD, "mut", f"{dict(spi='s', seq='q').get(bench, 'm')}{i:02d}")
+    d = os.path.join(BUILD, "mut", f"{dict(spi='s', seq='q', fifo='f').get(bench, 'm')}{i:02d}")
     shutil.rmtree(d, ignore_errors=True)
     os.makedirs(os.path.join(d, "build"))
     for s in SRC:
@@ -199,15 +250,17 @@ def run(i, m, bench="top"):
             return i, name, "NOT APPLIED", f"the text occurs {text.count(old)} times in {f}"
         open(p, "w", encoding="utf-8").write(text.replace(old, new))
     os.symlink(os.path.join(BUILD, "top_r14.codes"), os.path.join(d, "build", "top_r14.codes"))
-    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv"}.get(bench, "tb_top_r14.sv")
-    srcs = ["eeg_seq.sv"] if bench == "seq" else SRC + [os.path.join(RTL_OLD, x) for x in OLD]
+    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv"}.get(bench, "tb_top_r14.sv")
+    srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"]}.get(bench) or
+            SRC + [os.path.join(RTL_OLD, x) for x in OLD])   # pin_tests.svh: found through -I build
     cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
            + [os.path.join(R14, "tb", tb)])
     c = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
     if c.returncode:
         return i, name, "COMPILE ERROR", c.stderr.strip().splitlines()[-1][:150]
-    if bench in ("seq", "spi"):
-        args = (["+n=300000", "+seed=11", "+trace=build/seq_trace.txt"] if bench == "seq" else ["+n=800", "+seed=7"])
+    if bench in ("seq", "spi", "fifo"):
+        args = {"seq": ["+n=300000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=800", "+seed=7"],
+                "fifo": ["+n=100000", "+trace=build/fifo_trace.txt"]}[bench]
         try:
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"] + args, cwd=d, capture_output=True,
                                text=True, timeout=3600)
@@ -225,6 +278,17 @@ def run(i, m, bench="top"):
         if f is None:
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
+    if bench == "fifo":
+        k = subprocess.run([sys.executable, os.path.join(HERE, "check_fifo_trace.py"),
+                            os.path.join(d, "build", "fifo_trace.txt")], capture_output=True, text=True)
+        head = next((ln for ln in k.stdout.splitlines() if "mismatches" in ln), "")
+        if not head:
+            return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1]
+        nbad = int(head.split(":")[1].split()[0])
+        first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), head)
+        if f is None:
+            return i, name, ("baseline ok" if nbad == 0 and "PASS" in k.stdout else "BASELINE FAILS"), head
+        return i, name, ("detected" if nbad != 0 or "PASS" not in k.stdout else "MISSED"), first
     if bench == "spi":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_spi_trace.py"),
                             os.path.join(d, "build", "spi_trace.txt")], capture_output=True, text=True)
@@ -259,7 +323,7 @@ def main():
     for need in ("top_r14.codes", "reg_tests.svh"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
-    which = next((w for w in ("spi", "top", "seq") if f"--{w}" in sys.argv), "all")
+    which = next((w for w in ("spi", "top", "seq", "fifo") if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []
     if which in ("top", "all"):
@@ -268,19 +332,22 @@ def main():
         tasks += [(i, m, "spi") for i, m in enumerate(SPI_MUTATIONS)]
     if which in ("seq", "all"):
         tasks += [(i, m, "seq") for i, m in enumerate(SEQ_MUTATIONS)]
+    if which in ("fifo", "all"):
+        tasks += [(i, m, "fifo") for i, m in enumerate(FIFO_MUTATIONS)]
     if only:
-        tasks = [t for t in tasks if f"{dict(spi='s', seq='q').get(t[2], 'm')}{t[0]:02d}" in only]
+        tasks = [t for t in tasks if f"{dict(spi='s', seq='q', fifo='f').get(t[2], 'm')}{t[0]:02d}" in only]
     with cf.ThreadPoolExecutor(jobs) as ex:
         res = list(ex.map(lambda a: (a[2],) + run(*a), tasks))
     ok = True
-    title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)"}
-    for bench in ("top", "spi", "seq"):
+    title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
+             "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)"}
+    for bench in ("top", "spi", "seq", "fifo"):
         rs = sorted(r for r in res if r[0] == bench)
         if not rs:
             continue
         print(f"--- {title[bench]}")
         for _, i, name, verdict, first in rs:
-            print(f"{verdict:8s} {dict(spi='s', seq='q').get(bench, 'm')}{i:02d} {name}" + (f"  ({first[:120]})" if first else ""))
+            print(f"{verdict:8s} {dict(spi='s', seq='q', fifo='f').get(bench, 'm')}{i:02d} {name}" + (f"  ({first[:120]})" if first else ""))
         muts = [r for r in rs if r[3] != "baseline ok" and r[3] != "BASELINE FAILS"]
         n_det = sum(1 for r in muts if r[3] == "detected")
         base_ok = all(r[3] == "baseline ok" for r in rs if r[3] in ("baseline ok", "BASELINE FAILS"))

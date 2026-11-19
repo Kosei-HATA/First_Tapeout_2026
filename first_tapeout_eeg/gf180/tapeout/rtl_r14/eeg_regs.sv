@@ -251,7 +251,7 @@ module eeg_regs #(
                 a_atpsel <= s_atpsel; a_cstop <= s_cstop; a_azero <= s_azero;
                 o_ofm  <= (s_range == 3'd0) ? 10'd0 : s_m;
                 o_ofs  <= (s_range == 3'd0) ? 1'b0  : s_sign;
-                o_ofen <= {s_range >= 3'd4, s_range >= 3'd3, s_range >= 3'd2, s_range >= 3'd1};
+                o_ofen <= ofen_of_range(s_range);   // regmap.ofen_of_range (generated)
             end
             // command: taken by the sequencer at a tick; a new one only when none is pending (else STATE_ERR)
             if (w_ok && addr == A_COMMAND) begin
@@ -279,7 +279,7 @@ module eeg_regs #(
     assign chop_fast  = a_fast;
     assign dwa_en     = a_dwa;
     assign chop1_rate = a_c1;
-    assign blank_len  = (a_range != 3'd0) ? 4'd15 : a_blank;
+    assign blank_len  = (a_range != 3'd0) ? BLANK_WITH_DAC : a_blank;
     assign atp_en     = a_atpen;
     assign atp_sel    = a_atpsel;
     assign chop_stop  = a_cstop;
@@ -298,20 +298,12 @@ module eeg_regs #(
     assign alert       = |(err & r_mask) || |(dflag & r_mask_d);
     assign status_byte = {1'b1, 1'b0, alert, pend, (state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};
 
-    // cfg_ok and nr_ok (gf180/tapeout/rtl/spec/regmap.py cfg_ok, nr_ok)
-    function automatic logic [9:0] mmax(input logic [2:0] r);
-        case (r)
-            3'd1:    mmax = 10'd127;
-            3'd2:    mmax = 10'd255;
-            3'd3:    mmax = 10'd511;
-            default: mmax = 10'd1023;
-        endcase
-    endfunction
+    // cfg_ok and nr_ok (gf180/tapeout/rtl/spec/regmap.py cfg_ok, nr_ok; range_max_m generated from RANGE_MAX_M)
     logic signed [11:0] sv_s, sv_a, dsv;
     assign sv_s   = s_sign ? -$signed({2'b00, s_m}) : $signed({2'b00, s_m});
     assign sv_a   = a_sign ? -$signed({2'b00, a_m}) : $signed({2'b00, a_m});
     assign dsv    = sv_s - sv_a;
-    assign cfg_ok = (s_range == 3'd0) || (s_m <= mmax(s_range));
+    assign cfg_ok = (s_m <= range_max_m(s_range));
     assign nr_ok  = (s_range == a_range) && (dsv >= -12'sd1) && (dsv <= 12'sd1) &&
                     (s_ibias == a_ibias) && (s_cpf == a_cpf) && (s_bp == a_bp) && (s_bn == a_bn) &&
                     (s_fast == a_fast) && (s_dwa == a_dwa) && (s_c1 == a_c1) && (s_blank == a_blank) &&

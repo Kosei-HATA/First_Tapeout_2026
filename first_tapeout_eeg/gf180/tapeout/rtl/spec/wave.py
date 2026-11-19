@@ -5,8 +5,9 @@ Writes wave_<name>.json (WaveDrom source) and wave_<name>.png (headless Google C
 next to this file:
   frame    one frame (32 MCLK) with every event of the existing frame timing and the new tick (e24)
   chop     the chopper period at 128 and 64 kHz, the tick in the middle of phase A, the CIC output time
-  startup  RESET_N .. RUN (schematic, not to scale)
-  apply    APPLY in RUN: PRE, PULSE, RECOVER, ALIGN, FILL, RUN (schematic)
+  startup  RESET_N .. RUN (schematic, not to scale; the durations from the timers' reset values in regmap.py)
+  apply    APPLY in RUN: PRE, PULSE, RECOVER, ALIGN, FILL, RUN with the FIFO emptied at the APPLY's tick (schematic;
+           the durations from regmap.py)
   spi      the SPI frames at byte level: write, write with CRC, register read (burst), sample read
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/wave.py
@@ -96,9 +97,18 @@ def chop():
             "config": {"hscale": 1}}
 
 
+def timer_text(name):
+    """The timer's reset value as a duration: T_WARM, T_ELEC in ms; T_REC, T_PRE, T_RST in 8-frame units."""
+    v = next(f for *_, f in RM.all_fields() if f["name"] == name)["reset"]
+    if name in ("T_WARM", "T_ELEC"):
+        return f"{name} {v} ms"
+    us = v * 8 * FS.FRAME / FS.MCLK * 1e6
+    return f"{name} {us:.4g} µs" if us < 1000 else f"{name} {us / 1000:.4g} ms"
+
+
 def startup():
     st = ["RESET", "IDLE", "WARMUP", "RECOVER", "ALIGN", "FILL", "RUN"]
-    dur = ["", "設定", "T_WARM 5 ms", "T_REC 0.25 ms", "≤ 1 ms", "3 出力（3 ms）", "1 ms ごと"]
+    dur = ["", "設定", timer_text("T_WARM"), timer_text("T_REC"), "≤ 1 ms", "3 出力（3 ms）", "1 ms ごと"]
     sig = [
         {"name": "RESET_N", "wave": "01" + "." * 13},
         {"name": "命令", "wave": "x.=x" + "." * 11, "data": ["START"]},
@@ -107,16 +117,17 @@ def startup():
         {"name": "AFE_RST", "wave": "1....0........."},
         {"name": "CIC", "wave": "x........=.=...", "data": ["クリア後の充填", "有効"]},
         {"name": "READY", "wave": "0..........1..."},
+        {"name": "FIFO", "wave": "=..=.......=...", "data": ["", "空（START の tick）", "格納"]},
         {"name": "DRDY_N（パルス）", "wave": "1..........0101"},
     ]
-    return {"signal": sig, "head": {"text": "起動（模式図、時間の比は実際と異なる）"},
-            "foot": {"text": "AFE_RST の縁と設定の反映は tick（相 A の中ほど）で。SEQ はリセットの解除から数え続ける"},
+    return {"signal": sig, "head": {"text": "起動（模式図、時間の比は実際と異なる。T_ELEC ＞ 0 なら RECOVER のあとに WAIT_E）"},
+            "foot": {"text": "AFE_RST の縁と設定の反映は tick（相 A の中ほど）で。SEQ は RESET_N の解除から数え続ける"},
             "config": {"hscale": 2}}
 
 
 def apply_seq():
     st = ["RUN", "PRE", "PULSE", "RECOVER", "ALIGN", "FILL", "RUN"]
-    dur = ["", "T_PRE 23.4 µs", "T_RST 101.6 µs", "T_REC 250 µs", "≤ 1 ms", "3 出力", ""]
+    dur = ["", timer_text("T_PRE"), timer_text("T_RST"), timer_text("T_REC"), "≤ 1 ms", "3 出力", ""]
     sig = [
         {"name": "命令", "wave": "x=x" + "." * 13, "data": ["APPLY"]},
         {"name": "状態", "wave": "=.=.=.=.=.=.=...", "data": st},
@@ -124,9 +135,10 @@ def apply_seq():
         {"name": "アクティブの設定", "wave": "=.=.............", "data": ["旧い値", "新しい値（PRE の入口の tick で一括）"]},
         {"name": "AFE_RST", "wave": "0...1.0........."},
         {"name": "READY", "wave": "1.0.........1..."},
+        {"name": "FIFO", "wave": "=.=.........=...", "data": ["旧い設定のサンプル", "空（APPLY の tick で空にする）", "格納"]},
         {"name": "格納（DRDY_N のパルス）", "wave": "10..........1010"},
     ]
-    return {"signal": sig, "head": {"text": "APPLY（パルス付きの一括反映、模式図）"},
+    return {"signal": sig, "head": {"text": "APPLY（パルス付きの一括反映、模式図。T_ELEC ＞ 0 なら RECOVER のあとに WAIT_E）"},
             "foot": {"text": "再整定の間の出力は格納しない（SEQ は 1 ms ごとに数え続け、欠けた数が分かる）"},
             "config": {"hscale": 2}}
 

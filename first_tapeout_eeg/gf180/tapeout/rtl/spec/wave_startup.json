@@ -30,7 +30,7 @@
    "data": [
     "設定",
     "T_WARM 5 ms",
-    "T_REC 0.25 ms",
+    "T_REC 250 µs",
     "≤ 1 ms",
     "3 出力（3 ms）",
     "1 ms ごと"
@@ -53,15 +53,24 @@
    "wave": "0..........1..."
   },
   {
+   "name": "FIFO",
+   "wave": "=..=.......=...",
+   "data": [
+    "",
+    "空（START の tick）",
+    "格納"
+   ]
+  },
+  {
    "name": "DRDY_N（パルス）",
    "wave": "1..........0101"
   }
  ],
  "head": {
-  "text": "起動（模式図、時間の比は実際と異なる）"
+  "text": "起動（模式図、時間の比は実際と異なる。T_ELEC ＞ 0 なら RECOVER のあとに WAIT_E）"
  },
  "foot": {
-  "text": "AFE_RST の縁と設定の反映は tick（相 A の中ほど）で。SEQ はリセットの解除から数え続ける"
+  "text": "AFE_RST の縁と設定の反映は tick（相 A の中ほど）で。SEQ は RESET_N の解除から数え続ける"
  },
  "config": {
   "hscale": 2

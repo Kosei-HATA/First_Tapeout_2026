@@ -142,7 +142,7 @@ module tb_spi_r14;
             // every 400 frames a SOFT_RESET (every other one right after a FLUSH: with a command pending at 64 kHz),
             // then running again; the random commands below reach STOP and SOFT_RESET only now and then
             if (k % 400 == 200) begin
-                spi_tidle = 100.0;
+                spi_tidle = 125.0;
                 if (k % 800 == 200) wr(7'h10, 8'h55, 1, "cmd");
                 wr(7'h10, 8'hA5, 1, "cmd");
                 crc_model = dut.crc_en;
@@ -154,7 +154,7 @@ module tb_spi_r14;
                 wr(7'h52, 8'd29, 1, "setup");
                 wr(7'h10, 8'h11, 1, "setup");
             end
-            spi_tidle = ($urandom_range(0, 3) == 0) ? 100.0 : 600.0 + $urandom_range(0, 20000);
+            spi_tidle = ($urandom_range(0, 3) == 0) ? 125.0 : 600.0 + $urandom_range(0, 20000);
             kind = $urandom_range(0, 99);
             if (kind < 22) begin                                   // write a register (random address class)
                 case ($urandom_range(0, 9))
@@ -199,7 +199,7 @@ module tb_spi_r14;
                     wr(7'h10, 8'h11, 1, "setup");
                 end
             end else if (kind < 34) begin                          // two commands back to back (busy at 64 kHz)
-                spi_tidle = 100.0;
+                spi_tidle = 125.0;
                 wr(7'h10, 8'h55, 1, "cmd");
                 case ($urandom_range(0, 3))
                     0:       d = 8'h55;
@@ -217,7 +217,7 @@ module tb_spi_r14;
                 t_out = $realtime + 1.0e6;                         // the next output time (1024 frames)
                 @(posedge dut.tick);
                 while (t_out - $realtime > 25000.0) @(posedge dut.tick);   // a tick at most 25 us before it
-                spi_tidle = 100.0;
+                spi_tidle = 125.0;
                 if ($urandom_range(0, 1)) wr(7'h10, 8'h55, 1, "cmd");      // half of them after a FLUSH
                 spi_tx[0] = 8'hC0;
                 for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;
@@ -243,7 +243,7 @@ module tb_spi_r14;
                 frame(n, x, "smp");
             end else begin                                         // FLUSH, then a sample read at once
                 integer n, x;
-                spi_tidle = 100.0;
+                spi_tidle = 125.0;
                 wr(7'h10, 8'h55, 1, "cmd");
                 spi_tx[0] = 8'hC0;
                 for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;

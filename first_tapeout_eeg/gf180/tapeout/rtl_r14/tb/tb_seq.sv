@@ -4,7 +4,10 @@
 // Every traced line also carries the RTL's timer before and after the event, the frames since the previous traced
 // event and the timer settings, so that the checker models every load, decrement and restart of the timer.
 // Checked here directly: AFE_RST equals the state's value after every edge and changes only at a tick or reset;
-// an illegal state value returns to IDLE with STATE_ERR.
+// cmd_ack is the pending command at a tick and nothing else; between events (no tick, no output time) neither the
+// state nor any action changes; every illegal state value (9..15) returns to IDLE with STATE_ERR. The timer settings
+// are drawn mostly short (so that expiries happen) and sometimes over the full range 0..255 (loads of up to
+// 255 x 1024 frames, checked by the timer model).
 // Plusargs: +n=<events> +seed=<seed> +trace=<file>
 `timescale 1ns / 1ps
 `default_nettype none
@@ -42,8 +45,18 @@ module tb_seq;
     logic [3:0] st0;
     logic       tm0, cv0, ev_tick, ev_out, prev_afe, prev_tick, after_reset;
     logic [7:0] cc0;
+    logic       ack0;
     logic       a_apply, a_flush, a_store, a_mark, a_serr, a_cerr, a_clr;
     reg [8*256-1:0] trace;
+
+    function automatic logic [7:0] tcode();                    // a timer setting: mostly short, sometimes long
+        case ($urandom % 20)                                   // 15 % long, so that every cell is still reached
+            0:       tcode = 8'd255;
+            1:       tcode = 8'($urandom % 256);
+            2:       tcode = 8'd64 + 8'($urandom % 64);
+            default: tcode = 8'($urandom % 3);
+        endcase
+    endfunction
 
     function automatic logic afe_of(input logic [3:0] s);
         afe_of = (s == 4'd0) || (s == 4'd1) || (s == 4'd8) || (s > 4'd8);
@@ -80,8 +93,8 @@ module tb_seq;
                 cmd_code  = code_of($urandom % 9);
             end
             if (($urandom % 40) == 0) begin
-                t_warm = $urandom % 3; t_elec = $urandom % 3; t_rec = $urandom % 3;
-                t_pre  = $urandom % 3; t_rst  = $urandom % 3;
+                t_warm = tcode(); t_elec = tcode(); t_rec = tcode();
+                t_pre  = tcode(); t_rst  = tcode();
             end
             if (($urandom % 20000) == 0) begin               // asynchronous reset in the middle of anything
                 rst_n = 1'b0;
@@ -108,6 +121,7 @@ module tb_seq;
             ev_tick = tick;  ev_out = out_stb;
             a_apply = apply; a_flush = flush; a_store = store; a_mark = mark;
             a_serr = state_err; a_cerr = cfg_err; a_clr = cic_arm && out_stb;
+            ack0 = cmd_ack;
             @(posedge clk);
             #1;
             // AFE_RST: the state's value, changing only at a tick
@@ -121,6 +135,15 @@ module tb_seq;
             end
             prev_afe = afe_rst;
             after_reset = 1'b0;
+            if (ack0 !== (ev_tick && cv0)) begin
+                $display("ERROR: cmd_ack %b at a cycle with tick %b and a pending command %b", ack0, ev_tick, cv0);
+                errors = errors + 1;
+            end
+            if (!ev_tick && !ev_out && (state !== st0 || a_apply || a_flush || a_store || a_mark || a_serr || a_cerr ||
+                                        a_clr || a_rs)) begin
+                $display("ERROR: state %0d -> %0d or an action without a tick or an output time", st0, state);
+                errors = errors + 1;
+            end
             if (ev_tick || ev_out) begin
                 $fdisplay(fd, "%s %0d %0d %0d %0d %0d %0d %0d %0d %0d %0d%0d%0d%0d%0d%0d%0d%0d %0d %0d %0d %0d %0d %0d %0d %0d %0d",
                           ev_tick ? "T" : "O", st0, cv0, cc0, tm0, cfg_ok, nr_ok, (t_elec == 8'd0), out_valid, state,
@@ -132,24 +155,25 @@ module tb_seq;
                 frames = frames + 1;                        // frames between traced events (the timer's clock)
             end
             if (ev_tick && cv0) cmd_valid = 1'b0;             // taken at this tick (cmd_ack)
-            if (ev_tick && (cmd_ack !== 1'b0)) ;              // cmd_ack is combinational, already sampled
         end
-        // an illegal state value: back to IDLE with STATE_ERR
-        @(negedge clk);
-        tick = 1'b0; out_stb = 1'b0;
-        force dut.state = 4'd12;
-        #1;
-        if (state_err !== 1'b1) begin
-            $display("ERROR: illegal state without STATE_ERR");
-            errors = errors + 1;
-        end
-        @(negedge clk);
-        release dut.state;
-        @(posedge clk);
-        #1;
-        if (state !== 4'd0 || afe_rst !== 1'b1) begin
-            $display("ERROR: illegal state not returned to IDLE (state %0d, AFE_RST %b)", state, afe_rst);
-            errors = errors + 1;
+        // every illegal state value: back to IDLE with STATE_ERR (and AFE_RST = 1 while it lasts)
+        for (int bad = 9; bad < 16; bad++) begin
+            @(negedge clk);
+            tick = 1'b0; out_stb = 1'b0;
+            force dut.state = 4'(bad);
+            #1;
+            if (state_err !== 1'b1) begin
+                $display("ERROR: illegal state %0d without STATE_ERR", bad);
+                errors = errors + 1;
+            end
+            @(negedge clk);
+            release dut.state;
+            @(posedge clk);
+            #1;
+            if (state !== 4'd0 || afe_rst !== 1'b1) begin
+                $display("ERROR: illegal state %0d not returned to IDLE (state %0d, AFE_RST %b)", bad, state, afe_rst);
+                errors = errors + 1;
+            end
         end
         $fclose(fd);
         $display("tb_seq: %0d ticks, %0d output times, %0d resets traced; %0d direct errors", nticks, nouts, nresets,

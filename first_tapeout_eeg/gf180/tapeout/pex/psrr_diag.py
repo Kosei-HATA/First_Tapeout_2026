@@ -22,6 +22,11 @@ where the static estimate says 0.92). The MOS corners move it because the corner
 PDK's mimcap_ff 0.9, mimcap_ss 1.1 for the 2 fF/um2 MIM): Cf is MIM, the wiring is not, so the conversion goes as
 1 / (the MIM factor) (ff 1.228 against 1.100 / 0.9 = 1.222, ss 0.994 against 1.000), while the AFE's gain (Cin / Cf,
 both MIM) moves 1 % or less (the corner sine runs at 3.3 V: ff +0.9 %, ss -1.0 %).
+C (11/19 noon, ELP 51 kohm || 47 nF with B's matching): in band 74.6 dB next to 128 kHz and 82.5 dB next to 384 kHz
+against the typical deck's 47.5 and 53.6 dB (the noise allowance 605 against 26 nV/rtHz); 1 kHz stays at 58.2 dB (58.1):
+it enters at the pins through the legs' imbalance, not through INN. Its conversion between the choppers moves with the
+fit (0.04 and 0.09 V/V for k = 1 and 3 swap against the typical deck's baseline) while the folded tones agree (1.634
+against 1.635 uV next to 128 kHz).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --make     (writes runs/psrr_r12/diag_A, _B, _C)
        gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --layout   (runs/psrr_r12/diag_layout.json)

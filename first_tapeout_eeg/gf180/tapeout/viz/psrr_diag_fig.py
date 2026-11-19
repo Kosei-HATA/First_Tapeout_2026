@@ -70,8 +70,9 @@ def main():
                        "and BLP scaled to INP's counterparts (INP–BLN for BLP); nothing else changes. Without baselines "
                        "(their time grids differ) each is fitted alone (polynomial 4); on the typical run the folded tones "
                        "agree with the baseline fit to 1e−5. With ELP 51 kΩ || 47 nF the start-up drift leaks into the fit "
-                       "between the choppers (1.60 V/V alone against 1.47 with the baseline) while the folded tones agree "
-                       "(36.94 µV both), so (b) has the balanced legs only. The static estimate takes VBP as following "
+                       "between the choppers (1.60 V/V alone against 1.47 with the baseline; C 0.04 against 0.09) while "
+                       "the folded tones agree (36.94 µV both; C 1.634 against 1.635 µV with the typical deck's baseline), "
+                       "so (b) has the balanced legs only. The static estimate takes VBP as following "
                        "AVDD fully, through Cf_eff = Cin / gain = 636 pF / 297.47. The noise allowance next to the "
                        "chopper's harmonics scales with the folded tone from figure 46's value for the same legs. (d): the "
                        "corners' conversion from figure 46 (e); the gain from the corner sine runs at 3.3 V (figure 41) "
@@ -230,6 +231,13 @@ def main():
                      f"{(st['AVSS/AVSS'][1] - st['AVSS/AVSS'][0]) / 1e3:+.2f} pF, the input pair's common source "
                      f"{(st['CORE.SP/CORE.SP'][1] - st['CORE.SP/CORE.SP'][0]) / 1e3:+.2f} pF (both carry less of the "
                      "ripple than AVDD).")
+    if "C" in runs and "typical, ELP 51k||47n" in runs:
+        u, c_ = runs["typical, ELP 51k||47n"], runs["C"]
+        items.append(f"C (ELP 51 kΩ || 47 nF, B's matching), in band: next to 128 kHz {tone(c_, 1)['psrr_board_db']:.1f} dB "
+                     f"(typical {tone(u, 1)['psrr_board_db']:.1f}), next to 384 kHz {tone(c_, 3)['psrr_board_db']:.1f} dB "
+                     f"({tone(u, 3)['psrr_board_db']:.1f}); 1 kHz stays at {tone(c_, 0)['psrr_board_db']:.1f} dB "
+                     f"({tone(u, 0)['psrr_board_db']:.1f}): it enters at the pins through the legs' imbalance (figure 44), "
+                     "not through INN.")
     ff, ss = cs.get("ff"), cs.get("ss")
     if ff and ss:
         items.append(f"Corners: ff {ff['between_vv']:.3f} V/V against {ff['pred_vv']:.3f} (typical / 0.9), ss "

@@ -27,6 +27,9 @@ against the typical deck's 47.5 and 53.6 dB (the noise allowance 605 against 26 
 it enters at the pins through the legs' imbalance, not through INN. Its conversion between the choppers moves with the
 fit (0.04 and 0.09 V/V for k = 1 and 3 swap against the typical deck's baseline) while the folded tones agree (1.634
 against 1.635 uV next to 128 kHz).
+D (11/19 evening, the other way: INN's excess added to INP, legs 100 ohm): 0.060 V/V next to 128 kHz, in band 77.7 dB
+next to 128 kHz and 87.4 dB next to 384 kHz, the same as B (0.058 V/V, 78.0 and 87.7 dB): only the difference between
+the summing nodes converts the ripple; a coupling both carry alike does not (r13 takes INN's excess away).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --make     (writes runs/psrr_r12/diag_A, _B, _C)
        gf180/tools/venv310/bin/python gf180/tapeout/pex/psrr_diag.py --layout   (runs/psrr_r12/diag_layout.json)

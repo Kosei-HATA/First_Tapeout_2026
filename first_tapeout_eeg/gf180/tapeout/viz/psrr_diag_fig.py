@@ -3,7 +3,8 @@
 
 psrr_diag.py's results (gf180/tapeout/pex/runs/psrr_r12/diag.json) and psrr.py's (results.json): the typical
 AVDD-ripple start deck of figure 46 with INN's extracted couplings to the nets that carry the AVDD ripple scaled to
-INP's (A: AVDD; B: also VBP and BLP; C: B with ELP 100 ohm + 51 kohm || 47 nF). Not a design change.
+INP's (A: AVDD; B: also VBP and BLP; C: B with ELP 100 ohm + 51 kohm || 47 nF; D: the other way, INP's raised to
+INN's by adding INN's excess to INP). Not a design change.
   (a) the summing nodes' extracted capacitance to those nets, INN against INP;
   (b) the conversion between the choppers next to 128 kHz, measured and from the static scan;
   (c) what the output chopper folds into band, at the electrodes;
@@ -38,7 +39,8 @@ NETS = [("AVDD/AVDD", "AVDD"), ("VBP/VBP", "VBP"), ("BLP/BLP", "BLP (the PMOS\nb
         ("CORE.SP/CORE.SP", "CORE.SP (the input\npair's common source)")]
 SCALED = 3                                            # the first three are the ones A / B scale
 LABEL = {"typical": "typical", "A": "A: INN–AVDD\nas INP's", "B": "B: also INN–VBP,\nINN–BLP",
-         "typical, ELP 51k||47n": "typical, ELP\n51 kΩ || 47 nF", "C": "C: B with ELP\n51 kΩ || 47 nF"}
+         "typical, ELP 51k||47n": "typical, ELP\n51 kΩ || 47 nF", "C": "C: B with ELP\n51 kΩ || 47 nF",
+         "D": "D: INP raised\nto INN's"}
 
 
 def minus(s):
@@ -62,7 +64,8 @@ def main():
                    + (", interim)" if interim else ")"),
                    "Figure 46's typical AVDD-ripple deck (10 mV pk at the regulator; legs 100 Ω each) with INN's extracted "
                    "couplings to the nets that carry the AVDD ripple scaled to INP's — A: AVDD; B: also VBP and BLP; C: B "
-                   "with ELP 100 Ω + 51 kΩ || 47 nF — not a design change, a diagnostic of the r12 extraction · each "
+                   "with ELP 100 Ω + 51 kΩ || 47 nF; D: INP's raised to INN's instead — not a design change, a diagnostic "
+                   "of the r12 extraction · each "
                    "fitted alone · (d) figure 46's MOS corners against the PDK's MIM corner that comes with each",
                    note=minus(
                        "The diagnostic decks are copies of the typical decks (r12 extraction, chip wiring, AFE_IBIAS 3, "
@@ -102,14 +105,14 @@ def main():
 
     # (b) the conversion between the choppers, legs 100 ohm
     ax = fig.add_subplot(gs[0, 1])
-    names = [n for n in ("typical", "A", "B") if n in runs]
+    names = [n for n in ("typical", "A", "B", "D") if n in runs]
     for i, n in enumerate(names):
         r = runs[n]
         v = tone(r, 1)["between_vv"]
         ax.bar(i, v, width=0.55, color=ACCENT)
         hi = [tone(r, k)["between_vv"] for k in (1, 2, 3)]
         ax.text(i, v + 0.03, f"{v:.3f} V/V", ha="center", va="bottom", fontsize=7.8, color=INK, fontweight="medium")
-        ax.text(i, v + 0.11, f"129–386 kHz: {min(hi):.3f}–{max(hi):.3f}\n1 kHz: {tone(r, 0)['between_vv']:.3f}",
+        ax.text(i, v + 0.11, f"129–386 kHz:\n{min(hi):.3f}–{max(hi):.3f}\n1 kHz: {tone(r, 0)['between_vv']:.3f}",
                 ha="center", va="bottom", fontsize=6.9, color=MUTED, linespacing=1.3)
         p = d["static_pred_vv"].get(n)
         if p is not None:
@@ -127,9 +130,9 @@ def main():
 
     # (c) folded into band
     ax = fig.add_subplot(gs[1, 0])
-    rows = ["typical", "A", "B", "typical, ELP 51k||47n", "C"]
+    rows = ["typical", "A", "B", "D", "typical, ELP 51k||47n", "C"]
     for i, n in enumerate(rows):
-        yy = i + (0.35 if i >= 3 else 0)
+        yy = i + (0.35 if i >= 4 else 0)
         if n not in runs:
             ax.text(64, yy, "running", va="center", ha="center", fontsize=7.6, color=MUTED)
             continue
@@ -143,8 +146,8 @@ def main():
         ax.text(104, yy, density(r["allowed_13"]), ha="right", va="center", fontsize=7.4, color=INK)
     ax.text(104, -0.62, "noise allowed next to\n128 + 384 kHz", ha="right", va="center", fontsize=7.0, color=MUTED,
             linespacing=1.2)
-    ax.axhline(2.68, color="#cbd5e1", lw=0.8)
-    ax.set_yticks([i + (0.35 if i >= 3 else 0) for i in range(len(rows))])
+    ax.axhline(3.68, color="#cbd5e1", lw=0.8)
+    ax.set_yticks([i + (0.35 if i >= 4 else 0) for i in range(len(rows))])
     ax.set_yticklabels([LABEL[n].replace("\n", " ") for n in rows], fontsize=8)
     ax.set_ylim(len(rows) - 0.3, -1.25)
     ax.set_xlim(40, 105)
@@ -238,6 +241,12 @@ def main():
                      f"({tone(u, 3)['psrr_board_db']:.1f}); 1 kHz stays at {tone(c_, 0)['psrr_board_db']:.1f} dB "
                      f"({tone(u, 0)['psrr_board_db']:.1f}): it enters at the pins through the legs' imbalance (figure 44), "
                      "not through INN.")
+    if "D" in runs and "B" in runs:
+        dd, bb = runs["D"], runs["B"]
+        items.append(f"D (INN's excess added to INP, so both carry the larger coupling): {tone(dd, 1)['between_vv']:.3f} V/V "
+                     f"next to 128 kHz (B {tone(bb, 1)['between_vv']:.3f}), in band {tone(dd, 1)['psrr_board_db']:.1f} dB "
+                     f"(B {tone(bb, 1)['psrr_board_db']:.1f}): only the difference between the summing nodes counts, so taking "
+                     "INN's excess away (r13) works as well as matching it on INP.")
     ff, ss = cs.get("ff"), cs.get("ss")
     if ff and ss:
         items.append(f"Corners: ff {ff['between_vv']:.3f} V/V against {ff['pred_vv']:.3f} (typical / 0.9), ss "
@@ -246,7 +255,7 @@ def main():
                      "with the conversion.")
     items.append("Noise next to 128 and 384 kHz together that adds 5 % (with the odd harmonics above 3, (2/π)/k each):")
     rows = [f"  {LABEL[n].replace(chr(10), ' ')}: {density(runs[n]['allowed_13'])} ({density(runs[n]['allowed_odd'])})"
-            for n in ("typical", "A", "B", "typical, ELP 51k||47n", "C") if n in runs]
+            for n in ("typical", "A", "B", "D", "typical, ELP 51k||47n", "C") if n in runs]
     items.append("\n".join(rows))
     items.append("Typical die only; the diagnostic decks were not run on Monte Carlo dies or corners.")
     txt = "\n".join(V.wrap(minus(x), 6.0, 8.2) for x in items)

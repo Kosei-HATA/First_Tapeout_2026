@@ -44,7 +44,13 @@
 //      read of IF_CFG, legal in both), RESET_FLAG, and the recovery from a spoiled SOFT_RESET frame
 //   R  audit round 4: SOFT_RESET committed in the cycle of a tick that releases AFE_RST (WARMUP's end), of a tick that
 //      applies (APPLY in RUN: CPF_TRIM, OFM, OFEN), of an output time, and in the cycle after a store into an empty
-//      FIFO (DRDY_N): no runt on any register-driven pin (soft_req forced for that one cycle)
+//      FIFO (DRDY_N): no runt on any register-driven pin (soft_req forced for that one cycle); R5: a SOFT_RESET over
+//      frame cycles 1..5 leaves the frame strobes (DAC_CLK in cycle 4); R6: an overload that ends just before a
+//      SOFT_RESET is still in the detector's window after it (the detector runs from RESET_N: RST-02)
+// Also (audit round 4): every applied pin (OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, DWA_EN, CHOP_EN, TEST_CFG[5:0])
+// equals regmap.pins_from_active of the active copies at every MCLK in every state (CHOP_EN was seen only in IDLE and
+// RUN); STATUS's READY and AFE_RST bits in WARMUP, PRE, PULSE, RECOVER and ALIGN (N4); APPLY_NR across M's byte
+// boundary (N5); a wrong key after the right one locks (A).
 //   N5 audit round 3: APPLY_NR's step rule (regmap.nr_ok, generated): every other applied setting changed -> CFG_ERR,
 //      the sign walk; O: RAW_DATA / RAW_CLK (the code stream, the three timing pairs)
 // Also (audit round 3): shadow writes alone leave the chopper, CHOP1 and CHOP_BLANK; STATE read in WARMUP, RUN, PRE,
@@ -228,6 +234,29 @@ module tb_top_r14;
     always @(CHOP_EN)        begin if ($realtime == rt_chen)   runt("CHOP_EN");      rt_chen   = $realtime; end
     always @(DWA_EN)         begin if ($realtime == rt_dwa)    runt("DWA_EN");       rt_dwa    = $realtime; end
     always @(DRDY_N)         begin if ($realtime == rt_drdy)   runt("DRDY_N");       rt_drdy   = $realtime; end
+
+    // ------------------------------------------------------------------ every applied pin follows its active copy
+    // At every MCLK in every state (audit round 4: CHOP_EN was observed only in IDLE and RUN, so a copy that dropped it
+    // in PULSE passed every test): the applied pins are regmap.pins_from_active of the active copies (OFM and OFS 0 in
+    // range 0, OFEN = exp_ofen (generated from regmap.ofen_of_range), CHOP_EN = not CHOP_STOP). The active copies are
+    // the register block's (read back over SPI at address + 0x10 by the generated register tests)
+    integer n_pinrule = 0;
+    always @(posedge MCLK) begin
+        #0.1;
+        if (RESET_N === 1'b1 &&
+            (OFM !== ((dut.u_regs.a_range == 3'd0) ? 10'd0 : dut.u_regs.a_m) ||
+             OFS !== ((dut.u_regs.a_range == 3'd0) ? 1'b0 : dut.u_regs.a_sign) ||
+             OFEN !== exp_ofen(dut.u_regs.a_range) || CPF_TRIM !== dut.u_regs.a_cpf ||
+             AFE_IBIAS !== dut.u_regs.a_ibias || BTRIM_P !== dut.u_regs.a_bp || BTRIM_N !== dut.u_regs.a_bn ||
+             DWA_EN !== dut.u_regs.a_dwa || CHOP_EN !== ~dut.u_regs.a_cstop ||
+             TEST_CFG[5:0] !== {dut.u_regs.a_azero, dut.u_regs.a_atpen, dut.u_regs.a_atpsel})) begin
+            n_pinrule = n_pinrule + 1;
+            if (n_pinrule <= 5)
+                fail($sformatf("applied pins differ from regmap.pins_from_active of the active copies in state %0d: OFM %0d OFS %b OFEN %b CPF %0d IB %0d BT %0d/%0d DWA %b CHOP_EN %b TEST_CFG %02h",
+                               dut.seq_state, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM_P, BTRIM_N, DWA_EN, CHOP_EN,
+                               TEST_CFG));
+        end
+    end
 
     // ------------------------------------------------------------------ AFE_RST pin edges
     real t_afe_fall = 0.0, t_afe_rise = 0.0;
@@ -628,6 +657,12 @@ module tb_top_r14;
         r14_write(7'h11, 8'h3C);
         r14_write(7'h11, 8'h00);                        // unlock, then lock with 0x00: no error
         expect_noerr("TEST_KEY 0x3C, then 0x00");
+        r14_write(7'h11, 8'h3C);                        // unlocked, then a wrong key: locks (audit round 4)
+        r14_write(7'h11, 8'h3D);
+        expect_err_now(8'h80, "CMD_ERR for a wrong key after the right one");
+        r14_write(7'h60, 8'h05);
+        expect_err_now(8'h08, "TEST_MUX locked by a wrong key after the right one");
+        rt_read_expect(7'h60, 8'h00, "TEST_MUX unchanged after the wrong key");
         // burst read 0x20..0x27 in one frame (CRC off): the same bytes as eight single reads
         begin
             logic [7:0] single [0:7];
@@ -1218,6 +1253,7 @@ module tb_top_r14;
         run_pin_tests();                                // generated: ends with the reset values applied
         r14_cmd(8'h11);                                 // START: WARMUP, RECOVER, FILL, then PRE and PULSE
         wait_state(4'd1, 50.0, "N WARMUP");
+        check_status(8'h01, 8'h09, "N STATUS in WARMUP (READY 0, AFE_RST 1)");
         ovl_burst(1'b0, "N overload in WARMUP");
         wait_state(4'd2, 5100.0, "N RECOVER");
         ovl_burst(1'b0, "N overload in RECOVER");
@@ -1247,11 +1283,15 @@ module tb_top_r14;
         r14_cmd(8'h33);
         wait_state(4'd7, 50.0, "N4 PRE");
         rt_read_expect(7'h04, 8'd7, "STATE in PRE");
+        check_status(8'h00, 8'h09, "N4 STATUS in PRE (READY 0, AFE_RST 0)");
         wait_state(4'd8, 2100.0, "N4 PULSE");
         rt_read_expect(7'h04, 8'd8, "STATE in PULSE");
+        check_status(8'h01, 8'h09, "N4 STATUS in PULSE (READY 0, AFE_RST 1)");
         wait_state(4'd2, 2100.0, "N4 RECOVER");
         rt_read_expect(7'h04, 8'd2, "STATE in RECOVER");
+        check_status(8'h00, 8'h09, "N4 STATUS in RECOVER (READY 0, AFE_RST 0)");
         wait_state(4'd4, 2100.0, "N4 ALIGN");
+        check_status(8'h00, 8'h09, "N4 STATUS in ALIGN or FILL (READY 0, AFE_RST 0)");
         if ((t_state[8] - t_state[7]) / 1000.0 < 1992.13 || (t_state[8] - t_state[7]) / 1000.0 > 1992.25 ||
             (t_afe_fall - t_afe_rise) / 1000.0 < 1992.13 || (t_afe_fall - t_afe_rise) / 1000.0 > 1992.25 ||
             (t_state[4] - t_state[2]) / 1000.0 < 1992.13 || (t_state[4] - t_state[2]) / 1000.0 > 1992.25)
@@ -1477,15 +1517,39 @@ module tb_top_r14;
             if (DRDY_N !== 1'b1 || n_drdy_fall != falls0) fail($sformatf("R4: DRDY_N fell (%0d falls) at the SOFT_RESET",
                                                                         n_drdy_fall - falls0));
             r14_write(7'h06, 8'hFF);
+            // R5: a SOFT_RESET over frame cycles 1..5 (committed in cycle 0): the frame strobes run from RESET_N alone
+            // (TH_CAPTURE 1, DAC_LOAD 2, DAC_CLK 4: the strobe monitor checks every frame; RST-02)
+            k = 0;
+            @(posedge MCLK); #1;
+            while (dut.cycle !== 5'd0 && k < 64) begin @(posedge MCLK); #1; k++; end
+            if (k >= 64) fail("R5 not exercised: no frame cycle 0");
+            soft_now();
+            r14_write(7'h06, 8'hFF);
+            // R6: the overload detector runs from RESET_N alone (RST-02): an overload that ends just before a
+            // SOFT_RESET is still in its 32-frame window after it (OVL_NOW in the next STATUS)
+            ovl_force = 1'b1;
+            repeat (20 * 32) @(posedge MCLK);
+            fork
+                r14_cmd(8'hA5);                         // SOFT_RESET: committed about 8.6 us after its start
+                begin #(7000.0); ovl_force = 1'b0; end  // the last overloaded frame about 2 us before the commit
+            join
+            #(1000.0);                                  // CS_N high for 1 us after a SOFT_RESET
+            spi_tx[0] = 8'h83; spi_xfer(1, 0);          // the header only: STATUS
+            if (spi_rx[0][1] !== 1'b1)
+                fail($sformatf("R6: STATUS 0x%02h without OVL_NOW right after a SOFT_RESET (the overload detector must run on RESET_N)", spi_rx[0]));
+            r14_read(7'h06, e);
+            if (e !== 8'h01) fail($sformatf("R6: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG only", e));
+            r14_write(7'h06, 8'hFF);
             if (n_runt != runt0) fail($sformatf("R: %0d runts", n_runt - runt0));
         end
-        $display("R  SOFT_RESET in the cycle of a tick, an output time, after a store: no runt (errors %0d)", errors);
+        $display("R  SOFT_RESET in the cycle of a tick, an output time, after a store: no runt; strobes and the overload detector through it (errors %0d)", errors);
 
         $fclose(flog);
         $fclose(fsmp);
         $fclose(fseq);
         if (ana_afe_rst !== afe_falls + afe_rises) fail($sformatf("monitor saw %0d AFE_RST changes, the pin %0d edges",
                                                                   ana_afe_rst, afe_falls + afe_rises));
+        if (n_pinrule != 0) fail($sformatf("applied pins differed from their active copies in %0d cycles", n_pinrule));
         $display("tb_top_r14: %0d SPI transfers, %0d samples, %0d analog pin changes (%0d of AFE_RST), %0d SPI errors, %0d errors, ended at %0.3f ms",
                  spi_xfers, nsamples, ana_changes, ana_afe_rst, spi_errors, errors, $realtime / 1.0e6);
         if (errors == 0 && spi_errors == 0) $display("PASS: tb_top_r14");

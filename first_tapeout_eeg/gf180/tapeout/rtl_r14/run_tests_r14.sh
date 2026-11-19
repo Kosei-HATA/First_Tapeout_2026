@@ -12,12 +12,16 @@
 #               (rtl/tb/tb_chop1.sv with the r14 clock generator; ANA-04)
 #   tb_cic_arm  the CIC cleared at an output time == golden CIC (four positions), output grid kept
 #   tb_ovl      the overload detector == the rule (overload runs + full-scale stream)
-#   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear
+#   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
+#               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
+#   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; cfg_ok and nr_ok against
+#               regmap over the full 10-bit M (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
 #   tb_top_r14  the whole block through its pins (phases A to S, listed in the bench's header); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
+#   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06; yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 # usage: ./run_tests_r14.sh
 set -u
@@ -73,7 +77,10 @@ print(f"{len(g)} of {len(c)} frames compared, {bad} mismatches; detections: over
 print("PASS" if bad == 0 and g[:split].sum() > 0 and g[split:].sum() == 0 else "FAIL")
 EOF
 }
-regs_t() { comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }
+regs_t() { $PY tb/gen_ok_vectors.py && comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }
+rnd_t() { $PY -c "import sys; sys.path.insert(0, '../rtl/model'); import gen_vectors as G; G.gen_rnd_sat('build', sys.stdout)" &&
+          comp build/tb_rnd_sat.vvp ../rtl/eeg_rnd_sat.sv ../rtl/tb/tb_rnd_sat.sv && vvp -n build/tb_rnd_sat.vvp +vec=build/rnd_sat.vec; }
+outputs_t() { $PY tb/check_outputs_registered.py; }
 fifo_t() { comp build/tb_fifo.vvp eeg_fifo.sv tb/tb_fifo.sv &&
            vvp -n build/tb_fifo.vvp +n=400000 +trace=build/fifo_trace.txt && $PY tb/check_fifo_trace.py build/fifo_trace.txt; }
 fifo4_t() { comp build/tb_fifo4.vvp -DDEPTH4 eeg_fifo.sv tb/tb_fifo.sv &&
@@ -94,11 +101,13 @@ run tb_clkgen clkgen_t
 run tb_chop1 chop1_t
 run tb_cic_arm cic_t
 run tb_ovl ovl_t
+run tb_rnd_sat rnd_t
 run tb_regs regs_t
 run tb_fifo fifo_t
 run tb_fifo4 fifo4_t
 run tb_top_r14 top_t
 run tb_spi_r14 spi_t
 run tb_top_r14_fifo4 top4_t
+run outputs outputs_t
 printf '%s\n' "${RES[@]}"
 ! printf '%s\n' "${RES[@]}" | grep -q FAIL

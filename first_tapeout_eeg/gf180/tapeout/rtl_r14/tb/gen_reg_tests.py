@@ -156,7 +156,7 @@ def main():
             L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"{r[1]} read only\");")
     for a in sorted(mirrors):
         L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, 8'h{E_ADDR:02X}, \"{regs[mirrors[a]][1]} active (read only)\");")
-    for a in undefined[::7]:
+    for a in undefined:
         L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h00, 8'h{E_ADDR:02X}, \"undefined 0x{a:02X}\");")
     L.append("endtask")
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
@@ -264,6 +264,21 @@ def gen_nr():
             active = sh
         L.append(line(sh, ok, f"nr {n}: M {m} S {s} ({'accepted' if ok else 'rejected'})", active))
         n += 1
+    # the high bits of M (OFF_M_H = M[9:8]) at the pins (audit round 4): one step across 255/256 and 511/512 is
+    # accepted; M_H or M_L changed alone, and a step with the sign across a high M, are rejected
+    for rng_, m0, walk in ((3, 255, ((256, 0), (255, 0), (256, 0), (0, 0), (512, 0), (257, 0), (256, 0), (255, 0))),
+                           (4, 511, ((512, 0), (511, 0), (512, 0), (768, 0), (256, 0), (513, 0), (512, 0), (512, 1),
+                                     (511, 0)))):
+        hb = with_m(dict(reset, RANGE=rng_), m0, 0)
+        L.append(f"    nr_base({regs_text(hb)});   // range {rng_}, M {m0}")
+        active = dict(hb)
+        for m, s in walk:
+            sh = with_m(active, m, s)
+            ok = RM.nr_ok(model(sh), model(active))
+            if ok:
+                active = sh
+            L.append(line(sh, ok, f"nr {n}: range {rng_}, M {m} S {s} ({'accepted' if ok else 'rejected'})", active))
+            n += 1
     L.append(f"    nr_base({regs_text(dict(reset))});   // back to the reset values")
     L.append("endtask")
     return L
@@ -289,6 +304,11 @@ def gen_pins():
                  f"\"pin case {k}{'' if ok else ' (M above the range: CFG_ERR)'}\");")
     L.append("endtask")
     L += gen_nr()
+    # regmap.ofen_of_range for the bench's continuous check of the applied pins against the active copies
+    L += ["function automatic logic [3:0] exp_ofen(input logic [2:0] r);   // regmap.ofen_of_range",
+          "    case (r)"]
+    L += [f"        3'd{r}: exp_ofen = 4'b{RM.ofen_of_range(r):04b};" for r in sorted(RM.RANGE_MAX_M)]
+    L += ["        default: exp_ofen = 4'bxxxx;", "    endcase", "endfunction"]
     with open(PIN_OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
     print(f"wrote {os.path.relpath(PIN_OUT, HERE)}: {len(pin_cases())} pin cases")

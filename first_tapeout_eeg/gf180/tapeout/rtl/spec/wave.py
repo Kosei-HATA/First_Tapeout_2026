@@ -205,9 +205,49 @@ def json_text(src):
     return json.dumps(src, ensure_ascii=False, indent=1)
 
 
+def lane_values(wave, data=None):
+    """Per column: a WaveDrom lane's value ('0' / '1' levels, the data of '=' segments; '.' continues; else None)."""
+    out, cur, k = [], None, 0
+    for ch in wave:
+        if ch in "01":
+            cur = ch
+        elif ch == "=":
+            cur = data[k] if data is not None else "="
+            k += 1
+        elif ch != ".":
+            cur = None
+        out.append(cur)
+    return out
+
+
+def check():
+    """The startup and APPLY diagrams against fsm_spec's table (audit round 4: the waveforms are written here, only
+    their durations came from the timers): the drawn states form a path of the table, and the AFE_RST and READY lanes
+    are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN)."""
+    errs = []
+    afe = {x[0]: str(x[3]) for x in FS.SEQ_STATES}
+    for name, fn in (("startup", startup), ("apply", apply_seq)):
+        lanes = {ln["name"]: ln for ln in fn()["signal"] if isinstance(ln, dict)}
+        st = lane_values(lanes["状態"]["wave"], lanes["状態"]["data"])
+        seq = [x for i, x in enumerate(st) if x is not None and (i == 0 or st[i - 1] != x)]
+        for a, b in zip(seq, seq[1:]):
+            if not any(isinstance(c, list) and any(br["next"] == b for br in c)
+                       for (s0, _e), c in FS.SEQ["table"].items() if s0 == a):
+                errs.append(f"wave_{name}: {a} -> {b} is not a transition of the table")
+        for lane, want in (("AFE_RST", lambda x: afe[x]), ("READY", lambda x: "1" if x == "RUN" else "0")):
+            for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
+                if x is not None and v is not None and v != want(x):
+                    errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}, the table gives {want(x)}")
+    return errs
+
+
 def fresh():
-    """The wave_*.json equal what the source gives now, and each PNG was rendered from that JSON (its SHA-256)."""
-    stale = []
+    """The wave_*.json equal what the source gives now, each PNG was rendered from that JSON (its SHA-256), and the
+    startup and APPLY diagrams agree with fsm_spec's table (check)."""
+    errs = check()
+    for e in errs:
+        print("  " + e)
+    stale = ["(the diagrams disagree with the table)"] if errs else []
     for name, (fn, width) in DIAGRAMS.items():
         p = os.path.join(HERE, f"wave_{name}.json")
         if not os.path.exists(p) or json.load(open(p, encoding="utf-8")) != json.loads(json.dumps(fn())):
@@ -221,6 +261,10 @@ def fresh():
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "fresh":
         return fresh()
+    errs = check()
+    if errs:
+        print("not writing: the diagrams disagree with fsm_spec's table:\n  " + "\n  ".join(errs))
+        return 1
     for name, (fn, width) in DIAGRAMS.items():
         src = fn()
         with open(os.path.join(HERE, f"wave_{name}.json"), "w", encoding="utf-8") as f:

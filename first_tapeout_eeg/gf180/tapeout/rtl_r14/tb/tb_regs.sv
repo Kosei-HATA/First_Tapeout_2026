@@ -5,6 +5,12 @@
 // CFG_ERR from the sequencer) and both DFLAG bits (OVERRUN from the FIFO, OVL from the overload detector): a clear alone
 // leaves the bit 0; a set alone leaves it 1; a clear of 0xFF committed in the very cycle of the set leaves it 1 and
 // every other bit 0. The flags are read through rdata at their address (the SPI's read path).
+//
+// cfg_ok and nr_ok (audit round 4, 11/20): every vector of build/ok_vectors.txt (tb/gen_ok_vectors.py, from regmap's
+// cfg_ok, nr_ok, field layout and legal values): the active bytes are written and applied (apply), the shadow bytes
+// written, and eeg_regs's cfg_ok and nr_ok compared with regmap's. The vectors cover the full 10-bit M (both bytes:
+// one step across 255/256 and 511/512, M_H or M_L alone changed), both signs, every range, every other applied field
+// and random pairs. Every write must be accepted (no error flag).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -100,7 +106,55 @@ module tb_regs;
         if (v !== 8'h02) begin $display("ERROR: DFLAG 0x%02h after clearing OVERRUN alone, expected 0x02 (OVL kept)", v); errors++; end
         n = n + 2;
         $display("tb_regs: %0d checks of the W1C flags, %0d errors", n, errors);
-        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins)");
+        // ---------------- cfg_ok and nr_ok against regmap.cfg_ok / regmap.nr_ok
+        begin
+            integer fd, rc, na, nv, nbad, cexp, nexp, ncfg, nnr;
+            integer ad [0:15];
+            integer ab [0:15];
+            integer sb [0:15];
+            logic [7:0] e;
+            fd = $fopen("build/ok_vectors.txt", "r");
+            if (fd == 0) begin
+                $display("FAIL: tb_regs (build/ok_vectors.txt missing: run tb/gen_ok_vectors.py)");
+                $finish;
+            end
+            rc = $fscanf(fd, "%d", na);
+            for (int i = 0; i < na; i++) rc = $fscanf(fd, "%h", ad[i]);
+            @(negedge clk); addr = 7'h11; we = 1'b1; wdata = 8'h3C;     // TEST_KEY: the test registers are applied too
+            @(negedge clk); addr = A_ERR; wdata = 8'hFF;                 // ERR cleared before the vectors
+            @(negedge clk); we = 1'b0;
+            nv = 0; nbad = 0; ncfg = 0; nnr = 0;
+            while (1) begin
+                rc = $fscanf(fd, "%h", ab[0]);
+                if (rc != 1) break;
+                for (int i = 1; i < na; i++) rc = $fscanf(fd, "%h", ab[i]);
+                for (int i = 0; i < na; i++) rc = $fscanf(fd, "%h", sb[i]);
+                rc = $fscanf(fd, "%d %d", cexp, nexp);
+                for (int i = 0; i < na; i++) begin @(negedge clk); addr = 7'(ad[i]); we = 1'b1; wdata = 8'(ab[i]); end
+                @(negedge clk); we = 1'b0; apply = 1'b1;                 // shadow -> active
+                @(negedge clk); apply = 1'b0;
+                for (int i = 0; i < na; i++) begin @(negedge clk); addr = 7'(ad[i]); we = 1'b1; wdata = 8'(sb[i]); end
+                @(negedge clk); we = 1'b0;
+                #1;
+                if (cfg_ok !== 1'(cexp) || nr_ok !== 1'(nexp)) begin
+                    nbad = nbad + 1;
+                    if (nbad <= 10) $display("ERROR: ok vector %0d: cfg_ok %b nr_ok %b, regmap %0d %0d", nv, cfg_ok, nr_ok,
+                                             cexp, nexp);
+                end
+                ncfg = ncfg + cexp;
+                nnr  = nnr + nexp;
+                nv = nv + 1;
+            end
+            $fclose(fd);
+            read_reg(A_ERR, v);
+            e = v;
+            if (e !== 8'h00) begin $display("ERROR: ERR 0x%02h after the vectors' writes (every write must be accepted)", e); nbad = nbad + 1; end
+            if (nv < 1000) begin $display("ERROR: only %0d ok vectors read", nv); nbad = nbad + 1; end
+            $display("tb_regs: %0d cfg_ok / nr_ok vectors (cfg_ok %0d, nr_ok %0d true) against regmap, %0d mismatches",
+                     nv, ncfg, nnr, nbad);
+            errors = errors + nbad;
+        end
+        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap)");
         else             $display("FAIL: tb_regs");
         $finish;
     end

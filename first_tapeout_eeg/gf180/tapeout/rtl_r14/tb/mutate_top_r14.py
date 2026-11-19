@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""Mutation self-test of the r14 testbenches (11/19): each listed RTL error, put in on purpose into a copy of the r14
-RTL, must be detected. MUTATIONS by tb_top_r14 / check_top_r14.py; SPI_MUTATIONS by tb_spi_r14 / check_spi_trace.py
-(a mismatch with the specification on some frame; a shorter run than run_tests_r14.sh, +n=800, so branch coverage is
-not asked for here); SEQ_MUTATIONS by tb_seq / check_seq_trace.py (the timer modelled independently); each of the
-two with an unmutated baseline that must show no mismatch. The unmutated RTL passes both benches
-(run_tests_r14.sh), so a mutation that still passes shows a hole in a testbench.
+"""Mutation self-test of the r14 testbenches (11/19, extended by the audits of 11/20): each listed RTL error, put in on
+purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be detected, and each bench's unmutated
+baseline must pass. The groups and their benches:
+  top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
+  spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (+n=800: branch coverage is not asked for here)
+  seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently)
+  fifo   FIFO_MUTATIONS     tb_fifo + check_fifo_trace.py (fsm_spec.fifo_step and an identity model)
+  regs   REGS_MUTATIONS     tb_regs (W1C; cfg_ok / nr_ok against regmap over build/ok_vectors.txt)
+  chop1  CHOP1_MUTATIONS    rtl/tb/tb_chop1.sv with the r14 clock generator
+  rnd    RND_MUTATIONS      rtl/tb/tb_rnd_sat.sv (build/rnd_sat.vec from rtl/model/gen_vectors.py)
+  struct STRUCT_MUTATIONS   check_outputs_registered.py (every output a flip-flop's: NFR-06, yosys)
+Each mutation runs in build/mut/<tag>/ (its own copy of the RTL and its own logs); the generated files (build/
+reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared, so run_tests_r14.sh must have
+run once. Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
+arguments, so a recorded result always has its log (audit round 4).
 
-Each mutation runs in build/mut/mNN/ (its own copy of the RTL and its own logs); the register tests
-(build/reg_tests.svh) and the CODE stream (build/top_r14.codes) are shared, so run_tests_r14.sh (or gen_reg_tests.py
-and the stream) must have run once.
-
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/mutate_top_r14.py [-j N] [--top | --spi | --seq]
-       [--only m03,s11,q02]
+Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/mutate_top_r14.py [-j N]
+       [--top | --spi | --seq | --fifo | --regs | --chop1 | --rnd | --struct] [--only m03,s11,q02]
 """
 import concurrent.futures as cf
 import os
@@ -212,6 +217,24 @@ MUTATIONS = [
     ("最上位：SOFT_RESET の確定の周期に DRDY_N を High にしない", "eeg_digital_top.sv",
      "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
      "drdy_n_q   <= drdy_mode ? ~drdy_pulse : ~fifo_nonempty;"),
+    # audit round 4, auditor C (each passed every test before the round's additions)
+    ("レジスタ：nr_ok の 1 段を M[7:0] だけで計算（M_H だけの変化を受け付ける）", "eeg_regs.sv",
+     "    assign sv_s   = s_sign ? -$signed({2'b00, s_m}) : $signed({2'b00, s_m});\n    assign sv_a   = a_sign ? -$signed({2'b00, a_m}) : $signed({2'b00, a_m});",
+     "    assign sv_s   = s_sign ? -$signed({4'b0000, s_m[7:0]}) : $signed({4'b0000, s_m[7:0]});\n    assign sv_a   = a_sign ? -$signed({4'b0000, a_m[7:0]}) : $signed({4'b0000, a_m[7:0]});"),
+    ("レジスタ：nr_ok が M[9:8] の一致も求める（255/256 の 1 段を拒否）", "eeg_regs.sv",
+     "assign nr_ok  = (s_range == a_range) &&", "assign nr_ok  = (s_range == a_range) && (s_m[9:8] == a_m[9:8]) &&"),
+    ("最上位：CHOP_EN が PULSE で 0", "eeg_digital_top.sv",
+     "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & (seq_state != ST_PULSE);"),
+    ("レジスタ：STATUS の READY が RUN 以上（PRE と PULSE でも 1）", "eeg_regs.sv",
+     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state >= ST_RUN), fifo_nonempty, ovl_now, afe_rst};"),
+    ("最上位：過負荷の検出を SOFT_RESET で戻す", "eeg_digital_top.sv",
+     "eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_ovl u_ovl (.clk(MCLK), .rst_n(rst_n),"),
+    ("最上位：DAC_CLK を SOFT_RESET で戻す", "eeg_digital_top.sv",
+     "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n) DAC_CLK <= 1'b0;",
+     "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n) DAC_CLK <= 1'b0;"),
+    ("レジスタ：解錠のあとの誤った鍵が解錠を保つ", "eeg_regs.sv",
+     "A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE);",
+     "A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE) || (unlocked && wdata != 8'h00);"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -258,6 +281,15 @@ REGS_MUTATIONS = [
     ("レジスタ：DFLAG の W1C でクリアが同じサイクルの事象に勝つ", "eeg_regs.sv",
      "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};",
      "dflag <= (dflag | {ovl_set, ovr_set}) & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00);"),
+    # audit round 4, auditor C: cfg_ok / nr_ok against regmap over the full 10-bit M
+    ("レジスタ：nr_ok の 1 段を M[7:0] だけで計算", "eeg_regs.sv",
+     "    assign sv_s   = s_sign ? -$signed({2'b00, s_m}) : $signed({2'b00, s_m});\n    assign sv_a   = a_sign ? -$signed({2'b00, a_m}) : $signed({2'b00, a_m});",
+     "    assign sv_s   = s_sign ? -$signed({4'b0000, s_m[7:0]}) : $signed({4'b0000, s_m[7:0]});\n    assign sv_a   = a_sign ? -$signed({4'b0000, a_m[7:0]}) : $signed({4'b0000, a_m[7:0]});"),
+    ("レジスタ：nr_ok が M[9:8] の一致も求める", "eeg_regs.sv",
+     "assign nr_ok  = (s_range == a_range) &&", "assign nr_ok  = (s_range == a_range) && (s_m[9:8] == a_m[9:8]) &&"),
+    ("レジスタ：nr_ok が CPF_TRIM の変化を見ない", "eeg_regs.sv", "(s_cpf == a_cpf) && ", ""),
+    ("レジスタ：cfg_ok が範囲の上限を拒否", "eeg_regs.sv",
+     "assign cfg_ok = (s_m <= range_max_m(s_range));", "assign cfg_ok = (s_m < range_max_m(s_range));"),
 ]
 
 
@@ -323,7 +355,28 @@ CHOP1_MUTATIONS = [
      "if (cycle == 5'd15) begin     // this edge is e16", "if (cycle == 5'd16) begin     // this edge is e16"),
 ]
 
-TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c")
+# the rounding and saturation of the CIC output (rtl/eeg_rnd_sat.sv) alone, against the Python golden model
+RND_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("丸め：同値を切り上げる（偶数への丸めでない）", "eeg_rnd_sat.sv",
+     "assign up   = (r > HALF) || ((r == HALF) && q[0]);", "assign up   = (r >= HALF);"),
+    ("飽和：正と負の飽和の入れ違い", "eeg_rnd_sat.sv",
+     "assign dout = fits ? qr[WO-1:0] : (qr[WQ] ? MAXNEG : MAXPOS);",
+     "assign dout = fits ? qr[WO-1:0] : (qr[WQ] ? MAXPOS : MAXNEG);"),
+]
+
+# the structure (NFR-06: every output a flip-flop's), which no functional bench can see
+STRUCT_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("最上位：DRDY_N を組み合わせ回路で出す", "eeg_digital_top.sv",
+     "    assign DRDY_N = drdy_n_q;", "    assign DRDY_N = drdy_mode ? ~drdy_pulse : ~fifo_nonempty;"),
+    ("最上位：AFE_RST を状態の復号で出す", "eeg_digital_top.sv",
+     "    assign AFE_RST = seq_afe_rst;",
+     "    assign AFE_RST = (seq_state == ST_IDLE) || (seq_state == ST_WARMUP) || (seq_state == ST_PULSE);"),
+]
+
+TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g")
+GROUPS = ("top", "spi", "seq", "fifo", "regs", "chop1", "rnd", "struct")
 
 
 def run(i, m, bench="top"):
@@ -341,11 +394,22 @@ def run(i, m, bench="top"):
         if text.count(old) != 1:
             return i, name, "NOT APPLIED", f"the text occurs {text.count(old)} times in {f}"
         open(p, "w", encoding="utf-8").write(text.replace(old, new))
-    os.symlink(os.path.join(BUILD, "top_r14.codes"), os.path.join(d, "build", "top_r14.codes"))
+    for x in ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec"):       # shared generated files
+        os.symlink(os.path.join(BUILD, x), os.path.join(d, "build", x))
     tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv"}.get(bench, "tb_top_r14.sv")
-    tbp = os.path.join(RTL_OLD, "tb", "tb_chop1.sv") if bench == "chop1" else os.path.join(R14, "tb", tb)
+    if bench == "struct":                            # the structure: yosys on this copy
+        k = subprocess.run([sys.executable, os.path.join(HERE, "check_outputs_registered.py"), d], capture_output=True,
+                           text=True)
+        passed = k.returncode == 0 and "PASS" in k.stdout
+        first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  ") or ln.startswith("FAIL")), "")
+        if f is None:
+            return i, name, ("baseline ok" if passed else "BASELINE FAILS"), first
+        return i, name, ("detected" if not passed else "MISSED"), first
+    tbp = {"chop1": os.path.join(RTL_OLD, "tb", "tb_chop1.sv"),
+           "rnd": os.path.join(RTL_OLD, "tb", "tb_rnd_sat.sv")}.get(bench, os.path.join(R14, "tb", tb))
     srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"],
-             "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"]}.get(bench) or SRC + OLD)   # pin_tests.svh: through -I build
+             "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"], "rnd": ["eeg_rnd_sat.sv"]}.get(bench)
+            or SRC + OLD)                            # pin_tests.svh: through -I build
     cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
            + [tbp])
     c = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
@@ -371,12 +435,13 @@ def run(i, m, bench="top"):
         if f is None:
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
-    if bench == "chop1":
+    if bench in ("chop1", "rnd"):
         try:
-            v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
+            v = subprocess.run(["vvp", "-n", "build/t.vvp"] + (["+vec=build/rnd_sat.vec"] if bench == "rnd" else []),
+                               cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
             return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 1200 s"
-        passed = "PASS: chop1" in v.stdout and "FAIL" not in v.stdout
+        passed = ("PASS: chop1" if bench == "chop1" else "PASS: tb_rnd_sat") in v.stdout and "FAIL" not in v.stdout
         first = next((ln for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), "")
         if f is None:
             return i, name, ("baseline ok" if passed else "BASELINE FAILS"), first
@@ -438,10 +503,10 @@ def run(i, m, bench="top"):
 
 def main():
     jobs = int(sys.argv[sys.argv.index("-j") + 1]) if "-j" in sys.argv else 2
-    for need in ("top_r14.codes", "reg_tests.svh"):
+    for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
-    which = next((w for w in ("spi", "top", "seq", "fifo", "regs", "chop1") if f"--{w}" in sys.argv), "all")
+    which = next((w for w in GROUPS if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []
     if which in ("top", "all"):
@@ -456,31 +521,45 @@ def main():
         tasks += [(i, m, "regs") for i, m in enumerate(REGS_MUTATIONS)]
     if which in ("chop1", "all"):
         tasks += [(i, m, "chop1") for i, m in enumerate(CHOP1_MUTATIONS)]
+    if which in ("rnd", "all"):
+        tasks += [(i, m, "rnd") for i, m in enumerate(RND_MUTATIONS)]
+    if which in ("struct", "all"):
+        tasks += [(i, m, "struct") for i, m in enumerate(STRUCT_MUTATIONS)]
     if only:
         tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}") in only]
+    import datetime
+    t0 = datetime.datetime.now()
     with cf.ThreadPoolExecutor(jobs) as ex:
         res = list(ex.map(lambda a: (a[2],) + run(*a), tasks))
     ok = True
+    out = [f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "
+           f"{(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min"]
     title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
-             "regs": "tb_regs (W1C: the set wins)", "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)"}
-    for bench in ("top", "spi", "seq", "fifo", "regs", "chop1"):
+             "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
+             "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)", "rnd": "tb_rnd_sat (Python golden vectors)",
+             "struct": "check_outputs_registered (every output a flip-flop's, yosys)"}
+    for bench in GROUPS:
         rs = sorted(r for r in res if r[0] == bench)
         if not rs:
             continue
-        print(f"--- {title[bench]}")
+        out.append(f"--- {title[bench]}")
         for _, i, name, verdict, first in rs:
             tag = "b00" if i < 0 else f"{TAG.get(bench, 'm')}{i:02d}"
-            print(f"{verdict:8s} {tag} {name}" + (f"  ({first[:120]})" if first else ""))
+            out.append(f"{verdict:8s} {tag} {name}" + (f"  ({first[:120]})" if first else ""))
         muts = [r for r in rs if r[3] != "baseline ok" and r[3] != "BASELINE FAILS"]
         n_det = sum(1 for r in muts if r[3] == "detected")
         base_ok = all(r[3] == "baseline ok" for r in rs if r[3] in ("baseline ok", "BASELINE FAILS"))
-        print(f"{n_det} of {len(muts)} mutations detected" + ("" if bench == "top" else
-                                                              f"; baseline {'clean' if base_ok else 'NOT clean'}"))
+        out.append(f"{n_det} of {len(muts)} mutations detected; baseline {'clean' if base_ok else 'NOT clean'}")
         ok &= n_det == len(muts) and base_ok
-    print("PASS" if ok else "FAIL")
+    out.append("PASS" if ok else "FAIL")
+    log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}.log")    # every run keeps its report (audit round 4)
+    with open(log, "w", encoding="utf-8") as fo:
+        fo.write("\n".join(out) + "\n")
+    print("\n".join(out[:-1]))
+    print("report written to " + os.path.relpath(log, R14))
+    print(out[-1])
     return 0 if ok else 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -809,7 +809,8 @@ TIMING = dict(
     busy_cycles={0: "CMP_STROBE（比較器）", 1: "TH の確定待ち", 2: "TH の取り込み（e2）", 3: "SEL1／SEL2（DAC2、e3）",
                  4: "DAC_CLK（DAC1、e4）", 5: "DAC_CLK の立ち下がり（e5）", 8: "CIC の出力（OUT）",
                  16: "CHOP1 の縁（e16）"},
-    blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame .. BLANK_LEN (<= 15)
+    blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame and cycles 0 .. BLANK_LEN - 1
+                                               # (BLANK_LEN + 1 cycles, BLANK_LEN <= 15); checked as 31 and 0 .. 15
     tick_cycle=24,
     rates={"128k": dict(period_frames=8, tick_frame=1), "64k": dict(period_frames=16, tick_frame=3)},
     timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 255 * 256 / MCLK),
@@ -894,6 +895,7 @@ CHECKS = [
     "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
     "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
     "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET のみ（動作なし。SOFT_RESET の確定のサイクルの tick と出力の時刻は取らない）",
+    "分岐ごとの性質（シーケンサ）：拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
@@ -901,8 +903,32 @@ CHECKS = [
 ]
 
 
+def check_seq_branches():
+    """Per branch of the sequencer's table (audit round 4, 11/20: these table errors passed every other check):
+    a refused command (CFG_ERR, STATE_ERR) has no other effect and leaves the state (SEQ-09); 'restart' only with
+    'apply' (a wait starts again only for a change applied while the AFE is held or the electrode settles); 'mark'
+    only with 'apply' in RUN's APPLY_NR; FLUSH only empties the FIFO (no restart, mark, apply, move)."""
+    errs = []
+    for (s, e), cell in SEQ["table"].items():
+        if s == "RESET" or not isinstance(cell, list):
+            continue
+        for b in cell:
+            acts, nxt = set(b["actions"]), b["next"]
+            where = f"SEQ {s}/{e} [{b['guard']}]"
+            if acts & {"CFG_ERR", "STATE_ERR"} and (acts - {"CFG_ERR", "STATE_ERR"} or nxt not in (None, s)):
+                errs.append(f"{where}: a refused command has another effect ({sorted(acts)} -> {nxt})")
+            if "restart" in acts and "apply" not in acts:
+                errs.append(f"{where}: the wait starts again without a change applied")
+            if "mark" in acts and not ("apply" in acts and s == "RUN" and e == "APPLY_NR"):
+                errs.append(f"{where}: CHANGED marked other than by an applied APPLY_NR in RUN")
+            if e == "FLUSH" and (acts != {"flush"} or nxt not in (None, s)):
+                errs.append(f"{where}: FLUSH does more than empty the FIFO ({sorted(acts)} -> {nxt})")
+    return errs
+
+
 def run_checks(verbose=True):
     report, total = [], 0
+    report += check_seq_branches()
     for F, must, excl in ((SEQ, ["IDLE", "RUN"], ("RST",)), (SPI, ["IDLE"], ())):
         report += check_tables(F) + check_graph(F, must, excl) + check_vocab(F)
     e, n1 = check_seq_ticks()
@@ -1220,6 +1246,14 @@ def selftest():
         # audit round 4 (11/20)
         ("RUN のリセットで、そのサイクルの出力を格納する", lambda t: t.__setitem__(("RUN", "RST"), [B(ALWAYS, ["store"], "RESET")])),
         ("PULSE のリセットで RECOVER へ（AFE_RST を解除）", lambda t: t.__setitem__(("PULSE", "RST"), [B(ALWAYS, [], "RECOVER")])),
+        # audit round 4, auditor C: refused commands and FLUSH with other effects (each passed every other check)
+        ("RUN の拒否した APPLY_NR が CHANGED の印を付ける", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply", "mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR", "mark"])])),
+        ("WARMUP の拒否した APPLY が T_WARM を数え直す", lambda t: t.__setitem__(("WARMUP", "APPLY"), [B("cfg_ok", ["apply", "restart"]), B("not cfg_ok", ["CFG_ERR", "restart"])])),
+        ("PULSE の拒否した APPLY が T_RST を数え直す（パルスが伸びる）", lambda t: t.__setitem__(("PULSE", "APPLY"), [B(ALWAYS, ["STATE_ERR", "restart"])])),
+        ("WAIT_E の拒否した START が T_ELEC を数え直す", lambda t: t.__setitem__(("WAIT_E", "START"), [B(ALWAYS, ["STATE_ERR", "restart"])])),
+        ("FILL の拒否した APPLY_NR が ALIGN へ", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "ALIGN"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"], "ALIGN")])),
+        ("PRE の FLUSH が T_PRE を数え直す", lambda t: t.__setitem__(("PRE", "FLUSH"), [B(ALWAYS, ["flush", "restart"])])),
+        ("RUN の FLUSH が CHANGED の印を付ける", lambda t: t.__setitem__(("RUN", "FLUSH"), [B(ALWAYS, ["flush", "mark"])])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),

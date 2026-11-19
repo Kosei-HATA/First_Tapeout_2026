@@ -812,5 +812,14 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
 - **XOR（r12 と比べる、穴埋め前）**：違うのは afe_top の中だけで、ブロックでの XOR と同じ面積。afe_top の外とほかのブロックは r12 と同じ（`runs/chip_top/xor_r12_r13_chip_top_20261119.log`）。
   - そのため、r13 の評価では、チップの配線の抽出は chipnets_r12、ADC の抽出は adc_top_c_r12 を使う（`afe_startup._NET_REV`、`pex_e2e._ADC_REV`、`pex_adc`）。
 - **穴埋め**（22 秒、入った数は r12 と同じ。AFE の帯には穴埋めを入れない）のあとの全 DRC（アンテナと密度を含む、CUP を除く）も違反なし（13 時 55 分）。
-- チップ全体の LVS（KLayout）とコアの LVS、wafer.space の precheck（最新のイメージ。11/19 にもレジストリの最新が 10/20 版 104d9ccb… だと確かめた。`--slot 1x0p5 --cob`）は回している。Magic と Netgen のチップ全体の LVS はまだ。
+- **チップ全体の LVS（パッドリング込み、KLayout）：一致**（「Congratulations! Netlists match.」、14 時 41 分）。組み立ての中のコアの LVS も一致（14 時 49 分）。
+  - KLayout の LVS の警告は、毎回出る「Comp labels are ignored, as comp is not defined as a valid conductive layer」の 1 文だけ（設計が原因ではない。11 回目の節）。
+- **wafer.space の precheck**
+  - 1 回目は、入力の GDS を写す先（`runs/precheck/chip_top.gds`）が外付けの SSD を指す切れたリンクだったため、写すところで止まった（下）。
+  - **2 回目（タグ pre_20261119_r13）：通った**（passed、exit 0、13 時 56 分〜15 時 15 分）。最新のイメージ（10/20 版、digest 104d9ccb…。11/19 にもレジストリの最新と確かめた）を `--slot 1x0p5 --cob` で回した。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。大きさ（3932 × 2531 µm）とパッドマスクも一致し、ID を入れた。Magic DRC は最後まで走った。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力の警告は、GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、r12 と同じ。
+- **GDS**：穴埋めした `chip_top_fill.gds`（222,305,900 バイト、sha256 67891f40…）の gz を `gf180/tapeout/chip/gds/chip_top_fill_r13_20261119.gds.gz` に置いた（41,572,001 バイト、sha256 172873dd…）。展開すると 67891f40… に戻る。
+- **別の道具でのチップ全体の LVS（Magic の抽出と Netgen、`chip_lay.netgen_chip()`）**：15 時 17 分から回している（`runs/chip_top/run_netgen_r13.sh`）。
 - `runs/chip_top` と `runs/precheck` には、外付けの SSD（mukiebi、今はつながっていない）を指すリンクが残っていて、書き出しが失敗した。リンクは消さずに、それぞれの `archived_links_mukiebi/` に移した。r12 の `chip_top.gds` と `chip_top_fill.gds` は `runs/chip_top/r12_20261113/` に写した。
+- 13 回目は、KLayout のチップ全体の LVS、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）が通った。**発注の候補は、Magic／Netgen の LVS と、r13 での性能の回し直し（PSRR から）が通るまで r12 のまま。**

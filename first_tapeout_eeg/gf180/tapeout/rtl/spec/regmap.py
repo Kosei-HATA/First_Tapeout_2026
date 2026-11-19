@@ -1,0 +1,468 @@
+#!/usr/bin/env python3
+"""The register map, SPI byte formats and command codes of the new digital control, as one machine-readable source
+(11/19, detailed specification for requirements r3; decisions D-1..D-8 as recommended).
+
+From this file are generated: the register tables of documentation/gf180_digital_control_spec_20261119.md and the
+SystemVerilog package eeg_regs_pkg.sv (addresses, field positions, reset values, legal ranges, codes) that the RTL
+will use. `check` proves the properties listed in CHECKS, including the cross-checks with fsm_spec.py (timers against
+the analog minimums, STATE codes, the conditions cfg_ok and nr_ok, every analog control output covered).
+
+Usage:
+  gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/regmap.py check
+  gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/regmap.py gen      (check, then write the generated files)
+  gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/regmap.py selftest (each listed register-map error must be
+                                                                          detected)
+"""
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
+DOC = os.path.join(REPO, "documentation", "gf180_digital_control_spec_20261119.md")
+PKG = os.path.join(HERE, "eeg_regs_pkg.sv")
+sys.path.insert(0, HERE)
+import fsm_spec as FS  # noqa: E402
+
+TICK_UNIT_S = 256 / FS.MCLK                     # 7.8125 us: unit of T_PRE, T_RST, T_REC (one 128 kHz chopper period)
+
+# update classes of a field
+#   apply  analog-affecting: written to a shadow, copied to the active copy (and the pins) by START / APPLY / APPLY_NR
+#   seq    driven by the sequencer only
+#   imm    takes effect at once; no analog effect (or latched at a timer start)
+#   ro     read only        w1c  write 1 to clear        cmd  write only, executed at the next tick
+
+
+def F(name, msb, lsb, reset, legal, cls, desc, pin=None):
+    return dict(name=name, msb=msb, lsb=lsb, reset=reset, legal=legal, cls=cls, desc=desc, pin=pin)
+
+
+def rng(a, b):
+    return list(range(a, b + 1))
+
+
+REGS = [
+    # addr, name, access, lock (test key), fields, description
+    (0x00, "ID", "RO", False, [F("ID", 7, 0, 0xE6, [0xE6], "ro", "チップの識別（0xE6）")], "識別"),
+    (0x01, "VERSION", "RO", False, [F("VERSION", 7, 0, 0x10, [0x10], "ro", "制御の版（0x10 ＝ r3 の SPI とシーケンサ）")], "版"),
+    (0x02, "CAPS", "RO", False, [F("FIFO_DEPTH", 3, 0, 8, [4, 8], "ro", "FIFO の深さ（合成で決める。4 または 8）"),
+                                 F("CRC", 4, 4, 1, [1], "ro", "CRC を持つ（1）")], "機能"),
+    (0x03, "STATUS", "RO", False, [F("MARK1", 7, 7, 1, [1], "ro", "固定の 1（MISO の無応答と区別）"),
+                                   F("MARK0", 6, 6, 0, [0], "ro", "固定の 0"),
+                                   F("ALERT", 5, 5, 1, [0, 1], "ro", "マスクしないエラーのフラグがある（リセット直後は RESET_FLAG で 1）"),
+                                   F("CMD_PENDING", 4, 4, 0, [0, 1], "ro", "命令が tick での処理を待っている"),
+                                   F("READY", 3, 3, 0, [0, 1], "ro", "状態が RUN"),
+                                   F("DATA", 2, 2, 0, [0, 1], "ro", "FIFO が空でない"),
+                                   F("OVL_NOW", 1, 1, 0, [0, 1], "ro", "過負荷を検出中（直近 32 フレームに両端の符号が 4 個以上）"),
+                                   F("AFE_RST", 0, 0, 1, [0, 1], "ro", "AFE_RST の出力の現在値")],
+     "状態（フレームの先頭バイトで MISO から返す値と同じ）"),
+    (0x04, "STATE", "RO", False, [F("STATE", 3, 0, 0, [x[1] for x in FS.SEQ_STATES if x[1] is not None], "ro",
+                                    "シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 RUN、7 PRE、8 PULSE）")],
+     "シーケンサの状態"),
+    (0x05, "FIFO_LEVEL", "RO", False, [F("LEVEL", 3, 0, 0, rng(0, 8), "ro", "FIFO のサンプルの数")], "FIFO の占有数"),
+    (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または鍵の誤り"),
+                                 F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、または未処理の命令への上書き"),
+                                 F("CFG_ERR", 5, 5, 0, [0, 1], "w1c", "整合しない設定での START／APPLY、または nr_ok でない APPLY_NR"),
+                                 F("RANGE_ERR", 4, 4, 0, [0, 1], "w1c", "範囲外の値の書き込み（書かない）"),
+                                 F("ADDR_ERR", 3, 3, 0, [0, 1], "w1c", "未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み"),
+                                 F("CRC_ERR", 2, 2, 0, [0, 1], "w1c", "書き込みの CRC の不一致（書かない）"),
+                                 F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み"),
+                                 F("RESET_FLAG", 0, 0, 1, [0, 1], "w1c", "リセットが起きた（既定値 1）")], "エラー（W1C）"),
+    (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に過負荷を検出した"),
+                                   F("OVERRUN", 0, 0, 0, [0, 1], "w1c", "FIFO が満杯でサンプルを捨てた")], "データのフラグ（W1C）"),
+    (0x08, "ALERT_MASK", "RW", False, [F("ALERT_MASK", 7, 0, 0xFF, rng(0, 255), "imm", "ERR のビットごとに ALERT に含める（1）")], "ALERT のマスク"),
+    (0x09, "ALERT_MASK_D", "RW", False, [F("ALERT_MASK_D", 1, 0, 0x3, rng(0, 3), "imm", "DFLAG のビットごとに ALERT に含める（1）")], "ALERT のマスク（データ）"),
+    (0x0A, "ODR_H", "RO", False, [F("ODR_H", 7, 0, 0x03, [0x03], "ro", "出力データレート 1000 SPS の上位")], "出力データレート"),
+    (0x0B, "ODR_L", "RO", False, [F("ODR_L", 7, 0, 0xE8, [0xE8], "ro", "同下位")], "出力データレート"),
+    (0x0C, "FORMAT", "RO", False, [F("QBITS", 3, 0, 5, [5], "ro", "量子化器のビット数")], "形式"),
+    (0x10, "COMMAND", "WO", False, [F("CMD", 7, 0, 0, None, "cmd", "命令コード（表 2-3）。次の tick で処理")], "命令"),
+    (0x11, "TEST_KEY", "WO", False, [F("KEY", 7, 0, 0, None, "cmd", "0x3C で試験のレジスタを解錠、それ以外で施錠")], "試験の鍵"),
+    # analog configuration (shadow; the active copies are read at addr + 0x10)
+    (0x20, "OFF_M_H", "RW", False, [F("M_H", 1, 0, 0, rng(0, 3), "apply", "オフセット DAC の大きさ M[9:8]", "OFM[9:8]")], "オフセット DAC（上位）"),
+    (0x21, "OFF_M_L", "RW", False, [F("M_L", 7, 0, 0, rng(0, 255), "apply", "M[7:0]", "OFM[7:0]")], "オフセット DAC（下位）"),
+    (0x22, "OFF_CTRL", "RW", False, [F("SIGN", 4, 4, 0, [0, 1], "apply", "符号 S（打ち消す量は (1 − 2 S) × M × 0.311 mV）", "OFS"),
+                                     F("RANGE", 2, 0, 0, rng(0, 4), "apply", "範囲（0 切、1〜4 で ±39／79／159／318 mV。5〜7 は RANGE_ERR）", "OFEN[3:0]")],
+     "オフセット DAC（符号と範囲）"),
+    (0x23, "AFE_IBIAS", "RW", False, [F("AFE_IBIAS", 1, 0, 3, rng(0, 3), "apply", "AFE のバイアス電流（3 が推奨）", "AFE_IBIAS[1:0]")], "AFE のバイアス"),
+    (0x24, "CPF_TRIM", "RW", False, [F("CPF_TRIM", 3, 0, 8, rng(0, 15), "apply", "入力インピーダンスの補償容量のトリム", "CPF_TRIM[3:0]")], "補償容量のトリム"),
+    (0x25, "BOOST_TRIM", "RW", False, [F("BTRIM_N", 5, 4, 0, rng(0, 3), "apply", "NMOS カスコードのブースタ（00 ＝ 2 単位 … 11 ＝ 8 単位。既定 2）", "BTRIM_N[1:0]"),
+                                       F("BTRIM_P", 1, 0, 1, rng(0, 3), "apply", "PMOS カスコードのブースタ（既定 01 ＝ 4 単位）", "BTRIM_P[1:0]")],
+     "ブースタのトリム（typical 4/2）"),
+    (0x26, "CHOP_CFG", "RW", False, [F("CHOP_FAST", 0, 0, 1, [0, 1], "apply", "AFE のチョッパ（1 ＝ 128 kHz、0 ＝ 64 kHz）", "CHOP／CHOP_OUT／CHOP_BLANK の速さ")], "AFE のチョッパ"),
+    (0x27, "ADC_CFG", "RW", False, [F("DWA_EN", 4, 4, 1, [0, 1], "apply", "DAC1／DAC2 の DWA", "DWA_EN"),
+                                    F("CHOP1_RATE", 2, 0, 3, rng(0, 5), "apply", "OTA1 のチョッパ（0 切、1〜5 で 1／2／4／8／16 kHz。6、7 は RANGE_ERR）", "CHOP1")],
+     "ADC の設定"),
+    (0x28, "BLANK", "RW", False, [F("BLANK_LEN", 3, 0, 7, rng(1, 15), "apply", "出力チョッパのブランキング（MCLK。0 は RANGE_ERR。範囲 1 以上では 15 として出す）", "CHOP_BLANK の幅")],
+     "ブランキング"),
+    # data window
+    (0x40, "SAMPLE", "RO", False, [F("SAMPLE", 7, 0, 0, None, "ro", "サンプルの窓（先頭のアドレスとしてのみ。7 バイト、表 2-5）")], "サンプル"),
+    # timers and interface (immediate; timers are latched when the timer starts)
+    (0x50, "T_WARM", "RW", False, [F("T_WARM", 7, 0, 5, rng(5, 255), "imm", "WARMUP（ms）")], "タイマ"),
+    (0x51, "T_ELEC", "RW", False, [F("T_ELEC", 7, 0, 0, rng(0, 255), "imm", "WAIT_E（ms。0 で WAIT_E を通らない）")], "タイマ"),
+    (0x52, "T_REC", "RW", False, [F("T_REC", 7, 0, 32, rng(29, 255), "imm", "RECOVER（7.8125 µs 単位。既定 32 ＝ 250 µs）")], "タイマ"),
+    (0x53, "T_PRE", "RW", False, [F("T_PRE", 7, 0, 3, rng(3, 255), "imm", "PRE（7.8125 µs 単位。既定 3 ＝ 23.4 µs）")], "タイマ"),
+    (0x54, "T_RST", "RW", False, [F("T_RST", 7, 0, 13, rng(13, 255), "imm", "PULSE（7.8125 µs 単位。既定 13 ＝ 101.6 µs）")], "タイマ"),
+    (0x55, "IF_CFG", "RW", False, [F("DRDY_MODE", 1, 1, 0, [0, 1], "imm", "DRDY_N（0 ＝ レベル、1 ＝ サンプルごとのパルス）"),
+                                   F("CRC_EN", 0, 0, 0, [0, 1], "imm", "書き込みと読み出しの CRC")], "インターフェース"),
+    # test (locked by TEST_KEY)
+    (0x60, "TEST_MUX", "RW", True, [F("ATP_EN", 4, 4, 0, [0, 1], "apply", "試験用マルチプレクサを ATP へ", "TEST_CFG[4]"),
+                                    F("ATP_SEL", 3, 0, 0, rng(0, 15), "apply", "節点の選択（0 AVSS … 15 ADC O2N）", "TEST_CFG[3:0]")], "試験用マルチプレクサ"),
+    (0x61, "TEST_CTRL", "RW", True, [F("CHOP_STOP", 1, 1, 0, [0, 1], "apply", "1 で CHOP_EN ＝ 0（入力チョッパを相 A に固定）", "CHOP_EN"),
+                                     F("ADC_ZERO", 0, 0, 0, [0, 1], "apply", "ADC の入力の短絡と CHOP_BLANK の保持", "TEST_CFG[5]")], "試験の制御"),
+    (0x62, "DEBUG", "RW", True, [F("DBG_SEL", 2, 1, 0, rng(0, 3), "imm", "RAW のパッドに時刻の信号（RAW_EN ＝ 0 のとき）", "TEST_CFG[7:6]"),
+                                 F("RAW_EN", 0, 0, 0, [0, 1], "imm", "生の符号の出力", "RAW_DATA／RAW_CLK")], "デバッグの出力"),
+]
+SHADOW_MIRROR = 0x10                            # active copy of a shadowed register at addr + 0x10 (read only)
+
+COMMANDS = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5}
+TEST_KEY = 0x3C
+
+# every control the analog side receives from the digital block (gf180_digital_control_requirements_20261119.md 4.10)
+ANALOG_CONTROLS = ["AFE_RST", "CHOP_EN", "OFM[9:8]", "OFM[7:0]", "OFS", "OFEN[3:0]", "CPF_TRIM[3:0]", "AFE_IBIAS[1:0]",
+                   "BTRIM_P[1:0]", "BTRIM_N[1:0]", "CHOP／CHOP_OUT／CHOP_BLANK の速さ", "CHOP_BLANK の幅", "CHOP1",
+                   "DWA_EN", "TEST_CFG[4]", "TEST_CFG[3:0]", "TEST_CFG[5]"]
+SEQ_DRIVEN = {"AFE_RST"}
+DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}       # pads and debug: no analog effect (11/16: +0.64 nV)
+
+SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
+                 ("OVL", 5, "この出力の直前の 1 ms に過負荷を検出した"), ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓（反映の直後の 3 個）"),
+                 ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
+OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
+RANGE_MAX_M = {0: 1023, 1: 127, 2: 255, 3: 511, 4: 1023}       # range 0: the DAC is off and OFM/OFS are driven 0
+
+
+def cfg_ok(sh):
+    """START / APPLY / APPLY_NR: the shadow offset-DAC magnitude fits the shadow range."""
+    return sh["M"] <= RANGE_MAX_M[sh["RANGE"]]
+
+
+def nr_ok(sh, ac):
+    """APPLY_NR while the AFE runs: only the signed offset-DAC value moves, by one step, in the same range."""
+    sv = lambda r: (1 - 2 * r["SIGN"]) * r["M"]
+    others = [k for k in sh if k not in ("M", "SIGN")]
+    return sh["RANGE"] == ac["RANGE"] and abs(sv(sh) - sv(ac)) <= 1 and all(sh[k] == ac[k] for k in others)
+
+
+CHECKS = [
+    "アドレスの重なりがない。アクティブの写しのアドレス（＋0x10）が他のレジスタと重ならない",
+    "各レジスタのフィールドは 8 ビットに収まり、重ならない。未使用のビットは 0 を返す",
+    "既定値はフィールドの幅に収まり、合法な値。推奨の動作値（AFE_IBIAS 3、BOOST_TRIM 4/2、BLANK 7、CHOP_FAST 1、CHOP1 4 kHz、DWA_EN 1）",
+    "アナログ側が受ける制御の全て（17 項目）が、ちょうど 1 つのフィールド（apply）かシーケンサ（AFE_RST）から出る。アナログに効く設定に、即時に効くもの（imm）はない",
+    "タイマの最小値と既定値は、tick の格子に切り上げてもアナログの最小値（fsm_spec.TIMING）以上",
+    "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
+    "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
+    "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の電圧（±39／79／159／318 mV、0.311 mV／段）から独立に確かめる",
+    "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
+    "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）",
+]
+
+
+def all_fields():
+    for a, n, acc, lock, fields, _ in REGS:
+        for f in fields:
+            yield a, n, acc, lock, f
+
+
+def check(verbose=True):
+    errs, notes = [], []
+    addrs = {}
+    for a, n, acc, lock, fields, _ in REGS:
+        if a in addrs:
+            errs.append(f"address 0x{a:02X} used by {addrs[a]} and {n}")
+        addrs[a] = n
+    for a, n, acc, lock, fields, _ in REGS:
+        if any(f["cls"] == "apply" for f in fields):
+            m = a + SHADOW_MIRROR
+            if m in addrs:
+                errs.append(f"{n}: the active copy 0x{m:02X} collides with {addrs[m]}")
+    for a, n, acc, lock, fields, _ in REGS:
+        used = 0
+        for f in fields:
+            if not 0 <= f["lsb"] <= f["msb"] <= 7:
+                errs.append(f"{n}.{f['name']}: bits {f['msb']}:{f['lsb']} outside the byte")
+            mask = ((1 << (f["msb"] - f["lsb"] + 1)) - 1) << f["lsb"]
+            if used & mask:
+                errs.append(f"{n}.{f['name']}: overlaps another field")
+            used |= mask
+            width = f["msb"] - f["lsb"] + 1
+            if f["reset"] >= 1 << width:
+                errs.append(f"{n}.{f['name']}: reset value {f['reset']} does not fit {width} bits")
+            if f["legal"] is not None and f["reset"] not in f["legal"]:
+                errs.append(f"{n}.{f['name']}: reset value {f['reset']} is not legal")
+            if f["legal"] is not None and any(v >= 1 << width for v in f["legal"]):
+                errs.append(f"{n}.{f['name']}: a legal value does not fit the field")
+    rec = {f["name"]: f["reset"] for *_, f in all_fields()}
+    for k, v in dict(AFE_IBIAS=3, BTRIM_P=1, BTRIM_N=0, BLANK_LEN=7, CHOP_FAST=1, CHOP1_RATE=3, DWA_EN=1).items():
+        if rec.get(k) != v:
+            errs.append(f"reset value of {k} is {rec.get(k)}, the recommended operating value is {v}")
+    # analog controls: exactly one source each, never immediate
+    src = {}
+    for a, n, acc, lock, f in all_fields():
+        if f["pin"]:
+            src.setdefault(f["pin"], []).append((n, f["name"], f["cls"]))
+    for c in ANALOG_CONTROLS:
+        s_ = src.get(c, [])
+        if c in SEQ_DRIVEN:
+            if s_:
+                errs.append(f"{c}: driven by the sequencer but also by {s_}")
+            continue
+        if len(s_) != 1:
+            errs.append(f"{c}: {len(s_)} sources {s_} (exactly one required)")
+        elif s_[0][2] != "apply":
+            errs.append(f"{c}: class {s_[0][2]} (analog controls change only through START / APPLY / APPLY_NR)")
+    for pin, s_ in src.items():
+        if pin not in ANALOG_CONTROLS and pin not in DIGITAL_ONLY:
+            errs.append(f"{pin}: a pin that is in neither list of controls")
+    # timers against the analog minimums (fsm_spec.TIMING) on both tick grids
+    unit = {"T_REC": TICK_UNIT_S, "T_PRE": TICK_UNIT_S, "T_RST": TICK_UNIT_S, "T_WARM": 1e-3}
+    for tn, u in unit.items():
+        f = next(f for *_, f in all_fields() if f["name"] == tn)
+        mn, df, mx = FS.TIMING["timers"][tn]
+        for label, code in (("minimum", min(f["legal"])), ("default", f["reset"])):
+            for rate, r in FS.TIMING["rates"].items():
+                tick = r["period_frames"] * FS.FRAME / FS.MCLK
+                actual = -(-(code * u) // tick) * tick
+                if actual < mn - 1e-12:
+                    errs.append(f"{tn} {label} code {code}: {actual * 1e6:.2f} us at {rate} is below {mn * 1e6:g} us")
+            notes.append(f"{tn} {label}: code {code} = {code * u * 1e6:.2f} us")
+    # STATE codes
+    st = next(f for *_, f in all_fields() if f["name"] == "STATE")
+    codes = sorted(x[1] for x in FS.SEQ_STATES if x[1] is not None)
+    if sorted(st["legal"]) != codes or max(codes) >= 1 << (st["msb"] - st["lsb"] + 1):
+        errs.append("STATE field does not match the sequencer's state codes")
+    # STATUS marker
+    stat = next(r for r in REGS if r[1] == "STATUS")[4]
+    m1 = next(f for f in stat if f["name"] == "MARK1")
+    m0 = next(f for f in stat if f["name"] == "MARK0")
+    if not (m1["legal"] == [1] and m0["legal"] == [0] and m1["msb"] != m0["msb"]):
+        errs.append("STATUS has no fixed 1 and 0 bits (cannot tell it from a dead MISO)")
+    # command codes: Hamming distance >= 2 between codes and from 0x00 / 0xFF
+    vals = list(COMMANDS.items()) + [("TEST_KEY", TEST_KEY), ("idle 0x00", 0x00), ("idle 0xFF", 0xFF)]
+    for i in range(len(vals)):
+        for j in range(i + 1, len(vals)):
+            d = bin(vals[i][1] ^ vals[j][1]).count("1")
+            if d < 2:
+                errs.append(f"{vals[i][0]} 0x{vals[i][1]:02X} and {vals[j][0]} 0x{vals[j][1]:02X} differ in {d} bit")
+    # the range table against the DAC's groups (independent of RANGE_MAX_M): range r uses G0 (M0..M6) .. G(r-1)
+    # (M7, M8, M9), so M fits 6 + r bits; and the documented ranges +-39 / 79 / 159 / 318 mV at 0.311 mV per step
+    for r_, mv in {1: 39, 2: 79, 3: 159, 4: 318}.items():
+        if RANGE_MAX_M.get(r_) != 2 ** (6 + r_) - 1 or abs(RANGE_MAX_M[r_] * 0.311 - mv) > 1.0:
+            errs.append(f"range {r_}: largest M {RANGE_MAX_M.get(r_)}, the DAC groups give {2 ** (6 + r_) - 1} (+-{mv} mV)")
+    # cfg_ok / nr_ok at the boundaries
+    base = dict(M=0, SIGN=0, RANGE=1, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0, CHOP_FAST=1, CHOP1_RATE=3,
+                DWA_EN=1, BLANK_LEN=7, ATP_EN=0, ATP_SEL=0, CHOP_STOP=0, ADC_ZERO=0)
+    for r_, mx in RANGE_MAX_M.items():
+        if not cfg_ok(dict(base, RANGE=r_, M=mx)) or (r_ and cfg_ok(dict(base, RANGE=r_, M=mx + 1))):
+            errs.append(f"cfg_ok wrong at the top of range {r_}")
+    ac = dict(base, M=1, SIGN=0)
+    cases = [(dict(base, M=2), True), (dict(base, M=0), True), (dict(base, M=1, SIGN=1), False),
+             (dict(base, M=0, SIGN=1), True), (dict(base, M=3), False), (dict(base, M=1, RANGE=2), False),
+             (dict(base, M=1, CPF_TRIM=9), False), (dict(base, M=2, CHOP1_RATE=4), False)]
+    for sh, want in cases:
+        if nr_ok(sh, ac) != want:
+            errs.append(f"nr_ok({sh['M']}, S{sh['SIGN']}, R{sh['RANGE']}) is {nr_ok(sh, ac)}, expected {want}")
+    if set(base) != {f["name"] for *_, f in all_fields() if f["cls"] == "apply"} - {"M_H", "M_L"} | {"M"}:
+        errs.append("the nr_ok model does not list exactly the shadowed settings")
+    # overload rule against the full-scale code streams
+    import numpy as np
+    for name in ("s4", "s20"):
+        pth = os.path.join(HERE, "..", "build", "e2e", f"{name}.codes")
+        if not os.path.exists(pth):
+            notes.append(f"{name}.codes not found; overload false-alarm check skipped")
+            continue
+        c = np.fromfile(pth, dtype=np.uint8)[256000:]
+        ext = np.isin(c, OVL_RULE["codes"]).astype(np.int32)
+        k = np.convolve(ext, np.ones(OVL_RULE["window"], dtype=np.int32), mode="valid")
+        hits = int((k >= OVL_RULE["threshold"]).sum())
+        if hits:
+            errs.append(f"overload rule fires {hits} times on the full-scale stream {name}")
+        notes.append(f"overload rule on {name}: {len(c)} frames, codes {c.min()}..{c.max()}, {hits} detections")
+    if verbose:
+        for n_ in notes:
+            print("  " + n_)
+        print(f"{len(errs)} violations" if errs else "no violations")
+        for e in errs:
+            print("  " + e)
+    return errs
+
+
+# ---------------------------------------------------------------------------------------------------------------
+def md_tables():
+    reg = ["| アドレス | 名前 | 種別 | 試験の鍵 | 既定値 | 内容 |", "|---|---|---|---|---|---|"]
+    fld = ["| レジスタ | ビット | フィールド | 既定値 | 合法な値 | 反映 | アナログの端子 | 内容 |", "|---|---|---|---|---|---|---|---|"]
+    cls_j = {"apply": "一括反映", "seq": "シーケンサ", "imm": "即時", "ro": "読み出し専用", "w1c": "W1C", "cmd": "命令"}
+    for a, n, acc, lock, fields, desc in REGS:
+        rv = 0
+        for f in fields:
+            rv |= f["reset"] << f["lsb"]
+        shadow = any(f["cls"] == "apply" for f in fields)
+        reg.append(f"| 0x{a:02X}{'（写し 0x%02X）' % (a + SHADOW_MIRROR) if shadow else ''} | {n} | {acc} | "
+                   f"{'要' if lock else '—'} | {'—' if acc in ('WO',) or n == 'SAMPLE' else '0x%02X' % rv} | {desc} |")
+        for f in fields:
+            bits = f"[{f['msb']}:{f['lsb']}]" if f["msb"] != f["lsb"] else f"[{f['msb']}]"
+            if f["legal"] is None:
+                lg = "—"
+            elif len(f["legal"]) > 3 and f["legal"] == list(range(f["legal"][0], f["legal"][-1] + 1)):
+                lg = f"{f['legal'][0]}〜{f['legal'][-1]}"
+            else:
+                lg = "、".join(str(v) for v in f["legal"])
+            fld.append(f"| {n} | {bits} | {f['name']} | {f['reset']} | {lg} | {cls_j[f['cls']]} | {f['pin'] or '—'} | {f['desc']} |")
+    cmd = ["| 命令 | コード | 受け付ける状態（fsm_spec の状態遷移表） |", "|---|---|---|"]
+    acc_states = {}
+    for c in ("START", "STOP", "APPLY", "APPLY_NR", "FLUSH"):
+        ok = [x[0] for x in FS.SEQ_STATES if x[0] != "RESET" and FS.SEQ["table"][(x[0], c)] not in (FS.IGN, FS.IMP)
+              and not all(b["actions"] == ["STATE_ERR"] for b in FS.SEQ["table"][(x[0], c)])]
+        acc_states[c] = "、".join(ok)
+    acc_states["SOFT_RESET"] = "全て（CS_N の立ち上がりで直ちにリセット）"
+    for c, v in COMMANDS.items():
+        cmd.append(f"| {c} | 0x{v:02X} | {acc_states[c]} |")
+    cmd.append(f"| （試験の鍵） | 0x{TEST_KEY:02X}（TEST_KEY へ） | — |")
+    ss = ["| ビット | 名前 | 内容 |", "|---|---|---|"] + [f"| {b} | {n} | {d} |" for n, b, d in SAMPLE_STATUS]
+    return "\n".join(reg), "\n".join(fld), "\n".join(cmd), "\n".join(ss)
+
+
+def sv_package():
+    out = ["// eeg_regs_pkg - addresses, fields, reset values and codes of the digital control's registers.",
+           "// GENERATED by gf180/tapeout/rtl/spec/regmap.py; do not edit by hand.",
+           "`timescale 1ns / 1ps", "`default_nettype none", "", "package eeg_regs_pkg;", ""]
+    for a, n, acc, lock, fields, desc in REGS:
+        out.append(f"    localparam logic [6:0] A_{n} = 7'h{a:02X};")
+        if any(f["cls"] == "apply" for f in fields):
+            out.append(f"    localparam logic [6:0] A_{n}_ACT = 7'h{a + SHADOW_MIRROR:02X};")
+    out.append("")
+    for a, n, acc, lock, fields, desc in REGS:
+        for f in fields:
+            if f["name"] in ("MARK1", "MARK0"):
+                continue
+            w = f["msb"] - f["lsb"] + 1
+            out.append(f"    localparam int {n}_{f['name']}_LSB = {f['lsb']};  localparam int {n}_{f['name']}_W = {w};"
+                       f"  localparam logic [{w - 1}:0] {n}_{f['name']}_RST = {w}'d{f['reset']};")
+            if f["legal"] is not None and f["cls"] in ("apply", "imm") and f["legal"] == list(range(f["legal"][0], f["legal"][-1] + 1)):
+                out.append(f"    localparam int {n}_{f['name']}_MIN = {f['legal'][0]};  localparam int {n}_{f['name']}_MAX = {f['legal'][-1]};")
+    out.append("")
+    for c, v in COMMANDS.items():
+        out.append(f"    localparam logic [7:0] CMD_{c} = 8'h{v:02X};")
+    out.append(f"    localparam logic [7:0] TEST_KEY_VALUE = 8'h{TEST_KEY:02X};")
+    for x in FS.SEQ_STATES:
+        if x[1] is not None:
+            out.append(f"    localparam logic [3:0] ST_{x[0]} = 4'd{x[1]};")
+    out.append(f"    localparam int OVL_WINDOW = {OVL_RULE['window']};  localparam int OVL_THRESHOLD = {OVL_RULE['threshold']};")
+    out += ["", "endpackage", "", "`default_nettype wire", ""]
+    return "\n".join(out)
+
+
+def generate():
+    if check(verbose=True):
+        print("not generating: fix the violations first")
+        return 1
+    with open(PKG, "w", encoding="utf-8") as f:
+        f.write(sv_package())
+    blocks = dict(zip(("reg_summary", "reg_fields", "commands", "sample_status"), md_tables()))
+    blocks["reg_checks"] = "\n".join(f"- {c}" for c in CHECKS)
+    if os.path.exists(DOC):
+        with open(DOC, encoding="utf-8") as f:
+            doc = f.read()
+        for k, v in blocks.items():
+            a, b = f"<!-- BEGIN GENERATED {k} -->", f"<!-- END GENERATED {k} -->"
+            if a in doc:
+                i, j = doc.index(a) + len(a), doc.index(b)
+                doc = doc[:i] + "\n" + v + "\n" + doc[j:]
+        with open(DOC, "w", encoding="utf-8") as f:
+            f.write(doc)
+    print("wrote", os.path.relpath(PKG, REPO), "and the generated blocks of", os.path.relpath(DOC, REPO))
+    return 0
+
+
+def selftest():
+    """Mutation test of the checker: each mutation is a plausible register-map error and must be detected."""
+    import copy
+    g = globals()
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY")}
+    keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok}
+
+    def fld(reg, name):
+        return next(f for f in next(r for r in g["REGS"] if r[1] == reg)[4] if f["name"] == name)
+
+    def m_dup_addr():
+        r = list(g["REGS"][1]); r[0] = 0x00; g["REGS"][1] = tuple(r)
+
+    def m_overlap():
+        fld("BOOST_TRIM", "BTRIM_N").update(msb=1, lsb=0)
+
+    def m_reset_illegal():
+        fld("BLANK", "BLANK_LEN")["reset"] = 0
+
+    def m_imm_analog():
+        fld("CPF_TRIM", "CPF_TRIM")["cls"] = "imm"
+
+    def m_no_source():
+        fld("ADC_CFG", "CHOP1_RATE")["pin"] = None
+
+    def m_short_rst():
+        fld("T_RST", "T_RST")["legal"] = rng(12, 255)
+
+    def m_bad_default():
+        fld("AFE_IBIAS", "AFE_IBIAS")["reset"] = 2
+
+    def m_cmd_close():
+        g["COMMANDS"]["FLUSH"] = 0x45
+
+    def m_marker():
+        fld("STATUS", "MARK0")["legal"] = [0, 1]
+
+    def m_state():
+        fld("STATE", "STATE")["legal"] = [0, 1, 2, 3, 4, 5, 6, 7]
+
+    def m_range():
+        g["RANGE_MAX_M"][1] = 128
+
+    def m_nr_range():
+        g["nr_ok"] = lambda sh, ac: abs((1 - 2 * sh["SIGN"]) * sh["M"] - (1 - 2 * ac["SIGN"]) * ac["M"]) <= 1
+
+    def m_nr_two_steps():
+        g["nr_ok"] = lambda sh, ac: sh["RANGE"] == ac["RANGE"] and abs((1 - 2 * sh["SIGN"]) * sh["M"] - (1 - 2 * ac["SIGN"]) * ac["M"]) <= 2
+
+    def m_ovl():
+        g["OVL_RULE"]["threshold"] = 0
+
+    def m_mirror():
+        g["REGS"].append((0x30, "EXTRA", "RO", False, [F("X", 7, 0, 0, [0], "ro", "x")], "x"))
+
+    muts = [("アドレスの重なり", m_dup_addr), ("フィールドの重なり", m_overlap), ("合法でない既定値", m_reset_illegal),
+            ("アナログに効く設定が即時", m_imm_analog), ("アナログの端子の出どころの欠落", m_no_source),
+            ("T_RST の最小値が 100 µs 未満", m_short_rst), ("既定値が推奨値でない（AFE_IBIAS 2）", m_bad_default),
+            ("命令コードが 1 ビット違い", m_cmd_close), ("STATUS の固定ビットがない", m_marker),
+            ("STATE のコードの欠落", m_state), ("範囲 1 の上限の誤り", m_range), ("nr_ok が範囲の変更を許す", m_nr_range),
+            ("nr_ok が 2 段を許す", m_nr_two_steps), ("過負荷の規則が常に成立", m_ovl), ("写しのアドレスとの重なり", m_mirror)]
+    results, ok = [], True
+    for name, m in muts:
+        for k, v in keep.items():
+            g[k] = copy.deepcopy(v)
+        g.update(keep_fn)
+        m()
+        try:
+            e = check(verbose=False)
+        except Exception as ex:                        # a crash on a broken map counts as detected
+            e = [f"exception {ex!r}"]
+        results.append((name, len(e), e[0] if e else ""))
+        ok &= bool(e)
+    for k, v in keep.items():
+        g[k] = copy.deepcopy(v)
+    g.update(keep_fn)
+    for name, n, first in results:
+        print(f"{'detected' if n else 'MISSED  '} {name}: {n} violations" + (f" (e.g. {first[:100]})" if n else ""))
+    e = check(verbose=False)
+    print(f"{sum(1 for r in results if r[1])} of {len(results)} mutations detected; unmutated map: {len(e)} violations")
+    return 0 if ok and not e else 1
+
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
+    if cmd == "check":
+        sys.exit(1 if check() else 0)
+    if cmd == "gen":
+        sys.exit(generate())
+    if cmd == "selftest":
+        sys.exit(selftest())
+    print(__doc__)

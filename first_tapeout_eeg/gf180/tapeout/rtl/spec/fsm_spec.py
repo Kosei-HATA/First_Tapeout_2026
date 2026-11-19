@@ -7,7 +7,8 @@ properties listed in CHECKS on them, so the drawings, the tables and the checked
 
 Machines:
   SEQ   the sequencer (start-up, data start, applying settings, AFE_RST). Its tick is once per chopper period, at
-        frame cycle 24 of the frame in the middle of chopper phase A (frame 1 of 8 at 128 kHz, 3 of 16 at 64 kHz),
+        frame cycle 24 (outputs change at e25) of the frame in the middle of chopper phase A (frame 1 of 8 at
+        128 kHz, 3 of 16 at 64 kHz),
         so AFE_RST and every analog setting change at one fixed chopper phase, away from every ADC and chopper edge.
         At most one command is pending (a second one is rejected at the SPI write); a tick resolves that command
         and the state's timer by SEQ_PRIORITY. OUT (a CIC output time, frame cycle 8) is handled at its own MCLK
@@ -578,8 +579,9 @@ TIMING = dict(
 def check_timing():
     T, errs, notes = TIMING, [], []
     tc = T["tick_cycle"]
-    if tc in T["busy_cycles"]:
-        errs.append(f"tick at frame cycle {tc} coincides with {T['busy_cycles'][tc]}")
+    for c in (tc, (tc + 1) % 32):                  # the tick's strobe cycle and the edge its outputs change at
+        if c in T["busy_cycles"]:
+            errs.append(f"tick (cycle {tc}, outputs at e{tc + 1}) meets {T['busy_cycles'][c]} at cycle {c}")
     if tc <= T["blank_max"] or tc == 31:
         errs.append(f"tick at frame cycle {tc} can fall inside an output-chopper blanking window")
     for name, r in T["rates"].items():

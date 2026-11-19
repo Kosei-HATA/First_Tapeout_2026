@@ -266,6 +266,8 @@ stateDiagram-v2
   - （a）今回 rev で改修する範囲（全面、最小限、改修なし）。最小限の候補：B1（オフセット DAC の二重バッファと一括反映）、B3（命令レジスタの分離）、C5（FIFO のフラッシュ）、A7（ソフトウェアリセット）、D1／D2（フラグの拡充）、C6（START／SYNC のピン。パッドの追加を伴う）。
   - （b）改修しない項目のファームウェアでの回避方法の確定。候補：B1 は 256 の倍数の境界をまたぐ変更を AFE_RST のパルス付きの手順で行う、C5 は FILTER_CLEAR のあと SEQ が 0 に戻るまで古いサンプルを読み捨てる、C6 は全チップの一斉書き込み、D4 はレベル割り込みで FIFO を空にする、A1・A5 は書き込みごとに読み戻す。
 
+- 11/19 夜：本書を受けた要件定義の案を `gf180_digital_control_requirements_20261119.md` に作成（模範の状態遷移図・状態表・状態遷移表、未決事項 D-1〜D-8）。
+
 ## 7. 参照
 
 - RTL：`gf180/tapeout/rtl/eeg_spi_slave.sv`、`eeg_regs.sv`、`eeg_fifo.sv`、`eeg_digital_top.sv`、`eeg_clkgen.sv`、`eeg_cic3.sv`、`README.md`

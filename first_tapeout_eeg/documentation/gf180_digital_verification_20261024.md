@@ -312,6 +312,8 @@ eeg_digital_top を、チップの負荷（結合 2 倍、5.2 の C の右の値
 - **折り返し**：0.9〜1.1 kHz の帯域の外の成分は −58〜−79 dB で帯域に入る（帯域の端ほど落ちない）。電極の入力フィルタと AFE の帯域で、この帯の妨害を十分に落とすことを、入力側の仕様として確かめる。
 - **ゲートレベルで見ていないもの**：SDF のタイミング込みのシミュレーション（STA で代える）、20 s 分のゲートレベル、同期化の FF のメタステーブル、i1 の折り返し（2·10⁹ 入力以上）。
   - 11/19：ユーザーから、遅延込み（SDF）のゲートレベルを代表して数本回すよう言われた。f2／f3 の SDF（9 コーナー）は LibreLane のランの `final/sdf/` にあり、ランは外付けの SSD（mukiebi）に移してある（目録 `gf180/tools/archive/MANIFEST_20261113e.tsv`）。
+  - 11/19：同じ設定、PDK、nix shell で 2 つのマクロを回し直した（`gf180/tapeout/digital/README_rerun_20261119.md`）。ネットリスト、DEF、タイミングモデルは目録の sha256 と同じ。SDF と SPEF は頭の日付の行だけが違い、元の時刻に戻すと sha256 が一致した。GDS は XOR で同じ。回し直しの SDF は、チップのマクロの SDF そのもの。
+  - その SDF で、tb_spi、tb_top（DAC_LOAD_CYCLE 2）、tb_e2e の短い版を、max_ss_125C_3v00、nom_tt_025C_3v30、min_ff_n40C_3v60 の 3 コーナーで回している（`run_tests.sh --gl-only`、`run_e2e.sh --gl`、`GL_SDF_CORNER`。下ごしらえは `gl_sdf_prep.sh`）。Icarus は SDF の経路と配線の遅延を当てるが、タイミング検査（setup／hold）はしないので、その分は STA で見る。
 
 ## 7. 再現の手順
 

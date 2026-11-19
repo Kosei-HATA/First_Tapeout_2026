@@ -317,6 +317,9 @@ module tb_top;
 
         #200.0;
         if (SEL1 !== 31'h0000_FFFF || SEL2 !== 31'h0000_FFFF) err("SEL reset state");
+`ifdef GL_SDF
+        @(negedge MCLK);                       // the reset synchronizer takes the same edge at gate level (spi_bfm.svh)
+`endif
         RESET_N = 1'b1;
         #3000.0;
         spi_half = 250.0;

@@ -222,6 +222,9 @@ module tb_spi;
         if (CHOP !== 1'b0 || CHOP_OUT !== 1'b0 || CHOP_BLANK !== 1'b0) err("chopper outputs not 0 during reset");
         if (CHOP1 !== 1'b1) err("CHOP1 not in phase A (1) during reset");
         #100.0;
+`ifdef GL_SDF
+        @(negedge MCLK);                       // the reset synchronizer takes the same edge at gate level (spi_bfm.svh)
+`endif
         RESET_N = 1'b1;
         #2000.0;
 

@@ -12,6 +12,18 @@
 // the wires between the two blocks, must equal those of the RTL (4-state compare,
 // so an X in one of them is a mismatch). The result line is printed at the end of
 // the simulation (PASS/FAIL, picked up by run_tests.sh and run_e2e.sh).
+//
+// With +define+GL_SDF (run_tests.sh / run_e2e.sh with GL_SDF_CORNER, 11/19) the cell
+// models keep their specify paths (no FUNCTIONAL, iverilog -gspecify) and both netlists
+// are back-annotated with LibreLane's SDF of one corner (GL_SDF_TOP, GL_SDF_ADC). The
+// outputs then change a clock-to-output delay after MCLK rises, so the compare moves to
+// just before the next rising edge: at the edge itself, in the active region, before the
+// RTL's registers update (NBA region) and before any delayed netlist output moves. The
+// latest change of the netlists' outputs after a rising edge is reported (all outputs but
+// MISO_OE, which follows CS_N combinationally). Icarus applies the SDF's path delays but
+// not its timing checks (setup / hold: "Timing checks are not supported"); those are
+// the STA's. The testbenches move their asynchronous pins (SPI, RESET_N) at an MCLK
+// falling edge under GL_SDF (spi_bfm.svh).
 `timescale 1ns / 1ps
 
 module gl_shadow;
@@ -106,9 +118,33 @@ module gl_shadow;
     longint mismatch_cycles = 0;
     integer reported = 0;
 
+`ifdef GL_SDF
+    initial begin
+        $sdf_annotate(`GL_SDF_TOP, g_top);
+        $sdf_annotate(`GL_SDF_ADC, g_adc);
+    end
+    // latest change of the netlists' outputs after an MCLK rising edge (MISO_OE left out)
+    real t_edge = 0.0, settle_max = 0.0, t_settle_max = 0.0;
+    wire [115:0] v_sync = {v_gl[116], v_gl[114:0]};
+    always @(v_sync) begin
+        if (reset_n === 1'b1 && $realtime - t_edge > settle_max) begin
+            settle_max = $realtime - t_edge;
+            t_settle_max = $realtime;
+        end
+    end
+    always @(posedge mclk) begin
+        t_edge = $realtime;
+`else
     always @(negedge mclk) begin
+`endif
         cycles = cycles + 1;
+`ifdef GL_SDF
+        // not at the first rising edge: the RTL's registers take RESET_N there (in the NBA region, after
+        // this compare), while the netlists' flip-flops reset asynchronously before it
+        if (cycles > 1 && v_gl !== v_rtl) begin
+`else
         if (v_gl !== v_rtl) begin
+`endif
             mismatch_cycles = mismatch_cycles + 1;
             if (reported < 20) begin
                 for (int b = 0; b < 117 && reported < 20; b++) begin
@@ -122,8 +158,15 @@ module gl_shadow;
     end
 
     final begin
+`ifdef GL_SDF
+        $display("gate level with SDF (%s, %s): latest output change %.3f ns after an MCLK rising edge (at %.3f ns)",
+                 `GL_SDF_TOP, `GL_SDF_ADC, settle_max, t_settle_max);
+        if (mismatch_cycles == 0)
+            $display("PASS: gate level (SDF) == RTL just before every MCLK rising edge (%0d cycles, %0d signals: all outputs of both macros and the wires between them)", cycles, 117);
+`else
         if (mismatch_cycles == 0)
             $display("PASS: gate level == RTL at every MCLK falling edge (%0d cycles, %0d signals: all outputs of both macros and the wires between them)", cycles, 117);
+`endif
         else
             $display("FAIL: gate level != RTL in %0d of %0d cycles", mismatch_cycles, cycles);
     end

@@ -43,20 +43,34 @@ function automatic logic spi_bit(input integer n, input integer nbytes);
     else                return 1'b0;
 endfunction
 
+// With GL_SDF (gate level with delays, tb/gl_shadow.sv) the master changes its pins at an MCLK
+// falling edge: the synchronizers then take the same MCLK edge in the RTL and in the netlists,
+// whose clock trees and input paths now have delays (otherwise a pin changing within a few ns of
+// a rising edge can be taken one MCLK later by the netlists, a difference of the test, not of the
+// design). Without GL_SDF nothing waits.
+task automatic spi_sync();
+`ifdef GL_SDF
+    @(negedge MCLK);
+`endif
+endtask
+
 // Mode 0: MOSI changes after SCLK falls, both sides sample on SCLK rising.
 task automatic spi_xfer(input integer nbytes, input integer extra_bits);
     integer total;
     total = 8 * nbytes + extra_bits;
+    spi_sync();
     CS_N = 1'b0;
     MOSI = spi_bit(0, nbytes);
     #(spi_tcss);
     for (int n = 0; n < total; n++) begin
+        spi_sync();
         SCLK = 1'b1;
         if (n < 8 * nbytes) begin
             spi_rx[n / 8][7 - (n % 8)] = miso_pad;
             if (miso_pad === 1'bz || miso_pad === 1'bx) spi_err("MISO not driven at SCLK rising edge");
         end
         #(spi_half);
+        spi_sync();
         SCLK = 1'b0;
         MOSI = (n + 1 < total) ? spi_bit(n + 1, nbytes) : 1'b0;
         if (n + 1 < total) #(spi_half);
@@ -65,6 +79,7 @@ task automatic spi_xfer(input integer nbytes, input integer extra_bits);
     spi_cs_waiting = 1'b1;
     while (spi_cs_hold) #1.0;
     spi_cs_waiting = 1'b0;
+    spi_sync();
     CS_N = 1'b1;
     #(spi_tidle);
     spi_xfers = spi_xfers + 1;

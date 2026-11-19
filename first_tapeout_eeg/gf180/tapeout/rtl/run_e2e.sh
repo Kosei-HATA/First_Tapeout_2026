@@ -13,7 +13,8 @@
 #   s4:K/N chunk K (0..N-1) of the s4 stream, from reset like a stream of its own
 #          (the gate-level s4 split over parallel runs)
 #   --gl   also run the LibreLane gate-level netlists of both macros in lockstep
-#          (tb/gl_shadow.sv), about 20 times slower
+#          (tb/gl_shadow.sv), about 20 times slower; with GL_SDF_CORNER (e.g.
+#          max_ss_125C_3v00) with the delays of LibreLane's SDF (see run_tests.sh)
 #
 # Tools (environment): IVERILOG, VVP, PYTHON (default: ../../tools/venv310/bin/python,
 # with numpy and scipy), PDK_ROOT (default: the LibreLane work copy's gf180mcu, for
@@ -37,6 +38,14 @@ GL_ADC_NL=${GL_ADC_NL:-../layout/gds/eeg_adc_dig.nl.v}
 
 GL=0
 if [ "${1:-}" = "--gl" ]; then GL=1; shift; fi
+# GL_SDF_CORNER (11/19): --gl with delays, as in run_tests.sh (tb/gl_shadow.sv)
+GL_SDF_CORNER=${GL_SDF_CORNER:-}
+GL_DEFS="-DFUNCTIONAL"
+GL_CELLS="$SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/gf180mcu_fd_sc_mcu9t5v0.v
+          $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/gf180mcu_fd_sc_mcu7t5v0.v"
+if [ -n "$GL_SDF_CORNER" ]; then
+    . ./gl_sdf_prep.sh          # GL_DEFS, GL_CELLS, GL_TAG with delays
+fi
 [ $# -eq 0 ] && { sed -n '2,24p' "$0"; exit 1; }
 
 B=build/e2e
@@ -68,10 +77,8 @@ compile() {   # out.vvp tag
         sed 's/^module eeg_adc_dig (/module eeg_adc_dig_gl (/' "$GL_ADC_NL" > "$g/eeg_adc_dig_gl.v"
         # no -Wall: the cell models warn about implicit wires and inherited timescales
         # shellcheck disable=SC2086
-        $IVERILOG -g2012 -I tb -DFUNCTIONAL -DTB=tb_e2e -o "$out" -s tb_e2e -s gl_shadow \
-            $RTL tb/tb_e2e.sv tb/gl_shadow.sv \
-            $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/gf180mcu_fd_sc_mcu9t5v0.v \
-            $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/gf180mcu_fd_sc_mcu7t5v0.v \
+        $IVERILOG -g2012 -I tb $GL_DEFS -DTB=tb_e2e -o "$out" -s tb_e2e -s gl_shadow \
+            $RTL tb/tb_e2e.sv tb/gl_shadow.sv $GL_CELLS \
             "$g/eeg_digital_top_gl.v" "$g/eeg_adc_dig_gl.v"
     fi
 }

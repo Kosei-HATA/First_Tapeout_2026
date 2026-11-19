@@ -15,6 +15,11 @@
 #   PDK_ROOT (default: the LibreLane work copy's gf180mcu; cell models for --gl)
 #   GL_TOP_NL, GL_ADC_NL (default: the chip's netlists in ../layout/gds/), GL_TAG (a
 #   suffix for the names of the --gl tests, e.g. a candidate macro run)
+#   GL_SDF_CORNER (11/19): the --gl tests with delays, the cell models' specify paths
+#   back-annotated with LibreLane's SDF of that corner (e.g. max_ss_125C_3v00,
+#   nom_tt_025C_3v30, min_ff_n40C_3v60) from the macro runs GL_SDF_TOP_RUN / GL_SDF_ADC_RUN
+#   (default f2_rerun_20261119 / f3_rerun_20261119 in ../digital/*/runs/); see
+#   tb/gl_shadow.sv. --gl-only skips the RTL tests.
 # Outputs go to build/ (vectors, compiled simulations, one log per test).
 # No waveform files are written.
 
@@ -34,17 +39,26 @@ fi
 
 QUICK=0
 GL=0
+GL_ONLY=0
 for arg in "$@"; do
     case $arg in
-        --quick) QUICK=1 ;;
-        --gl)    GL=1 ;;
-        *) echo "usage: $0 [--quick] [--gl]"; exit 1 ;;
+        --quick)   QUICK=1 ;;
+        --gl)      GL=1 ;;
+        --gl-only) GL=1; GL_ONLY=1 ;;
+        *) echo "usage: $0 [--quick] [--gl | --gl-only]"; exit 1 ;;
     esac
 done
 PDK_ROOT=${PDK_ROOT:-/Users/noah/Codings/ws_gf180/eeg_padring/gf180mcu}
 SCL=$PDK_ROOT/gf180mcuD/libs.ref
 GL_TOP_NL=${GL_TOP_NL:-../layout/gds/eeg_digital_top.nl.v}
 GL_ADC_NL=${GL_ADC_NL:-../layout/gds/eeg_adc_dig.nl.v}
+GL_SDF_CORNER=${GL_SDF_CORNER:-}
+GL_DEFS="-DFUNCTIONAL"
+GL_CELLS="$SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/gf180mcu_fd_sc_mcu9t5v0.v
+          $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/gf180mcu_fd_sc_mcu7t5v0.v"
+if [ -n "$GL_SDF_CORNER" ]; then
+    . ./gl_sdf_prep.sh          # GL_DEFS, GL_CELLS, GL_TAG with delays
+fi
 GLS=${GL_TAG:+_$GL_TAG}
 
 BUILD=build
@@ -83,13 +97,12 @@ run_sim() {
     local log=$LOGS/$name.log t0=$SECONDS
     local flags=$IVFLAGS extra="" roots="-s $top"
     if [ -n "$gl" ]; then
-        sed 's/^module eeg_digital_top (/module eeg_digital_top_gl (/' "$GL_TOP_NL" > $BUILD/gl/eeg_digital_top_gl.v
-        sed 's/^module eeg_adc_dig (/module eeg_adc_dig_gl (/' "$GL_ADC_NL" > $BUILD/gl/eeg_adc_dig_gl.v
-        flags="-g2012 -I tb -DFUNCTIONAL -DTB=$top"
+        mkdir -p "$BUILD/gl$GLS"         # one folder per GL_TAG: the SDF corners can run side by side
+        sed 's/^module eeg_digital_top (/module eeg_digital_top_gl (/' "$GL_TOP_NL" > $BUILD/gl$GLS/eeg_digital_top_gl.v
+        sed 's/^module eeg_adc_dig (/module eeg_adc_dig_gl (/' "$GL_ADC_NL" > $BUILD/gl$GLS/eeg_adc_dig_gl.v
+        flags="-g2012 -I tb $GL_DEFS -DTB=$top"
         roots="-s $top -s gl_shadow"
-        extra="tb/gl_shadow.sv $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu9t5v0/verilog/gf180mcu_fd_sc_mcu9t5v0.v
-               $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/primitives.v $SCL/gf180mcu_fd_sc_mcu7t5v0/verilog/gf180mcu_fd_sc_mcu7t5v0.v
-               $BUILD/gl/eeg_digital_top_gl.v $BUILD/gl/eeg_adc_dig_gl.v"
+        extra="tb/gl_shadow.sv $GL_CELLS $BUILD/gl$GLS/eeg_digital_top_gl.v $BUILD/gl$GLS/eeg_adc_dig_gl.v"
     fi
     # shellcheck disable=SC2086
     if ! $IVERILOG $flags $ivargs -o "$BUILD/$name.vvp" $roots $RTL "tb/$top.sv" $extra > "$log" 2>&1; then
@@ -100,10 +113,14 @@ run_sim() {
     $VVP -n "$BUILD/$name.vvp" $plusargs >> "$log" 2>&1
     local result
     result=$(grep -E "^(PASS|FAIL)" "$log" | tail -n 1)
+    local sdf=""
+    if [ -n "$gl" ] && [ -n "$GL_SDF_CORNER" ]; then
+        sdf=" [SDF $GL_SDF_CORNER: $(grep -E "^SDF (ERROR|WARNING)" "$log" | grep -c -v "TIMINGCHECK not supported") SDF errors / warnings besides the timing checks; $(grep -o -E "latest output change [0-9.]+ ns" "$log" | tail -n 1)]"
+    fi
     if [ -n "$gl" ] && ! grep -q -E "^PASS: gate level" "$log"; then
-        record "$name" FAIL $((SECONDS - t0)) "no gate-level result, see $log"
+        record "$name" FAIL $((SECONDS - t0)) "no gate-level result, see $log$sdf"
     elif [ -n "$result" ] && ! grep -q -E "^FAIL" "$log"; then
-        record "$name" PASS $((SECONDS - t0)) "${result#PASS: }"
+        record "$name" PASS $((SECONDS - t0)) "${result#PASS: }$sdf"
     else
         record "$name" FAIL $((SECONDS - t0)) "${result:-no result line, see $log}"
     fi
@@ -114,13 +131,18 @@ echo "iverilog: $($IVERILOG -V 2>&1 | head -n 1)"
 echo "python:   $($PYTHON --version 2>&1)"
 echo
 
+if [ $GL_ONLY -eq 1 ] && [ -s "$BUILD/top_stream.codes" ] && [ -s "$BUILD/top_stream.gold" ]; then
+    echo "--gl-only: the vectors in $BUILD/ are there; model self check and vector generation skipped"
+else
 run_python golden_selfcheck $PYTHON model/cic_golden.py
 run_python gen_vectors      $PYTHON model/gen_vectors.py "$BUILD"
+fi
 if [ $nfail -ne 0 ]; then
     echo "model self check or vector generation failed, stopping"
     exit 1
 fi
 
+if [ $GL_ONLY -eq 0 ]; then
 run_sim therm2bin   tb_therm2bin "" ""
 run_sim dwa         tb_dwa       "" ""
 run_sim clkgen      tb_clkgen    "" ""
@@ -134,8 +156,9 @@ fi
 run_sim spi_fifo_regs tb_spi     "" ""
 run_sim top_dlc2      tb_top     "-Ptb_top.DLC=2 -Ptb_top.NSAMP=40" ""
 run_sim top_dlc5      tb_top     "-Ptb_top.DLC=5 -Ptb_top.NSAMP=12" ""
+fi
 if [ $GL -eq 1 ]; then
-    echo "gate level: $GL_TOP_NL, $GL_ADC_NL"
+    echo "gate level: $GL_TOP_NL, $GL_ADC_NL${GL_SDF_CORNER:+ with SDF $GL_SDF_TOP, $GL_SDF_ADC}"
     run_sim spi_fifo_regs_gl$GLS tb_spi "" "" gl
     run_sim top_dlc2_gl$GLS      tb_top "-Ptb_top.DLC=2 -Ptb_top.NSAMP=40" "" gl
 fi

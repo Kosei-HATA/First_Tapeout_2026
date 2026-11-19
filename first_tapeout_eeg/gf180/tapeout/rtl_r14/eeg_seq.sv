@@ -11,7 +11,8 @@
 //   out_stb  a CIC output time (frame cycle 8); never in the same MCLK cycle as tick.
 //   rst_n    asynchronous (RESET_N or SOFT_RESET): the reset state is IDLE with AFE_RST = 1.
 // Timer: one down-counter in frames, loaded on entering a timed state and on a restart (APPLY or APPLY_NR in
-// WARMUP: AFE_RST is never released sooner than T_WARM after a change) (T_WARM, T_ELEC in 1024-frame units of 1 ms,
+// WARMUP: AFE_RST is never released sooner than T_WARM after a change; APPLY_NR in WAIT_E: the electrode settles
+// T_ELEC after the step) (T_WARM, T_ELEC in 1024-frame units of 1 ms,
 // T_REC, T_PRE, T_RST in 8-frame units of 7.8125 us), decremented once per frame (frame_stb); TMR = 0. The expiry is
 // taken at the first tick after it, so every duration is a whole number of chopper periods at 128 kHz.
 // An illegal state value returns to IDLE (AFE_RST = 1) with STATE_ERR.
@@ -43,7 +44,7 @@ module eeg_seq (
     output logic       flush,             // empty the FIFO
     output logic       cic_arm,           // ALIGN: the CIC clears at this output time
     output logic       store,             // store this output (with out_stb; the FIFO decides OVERRUN)
-    output logic       mark,              // APPLY_NR in RUN: CHANGED on the next three outputs
+    output logic       mark,              // APPLY_NR in RUN: CHANGED on the next 3 + T_ELEC outputs (eeg_digital_top)
     output logic       state_err,
     output logic       cfg_err
 );
@@ -134,7 +135,8 @@ module eeg_seq (
                                     S_ALIGN:  if (t_elec != 8'd0) nxt = S_WAIT_E;
                                     S_FILL:   nxt = (t_elec != 8'd0) ? S_WAIT_E : S_ALIGN;   // restart the clear
                                     S_RUN:    a_mark = 1'b1;    // CHANGED on the next 3 + T_ELEC outputs
-                                    default:  ;                 // RECOVER: WAIT_E follows anyway
+                                    default:  ;                 // RECOVER: the electrode wait (T_ELEC > 0)
+                                                                // and the clear follow anyway
                                 endcase
                             end else begin
                                 a_cerr = 1'b1;

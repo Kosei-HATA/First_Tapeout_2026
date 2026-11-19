@@ -63,11 +63,11 @@ REGS = [
     (0x05, "FIFO_LEVEL", "RO", False, [F("LEVEL", 3, 0, 0, rng(0, 8), "ro", "FIFO のサンプルの数")], "FIFO の占有数"),
     (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値"),
                                  F("STATE_ERR", 6, 6, 0, [0, 1], "w1c", "その状態で受け付けない命令、未処理の命令への上書き、または未処理の命令がある間のシャドウとタイマへの書き込み（SOFT_RESET は常に受け付ける）"),
-                                 F("CFG_ERR", 5, 5, 0, [0, 1], "w1c", "整合しない設定での START／APPLY、または nr_ok でない APPLY_NR"),
+                                 F("CFG_ERR", 5, 5, 0, [0, 1], "w1c", "整合しない設定（cfg_ok でない）での START、APPLY、APPLY_NR、または AFE の動作中の nr_ok でない APPLY_NR"),
                                  F("RANGE_ERR", 4, 4, 0, [0, 1], "w1c", "範囲外の値の書き込み（書かない）"),
                                  F("ADDR_ERR", 3, 3, 0, [0, 1], "w1c", "未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み"),
                                  F("CRC_ERR", 2, 2, 0, [0, 1], "w1c", "書き込みの CRC の不一致（書かない）"),
-                                 F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み"),
+                                 F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル"),
                                  F("RESET_FLAG", 0, 0, 1, [0, 1], "w1c", "リセットが起きた（既定値 1）")], "エラー（W1C）"),
     (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に過負荷を検出した"),
                                    F("OVERRUN", 0, 0, 0, [0, 1], "w1c", "FIFO が満杯でサンプルを捨てた")], "データのフラグ（W1C）"),
@@ -76,8 +76,8 @@ REGS = [
     (0x0A, "ODR_H", "RO", False, [F("ODR_H", 7, 0, 0x03, [0x03], "ro", "出力データレート 1000 SPS の上位")], "出力データレート"),
     (0x0B, "ODR_L", "RO", False, [F("ODR_L", 7, 0, 0xE8, [0xE8], "ro", "同下位")], "出力データレート"),
     (0x0C, "FORMAT", "RO", False, [F("QBITS", 3, 0, 5, [5], "ro", "量子化器のビット数")], "形式"),
-    (0x10, "COMMAND", "WO", False, [F("CMD", 7, 0, 0, None, "cmd", "命令コード（表 2-3）。次の tick で処理")], "命令"),
-    (0x11, "TEST_KEY", "WO", False, [F("KEY", 7, 0, 0, None, "cmd", "0x3C で試験のレジスタを解錠、0x00 で施錠。その他の値は施錠し、CMD_ERR")], "試験の鍵"),
+    (0x10, "COMMAND", "WO", False, [F("CMD", 7, 0, 0, None, "cmd", "命令コード（第 2.3 節）。次の tick で処理")], "命令"),
+    (0x11, "TEST_KEY", "WO", False, [F("KEY", 7, 0, 0, None, "imm", "0x3C で試験のレジスタを解錠、0x00 で施錠。その他の値は施錠し、CMD_ERR（書き込みの確定の時点で効く）")], "試験の鍵"),
     # analog configuration (shadow; the active copies are read at addr + 0x10)
     (0x20, "OFF_M_H", "RW", False, [F("M_H", 1, 0, 0, rng(0, 3), "apply", "オフセット DAC の大きさ M[9:8]", "OFM[9:8]")], "オフセット DAC（上位）"),
     (0x21, "OFF_M_L", "RW", False, [F("M_L", 7, 0, 0, rng(0, 255), "apply", "M[7:0]", "OFM[7:0]")], "オフセット DAC（下位）"),
@@ -96,14 +96,14 @@ REGS = [
     (0x28, "BLANK", "RW", False, [F("BLANK_LEN", 3, 0, 7, rng(1, 15), "apply", "出力チョッパのブランキング（MCLK。0 は RANGE_ERR。範囲 1 以上では 15 として出す）", "CHOP_BLANK の幅")],
      "ブランキング"),
     # data window
-    (0x40, "SAMPLE", "RO", False, [F("SAMPLE", 7, 0, 0, None, "ro", "サンプルの窓（先頭のアドレスとしてのみ。7 バイト、表 2-5）")], "サンプル"),
+    (0x40, "SAMPLE", "RO", False, [F("SAMPLE", 7, 0, 0, None, "ro", "サンプルの窓（先頭のアドレスとしてのみ。先頭バイトのあとの 7 バイト、フレームは 8 バイト。第 3.2 節、第 3.4 節）")], "サンプル"),
     # timers and interface (immediate; timers are latched when the timer starts)
     (0x50, "T_WARM", "RW", False, [F("T_WARM", 7, 0, 5, rng(5, 255), "imm", "WARMUP（ms）")], "タイマ"),
     (0x51, "T_ELEC", "RW", False, [F("T_ELEC", 7, 0, 0, rng(0, 255), "imm", "WAIT_E（ms。0 で WAIT_E を通らない）")], "タイマ"),
     (0x52, "T_REC", "RW", False, [F("T_REC", 7, 0, 32, rng(29, 255), "imm", "RECOVER（7.8125 µs 単位。既定 32 ＝ 250 µs）")], "タイマ"),
     (0x53, "T_PRE", "RW", False, [F("T_PRE", 7, 0, 3, rng(3, 255), "imm", "PRE（7.8125 µs 単位。既定 3 ＝ 23.4 µs）")], "タイマ"),
     (0x54, "T_RST", "RW", False, [F("T_RST", 7, 0, 13, rng(13, 255), "imm", "PULSE（7.8125 µs 単位。既定 13 ＝ 101.6 µs）")], "タイマ"),
-    (0x55, "IF_CFG", "RW", False, [F("DRDY_MODE", 1, 1, 0, [0, 1], "imm", "DRDY_N（0 ＝ FIFO が空でない間 Low のレベル、1 ＝ 格納ごとに 128 MCLK（4 フレーム、3.906 µs）の Low のパルス）"),
+    (0x55, "IF_CFG", "RW", False, [F("DRDY_MODE", 1, 1, 0, [0, 1], "imm", "DRDY_N（0 ＝ FIFO が空でない間 Low のレベル、1 ＝ 格納ごとに 128 MCLK（4 フレーム、3.906 µs）の Low のパルス。満杯で捨てた出力ではパルスなし）"),
                                    F("CRC_EN", 0, 0, 0, [0, 1], "imm", "書き込みと読み出しの CRC")], "インターフェース"),
     # test (locked by TEST_KEY)
     (0x60, "TEST_MUX", "RW", True, [F("ATP_EN", 4, 4, 0, [0, 1], "apply", "試験用マルチプレクサを ATP へ", "TEST_CFG[4]"),
@@ -127,7 +127,7 @@ DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}       # pads and debug: n
 
 SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
                  ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかで過負荷を検出した"),
-                 ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓と電極の整定（反映の直後の 3 ＋ T_ELEC 個。RUN を出ると残りは取り消す）"),
+                 ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓と電極の整定（反映の直後の 3 ＋ T_ELEC 個。残りのほうが長ければその長さ。RUN を出ると残りは取り消す）"),
                  ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
 OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
 RANGE_MAX_M = {0: 1023, 1: 127, 2: 255, 3: 511, 4: 1023}       # range 0: the DAC is off and OFM/OFS are driven 0

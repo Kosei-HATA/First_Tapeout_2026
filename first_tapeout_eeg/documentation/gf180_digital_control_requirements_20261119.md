@@ -79,14 +79,14 @@
 | SEQ-02 | 起動の待ち（バイアスと VCM の整定）は、WARMUP のタイマ T_WARM で保証すること。既定 5 ms、5〜255 ms で設定可（VCM の容量を増やす場合は、その時定数の約 5 倍以上に） | 必須 | C1 |
 | SEQ-03 | AFE_RST の解除後、ADC の過負荷からの復帰を RECOVER のタイマ T_REC で待つこと（既定 0.25 ms、最小 0.22 ms）。電極の整定のための追加の待ち T_ELEC（既定 0、0〜255 ms）は WAIT_E で待ち、T_ELEC ＝ 0 では WAIT_E を通らないこと | 必須 | C1、C8 |
 | SEQ-04 | ALIGN で次の出力の時刻を待ってその時刻に CIC をクリアし、FILL で最初の有効な出力を待って RUN に入ること（READY ＝ 1）。間引きの位相（出力の時刻の格子）は START の時点のまま保つこと | 必須 | C3、C5、C6 |
-| SEQ-05 | 設定の反映（APPLY）では、次の要件を満たすこと | 必須 | B1、C2、E1 |
+| SEQ-05 | AFE の動作中（RECOVER〜RUN）の設定の反映（APPLY）では、次の要件を満たすこと。IDLE と WARMUP の APPLY は、パルスなしで一括反映のみ行い、FIFO は空にしない（WARMUP では T_WARM を数え直す。SEQ-16）（11/20 の監査の第 2 回） | 必須 | B1、C2、E1 |
 | | ・シャドウからアクティブへ、フレームの決まった位置で一括して写すこと | | |
 | | ・FIFO を空にすること（古い設定のサンプルを残さない）（11/20 の監査） | | |
 | | ・T_PRE（既定 3 周期 ＝ 23.4 µs）ののち、AFE_RST のワンショット（T_RST、既定 13 周期 ＝ 101.6 µs、最大 255 周期 ＝ 1.99 ms。周期は 7.8125 µs）を出すこと | | |
 | | ・RECOVER、（WAIT_E）、ALIGN、FILL を経て RUN に戻ること | | |
 | | ・PRE と PULSE の間の APPLY と APPLY_NR は拒否すること（STATE_ERR） | | |
 | | ・パルスの間もチョッパを止めないこと | | |
-| SEQ-06 | パルスなしの一括反映（APPLY_NR）を持つこと（運転中の 1 段の追従用）。RUN では反映の直後の 3 ＋ T_ELEC 個の出力（sinc³ の窓が反映をまたぐ 3 個と、電極の整定の T_ELEC（1 ms ＝ 出力 1 個））に CHANGED の印を付け、RUN を出たら残りの印を取り消すこと（次の RUN はクリアした CIC から始まる）。RUN の前では、T_ELEC ＞ 0 なら電極の整定を待ち直すこと（WAIT_E では数え直し、ALIGN と FILL からは WAIT_E へ）（11/20 の監査）。T_ELEC ＝ 0 の FILL では ALIGN に戻り、CIC のクリアをやり直すこと | 必須 | B1、C9 |
+| SEQ-06 | パルスなしの一括反映（APPLY_NR）を持つこと（運転中の 1 段の追従用）。RUN では反映の直後の 3 ＋ T_ELEC 個の出力（sinc³ の窓が反映をまたぐ 3 個と、電極の整定の T_ELEC（1 ms ＝ 出力 1 個））に CHANGED の印を付け（残っている印のほうが長ければ、その長さを保つ。前の 1 段の電極の整定が続いている）、RUN を出たら残りの印を取り消すこと（次の RUN はクリアした CIC から始まる）。RUN の前では、T_ELEC ＞ 0 なら電極の整定を待ち直すこと（WAIT_E では数え直し、ALIGN と FILL からは WAIT_E へ）（11/20 の監査）。T_ELEC ＝ 0 の FILL では ALIGN に戻り、CIC のクリアをやり直すこと | 必須 | B1、C9 |
 | SEQ-07 | START は命令で受け付けること。STOP で IDLE（AFE_RST ＝ 1）に戻ること。出力の時刻の格子はリセットの解除（RESET_N）を原点とし、START でも SOFT_RESET でも変えないこと（MCLK と RESET_N を共有するチップの間で格子がそろう。RST-02）（11/20 の監査） | 必須 | C6 |
 | SEQ-08 | START、APPLY、APPLY_NR のたびに、シャドウの設定の整合（cfg_ok：オフセット DAC の M が、選んだ範囲の上限以下）を検査すること。不整合なら命令を拒否し、CFG_ERR を立てること（範囲を下げたあとの M の超過を含む） | 必須 | B6 |
 | SEQ-09 | 状態遷移表（表 5.1-2）の全欄をそのまま実装すること。受け付けない命令は状態を変えず、STATE_ERR を立てること（IDLE の STOP は受け付けて何もしない） | 必須 | D5 |
@@ -94,7 +94,7 @@
 | SEQ-10 | 試験の設定（ADC_ZERO、CHOP_EN ＝ 0、試験用マルチプレクサ）の切り替えも APPLY を経由し、再整定を自動で行うこと | 推奨 | C7 |
 | SEQ-11 | 過負荷では状態を変えないこと（自動の再試行は行わない。未決事項 D-8）。過負荷のフラグ OVL は FILL と RUN の間のみ立てること（それ以外の状態では、過負荷は想定内） | 必須 | E4 |
 | SEQ-12 | リセットの解除後に自動で WARMUP へ進む設定（AUTO_START、既定は無効）を持つこと | 任意 | — |
-| SEQ-13 | シーケンサの tick は、チョッパの 1 周期に 1 回、相 A の中ほどのフレーム（128 kHz では 8 フレーム中の 2 番目、64 kHz では 16 フレーム中の 4 番目）のフレームサイクル 24 とすること。AFE_RST とアナログの設定の変化は、この tick に限ること。命令とタイマの満了は tick で、CIC の出力（OUT）はその出力のサイクルで処理する。同じ tick の事象は、第 5.0 節の優先順位の規則で処理すること | 必須 | B2、E1 |
+| SEQ-13 | シーケンサの tick は、チョッパの 1 周期に 1 回、相 A の中ほどのフレーム（128 kHz では 8 フレーム中の 2 番目、64 kHz では 16 フレーム中の 4 番目）のフレームサイクル 24 とすること。AFE_RST とアナログの設定の変化は、この tick に限ること。命令とタイマの満了は tick で、CIC の出力（OUT）はその出力のサイクルで処理する。同じ tick の事象は、第 5.0 節の優先順位の規則で処理すること。例外はリセット（RESET_N、SOFT_RESET）による既定値への復帰で、任意のサイクルに起こる。このとき AFE_RST も同時に 1 となり、IDLE と WARMUP（T_WARM 以上）を経てから解除される。ADC へ入る DWA_EN と TEST_CFG もこのとき変わるが、ADC は動作を続け、格納は RUN のみで、再開の START は FIFO を空にする（11/20 の監査の第 2 回） | 必須 | B2、E1 |
 | SEQ-15 | AFE の動作中（RECOVER〜RUN）の APPLY_NR は、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段の変更のみを受け付けること（範囲と、その他の設定は同じ。nr_ok）。それ以外は CFG_ERR とし、APPLY（パルス付き）を使うこと | 必須 | B1 |
 | SEQ-14 | タイマの値は開始時に取り込むこと。最小値（T_WARM 5 ms、T_REC 0.22 ms、T_PRE 20 µs、T_RST 100 µs）を下回る値の書き込みは拒否し、RANGE_ERR を立てること | 必須 | C1、C2 |
 
@@ -135,8 +135,8 @@
 | ID | 要件 | 優先度 | 対応する問題点 |
 |---|---|---|---|
 | DAT-01 | FIFO への格納は、RUN の間と、FILL から RUN への遷移（最初の有効な出力）のみとすること | 必須 | C4 |
-| DAT-02 | サンプルのステータスに次を含めること：VALID、OVERRUN、OVL（その窓、すなわちこの出力と直前の 2 個の出力の間隔のいずれかでの過負荷（11/20 の監査））、CHANGED（APPLY_NR の反映の直後の 3 ＋ T_ELEC 個の出力。RUN を出ると取り消す）、ERR（マスクしないエラーのフラグの有無） | 必須 | C9、D2 |
-| DAT-03 | SEQ は、リセットの解除からの出力の時刻（1 ms）の番号とすること。全ての状態で加算し、START では変えない。格納しない出力も数えるので、欠けた数が分かる。MCLK と RESET_N を共有するチップの間では、同じ SEQ が同じ時刻を表す（SOFT_RESET でも変えない）。SEQ は 16 ビットで、65,536 個（65.536 s）ごとに 0 に戻る。FIFO は START、APPLY（パルスあり）、FLUSH の命令でのみ空にすること（11/20 の監査） | 必須 | C5、C6 |
+| DAT-02 | サンプルのステータスに次を含めること：VALID、OVERRUN、OVL（その窓、すなわちこの出力と直前の 2 個の出力の間隔のいずれかでの過負荷（11/20 の監査））、CHANGED（APPLY_NR の反映の直後の 3 ＋ T_ELEC 個の出力。残っている印のほうが長ければその長さ。RUN を出ると取り消す）、ERR（マスクしないエラーのフラグの有無） | 必須 | C9、D2 |
+| DAT-03 | SEQ は、RESET_N の解除からの出力の時刻（1 ms）の番号とすること。全ての状態で加算し（SOFT_RESET の間も）、START では変えない。格納しない出力も数えるので、欠けた数が分かる。MCLK と RESET_N を共有するチップの間では、同じ SEQ が同じ時刻を表す（SOFT_RESET でも変えない）。SEQ は 16 ビットで、65,536 個（65.536 s）ごとに 0 に戻る。FIFO を空にするのは、START、APPLY（パルスあり、すなわち AFE の動作中の APPLY）、FLUSH の命令と、リセット（RESET_N、SOFT_RESET）のみとすること（11/20 の監査） | 必須 | C5、C6 |
 | DAT-04 | DRDY_N は、レベル（FIFO が空でない間 Low、既定）とパルス（サンプルごとに一定幅の Low）を選べること | 必須 | D4 |
 | DAT-05 | FIFO の深さは 4 以上とすること（8 が望ましい。未決事項 D-4）。満杯時は新しいサンプルを捨てて OVERRUN を立てること（現行どおり） | 必須 | — |
 | DAT-06 | サンプルの形式（24 ビットの 2 の補数、CRC-8）は現行どおりとすること。CIC の出力は、出力の時刻の格子が同じであれば、現行とビット単位で一致すること | 必須 | — |
@@ -163,7 +163,7 @@
 
 | ID | 要件 | 優先度 | 対応する問題点 |
 |---|---|---|---|
-| ANA-01 | アナログへの制御出力（AFE_RST、CHOP_EN、OFM、OFS、OFEN、トリム、TEST_CFG など）は、すべてレジスタの出力とすること。変化は tick（SEQ-13）に限ること。これにより、比較器（e0）、TH（e2）、DAC（e3、e4）、CIC の出力（cycle 8）、CHOP1 の縁（e16）、ブランキングの窓（前のフレームの cycle 31〜cycle 15）を避ける（第 4.10 節、`fsm_spec.py` の時刻の検査） | 必須 | B2、E1 |
+| ANA-01 | アナログへの制御出力（AFE_RST、CHOP_EN、OFM、OFS、OFEN、トリム、TEST_CFG など）は、すべてレジスタの出力とすること。変化は tick（SEQ-13）に限ること（リセットによる既定値への復帰を除く。SEQ-13 の例外）。これにより、比較器（e0）、TH（e2）、DAC（e3、e4）、CIC の出力（cycle 8）、CHOP1 の縁（e16）、ブランキングの窓（前のフレームの cycle 31〜cycle 15）を避ける（第 4.10 節、`fsm_spec.py` の時刻の検査） | 必須 | B2、E1 |
 | ANA-02 | AFE_RST はシーケンサのみが駆動し、パルス幅は T_RST で保証すること | 必須 | C2、E1 |
 | ANA-03 | CHOP_EN の意味（ピンへの出力のみで、CHOP と CHOP_OUT は止まらない）を仕様に明記すること | 必須 | E2 |
 | ANA-04 | CHOP1 の速さの切り替えの区切り（1,024 フレームごと）を、出力の時刻の格子と一致させること（どちらもリセットの解除が原点）。旧い速さに残る CIC の重みは 9.3 × 10⁻¹⁰ | 必須 | — |
@@ -174,7 +174,7 @@
 | ID | 要件 | 優先度 | 対応する問題点 |
 |---|---|---|---|
 | RST-01 | RESET_N は非同期で掛け、同期で解除すること（現行どおり） | 必須 | — |
-| RST-02 | ソフトウェアリセット（SPI-09）は、制御（レジスタ、シーケンサ、SPI、FIFO、フラグ、CHANGED、DRDY_N）を RESET_N と同じ既定値に戻すこと。時刻とデータの経路（フレームとチョッパ、CHOP1、CIC、過負荷の検出、SEQ、RAW、eeg_adc_dig の ADC_RST_N）は RESET_N からそのまま続け、複数チップの格子と SEQ をそろえたままにすること（11/20 の監査） | 必須 | A7 |
+| RST-02 | ソフトウェアリセット（SPI-09）は、制御（レジスタ、シーケンサ、SPI、FIFO、フラグ、CHANGED、DRDY_N）を RESET_N と同じ既定値に戻すこと。時刻とデータの経路（フレームとチョッパ、CHOP1、CIC、過負荷の検出、SEQ、RAW の生成の時刻、eeg_adc_dig の ADC_RST_N）は RESET_N からそのまま続け、複数チップの格子と SEQ をそろえたままにすること（11/20 の監査）。RAW_EN と DBG_SEL は制御のレジスタであり、SOFT_RESET で既定値に戻る（RAW の出力は止まる）。設定の既定値への復帰は、AFE_RST ＝ 1 と同時の任意のサイクルである（SEQ-13 の例外）（11/20 の監査の第 2 回） | 必須 | A7 |
 | RST-03 | リセットの発生を RESET_FLAG で示すこと（予期しないリセットの検出） | 必須 | F2 |
 | RST-04 | チップに POR はないため、電源の安定まで RESET_N を Low に保つことを基板の要件とすること（記録表 F2） | 必須（基板） | F2 |
 | RST-05 | クロックは MCLK の単一とすること。MCLK の停止は、ホストが STATUS の固定のビット列（SPI-03）で検出すること | 必須 | A6、F1 |
@@ -244,6 +244,7 @@
 - タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）
 - 語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）
 - 同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす
+  - 状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ
   - AFE_RST の解除は必ず RECOVER（ADC の復帰待ち）に入る
   - AFE_RST の解除と同じ tick で設定を反映しない。AFE_RST を保っている間（WARMUP）の反映は、解除までの待ちを最初から数え直す（変更から解除まで T_WARM 以上）
   - START は必ず一括反映し、FIFO を空にする
@@ -256,21 +257,21 @@
   - CIC のクリアは出力の時刻の格子の上（ALIGN から FILL）でのみ
   - AFE_RST のパルスの前には必ず PRE（T_PRE の待ち）がある。PRE へは設定の反映とともにのみ入る
   - RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る
-  - FIFO を空にするのは START、APPLY（パルスあり）、FLUSH のみ。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）
+  - FIFO を空にするのは START、APPLY（パルスあり、すなわち AFE の動作中の APPLY）、FLUSH のみ（ほかはリセット）。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）。IDLE と WARMUP の APPLY はパルスなしで、FIFO を空にしない
   - RUN の前のオフセットの 1 段（APPLY_NR）は、T_ELEC > 0 なら電極の整定を待ち直す（WAIT_E、WAIT_E では数え直し）。WAIT_E へは RECOVER の満了か、その 1 段からのみ入る
   - STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）
-- SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、7 バイトちょうど読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR
+- SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR
 - SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数
 - FIFO（深さ 4）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）
 - 時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある
 <!-- END GENERATED checks -->
 
-- 結果（11/19、r3）：違反 0。
-  - シーケンサ：10 状態 × 9 イベント。tick の事象と出力の時刻の組み合わせは 2,688 通り。
+- 結果（11/20、監査の第 2 回の修正のあと）：違反 0。
+  - シーケンサ：10 状態 × 9 イベント。tick の事象と出力の時刻の組み合わせは 1,344 通り（11/19 の r3 では 2,688 通り。11/20 の監査の第 1 回で条件 full を除いたため（満杯の判断は FIFO の規則に一本化）、条件の組み合わせが半分になった）。状態の変化は全て、表とは独立に書いた出口の一覧（SEQ_EXITS）と照合する（11/20 の監査の第 2 回）。
   - SPI：11 状態 × 4 イベント。条件の全ての値に対する分岐は 6,528 通り（11/19 夜の RTL の作成時に条件 head を加え、13,056 通り）。
   - FIFO：40 通り（同上、SPI の写しを加えて項目の同一性を持つ独立のモデルと比較し、144 通り）。
   - 時刻：tick は 128 kHz で相 A の立ち上がりから 56 MCLK（半周期の 0.438）、64 kHz で 120 MCLK（0.469）。タイマの既定値を tick の格子に切り上げると、T_PRE は 23.4／31.3 µs、T_RST は 101.6／109.4 µs（128／64 kHz）、T_REC は 250 µs、T_WARM は 5 ms で、いずれもアナログの最小値以上。CHOP1 の切り替えで旧い相に残る CIC の重みは 9.3 × 10⁻¹⁰。
-- 検査器そのものの確認（`fsm_spec.py selftest`）：もっともらしい仕様の誤り 28 種類（11/19 夜の RTL の作成時に 4 種類を加え 32 種類）を一つずつ入れ、すべて検出されることを確認。誤りの例は、欄の欠落、条件の重なり、RECOVER の飛ばし、印のない反映、AFE の動作中の大きな変更、整合の検査の欠落、CRC を検査しない確定、未処理の命令の上書き、短い読み出しでの取り出し。
+- 検査器そのものの確認（`fsm_spec.py selftest`）：もっともらしい仕様の誤り 60 種類（11/19 の 28 種類に、RTL の作成時に 4 種類、11/20 の監査の第 1 回で 18 種類、第 2 回で 10 種類（待ちを FLUSH、START、APPLY_NR で切る 9 種と、SOFT_RESET の間の出力の時刻）を加えた）を一つずつ入れ、すべて検出されることを確認。誤りの例は、欄の欠落、条件の重なり、RECOVER の飛ばし、印のない反映、AFE の動作中の大きな変更、整合の検査の欠落、CRC を検査しない確定、未処理の命令の上書き、短い読み出しでの取り出し。
   - r3 の改訂の途中で、出力の時刻による遷移を検査の模型が実行しない誤りを検査器に入れてしまった。これを selftest（ALIGN で CIC をクリアしない誤り）が検出したので、直した。
 
 ### 5.1 シーケンサ
@@ -282,18 +283,31 @@ stateDiagram-v2
     [*] --> RESET
     RESET
     IDLE
+    IDLE : IDLE
+    IDLE : APPLY, APPLY_NR [cfg_ok] / apply
     state ACTIVE {
         [*] --> WARMUP
         WARMUP
+        WARMUP : WARMUP
+        WARMUP : APPLY, APPLY_NR [cfg_ok] / apply, restart
         PRE
         PULSE
         state AFE_ON {
             [*] --> RECOVER
             RECOVER
+            RECOVER : RECOVER
+            RECOVER : APPLY_NR [cfg_ok & nr_ok] / apply
             WAIT_E
+            WAIT_E : WAIT_E
+            WAIT_E : APPLY_NR [cfg_ok & nr_ok] / apply, restart
             ALIGN
+            ALIGN : ALIGN
+            ALIGN : APPLY_NR [cfg_ok & nr_ok & t_elec0] / apply
             FILL
             RUN
+            RUN : RUN
+            RUN : APPLY_NR [cfg_ok & nr_ok] / apply, mark
+            RUN : OUT / store
             RECOVER --> ALIGN : TMR(T_REC) [t_elec0]
             RECOVER --> WAIT_E : TMR(T_REC) [!t_elec0]
             WAIT_E --> ALIGN : TMR(T_ELEC)
@@ -302,7 +316,6 @@ stateDiagram-v2
             FILL --> ALIGN : APPLY_NR [cfg_ok & nr_ok & t_elec0] / apply
             FILL --> WAIT_E : APPLY_NR [cfg_ok & nr_ok & !t_elec0] / apply
             FILL --> RUN : OUT [valid] / store
-            RUN --> RUN : APPLY_NR [cfg_ok & nr_ok] / apply, mark<br/>OUT / store
         }
         AFE_ON --> PRE : APPLY [cfg_ok] / apply, flush
         WARMUP --> AFE_ON : TMR(T_WARM)
@@ -314,7 +327,9 @@ stateDiagram-v2
     IDLE --> ACTIVE : START [cfg_ok] / apply, flush
     note right of RESET
         RST (RESET_N = 0 or SOFT_RESET) from any state leads to RESET.
-        Self-loops and errors: see the transition table.
+        In a state's box: its transitions that stay in the state
+        (apply, restart, mark, store; from the table).
+        Errors (CFG_ERR, STATE_ERR) and FLUSH: see the transition table.
     end note
 ```
 <!-- END GENERATED seq_mermaid -->
@@ -341,7 +356,7 @@ stateDiagram-v2
 <!-- BEGIN GENERATED seq_table -->
 | 状態 ＼ イベント | RST | REL | STOP | START | APPLY | APPLY_NR | FLUSH | TMR | OUT |
 |---|---|---|---|---|---|---|---|---|---|
-| RESET | 無視 | → IDLE | 無視 | 無視 | 無視 | 無視 | 無視 | — | — |
+| RESET | 無視 | → IDLE | 無視 | 無視 | 無視 | 無視 | 無視 | — | discard, seq_inc |
 | IDLE | → RESET | — | 無視 | ［cfg_ok］ apply, flush → WARMUP<br>［not cfg_ok］ CFG_ERR | ［cfg_ok］ apply<br>［not cfg_ok］ CFG_ERR | ［cfg_ok］ apply<br>［not cfg_ok］ CFG_ERR | flush | — | discard, seq_inc |
 | WARMUP | → RESET | — | → IDLE | STATE_ERR | ［cfg_ok］ apply, restart<br>［not cfg_ok］ CFG_ERR | ［cfg_ok］ apply, restart<br>［not cfg_ok］ CFG_ERR | flush | → RECOVER | discard, seq_inc |
 | RECOVER | → RESET | — | → IDLE | STATE_ERR | ［cfg_ok］ apply, flush → PRE<br>［not cfg_ok］ CFG_ERR | ［cfg_ok and nr_ok］ apply<br>［not (cfg_ok and nr_ok)］ CFG_ERR | flush | ［t_elec0］ → ALIGN<br>［not t_elec0］ → WAIT_E | discard, seq_inc |
@@ -390,14 +405,14 @@ stateDiagram-v2
 | cic_clear | CIC をクリアする（出力の時刻に合わせて行うので、格子は変わらない） |
 | store | 出力を FIFO へ格納する（DRDY）。満杯なら FIFO が新しいサンプルを捨てて OVERRUN を立てる（第 5.3 節、fifo_step） |
 | discard | 出力を捨てる |
-| seq_inc | SEQ に 1 を加える（SEQ はリセットの解除からの出力の時刻の番号） |
-| mark | このあとの 3 ＋ T_ELEC 個の出力に CHANGED を付ける（反映をまたぐ sinc³ の窓 3 個と、電極の整定 T_ELEC（1 ms ＝ 出力 1 個の単位））。RUN を出ると残りは取り消す（次の RUN はクリアした CIC から始まり、その窓は反映をまたがない） |
+| seq_inc | SEQ に 1 を加える（SEQ は RESET_N の解除からの出力の時刻の番号。SOFT_RESET でも変えない） |
+| mark | このあとの 3 ＋ T_ELEC 個の出力に CHANGED を付ける（反映をまたぐ sinc³ の窓 3 個と、電極の整定 T_ELEC（1 ms ＝ 出力 1 個の単位））。残っている印のほうが長ければ、その長さを保つ（前の 1 段の電極の整定が続いている）。RUN を出ると残りは取り消す（次の RUN はクリアした CIC から始まり、その窓は反映をまたがない） |
 | CFG_ERR | エラー CFG_ERR を立てる（命令は実行しない） |
 | STATE_ERR | エラー STATE_ERR を立てる（命令は実行しない） |
 | restart | その状態のタイマを最初から数え直す（同じ tick のタイマの満了は取り消す） |
 <!-- END GENERATED seq_actions -->
 
-- SEQ は、リセットの解除からの出力の時刻の番号（全ての状態で加算し、START では変えない。DAT-03）。
+- SEQ は、RESET_N の解除からの出力の時刻の番号（全ての状態で、SOFT_RESET の間も加算し、START では変えない。DAT-03）。
 - 一括反映（apply）は tick（フレームの決まった位置）で行う。
 
 ### 5.2 SPI のトランザクション
@@ -412,9 +427,13 @@ stateDiagram-v2
         [*] --> HDR
         HDR
         RREG
+        RREG : RREG
+        RREG : BYTE [!crc_en] / addr_inc, load_data
         RCRC
         RDONE
         RSMP
+        RSMP : RSMP
+        RSMP : BYTE [!last] / next_byte
         SDONE
         WDAT
         WCRC
@@ -432,8 +451,6 @@ stateDiagram-v2
         WDAT --> WCRC : BYTE [crc_en] / latch_data
         WDAT --> WDONE : BYTE [!crc_en] / latch_data
         WCRC --> WDONE : BYTE / latch_crc
-        RREG --> RREG : BYTE [!crc_en] / addr_inc, load_data
-        RSMP --> RSMP : BYTE [!last] / next_byte
     }
     IDLE --> FRAME : CSF / load_status
     FRAME --> IDLE : CSR / commit, pop or error (see the table)
@@ -450,8 +467,8 @@ stateDiagram-v2
 | RREG | レジスタの読み出し（CRC 無効時はアドレスを自動加算して連続） | FRAME |
 | RCRC | CRC 有効時、データ 1 バイトのあとの CRC | FRAME |
 | RDONE | CRC 付きの読み出しの完了 | FRAME |
-| RSMP | サンプルの窓の読み出し（STATUS、SEQ、DATA、CRC の 7 バイト） | FRAME |
-| SDONE | サンプルの 7 バイトの完了（CS_N の立ち上がりで FIFO から取り出す） | FRAME |
+| RSMP | サンプルの窓の読み出し（先頭バイトのあとの 7 バイト：サンプルの状態、SEQ 2、DATA 3、CRC。フレームは 8 バイト） | FRAME |
+| SDONE | サンプルの 8 バイト（先頭バイトと 7 バイト）の完了（CS_N の立ち上がりで FIFO から取り出す） | FRAME |
 | WDAT | 書き込みのデータ 1 バイト | FRAME |
 | WCRC | CRC 有効時の CRC の受信 | FRAME |
 | WDONE | 書き込みのフレームの完了（CS_N の立ち上がりで確定） | FRAME |
@@ -496,7 +513,7 @@ stateDiagram-v2
 | smp | アドレスがサンプルの窓 |
 | addr_ok | アドレスが定義済み |
 | crc_en | CRC が有効 |
-| last | サンプルの 7 バイト目 |
+| last | サンプルの最後のバイト（先頭バイトのあとの 7 バイト目、フレームの 8 バイト目） |
 | mid | バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない） |
 | crc_ok | 受信した CRC が一致 |
 | wr_ok | 書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み） |
@@ -542,12 +559,16 @@ stateDiagram-v2
 1. 電源投入。電源の安定まで RESET_N を Low に保ち、そのあと High にする。RESET_N が Low の間と、High にしてから 10 MCLK（約 0.3 µs）以上は、CS_N を High に保つ。
 2. ID（0x00）と STATUS を読み、STATUS の固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を確かめる。ERR（0x06）を読んで RESET_FLAG を確かめ、読んだ値をそのまま書き戻してクリアする（W1C。読んでいないビットを消さない）。
 3. 必要な設定をシャドウとタイマへ書く。BOOST_TRIM（ダイごと）、CHOP1、CRC_EN（推奨は 1）、DRDY のモード、ALERT のマスク、電極に応じた T_ELEC など。既定値で足りる項目は書かない。
-4. 命令の出し方（全ての命令に共通）：命令を書いたら、STATUS の CMD_PENDING が 0 になる（次の tick、128 kHz で最大 7.8 µs、64 kHz で最大 15.6 µs）のを待ち、ERR を読んで CMD_ERR、STATE_ERR、CFG_ERR がないことを確かめる。CMD_PENDING が 1 の間は、次の命令と、シャドウとタイマへの書き込みを出さない（STATE_ERR となり、書かれない）。
+4. 命令の出し方（全ての命令に共通）：命令を書いたら（書き込みの MISO が全て 0x00 であることを確かめる。手順 8）、STATUS の CMD_PENDING が 0 になる（次の tick、128 kHz で最大 7.8 µs、64 kHz で最大 15.6 µs）のを待ち、ERR を読んで、前にクリアしたあとに立ったビットがないことを確かめる。CMD_ERR、STATE_ERR、CFG_ERR に加え、命令のフレーム自体の CRC_ERR、FRAME_ERR、ADDR_ERR も、命令が実行されなかったことを示す。CRC 有効時は、CMD_PENDING と ERR を CRC 付きの読み出し（0x03、0x06）で確かめる（先頭バイトの状態は CRC で守られない）（11/20 の監査の第 2 回）。CMD_PENDING が 1 の間は、次の命令と、シャドウとタイマへの書き込みを出さない（STATE_ERR となり、書かれない）。
 5. START（手順 4）。STATE（0x04）が RUN、または STATUS の READY が 1 になるのを待つ。START は FIFO を空にするので、START の処理より前の DRDY_N と FIFO の中身は使わない。複数チップでは、MCLK と RESET_N を共有し、CS_N はチップごとに分け、同じ SEQ のサンプルを同じ時刻として扱う（SOFT_RESET のあとも同じ。SEQ は 65,536 個ごとに 0 に戻る）。
-6. DRDY_N ごとにサンプル（8 バイト）を読む。CRC、VALID、OVL、CHANGED を確かめ、OVL または CHANGED の付いたサンプルを除く。CRC が合わない場合は、CS_N を上げる前に SCLK を 1 回余分に入れる（取り出されずに FRAME_ERR となるので、同じサンプルを読み直せる）。読み出しの先頭バイト以降の MOSI は 0x00 とする。STATUS だけを見るときは、読み出しの先頭バイトだけのフレームとする（CRC の有無によらずエラーにならない）。
-7. オフセットの探索：M・符号・範囲をシャドウへ書いて APPLY し（手順 4）、READY が 1 になるのを待ってサンプルを読む。APPLY は FIFO を空にし、PRE から FILL までは格納しないので、READY のあとのサンプルは全て新しい設定のもの。探索の間は T_ELEC ＝ 0 とし（1 点ごとの待ちを短くし、合わない M のままの時間を減らす。`gf180_electrode_dc_20261022.md`）、決めた M で T_ELEC を電極に合わせて戻す。運転中の 1 段の追従は APPLY_NR とし（±1 段のみ。それ以外は CFG_ERR）、CHANGED の付いたサンプル（3 ＋ T_ELEC 個）を除く。
-8. 異常時：STATUS の ALERT（全てのフレームの先頭バイトで返る）を見て ERR と DFLAG を読み、対処ののち、読んだ値を書き戻してクリアする（DFLAG を消さないと、以後の全てのサンプルの OVERRUN と ERR が立ったままになる）。書き込みのフレームでは、先頭バイトのあとの MISO が 0x00 であることを確かめる（先頭バイトの R/W の化けで読み出しとして扱われた書き込みを検出できる）。
-9. SOFT_RESET のあとは、CS_N を 1 µs 以上 High に保ってから次のフレームを始める（SPI もリセットされるため）。SOFT_RESET は制御だけを戻し、格子と SEQ は変えない。
+6. DRDY_N の立ち下がり（パルスのモードではパルス）ごとに、VALID ＝ 0 の語が返るまで（または STATUS の DATA ＝ 0 まで）続けてサンプル（8 バイト）を読む。1 個ずつでは滞留が減らず、満杯の間はパルスも出ないので、パルスのモードでは定期的に STATUS の DATA も確かめる。CRC、VALID、OVL、CHANGED を確かめ、OVL または CHANGED の付いたサンプルを除く。CRC が合わない場合は、CS_N を上げる前に SCLK を 1 回以上（1 バイト分でもよい）余分に入れる（取り出されずに FRAME_ERR となるので、同じサンプルを読み直せる。CS_N をソフトウェアで制御できる場合）。読み出しの先頭バイト以降の MOSI は 0x00 とする。STATUS だけを見るときは、定義済みのレジスタ（例：0x83）の読み出しの先頭バイトだけのフレームとする（CRC の有無によらずエラーにならない。サンプルの窓 0xC0 は CRC 有効時に FRAME_ERR、未定義のアドレスは ADDR_ERR となる）（11/20 の監査の第 2 回）。
+7. オフセットの探索（11/20 の監査の第 2 回で改訂。`gf180_electrode_dc_20261022.md`）：
+   - 粗い探索：T_ELEC ＝ 0 とし（1 点ごとの待ちを短くし、合わない M のままの時間を減らす）、M・符号・範囲をシャドウへ書いて APPLY し（手順 4）、READY が 1 になったあとのサンプルで M の向きと幅を決める。APPLY は FIFO を空にし、PRE から FILL までは格納しないので、READY のあとのサンプルは全て新しい設定のものであるが、電極の整定（T_ELEC ＝ 0 では待たない）は含まない。範囲の外では値が圧縮されるので、主に符号を使う（読みの符号は M の向きのとおり）。
+   - 仕上げ：候補の M は、電極の整定（約 5 R_e C_e。51 kΩ ∥ 47 nF で約 12 ms）を待ってから判断する。T_ELEC をその時間として APPLY するか、T_ELEC ＝ 0 のまま READY のあとのサンプルをその時間だけ捨てる（読み出しの 1 ms ごとに 1 個）。10 ms で範囲の中に見えた M が、整定のあとは範囲の端であった例がある。
+   - 確定：決めた M と、電極に合わせた T_ELEC をシャドウとタイマへ書き、APPLY する。最後に試した点が決めた M であっても省かない（省くと、WAIT_E を経ない RUN の最初の約 5 R_e C_e のサンプルが整定の途中となり、CHANGED も付かない）。
+   - 運転中の 1 段の追従（APPLY_NR、±1 段のみ。それ以外は CFG_ERR）は、1 段が ADC の範囲に比べて十分小さい電極に限る。1 段は増幅器の入力で 0.301 mV × (1 ＋ R_e ／ 5.56 kΩ)、ADC の入力でその約 284 倍となる（100 Ω で約 0.09 V。51 kΩ では約 0.85 V となり、DAC1 のフルスケール ±0.484 V を超える）。高抵抗の電極では追従せず、APPLY による探索をやり直す。追従では、CHANGED の付いたサンプル（3 ＋ T_ELEC 個）を除く。
+8. 異常時：STATUS の ALERT（全てのフレームの先頭バイトで返る）を見て ERR と DFLAG を読み、対処ののち、読んだ値を書き戻してクリアする（DFLAG を消さないと、以後の全てのサンプルの OVERRUN と ERR が立ったままになる）。書き込みのフレームでは、先頭バイトのあとの MISO が全て 0x00（CRC の位置を含む）であることを確かめる（先頭バイトの R/W の化けで読み出しとして扱われた書き込みを検出できる。CRC 有効時は必ず検出でき、CRC 無効時は読み値が 0x00 のレジスタへの化けは分からない）（11/20 の監査の第 2 回）。
+9. SOFT_RESET のあとは、CS_N を 1 µs 以上 High に保ってから次のフレームを始める（SPI もリセットされるため）。SOFT_RESET は制御だけを戻し、格子と SEQ は変えない。制御の全ての設定（CRC_EN、DRDY_MODE、マスク、試験の鍵、シャドウ、タイマ）は既定値に戻り、RESET_FLAG が立つので、手順 2〜5 をやり直す（CRC_EN は 0 に戻るので、最初のフレームは CRC なしで送る。3 バイトの書き込みは過長な FRAME_ERR となる）（11/20 の監査の第 2 回）。
 10. 停止は STOP、再開は START（手順 4、5）。STOP のあとの IDLE も AFE_RST ＝ 1 でチョッパが動いており、電極から見て約 5.4 kΩ の負荷となる（低電流の待機ではない。未確認事項）。
 
 現行の手順（AFE_IBIAS の先行書き込み、AFE_RST の 2 回の書き込みによるパルス、0.22 ms と 3 ms の待ち、FILTER_CLEAR、BLANK の切り替え）は、すべてチップ側に移る。
@@ -606,7 +627,7 @@ r2 から r3 への修正（アナログ側の仕様との照合で見つけた�
 
 | ID | 要件 |
 |---|---|
-| VER-01 | 状態遷移表（表 5.1-2、表 5.2-1）の全欄を単体試験で確認すること（状態の網羅率と遷移の網羅率 100 %。STATE_ERR、FRAME_ERR などの拒否の欄を含む） |
+| VER-01 | 状態遷移表（表 5.1-2、表 5.2-2）の全欄を単体試験で確認すること（状態の網羅率と遷移の網羅率 100 %。STATE_ERR、FRAME_ERR などの拒否の欄を含む） |
 | VER-02 | SPI：全種類のフレーム、連続読み出し、CRC の有無、長さ違い、バイトの途中での CS_N の立ち上がり、未定義のアドレス、読み出し専用への書き込み、鍵の誤り。MCLK と非同期の 2 MHz と 1 MHz で確認すること |
 | VER-03 | タイマ：T_WARM、T_PRE、T_RST、T_REC、T_ELEC を最小・既定・最大で確認し、AFE_RST のパルス幅をピンで測ること |
 | VER-04 | 通し試験：START から RUN までと、運転中の APPLY と APPLY_NR を、行動モデルのコード列（s4、s20）で黄金モデルとビット単位で照合すること |

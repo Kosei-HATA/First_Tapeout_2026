@@ -11,7 +11,8 @@
 //   C  APPLY in RUN: the settings at the tick, AFE_RST high after T_PRE for exactly T_RST, the re-settling, samples
 //      again with the SEQ gap of the outputs not stored
 //   D  APPLY_NR with T_ELEC = 2: one step accepted, CHANGED on the next 3 + T_ELEC samples; two steps rejected;
-//      D2: leaving RUN (an APPLY) cancels the rest of a long CHANGED mark (T_ELEC = 30): no CHANGED in the next RUN
+//      D2: leaving RUN (an APPLY) cancels the rest of a long CHANGED mark (T_ELEC = 30): no CHANGED in the next RUN;
+//      D3: a second APPLY_NR with T_ELEC = 0 keeps the longer remaining mark of the first (T_ELEC = 10)
 //   E  START with an inconsistent configuration (CFG_ERR), STOP, START in RUN (STATE_ERR)
 //   F  one pending command: at 64 kHz a second command before the tick gets STATE_ERR, an unknown code CMD_ERR only
 //   G  FLUSH, overrun (OVERRUN in DFLAG and in the next sample's status); a sample read across a FLUSH: the sample
@@ -24,6 +25,11 @@
 //      the change); APPLY empties the FIFO; an injected overload sets OVL_NOW, DFLAG.OVL (only in FILL / RUN) and
 //      the OVL bit of exactly the three samples whose window contains it
 //   K  SEQ wraps from 0xFFFF to 0 (forced near the end, samples outside the golden comparison)
+//   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
+//      ALERT_MASK_D, the empty word (VALID 0, OVERRUN, OVL_NOW, ERR = ALERT, SEQ 0, DATA 0, CRC), the DRDY_N release in
+//      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
+//   L  SPI at the specification's limits (VER-02): 2 MHz with the minimum high (4 MCLK) or the minimum low (5 MCLK),
+//      and 1 MHz; CS_N setup 5 MCLK, hold 3 MCLK, high 4 MCLK; MISO through the 15 ns pad delay; CRC off and on
 // Define FIFO4 for the 4-deep FIFO (CAPS and the overrun test follow).
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); the SPI timing (spi_bfm_r14.svh).
@@ -193,6 +199,8 @@ module tb_top_r14;
         if (dut.soft_req)  soft_pend = dut.cmd_valid;
     end
     always @(posedge CS_N) t_csr = $realtime;
+    real t_drdy_rise = 0.0;                       // M5: the DRDY_N release
+    always @(posedge DRDY_N) t_drdy_rise = $realtime;
 
     integer mclk_count = 0;
     always @(posedge MCLK) mclk_count = mclk_count + 1;
@@ -394,7 +402,24 @@ module tb_top_r14;
         r14_cmd(8'h44);                                 // back to M = 11 (one step)
         repeat (300) @(posedge MCLK);
         if (OFM !== 10'd11) fail("D2 APPLY_NR back to M = 11");
-        $display("D  APPLY_NR, CHANGED cancelled on leaving RUN (errors %0d)", errors);
+        // D3: a mark of 13 outputs (T_ELEC = 10); two samples later a second step with T_ELEC = 0 (a mark of 3 alone)
+        // must keep the 11 that remain: the first step's electrode is still settling
+        phase = "D3";
+        r14_write(7'h51, 8'd10);                        // T_ELEC = 10 ms
+        r14_write(7'h21, 8'h0C);                        // M = 12: one step
+        r14_cmd(8'h44);
+        repeat (300) @(posedge MCLK);
+        if (OFM !== 10'd12) fail("D3 first APPLY_NR");
+        while (DRDY_N === 1'b0) read_samples(1, -1, "D3 drain");
+        read_samples(2, 2, "D3 CHANGED of the first mark");
+        r14_write(7'h51, 8'd0);                         // T_ELEC = 0
+        r14_write(7'h21, 8'h0B);                        // M = 11: one step back
+        r14_cmd(8'h44);
+        repeat (300) @(posedge MCLK);
+        if (OFM !== 10'd11) fail("D3 second APPLY_NR");
+        if (dut.chg_cnt !== 9'd11) fail($sformatf("D3 CHANGED count %0d after the second mark, expected 11", dut.chg_cnt));
+        read_samples(12, 11, "D3 the longer mark kept (11 more samples, then none)");
+        $display("D  APPLY_NR, CHANGED cancelled on leaving RUN, the longer mark kept (errors %0d)", errors);
 
         // ---------------- E: START in RUN, STOP, START with an inconsistent configuration
         phase = "E";
@@ -701,6 +726,117 @@ module tb_top_r14;
             end
         end
         $display("K  SEQ wraps (errors %0d)", errors);
+
+        // ---------------- M: status bits no other phase checks (audit round 2, 11/20); RUN, outside the golden log
+        phase = "M";
+        begin
+            logic [7:0] st, e; logic [15:0] sq; logic [23:0] d; bit ok; real tcs, tdr;
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+            check_status(8'h00, 8'h20, "M1 ALERT clear");
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);
+            for (int i = 0; i < 2; i++) begin           // M1: no flag: ERR 0, reserved bits 0
+                while (DRDY_N !== 1'b0) @(posedge MCLK);
+                r14_sample(st, sq, d, ok);
+                if (!ok || st[7] !== 1'b1 || st[3] !== 1'b0 || st[2:0] !== 3'b000)
+                    fail($sformatf("M1 sample status 0x%02h: VALID, ERR 0 and reserved bits 0 expected", st));
+            end
+            r14_read(7'h7E, v);                         // M2: an undefined address: ADDR_ERR -> ALERT -> ERR in samples
+            check_status(8'h20, 8'h20, "M2 ALERT after ADDR_ERR");
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);
+            for (int i = 0; i < 2; i++) begin
+                while (DRDY_N !== 1'b0) @(posedge MCLK);
+                r14_sample(st, sq, d, ok);
+                if (!ok || st[7] !== 1'b1 || st[3] !== 1'b1 || st[2:0] !== 3'b000)
+                    fail($sformatf("M2 sample status 0x%02h: ERR 1 (ALERT at the store) expected", st));
+            end
+            r14_write(7'h08, 8'hF7);                    // M3: ADDR_ERR masked: ALERT 0, ERR 0, the flag stays
+            check_status(8'h00, 8'h20, "M3 ALERT with ADDR_ERR masked");
+            r14_read(7'h06, e);
+            if (e[3] !== 1'b1) fail($sformatf("M3 ERR 0x%02h: ADDR_ERR lost under the mask", e));
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);
+            while (DRDY_N !== 1'b0) @(posedge MCLK);
+            r14_sample(st, sq, d, ok);
+            if (!ok || st[3] !== 1'b0) fail($sformatf("M3 sample status 0x%02h: ERR 0 with the error masked", st));
+            r14_write(7'h08, 8'hFF);
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h09, 8'h01);                    // M4: DFLAG.OVL masked (ALERT_MASK_D = OVERRUN only)
+            ovl_force = 1'b1;
+            repeat (20 * 32) @(posedge MCLK);
+            ovl_force = 1'b0;
+            repeat (40 * 32) @(posedge MCLK);
+            r14_read(7'h07, v);
+            if (v[1] !== 1'b1) fail("M4 DFLAG.OVL after an overload in RUN");
+            check_status(8'h00, 8'h20, "M4 ALERT with DFLAG.OVL masked");
+            r14_write(7'h09, 8'h03);
+            check_status(8'h20, 8'h20, "M4 ALERT with DFLAG.OVL unmasked");
+            r14_write(7'h07, 8'hFF);
+            check_status(8'h00, 8'h20, "M4 ALERT after DFLAG cleared");
+            // M5: the DRDY_N release (level mode) after the read that empties the FIFO, then the empty word: drain,
+            // wait for the next store (a fresh 1 ms interval), read that single sample
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);
+            while (DRDY_N !== 1'b0) @(posedge MCLK);
+            r14_sample(st, sq, d, ok);                  // the only sample: its read empties the FIFO
+            tcs = t_csr;
+            tdr = t_drdy_rise;
+            if (DRDY_N !== 1'b1 || tdr < tcs || (tdr - tcs) / TMCLK > 5.0)
+                fail($sformatf("M5 DRDY_N released %0.2f MCLK after CS_N rose (at most 5; DRDY_N %b)",
+                               (tdr - tcs) / TMCLK, DRDY_N));
+            r14_read(7'h7E, v);                         // ALERT = 1 for the empty word's ERR
+            ovl_force = 1'b1;                           // and OVL_NOW = 1 for its OVL
+            repeat (20 * 32) @(posedge MCLK);
+            r14_sample(st, sq, d, ok);
+            e = {1'b0, 1'b0, spi_rx[0][1], 1'b0, spi_rx[0][5], 3'b000};   // DFLAG.OVERRUN is 0 here
+            if (!ok || st !== e || sq !== 16'd0 || d !== 24'd0)
+                fail($sformatf("M5 empty word: status 0x%02h (expected 0x%02h from STATUS 0x%02h), SEQ %0d, DATA %0d, CRC %0b",
+                               st, e, spi_rx[0], sq, d, ok));
+            if (spi_rx[0][1] !== 1'b1 || spi_rx[0][5] !== 1'b1) fail("M5 not exercised: OVL_NOW and ALERT expected");
+            ovl_force = 1'b0;
+            repeat (40 * 32) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+        end
+        $display("M  sample ERR and reserved bits, ALERT masks, DRDY_N release, the empty word (errors %0d)", errors);
+
+        // ---------------- L: SPI at the specification's limits and at 1 MHz (VER-02; audit round 2)
+        phase = "L";
+        begin
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+            for (int c = 0; c < 3; c++) begin
+                case (c)
+                    0: begin spi_high = 4.0 * TMCLK + 0.3; spi_low = 500.0 - spi_high; end   // 2 MHz, minimum high
+                    1: begin spi_low = 5.0 * TMCLK + 0.3; spi_high = 500.0 - spi_low; end    // 2 MHz, minimum low
+                    default: begin spi_high = 500.0; spi_low = 500.0; end                    // 1 MHz
+                endcase
+                spi_tcss  = 5.0 * TMCLK + 0.3;
+                spi_tcsh  = 3.0 * TMCLK + 0.3;
+                spi_tidle = 4.0 * TMCLK + 0.3;
+                for (int crc = 0; crc < 2; crc++) begin
+                    r14_write(7'h55, crc ? 8'h01 : 8'h00);
+                    bfm_crc_en = (crc != 0);
+                    for (int k = 0; k < 8; k++) begin
+                        r14_write(7'h24, 8'((2 * k + 1 + c) % 16));
+                        rt_read_expect(7'h24, 8'((2 * k + 1 + c) % 16), $sformatf("L%0d CPF_TRIM (CRC %0d)", c, crc));
+                    end
+                    rt_read_expect(7'h00, 8'hE6, $sformatf("L%0d ID (CRC %0d)", c, crc));
+                    for (int i = 0; i < 2; i++) begin
+                        repeat (6) @(posedge MCLK);             // DRDY_N is released up to 5 MCLK after CS_N
+                        while (DRDY_N !== 1'b0) @(posedge MCLK);
+                        r14_sample(st, sq, d, ok);
+                        if (!ok || st[7] !== 1'b1)
+                            fail($sformatf("L%0d sample %0d (CRC %0d): status 0x%02h, SEQ %0d, DATA %0d, CRC ok %0b, MISO %h %h %h %h %h %h %h %h",
+                                           c, i, crc, st, sq, d, ok, spi_rx[0], spi_rx[1], spi_rx[2], spi_rx[3],
+                                           spi_rx[4], spi_rx[5], spi_rx[6], spi_rx[7]));
+                    end
+                    expect_noerr($sformatf("L%0d no error (CRC %0d)", c, crc));
+                end
+            end
+            r14_write(7'h55, 8'h00);
+            bfm_crc_en = 1'b0;
+            r14_write(7'h24, 8'h08);
+            spi_high = 250.0; spi_low = 250.0; spi_tcss = 300.0; spi_tcsh = 200.0; spi_tidle = 600.0;
+        end
+        $display("L  SPI at the timing limits and at 1 MHz (errors %0d)", errors);
 
         $fclose(flog);
         $fclose(fsmp);

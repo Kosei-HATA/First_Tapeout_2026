@@ -1,7 +1,7 @@
 // eeg_fifo - sample FIFO between the CIC and the SPI slave (r14).
 //
 // DEPTH entries of {status[7:0], seq[15:0], data[23:0]} (48 bits); the status byte and SEQ are built by the top
-// (gf180/tapeout/rtl/spec/regmap.py SAMPLE_STATUS; SEQ = the output's number since reset release).
+// (gf180/tapeout/rtl/spec/regmap.py SAMPLE_STATUS; SEQ = the output's number since RESET_N release).
 // One MCLK cycle: flush, then pop, then push (gf180/tapeout/rtl/spec/fsm_spec.py fifo_step: a new sample is never
 // lost to a flush or a pop in the same cycle). A push into a full FIFO without a pop in the same cycle drops the
 // new sample and pulses ovr_set. Empty: rd_word = {empty_status, 16'h0, 24'h0}.
@@ -17,7 +17,7 @@ module eeg_fifo #(
 ) (
     input  logic        clk,
     input  logic        rst_n,
-    input  logic        flush,                    // START / FLUSH (sequencer, at a tick)
+    input  logic        flush,                    // START, APPLY with its pulse, FLUSH (sequencer, at a tick)
     input  logic        push,                     // store this output (sequencer, at a CIC output time)
     input  logic [7:0]  status_in,
     input  logic [15:0] seq_in,

@@ -8,8 +8,9 @@
 //   * eeg_regs (new map): shadow / active analog settings, W1C flags, the pending command, SOFT_RESET.
 //   * eeg_spi_slave (new protocol): R/W + address header, STATUS first, fixed-length writes with optional CRC.
 //   * eeg_cic3: no FILTER_CLEAR; cleared at an output time in ALIGN, the output grid fixed from reset release.
-//   * eeg_fifo: START / FLUSH empty it; status byte {VALID, OVERRUN, OVL, CHANGED, ERR, 0, 0, 0}; SEQ = the output's
-//     number since reset release (every output time counts).
+//   * eeg_fifo: START, APPLY with its pulse (the AFE running) and FLUSH empty it (and a reset); status byte {VALID,
+//     OVERRUN, OVL, CHANGED, ERR, 0, 0, 0}; SEQ = the output's number since RESET_N release (every output time counts,
+//     also during a SOFT_RESET).
 //   * eeg_ovl (new): overload from the extreme quantizer codes.
 //   * CHOP_DLY is gone (tied to 0 in eeg_clkgen); eeg_adc_dig, eeg_chop1, eeg_raw are unchanged (../rtl/).
 // Resets: RESET_N (asynchronous assert, 2-FF release) resets everything. SOFT_RESET (the command; a registered reset
@@ -183,11 +184,14 @@ module eeg_digital_top #(
         else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;
     end
     // APPLY_NR in RUN: the windows that straddle the step (3) and the electrode's settling (T_ELEC, 1 ms = 1 output).
-    // Leaving RUN cancels the rest (APPLY, STOP: the data starts again with a cleared CIC after the waits, so no window
-    // of the next RUN straddles the step; samples are stored only in RUN)
+    // A new mark keeps a longer remaining one (the earlier step's electrode is still settling; the mark is at a tick,
+    // never in the cycle of an output). Leaving RUN cancels the rest (APPLY, STOP: the data starts again with a cleared
+    // CIC after the waits, so no window of the next RUN straddles the step; samples are stored only in RUN)
+    logic [8:0] chg_new;
+    assign chg_new = 9'd3 + {1'b0, t_elec};
     always_ff @(posedge MCLK or negedge rst_n) begin
         if (!rst_n)                   chg_cnt <= 9'd0;
-        else if (seq_mark)            chg_cnt <= 9'd3 + {1'b0, t_elec};
+        else if (seq_mark)            chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;
         else if (seq_state != ST_RUN) chg_cnt <= 9'd0;
         else if (cic_stb && chg_now)  chg_cnt <= chg_cnt - 9'd1;
     end

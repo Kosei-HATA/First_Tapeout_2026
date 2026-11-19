@@ -6,9 +6,13 @@ stateDiagram-v2
         [*] --> HDR
         HDR
         RREG
+        RREG : RREG
+        RREG : BYTE [!crc_en] / addr_inc, load_data
         RCRC
         RDONE
         RSMP
+        RSMP : RSMP
+        RSMP : BYTE [!last] / next_byte
         SDONE
         WDAT
         WCRC
@@ -26,8 +30,6 @@ stateDiagram-v2
         WDAT --> WCRC : BYTE [crc_en] / latch_data
         WDAT --> WDONE : BYTE [!crc_en] / latch_data
         WCRC --> WDONE : BYTE / latch_crc
-        RREG --> RREG : BYTE [!crc_en] / addr_inc, load_data
-        RSMP --> RSMP : BYTE [!last] / next_byte
     }
     IDLE --> FRAME : CSF / load_status
     FRAME --> IDLE : CSR / commit, pop or error (see the table)

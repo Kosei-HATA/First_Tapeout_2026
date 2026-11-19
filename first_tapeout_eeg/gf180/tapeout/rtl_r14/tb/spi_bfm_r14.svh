@@ -7,10 +7,16 @@
 //
 // Tasks: spi_xfer(nbytes, extra_bits) raw; r14_write(addr, val); r14_read(addr, val); r14_cmd(code);
 //        r14_sample(sstat, seq, data, crc_ok) (8 bytes); bfm_crc_en mirrors IF_CFG.CRC_EN.
+// SCLK's high and low times are set apart (spi_high, spi_low); MISO and MISO_OE reach the master through the pad
+// delay SPI_TPAD (spec 3.1: about 15 ns), so the specification's minimum low time is checked with it. A write's MISO
+// must be 0x00 after the header, also at the CRC position (a write turned into a read by a flipped R/W bit returns
+// data and a nonzero CRC).
 
 logic [7:0] spi_tx [0:15];
 logic [7:0] spi_rx [0:15];
-real        spi_half  = 250.0;      // SCLK half period [ns] (2 MHz)
+real        spi_high  = 250.0;      // SCLK high [ns] (>= 4 MCLK = 122 ns)
+real        spi_low   = 250.0;      // SCLK low [ns] (>= 5 MCLK = 153 ns); 2 MHz at most
+localparam real SPI_TPAD = 15.0;    // MISO / MISO_OE pad delay [ns]
 real        spi_tcss  = 300.0;      // CS_N fall -> first SCLK rise [ns] (>= 5 MCLK = 153 ns)
 real        spi_tcsh  = 200.0;      // last SCLK fall -> CS_N rise [ns]
 real        spi_tidle = 600.0;      // CS_N high after a transfer [ns]
@@ -21,7 +27,9 @@ bit         bfm_crc_en = 1'b0;
 real        spi_miso_lat_max = 0.0;
 real        spi_oe_lat_max = 0.0;
 
-wire        miso_pad = MISO_OE ? MISO : 1'bz;
+wire        #(SPI_TPAD) miso_pin = MISO;
+wire        #(SPI_TPAD) oe_pin   = MISO_OE;
+wire        miso_pad = oe_pin ? miso_pin : 1'bz;
 
 task automatic spi_err(input string msg);
     spi_errors = spi_errors + 1;
@@ -52,10 +60,10 @@ task automatic spi_xfer(input integer nbytes, input integer extra_bits);
             spi_rx[n / 8][7 - (n % 8)] = miso_pad;
             if (miso_pad === 1'bz || miso_pad === 1'bx) spi_err("MISO not driven at SCLK rising edge");
         end
-        #(spi_half);
+        #(spi_high);
         SCLK = 1'b0;
         MOSI = (n + 1 < total) ? spi_bit(n + 1, nbytes) : 1'b0;
-        if (n + 1 < total) #(spi_half);
+        if (n + 1 < total) #(spi_low);
     end
     #(spi_tcsh);
     CS_N = 1'b1;
@@ -73,6 +81,7 @@ task automatic r14_write(input logic [6:0] addr, input logic [7:0] val);
     spi_tx[2] = tb_crc8_update(tb_crc8_update(8'h00, spi_tx[0]), val);
     spi_xfer(bfm_crc_en ? 3 : 2, 0);
     if (spi_rx[1] !== 8'h00) spi_err("write: MISO data byte not 0x00");
+    if (bfm_crc_en && spi_rx[2] !== 8'h00) spi_err("write: MISO byte at the CRC position not 0x00");
 endtask
 
 task automatic r14_read(input logic [6:0] addr, output logic [7:0] val);
@@ -110,8 +119,8 @@ endtask
 real spi_t_fall = 0.0;
 real spi_t_csfall = 0.0;
 always @(negedge SCLK) spi_t_fall = $realtime;
-always @(MISO) begin
-    if (MISO_OE === 1'b1 && CS_N === 1'b0 && SCLK === 1'b1 && $realtime - spi_t_csfall > 4.0 * TMCLK)
+always @(miso_pin) begin                     // at the pin: a change while SCLK is high came too late
+    if (oe_pin === 1'b1 && CS_N === 1'b0 && SCLK === 1'b1 && $realtime - spi_t_csfall > 4.0 * TMCLK)
         spi_err("MISO changed while SCLK is high");
 end
 always @(negedge CS_N) spi_t_csfall = $realtime;

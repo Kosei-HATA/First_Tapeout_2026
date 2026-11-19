@@ -95,8 +95,8 @@ SEQ_ACTIONS = {
     "cic_clear": "CIC をクリアする（出力の時刻に合わせて行うので、格子は変わらない）",
     "store": "出力を FIFO へ格納する（DRDY）。満杯なら FIFO が新しいサンプルを捨てて OVERRUN を立てる（第 5.3 節、fifo_step）",
     "discard": "出力を捨てる",
-    "seq_inc": "SEQ に 1 を加える（SEQ はリセットの解除からの出力の時刻の番号）",
-    "mark": "このあとの 3 ＋ T_ELEC 個の出力に CHANGED を付ける（反映をまたぐ sinc³ の窓 3 個と、電極の整定 T_ELEC（1 ms ＝ 出力 1 個の単位））。RUN を出ると残りは取り消す（次の RUN はクリアした CIC から始まり、その窓は反映をまたがない）",
+    "seq_inc": "SEQ に 1 を加える（SEQ は RESET_N の解除からの出力の時刻の番号。SOFT_RESET でも変えない）",
+    "mark": "このあとの 3 ＋ T_ELEC 個の出力に CHANGED を付ける（反映をまたぐ sinc³ の窓 3 個と、電極の整定 T_ELEC（1 ms ＝ 出力 1 個の単位））。残っている印のほうが長ければ、その長さを保つ（前の 1 段の電極の整定が続いている）。RUN を出ると残りは取り消す（次の RUN はクリアした CIC から始まり、その窓は反映をまたがない）",
     "CFG_ERR": "エラー CFG_ERR を立てる（命令は実行しない）",
     "STATE_ERR": "エラー STATE_ERR を立てる（命令は実行しない）",
     "restart": "その状態のタイマを最初から数え直す（同じ tick のタイマの満了は取り消す）",
@@ -120,12 +120,13 @@ def _seq_table():
         t[(s, "FLUSH")] = [B(ALWAYS, ["flush"])]
         t[(s, "TMR")] = IMP if s not in timed else None
         t[(s, "OUT")] = [B(ALWAYS, ["discard", "seq_inc"])]
-    # RESET: nothing is served; only the release leaves it
+    # RESET: nothing is served; only the release leaves it. An output time can fall inside a SOFT_RESET (the CIC
+    # and SEQ run from RESET_N alone): it is counted like in IDLE
     for e, _ in SEQ_EVENTS:
         t[("RESET", e)] = IGN
     t[("RESET", "REL")] = [B(ALWAYS, [], "IDLE")]
     t[("RESET", "TMR")] = IMP
-    t[("RESET", "OUT")] = IMP
+    t[("RESET", "OUT")] = [B(ALWAYS, ["discard", "seq_inc"])]
     # IDLE
     t[("IDLE", "START")] = [B("cfg_ok", ["apply", "flush"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])]
     t[("IDLE", "STOP")] = IGN
@@ -170,7 +171,7 @@ def seq_possible(s, e):
     if e == "TMR":
         return s in timed
     if e == "OUT":
-        return s != "RESET"
+        return True                   # also in RESET: during a SOFT_RESET the CIC and SEQ keep running (RESET_N)
     return True                       # RST and commands can arrive at any time
 
 
@@ -187,8 +188,8 @@ SPI_STATES = [
     ("RREG", None, "FRAME", None, None, "レジスタの読み出し（CRC 無効時はアドレスを自動加算して連続）"),
     ("RCRC", None, "FRAME", None, None, "CRC 有効時、データ 1 バイトのあとの CRC"),
     ("RDONE", None, "FRAME", None, None, "CRC 付きの読み出しの完了"),
-    ("RSMP", None, "FRAME", None, None, "サンプルの窓の読み出し（STATUS、SEQ、DATA、CRC の 7 バイト）"),
-    ("SDONE", None, "FRAME", None, None, "サンプルの 7 バイトの完了（CS_N の立ち上がりで FIFO から取り出す）"),
+    ("RSMP", None, "FRAME", None, None, "サンプルの窓の読み出し（先頭バイトのあとの 7 バイト：サンプルの状態、SEQ 2、DATA 3、CRC。フレームは 8 バイト）"),
+    ("SDONE", None, "FRAME", None, None, "サンプルの 8 バイト（先頭バイトと 7 バイト）の完了（CS_N の立ち上がりで FIFO から取り出す）"),
     ("WDAT", None, "FRAME", None, None, "書き込みのデータ 1 バイト"),
     ("WCRC", None, "FRAME", None, None, "CRC 有効時の CRC の受信"),
     ("WDONE", None, "FRAME", None, None, "書き込みのフレームの完了（CS_N の立ち上がりで確定）"),
@@ -208,7 +209,7 @@ SPI_CONDS = {
     "smp": "アドレスがサンプルの窓",
     "addr_ok": "アドレスが定義済み",
     "crc_en": "CRC が有効",
-    "last": "サンプルの 7 バイト目",
+    "last": "サンプルの最後のバイト（先頭バイトのあとの 7 バイト目、フレームの 8 バイト目）",
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
     "crc_ok": "受信した CRC が一致",
     "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み）",
@@ -253,8 +254,9 @@ def _spi_table():
     t[("RREG", "BYTE")] = [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])]
     t[("RCRC", "BYTE")] = [B(ALWAYS, [], "RDONE")]
     # CRC on: a read that stops before its CRC byte, or a sample read shorter than its 8 bytes, is a frame error, so
-    # that a one-bit header error that changes the kind of frame is flagged both ways (a header-only read, the status
-    # poll, stays legal)
+    # that a one-bit header error that changes the kind of frame is flagged both ways (a header-only read of a defined
+    # register, the status poll, stays legal; a header-only sample read with CRC on is a frame error, an undefined
+    # address an ADDR_ERR)
     t[("RCRC", "CSR")] = [B(ALWAYS, ["FRAME_ERR"], "IDLE")]
     t[("RSMP", "CSR")] = [B("mid or crc_en", ["FRAME_ERR"], "IDLE"), B("not mid and not crc_en", [], "IDLE")]
     t[("RSMP", "BYTE")] = [B("not last", ["next_byte"]), B("last", [], "SDONE")]
@@ -415,6 +417,26 @@ SEQ_STATE = {s[0]: s for s in SEQ_STATES}
 
 def seq_tick(s, present, env):
     """Next state and executed actions for the events present in one tick (RST excluded: asynchronous)."""
+    nxt, acts, _ = seq_resolve(s, present, env)
+    return nxt, acts
+
+
+# The allowed state changes, written independently of the transition table: (state, the event that moves it) -> the
+# allowed next states. A timed wait (WARMUP, RECOVER, WAIT_E, PRE, PULSE) is left only by its own timer, by STOP, or
+# (the AFE running) by APPLY with its pulse; FLUSH never moves; START only leaves IDLE; APPLY_NR moves only before
+# RUN (back to the electrode wait or the clear); RUN is left only by STOP or APPLY.
+SEQ_AFE_ON = ("RECOVER", "WAIT_E", "ALIGN", "FILL", "RUN")
+SEQ_EXITS = {("IDLE", "START"): {"WARMUP"},
+             ("WARMUP", "TMR"): {"RECOVER"}, ("RECOVER", "TMR"): {"ALIGN", "WAIT_E"}, ("WAIT_E", "TMR"): {"ALIGN"},
+             ("PRE", "TMR"): {"PULSE"}, ("PULSE", "TMR"): {"RECOVER"},
+             ("ALIGN", "APPLY_NR"): {"WAIT_E"}, ("FILL", "APPLY_NR"): {"ALIGN", "WAIT_E"},
+             ("ALIGN", "OUT"): {"FILL"}, ("FILL", "OUT"): {"RUN"}}
+SEQ_EXITS.update({(s, "STOP"): {"IDLE"} for s in ("WARMUP", "PRE", "PULSE") + SEQ_AFE_ON})
+SEQ_EXITS.update({(s, "APPLY"): {"PRE"} for s in SEQ_AFE_ON})
+
+
+def seq_resolve(s, present, env):
+    """seq_tick, and the event whose branch decided the next state (None if none moved)."""
     t = SEQ["table"]
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
     if "TMR" in br and any(isinstance(b, dict) and "restart" in b["actions"] for e, b in br.items() if e != "TMR"):
@@ -442,13 +464,16 @@ def seq_tick(s, present, env):
     nxt = s
     if winner and isinstance(br[winner], dict) and br[winner]["next"] is not None:
         nxt = br[winner]["next"]
-    return nxt, acts
+    return nxt, acts, winner
 
 
-def seq_properties(s, present, env, nxt, acts):
+def seq_properties(s, present, env, nxt, acts, winner=None):
     """Each returns an error string or None."""
     afe = lambda x: SEQ_STATE[x][3]
     P = []
+    if nxt != s and nxt not in SEQ_EXITS.get((s, winner), ()):
+        P.append(f"{s} -> {nxt} by {winner}: not an allowed exit (SEQ_EXITS: a timed wait is left only by its timer, "
+                 f"STOP or a pulsed APPLY; FLUSH never moves; START only from IDLE; RUN only by STOP or APPLY)")
     if afe(s) == 1 and afe(nxt) == 0 and nxt != "RECOVER":
         P.append("AFE_RST is released without passing RECOVER (ADC recovery wait)")
     if "apply" in acts and afe(s) == 1 and afe(nxt) == 0:
@@ -512,9 +537,9 @@ def check_seq_ticks():
         cases += [["OUT"]]                      # handled at its own MCLK cycle, never together with a tick
         for present in cases:
             for env in all_envs(list(SEQ_CONDS), lambda e: True):
-                nxt, acts = seq_tick(s, present, env)
+                nxt, acts, winner = seq_resolve(s, present, env)
                 n += 1
-                for p in seq_properties(s, present, env, nxt, acts):
+                for p in seq_properties(s, present, env, nxt, acts, winner):
                     errs.append(f"SEQ {s} {present} {env}: {p} -> {nxt} {acts}")
     # STATE and AFE_RST are Moore outputs of the state; READY = (state == RUN)
     codes = [x[1] for x in SEQ_STATES if x[1] is not None]
@@ -808,6 +833,7 @@ CHECKS = [
     "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
+    "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
     "  AFE_RST の解除は必ず RECOVER（ADC の復帰待ち）に入る",
     "  AFE_RST の解除と同じ tick で設定を反映しない。AFE_RST を保っている間（WARMUP）の反映は、解除までの待ちを最初から数え直す（変更から解除まで T_WARM 以上）",
     "  START は必ず一括反映し、FIFO を空にする",
@@ -820,10 +846,10 @@ CHECKS = [
     "  CIC のクリアは出力の時刻の格子の上（ALIGN から FILL）でのみ",
     "  AFE_RST のパルスの前には必ず PRE（T_PRE の待ち）がある。PRE へは設定の反映とともにのみ入る",
     "  RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る",
-    "  FIFO を空にするのは START、APPLY（パルスあり）、FLUSH のみ。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）",
+    "  FIFO を空にするのは START、APPLY（パルスあり、すなわち AFE の動作中の APPLY）、FLUSH のみ（ほかはリセット）。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）。IDLE と WARMUP の APPLY はパルスなしで、FIFO を空にしない",
     "  RUN の前のオフセットの 1 段（APPLY_NR）は、T_ELEC > 0 なら電極の整定を待ち直す（WAIT_E、WAIT_E では数え直し）。WAIT_E へは RECOVER の満了か、その 1 段からのみ入る",
     "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
-    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、7 バイトちょうど読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
+    "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
@@ -882,8 +908,28 @@ def label(e, guard, acts, short=None):
     return (short or e) + g + (f" / {', '.join(a)}" if a else "")
 
 
-def mermaid(F, title, notes=(), self_loops=(), lump=None, hide=()):
-    """Hierarchical state diagram. A transition shared (same event, guard, actions, target) by every leaf of a
+def table_self_loops(F, keep, hide=()):
+    """Self-loop labels drawn from the table: every branch that stays in its state and executes one of the actions in
+    keep (events with the same guard and actions are merged into one label)."""
+    loops = []
+    for x in F["states"]:
+        s, groups = x[0], {}
+        for e, _ in F["events"]:
+            cell = F["table"].get((s, e))
+            if e in hide or cell in (None, IMP, IGN):
+                continue
+            for b in cell:
+                if b["next"] in (None, s) and set(b["actions"]) & set(keep):
+                    groups.setdefault((b["guard"], tuple(b["actions"])), []).append(e)
+        labs = [label(", ".join(es), g, list(a)) for (g, a), es in groups.items()]
+        if labs:
+            loops.append((s, "<br/>".join(labs)))
+    return loops
+
+
+def mermaid(F, title, notes=(), self_loops=(), lump=None, hide=(), internal=()):
+    """Hierarchical state diagram. internal: (state, label) pairs written inside the state's box (UML internal
+    transitions: the event's actions without leaving the state), one line per label part. A transition shared (same event, guard, actions, target) by every leaf of a
     composite is drawn once from the composite; a transition into a composite's initial leaf from outside is drawn
     into the composite. lump: (composite, event) pairs drawn once from the composite with a summary label."""
     E = [x for x in edges(F) if x[1] not in hide]
@@ -943,6 +989,10 @@ def mermaid(F, title, notes=(), self_loops=(), lump=None, hide=()):
         for x in F["states"]:
             if x[2] == container:
                 out.append(f"{ind}{x[0]}")
+                for st, text in internal:
+                    if st == x[0]:                     # the first description line is the box's title: the name
+                        out.append(f"{ind}{st} : {st}")
+                        out.extend(f"{ind}{st} : {part}" for part in text.split("<br/>"))
         for c, v in comps.items():
             if v[0] == container:
                 out.append(f"{ind}state {c} {{")
@@ -1013,11 +1063,12 @@ def generate():
         return 1
     seq_mmd = mermaid(SEQ, "sequencer", hide=("RST",),
                       notes=[("RESET", ["RST (RESET_N = 0 or SOFT_RESET) from any state leads to RESET.",
-                                        "Self-loops and errors: see the transition table."])],
-                      self_loops=[("RUN", "APPLY_NR [cfg_ok & nr_ok] / apply, mark<br/>OUT / store")])
+                                        "In a state's box: its transitions that stay in the state",
+                                        "(apply, restart, mark, store; from the table).",
+                                        "Errors (CFG_ERR, STATE_ERR) and FLUSH: see the transition table."])],
+                      internal=table_self_loops(SEQ, ("apply", "restart", "mark", "store"), hide=("RST",)))
     spi_mmd = mermaid(SPI, "SPI transaction", lump=[("FRAME", "CSR", "CSR / commit, pop or error (see the table)")],
-                      self_loops=[("RREG", "BYTE [!crc_en] / addr_inc, load_data"),
-                                  ("RSMP", "BYTE [!last] / next_byte")])
+                      internal=table_self_loops(SPI, ("addr_inc", "next_byte")))
     files = {"seq_fsm.mmd": seq_mmd, "spi_fsm.mmd": spi_mmd}
     seq_tabs = tables_md(SEQ, [("STATE", lambda x: "—" if x[1] is None else str(x[1])),
                                ("AFE_RST", lambda x: str(x[3])),
@@ -1082,6 +1133,17 @@ def selftest():
         ("PULSE の満了の一部の分岐が状態を出ない", lambda t: t.__setitem__(("PULSE", "TMR"), [B("t_elec0", [], "RECOVER"), B("not t_elec0", [])])),
         ("FILL/OUT で有効の条件を使わない（条件 valid が未使用）", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["store", "seq_inc"], "RUN")])),
         ("ALIGN から WAIT_E へ黙って戻る", lambda t: t.__setitem__(("ALIGN", "FLUSH"), [B(ALWAYS, ["flush"], "WAIT_E")])),
+        # audit round 2 (11/20): a wait cut short by another event (the next state alone looked legal)
+        ("WARMUP の FLUSH で AFE_RST を解除（T_WARM より前）", lambda t: t.__setitem__(("WARMUP", "FLUSH"), [B(ALWAYS, ["flush"], "RECOVER")])),
+        ("PULSE の FLUSH でパルスを短くする", lambda t: t.__setitem__(("PULSE", "FLUSH"), [B(ALWAYS, ["flush"], "RECOVER")])),
+        ("PRE の FLUSH で T_PRE を飛ばす", lambda t: t.__setitem__(("PRE", "FLUSH"), [B(ALWAYS, ["flush"], "PULSE")])),
+        ("RECOVER の FLUSH で復帰待ちを飛ばす", lambda t: t.__setitem__(("RECOVER", "FLUSH"), [B(ALWAYS, ["flush"], "ALIGN")])),
+        ("WAIT_E の FLUSH で電極の待ちを飛ばす", lambda t: t.__setitem__(("WAIT_E", "FLUSH"), [B(ALWAYS, ["flush"], "ALIGN")])),
+        ("RUN の FLUSH で IDLE へ", lambda t: t.__setitem__(("RUN", "FLUSH"), [B(ALWAYS, ["flush"], "IDLE")])),
+        ("WARMUP の START で AFE_RST を解除", lambda t: t.__setitem__(("WARMUP", "START"), [B(ALWAYS, [], "RECOVER")])),
+        ("PULSE の START でパルスを短くする", lambda t: t.__setitem__(("PULSE", "START"), [B(ALWAYS, [], "RECOVER")])),
+        ("RECOVER の APPLY_NR で復帰待ちを飛ばす", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("SOFT_RESET の間の出力の時刻を数えない（RESET/OUT を IMP）", lambda t: t.__setitem__(("RESET", "OUT"), IMP)),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -1187,6 +1249,14 @@ def render():
         subprocess.run([chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=2",
                         f"--window-size={size}", "--virtual-time-budget=15000", f"--screenshot={out}",
                         "file://" + os.path.abspath(page)], check=True, capture_output=True)
+        try:                                     # trim the empty page below and right of the drawing
+            from PIL import Image, ImageChops
+            im = Image.open(out).convert("RGB")
+            box = ImageChops.difference(im, Image.new("RGB", im.size, (255, 255, 255))).getbbox()
+            if box:
+                im.crop((0, 0, min(im.width, box[2] + 32), min(im.height, box[3] + 32))).save(out)
+        except ImportError:
+            pass
         print("wrote", os.path.relpath(out, REPO))
     return 0
 

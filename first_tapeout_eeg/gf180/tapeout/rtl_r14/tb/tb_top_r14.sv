@@ -24,13 +24,17 @@
 //      byte and a short sample read are FRAME_ERR; APPLY in WARMUP restarts T_WARM (AFE_RST released T_WARM after
 //      the change); APPLY empties the FIFO; an injected overload sets OVL_NOW, DFLAG.OVL (only in FILL / RUN) and
 //      the OVL bit of exactly the three samples whose window contains it
-//   V  audit round 9: APPLY_NR in IDLE, and APPLY and APPLY_NR in RECOVER, WAIT_E, ALIGN and FILL (the end-to-end
+//   V  audit rounds 9, 10: APPLY_NR in IDLE, APPLY and APPLY_NR in RECOVER, WAIT_E, ALIGN and FILL (T_ELEC > 0 and
+//      = 0), APPLY_NR in PRE and APPLY in PULSE refused (the end-to-end
 //      replay had none of them), each with its effect (pins, STATE) and no flag. Also: CODE changes at e2 as the ADC's;
 //      the RESET_N release reaches the first CMP_STROBE in 3 MCLK (2 synchronizer flops); the control reset of a
 //      SOFT_RESET lasts 5 MCLK (H); RAW's bits change at e1, e5, ... and RAW_CLK rises at e3, e7, ... (O); T12 an
 //      overload ending at the interval's last input; U3 / U4 CRC-off read flips
-//   K  SEQ wraps from 0xFFFF to 0 (forced; the last phase, so that every other phase's samples are compared with the
-//      golden CIC: audit round 8, the comparison had stopped at K, in the middle of the bench)
+//   K  SEQ wraps from 0xFFFF to 0 (forced; after every phase whose samples are compared with the golden CIC: audit
+//      round 8, the comparison had stopped at K, in the middle of the bench)
+//   W  audit round 10: a reset released inside a frame (RESET_N at 48 points of a CRC write and of a CRC FLUSH, a
+//      SOFT_RESET whose control reset ends inside the next frame): the frame is ignored up to its CS_N rise, MISO_OE
+//      stays off, nothing is committed, the registers keep their reset values (after K: the golden log is off)
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
 //      ALERT_MASK_D, the empty word (VALID 0, OVERRUN, OVL_NOW, ERR = ALERT, SEQ 0, DATA 0, CRC), the DRDY_N release in
 //      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
@@ -760,6 +764,27 @@ module tb_top_r14;
         end
     end
 
+    // W (audit round 10): commits and MISO_OE while a frame that was running at a reset's release goes on
+    bit w_on = 1'b0;
+    integer w_we = 0, w_oe = 0;
+    always @(posedge MCLK) if (w_on) begin
+        if (dut.reg_we === 1'b1 && dut.reg_addr !== 7'h10) w_we = w_we + 1;   // W3's own SOFT_RESET is a commit to 0x10
+        if (MISO_OE === 1'b1) w_oe = w_oe + 1;
+    end
+
+    // the analog control pins at their reset values, written here from the requirements and not from regmap (audit
+    // round 10, auditor C: a test control's reset value edited in regmap passed every test, the generated tests and the
+    // pin monitor following the map): test settings off (ANA-05, REG-08), the offset DAC off, REG-05's operating values
+    task automatic check_reset_pins(input string tag);
+        if (CHOP_EN !== 1'b1) fail($sformatf("%s: CHOP_EN %b, the chopper must run from the reset (ANA-05)", tag, CHOP_EN));
+        if (TEST_CFG[5:0] !== 6'd0) fail($sformatf("%s: TEST_CFG[5:0] 0x%02h, the test settings must be off", tag, TEST_CFG[5:0]));
+        if (OFEN !== 4'd0 || OFM !== 10'd0 || OFS !== 1'b0) fail($sformatf("%s: the offset DAC on (OFEN %b, OFM %0d, OFS %b)", tag, OFEN, OFM, OFS));
+        if (AFE_IBIAS !== 2'd3 || CPF_TRIM !== 4'd8 || BTRIM_P !== 2'd1 || BTRIM_N !== 2'd0 || DWA_EN !== 1'b1)
+            fail($sformatf("%s: AFE_IBIAS %0d, CPF_TRIM %0d, BTRIM_P %0d, BTRIM_N %0d, DWA_EN %b; REG-05 gives 3, 8, 1, 0, 1",
+                           tag, AFE_IBIAS, CPF_TRIM, BTRIM_P, BTRIM_N, DWA_EN));
+        if (AFE_RST !== 1'b1) fail($sformatf("%s: AFE_RST %b, held after a reset", tag, AFE_RST));
+    endtask
+
     // ------------------------------------------------------------------ the test
     logic [7:0] v;
     real t_start_tick, t0, t1;
@@ -771,6 +796,7 @@ module tb_top_r14;
         if (n_release != 3) fail($sformatf("the first CMP_STROBE %0d MCLK after the RESET_N release, expected 3 (two synchronizer flops and the strobe's register)", n_release));
         prev_tick = 1'b0;
         ana_q = ana;
+        check_reset_pins("after RESET_N");
 
         // ---------------- A: registers
         phase = "A";
@@ -1148,6 +1174,7 @@ module tb_top_r14;
             if (n_chop1_edge <= tc0 || ((n_chop1_edge - tc0) % 4096) != 0)
                 fail($sformatf("SOFT_RESET moved CHOP1: an edge %0d MCLK after the one before it", n_chop1_edge - tc0));
         end
+        check_reset_pins("after SOFT_RESET");
         rt_read_expect(7'h06, 8'h01, "ERR after SOFT_RESET (RESET_FLAG)");
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM after SOFT_RESET");
         rt_read_expect(7'h05, 8'h00, "FIFO level after SOFT_RESET");
@@ -1896,8 +1923,10 @@ module tb_top_r14;
             r14_write(7'h07, 8'h01);
             r14_read(7'h03, st);
             if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT after clearing OVERRUN", st));
-            // an overload on the inputs 100..119 of an output interval: OVL_NOW in STATUS and in the empty word is the
-            // detector's (1 during, 0 sixty frames after, in the same interval), DFLAG.OVL is set
+            // an overload from the input 100 of an output interval to the input 120 or the end of the STATUS read in it,
+            // whichever is later: OVL_NOW in STATUS and in the empty word is the detector's (1 during, 0 sixty frames
+            // after, in the same interval), DFLAG.OVL is set (audit round 10: the release waited for the input 120
+            // exactly, and a 3-byte read ending at about the input 123 pushed the checks into the next interval)
             k = 0;
             while (!(dut.u_cic.dcnt == 10'd100 && dut.cycle > 5'd3 && dut.cycle < 5'd16) && k < 80000) begin @(posedge MCLK); k++; end
             seq2 = dut.seq_cnt;                         // the checks below lie in this output interval
@@ -1905,7 +1934,7 @@ module tb_top_r14;
             repeat (10 * 32) @(posedge MCLK);
             r14_read(7'h03, st);
             if (st[1] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h without OVL_NOW during an overload", st));
-            while (!(dut.u_cic.dcnt == 10'd120 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+            while (!(dut.u_cic.dcnt >= 10'd120 && dut.u_cic.dcnt < 10'd900 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
             ovl_force = 1'b0;
             repeat (60 * 32) @(posedge MCLK);
             r14_read(7'h03, st);
@@ -2315,6 +2344,47 @@ module tb_top_r14;
             wait_state(4'd5, 3000.0, "V9 FILL");
             r14_cmd(8'h33); wait_state(4'd7, 50.0, "V9 PRE after APPLY in FILL");
             expect_err_exact(8'h00, "V9 APPLY in FILL");
+            // V10 (audit round 10, auditor C: V took ALIGN's and FILL's APPLY_NR with T_ELEC > 0 only, and no refusal
+            // in PRE or PULSE): with T_ELEC = 0, APPLY_NR in ALIGN applies and stays in ALIGN (its clear still to come),
+            // in FILL applies and returns to ALIGN (the CIC cleared again); APPLY_NR in PRE and APPLY in PULSE are refused
+            // with STATE_ERR only, the state going on (T_PRE 10, 78 us, so that a command written after PRE began is
+            // taken in PRE)
+            begin
+                bit done_a, done_f;
+                done_a = 1'b0; done_f = 1'b0; tries = 0;
+                while (!(done_a && done_f) && tries < 8) begin
+                    tries = tries + 1;
+                    while (!(dut.seq_state === 4'd4 || dut.seq_state === 4'd5)) @(posedge MCLK);
+                    if (dut.seq_state === 4'd4 && !done_a && dut.u_cic.dcnt < 10'd960) begin
+                        m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+                        expect_err_exact(8'h00, "V10 APPLY_NR in ALIGN (T_ELEC 0)");
+                        if (OFM !== m) fail($sformatf("V10: OFM %0d after APPLY_NR in ALIGN, expected %0d", OFM, m));
+                        if (dut.seq_state !== 4'd4 && dut.seq_state !== 4'd5)
+                            fail($sformatf("V10: state %0d after APPLY_NR in ALIGN with T_ELEC 0 (ALIGN stays)", dut.seq_state));
+                        done_a = 1'b1;
+                    end else begin
+                        wait_state(4'd5, 1100.0, "V10 FILL");
+                        m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+                        expect_err_exact(8'h00, "V10 APPLY_NR in FILL (T_ELEC 0)");
+                        if (OFM !== m) fail($sformatf("V10: OFM %0d after APPLY_NR in FILL, expected %0d", OFM, m));
+                        if (dut.seq_state !== 4'd4 && dut.seq_state !== 4'd5)
+                            fail($sformatf("V10: state %0d after APPLY_NR in FILL with T_ELEC 0 (back to ALIGN)", dut.seq_state));
+                        done_f = 1'b1;
+                    end
+                end
+                if (!(done_a && done_f)) fail("V10 not exercised: ALIGN never long enough");
+            end
+            r14_write(7'h53, 8'd10);                    // T_PRE 78 us
+            r14_cmd(8'h33); wait_state(4'd7, 50.0, "V10 PRE");
+            expect_err_exact(8'h00, "V10 APPLY into PRE");
+            r14_cmd(8'h44); repeat (300) @(posedge MCLK);
+            expect_err_exact(8'h40, "V10 APPLY_NR in PRE: STATE_ERR only");
+            if (dut.seq_state !== 4'd7) fail($sformatf("V10: state %0d after the APPLY_NR refused in PRE (PRE goes on)", dut.seq_state));
+            wait_state(4'd8, 200.0, "V10 PULSE");
+            r14_cmd(8'h33); repeat (300) @(posedge MCLK);
+            expect_err_exact(8'h40, "V10 APPLY in PULSE: STATE_ERR only");
+            if (dut.seq_state !== 4'd8) fail($sformatf("V10: state %0d after the APPLY refused in PULSE (PULSE goes on)", dut.seq_state));
+            r14_write(7'h53, 8'd3);
             r14_cmd(8'h22);
             wait_state(4'd0, 50.0, "V IDLE");
             r14_write(7'h21, 8'h00); r14_write(7'h22, 8'h00); r14_cmd(8'h33);
@@ -2343,6 +2413,74 @@ module tb_top_r14;
             end
         end
         $display("K  SEQ wraps (errors %0d)", errors);
+
+        // ---------------- W: a reset released inside a frame (audit round 10, auditor B). The frame is ignored up to
+        // its CS_N rise: MISO_OE stays off, nothing is committed, the chip keeps its reset values. With CRC on, the write
+        // [0x21, 0x23, crc] taken from its second byte is [0x23, crc]: with CRC off (every reset clears CRC_EN) a 2-byte
+        // write of AFE_IBIAS; the FLUSH [0x10, 0x55, crc] so taken is a write of IF_CFG (CRC_EN without a CRC). RESET_N
+        // falls with CS_N and is released at 48 points, every half SCLK period of the 24 bits (W1, W2). W3: a SOFT_RESET
+        // whose control reset ends inside the next frame (the host's 1 us rule broken on purpose). After K: the golden
+        // log is off, and RESET_N restarts SEQ.
+        phase = "W";
+        begin
+            logic [7:0] fr [0:1][0:2];
+            logic [7:0] rv;
+            real t_rel, save_idle;
+            fr[0][0] = 8'h21; fr[0][1] = 8'h23; fr[1][0] = 8'h10; fr[1][1] = 8'h55;
+            for (int f = 0; f < 2; f++) fr[f][2] = tb_crc8_update(tb_crc8_update(8'h00, fr[f][0]), fr[f][1]);
+            for (int f = 0; f < 3; f++) begin
+                for (int k = 0; k < (f < 2 ? 48 : 1); k++) begin
+                    bfm_crc_en = 1'b0;
+                    r14_write(7'h55, 8'h01);
+                    bfm_crc_en = 1'b1;
+                    for (int i = 0; i < 3; i++) spi_tx[i] = fr[f < 2 ? f : 0][i];
+                    if (f == 2) begin                   // W3: SOFT_RESET, the next frame 150 ns after its CS_N rise
+                        save_idle = spi_tidle;
+                        spi_tidle = 150.0;
+                        r14_cmd(8'hA5);
+                        spi_tidle = save_idle;
+                        for (int i = 0; i < 3; i++) spi_tx[i] = fr[0][i];
+                    end
+                    w_we = 0; w_oe = 0; w_on = 1'b1;
+                    spi_chk_hdr = 1'b0;                 // the chip ignores this frame: no STATUS
+                    t_rel = spi_tcss + (spi_high + spi_low) * k / 2.0 + 10.0;
+                    CS_N = 1'b0;
+                    MOSI = spi_bit(0, 3);
+                    if (f < 2) begin
+                        RESET_N = 1'b0;
+                        fork begin #(t_rel); RESET_N = 1'b1; end join_none
+                    end
+                    #(spi_tcss);
+                    for (int n = 0; n < 24; n++) begin
+                        SCLK = 1'b1;
+                        #(spi_high);
+                        SCLK = 1'b0;
+                        MOSI = (n + 1 < 24) ? spi_bit(n + 1, 3) : 1'b0;
+                        if (n + 1 < 24) #(spi_low);
+                    end
+                    #(spi_tcsh);
+                    CS_N = 1'b1;
+                    repeat (12) @(posedge MCLK);
+                    w_on = 1'b0;
+                    spi_chk_hdr = 1'b1;
+                    check_reset_pins($sformatf("W%0d release %0d", f + 1, k));
+                    if (w_we != 0 || w_oe != 0)
+                        fail($sformatf("W%0d release %0d: %0d commits, MISO_OE on in %0d MCLK of a frame running at the release",
+                                       f + 1, k, w_we, w_oe));
+                    bfm_crc_en = 1'b0;                  // the reset cleared CRC_EN
+                    r14_read(7'h23, rv);
+                    if (rv !== 8'h03) fail($sformatf("W%0d release %0d: AFE_IBIAS 0x%02h, expected its reset value 0x03", f + 1, k, rv));
+                    r14_read(7'h21, rv);
+                    if (rv !== 8'h00) fail($sformatf("W%0d release %0d: OFF_M_L 0x%02h, expected 0x00", f + 1, k, rv));
+                    r14_read(7'h55, rv);
+                    if (rv !== 8'h00) fail($sformatf("W%0d release %0d: IF_CFG 0x%02h, expected 0x00", f + 1, k, rv));
+                    r14_read(7'h06, rv);
+                    if (rv !== 8'h01) fail($sformatf("W%0d release %0d: ERR 0x%02h, expected RESET_FLAG only", f + 1, k, rv));
+                    r14_write(7'h06, rv);
+                end
+            end
+        end
+        $display("W  a reset released inside a frame: the frame ignored, nothing committed (errors %0d)", errors);
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
 
         $fclose(flog);

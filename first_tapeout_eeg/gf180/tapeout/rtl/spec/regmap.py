@@ -153,6 +153,52 @@ PIN_OF_CONTROL = {"CHOP_EN": "CHOP_EN", "OFM[9:8]": "OFM", "OFM[7:0]": "OFM", "O
                   "TEST_CFG[3:0]": "TEST_CFG", "TEST_CFG[5]": "TEST_CFG"}
 
 
+# The reset value of every writable field, written from the requirements and not from REGS (audit round 10, auditor C:
+# a one-character edit of a test control's reset - CHOP_STOP 1 stops the chopper from power-up, ADC_ZERO 1 shorts the
+# ADC's input - passed every check, test and self-test, because the generated tests and the pin monitor follow the map)
+REQUIRED_RESET = dict(
+    ALERT_MASK=0xFF, ALERT_MASK_D=0x3,                    # every flag raises ALERT (REG-05)
+    M_H=0, M_L=0, SIGN=0, RANGE=0,                        # the offset DAC off (range 0) from power-up (5.4, step 9)
+    AFE_IBIAS=3, CPF_TRIM=8, BTRIM_N=0, BTRIM_P=1, CHOP_FAST=1, DWA_EN=1, CHOP1_RATE=3, BLANK_LEN=7,   # REG-05
+    T_WARM=5, T_ELEC=0, T_REC=32, T_PRE=3, T_RST=13,      # SEQ-02, SEQ-03, SEQ-05 (5 ms, 0, 250 us, 23.4 us, 101.6 us)
+    DRDY_MODE=0, CRC_EN=0,                                # DAT-04 (level), SPI-05 (off)
+    ATP_EN=0, ATP_SEL=0, CHOP_STOP=0, ADC_ZERO=0, DBG_SEL=0, RAW_EN=0,   # the test settings off (ANA-05, REG-08)
+    RESET_FLAG=1, CMD_ERR=0, STATE_ERR=0, CFG_ERR=0, RANGE_ERR=0, ADDR_ERR=0, CRC_ERR=0, FRAME_ERR=0,   # FLG-02
+    OVL=0, OVERRUN=0, CMD=0, KEY=0,
+    # read-only, after a reset: STATUS's fixed bits (SPI-03), ALERT from RESET_FLAG (FLG-02) under the default masks,
+    # AFE_RST held (SEQ-13), IDLE, no command pending, no data (the FIFO empty)
+    MARK1=1, MARK0=0, ALERT=1, CMD_PENDING=0, READY=0, DATA=0, OVL_NOW=0, AFE_RST=1, STATE=0, LEVEL=0)
+ACCESS_CLASSES = {"RO": ("ro",), "W1C": ("w1c",), "RW": ("apply", "imm"), "WO": ("cmd", "imm")}
+# the read-only fields the requirements and the spec name (with REQUIRED_RESET's fields: every field of the map)
+REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", "SAMPLE"}
+# addresses and bits the requirements name (the host procedure 5.4 and its examples, SPI-03): the host relies on them
+FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "ERR": 0x06, "DFLAG": 0x07, "ALERT_MASK": 0x08,
+              "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51,
+              "IF_CFG": 0x55}
+FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1}
+# REG-01's regions (stated with these ranges in the requirements): the kind of a register from its fields
+REGIONS = {"status": range(0x00, 0x10), "command": range(0x10, 0x20), "settings": range(0x20, 0x40),
+           "data": range(0x40, 0x41), "timers": range(0x50, 0x60), "test": range(0x60, 0x70)}
+
+
+def region_of(n, acc, lock, fields):
+    """REG-01: identification and status (read-only, W1C, and the ALERT masks of that status), the command register
+    and the test key, the settings (shadows applied at a tick), the data window, the timers and the interface, the
+    test registers (locked)"""
+    cls = {f["cls"] for f in fields}
+    if lock:
+        return "test"
+    if n == "SAMPLE":
+        return "data"
+    if cls & {"cmd"} or n == "TEST_KEY":
+        return "command"
+    if cls & {"apply"}:
+        return "settings"
+    if cls <= {"ro", "w1c"} or n.startswith("ALERT_MASK"):
+        return "status"
+    return "timers"
+
+
 def pins_from_active(ac):
     """The analog control pins for the active settings ac (field name -> value; DBG_SEL from the DEBUG register,
     which takes effect at once). OFM / OFS are driven 0 with the DAC off; OFEN is the range's thermometer; CHOP_BLANK
@@ -165,9 +211,15 @@ def pins_from_active(ac):
                 AFE_IBIAS=ac["AFE_IBIAS"], CPF_TRIM=ac["CPF_TRIM"], BTRIM_P=ac["BTRIM_P"], BTRIM_N=ac["BTRIM_N"],
                 DWA_EN=ac["DWA_EN"], CHOP_EN=1 - ac["CHOP_STOP"],
                 TEST_CFG=(ac["DBG_SEL"] << 6) | (ac["ADC_ZERO"] << 5) | (ac["ATP_EN"] << 4) | ac["ATP_SEL"],
-                BLANK_W=(BLANK_WITH_DAC if dac else ac["BLANK_LEN"]) + 1, BLANK_HELD=ac["ADC_ZERO"],
+                BLANK_W=blank_w(BLANK_WITH_DAC if dac else ac["BLANK_LEN"]), BLANK_HELD=ac["ADC_ZERO"],
                 CHOP_HALF=128 if ac["CHOP_FAST"] else 256,
                 CHOP1_HALF=0 if c1 == 0 else FS.TIMING["chop1_periods_frames"][c1 - 1] * FS.FRAME // 2)
+
+
+def blank_w(length):
+    """CHOP_BLANK's width in MCLK for a blanking length: length + 1, and no pulse for 0 (eeg_clkgen; 0 is not legal,
+    REG-06; audit round 10: the model gave a 1-MCLK pulse)"""
+    return length + 1 if length else 0
 
 
 def guarded_addrs():
@@ -240,6 +292,63 @@ def check(verbose=True):
                 errs.append(f"{n}.{f['name']}: reset value {f['reset']} is not among the legal values")
             if f["legal"] is not None and any(v >= 1 << width for v in f["legal"]):
                 errs.append(f"{n}.{f['name']}: a legal value does not fit the field")
+    names_all = {f["name"] for *_, f in all_fields()}
+    for nm in sorted((set(REQUIRED_RESET) | REQUIRED_RO) - names_all):
+        errs.append(f"{nm}: a field the requirements name is missing from the map")
+    for nm in sorted(names_all - set(REQUIRED_RESET) - REQUIRED_RO):
+        if next(f for *_, f in all_fields() if f["name"] == nm)["cls"] == "ro":
+            errs.append(f"{nm}: a read-only field the requirements do not name")
+    for a, n, acc, lock, fields, _ in REGS:              # audit round 10: addresses, bits, regions, locks, write-only
+        if n in FIXED_ADDR and a != FIXED_ADDR[n]:
+            errs.append(f"{n} at 0x{a:02X}: the host procedure names it at 0x{FIXED_ADDR[n]:02X}")
+        rg = region_of(n, acc, lock, fields)
+        if a not in REGIONS[rg]:
+            errs.append(f"{n} at 0x{a:02X}: outside the {rg} region of REG-01 (0x{REGIONS[rg][0]:02X}-0x{REGIONS[rg][-1]:02X})")
+        if bool(lock) != (a in REGIONS["test"]):
+            errs.append(f"{n}: lock {lock} at 0x{a:02X} (REG-08: exactly the test registers, 0x60-0x6F, are locked)")
+        if (acc == "WO") != (n in ("COMMAND", "TEST_KEY")):
+            errs.append(f"{n}: access {acc}; only the command register and the test key are write-only")
+        for f in fields:
+            if (f["cls"] == "cmd") != (n == "COMMAND"):
+                errs.append(f"{n}.{f['name']}: class {f['cls']}; the class cmd is the command register's alone")
+            if f["name"] in FIXED_BITS and f["lsb"] != FIXED_BITS[f["name"]]:
+                errs.append(f"{n}.{f['name']}: at bit {f['lsb']}, the requirements read it at bit {FIXED_BITS[f['name']]}")
+    for a, n, acc, lock, fields, _ in REGS:              # audit round 10: every writable reset as the requirements give
+        for f in fields:
+            if f["cls"] not in ACCESS_CLASSES.get(acc, ()):
+                errs.append(f"{n}.{f['name']}: access {acc} with class {f['cls']} (RO: ro; W1C: w1c; RW: apply or imm; "
+                            f"WO: cmd or imm)")
+            if f["cls"] == "ro":
+                if f["name"] in REQUIRED_RESET and f["reset"] != REQUIRED_RESET[f["name"]]:
+                    errs.append(f"{n}.{f['name']}: reads {f['reset']} after a reset, where the requirements give "
+                                f"{REQUIRED_RESET[f['name']]} (read-only, REQUIRED_RESET)")
+                continue
+            if f["name"] not in REQUIRED_RESET:
+                errs.append(f"{n}.{f['name']}: a writable field without a reset value stated from the requirements "
+                            f"(REQUIRED_RESET)")
+            elif f["reset"] != REQUIRED_RESET[f["name"]]:
+                errs.append(f"{n}.{f['name']}: reset value {f['reset']}, but the requirements give "
+                            f"{REQUIRED_RESET[f['name']]} (REQUIRED_RESET)")
+            for v in map(int, re.findall(r"(\d+) は RANGE_ERR", f["desc"])):
+                if f["legal"] is not None and v in f["legal"]:
+                    errs.append(f"{n}.{f['name']}: {v} is legal, but the field's text says {v} gives RANGE_ERR")
+    fd = {f["name"]: f for *_, f in all_fields()}
+    if 0 in (fd["BLANK_LEN"]["legal"] or []):
+        errs.append("BLANK_LEN 0 is legal (REG-06: it must give RANGE_ERR; CDA and CDB would overlap at the edges)")
+    if sorted(fd["RANGE"]["legal"]) != sorted(RANGE_MAX_M):
+        errs.append(f"OFF_CTRL.RANGE legal {fd['RANGE']['legal']}, but the ranges of RANGE_MAX_M are {sorted(RANGE_MAX_M)}")
+    if sorted(fd["SIGN"]["legal"]) != [0, 1]:
+        errs.append(f"OFF_CTRL.SIGN legal {fd['SIGN']['legal']}: the offset needs both signs")
+    if not (fd["M_H"]["legal"] == list(range(1 << (fd["M_H"]["msb"] - fd["M_H"]["lsb"] + 1))) and
+            fd["M_L"]["legal"] == list(range(256)) and
+            max(fd["M_H"]["legal"]) * 256 + max(fd["M_L"]["legal"]) >= max(RANGE_MAX_M.values())):
+        errs.append(f"M: the legal values of M_H and M_L do not reach every M up to {max(RANGE_MAX_M.values())}")
+    regs_by = {n: a for a, n, *_ in REGS}
+    for n in regs_by:                                    # REG-04: over 8 bits, consecutive addresses, the high byte first
+        if n.endswith("_H") and n[:-2] + "_L" in regs_by and regs_by[n[:-2] + "_L"] != regs_by[n] + 1:
+            errs.append(f"{n} and {n[:-2]}_L: a field over 8 bits not at consecutive addresses, the high byte first (REG-04)")
+    if 0x56 in regs_by.values():
+        errs.append("address 0x56 is defined: step 9's mode probe reads it, after IF_CFG, as undefined (0x00)")
     rec = {f["name"]: f["reset"] for *_, f in all_fields()}
     for k, v in dict(AFE_IBIAS=3, BTRIM_P=1, BTRIM_N=0, BLANK_LEN=7, CHOP_FAST=1, CHOP1_RATE=3, DWA_EN=1).items():
         if rec.get(k) != v:
@@ -262,8 +371,12 @@ def check(verbose=True):
     for pin, s_ in src.items():
         if pin not in ANALOG_CONTROLS and pin not in DIGITAL_ONLY:
             errs.append(f"{pin}: a pin that is in neither list of controls")
+    for pin in sorted(DIGITAL_ONLY):                   # audit round 10: one writable source each, as the analog ones
+        s_ = src.get(pin, [])
+        if len(s_) != 1 or s_[0][2] == "ro":
+            errs.append(f"{pin}: sources {s_} (a digital-only control needs exactly one, writable)")
     # timers against the analog minimums (fsm_spec.TIMING) on both tick grids
-    unit = {"T_REC": 8, "T_PRE": 8, "T_RST": 8, "T_WARM": 1024}                   # frames per register step
+    unit = {"T_REC": 8, "T_PRE": 8, "T_RST": 8, "T_WARM": 1024, "T_ELEC": 1024}   # frames per register step
     frame_s = FS.FRAME / FS.MCLK
     for tn, u in unit.items():
         f = next(f for *_, f in all_fields() if f["name"] == tn)
@@ -343,7 +456,7 @@ def check(verbose=True):
                    AFE_IBIAS=ac["AFE_IBIAS"], CPF_TRIM=ac["CPF_TRIM"], BTRIM_P=ac["BTRIM_P"], BTRIM_N=ac["BTRIM_N"],
                    DWA_EN=ac["DWA_EN"], CHOP_EN=1 - cs,
                    TEST_CFG=ac["DBG_SEL"] * 64 + az * 32 + ac["ATP_EN"] * 16 + ac["ATP_SEL"],
-                   BLANK_W=len([31] + list(range(win))), BLANK_HELD=az,
+                   BLANK_W=len([31] + list(range(win))) if win else 0, BLANK_HELD=az,
                    CHOP_HALF=int(FS.MCLK) // (128000 if cf else 64000) // 2,
                    CHOP1_HALF=0 if c1 == 0 else (32 * 1024 >> (c1 - 1)) // 2)
         got = pins_from_active(ac)
@@ -575,6 +688,7 @@ def selftest():
     message it is written for (SELFTEST_EXPECT); every message of check() must be the expected message of a mutation,
     and a crash of check() is no detection (audit round 9, auditor C)."""
     import copy
+    import shutil
     import tempfile
     g = globals()
     keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "PIN_OF_CONTROL",
@@ -705,6 +819,77 @@ def selftest():
     def m_codes_other():
         g["FULLSCALE_SHA256"] = {k: "0" * 64 for k in keep["FULLSCALE_SHA256"]}
 
+    # audit round 10, auditor C: the reset values and field rules
+    def m_chopstop_reset():
+        fld("TEST_CTRL", "CHOP_STOP")["reset"] = 1
+
+    def m_adczero_reset():
+        fld("TEST_CTRL", "ADC_ZERO")["reset"] = 1
+
+    def m_no_default():
+        next(r for r in g["REGS"] if r[1] == "IF_CFG")[4].append(F("NEW_BIT", 2, 2, 0, [0, 1], "imm", "x"))
+
+    def m_access_class():
+        fld("ALERT_MASK", "ALERT_MASK")["cls"] = "ro"
+
+    def m_range_legal():
+        fld("OFF_CTRL", "RANGE")["legal"] = rng(0, 5)
+
+    def m_sign_legal():
+        fld("OFF_CTRL", "SIGN")["legal"] = [0]
+
+    def m_mh_legal():
+        fld("OFF_M_H", "M_H")["legal"] = [0, 1, 2]
+
+    def m_hilo():
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "ODR_L")
+        r = list(g["REGS"][i]); r[0] = 0x0D; g["REGS"][i] = tuple(r)
+
+    def m_define56():
+        g["REGS"].append((0x56, "EXTRA56", "RO", False, [F("X", 7, 0, 0, [0], "ro", "x")], "x"))
+
+    def m_blank0():
+        fld("BLANK", "BLANK_LEN")["legal"] = rng(0, 15)
+
+    def m_telec_max():
+        f = fld("T_ELEC", "T_ELEC")
+        f["legal"] = [v for v in f["legal"] if v != max(f["legal"])]
+
+    def m_drop_field():
+        r = next(r for r in g["REGS"] if r[1] == "ERR")
+        r[4][:] = [f for f in r[4] if f["name"] != "CMD_ERR"]
+
+    def m_extra_ro():
+        next(r for r in g["REGS"] if r[1] == "CAPS")[4].append(F("SPARE", 7, 7, 0, [0], "ro", "x"))
+
+    def m_move_status():
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "STATUS")
+        r = list(g["REGS"][i]); r[0] = 0x0D; g["REGS"][i] = tuple(r)
+
+    def m_region():
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "VERSION")
+        r = list(g["REGS"][i]); r[0] = 0x41; g["REGS"][i] = tuple(r)
+
+    def m_lock_mask():
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "ALERT_MASK")
+        r = list(g["REGS"][i]); r[3] = True; g["REGS"][i] = tuple(r)
+
+    def m_wo_timer():
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "T_WARM")
+        r = list(g["REGS"][i]); r[2] = "WO"; g["REGS"][i] = tuple(r)
+
+    def m_cmd_class():
+        fld("TEST_KEY", "KEY")["cls"] = "cmd"
+
+    def m_crc_bit():
+        fld("IF_CFG", "CRC_EN").update(msb=2, lsb=2)
+
+    def m_digital_pin():
+        fld("ID", "ID")["pin"] = "TEST_CFG[7:6]"
+
+    def m_status_reset():
+        fld("STATUS", "ALERT")["reset"] = 0
+
     def m_cfg_top():
         f0 = keep_fn["cfg_ok"]
         g["cfg_ok"] = lambda sh: f0(sh) or (sh["RANGE"] >= 1 and sh["M"] == g["RANGE_MAX_M"][sh["RANGE"]] + 1)
@@ -725,7 +910,19 @@ def selftest():
             ("BLANK_WITH_DAC がフレームの最長のブランキングでない", m_blank_dac),
             ("要件定義が読めない", m_req_missing), ("詳細仕様に過負荷の規則の文がない", m_doc_no_rule),
             ("nr_ok の模型にない反映の設定", m_extra_apply), ("全振幅の符号の列がない", m_codes_missing),
-            ("全振幅の符号の列が 11/19 のものでない", m_codes_other), ("cfg_ok が範囲の上限 ＋ 1 を受け付ける", m_cfg_top)]
+            ("全振幅の符号の列が 11/19 のものでない", m_codes_other), ("cfg_ok が範囲の上限 ＋ 1 を受け付ける", m_cfg_top),
+            ("CHOP_STOP の既定値が 1（電源投入からチョッパが止まる）", m_chopstop_reset),
+            ("ADC_ZERO の既定値が 1（電源投入から ADC の入力が短絡）", m_adczero_reset),
+            ("既定値の定めのない書き込み可能なフィールド", m_no_default), ("RW のレジスタに読み出し専用の区分", m_access_class),
+            ("RANGE の合法な値に 5", m_range_legal), ("SIGN の合法な値が 0 のみ", m_sign_legal),
+            ("M_H の合法な値が 0〜2（M ≤ 767）", m_mh_legal), ("ODR_L が ODR_H の次のアドレスでない", m_hilo),
+            ("0x56 を定義する（手順 9 のモードの判定が未定義として読む）", m_define56),
+            ("BLANK_LEN の 0 を合法とする", m_blank0), ("T_ELEC の最大が TIMING と合わない", m_telec_max),
+            ("ERR から CMD_ERR を除く", m_drop_field), ("要件にない読み出し専用のフィールド", m_extra_ro),
+            ("STATUS を 0x0D に移す（手順が 0x03 として読む）", m_move_status), ("VERSION をデータの窓の区画へ", m_region),
+            ("ALERT_MASK を施錠する", m_lock_mask), ("T_WARM を書き込み専用に", m_wo_timer),
+            ("試験の鍵を命令の区分に", m_cmd_class), ("CRC_EN を bit 2 に（手順 9 は bit 0 を読む）", m_crc_bit),
+            ("読み出し専用の ID を DBG_SEL の端子の出どころに", m_digital_pin), ("STATUS.ALERT の既定値を 0", m_status_reset)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -764,6 +961,7 @@ def selftest():
         if t not in expected:
             problems.append(f"line {ln}: no mutation expects the message {t!r}")
     e = check(verbose=False)
+    shutil.rmtree(tmp, ignore_errors=True)               # the self-test's own folder (audit round 10)
     for p_ in problems:
         print("PROBLEM  " + p_)
     print(f"{n_det} of {len(results)} mutations detected by their expected messages; {len(msgs)} messages, "
@@ -812,6 +1010,27 @@ SELFTEST_EXPECT = {
     '全振幅の符号の列がない': ('.codes not found: the overload false-alarm check cannot run',),
     '全振幅の符号の列が 11/19 のものでない': ('.codes is not the stream checked on 11/19 (SHA-256',),
     'cfg_ok が範囲の上限 ＋ 1 を受け付ける': ('cfg_ok wrong at the top of range',),
+    'CHOP_STOP の既定値が 1（電源投入からチョッパが止まる）': (', but the requirements give',),
+    'ADC_ZERO の既定値が 1（電源投入から ADC の入力が短絡）': (', but the requirements give',),
+    '既定値の定めのない書き込み可能なフィールド': (': a writable field without a reset value stated from the requirements (REQUIRED_RESET)',),
+    'RW のレジスタに読み出し専用の区分': ('(RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)',),
+    'RANGE の合法な値に 5': (', but the ranges of RANGE_MAX_M are',),
+    'SIGN の合法な値が 0 のみ': (': the offset needs both signs',),
+    'M_H の合法な値が 0〜2（M ≤ 767）': ('M: the legal values of M_H and M_L do not reach every M up to',),
+    'ODR_L が ODR_H の次のアドレスでない': ('_L: a field over 8 bits not at consecutive addresses, the high byte first (REG-04)',),
+    '0x56 を定義する（手順 9 のモードの判定が未定義として読む）': ("address 0x56 is defined: step 9's mode probe reads it, after IF_CFG, as undefined (0x00)",),
+    'BLANK_LEN の 0 を合法とする': ('BLANK_LEN 0 is legal (REG-06: it must give RANGE_ERR; CDA and CDB would overlap at the edges)', "is legal, but the field's text says",),
+    'T_ELEC の最大が TIMING と合わない': (': the register reaches',),
+    'ERR から CMD_ERR を除く': (': a field the requirements name is missing from the map',),
+    '要件にない読み出し専用のフィールド': (': a read-only field the requirements do not name',),
+    'STATUS を 0x0D に移す（手順が 0x03 として読む）': (': the host procedure names it at 0x',),
+    'VERSION をデータの窓の区画へ': ('region of REG-01 (0x',),
+    'ALERT_MASK を施錠する': ('(REG-08: exactly the test registers, 0x60-0x6F, are locked)',),
+    'T_WARM を書き込み専用に': ('; only the command register and the test key are write-only',),
+    '試験の鍵を命令の区分に': ("; the class cmd is the command register's alone",),
+    'CRC_EN を bit 2 に（手順 9 は bit 0 を読む）': (', the requirements read it at bit',),
+    '読み出し専用の ID を DBG_SEL の端子の出どころに': ('(a digital-only control needs exactly one, writable)',),
+    'STATUS.ALERT の既定値を 0': ('after a reset, where the requirements give',),
 }
 
 

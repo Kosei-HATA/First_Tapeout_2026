@@ -18,6 +18,10 @@
 //     header-only read, the status poll, stays legal); an empty frame (no SCLK) is no error.
 // Synchronizers as in rtl/eeg_spi_slave.sv (MCLK oversampling, SCLK <= 2 MHz). MISO_OE = ~CS_N (pad) & the
 // synchronized CS (turns on 1..2 MCLK after the fall, off at once at the rise).
+// A frame that is running when a reset ends (RESET_N or SOFT_RESET, CS_N low at the release) is ignored up to its
+// CS_N rise: no edge, no bit, MISO not driven, nothing committed (audit round 10, auditor B: the synchronizer's reset
+// value "CS_N high" made the release look like a CS_N fall, and with CRC_EN cleared by the reset the tail
+// [data, crc] of a CRC write was committed as a 2-byte write). The SPI takes frames again once it has seen CS_N high.
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -53,21 +57,24 @@ module eeg_spi_slave (
     // ---------------- synchronizers and edges (as rtl/eeg_spi_slave.sv)
     logic [2:0] sclk_q, cs_q;
     logic [1:0] mosi_q;
+    logic       armed;                               // CS_N seen high (synchronized) since the reset
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             sclk_q <= 3'b000;
-            cs_q   <= 3'b111;
+            cs_q   <= 3'b000;                        // no CS_N fall can come from the reset values
             mosi_q <= 2'b00;
+            armed  <= 1'b0;
         end else begin
             sclk_q <= {sclk_q[1:0], sclk};
             cs_q   <= {cs_q[1:0], cs_n};
             mosi_q <= {mosi_q[0], mosi};
+            if (cs_q[1]) armed <= 1'b1;
         end
     end
     logic cs_act, cs_start, cs_end, sclk_rise, sclk_fall, mosi_s;
-    assign cs_act    = ~cs_q[1];
-    assign cs_start  = ~cs_q[1] &  cs_q[2];
-    assign cs_end    =  cs_q[1] & ~cs_q[2];
+    assign cs_act    = armed & ~cs_q[1];
+    assign cs_start  = armed & ~cs_q[1] &  cs_q[2];
+    assign cs_end    = armed &  cs_q[1] & ~cs_q[2];
     assign sclk_rise = cs_act &  sclk_q[1] & ~sclk_q[2];
     assign sclk_fall = cs_act & ~sclk_q[1] &  sclk_q[2];
     assign mosi_s    = mosi_q[1];

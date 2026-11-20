@@ -5,7 +5,8 @@
 // localparam real TMCLK. Every transfer checks that MISO's first byte carries STATUS's fixed bits (bit 7 = 1,
 // bit 6 = 0) and keeps it in spi_status.
 //
-// Tasks: spi_xfer(nbytes, extra_bits) raw; r14_write(addr, val); r14_read(addr, val); r14_cmd(code);
+// Tasks: spi_xfer(nbytes, extra_bits) raw; r14_write(addr, val); r14_read(addr, val) (3 bytes, CRC on or off);
+//        r14_cmd(code);
 //        r14_sample(sstat, seq, data, crc_ok) (8 bytes); bfm_crc_en mirrors IF_CFG.CRC_EN.
 // SCLK's high and low times are set apart (spi_high, spi_low); MISO and MISO_OE reach the master through the pad
 // delay SPI_TPAD (spec 3.1: about 15 ns), so the specification's minimum low time is checked with it. A write's MISO
@@ -89,7 +90,8 @@ task automatic r14_read(input logic [6:0] addr, output logic [7:0] val);
     spi_tx[0] = {1'b1, addr};
     spi_tx[1] = 8'h00;
     spi_tx[2] = 8'h00;
-    spi_xfer(bfm_crc_en ? 3 : 2, 0);
+    spi_xfer(3, 0);              // CRC off too: 3 bytes (the host procedure, spec 3.2; audit round 10: a 2-byte read
+                                 // whose R/W bit flips is a legal write, a 3-byte one an overlong write, FRAME_ERR)
     val = spi_rx[1];
     if (bfm_crc_en) begin
         c = tb_crc8_update(tb_crc8_update(8'h00, spi_tx[0]), val);
@@ -138,6 +140,15 @@ always @(miso_pin) begin                     // at the pin: a change while SCLK 
     end
 end
 always @(negedge CS_N) spi_t_csfall = $realtime;
+// STATUS's bit 7 (the fixed 1) on MISO at most 3 MCLK and the pad delay after CS_N falls (spec 3.1: 2 synchronizer
+// flops and the load at the next edge; audit round 10: STATUS one MCLK later passed every test). spi_chk_hdr: the
+// bench clears it for a frame the chip is meant to ignore (tb_top_r14's W).
+bit spi_chk_hdr = 1'b1;
+always @(negedge CS_N) begin
+    #(3.0 * TMCLK + SPI_TPAD + 1.0);
+    if (spi_chk_hdr && CS_N === 1'b0 && miso_pad !== 1'b1)
+        spi_err($sformatf("MISO %b at 3 MCLK and the pad delay after CS_N fell: STATUS's bit 7 not yet out", miso_pad));
+end
 always @(posedge CS_N) begin
     #0.001;
     if (MISO_OE !== 1'b0) spi_err("MISO_OE still high after CS_N rose");
@@ -145,7 +156,8 @@ end
 always @(posedge MISO_OE) begin
     if (CS_N !== 1'b0) spi_err("MISO_OE raised while CS_N is high");
     if ($realtime - spi_t_csfall > spi_oe_lat_max) spi_oe_lat_max = $realtime - spi_t_csfall;
-    if ($realtime - spi_t_csfall > 4.0 * TMCLK) spi_err("MISO_OE later than 4 MCLK after CS_N fell");
+    if ($realtime - spi_t_csfall > 2.0 * TMCLK + 0.5)       // spec 3.1: 1..2 MCLK (audit round 10: was 4 MCLK, and a
+        spi_err($sformatf("MISO_OE %0.1f ns after CS_N fell: later than 2 MCLK", $realtime - spi_t_csfall));  // flop more passed)
     if ($realtime - spi_t_csfall < 1.0 * TMCLK - 0.5)       // audit round 9: CS_N passes 2 synchronizer flops
         spi_err($sformatf("MISO_OE %0.1f ns after CS_N fell: earlier than 2 synchronizer flops", $realtime - spi_t_csfall));
 end

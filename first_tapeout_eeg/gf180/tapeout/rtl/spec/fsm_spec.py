@@ -662,6 +662,19 @@ def check_spi_props():
                     errs.append(f"SPI {s}/{e} [{b['guard']}]: the address advances without loading the next byte")
                 if "latch_addr" in b["actions"] and "not rw" not in b["guard"]:   # audit round 7
                     errs.append(f"SPI {s}/{e} [{b['guard']}]: the write address latched on a branch that is not a write")
+    # SPI-03: every frame starts with STATUS; a branch uses only conditions known at its event: none at the CS_N fall,
+    # and mid (a partial byte) only at the CS_N rise (audit round 10, auditor C: a CS_N fall loading STATUS for reads
+    # only, and BYTE branches that knew in advance that the frame would end inside a byte, passed every check)
+    csf = t.get(("IDLE", "CSF"))
+    for b in (csf if isinstance(csf, list) else []):
+        if "load_status" not in b["actions"] or b["next"] != "HDR":
+            errs.append(f"SPI IDLE/CSF [{b['guard']}]: a frame that does not start with STATUS in HDR (SPI-03)")
+    for (s, e), cell in t.items():
+        for b in (cell if isinstance(cell, list) else []):
+            v = set(guard_vars(b["guard"]))
+            if (e == "CSF" and v) or (e != "CSR" and "mid" in v):
+                errs.append(f"SPI {s}/{e} [{b['guard']}]: a condition not known at this event (none at the CS_N fall, "
+                            f"mid only at the CS_N rise)")
     done = ("RDONE", "SDONE", "WDONE")             # no bit after completion (a further bit leaves for OVF)
     for (s, e), cell in t.items():
         if not isinstance(cell, list):
@@ -798,7 +811,7 @@ def check_spi_frames():
         got = {a for a in acts if a in effects}
         if got != exp:
             errs.append(f"{tag}: effects {sorted(got)}, but spi_expect gives {sorted(exp)}")
-        if loads and not extra:
+        if loads:                                     # a partial last byte loads nothing more (audit round 10)
             if kind == "read":
                 d = acts.count("load_data") + acts.count("load_zero")
                 if d != loads["data"] or acts.count("load_crc") != loads["crc"]:
@@ -909,7 +922,8 @@ TIMING = dict(
     tick_cycle=24,
     rates={"128k": dict(period_frames=8, tick_frame=1), "64k": dict(period_frames=16, tick_frame=3)},
     timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 255 * 256 / MCLK),
-                T_PRE=(20e-6, 20e-6, 255 * 256 / MCLK), T_RST=(100e-6, 100e-6, 255 * 256 / MCLK)),
+                T_PRE=(20e-6, 20e-6, 255 * 256 / MCLK), T_RST=(100e-6, 100e-6, 255 * 256 / MCLK),
+                T_ELEC=(0.0, 0.0, 255e-3)),   # the electrode's wait: no analog minimum (audit round 10)
     # (analog minimum, nominal, the longest the register can give: 255 ms, 255 x 7.8125 us = 1.99 ms)
     decimation=1024, cic_order=3,
     chop1_periods_frames=[1024, 512, 256, 128, 64],    # 1, 2, 4, 8, 16 kHz full periods
@@ -998,7 +1012,8 @@ CHECKS = [
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
     f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
-    "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）",
+    "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
+    "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
@@ -1426,6 +1441,31 @@ def check_messages():
     return out
 
 
+def check_funcs_complete():
+    """CHECK_FUNCS is every function that reports violations: each module-level check_* function (but check_messages
+    and this one) and seq_properties, each reached from run_checks (audit round 10: a hand-written list could miss a new
+    check, whose messages would then be pinned by nothing)."""
+    import ast
+    import inspect
+    import textwrap
+    names = {n for n, f in globals().items() if callable(f) and getattr(f, "__module__", None) == __name__
+             and n.startswith("check_") and n not in ("check_messages", "check_funcs_complete")} | {"seq_properties"}
+    problems = [f"{n}: a check function not in CHECK_FUNCS" for n in sorted(names - set(CHECK_FUNCS))]
+    problems += [f"{n}: in CHECK_FUNCS but not a function of this module" for n in CHECK_FUNCS if n not in globals()]
+    calls, todo, seen = set(), ["run_checks"], set()
+    while todo:                                         # the functions reached from run_checks, transitively
+        n = todo.pop()
+        if n in seen or n not in globals() or not callable(globals()[n]):
+            continue
+        seen.add(n)
+        for c in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(globals()[n])))):
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name):
+                calls.add(c.func.id)
+                todo.append(c.func.id)
+    problems += [f"{n}: in CHECK_FUNCS but never called from run_checks" for n in CHECK_FUNCS if n not in calls]
+    return problems
+
+
 def refusal_mutations():
     """Audit round 9, auditor C: each consistent branch of APPLY / APPLY_NR refused with CFG_ERR, and each such cell
     refused whole with STATE_ERR (all passed every check before the command-outcome rules)."""
@@ -1582,6 +1622,10 @@ def selftest_runs():
         ("CRC 有効の読み出しでもアドレスを進める", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc", "addr_inc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])])),
         # audit round 9, auditor C
         ("RREG の CS_N の立ち上がりを起こり得ない（IMP）とする", lambda t: t.__setitem__(("RREG", "CSR"), IMP)),
+        # audit round 10, auditor C: STATUS in every frame, conditions known at their events
+        ("CS_N の立ち下がりで読み出しのときだけ STATUS を写す", lambda t: t.__setitem__(("IDLE", "CSF"), [B("rw", ["load_status"], "HDR"), B("not rw", [], "HDR")])),
+        ("CS_N の立ち下がりで STATUS を写さない", lambda t: t.__setitem__(("IDLE", "CSF"), [B(ALWAYS, [], "HDR")])),
+        ("連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en and not mid", ["addr_inc", "load_data"]), B("not crc_en and mid", ["addr_inc", "load_zero"])])),
         ("WDAT のバイトで FRAME_ERR を立てる", lambda t: [b.__setitem__("actions", b["actions"] + ["FRAME_ERR"]) for b in t[("WDAT", "BYTE")]]),
     ]
     global fifo_step
@@ -1699,7 +1743,8 @@ def selftest():
     results = selftest_runs()
     msgs = check_messages()
     texts = [m[2] for m in msgs]
-    problems = [f"{fn} line {ln}: a message without 12 fixed characters (it cannot be told apart)"
+    problems = check_funcs_complete()
+    problems += [f"{fn} line {ln}: a message without 12 fixed characters (it cannot be told apart)"
                 for fn, ln, t, _ in msgs if len(t) < 12]
     problems += [f"two check messages share the fixed text {t!r}" for t in sorted(set(texts)) if texts.count(t) > 1]
     problems += [f"{fn} line {ln}: the fixed text {t!r} also occurs in the message of {f2} line {l2}"
@@ -1872,6 +1917,9 @@ SELFTEST_EXPECT = {
     'サンプルの先頭バイトでレジスタのデータを載せる': ("frame loads register data or a read CRC onto MISO (a write's MISO is 0x00, a sample's bytes come from its copy)",),
     'CRC 有効の読み出しでもアドレスを進める': (']: the address advances without loading the next byte',),
     'RREG の CS_N の立ち上がりを起こり得ない（IMP）とする': (': no exit on CS_N rising',),
+    'CS_N の立ち下がりで読み出しのときだけ STATUS を写す': (']: a frame that does not start with STATUS in HDR (SPI-03)',),
+    'CS_N の立ち下がりで STATUS を写さない': (']: a frame that does not start with STATUS in HDR (SPI-03)',),
+    '連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）': (']: a condition not known at this event (none at the CS_N fall, mid only at the CS_N rise)',),
     'WDAT のバイトで FRAME_ERR を立てる': (']: FRAME_ERR other than at CS_N rising',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
     '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),

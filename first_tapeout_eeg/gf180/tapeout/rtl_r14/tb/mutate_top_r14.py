@@ -340,6 +340,18 @@ MUTATIONS = [
     ("RAW：語を cycle 0 で読み込む", "eeg_raw.sv", "if (cycle == 5'd31) begin", "if (cycle == 5'd0) begin"),
     ("シーケンサ：RECOVER の APPLY_NR を CFG_ERR で拒む", "eeg_seq.sv",
      "if (cfg_ok && nr_ok) begin", "if (cfg_ok && nr_ok && state != S_RECOVER) begin"),
+    # audit round 10, auditor B: a frame running at a reset's release (phase W)
+    ("SPI：CS_N の同期の初期値が High（解除のときのフレームを途中から拾う）", "eeg_spi_slave.sv",
+     "cs_q   <= 3'b000;                        // no CS_N fall", "cs_q   <= 3'b111;                        // no CS_N fall"),
+    ("SPI：リセットの解除のときのフレームで MISO を駆動する", "eeg_spi_slave.sv",
+     "assign cs_act    = armed & ~cs_q[1];", "assign cs_act    = ~cs_q[1];"),
+    # audit round 10, auditor C: the test controls' reset values (the pins after RESET_N and SOFT_RESET)
+    ("レジスタ：CHOP_STOP のリセット値が 1（電源投入からチョッパが止まる）", "eeg_regs.sv",
+     "s_cstop <= TEST_CTRL_CHOP_STOP_RST;             a_cstop <= TEST_CTRL_CHOP_STOP_RST;",
+     "s_cstop <= 1'b1;             a_cstop <= 1'b1;"),
+    ("レジスタ：ADC_ZERO のリセット値が 1（電源投入から ADC の入力が短絡）", "eeg_regs.sv",
+     "s_azero <= TEST_CTRL_ADC_ZERO_RST;              a_azero <= TEST_CTRL_ADC_ZERO_RST;",
+     "s_azero <= 1'b1;              a_azero <= 1'b1;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -422,8 +434,8 @@ FIFO_MUTATIONS = [
 
 
 # one flip-flop less on CS_N and SCLK (audit round 9: in the SPI and the structural groups)
-SYNC_OLD = '    assign cs_act    = ~cs_q[1];\n    assign cs_start  = ~cs_q[1] &  cs_q[2];\n    assign cs_end    =  cs_q[1] & ~cs_q[2];\n    assign sclk_rise = cs_act &  sclk_q[1] & ~sclk_q[2];\n    assign sclk_fall = cs_act & ~sclk_q[1] &  sclk_q[2];'
-SYNC_NEW = '    assign cs_act    = ~cs_q[0];\n    assign cs_start  = ~cs_q[0] &  cs_q[1];\n    assign cs_end    =  cs_q[0] & ~cs_q[1];\n    assign sclk_rise = cs_act &  sclk_q[0] & ~sclk_q[1];\n    assign sclk_fall = cs_act & ~sclk_q[0] &  sclk_q[1];'
+SYNC_OLD = '    assign cs_act    = armed & ~cs_q[1];\n    assign cs_start  = armed & ~cs_q[1] &  cs_q[2];\n    assign cs_end    = armed &  cs_q[1] & ~cs_q[2];\n    assign sclk_rise = cs_act &  sclk_q[1] & ~sclk_q[2];\n    assign sclk_fall = cs_act & ~sclk_q[1] &  sclk_q[2];'
+SYNC_NEW = '    assign cs_act    = armed & ~cs_q[0];\n    assign cs_start  = armed & ~cs_q[0] &  cs_q[1];\n    assign cs_end    = armed &  cs_q[0] & ~cs_q[1];\n    assign sclk_rise = cs_act &  sclk_q[0] & ~sclk_q[1];\n    assign sclk_fall = cs_act & ~sclk_q[0] &  sclk_q[1];'
 
 SPI_MUTATIONS = [
     ("（基準：変更なし）", None, None, None),
@@ -467,6 +479,15 @@ SPI_MUTATIONS = [
     # audit round 9, auditor C: one flip-flop less on CS_N and SCLK (MISO and MISO_OE one MCLK early: the BFM's lower
     # bounds on the latencies)
     ("SPI：CS_N と SCLK を 1 段で同期（MISO が 1 MCLK 早い）", "eeg_spi_slave.sv", SYNC_OLD, SYNC_NEW),
+    # audit round 10, auditor C: the start of a frame one MCLK late (the BFM's upper bounds: MISO_OE 2 MCLK, STATUS's
+    # bit 7 at 3 MCLK and the pad delay)
+    ("SPI：MISO_OE をもう 1 段遅く（CS_N の立ち下がりから 2〜3 MCLK）", "eeg_spi_slave.sv",
+     "assign miso_oe   = ~cs_n & cs_act;", "assign miso_oe   = ~cs_n & armed & ~cs_q[2];"),
+    ("SPI：STATUS を cs_start の 1 MCLK あとに載せる", "eeg_spi_slave.sv",
+     "                tx_sh   <= status_byte;                  // STATUS during the header byte\n            end else if (cs_end) begin",
+     "                tx_sh   <= 8'h00;                        // (mutant: STATUS one MCLK later)\n"
+     "            end else if (st == S_HDR && bit_cnt == 3'd0 && tx_sh == 8'h00 && !sclk_rise) begin\n"
+     "                tx_sh   <= status_byte;\n            end else if (cs_end) begin"),
 ]
 
 

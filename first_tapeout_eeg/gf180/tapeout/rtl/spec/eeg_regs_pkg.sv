@@ -55,6 +55,8 @@ package eeg_regs_pkg;
     localparam int VERSION_VERSION_LSB = 0;  localparam int VERSION_VERSION_W = 8;  localparam logic [7:0] VERSION_VERSION_RST = 8'd16;
     localparam int CAPS_FIFO_DEPTH_LSB = 0;  localparam int CAPS_FIFO_DEPTH_W = 4;  localparam logic [3:0] CAPS_FIFO_DEPTH_RST = 4'd8;
     localparam int CAPS_CRC_LSB = 4;  localparam int CAPS_CRC_W = 1;  localparam logic [0:0] CAPS_CRC_RST = 1'd1;
+    localparam int STATUS_MARK1_LSB = 7;  localparam int STATUS_MARK1_W = 1;  localparam logic [0:0] STATUS_MARK1_RST = 1'd1;
+    localparam int STATUS_MARK0_LSB = 6;  localparam int STATUS_MARK0_W = 1;  localparam logic [0:0] STATUS_MARK0_RST = 1'd0;
     localparam int STATUS_ALERT_LSB = 5;  localparam int STATUS_ALERT_W = 1;  localparam logic [0:0] STATUS_ALERT_RST = 1'd1;
     localparam int STATUS_CMD_PENDING_LSB = 4;  localparam int STATUS_CMD_PENDING_W = 1;  localparam logic [0:0] STATUS_CMD_PENDING_RST = 1'd0;
     localparam int STATUS_READY_LSB = 3;  localparam int STATUS_READY_W = 1;  localparam logic [0:0] STATUS_READY_RST = 1'd0;
@@ -133,6 +135,12 @@ package eeg_regs_pkg;
     localparam logic [1:0] DEBUG_DBG_SEL_MIN = 2'd0;  localparam logic [1:0] DEBUG_DBG_SEL_MAX = 2'd3;
     localparam int DEBUG_RAW_EN_LSB = 0;  localparam int DEBUG_RAW_EN_W = 1;  localparam logic [0:0] DEBUG_RAW_EN_RST = 1'd0;
     localparam logic [0:0] DEBUG_RAW_EN_MIN = 1'd0;  localparam logic [0:0] DEBUG_RAW_EN_MAX = 1'd1;
+
+    localparam int SMP_VALID_LSB = 7;
+    localparam int SMP_OVERRUN_LSB = 6;
+    localparam int SMP_OVL_LSB = 5;
+    localparam int SMP_CHANGED_LSB = 4;
+    localparam int SMP_ERR_LSB = 3;
 
     localparam logic [7:0] CMD_START = 8'h11;
     localparam logic [7:0] CMD_STOP = 8'h22;

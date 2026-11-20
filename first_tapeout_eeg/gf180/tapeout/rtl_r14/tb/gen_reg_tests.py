@@ -189,12 +189,25 @@ def main():
             w2 = reset_byte(r[4])
         assert w1 != w2 and w1 != reset_byte(r[4]), (r[1], w1, w2)
         L.append(f"    guard_one(7'h{a:02X}, 8'h{w1:02X}, 8'h{w2:02X}, \"{r[1]}\");")
+        bad = None                                     # an out-of-range byte, if a field has values beyond its range
+        for f in r[4]:
+            w_ = f["msb"] - f["lsb"] + 1
+            xs = [x for x in (min(f["legal"]) - 1, max(f["legal"]) + 1) if 0 <= x < (1 << w_)]
+            if xs:
+                bad = (reset_byte(r[4]) & ~field_mask(f)) | (xs[0] << f["lsb"])
+                break
+        if bad is not None:                            # audit round 8: the guard is decided before the range
+            L.append(f"    guard_range(7'h{a:02X}, 8'h{bad:02X}, \"{r[1]}\");")
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    for a in RM.guarded_addrs():                       # audit round 8: the lock is decided before the guard
+        if regs[a][3]:
+            L.append(f"    guard_locked(7'h{a:02X}, 8'h{legal_other(regs[a][4]):02X}, \"{regs[a][1]}\");")
     L.append("endtask")
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
-    chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "rt_write_check(", "guard_one(")
+    chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "rt_write_check(", "guard_one(", "guard_range(",
+           "guard_locked(")
     total, per, skip = 0, {"": 0, "FIFO4": 0}, None
     for ln in L:                                       # checks in the file, and those each FIFO configuration runs
         t = ln.strip()

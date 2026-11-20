@@ -296,7 +296,18 @@ module eeg_regs #(
     assign dflag_overrun = dflag[0];
 
     assign alert       = |(err & r_mask) || |(dflag & r_mask_d);
-    assign status_byte = {1'b1, 1'b0, alert, pend, (state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};
+    // the bit positions from the generated constants (audit round 8: a hand-written order could differ from the map)
+    always_comb begin
+        status_byte                         = 8'h00;
+        status_byte[STATUS_MARK1_LSB]       = STATUS_MARK1_RST;     // the fixed bits (MISO without a response)
+        status_byte[STATUS_MARK0_LSB]       = STATUS_MARK0_RST;
+        status_byte[STATUS_ALERT_LSB]       = alert;
+        status_byte[STATUS_CMD_PENDING_LSB] = pend;
+        status_byte[STATUS_READY_LSB]       = (state == ST_RUN);
+        status_byte[STATUS_DATA_LSB]        = fifo_nonempty;
+        status_byte[STATUS_OVL_NOW_LSB]     = ovl_now;
+        status_byte[STATUS_AFE_RST_LSB]     = afe_rst;
+    end
 
     // cfg_ok and nr_ok (gf180/tapeout/rtl/spec/regmap.py cfg_ok, nr_ok; range_max_m generated from RANGE_MAX_M)
     logic signed [11:0] sv_s, sv_a, dsv;

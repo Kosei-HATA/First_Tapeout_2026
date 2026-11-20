@@ -24,6 +24,8 @@ import fsm_spec as FS  # noqa: E402
 import regmap as RM  # noqa: E402
 
 T = FS.SPI["table"]
+SMP_BIT = {n: b for n, b, _d in RM.SAMPLE_STATUS if n != "0"}
+EMPTY_ZERO = 0xFF & ~sum(1 << SMP_BIT[n] for n in ("OVERRUN", "OVL", "ERR"))   # the empty word's bits that are 0
 REGS = {r[0]: r for r in RM.REGS}
 SHADOWED = {a for a, r in REGS.items() if any(f["cls"] == "apply" for f in r[4])}
 MIRRORS = {a + RM.SHADOW_MIRROR for a in SHADOWED}
@@ -210,6 +212,9 @@ def main():
                 errs.append(f"{nm} {got}, expected {want}")
         # --- MISO bytes
         sbytes = fr["sw"].to_bytes(6, "big")
+        if fr["snap"] == 1 and not (sbytes[0] >> SMP_BIT["VALID"]) & 1:   # an empty word (audit round 8): only
+            if sbytes[0] & EMPTY_ZERO or any(sbytes[1:]):              # OVERRUN, OVL and ERR may be set
+                errs.append(f"empty word {fr['sw']:012x}: VALID, CHANGED and the reserved bits, SEQ and DATA must be 0")
         loads = fr["loads"]
         for j, x in enumerate(exp_bytes[:len(rx)]):
             got = rx[j]

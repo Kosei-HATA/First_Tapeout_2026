@@ -7,8 +7,9 @@
 *                       Phase A = CHOP high; with CHOP_EN low the chopper stays in
 *                       phase A. Load per phase: two TGs of m = 256 (NMOS gates about
 *                       16 pF on CIA/CIB, PMOS gates about 32 pF on NCIA/NCIB).
-*   CDA NCDA CDB NCDB   output-chopper phases: CDA = CHOP_OUT and not CHOP_BLANK,
-*                       CDB = not CHOP_OUT and not CHOP_BLANK (both low while blanked).
+*   CDA NCDA CDB NCDB   output-chopper phases: CDA = (CHOP_OUT or not CHOP_EN) and not CHOP_BLANK,
+*                       CDB = CHOP_EN and not CHOP_OUT and not CHOP_BLANK (both low while blanked;
+*                       with CHOP_EN low the output chopper stays in phase A as well; comment only, 11/20).
 *   OFPH                offset-DAC phase: set when CIA rises, cleared when CIB rises
 *                       (an SR latch on the TG gate drives), so it changes when the
 *                       input TG of the new phase closes; high in phase A.

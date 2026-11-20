@@ -3,7 +3,8 @@
 // The quantizer code of each frame (taken with the CIC input, en = cic_en) is an extreme when it is 0 or 31. A
 // 32-frame window of those flags and its count give ovl_now = (count >= OVL_THRESHOLD). The full-scale behavioural
 // streams never reach an extreme (codes 3..27); an AFE or ADC overload pins the integrators and the codes at the
-// extremes. ovl_seen: ovl_now was 1 at some frame since the previous output time (for the sample's status byte).
+// extremes. ovl_seen: a hit (an extreme code taken while the rule holds, counting it) since the previous output
+// time (for the sample's status byte; audit round 8: the meaning since round 6).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -25,7 +26,8 @@ module eeg_ovl (
     logic                  ext;
 
     // An interval (and DFLAG.OVL) is marked only for an extreme code taken during a detected overload: the window's
-    // count stays high up to OVL_WINDOW - 1 frames after the last extreme code, and an interval that starts in that
+    // count stays high up to OVL_WINDOW - OVL_THRESHOLD frames (28) after the last extreme code (until the last
+    // OVL_THRESHOLD of them leave the window; audit round 8: was 'OVL_WINDOW - 1'), and an interval that starts in that
     // tail holds no overloaded frame (audit round 6, 11/20: it marked a fourth sample, and a tail from ALIGN set
     // DFLAG.OVL in FILL). The first OVL_THRESHOLD - 1 codes of an overload are not hits (the detection lag, as before)
     assign ext     = (code == 5'd0) || (code == 5'd31);

@@ -115,7 +115,7 @@ REGS = [
     # test (locked by TEST_KEY)
     (0x60, "TEST_MUX", "RW", True, [F("ATP_EN", 4, 4, 0, [0, 1], "apply", "試験用マルチプレクサを ATP へ", "TEST_CFG[4]"),
                                     F("ATP_SEL", 3, 0, 0, rng(0, 15), "apply", "節点の選択（0 AVSS … 15 ADC O2N）", "TEST_CFG[3:0]")], "試験用マルチプレクサ"),
-    (0x61, "TEST_CTRL", "RW", True, [F("CHOP_STOP", 1, 1, 0, [0, 1], "apply", "1 で CHOP_EN ＝ 0（入力チョッパを相 A に固定。CHOP、CHOP_OUT と出力チョッパは止まらない：第 4.1 節、ANA-03）", "CHOP_EN"),
+    (0x61, "TEST_CTRL", "RW", True, [F("CHOP_STOP", 1, 1, 0, [0, 1], "apply", "1 で CHOP_EN ＝ 0（入力と出力のチョッパを相 A に固定し、AFE はチョップされずに動く。CHOP、CHOP_OUT、CHOP_BLANK の端子は動き続ける：第 4.1 節、ANA-03）", "CHOP_EN"),
                                      F("ADC_ZERO", 0, 0, 0, [0, 1], "apply", "ADC の入力の短絡と CHOP_BLANK の保持", "TEST_CFG[5]")], "試験の制御"),
     (0x62, "DEBUG", "RW", True, [F("DBG_SEL", 2, 1, 0, rng(0, 3), "imm", "RAW のパッドに時刻の信号（RAW_EN ＝ 0 のとき）", "TEST_CFG[7:6]"),
                                  F("RAW_EN", 0, 0, 0, [0, 1], "imm", "生の符号の出力", "RAW_DATA／RAW_CLK")], "デバッグの出力"),
@@ -325,16 +325,22 @@ def check(verbose=True):
     m_bits = sum(f["msb"] - f["lsb"] + 1 for *_, f in all_fields() if f["name"] in ("M_H", "M_L"))
     if RANGE_MAX_M.get(0) != 2 ** m_bits - 1:
         errs.append(f"range 0: largest M {RANGE_MAX_M.get(0)}; the DAC is off, so every M (0..{2 ** m_bits - 1}) is accepted")
-    import itertools
-    for rg, sg, bl, cf, c1, az, cs, mm in itertools.product(range(5), (0, 1), (0, 7, 15), (0, 1), range(5), (0, 1),
-                                                           (0, 1), (0, 1, 127, 1023)):
-        ac = dict(M_H=mm >> 8, M_L=mm & 0xFF, SIGN=sg, RANGE=rg, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0,
-                  CHOP_FAST=cf, CHOP1_RATE=c1, DWA_EN=1 - az, BLANK_LEN=bl, ATP_EN=cs, ATP_SEL=5 * cs,
-                  CHOP_STOP=cs, ADC_ZERO=az, DBG_SEL=2 * az + cs)
+    import random
+    rnd_ = random.Random(20261120)
+    legal = {f["name"]: f["legal"] for *_, f in all_fields()}
+    for k_ in range(6000):                             # each field drawn on its own (audit round 8)
+        ac = {n_: rnd_.choice(legal[n_]) for n_ in ("SIGN", "RANGE", "AFE_IBIAS", "CPF_TRIM", "BTRIM_P", "BTRIM_N",
+                                                    "CHOP_FAST", "CHOP1_RATE", "DWA_EN", "BLANK_LEN", "ATP_EN",
+                                                    "ATP_SEL", "CHOP_STOP", "ADC_ZERO", "DBG_SEL")}
+        mm = rnd_.choice((0, 1, 127, 128, 255, 256, 511, 512, 1023, rnd_.randrange(1024)))
+        ac.update(M_H=mm >> 8, M_L=mm & 0xFF)
+        rg, sg, bl, cf, c1 = ac["RANGE"], ac["SIGN"], ac["BLANK_LEN"], ac["CHOP_FAST"], ac["CHOP1_RATE"]
+        az, cs = ac["ADC_ZERO"], ac["CHOP_STOP"]
         win = 15 if rg >= 1 else bl                    # the blanking runs from cycle 31 through cycle win - 1
         ind = dict(OFM=mm * (rg >= 1), OFS=sg * (rg >= 1), OFEN=int("0" * (4 - rg) + "1" * rg, 2),
-                   AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0, DWA_EN=1 - az, CHOP_EN=1 - cs,
-                   TEST_CFG=(2 * az + cs) * 64 + az * 32 + cs * 16 + 5 * cs,
+                   AFE_IBIAS=ac["AFE_IBIAS"], CPF_TRIM=ac["CPF_TRIM"], BTRIM_P=ac["BTRIM_P"], BTRIM_N=ac["BTRIM_N"],
+                   DWA_EN=ac["DWA_EN"], CHOP_EN=1 - cs,
+                   TEST_CFG=ac["DBG_SEL"] * 64 + az * 32 + ac["ATP_EN"] * 16 + ac["ATP_SEL"],
                    BLANK_W=len([31] + list(range(win))), BLANK_HELD=az,
                    CHOP_HALF=int(FS.MCLK) // (128000 if cf else 64000) // 2,
                    CHOP1_HALF=0 if c1 == 0 else (32 * 1024 >> (c1 - 1)) // 2)
@@ -453,8 +459,6 @@ def sv_package():
     out.append("")
     for a, n, acc, lock, fields, desc in REGS:
         for f in fields:
-            if f["name"] in ("MARK1", "MARK0"):
-                continue
             w = f["msb"] - f["lsb"] + 1
             out.append(f"    localparam int {n}_{f['name']}_LSB = {f['lsb']};  localparam int {n}_{f['name']}_W = {w};"
                        f"  localparam logic [{w - 1}:0] {n}_{f['name']}_RST = {w}'d{f['reset']};")
@@ -462,6 +466,10 @@ def sv_package():
                 # the field's own width, so that comparing a field with its limits needs no width extension
                 out.append(f"    localparam logic [{w - 1}:0] {n}_{f['name']}_MIN = {w}'d{f['legal'][0]};"
                            f"  localparam logic [{w - 1}:0] {n}_{f['name']}_MAX = {w}'d{f['legal'][-1]};")
+    out.append("")
+    for n_, b_, _d in SAMPLE_STATUS:                   # the sample word's status byte (audit round 8: the RTL builds it
+        if n_ != "0":                                  # from these, so the map and the RTL cannot differ)
+            out.append(f"    localparam int SMP_{n_}_LSB = {b_};")
     out.append("")
     for c, v in COMMANDS.items():
         out.append(f"    localparam logic [7:0] CMD_{c} = 8'h{v:02X};")
@@ -605,6 +613,10 @@ def selftest():
         f0 = keep_fn["pins_from_active"]
         g["pins_from_active"] = lambda ac: dict(f0(ac), BLANK_W=f0(ac)["BLANK_W"] - 1)
 
+    def m_tcfg4():                                     # audit round 8: TEST_CFG[4] from CHOP_STOP, not ATP_EN
+        f0 = keep_fn["pins_from_active"]
+        g["pins_from_active"] = lambda ac: dict(f0(ac), TEST_CFG=(f0(ac)["TEST_CFG"] & ~16) | (ac["CHOP_STOP"] << 4))
+
     def m_mirror():
         g["REGS"].append((0x30, "EXTRA", "RO", False, [F("X", 7, 0, 0, [0], "ro", "x")], "x"))
 
@@ -615,7 +627,7 @@ def selftest():
             ("STATE のコードの欠落", m_state), ("範囲 1 の上限の誤り", m_range), ("nr_ok が範囲の変更を許す", m_nr_range),
             ("nr_ok が 2 段を許す", m_nr_two_steps), ("過負荷の規則が常に成立", m_ovl), ("写しのアドレスとの重なり", m_mirror),
             ("過負荷の閾値が 2", m_ovl2), ("過負荷の窓が 8 で閾値が 8", m_ovl_window), ("範囲 0 の M の上限が 0", m_range0),
-            ("CHOP_BLANK の幅に 1 を足さない", m_blank)]
+            ("CHOP_BLANK の幅に 1 を足さない", m_blank), ("TEST_CFG[4] を CHOP_STOP から取る", m_tcfg4)]
     results, ok = [], True
     for name, m in muts:
         for k, v in keep.items():

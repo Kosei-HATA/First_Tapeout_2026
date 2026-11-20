@@ -113,6 +113,9 @@ task automatic r14_sample(output logic [7:0] sstat, output logic [15:0] seq, out
     crc   = tb_crc8_update(8'h00, 8'hC0);           // the sample's CRC covers its header 0xC0 and the six bytes
     for (int i = 1; i <= 6; i++) crc = tb_crc8_update(crc, spi_rx[i]);
     crc_ok = (crc === spi_rx[7]);
+`ifdef R14_SAMPLE_HOOK
+    r14_sample_hook(sstat, seq, data, crc_ok);       // tb_top_r14: every sample read goes to the golden log
+`endif
 endtask
 
 // ------------------------------------------------------------------ timing monitors (as rtl/tb/spi_bfm.svh)
@@ -122,6 +125,13 @@ always @(negedge SCLK) spi_t_fall = $realtime;
 always @(miso_pin) begin                     // at the pin: a change while SCLK is high came too late
     if (oe_pin === 1'b1 && CS_N === 1'b0 && SCLK === 1'b1 && $realtime - spi_t_csfall > 4.0 * TMCLK)
         spi_err("MISO changed while SCLK is high");
+    // the latency after the SCLK fall (spec 3.1: at most 3 MCLK of synchronizing and loading plus the pad delay;
+    // audit round 8: the r13 bench's check had been dropped, and a MISO one register later passed every test)
+    if (oe_pin === 1'b1 && CS_N === 1'b0 && spi_t_fall > spi_t_csfall) begin
+        if ($realtime - spi_t_fall > spi_miso_lat_max) spi_miso_lat_max = $realtime - spi_t_fall;
+        if ($realtime - spi_t_fall > 3.0 * TMCLK + SPI_TPAD + 0.01)
+            spi_err($sformatf("MISO %0.1f ns after the SCLK fall (at most 3 MCLK and the pad delay)", $realtime - spi_t_fall));
+    end
 end
 always @(negedge CS_N) spi_t_csfall = $realtime;
 always @(posedge CS_N) begin

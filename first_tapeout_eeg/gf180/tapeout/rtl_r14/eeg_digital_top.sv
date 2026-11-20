@@ -190,6 +190,7 @@ module eeg_digital_top #(
     logic [8:0]  chg_cnt;                        // outputs still to mark CHANGED
     logic        chg_now;
     assign chg_now = (chg_cnt != 9'd0);
+    logic [7:0]  smp_status, empty_status;       // built below from the generated bit positions (audit round 8)
 
     always_ff @(posedge MCLK or negedge tm_rst_n) begin
         if (!tm_rst_n)    seq_cnt <= 16'd0;
@@ -210,10 +211,24 @@ module eeg_digital_top #(
 
     eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (
         .clk(MCLK), .rst_n(rst_n), .flush(seq_flush), .push(seq_store),
-        .status_in({1'b1, dflag_overrun, ovl_iv | ovl_hist[0] | ovl_hist[1], chg_now, alert, 3'b000}),
+        .status_in(smp_status),
         .seq_in(seq_cnt), .data_in(cic_data), .ovr_set(ovr_set), .push_ok(push_ok), .snap(smp_snap), .pop(smp_pop),
-        .empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000}), .rd_word(smp_word),
+        .empty_status(empty_status), .rd_word(smp_word),
         .nonempty(fifo_nonempty), .level(fifo_level));
+
+    // the sample's status byte and the empty word's, from the generated bit positions (audit round 8)
+    always_comb begin
+        smp_status                  = 8'h00;
+        smp_status[SMP_VALID_LSB]   = 1'b1;
+        smp_status[SMP_OVERRUN_LSB] = dflag_overrun;
+        smp_status[SMP_OVL_LSB]     = ovl_iv | ovl_hist[0] | ovl_hist[1];
+        smp_status[SMP_CHANGED_LSB] = chg_now;
+        smp_status[SMP_ERR_LSB]     = alert;
+        empty_status                  = 8'h00;  // VALID 0, CHANGED 0, SEQ and DATA 0 (spec 3.4)
+        empty_status[SMP_OVERRUN_LSB] = dflag_overrun;
+        empty_status[SMP_OVL_LSB]     = ovl_now;
+        empty_status[SMP_ERR_LSB]     = alert;
+    end
 
     // the OVL history advances at every output time (stored or not: the sinc^3 window counts output intervals)
     always_ff @(posedge MCLK or negedge tm_rst_n) begin

@@ -56,7 +56,7 @@ MUTATIONS = [
     ("レジスタ：未処理の間の未定義のコードを STATE_ERR とする", "eeg_regs.sv",
      "end else if (!is_cmd_code) begin", "end else if (!is_cmd_code && !pend) begin"),
     ("レジスタ：STATUS の固定ビット 6 が 1", "eeg_regs.sv",
-     "assign status_byte = {1'b1, 1'b0, alert,", "assign status_byte = {1'b1, 1'b1, alert,"),
+     "status_byte[STATUS_MARK0_LSB]       = STATUS_MARK0_RST;", "status_byte[STATUS_MARK0_LSB]       = 1'b1;"),
     ("レジスタ：DFLAG を W1C で消せない", "eeg_regs.sv",
      "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};",
      "dflag <= dflag | {ovl_set, ovr_set};"),
@@ -85,7 +85,7 @@ MUTATIONS = [
     ("最上位：DRDY のパルスをフレームの末尾で数える（119 MCLK）", "eeg_digital_top.sv",
      "((cycle == STORE_CYCLE && drdy_cnt != 3'd0)", "((frame_stb && drdy_cnt != 3'd0)"),
     ("最上位：サンプルの状態に OVERRUN を入れない", "eeg_digital_top.sv",
-     ".status_in({1'b1, dflag_overrun,", ".status_in({1'b1, 1'b0,"),
+     "smp_status[SMP_OVERRUN_LSB] = dflag_overrun;", "smp_status[SMP_OVERRUN_LSB] = 1'b0;"),
     ("クロック：tick が 1 サイクル早い（サイクル 23）", "eeg_clkgen.sv",
      "tick       <= (cnt_nxt[4:0] == 5'd24) &&", "tick       <= (cnt_nxt[4:0] == 5'd23) &&"),
     # audit round 1 (11/20)
@@ -98,7 +98,7 @@ MUTATIONS = [
     ("最上位：SOFT_RESET で SEQ を戻す", "eeg_digital_top.sv",
      "if (!tm_rst_n)    seq_cnt <= 16'd0;", "if (!tm_rst_n || !rst_n) seq_cnt <= 16'd0;"),
     ("最上位：OVL が直前の 1 ms のみ", "eeg_digital_top.sv",
-     ".status_in({1'b1, dflag_overrun, ovl_iv | ovl_hist[0] | ovl_hist[1],", ".status_in({1'b1, dflag_overrun, ovl_iv,"),
+     "smp_status[SMP_OVL_LSB]     = ovl_iv | ovl_hist[0] | ovl_hist[1];", "smp_status[SMP_OVL_LSB]     = ovl_iv;"),
     ("最上位：CHANGED の長さに T_ELEC を足さない", "eeg_digital_top.sv",
      "assign chg_new = 9'd3 + {1'b0, t_elec};", "assign chg_new = 9'd3;"),
     ("最上位：IDLE の過負荷でも DFLAG.OVL を立てる", "eeg_digital_top.sv",
@@ -106,13 +106,13 @@ MUTATIONS = [
     ("レジスタ：未処理の命令がある間もシャドウとタイマへ書く", "eeg_regs.sv",
      "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin", "end else if (1'b0) begin"),
     ("レジスタ：STATUS の CMD_PENDING が 0 のまま", "eeg_regs.sv",
-     "assign status_byte = {1'b1, 1'b0, alert, pend,", "assign status_byte = {1'b1, 1'b0, alert, 1'b0,"),
+     "status_byte[STATUS_CMD_PENDING_LSB] = pend;", "status_byte[STATUS_CMD_PENDING_LSB] = 1'b0;"),
     ("レジスタ：STATUS の DATA が 0 のまま", "eeg_regs.sv",
-     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state == ST_RUN), 1'b0, ovl_now, afe_rst};"),
+     "status_byte[STATUS_DATA_LSB]        = fifo_nonempty;", "status_byte[STATUS_DATA_LSB]        = 1'b0;"),
     ("レジスタ：STATUS の OVL_NOW が 0 のまま", "eeg_regs.sv",
-     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state == ST_RUN), fifo_nonempty, 1'b0, afe_rst};"),
+     "status_byte[STATUS_OVL_NOW_LSB]     = ovl_now;", "status_byte[STATUS_OVL_NOW_LSB]     = 1'b0;"),
     ("レジスタ：STATUS の AFE_RST が 1 のまま", "eeg_regs.sv",
-     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state == ST_RUN), fifo_nonempty, ovl_now, 1'b1};"),
+     "status_byte[STATUS_AFE_RST_LSB]     = afe_rst;", "status_byte[STATUS_AFE_RST_LSB]     = 1'b1;"),
     ("SPI：CRC 有効時の CRC のない読み出しと短いサンプルを通す", "eeg_spi_slave.sv",
      "(crc_en && (st == S_RCRC || st == S_RSMP)) || st > S_OVF) begin", "st > S_OVF) begin"),
     ("最上位：RUN を出ても CHANGED の残りを消さない", "eeg_digital_top.sv",
@@ -121,11 +121,12 @@ MUTATIONS = [
     ("最上位：新しい印が長い残りを短く上書きする", "eeg_digital_top.sv",
      "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;", "chg_cnt <= chg_new;"),
     ("最上位：サンプルの ERR が 0 のまま", "eeg_digital_top.sv",
-     "chg_now, alert, 3'b000}", "chg_now, 1'b0, 3'b000}"),
+     "smp_status[SMP_ERR_LSB]     = alert;", "smp_status[SMP_ERR_LSB]     = 1'b0;"),
     ("最上位：サンプルの予約ビットが 0 でない", "eeg_digital_top.sv",
-     "chg_now, alert, 3'b000}", "chg_now, alert, 3'b100}"),
+     "smp_status                  = 8'h00;", "smp_status                  = 8'h04;"),
     ("最上位：空の語の状態が 0x00", "eeg_digital_top.sv",
-     ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status(8'h00)"),
+     "empty_status[SMP_OVERRUN_LSB] = dflag_overrun;\n        empty_status[SMP_OVL_LSB]     = ovl_now;\n        empty_status[SMP_ERR_LSB]     = alert;",
+     "// the empty word's flags left out"),
     ("レジスタ：ALERT がマスクを無視する", "eeg_regs.sv",
      "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);", "assign alert       = |err || |dflag;"),
     ("最上位：DRDY_N の解除がフレームの先頭まで遅れる（レベル）", "eeg_digital_top.sv",
@@ -199,7 +200,7 @@ MUTATIONS = [
     ("最上位：CHOP_EN が ADC_ZERO でも 0", "eeg_digital_top.sv",
      "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & ~a_azero;"),
     ("最上位：空の語の OVERRUN が 0", "eeg_digital_top.sv",
-     ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status({1'b0, 1'b0, ovl_now, 1'b0, alert, 3'b000})"),
+     "empty_status[SMP_OVERRUN_LSB] = dflag_overrun;", "empty_status[SMP_OVERRUN_LSB] = 1'b0;"),
     # audit round 4, auditor B
     ("レジスタ：拒否した命令が未処理の命令を置き換える", "eeg_regs.sv",
      "            if (w_ok && addr == A_COMMAND) begin",
@@ -227,7 +228,7 @@ MUTATIONS = [
     ("最上位：CHOP_EN が PULSE で 0", "eeg_digital_top.sv",
      "assign CHOP_EN    = ~a_cstop;", "assign CHOP_EN    = ~a_cstop & (seq_state != ST_PULSE);"),
     ("レジスタ：STATUS の READY が RUN 以上（PRE と PULSE でも 1）", "eeg_regs.sv",
-     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "(state >= ST_RUN), fifo_nonempty, ovl_now, afe_rst};"),
+     "status_byte[STATUS_READY_LSB]       = (state == ST_RUN);", "status_byte[STATUS_READY_LSB]       = (state >= ST_RUN);"),
     ("最上位：過負荷の検出を SOFT_RESET で戻す", "eeg_digital_top.sv",
      "eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_ovl u_ovl (.clk(MCLK), .rst_n(rst_n),"),
     ("最上位：DAC_CLK を SOFT_RESET で戻す", "eeg_digital_top.sv",
@@ -281,11 +282,11 @@ MUTATIONS = [
      "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;",
      "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : ((chg_new > 9'd255) ? 9'd255 : chg_new);"),
     ("レジスタ：STATUS の READY が FILL でも 1", "eeg_regs.sv",
-     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "((state == ST_RUN) || (state == ST_FILL)), fifo_nonempty, ovl_now, afe_rst};"),
+     "status_byte[STATUS_READY_LSB]       = (state == ST_RUN);", "status_byte[STATUS_READY_LSB]       = (state == ST_RUN) || (state == ST_FILL);"),
     ("最上位：STATUS の OVL_NOW が次の出力まで残る", "eeg_digital_top.sv",
      ".ovl_now(ovl_now), .ovr_set(ovr_set),", ".ovl_now(ovl_iv), .ovr_set(ovr_set),"),
     ("最上位：空の語の OVL を間隔の印から取る", "eeg_digital_top.sv",
-     ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status({1'b0, dflag_overrun, ovl_iv, 1'b0, alert, 3'b000})"),
+     "empty_status[SMP_OVL_LSB]     = ovl_now;", "empty_status[SMP_OVL_LSB]     = ovl_iv;"),
     ("レジスタ：RESET_FLAG を ALERT から隠せない", "eeg_regs.sv",
      "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
      "assign alert       = |(err & r_mask) || |(dflag & r_mask_d) || err[ERR_RESET_FLAG_LSB];"),
@@ -307,6 +308,19 @@ MUTATIONS = [
      "A_TEST_MUX, A_TEST_CTRL, A_DEBUG: wr_locked = !unlocked;", "A_TEST_MUX, A_DEBUG: wr_locked = !unlocked;"),
     ("最上位：SEQ を RUN の出力の時刻だけ数える", "eeg_digital_top.sv",
      "else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;", "else if (cic_stb && (seq_state == ST_RUN)) seq_cnt <= seq_cnt + 16'd1;"),
+    # audit round 8, auditor C (each passed all 16 groups)
+    ('レジスタ：範囲の検査を未処理の命令のガードより先に（範囲外の書き込みが RANGE_ERR）', 'eeg_regs.sv',
+     "            end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin\n                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick\n            end else if (wr_range_bad) begin\n                ev_err[ERR_RANGE_ERR_LSB] = 1'b1;\n",
+     "            end else if (wr_range_bad) begin\n                ev_err[ERR_RANGE_ERR_LSB] = 1'b1;\n            end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin\n                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick\n"),
+    ('レジスタ：施錠の検査を未処理の命令のガードより後に（施錠の書き込みが STATE_ERR）', 'eeg_regs.sv',
+     "            if (!wr_def || wr_ro || wr_locked) begin\n                ev_err[ERR_ADDR_ERR_LSB] = 1'b1;\n            end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin\n                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick\n",
+     "            if (!wr_def || wr_ro) begin\n                ev_err[ERR_ADDR_ERR_LSB] = 1'b1;\n            end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin\n                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick\n            end else if (wr_locked) begin\n                ev_err[ERR_ADDR_ERR_LSB] = 1'b1;\n"),
+    ('最上位：空の語の CHANGED を印の残りから取る', 'eeg_digital_top.sv',
+     'empty_status[SMP_ERR_LSB]     = alert;',
+     'empty_status[SMP_ERR_LSB]     = alert;\n        empty_status[SMP_CHANGED_LSB] = chg_now;'),
+    ('RAW：止めていても語を読み込む（RAW_DATA が動く）', 'eeg_raw.sv',
+     "sh <= raw_en ? {3'b101, code} : 8'h00;",
+     "sh <= {3'b101, code};"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -423,6 +437,10 @@ SPI_MUTATIONS = [
      "assign miso_oe   = ~cs_n & cs_act;", "assign miso_oe   = cs_act;"),
     # (SCLK edges counted with CS_N high is an equivalent mutant: IDLE ignores the bits and CS_N falling resets the
     #  bit count; an edge in the 2-3 MCLK after CS_N rises is counted with or without the gate. Not listed.)
+    # audit round 8, auditor C: MISO one register later (4 MCLK after the SCLK fall; the latency check had been dropped)
+    ('SPI：MISO をもう 1 段のレジスタから出す', 'eeg_spi_slave.sv',
+     '    assign miso      = tx_sh[7];',
+     '    logic miso_q;\n    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) miso_q <= 1\'b0;\n        else        miso_q <= tx_sh[7];\n    end\n    assign miso      = miso_q;'),
 ]
 
 
@@ -662,7 +680,8 @@ def main():
     import datetime
     import threading
     t0 = datetime.datetime.now()
-    log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}.log")    # every run keeps its record (audit rounds 4, 5)
+    log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}-{os.getpid()}.log")   # every run keeps its record (audit
+    # rounds 4, 5; round 8: two runs in one second no longer share a name, and the file is opened only if new)
     lock = threading.Lock()
     def tool(cmd):
         try:
@@ -675,7 +694,7 @@ def main():
     env = (f"commit {tool(['git', 'rev-parse', '--short', 'HEAD'])}"
            f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '', 'unknown') else ''}; "
            f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; yosys {os.environ.get('YOSYS', 'default path')}")
-    with open(log, "w", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
+    with open(log, "x", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
                  f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n{env}\n")
 

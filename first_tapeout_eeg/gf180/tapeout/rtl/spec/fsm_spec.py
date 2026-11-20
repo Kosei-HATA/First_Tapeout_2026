@@ -544,16 +544,33 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
         P.append("FLUSH does not empty the FIFO")
     if s == "FILL" and nxt == "RUN" and not env.get("valid", 1):
         P.append("RUN entered with an output that is not valid (the window not yet full)")
-    for c in ("APPLY", "APPLY_NR"):                  # an accepted change is applied (flagged ones are not)
-        if c in present:
-            b = pick(SEQ["table"].get((s, c)), env)
-            if isinstance(b, dict) and not ({"CFG_ERR", "STATE_ERR"} & set(b["actions"])) and "apply" not in b["actions"]:
-                P.append(f"{c} accepted without applying the settings")
-    for c in SEQ_COMMANDS:                          # a command is executed, ignored by definition, or flagged
-        if c in present:
-            b = pick(SEQ["table"].get((s, c)), env)
-            if isinstance(b, dict) and not b["actions"] and b["next"] in (None, s):
-                P.append(f"command {c} silently dropped")
+    # a command is executed, refused with a flag, or ignored by definition (only STOP in IDLE), judged on the
+    # resolved result of the tick, not on its own cell (audit round 5: an IGN cell, and a command losing its
+    # transition to the timer by a wrong priority, passed the per-cell form)
+    for c in SEQ_COMMANDS:
+        if c not in present:
+            continue
+        cell = SEQ["table"].get((s, c))
+        if cell == IGN:
+            if (s, c) != ("IDLE", "STOP"):
+                P.append(f"command {c} ignored in {s} (no effect and no flag)")
+            continue
+        b = pick(cell, env)
+        if not isinstance(b, dict):
+            continue
+        flags = {"CFG_ERR", "STATE_ERR"} & set(b["actions"])
+        if flags:
+            if not flags <= set(acts):
+                P.append(f"command {c} refused without its flag in the tick's result")
+            continue
+        if not b["actions"] and b["next"] in (None, s):
+            P.append(f"command {c} silently dropped")
+        if not set(b["actions"]) <= set(acts):
+            P.append(f"command {c} accepted but its actions not taken ({sorted(b['actions'])} -> {sorted(acts)})")
+        if b["next"] not in (None, s) and winner != c:
+            P.append(f"command {c} accepted but its transition lost to {winner}")
+        if c in ("APPLY", "APPLY_NR") and "apply" not in acts:
+            P.append(f"{c} accepted without applying the settings")
     return P
 
 
@@ -902,11 +919,11 @@ CHECKS = [
     "  RECOVER へは AFE_RST の解除（WARMUP と PULSE の満了）からのみ入る",
     "  FIFO を空にするのは START、APPLY（パルスあり、すなわち AFE の動作中の APPLY）、FLUSH のみ（ほかはリセット）。APPLY（パルスあり）は必ず FIFO を空にする（古い設定のサンプルを残さない）。IDLE と WARMUP の APPLY はパルスなしで、FIFO を空にしない",
     "  RUN の前のオフセットの 1 段（APPLY_NR）は、T_ELEC > 0 なら電極の整定を待ち直す（WAIT_E、WAIT_E では数え直し）。WAIT_E へは RECOVER の満了か、その 1 段からのみ入る",
-    "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視か、エラーのフラグのいずれか（黙って捨てられない）",
+    "  STOP は必ず IDLE へ。命令は実行されるか、定義による無視（IDLE の STOP のみ）か、エラーのフラグのいずれか（黙って捨てられない）。これを各欄でなく、その tick の優先順位の解決の結果で確かめる（受け付けた命令の動作が全て取られ、遷移する命令はその tick の遷移を決める）",
     "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
     "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
     "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET で、状態の変化と制御の動作はない（SOFT_RESET の確定のサイクルの tick と出力の時刻）。その出力の時刻はデータの経路として数えて捨て（seq_inc、discard）、ALIGN では CIC のクリアが出力の時刻のサイクルの始まりの縁で済んでいる（cic_clear）",
-    "分岐ごとの性質（シーケンサ）：拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
+    "分岐ごとの性質（シーケンサ）：命令を無視（IGN）してよいのは IDLE の STOP のみ。拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
@@ -921,6 +938,8 @@ def check_seq_branches():
     only with 'apply' in RUN's APPLY_NR; FLUSH only empties the FIFO (no restart, mark, apply, move)."""
     errs = []
     for (s, e), cell in SEQ["table"].items():
+        if s != "RESET" and e in SEQ_COMMANDS and cell == IGN and (s, e) != ("IDLE", "STOP"):
+            errs.append(f"SEQ {s}/{e}: a command ignored without effect or flag (only STOP in IDLE is)")
         if s == "RESET" or not isinstance(cell, list):
             continue
         for b in cell:
@@ -1265,6 +1284,10 @@ def selftest():
         ("FILL の拒否した APPLY_NR が ALIGN へ", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "ALIGN"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"], "ALIGN")])),
         ("PRE の FLUSH が T_PRE を数え直す", lambda t: t.__setitem__(("PRE", "FLUSH"), [B(ALWAYS, ["flush", "restart"])])),
         ("RUN の FLUSH が CHANGED の印を付ける", lambda t: t.__setitem__(("RUN", "FLUSH"), [B(ALWAYS, ["flush", "mark"])])),
+        # audit round 5, auditor C: commands ignored without a flag (the per-cell checks let IGN through)
+        ("PULSE の APPLY を無視（IGN）", lambda t: t.__setitem__(("PULSE", "APPLY"), IGN)),
+        ("RUN の START を無視（IGN）", lambda t: t.__setitem__(("RUN", "START"), IGN)),
+        ("WAIT_E の APPLY_NR を無視（IGN）", lambda t: t.__setitem__(("WAIT_E", "APPLY_NR"), IGN)),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -1323,6 +1346,15 @@ def selftest():
                 ("フラッシュで写しの印を消さない（送っていない語を取り出しうる）", fifo_bad_flush_keeps_held),
                 ("空の語の写しにも印を付ける（あとの格納を取り出しうる）", fifo_bad_snap_empty)]
     results, ok = [], True
+    # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
+    prio_orig = list(SEQ_PRIORITY)
+    for name, order in (("同じ tick でタイマの満了を APPLY より優先", ["STOP", "START", "TMR", "APPLY", "APPLY_NR", "FLUSH"]),
+                        ("同じ tick でタイマの満了を START より優先", ["STOP", "TMR", "START", "APPLY", "APPLY_NR", "FLUSH"])):
+        SEQ_PRIORITY[:] = order
+        rep, _ = run_checks(verbose=False)
+        results.append(("SEQ", name, len(rep), rep[0] if rep else ""))
+        ok &= bool(rep)
+    SEQ_PRIORITY[:] = prio_orig
     for F, muts in ((SEQ, seq_mut), (SPI, spi_mut)):
         orig = F["table"]
         for name, m in muts:

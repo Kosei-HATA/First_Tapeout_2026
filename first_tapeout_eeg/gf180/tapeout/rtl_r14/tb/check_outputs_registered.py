@@ -7,8 +7,9 @@ Yosys reads the RTL (read_verilog -sv, hierarchy, proc, flatten, opt) and writes
 every output port must come from a flip-flop cell (a type with "dff": $dff, $adff, $dffe, $adffe, ...), except:
   CHOP_EN     a $not of one flip-flop (the active copy of CHOP_STOP): one input, no glitch
   CHOP_BLANK  a $or of two flip-flops: the frame's blanking (it changes at frame cycle 31 and when the window ends,
-              cycle 15 at the longest) and the active copy of ADC_ZERO (it changes at a tick, e25, or in a reset),
-              which never change at one edge
+              cycle 15 at the longest) and the active copy of ADC_ZERO (it changes at a tick, e25), which never change
+              at one edge in operation; a SOFT_RESET in the ADC_ZERO test mode clears the latter after the reset
+              tree's delay, later than the blanking flip-flop's clock-to-Q at the same edge, so the OR changes once
   MISO_OE     combinational, as in r13 (NFR-06)
 For CHOP_EN and CHOP_BLANK every input of that one gate must itself come from a flip-flop.
 

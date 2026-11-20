@@ -11,6 +11,11 @@
 // written, and eeg_regs's cfg_ok and nr_ok compared with regmap's. The vectors cover the full 10-bit M (both bytes:
 // one step across 255/256 and 511/512, M_H or M_L alone changed), both signs, every range, every other applied field
 // and random pairs. Every write must be accepted (no error flag).
+//
+// The command's acknowledge cycle (audit round 5, 11/20: a command or a guarded write committed in the very cycle the
+// tick takes the pending command was never tested; a copy that lost such a command passed every test): a command
+// written in the ack cycle becomes the new pending command (no STATE_ERR); a shadow write in the ack cycle is written
+// (no STATE_ERR); outside the ack cycle both are refused with STATE_ERR while a command is pending.
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -154,7 +159,44 @@ module tb_regs;
                      nv, ncfg, nnr, nbad);
             errors = errors + nbad;
         end
-        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap)");
+        // ---------------- the command's acknowledge cycle
+        begin
+            integer nack;
+            logic [7:0] e;
+            nack = 0;
+            @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;      // ERR cleared
+            @(negedge clk); addr = 7'h10; wdata = 8'h55;                 // FLUSH: pending
+            @(negedge clk); we = 1'b0;
+            if (cmd_valid !== 1'b1 || cmd_code !== 8'h55) begin $display("ERROR: FLUSH not pending"); nack++; end
+            @(negedge clk); addr = 7'h10; we = 1'b1; wdata = 8'h11; cmd_ack = 1'b1;   // START in the ack cycle
+            @(negedge clk); we = 1'b0; cmd_ack = 1'b0;
+            if (cmd_valid !== 1'b1 || cmd_code !== 8'h11) begin
+                $display("ERROR: a command written in the ack cycle is not the new pending one (valid %b code %02h)", cmd_valid, cmd_code);
+                nack++;
+            end
+            read_reg(A_ERR, e);
+            if (e[6] !== 1'b0) begin $display("ERROR: STATE_ERR for a command written in the ack cycle"); nack++; end
+            @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h5A;      // a shadow write while START waits: refused
+            @(negedge clk); we = 1'b0;
+            read_reg(A_ERR, e);
+            if (e[6] !== 1'b1) begin $display("ERROR: no STATE_ERR for a shadow write while a command is pending"); nack++; end
+            read_reg(7'h21, e);
+            if (e === 8'h5A) begin $display("ERROR: a shadow written while a command is pending"); nack++; end
+            @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;
+            @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h5A; cmd_ack = 1'b1;  // the same write in the ack cycle
+            @(negedge clk); we = 1'b0; cmd_ack = 1'b0;
+            read_reg(7'h21, e);
+            if (e !== 8'h5A) begin $display("ERROR: a shadow write in the ack cycle not written (0x%02h)", e); nack++; end
+            read_reg(A_ERR, e);
+            if (e[6] !== 1'b0) begin $display("ERROR: STATE_ERR for a shadow write in the ack cycle"); nack++; end
+            if (cmd_valid !== 1'b0) begin $display("ERROR: the acknowledged command still pending"); nack++; end
+            @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h00;
+            @(negedge clk); addr = A_ERR; wdata = 8'hFF;
+            @(negedge clk); we = 1'b0;
+            $display("tb_regs: the command's acknowledge cycle: 8 checks, %0d errors", nack);
+            errors = errors + nack;
+        end
+        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap; the ack cycle)");
         else             $display("FAIL: tb_regs");
         $finish;
     end

@@ -119,6 +119,14 @@ module tb_spi_r14;
     endtask
 
     integer i_run;
+    // watchdog (audit round 5): a frame takes about 0.34 ms of simulated time; 1 ms per frame ends a run that waits for
+    // an event the RTL never gives (cic_stb, tick) as a failure instead of a hang
+    initial begin
+        #1;
+        #(i_run * 1.0e6);
+        $display("FAIL: tb_spi_r14 watchdog: not finished after %0d ms of simulated time", i_run);
+        $finish;
+    end
     initial begin
         if (!$value$plusargs("n=%d", i_run)) i_run = 4000;
         if (!$value$plusargs("seed=%d", seed)) seed = 1;

@@ -67,10 +67,14 @@ cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
 ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp > /dev/null &&
           $PY - <<'EOF'
+import sys
 import numpy as np
+sys.path.insert(0, "../rtl/spec")
+import regmap
+R = regmap.OVL_RULE                                # the rule from the specification source (audit round 5)
 c = np.loadtxt("build/ovl.codes", dtype=int); g = np.loadtxt("build/ovl.out", dtype=int)
-split = int(open("build/ovl.split").read()) + 32   # the full scale after the 32-frame window left the overload runs
-e = (np.convolve(np.isin(c, (0, 31)).astype(int), np.ones(32, dtype=int))[:len(c)] >= 4).astype(int)
+split = int(open("build/ovl.split").read()) + R["window"]   # the full scale after the window left the overload runs
+e = (np.convolve(np.isin(c, R["codes"]).astype(int), np.ones(R["window"], dtype=int))[:len(c)] >= R["threshold"]).astype(int)
 bad = int((g != e).sum()) if len(g) == len(e) else -1
 print(f"{len(g)} of {len(c)} frames compared, {bad} mismatches; detections: overload runs {int(g[:split].sum())}, "
       f"full scale {int(g[split:].sum())}")

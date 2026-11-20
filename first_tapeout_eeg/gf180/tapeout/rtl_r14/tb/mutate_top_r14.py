@@ -80,7 +80,7 @@ MUTATIONS = [
     ("最上位：T_RST が 1 単位短い", "eeg_digital_top.sv",
      ".t_rst(t_rst), .state(seq_state)", ".t_rst(t_rst - 8'd1), .state(seq_state)"),
     ("最上位：ALIGN で CIC をクリアしない", "eeg_digital_top.sv",
-     ".arm(cic_arm),", ".arm(1'b0),"),
+     ".arm(cic_arm & ~soft_req),", ".arm(1'b0),"),
     ("最上位：DRDY のパルスをフレームの末尾で数える（119 MCLK）", "eeg_digital_top.sv",
      "((cycle == STORE_CYCLE && drdy_cnt != 3'd0)", "((frame_stb && drdy_cnt != 3'd0)"),
     ("最上位：サンプルの状態に OVERRUN を入れない", "eeg_digital_top.sv",
@@ -128,8 +128,8 @@ MUTATIONS = [
     ("レジスタ：ALERT がマスクを無視する", "eeg_regs.sv",
      "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);", "assign alert       = |err || |dflag;"),
     ("最上位：DRDY_N の解除がフレームの先頭まで遅れる（レベル）", "eeg_digital_top.sv",
-     "drdy_n_q   <= drdy_mode ? ~drdy_pulse : ~fifo_nonempty;",
-     "drdy_n_q   <= drdy_mode ? ~drdy_pulse : (~fifo_nonempty && (drdy_n_q || cycle == 5'd0));"),
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty && (drdy_n_q || cycle == 5'd0)));"),
     ("SPI：MISO が 2 MCLK 遅れる（最小の Low で間に合わない）", "eeg_spi_slave.sv",
      "assign miso      = tx_sh[7];",
      "logic [1:0] miso_d; always_ff @(posedge clk) miso_d <= {miso_d[0], tx_sh[7]}; assign miso = miso_d[1];"),
@@ -240,6 +240,28 @@ MUTATIONS = [
      ".arm(cic_arm & ~soft_req)", ".arm(cic_arm)"),
     ("SPI：サンプルの CRC に先頭バイトを含めない（全て 0 の応答が CRC の合う空の語になる）", "eeg_spi_slave.sv",
      "default: tx_next = crc8_48(CRC_SMP_HDR, shadow);", "default: tx_next = crc8_48(8'h00, shadow);"),
+    # audit round 5, auditor C (each passed all 16 groups of run_tests_r14.sh)
+    ("レジスタ：確認のサイクルに書いた命令を失う", "eeg_regs.sv", "            if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end else if (cmd_ack) begin\n                pend  <= 1'b0;\n            end", "            if (cmd_ack) begin\n                pend  <= 1'b0;\n            end else if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end"),
+    ("レジスタ：確認のサイクルの命令を拒否", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack) begin", "end else if (pend) begin"),
+    ("最上位：FLUSH で CHANGED の残りを消す", "eeg_digital_top.sv",
+     "else if (seq_state != ST_RUN) chg_cnt <= 9'd0;", "else if (seq_state != ST_RUN || seq_flush) chg_cnt <= 9'd0;"),
+    ("最上位：CHOP_DLY が 1", "eeg_digital_top.sv", ".chop_dly(8'd0)", ".chop_dly(8'd1)"),
+    ("最上位：反映でも FIFO を空にする", "eeg_digital_top.sv",
+     ".flush(seq_flush), .push(seq_store),", ".flush(seq_flush | apply), .push(seq_store),"),
+    ("レジスタ：ALERT が CMD、STATE、CFG、RANGE の ERR を含まない", "eeg_regs.sv",
+     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
+     "assign alert       = |(err[3:0] & r_mask[3:0]) || |(dflag & r_mask_d);"),
+    ("レジスタ：ALERT が OVERRUN を含まない", "eeg_regs.sv",
+     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
+     "assign alert       = |(err & r_mask) || (dflag[1] & r_mask_d[1]);"),
+    ("最上位：CHANGED の計数が 8 ビット", "eeg_digital_top.sv", "logic [8:0]  chg_cnt;", "logic [7:0]  chg_cnt;"),
+    ("最上位：DFLAG.OVL を WAIT_E と ALIGN でも立てる", "eeg_digital_top.sv",
+     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
+     ".ovl_set(ovl_now && (seq_state >= ST_WAIT_E) && (seq_state <= ST_RUN)),"),
+    ("SPI：読み出しの CRC を送ったバイトでなくその時のレジスタの値で計算", "eeg_spi_slave.sv",
+     "S_RCRC:  tx_next = crc8_step(crc8_step(8'h00, hdr), txd);",
+     "S_RCRC:  tx_next = crc8_step(crc8_step(8'h00, hdr), reg_rdata);"),
     ("最上位：SEQ を SOFT_RESET で戻す", "eeg_digital_top.sv",
      "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;",
      "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)       seq_cnt <= 16'd0;"),
@@ -298,6 +320,12 @@ REGS_MUTATIONS = [
     ("レジスタ：nr_ok が CPF_TRIM の変化を見ない", "eeg_regs.sv", "(s_cpf == a_cpf) && ", ""),
     ("レジスタ：cfg_ok が範囲の上限を拒否", "eeg_regs.sv",
      "assign cfg_ok = (s_m <= range_max_m(s_range));", "assign cfg_ok = (s_m < range_max_m(s_range));"),
+    # audit round 5, auditor C: the command's acknowledge cycle
+    ("レジスタ：確認のサイクルに書いた命令を失う", "eeg_regs.sv", "            if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end else if (cmd_ack) begin\n                pend  <= 1'b0;\n            end", "            if (cmd_ack) begin\n                pend  <= 1'b0;\n            end else if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end"),
+    ("レジスタ：確認のサイクルのシャドウの書き込みを拒否", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin", "end else if (pend && GUARDED_ADDRS[addr]) begin"),
+    ("レジスタ：確認のサイクルの命令を拒否", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack) begin", "end else if (pend) begin"),
 ]
 
 
@@ -424,13 +452,13 @@ def run(i, m, bench="top"):
     if c.returncode:
         return i, name, "COMPILE ERROR", c.stderr.strip().splitlines()[-1][:150]
     if bench in ("seq", "spi", "fifo"):
-        args = {"seq": ["+n=300000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=800", "+seed=7"],
+        args = {"seq": ["+n=300000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=1500", "+seed=5"],
                 "fifo": ["+n=100000", "+trace=build/fifo_trace.txt"]}[bench]
         try:
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"] + args, cwd=d, capture_output=True,
                                text=True, timeout=3600)
         except subprocess.TimeoutExpired:
-            return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 3600 s"
+            return i, name, "TIMEOUT", "no end within 3600 s (undecided: rerun)"
     if bench == "seq":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
                             os.path.join(d, "build", "seq_trace.txt")], capture_output=True, text=True)
@@ -448,7 +476,7 @@ def run(i, m, bench="top"):
             v = subprocess.run(["vvp", "-n", "build/t.vvp"] + (["+vec=build/rnd_sat.vec"] if bench == "rnd" else []),
                                cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
-            return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 1200 s"
+            return i, name, "TIMEOUT", "no end within 1200 s (undecided: rerun)"
         passed = ("PASS: chop1" if bench == "chop1" else "PASS: tb_rnd_sat") in v.stdout and "FAIL" not in v.stdout
         first = next((ln for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), "")
         if f is None:
@@ -458,7 +486,7 @@ def run(i, m, bench="top"):
         try:
             v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=600)
         except subprocess.TimeoutExpired:
-            return i, name, ("BASELINE FAILS" if f is None else "detected"), "no end within 600 s"
+            return i, name, "TIMEOUT", "no end within 600 s (undecided: rerun)"
         head = next((ln for ln in v.stdout.splitlines() if ln.startswith("tb_regs:")), "no summary")
         first = next((ln for ln in v.stdout.splitlines() if ln.startswith("ERROR")), head)
         if f is None:
@@ -485,14 +513,15 @@ def run(i, m, bench="top"):
         timing = next((ln for ln in v.stdout.splitlines() if "SPI timing errors" in ln), "")
         nt = int(timing.split(",")[1].split()[0]) if timing else -1
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  frame")), head)
+        failed = "FAIL" in v.stdout                  # e.g. the bench's watchdog (the trace then ends early)
         if f is None:
-            return i, name, ("baseline ok" if nbad == 0 and nt == 0 else "BASELINE FAILS"), head
-        return i, name, ("detected" if nbad != 0 or nt != 0 else "MISSED"), first
-    try:
+            return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed else "BASELINE FAILS"), head
+        return i, name, ("detected" if nbad != 0 or nt != 0 or failed else "MISSED"), first
+    try:                                             # the bench's own watchdog (600 ms simulated) ends a hang
         v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True,
-                           timeout=1800)
+                           timeout=5400)
     except subprocess.TimeoutExpired:
-        return i, name, "detected", "no end within 1800 s (the bench did not pass)"
+        return i, name, "TIMEOUT", "no end within 5400 s (undecided: rerun)"
     out = v.stdout
     k = subprocess.run([sys.executable, os.path.join(HERE, "check_top_r14.py"), os.path.join(d, "build")],
                        capture_output=True, text=True)
@@ -503,10 +532,15 @@ def run(i, m, bench="top"):
                              os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
         ok = tb_pass and gold_pass and k2.returncode == 0
         return i, name, ("baseline ok" if ok else "BASELINE FAILS"), next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
+    k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
+                         os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
+    seq_pass = k2.returncode == 0
     first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
     if tb_pass and not gold_pass:
         first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL")
-    return i, name, ("detected" if not (tb_pass and gold_pass) else "MISSED"), first
+    elif tb_pass and not seq_pass:
+        first = "check_seq_trace: " + next((ln.strip() for ln in k2.stdout.splitlines() if ln.startswith("  line")), "FAIL")
+    return i, name, ("detected" if not (tb_pass and gold_pass and seq_pass) else "MISSED"), first
 
 
 def main():
@@ -514,6 +548,19 @@ def main():
     for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
+    # every listed mutation must apply to the RTL as it is now (audit round 5: two targets had changed with the RTL
+    # and would have shown only as NOT APPLIED at the end of a long run)
+    stale = []
+    for g, lst in (("top", MUTATIONS), ("spi", SPI_MUTATIONS), ("seq", SEQ_MUTATIONS), ("fifo", FIFO_MUTATIONS),
+                   ("regs", REGS_MUTATIONS), ("chop1", CHOP1_MUTATIONS), ("rnd", RND_MUTATIONS),
+                   ("struct", STRUCT_MUTATIONS)):
+        for i, (name, f, old, _new) in enumerate(lst):
+            if f is not None:
+                src = os.path.join(R14 if f in SRC else RTL_OLD, f)
+                if open(src, encoding="utf-8").read().count(old) != 1:
+                    stale.append(f"{TAG.get(g, 'm')}{i:02d} {name} ({f})")
+    if stale:
+        sys.exit("mutations whose text does not occur exactly once in the RTL (update them first):\n  " + "\n  ".join(stale))
     which = next((w for w in GROUPS if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []
@@ -536,12 +583,24 @@ def main():
     if only:
         tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}") in only]
     import datetime
+    import threading
     t0 = datetime.datetime.now()
+    log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}.log")    # every run keeps its record (audit rounds 4, 5)
+    lock = threading.Lock()
+    with open(log, "w", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
+        fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
+                 f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n")
+
+    def run_logged(a):
+        r = (a[2],) + run(*a)
+        tag = "b00" if r[1] < 0 else f"{TAG.get(r[0], 'm')}{r[1]:02d}"
+        with lock, open(log, "a", encoding="utf-8") as fo:
+            fo.write(f"{datetime.datetime.now():%H:%M:%S} {r[3]:8s} {tag} {r[2]}" + (f"  ({r[4][:120]})" if r[4] else "") + "\n")
+        return r
     with cf.ThreadPoolExecutor(jobs) as ex:
-        res = list(ex.map(lambda a: (a[2],) + run(*a), tasks))
+        res = list(ex.map(run_logged, tasks))
     ok = True
-    out = [f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "
-           f"{(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min"]
+    out = [f"--- summary ({(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min)"]
     title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
              "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
@@ -555,14 +614,17 @@ def main():
         for _, i, name, verdict, first in rs:
             tag = "b00" if i < 0 else f"{TAG.get(bench, 'm')}{i:02d}"
             out.append(f"{verdict:8s} {tag} {name}" + (f"  ({first[:120]})" if first else ""))
-        muts = [r for r in rs if r[3] != "baseline ok" and r[3] != "BASELINE FAILS"]
+        base = [r for r in rs if (r[1] < 0 if bench == "top" else r[1] == 0)]       # b00, or the group's 00
+        muts = [r for r in rs if r not in base]
         n_det = sum(1 for r in muts if r[3] == "detected")
-        base_ok = all(r[3] == "baseline ok" for r in rs if r[3] in ("baseline ok", "BASELINE FAILS"))
-        out.append(f"{n_det} of {len(muts)} mutations detected; baseline {'clean' if base_ok else 'NOT clean'}")
-        ok &= n_det == len(muts) and base_ok
+        n_to = sum(1 for r in rs if r[3] == "TIMEOUT")
+        base_txt = ("not run" if not base else
+                    "clean" if all(r[3] == "baseline ok" for r in base) else "NOT clean")
+        out.append(f"{n_det} of {len(muts)} mutations detected; baseline {base_txt}"
+                   + (f"; {n_to} undecided (TIMEOUT)" if n_to else ""))
+        ok &= n_det == len(muts) and base_txt != "NOT clean" and not n_to
     out.append("PASS" if ok else "FAIL")
-    log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}.log")    # every run keeps its report (audit round 4)
-    with open(log, "w", encoding="utf-8") as fo:
+    with open(log, "a", encoding="utf-8") as fo:
         fo.write("\n".join(out) + "\n")
     print("\n".join(out[:-1]))
     print("report written to " + os.path.relpath(log, R14))

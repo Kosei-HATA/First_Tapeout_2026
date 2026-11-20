@@ -54,6 +54,12 @@
 //      counts the output time of the commit cycle (DAT-03); R7: a SOFT_RESET in the cycle where the CIC decides
 //      ALIGN's clear (its step 3) cancels the clear; R8: one in the output-time cycle of ALIGN comes after the clear
 //      (audit round 5)
+//   T  audit round 5 (auditor C: RTL copies that passed every test): T1 ALERT from every ERR bit, T2 from DFLAG's
+//      OVERRUN and OVL; T3 a CRC read of ERR while STATE_ERR is set in the frame (the CRC covers the byte sent);
+//      T4 CHANGED for T_ELEC 255 (258 outputs, past 8 bits); T5 an overload in WAIT_E leaves DFLAG.OVL; T6 APPLY_NR
+//      in RUN keeps the FIFO, a FLUSH keeps the CHANGED marks; T7 a command committed in the very cycle the tick takes
+//      the pending one (its acknowledge cycle, 64 kHz, the frame start swept in half-MCLK steps) is the new pending
+//      command. Always: CHOP_OUT == CHOP (CHOP_DLY 0)
 // Also (audit round 4): every applied pin (OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, DWA_EN, CHOP_EN, TEST_CFG[5:0])
 // equals regmap.pins_from_active of the active copies at every MCLK in every state (CHOP_EN was seen only in IDLE and
 // RUN); STATUS's READY and AFE_RST bits in WARMUP, PRE, PULSE, RECOVER and ALIGN (N4); APPLY_NR across M's byte
@@ -71,7 +77,7 @@
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); no register-driven pin (those and
 // DRDY_N, TEST_CFG[7:6]) changes twice at one simulation time (a runt: NFR-06); the SPI timing (spi_bfm_r14.svh).
-// A watchdog ends the run as FAIL if it has not finished by 400 ms of simulated time (about twice the normal length),
+// A watchdog ends the run as FAIL if it has not finished by 600 ms of simulated time (about 1.6 times the normal length),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
@@ -154,8 +160,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(400.0e6);
-        fail($sformatf("watchdog: not finished after 400 ms of simulated time (phase %s)", phase));
+        #(600.0e6);
+        fail($sformatf("watchdog: not finished after 600 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -264,6 +270,20 @@ module tb_top_r14;
                                TEST_CFG));
         end
     end
+
+    // ------------------------------------------------------------------ CHOP_OUT == CHOP (CHOP_DLY fixed to 0)
+    // audit round 5: a top that passed a nonzero delay to the clock generator passed every test (REG-06, section 4.10)
+    integer n_chopout = 0;
+    always @(posedge MCLK) begin
+        #0.1;
+        if (RESET_N === 1'b1 && CHOP_OUT !== CHOP) n_chopout = n_chopout + 1;
+    end
+    // T7: a command written in the cycle the tick acknowledges the pending one; T3: when STATE_ERR is set
+    integer n_ack_commit = 0;
+    always @(posedge MCLK)
+        if (dut.reg_we === 1'b1 && dut.reg_addr === 7'h10 && dut.cmd_ack === 1'b1) n_ack_commit = n_ack_commit + 1;
+    real t_serr = 0.0;
+    always @(posedge dut.u_regs.err[6]) t_serr = $realtime;
 
     // ------------------------------------------------------------------ AFE_RST pin edges
     real t_afe_fall = 0.0, t_afe_rise = 0.0;
@@ -378,6 +398,18 @@ module tb_top_r14;
         @(posedge MCLK); #1;
         release dut.soft_req;
         repeat (8) @(posedge MCLK);                     // the soft reset (rst_n low for 5 MCLK) is over
+    endtask
+
+    // ------------------------------------------------------------------ T1: an ERR bit sets ALERT, its clear removes it
+    task automatic alert_bit(input logic [7:0] bitmask, input string name);
+        logic [7:0] st, e;
+        r14_read(7'h03, st);
+        r14_read(7'h06, e);
+        if (st[5] !== 1'b1 || (e & bitmask) !== bitmask)
+            fail($sformatf("T1 %s: STATUS 0x%02h ERR 0x%02h, expected ALERT with 0x%02h", name, st, e, bitmask));
+        r14_write(7'h06, 8'hFF);
+        r14_read(7'h03, st);
+        if (st[5] !== 1'b0) fail($sformatf("T1 %s: STATUS 0x%02h, ALERT still set after clearing ERR", name, st));
     endtask
 
     // ------------------------------------------------------------------ S: the CRC-mode probe (requirements step 9)
@@ -604,8 +636,10 @@ module tb_top_r14;
             if (have_last && sq <= last_seq) fail($sformatf("%s: SEQ %0d after %0d", name, sq, last_seq));
             last_seq  = sq;
             have_last = 1'b1;
-            $fdisplay(fsmp, "%0d %0d %0d", sq, $signed(d), st);
-            nsamples = nsamples + 1;
+            if (log_on) begin                           // compared with the golden CIC only while it is logged
+                $fdisplay(fsmp, "%0d %0d %0d", sq, $signed(d), st);
+                nsamples = nsamples + 1;
+            end
         end
     endtask
 
@@ -1665,6 +1699,156 @@ module tb_top_r14;
             if (n_runt != runt0) fail($sformatf("R: %0d runts", n_runt - runt0));
         end
         $display("R  SOFT_RESET in the cycle of a tick, an output time, after a store: no runt; strobes and the overload detector through it (errors %0d)", errors);
+
+        // ---------------- T: audit round 5, auditor C
+        phase = "T";
+        begin
+            logic [7:0] e, st, f, lv0, v1;
+            integer k;
+            bit found;
+            real t0f;
+            have_last = 1'b0;
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+            // T1: ALERT (STATUS bit 5, the default masks) from every ERR bit, each made through the pins
+            check_status(8'h00, 8'h20, "T1 ALERT clear");
+            r14_cmd(8'h77);                                                       alert_bit(8'h80, "CMD_ERR");
+            spi_tx[0] = 8'h24; spi_tx[1] = 8'h03; spi_xfer(2, 3);                 alert_bit(8'h02, "FRAME_ERR");
+            r14_write(7'h57, 8'h01);                                              alert_bit(8'h08, "ADDR_ERR");
+            r14_write(7'h50, 8'h01);                                              alert_bit(8'h10, "RANGE_ERR");
+            r14_write(7'h55, 8'h01);
+            bfm_crc_en = 1'b1;
+            spi_tx[0] = 8'h24; spi_tx[1] = 8'h09; spi_tx[2] = 8'h00; spi_xfer(3, 0); alert_bit(8'h04, "CRC_ERR");
+            r14_write(7'h55, 8'h00);
+            bfm_crc_en = 1'b0;
+            r14_write(7'h22, 8'h01); r14_write(7'h21, 8'hC8);                    // M 200 above range 1
+            r14_cmd(8'h11); repeat (600) @(posedge MCLK);                         alert_bit(8'h20, "CFG_ERR");
+            r14_write(7'h21, 8'h00); r14_write(7'h22, 8'h00);
+            r14_cmd(8'h11);
+            wait_state(4'd1, 50.0, "T1 WARMUP");
+            r14_cmd(8'h11); repeat (600) @(posedge MCLK);                         alert_bit(8'h40, "STATE_ERR");
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "T1 IDLE");
+            r14_cmd(8'hA5); #(1500.0);                                            alert_bit(8'h01, "RESET_FLAG");
+            // T2: ALERT from DFLAG.OVERRUN and DFLAG.OVL (ALERT_MASK_D 0x3)
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "T2 RUN");
+            f = 8'h00; k = 0;
+            while (f[0] !== 1'b1 && k < 40) begin repeat (16384) @(posedge MCLK); r14_read(7'h07, f); k++; end
+            if (f[0] !== 1'b1) fail("T2: no OVERRUN with the FIFO left unread");
+            r14_cmd(8'h55);                                                       // FLUSH: room again
+            repeat (600) @(posedge MCLK);
+            r14_read(7'h03, st);
+            if (st[5] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h, ALERT not set by DFLAG.OVERRUN", st));
+            r14_write(7'h07, 8'h01);
+            r14_read(7'h03, st);
+            if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT after clearing OVERRUN", st));
+            ovl_force = 1'b1; repeat (20 * 32) @(posedge MCLK); ovl_force = 1'b0; repeat (40 * 32) @(posedge MCLK);
+            r14_read(7'h07, f);
+            if (f[1] !== 1'b1) fail("T2: no DFLAG.OVL after an overload in RUN");
+            r14_read(7'h03, st);
+            if (st[5] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h, ALERT not set by DFLAG.OVL", st));
+            r14_write(7'h07, 8'h02);
+            r14_read(7'h03, st);
+            if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT after clearing OVL", st));
+            // T3: a CRC read of ERR during which STATE_ERR is set (a START in RUN, refused at the tick that falls in
+            // the read's data byte): the read CRC covers the byte sent, not the register's later value
+            r14_write(7'h55, 8'h01);
+            bfm_crc_en = 1'b1;
+            r14_write(7'h06, 8'hFF);
+            // 128 kHz: the 3-byte command frame (CRC on) started 4.5 us after a tick commits after the next tick
+            // (+7.8 us), so the START is refused at the tick after that (+23.4 us), about 5.9 us into the read frame
+            // that follows at once, inside its data byte (4.4..8.2 us)
+            @(posedge dut.tick); #(4500.0);
+            r14_cmd(8'h11);
+            t0f = $realtime;
+            r14_read(7'h06, e);                                                   // the BFM checks its CRC
+            if (e !== 8'h00 || t_serr < t0f + 4400.0 || t_serr > t0f + 8200.0)
+                fail($sformatf("T3 not exercised: ERR read 0x%02h, STATE_ERR set %0.0f ns into the frame", e, t_serr - t0f));
+            r14_read(7'h06, e);
+            if (e[6] !== 1'b1) fail($sformatf("T3: ERR 0x%02h without the STATE_ERR of the refused START", e));
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h55, 8'h00);
+            bfm_crc_en = 1'b0;
+            // T4: CHANGED for T_ELEC 255: 3 + 255 = 258 outputs (past 8 bits): the next 3 samples all marked
+            r14_write(7'h51, 8'd255);
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T4 drain");
+            read_samples(1, -1, "T4 sync");
+            r14_write(7'h21, 8'h01);                                              // M 0 -> 1: one step
+            r14_cmd(8'h44);
+            repeat (600) @(posedge MCLK);
+            read_samples(3, 3, "T4 CHANGED of a 258-output mark");
+            r14_cmd(8'h22);                                                       // leaving RUN ends the mark
+            wait_state(4'd0, 50.0, "T4 IDLE");
+            // T5: an overload in WAIT_E does not set DFLAG.OVL (only FILL and RUN)
+            r14_write(7'h51, 8'd2);
+            r14_cmd(8'h11);
+            wait_state(4'd3, 6000.0, "T5 WAIT_E");
+            ovl_burst(1'b0, "T5 overload in WAIT_E");
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "T5 IDLE");
+            r14_write(7'h51, 8'd0);
+            // T6: APPLY_NR in RUN keeps the FIFO's samples; a FLUSH keeps the CHANGED marks still to come
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "T6 RUN");
+            k = 0;
+            while (dut.fifo_level < 4'd3 && k < 200000) begin @(posedge MCLK); k++; end
+            r14_read(7'h05, lv0);
+            r14_write(7'h21, 8'h02);                                              // M 1 -> 2: one step
+            r14_cmd(8'h44);
+            repeat (600) @(posedge MCLK);
+            r14_read(7'h05, v1);
+            if (lv0 < 8'd3 || v1 < lv0) fail($sformatf("T6: FIFO %0d -> %0d over an APPLY_NR in RUN", lv0, v1));
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T6 drain");
+            read_samples(4, -1, "T6 past the first mark");
+            r14_write(7'h51, 8'd10);
+            read_samples(1, -1, "T6 sync");
+            r14_write(7'h21, 8'h03);                                              // M 2 -> 3: 13 marks
+            r14_cmd(8'h44);
+            repeat (600) @(posedge MCLK);
+            read_samples(2, 2, "T6 the mark before FLUSH");
+            r14_cmd(8'h55);
+            repeat (600) @(posedge MCLK);
+            read_samples(12, 11, "T6 the 11 marks left after FLUSH");
+            r14_write(7'h51, 8'd0);
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "T6 IDLE");
+            r14_write(7'h21, 8'h00);
+            // T7: 64 kHz; FLUSH then START back to back, the first frame started 13.8 us + k half-MCLK after a tick,
+            // until START's commit falls in the cycle the tick takes FLUSH: START is then the new pending command,
+            // executed at the next tick (WARMUP), without STATE_ERR
+            r14_write(7'h26, 8'h00);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+            found = 1'b0;
+            for (k = 0; k < 70 && !found; k++) begin
+                integer nack0;
+                nack0 = n_ack_commit;
+                @(posedge dut.tick); #(13800.0 + k * TMCLK / 2.0);
+                spi_tidle = 125.0;
+                r14_cmd(8'h55);
+                r14_cmd(8'h11);
+                spi_tidle = 600.0;
+                repeat (1200) @(posedge MCLK);
+                if (n_ack_commit != nack0) begin
+                    found = 1'b1;
+                    if (dut.seq_state !== 4'd1)
+                        fail($sformatf("T7: START committed in FLUSH's acknowledge cycle not executed (state %0d)", dut.seq_state));
+                    r14_read(7'h06, e);
+                    if (e[6] !== 1'b0) fail($sformatf("T7: ERR 0x%02h, STATE_ERR for START committed in the acknowledge cycle", e));
+                end
+                if (dut.seq_state !== 4'd0) begin r14_cmd(8'h22); wait_state(4'd0, 50.0, "T7 IDLE"); end
+                r14_write(7'h06, 8'hFF);
+            end
+            if (!found) fail("T7 not exercised: no START committed in FLUSH's acknowledge cycle");
+            r14_write(7'h26, 8'h01);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+        end
+        $display("T  ALERT from every flag, a read CRC across a change, CHANGED 258, OVL in WAIT_E, FIFO and marks over APPLY_NR and FLUSH, a command in the ack cycle (errors %0d)", errors);
+        if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
 
         $fclose(flog);
         $fclose(fsmp);

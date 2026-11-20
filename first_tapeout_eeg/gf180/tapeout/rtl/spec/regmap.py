@@ -26,6 +26,13 @@ sys.path.insert(0, HERE)
 import fsm_spec as FS  # noqa: E402
 
 TICK_UNIT_S = 256 / FS.MCLK                     # 7.8125 us: unit of T_PRE, T_RST, T_REC (one 128 kHz chopper period)
+# the overload rule (FLG-04; `check` compares it with the requirement's row and the spec's section 5, audit round 7)
+OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
+REQ_DOC = os.path.join(REPO, "documentation", "gf180_digital_control_requirements_20261119.md")
+# the full-scale streams of the CT loop model (gitignored build outputs, 10/24): their SHA-256, so that a changed or
+# regenerated stream cannot pass unnoticed (audit round 7)
+FULLSCALE_SHA256 = {"s4": "fbc092845489d9b7df1bb48cd158a6b95006cb59a0e7e30c2c7510dd78632f11",
+                    "s20": "2f06a6497bed6c65cb10f530ac4811cf6e2636c152961b8a548dfcea96b388a8"}
 
 # update classes of a field
 #   apply  analog-affecting: written to a shadow, copied to the active copy (and the pins) by START / APPLY / APPLY_NR
@@ -54,7 +61,7 @@ REGS = [
                                    F("CMD_PENDING", 4, 4, 0, [0, 1], "ro", "命令が tick での処理を待っている"),
                                    F("READY", 3, 3, 0, [0, 1], "ro", "状態が RUN"),
                                    F("DATA", 2, 2, 0, [0, 1], "ro", "FIFO が空でない"),
-                                   F("OVL_NOW", 1, 1, 0, [0, 1], "ro", "過負荷を検出中（直近 32 フレームに両端の符号が 4 個以上）"),
+                                   F("OVL_NOW", 1, 1, 0, [0, 1], "ro", f"過負荷を検出中（直近 {OVL_RULE['window']} フレームに両端の符号が {OVL_RULE['threshold']} 個以上）"),
                                    F("AFE_RST", 0, 0, 1, [0, 1], "ro", "AFE_RST の出力の現在値")],
      "状態（フレームの先頭バイトで MISO から返す値と同じ）"),
     (0x04, "STATE", "RO", False, [F("STATE", 3, 0, 0, [x[1] for x in FS.SEQ_STATES if x[1] is not None], "ro",
@@ -108,7 +115,7 @@ REGS = [
     # test (locked by TEST_KEY)
     (0x60, "TEST_MUX", "RW", True, [F("ATP_EN", 4, 4, 0, [0, 1], "apply", "試験用マルチプレクサを ATP へ", "TEST_CFG[4]"),
                                     F("ATP_SEL", 3, 0, 0, rng(0, 15), "apply", "節点の選択（0 AVSS … 15 ADC O2N）", "TEST_CFG[3:0]")], "試験用マルチプレクサ"),
-    (0x61, "TEST_CTRL", "RW", True, [F("CHOP_STOP", 1, 1, 0, [0, 1], "apply", "1 で CHOP_EN ＝ 0（入力チョッパを相 A に固定）", "CHOP_EN"),
+    (0x61, "TEST_CTRL", "RW", True, [F("CHOP_STOP", 1, 1, 0, [0, 1], "apply", "1 で CHOP_EN ＝ 0（入力チョッパを相 A に固定。CHOP、CHOP_OUT と出力チョッパは止まらない：第 4.1 節、ANA-03）", "CHOP_EN"),
                                      F("ADC_ZERO", 0, 0, 0, [0, 1], "apply", "ADC の入力の短絡と CHOP_BLANK の保持", "TEST_CFG[5]")], "試験の制御"),
     (0x62, "DEBUG", "RW", True, [F("DBG_SEL", 2, 1, 0, rng(0, 3), "imm", "RAW のパッドに時刻の信号（RAW_EN ＝ 0 のとき）", "TEST_CFG[7:6]"),
                                  F("RAW_EN", 0, 0, 0, [0, 1], "imm", "生の符号の出力", "RAW_DATA／RAW_CLK")], "デバッグの出力"),
@@ -129,7 +136,6 @@ SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み�
                  ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかに、過負荷の検出の成り立つ両端の符号があった"),
                  ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓と電極の整定（反映の直後の 3 ＋ T_ELEC 個。残りのほうが長ければその長さ。RUN を出ると残りは取り消す）"),
                  ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
-OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))
 RANGE_MAX_M = {0: 1023, 1: 127, 2: 255, 3: 511, 4: 1023}       # range 0: the DAC is off and OFM/OFS are driven 0
 BLANK_WITH_DAC = 15                    # CHOP_BLANK's length (MCLK) with the offset DAC on (range >= 1): its settling
 
@@ -314,6 +320,49 @@ def check(verbose=True):
         errs.append("pins_from_active lacks " + ", ".join(sorted(set(PIN_OF_CONTROL.values()) - set(probe))))
     if BLANK_WITH_DAC != FS.TIMING["blank_max"]:
         errs.append(f"BLANK_WITH_DAC {BLANK_WITH_DAC} is not the frame's longest blanking {FS.TIMING['blank_max']}")
+    # audit round 7: range 0 (the DAC off, OFM / OFS driven 0) accepts every M; pins_from_active against an
+    # independent derivation from the statements of the spec (2.2, 4.1) over a grid of active settings
+    m_bits = sum(f["msb"] - f["lsb"] + 1 for *_, f in all_fields() if f["name"] in ("M_H", "M_L"))
+    if RANGE_MAX_M.get(0) != 2 ** m_bits - 1:
+        errs.append(f"range 0: largest M {RANGE_MAX_M.get(0)}; the DAC is off, so every M (0..{2 ** m_bits - 1}) is accepted")
+    import itertools
+    for rg, sg, bl, cf, c1, az, cs, mm in itertools.product(range(5), (0, 1), (0, 7, 15), (0, 1), range(5), (0, 1),
+                                                           (0, 1), (0, 1, 127, 1023)):
+        ac = dict(M_H=mm >> 8, M_L=mm & 0xFF, SIGN=sg, RANGE=rg, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0,
+                  CHOP_FAST=cf, CHOP1_RATE=c1, DWA_EN=1 - az, BLANK_LEN=bl, ATP_EN=cs, ATP_SEL=5 * cs,
+                  CHOP_STOP=cs, ADC_ZERO=az, DBG_SEL=2 * az + cs)
+        win = 15 if rg >= 1 else bl                    # the blanking runs from cycle 31 through cycle win - 1
+        ind = dict(OFM=mm * (rg >= 1), OFS=sg * (rg >= 1), OFEN=int("0" * (4 - rg) + "1" * rg, 2),
+                   AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0, DWA_EN=1 - az, CHOP_EN=1 - cs,
+                   TEST_CFG=(2 * az + cs) * 64 + az * 32 + cs * 16 + 5 * cs,
+                   BLANK_W=len([31] + list(range(win))), BLANK_HELD=az,
+                   CHOP_HALF=int(FS.MCLK) // (128000 if cf else 64000) // 2,
+                   CHOP1_HALF=0 if c1 == 0 else (32 * 1024 >> (c1 - 1)) // 2)
+        got = pins_from_active(ac)
+        bad = {k: (got.get(k), v) for k, v in ind.items() if got.get(k) != v}
+        if bad:
+            errs.append(f"pins_from_active differs from the independent derivation for {ac}: {bad}")
+            break
+    # the overload rule against the requirement (FLG-04) and the spec's section 5, which state it in words
+    R = OVL_RULE
+    for path, pat in ((REQ_DOC, r"直近 (\d+) フレームに両端が (\d+) 個以上"),
+                      (DOC, r"直近 (\d+) フレームに (\d+) 個以上")):
+        try:
+            txt = open(path, encoding="utf-8").read()
+        except OSError as ex:
+            errs.append(f"the overload rule cannot be compared with {os.path.basename(path)}: {ex}")
+            continue
+        mt = re.search(pat, txt)
+        mc = re.search(r"両端（(\d+) または (\d+)）", txt)
+        if not mt or not mc:
+            errs.append(f"{os.path.basename(path)}: the overload rule's statement not found")
+        elif (int(mt.group(1)), int(mt.group(2))) != (R["window"], R["threshold"]) or \
+                (int(mc.group(1)), int(mc.group(2))) != tuple(R["codes"]):
+            errs.append(f"OVL_RULE {R} differs from {os.path.basename(path)}: window {mt.group(1)}, threshold "
+                        f"{mt.group(2)}, codes {mc.group(1)} / {mc.group(2)}")
+    ovl_txt = next(f["desc"] for *_, f in all_fields() if f["name"] == "OVL_NOW")
+    if f"直近 {R['window']} フレームに両端の符号が {R['threshold']} 個以上" not in ovl_txt:
+        errs.append(f"STATUS.OVL_NOW's text does not state OVL_RULE: {ovl_txt}")
     # cfg_ok / nr_ok at the boundaries
     base = dict(M=0, SIGN=0, RANGE=1, AFE_IBIAS=3, CPF_TRIM=8, BTRIM_P=1, BTRIM_N=0, CHOP_FAST=1, CHOP1_RATE=3,
                 DWA_EN=1, BLANK_LEN=7, ATP_EN=0, ATP_SEL=0, CHOP_STOP=0, ADC_ZERO=0)
@@ -331,11 +380,15 @@ def check(verbose=True):
         errs.append("the nr_ok model does not list exactly the shadowed settings")
     # overload rule against the full-scale code streams
     import numpy as np
+    import hashlib
     for name in ("s4", "s20"):
         pth = os.path.join(HERE, "..", "build", "e2e", f"{name}.codes")
         if not os.path.exists(pth):
             errs.append(f"{name}.codes not found: the overload false-alarm check cannot run")
             continue
+        h = hashlib.sha256(open(pth, "rb").read()).hexdigest()
+        if h != FULLSCALE_SHA256[name]:
+            errs.append(f"{name}.codes is not the stream checked on 11/19 (SHA-256 {h[:16]}...)")
         c = np.fromfile(pth, dtype=np.uint8)[256000:]
         ext = np.isin(c, OVL_RULE["codes"]).astype(np.int32)
         k = np.convolve(ext, np.ones(OVL_RULE["window"], dtype=np.int32), mode="valid")
@@ -491,7 +544,7 @@ def selftest():
     import copy
     g = globals()
     keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY")}
-    keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok}
+    keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active}
 
     def fld(reg, name):
         return next(f for f in next(r for r in g["REGS"] if r[1] == reg)[4] if f["name"] == name)
@@ -538,6 +591,20 @@ def selftest():
     def m_ovl():
         g["OVL_RULE"]["threshold"] = 0
 
+    def m_ovl2():                                       # audit round 7, auditor C (each passed check)
+        g["OVL_RULE"]["threshold"] = 2
+
+    def m_ovl_window():
+        g["OVL_RULE"]["window"] = 8
+        g["OVL_RULE"]["threshold"] = 8
+
+    def m_range0():
+        g["RANGE_MAX_M"][0] = 0
+
+    def m_blank():
+        f0 = keep_fn["pins_from_active"]
+        g["pins_from_active"] = lambda ac: dict(f0(ac), BLANK_W=f0(ac)["BLANK_W"] - 1)
+
     def m_mirror():
         g["REGS"].append((0x30, "EXTRA", "RO", False, [F("X", 7, 0, 0, [0], "ro", "x")], "x"))
 
@@ -546,7 +613,9 @@ def selftest():
             ("T_RST の最小値が 100 µs 未満", m_short_rst), ("既定値が推奨値でない（AFE_IBIAS 2）", m_bad_default),
             ("命令コードが 1 ビット違い", m_cmd_close), ("STATUS の固定ビットがない", m_marker),
             ("STATE のコードの欠落", m_state), ("範囲 1 の上限の誤り", m_range), ("nr_ok が範囲の変更を許す", m_nr_range),
-            ("nr_ok が 2 段を許す", m_nr_two_steps), ("過負荷の規則が常に成立", m_ovl), ("写しのアドレスとの重なり", m_mirror)]
+            ("nr_ok が 2 段を許す", m_nr_two_steps), ("過負荷の規則が常に成立", m_ovl), ("写しのアドレスとの重なり", m_mirror),
+            ("過負荷の閾値が 2", m_ovl2), ("過負荷の窓が 8 で閾値が 8", m_ovl_window), ("範囲 0 の M の上限が 0", m_range0),
+            ("CHOP_BLANK の幅に 1 を足さない", m_blank)]
     results, ok = [], True
     for name, m in muts:
         for k, v in keep.items():

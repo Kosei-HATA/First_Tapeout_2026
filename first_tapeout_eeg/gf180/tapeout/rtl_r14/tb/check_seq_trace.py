@@ -4,7 +4,9 @@
 For every tick (T) and output time (O) of the trace, fsm_spec.seq_tick gives the next state and the actions from the
 state, the events present (the pending command and the timer at a tick, OUT at an output time) and the conditions;
 the RTL's next state and actions must be the same. Compared actions: apply, flush, store, mark, STATE_ERR, CFG_ERR,
-cic_clear, restart ('discard' and 'seq_inc' belong to other blocks; the FIFO decides OVERRUN).
+cic_clear, restart; and at every output time 'seq_inc' (the data path counts every output time, eeg_digital_top) and
+'discard' exactly when the RTL does not store (audit round 7: a table that ignored OUT in some states passed). The FIFO
+decides OVERRUN.
 The timer is modelled here, not taken from the RTL: loaded with the state's setting (T_WARM, T_ELEC x 1024 frames;
 T_REC, T_PRE, T_RST x 8 frames) on entering a timed state and on a restart, decremented once per frame, clamped at 0;
 TMR is present at a tick when the model is 0. The RTL's timer before and after every event must equal the model.
@@ -66,6 +68,9 @@ def main(path):
         if NAME.get(nxt) != exp_nxt or got != exp:
             errs.append(f"line {ln}: {s} {present} {env}: RTL -> {NAME.get(nxt, nxt)} {sorted(got)}, "
                         f"specification -> {exp_nxt} {sorted(exp)}")
+        if kind == "O" and ("seq_inc" not in exp_acts or ("discard" in exp_acts) == ("store" in got)):
+            errs.append(f"line {ln}: {s} OUT: the specification's {sorted(exp_acts)} does not count the output time "
+                        f"and {'store' if 'store' in got else 'discard'} it as the RTL does")
         if exp_nxt != s or "restart" in exp:
             model = load(exp_nxt, tset)
             nload += 1

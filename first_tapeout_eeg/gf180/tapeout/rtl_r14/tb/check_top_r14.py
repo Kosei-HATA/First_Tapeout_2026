@@ -17,13 +17,23 @@ B = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "build")     
 
 
 def main():
-    codes, clears = [], []
+    codes, clears, seqs = [], [], []
     for line in open(os.path.join(B, "top_r14_cic.log")):
         f = line.split()
         if f[0] == "I":
             codes.append(int(f[1]))
-        elif f[0] == "O" and f[2] == "1":
-            clears.append(int(f[1]))
+        elif f[0] == "O":
+            seqs.append(int(f[1]))
+            if f[2] == "1":
+                clears.append(int(f[1]))
+    # SEQ counts every output time in every state from the RESET_N release (DAT-03; audit round 7: a table that left
+    # IDLE, WARMUP, PRE and PULSE uncounted passed every test): the logged output times carry 0, 1, 2, ...
+    gaps = [k for k in range(len(seqs)) if seqs[k] != k % 65536]
+    print(f"{len(seqs)} output times logged: SEQ " + ("0, 1, 2, ... at every one" if not gaps else
+                                                     f"breaks at output {gaps[0]} (SEQ {seqs[gaps[0]]})"))
+    if gaps or not seqs:
+        print("FAIL: SEQ does not count every output time")
+        return 1
     # golden per segment between clears; seq s closes inputs [s R, (s + 1) R)
     gold = {}
     starts = [0] + [s + 1 for s in clears]

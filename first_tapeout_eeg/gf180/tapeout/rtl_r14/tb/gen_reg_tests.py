@@ -8,8 +8,12 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      and the reserved bits set (they must read 0); the active copy unchanged (no APPLY); a value below the minimum
      or above the maximum, with every other field changed to another legal value -> RANGE_ERR and nothing written
      (the register still holds the last legal value); the reset value restored
-  3. the test registers: without the key ADDR_ERR and nothing written; with the key as 2.; locked again
+  3. the test registers (every one): without the key ADDR_ERR and nothing written; with the key as 2.; locked again,
+     each refused again (audit round 7: only DEBUG before the key and TEST_MUX after were written locked)
   4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing
+  5. run_guard_tests (tb_top_r14's J2, at 64 kHz): every register of regmap.guarded_addrs(), written while a FLUSH waits
+     for its tick, gives STATE_ERR and is not written (audit round 7: J2 wrote 2 of the 16; a guard that skipped
+     OFF_M_H passed every test)
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/gen_reg_tests.py
 """
@@ -42,6 +46,16 @@ def caps4(r):
 
 def field_mask(f):
     return ((1 << (f["msb"] - f["lsb"] + 1)) - 1) << f["lsb"]
+
+
+def legal_other(fields, low=False):
+    """A legal byte with every field at a legal value other than its reset value where it has one (low: the smallest
+    such value, else the largest); a field with a single legal value keeps it."""
+    v = 0
+    for f in fields:
+        alt = [x for x in f["legal"] if x != f["reset"]]
+        v |= ((min(alt) if low else max(alt)) if alt else f["reset"]) << f["lsb"]
+    return v
 
 
 def main():
@@ -102,8 +116,10 @@ def main():
     L.append(f"    rt_expect_err(8'h{E_ADDR:02X}, \"reads of undefined addresses\");")
     # 2./3. writable fields
     L.append("    // 2. writable fields (3. the test registers with the key)")
-    L.append(f"    rt_write(7'h{0x62:02X}, 8'h01);  rt_expect_err(8'h{E_ADDR:02X}, \"DEBUG without the key\");")
-    L.append(f"    rt_read_expect(7'h{0x62:02X}, 8'h00, \"DEBUG unchanged\");")
+    locked = [(a, r) for a, r in sorted(regs.items()) if r[3]]
+    for a, r in locked:                                        # every test register refused without the key
+        wv = legal_other(r[4])
+        L.append(f"    rt_write_check(7'h{a:02X}, 8'h{wv:02X}, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"{r[1]} without the key\");")
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
     for a, r in sorted(regs.items()):
         if r[2] != "RW":
@@ -143,7 +159,9 @@ def main():
                 L.append(f"    rt_write_check(7'h{a:02X}, 8'h{wb:02X}, 8'h{cur:02X}, 8'h{E_RANGE:02X}, \"{r[1]}.{f['name']} = {v} (illegal)\");")
             L.append(f"    rt_write(7'h{a:02X}, 8'h{base:02X});")
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
-    L.append(f"    rt_write_check(7'h{0x60:02X}, 8'h05, 8'h00, 8'h{E_ADDR:02X}, \"TEST_MUX locked again\");")
+    for a, r in locked:                                        # and refused again once locked
+        wv = legal_other(r[4])
+        L.append(f"    rt_write_check(7'h{a:02X}, 8'h{wv:02X}, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"{r[1]} locked again\");")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     for a, r in sorted(regs.items()):
@@ -159,10 +177,43 @@ def main():
     for a in undefined:
         L.append(f"    rt_write_check(7'h{a:02X}, 8'h5A, 8'h00, 8'h{E_ADDR:02X}, \"undefined 0x{a:02X}\");")
     L.append("endtask")
+    # 5. the guarded writes (regmap.guarded_addrs): two legal bytes differing from the reset value and each other;
+    #    guard_one (tb_top_r14) uses the first unless the register holds it, sends FLUSH just after a tick at 64 kHz,
+    #    writes, and expects STATE_ERR and the register unchanged
+    L.append("task automatic run_guard_tests();")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});       // the test registers among them need the key")
+    for a in RM.guarded_addrs():
+        r = regs[a]
+        w1, w2 = legal_other(r[4]), legal_other(r[4], low=True)
+        if w2 == w1:                                   # binary fields only: the reset value is the other choice
+            w2 = reset_byte(r[4])
+        assert w1 != w2 and w1 != reset_byte(r[4]), (r[1], w1, w2)
+        L.append(f"    guard_one(7'h{a:02X}, 8'h{w1:02X}, 8'h{w2:02X}, \"{r[1]}\");")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    L.append("endtask")
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
-    print(f"wrote {os.path.relpath(OUT, HERE)}: {len(L) - 3} checks")
+    chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "rt_write_check(", "guard_one(")
+    total, per, skip = 0, {"": 0, "FIFO4": 0}, None
+    for ln in L:                                       # checks in the file, and those each FIFO configuration runs
+        t = ln.strip()
+        if t == "`ifdef FIFO4":
+            skip = ""
+            continue
+        if t == "`else":
+            skip = "FIFO4"
+            continue
+        if t == "`endif":
+            skip = None
+            continue
+        k = sum(t.count(c) for c in chk)
+        total += k
+        for cfg in per:
+            if skip is None or skip != cfg:
+                per[cfg] += k
+    print(f"wrote {os.path.relpath(OUT, HERE)}: {total} checks ({per['']} with an 8-deep FIFO, {per['FIFO4']} with "
+          f"a 4-deep one; {len(RM.guarded_addrs())} guarded registers)")
 
 
 PIN_OUT = os.path.join(HERE, "..", "build", "pin_tests.svh")

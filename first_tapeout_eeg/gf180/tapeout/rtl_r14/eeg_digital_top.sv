@@ -122,8 +122,10 @@ module eeg_digital_top #(
                    .ovl_hit(ovl_hit), .ovl_seen(ovl_seen));
 
     // a sample's OVL: an extreme code taken during a detected overload in any of the three output intervals of its
-    // sinc^3 window (this one and the two before; the detection lags by at most 3 frames, whose weight in a window is
-    // below 1e-8). At the output time every input of the interval is in (its last at cycle 3), so ovl_seen holds it
+    // sinc^3 window (this one and the two before). The first 3 extreme codes of a detection are not hits; sparse, they
+    // can span up to 31 frames and fall in the newest inputs of the previous window, whose weight there is at most
+    // 1.3e-6 (under 0.1 LSB at 16 bits; audit round 7: was "3 frames, below 1e-8", true only for consecutive codes).
+    // At the output time every input of the interval is in (its last at cycle 3), so ovl_seen holds it
     logic       ovl_iv;                               // this output interval
     logic [1:0] ovl_hist;                             // the two previous intervals
     assign ovl_iv = ovl_seen;                         // (ovl_hist's register follows the FIFO, below)

@@ -118,6 +118,34 @@ module tb_spi_r14;
         frame(n, x, tag);
     endtask
 
+    // audit round 7: SCLK and MOSI are shared between chips. Another chip's frame (this CS_N high; its own CS_N low
+    // 5 MCLK or more before its first SCLK edge, so its edges come after this chip's CS_N synchronizer has let go)
+    // must do nothing here: no state, commit, copy, pop or flag, MISO not driven. MISO_OE is off as CS_N rises.
+    logic   other_on = 1'b0;
+    integer n_other = 0, n_other_bad = 0, oseed = 20261120;
+    task automatic other_chip(input integer nbits);
+        other_on = 1'b1;
+        #(160.0);                                      // the other chip's CS_N setup (5 MCLK or more)
+        for (int n = 0; n < nbits; n++) begin
+            MOSI = $random(oseed);
+            SCLK = 1'b1; #(spi_high); SCLK = 1'b0; #(spi_low);
+        end
+        MOSI = 1'b0;
+        #(160.0);
+        other_on = 1'b0;
+        n_other = n_other + 1;
+    endtask
+    always @(posedge MCLK)
+        if (other_on && (dut.reg_we || dut.smp_pop || dut.smp_snap || dut.frame_err || dut.crc_err || dut.addr_err ||
+                         MISO_OE !== 1'b0 || dut.u_spi.st !== 4'd0)) begin
+            n_other_bad = n_other_bad + 1;
+            if (n_other_bad <= 5) $display("FAIL: tb_spi_r14 @%0t: activity during another chip's frame (st %0d)", $time, dut.u_spi.st);
+        end
+    always @(posedge CS_N) begin
+        #1;
+        if (MISO_OE !== 1'b0) $display("FAIL: tb_spi_r14 @%0t: MISO_OE still on after CS_N rose", $time);
+    end
+
     integer i_run;
     // watchdog (audit round 5): a frame takes about 0.34 ms of simulated time; 1 ms per frame ends a run that waits for
     // an event the RTL never gives (cic_stb, tick) as a failure instead of a hang
@@ -163,6 +191,8 @@ module tb_spi_r14;
                 wr(7'h10, 8'h11, 1, "setup");
             end
             spi_tidle = ($urandom_range(0, 3) == 0) ? 125.0 : 600.0 + $urandom_range(0, 20000);
+            if ($unsigned($random(oseed)) % 100 < 15)  // another chip's frame (its own random stream: the frames
+                other_chip(1 + $unsigned($random(oseed)) % 40);   // of this chip are the same as before)
             kind = $urandom_range(0, 99);
             if (kind < 22) begin                                   // write a register (random address class)
                 case ($urandom_range(0, 9))
@@ -260,7 +290,8 @@ module tb_spi_r14;
             end
         end
         $fclose(fd);
-        $display("tb_spi_r14: %0d frames, %0d SPI timing errors -> %s", nfr, spi_errors, logname);
+        $display("tb_spi_r14: %0d frames, %0d SPI timing errors, %0d frames of another chip on SCLK -> %s", nfr, spi_errors,
+                 n_other, logname);
         $finish;
     end
 endmodule

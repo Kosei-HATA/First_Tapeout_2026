@@ -11,7 +11,10 @@
                        4 extreme codes in 32 frames (detected) and 3 (never); then 300,000 frames of s4 (the full
                        scale, where the overload rule must never fire).
 
-A missing input is an error (the test that needs the file then fails instead of being skipped).
+A missing input is an error (the test that needs the file then fails instead of being skipped), and so is an input
+whose SHA-256 is not the one recorded here (they are gitignored build and run outputs; audit round 7).
+build/ovl.split: one line per segment, "run <first> <end> <name>" for each extracted run, "synth <first> <end>",
+"full <first> <end>" (frame indices, end excluded); check_ovl.py requires detection in every extracted run.
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/gen_codes.py
 """
 import os
@@ -24,39 +27,56 @@ R14 = os.path.normpath(os.path.join(HERE, ".."))
 S4 = os.path.normpath(os.path.join(R14, "..", "rtl", "build", "e2e", "s4.codes"))
 OVL_RUNS = os.path.normpath(os.path.join(R14, "..", "pex", "runs", "adc_overload_r12"))
 FR = 1 / 1.024e6
+SHA256 = {"s4.codes": "fbc092845489d9b7df1bb48cd158a6b95006cb59a0e7e30c2c7510dd78632f11",
+          "typical_ov2.5V_150u_then_dc-39mV_300u": "28c464e1950946e762b3608d49bd75510c3bef22e6e4604ec265cf382b285632",
+          "typical_ov2.5V_50u_rec60u_f20k_a0.28": "dd360de33340f371345e7f7480fadab61c5132d2e6e3444542bbd23160faa9bb"}
+
+
+def sha(p):
+    import hashlib
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
 
 
 def main():
     if not os.path.exists(S4):
         sys.exit(f"missing {S4} (the CT loop model's full-scale stream; gf180/tapeout/rtl e2e flow)")
+    if sha(S4) != SHA256["s4.codes"]:
+        sys.exit(f"{S4} is not the stream recorded on 11/19 (SHA-256)")
     s4 = np.fromfile(S4, dtype=np.uint8)
     os.makedirs(os.path.join(R14, "build"), exist_ok=True)
     top = s4[256000:256000 + 262144]
     with open(os.path.join(R14, "build", "top_r14.codes"), "w") as f:
         f.write("\n".join(str(int(x)) for x in top) + "\n")
-    codes, runs = [], 0
+    codes, runs, segs = [], 0, []
     for d in sorted(os.listdir(OVL_RUNS)) if os.path.isdir(OVL_RUNS) else []:
         p = os.path.join(OVL_RUNS, d, "out.csv")
         if not os.path.exists(p):
             continue
+        if SHA256.get(d) != sha(p):
+            sys.exit(f"{p}: not one of the extracted runs recorded (SHA-256)")
         x = np.loadtxt(p)
         t, norm1 = x[:, 0], x[:, 19]
         tf = np.arange(t[0] + 0.5 * FR, t[-1], FR)
+        first = len(codes)
         codes += list(np.round((np.interp(tf, t, norm1) + 0.5) * 31).astype(int))
+        segs.append(f"run {first} {len(codes)} {d}")
         runs += 1
     if runs != 2:
         sys.exit(f"expected the two extracted overload runs in {OVL_RUNS}, found {runs}")
+    first = len(codes)
     for p in range(37):                                # a burst whose last frame has index p (mod 37)
         gap = 64 + ((p - (len(codes) + 64 + 19)) % 37)
         codes += [16] * gap + [31 if p % 2 else 0] * 20
     codes += [16] * 64 + [0, 16, 16, 16, 16, 16, 16, 16] * 4 + [16] * 64        # 4 extremes in 32 frames: detected
     codes += [31] + [16] * 10 + [31] + [16] * 10 + [31] + [16] * 64            # 3 extremes: never
     n_ovl = len(codes)
+    segs.append(f"synth {first} {n_ovl}")
     codes += list(s4[256000:556000].astype(int))
+    segs.append(f"full {n_ovl} {len(codes)}")
     with open(os.path.join(R14, "build", "ovl.codes"), "w") as f:
         f.write("\n".join(str(int(c)) for c in codes) + "\n")
     with open(os.path.join(R14, "build", "ovl.split"), "w") as f:
-        f.write(f"{n_ovl}\n")                         # frames of the overload runs; the rest is the full scale
+        f.write("\n".join(segs) + "\n")
     print(f"build/top_r14.codes: {len(top)} frames; build/ovl.codes: {n_ovl} overload (2 runs, 39 synthetic bursts) "
           f"+ 300000 full-scale frames")
     return 0

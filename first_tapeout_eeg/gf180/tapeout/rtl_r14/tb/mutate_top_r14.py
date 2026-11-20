@@ -297,6 +297,16 @@ MUTATIONS = [
     ("最上位：SEQ を SOFT_RESET で戻す", "eeg_digital_top.sv",
      "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;",
      "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)       seq_cnt <= 16'd0;"),
+    # audit round 7, auditor C (each passed all 16 groups before the round's additions) and the SEQ count
+    ("レジスタ：FIFO_LEVEL の最上位のビットを落とす（満杯の 8 段が 0 と読める）", "eeg_regs.sv",
+     "A_FIFO_LEVEL:     rdata = {4'h0, fifo_level};", "A_FIFO_LEVEL:     rdata = {5'h00, fifo_level[2:0]};"),
+    ("レジスタ：未処理の命令の間も OFF_M_H を書ける（ガードの漏れ）", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin",
+     "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr] && (addr != A_OFF_M_H)) begin"),
+    ("レジスタ：TEST_CTRL を鍵なしで書ける", "eeg_regs.sv",
+     "A_TEST_MUX, A_TEST_CTRL, A_DEBUG: wr_locked = !unlocked;", "A_TEST_MUX, A_DEBUG: wr_locked = !unlocked;"),
+    ("最上位：SEQ を RUN の出力の時刻だけ数える", "eeg_digital_top.sv",
+     "else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;", "else if (cic_stb && (seq_state == ST_RUN)) seq_cnt <= seq_cnt + 16'd1;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -408,6 +418,11 @@ SPI_MUTATIONS = [
      "end else if (pend && !cmd_ack) begin", "end else if (1'b0) begin"),
     ("レジスタ：未定義のアドレスの読み出しが 0x00 でない", "eeg_regs.sv",
      "default:          addr_ok = 1'b0;", "default:          begin addr_ok = 1'b0; rdata = 8'hFF; end"),
+    # audit round 7: the shared bus (another chip's frame with this CS_N high; MISO_OE off as CS_N rises)
+    ("SPI：MISO_OE を CS_N の立ち上がりで直ちに切らない（同期化の 2〜3 MCLK の間、共有の MISO を駆動）", "eeg_spi_slave.sv",
+     "assign miso_oe   = ~cs_n & cs_act;", "assign miso_oe   = cs_act;"),
+    # (SCLK edges counted with CS_N high is an equivalent mutant: IDLE ignores the bits and CS_N falling resets the
+    #  bit count; an edge in the 2-3 MCLK after CS_N rises is counted with or without the gate. Not listed.)
 ]
 
 
@@ -652,11 +667,13 @@ def main():
     def tool(cmd):
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, cwd=R14)
+            if r.returncode != 0:                      # e.g. not a git checkout (a copy): say so plainly
+                return "unknown"
             return ((r.stdout or r.stderr).strip().splitlines() or ["?"])[0]
         except OSError as ex:
             return f"not found ({ex})"
     env = (f"commit {tool(['git', 'rev-parse', '--short', 'HEAD'])}"
-           f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '') else ''}; "
+           f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '', 'unknown') else ''}; "
            f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; yosys {os.environ.get('YOSYS', 'default path')}")
     with open(log, "w", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did

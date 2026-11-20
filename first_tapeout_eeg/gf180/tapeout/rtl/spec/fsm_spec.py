@@ -345,7 +345,11 @@ def check_tables(F):
                 errs.append(f"{where}: marked impossible, but the event can occur")
             if cell != IMP and not possible:
                 errs.append(f"{where}: the event cannot occur, but the cell is defined")
-            if isinstance(cell, list):
+            if isinstance(cell, list):            # one way of writing each meaning (audit round 7): staying is
+                if any(b["next"] == s for b in cell):    # next None, and doing nothing at all is IGN
+                    errs.append(f"{where}: a transition to its own state (write the stay as next None)")
+                if len(cell) == 1 and not cell[0]["actions"] and cell[0]["next"] is None:
+                    errs.append(f"{where}: one branch with no action that stays (write it IGN)")
                 vs = sorted({v for b in cell for v in guard_vars(b["guard"])})
                 unknown = [v for v in vs if v not in F["conds"]]
                 if unknown:
@@ -448,9 +452,11 @@ def seq_resolve(s, present, env):
         if not isinstance(b, dict):
             return s, [], None
         acts = list(b["actions"])
-        if "OUT" in present:                     # the data path (RESET_N): the output time counted and discarded;
-            o = pick(t.get((s, "OUT")), env)     # ALIGN's clear was taken at the edge that started this cycle
-            acts += (["cic_clear"] if isinstance(o, dict) and "cic_clear" in o["actions"] else []) + ["discard", "seq_inc"]
+        if "OUT" in present:                     # the data path (RESET_N): the output time as the RESET row's OUT
+            o = pick(t.get((s, "OUT")), env)     # cell says (counted, discarded); ALIGN's clear was taken at the edge
+            r = pick(t.get(("RESET", "OUT")), env)   # that started this cycle (audit round 7: was hard-coded here)
+            acts += ((["cic_clear"] if isinstance(o, dict) and "cic_clear" in o["actions"] else [])
+                     + (list(r["actions"]) if isinstance(r, dict) else []))
         return b["next"], acts, "RST"
     br = {e: pick(t.get((s, e)), env) for e in present}       # a missing cell is reported by check_tables
     if "TMR" in br and any(isinstance(b, dict) and "restart" in b["actions"] for e, b in br.items() if e != "TMR"):
@@ -536,8 +542,8 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
         P.append("RUN left other than by STOP or APPLY")
     if s == "RECOVER" and nxt == "ALIGN" and not env.get("t_elec0", 1):
         P.append("T_ELEC > 0 but RECOVER goes to the clear without the electrode wait (WAIT_E)")
-    if s == "RECOVER" and nxt == "WAIT_E" and env.get("t_elec0", 0) and "apply" not in acts:
-        P.append("T_ELEC = 0 but RECOVER goes to WAIT_E")
+    if nxt == "WAIT_E" and s != "WAIT_E" and env.get("t_elec0", 0):  # audit round 7: was RECOVER only (and let an
+        P.append(f"T_ELEC = 0 but {s} goes to WAIT_E (0 で WAIT_E を通らない)")  # ALIGN / FILL APPLY_NR through)
     if s == "RUN" and present == ["OUT"] and "store" not in acts:
         P.append("an output time in RUN is not stored")
     if "FLUSH" in present and "flush" not in acts:
@@ -601,8 +607,8 @@ def check_seq_ticks():
         cell = SEQ["table"].get(("RESET", e))
         if e == "REL":
             ok = isinstance(cell, list) and all(b["next"] == "IDLE" and not b["actions"] for b in cell)
-        elif e == "OUT":
-            ok = isinstance(cell, list) and all(b["next"] in (None, "RESET") and set(b["actions"]) <= DATA
+        elif e == "OUT":                         # exactly counted and discarded (audit round 7: a subset passed)
+            ok = isinstance(cell, list) and all(b["next"] in (None, "RESET") and set(b["actions"]) == DATA
                                                 for b in cell)
         elif e == "TMR":
             ok = cell == IMP
@@ -615,9 +621,10 @@ def check_seq_ticks():
     codes = [x[1] for x in SEQ_STATES if x[1] is not None]
     if len(codes) != len(set(codes)):
         errs.append("SEQ: STATE codes are not unique")
-    for x in SEQ_STATES:
-        if x[4] and any(b["next"] in (None, x[0]) for b in SEQ["table"][(x[0], "TMR")]):
-            errs.append(f"SEQ {x[0]}: the timer's expiry does not always leave the state")
+    for x in SEQ_STATES:                        # (audit round 7: an IGN timer cell made this loop crash)
+        tc = SEQ["table"].get((x[0], "TMR"))
+        if x[4] and (not isinstance(tc, list) or any(b["next"] in (None, x[0]) for b in tc)):
+            errs.append(f"SEQ {x[0]}: the timer's expiry does not always leave the state ({tc if not isinstance(tc, list) else 'stays'})")
     return errs, n
 
 
@@ -638,6 +645,10 @@ def check_spi_props():
     """Enumerated over every value of every condition (not over the guard strings)."""
     errs, n = [], 0
     t = SPI["table"]
+    for e, want in (("BIT", IGN), ("BYTE", IMP), ("CSR", IMP)):   # audit round 7: no frame walk reaches these
+        if t.get(("IDLE", e)) != want:
+            errs.append(f"SPI IDLE/{e}: {t.get(('IDLE', e))}, must be {want} (with CS_N high an SCLK edge of another "
+                        f"chip's frame does nothing; SCLK and MISO are shared)")
     for (s, e), cell in t.items():                  # every action only where the frame definitions put it
         if isinstance(cell, list):
             for b in cell:
@@ -648,6 +659,8 @@ def check_spi_props():
                         errs.append(f"SPI {s}/{e} [{b['guard']}]: {a} where the frame definitions do not put it")
                 if "addr_inc" in b["actions"] and "load_data" not in b["actions"]:
                     errs.append(f"SPI {s}/{e} [{b['guard']}]: the address advances without loading the next byte")
+                if "latch_addr" in b["actions"] and "not rw" not in b["guard"]:   # audit round 7
+                    errs.append(f"SPI {s}/{e} [{b['guard']}]: the write address latched on a branch that is not a write")
     done = ("RDONE", "SDONE", "WDONE")             # no bit after completion (a further bit leaves for OVF)
     for (s, e), cell in t.items():
         if not isinstance(cell, list):
@@ -979,6 +992,7 @@ CHECKS = [
     "分岐ごとの性質（シーケンサ、第 6 回で追加）：出力の時刻の分岐は必ず数え（seq_inc）、格納か破棄のちょうど一方。出力の時刻の動作（store、discard、seq_inc、cic_clear）は出力の時刻のみ。RESET の出力の時刻も数える（DAT-03）。拒否の旗はちょうど 1 個で、CFG_ERR は設定の整合に依る分岐、STATE_ERR は状態による無条件の拒否のみ。待ちの数え直しは、表とは独立に書いた一覧（WARMUP の APPLY と APPLY_NR、WAIT_E の APPLY_NR）のとおり",
     "分岐ごとの性質（シーケンサ）：命令を無視（IGN）してよいのは IDLE の STOP のみ。拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
+    "第 7 回で追加（1 か所の書き換えの全数、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
     f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
@@ -992,9 +1006,13 @@ def check_seq_branches():
     'apply' (a wait starts again only for a change applied while the AFE is held or the electrode settles); 'mark'
     only with 'apply' in RUN's APPLY_NR; FLUSH only empties the FIFO (no restart, mark, apply, move)."""
     errs = []
+    if SEQ["table"].get(("IDLE", "STOP")) != IGN:   # audit round 7: STOP in IDLE is accepted and does nothing
+        errs.append(f"SEQ IDLE/STOP: {SEQ['table'].get(('IDLE', 'STOP'))}; STOP in IDLE is accepted and does nothing (IGN)")
     for (s, e), cell in SEQ["table"].items():
         if s != "RESET" and e in SEQ_COMMANDS and cell == IGN and (s, e) != ("IDLE", "STOP"):
             errs.append(f"SEQ {s}/{e}: a command ignored without effect or flag (only STOP in IDLE is)")
+        if e == "OUT" and not isinstance(cell, list):    # audit round 7: IGN let the OUT rule below skip a state
+            errs.append(f"SEQ {s}/OUT: {cell}; every output time is counted in every state (DAT-03)")
         if s == "RESET" or not isinstance(cell, list):
             continue
         for b in cell:
@@ -1377,8 +1395,19 @@ def selftest():
         ("RUN の APPLY で格納する", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_ok", ["apply", "flush", "store"], "PRE"), B("not cfg_ok", ["CFG_ERR"])])),
         ("拒否に旗を 2 つ立てる", lambda t: t.__setitem__(("PULSE", "APPLY"), [B(ALWAYS, ["STATE_ERR", "CFG_ERR"])])),
         ("RECOVER の APPLY_NR で数え直す", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply", "restart"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        # audit round 7, auditor C: edits that still passed (IGN cells, the RESET row, T_ELEC = 0, IDLE/STOP)
+        ("IDLE の出力の時刻を無視（IGN）", lambda t: t.__setitem__(("IDLE", "OUT"), IGN)),
+        ("PULSE の出力の時刻を無視（IGN）", lambda t: t.__setitem__(("PULSE", "OUT"), IGN)),
+        ("リセット中の出力の時刻を捨てない", lambda t: t.__setitem__(("RESET", "OUT"), [B(ALWAYS, ["seq_inc"])])),
+        ("ALIGN の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ", lambda t: t.__setitem__(("ALIGN", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "WAIT_E"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("FILL の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "WAIT_E"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
+        ("IDLE の STOP を STATE_ERR で拒む", lambda t: t.__setitem__(("IDLE", "STOP"), [B(ALWAYS, ["STATE_ERR"])])),
+        ("WARMUP のタイマの満了を無視（IGN）", lambda t: t.__setitem__(("WARMUP", "TMR"), IGN)),
     ]
     spi_mut = [
+        ("CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）", lambda t: t.__setitem__(("IDLE", "BIT"), [B(ALWAYS, [], "HDR")])),
+        ("読み出しの先頭バイトで書き込みのアドレスを取り込む", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data", "latch_addr"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("WDAT の BIT を自分自身への遷移と書く（IGN と同じ意味の別の書き方）", lambda t: t.__setitem__(("WDAT", "BIT"), [B(ALWAYS, [], "WDAT")])),
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
         ("不完全な書き込みを通知しない", lambda t: t.__setitem__(("WDAT", "CSR"), [B(ALWAYS, [], "IDLE")])),
         ("短い読み出しで取り出す", lambda t: t.__setitem__(("RSMP", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", ["pop"], "IDLE")])),

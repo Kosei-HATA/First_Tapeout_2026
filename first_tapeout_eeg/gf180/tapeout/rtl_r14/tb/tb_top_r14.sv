@@ -66,7 +66,10 @@
 //      next, and sets DFLAG.OVL; T11 CHANGED counts output times, not stored samples (marks spent on outputs dropped
 //      by a full FIFO); T1 / T2 also mask each flag from ALERT; T2 reads OVL_NOW in STATUS and in the empty word
 //      60 frames after an overload in the same output interval (they follow the detector); T4 the 258 marks as a
-//      count; N4 STATUS in FILL; R4 also in pulse mode; R9 RAW's word runs on through a SOFT_RESET (RST-02)
+//      count; N4 STATUS in FILL; R4 also in pulse mode; R9 RAW's word runs on through a SOFT_RESET (RST-02).
+//      Audit round 7: J2 writes every guarded register (regmap.guarded_addrs, run_guard_tests from gen_reg_tests.py)
+//      while a FLUSH waits; G and T11 read FIFO_LEVEL = the depth while full; C and D: out of RUN for at least
+//      T_PRE + T_RST + T_REC + T_ELEC + 3 ms after an APPLY (host procedure step 4)
 // Also (audit round 4): every applied pin (OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, DWA_EN, CHOP_EN, TEST_CFG[5:0])
 // equals regmap.pins_from_active of the active copies at every MCLK in every state (CHOP_EN was seen only in IDLE and
 // RUN); STATUS's READY and AFE_RST bits in WARMUP, PRE, PULSE, RECOVER and ALIGN (N4); APPLY_NR across M's byte
@@ -151,6 +154,24 @@ module tb_top_r14;
             fail($sformatf("%s: unexpected ERR 0x%02h", name, e));
             r14_write(7'h06, 8'hFF);
         end
+    endtask
+`ifdef FIFO4
+    localparam logic [7:0] FDEPTH = 8'd4;
+`else
+    localparam logic [7:0] FDEPTH = 8'd8;
+`endif
+    // J2 (audit round 7): a write of a guarded register while FLUSH waits for its tick (64 kHz) gets STATE_ERR and
+    // leaves the register as it was; w1 unless the register holds it, else w2 (both legal, from gen_reg_tests.py)
+    task automatic guard_one(input logic [6:0] a, input logic [7:0] w1, input logic [7:0] w2, input string name);
+        logic [7:0] v0, w;
+        r14_read(a, v0);
+        w = (v0 === w1) ? w2 : w1;
+        @(posedge dut.tick); #(8000.0); spi_tidle = 125.0;
+        r14_cmd(8'h55);                                 // FLUSH: pending until the next tick
+        r14_write(a, w);
+        spi_tidle = 600.0;
+        expect_err_now(8'h40, $sformatf("J2 STATE_ERR for %s written while a command is pending", name));
+        rt_read_expect(a, v0, $sformatf("J2 %s not written while a command is pending", name));
     endtask
     task automatic expect_err_now(input logic [7:0] mask, input string name);
         logic [7:0] e;
@@ -806,6 +827,10 @@ module tb_top_r14;
         if ((t_afe_rise - t0) / 1000.0 < 23.40 || (t_afe_rise - t0) / 1000.0 > 23.47)
             fail($sformatf("T_PRE %0.4f us, expected 23.4375", (t_afe_rise - t0) / 1000.0));
         wait_state(4'd6, 5000.0, "RUN again");
+        // host procedure step 4 (audit round 7): an executed APPLY keeps STATE out of RUN for at least
+        // T_PRE + T_RST + T_REC + T_ELEC + 3 ms from its tick (T_ELEC 0 here)
+        if ((t_state[6] - t_state[7]) / 1000.0 < 23.4375 + 101.5625 + 250.0 + 3000.0)
+            fail($sformatf("C: RUN %0.1f us after the APPLY's tick, expected at least 3375", (t_state[6] - t_state[7]) / 1000.0));
         read_samples(4, -1, "C samples");
         $display("C  APPLY: pulse %0.4f us, SEQ %0d -> %0d (errors %0d)", t1, seq_before, last_seq, errors);
 
@@ -819,6 +844,8 @@ module tb_top_r14;
         if (OFEN !== 4'b0001 || OFM !== 10'd10 || OFS !== 1'b0) fail("offset DAC pins after APPLY");
         wait_state(4'd3, 400.0, "WAIT_E after RECOVER (T_ELEC = 2)");
         wait_state(4'd6, 9000.0, "RUN after APPLY of range 1");
+        if ((t_state[6] - t_state[7]) / 1000.0 < 23.4375 + 101.5625 + 250.0 + 2000.0 + 3000.0)
+            fail($sformatf("D: RUN %0.1f us after the APPLY's tick, expected at least 5375 (T_ELEC 2 ms)", (t_state[6] - t_state[7]) / 1000.0));
         if ((t_state[3] - t_state[2]) / 1000.0 < 249.95 || (t_state[3] - t_state[2]) / 1000.0 > 250.05)
             fail($sformatf("D RECOVER lasted %0.3f us, expected 250", (t_state[3] - t_state[2]) / 1000.0));
         if ((t_state[4] - t_state[3]) / 1000.0 < 1999.95 || (t_state[4] - t_state[3]) / 1000.0 > 2000.05)
@@ -934,6 +961,7 @@ module tb_top_r14;
         repeat (11 * 32768) @(posedge MCLK);             // 11 ms: more than 8 samples -> overrun
         r14_read(7'h07, v);
         if (v[0] !== 1'b1) fail("DFLAG.OVERRUN after the FIFO overflowed");
+        rt_read_expect(7'h05, FDEPTH, "G FIFO_LEVEL of a full FIFO (audit round 7: the level's top bit)");
         r14_cmd(8'h55);
         repeat (400) @(posedge MCLK);
         begin                                           // the empty word carries DFLAG.OVERRUN too
@@ -1099,6 +1127,7 @@ module tb_top_r14;
             expect_noerr("J2 ALERT_MASK written while a command is pending");
             rt_read_expect(7'h08, 8'hFD, "J2 ALERT_MASK written");
             r14_write(7'h08, mask0);
+            run_guard_tests();                          // every guarded register (audit round 7)
             r14_write(7'h26, 8'h01);
             r14_cmd(8'h33);
             repeat (2000) @(posedge MCLK);
@@ -2025,6 +2054,7 @@ module tb_top_r14;
             f = 8'h00; k = 0;
             while (f[0] !== 1'b1 && k < 40) begin repeat (16384) @(posedge MCLK); r14_read(7'h07, f); k++; end
             if (f[0] !== 1'b1) fail("T11 not exercised: the FIFO never full");
+            rt_read_expect(7'h05, FDEPTH, "T11 FIFO_LEVEL of a full FIFO");
             r14_write(7'h21, 8'h01);                    // M 0 -> 1: one step, 3 + 3 marks
             r14_cmd(8'h44);
             repeat (600) @(posedge MCLK);

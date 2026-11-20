@@ -13,7 +13,7 @@
 //     OVERRUN, OVL, CHANGED, ERR, 0, 0, 0}; SEQ = the output's number since RESET_N release (every output time counts,
 //     also during a SOFT_RESET).
 //   * eeg_ovl (new): overload from the extreme quantizer codes.
-//   * CHOP_DLY is gone (tied to 0 in eeg_clkgen); eeg_adc_dig, eeg_chop1, eeg_raw are unchanged (../rtl/).
+//   * CHOP_DLY is gone (tied to 0 at the eeg_clkgen instance); eeg_adc_dig, eeg_chop1, eeg_raw are unchanged (../rtl/).
 // Resets: RESET_N (asynchronous assert, 2-FF release) resets everything. SOFT_RESET (the command; a registered reset
 // for 5 MCLK) resets only the control side: registers, sequencer, SPI, FIFO, flags, CHANGED, DRDY_N. The timing and
 // the data path keep running from RESET_N: frame counter and choppers (eeg_clkgen), CHOP1, the CIC, the overload

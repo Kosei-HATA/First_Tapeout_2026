@@ -30,7 +30,8 @@ module eeg_ovl (
     // OVL_THRESHOLD of them leave the window; audit round 8: was 'OVL_WINDOW - 1'), and an interval that starts in that
     // tail holds no overloaded frame (audit round 6, 11/20: it marked a fourth sample, and a tail from ALIGN set
     // DFLAG.OVL in FILL). The first OVL_THRESHOLD - 1 codes of an overload are not hits (the detection lag, as before)
-    assign ext     = (code == 5'd0) || (code == 5'd31);
+    assign ext     = OVL_EXT_CODES[code];          // FLG-04's extreme codes, generated from regmap.OVL_RULE (audit
+                                                   // round 11: the set was written here by hand)
     assign cnt_nxt = cnt + {5'd0, ext} - {5'd0, win[OVL_WINDOW-1]};
     assign ovl_now = (cnt >= OVL_THRESHOLD);
     assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);

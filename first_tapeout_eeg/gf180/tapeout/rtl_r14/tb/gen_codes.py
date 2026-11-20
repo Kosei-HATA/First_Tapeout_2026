@@ -69,6 +69,12 @@ def main():
         codes += [16] * gap + [31 if p % 2 else 0] * 20
     codes += [16] * 64 + [0, 16, 16, 16, 16, 16, 16, 16] * 4 + [16] * 64        # 4 extremes in 32 frames: detected
     codes += [31] + [16] * 10 + [31] + [16] * 10 + [31] + [16] * 64            # 3 extremes: never
+    # the edge of FLG-04's set (audit round 11, auditor A: no stimulus had the codes next to the rails, and an RTL that
+    # also counted 1 and 30 passed every test): bursts of 1, 30, 2 and 29, never detected; three extremes among codes
+    # next to the rails, never detected
+    for c in (1, 30, 2, 29):
+        codes += [16] * 64 + [c] * 40
+    codes += [16] * 64 + [1, 30, 0, 1, 30, 31, 1, 30, 0, 1, 30] + [16] * 64
     n_ovl = len(codes)
     segs.append(f"synth {first} {n_ovl}")
     codes += list(s4[256000:556000].astype(int))
@@ -77,7 +83,7 @@ def main():
         f.write("\n".join(str(int(c)) for c in codes) + "\n")
     with open(os.path.join(R14, "build", "ovl.split"), "w") as f:
         f.write("\n".join(segs) + "\n")
-    print(f"build/top_r14.codes: {len(top)} frames; build/ovl.codes: {n_ovl} overload (2 runs, 39 synthetic bursts) "
+    print(f"build/top_r14.codes: {len(top)} frames; build/ovl.codes: {n_ovl} overload (2 runs, 39 synthetic bursts and 5 at the edge of the extreme set) "
           f"+ 300000 full-scale frames")
     return 0
 

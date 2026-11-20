@@ -169,6 +169,27 @@ REQUIRED_RESET = dict(
     # AFE_RST held (SEQ-13), IDLE, no command pending, no data (the FIFO empty)
     MARK1=1, MARK0=0, ALERT=1, CMD_PENDING=0, READY=0, DATA=0, OVL_NOW=0, AFE_RST=1, STATE=0, LEVEL=0)
 ACCESS_CLASSES = {"RO": ("ro",), "W1C": ("w1c",), "RW": ("apply", "imm"), "WO": ("cmd", "imm")}
+# The legal values of every writable field, written from the requirements and not from REGS (audit round 11, auditor
+# C: a legal set narrowed in regmap.py, e.g. CRC_EN [0], CHOP1_RATE 0..4, BLANK_LEN 2..15, AFE_IBIAS [3], or a timer
+# with a hole, passed every check; eeg_regs enforces only a field's [MIN, MAX] or nothing)
+_bit = [0, 1]
+REQUIRED_LEGAL = dict(
+    ALERT_MASK=list(range(256)), ALERT_MASK_D=list(range(4)),               # any mask
+    M_H=list(range(4)), M_L=list(range(256)), SIGN=_bit, RANGE=list(range(5)),   # M up to 1023, ranges 0..4
+    AFE_IBIAS=list(range(4)),                     # 0..2 for evaluation, writable (the user's decision, 11/20)
+    CPF_TRIM=list(range(16)), BTRIM_N=list(range(4)), BTRIM_P=list(range(4)),     # the trims' full ranges
+    CHOP_FAST=_bit, DWA_EN=_bit, CHOP1_RATE=list(range(6)),                 # CHOP1 off, 1 / 2 / 4 / 8 / 16 kHz
+    BLANK_LEN=list(range(1, 16)),                 # REG-06: 0 gives RANGE_ERR
+    T_WARM=list(range(5, 256)), T_ELEC=list(range(256)),                    # SEQ-02 (5..255 ms), SEQ-03 (0..255 ms)
+    T_REC=list(range(29, 256)), T_PRE=list(range(3, 256)), T_RST=list(range(13, 256)),   # SEQ-14: 0.22 ms, 20 us,
+    #                                             100 us on the 7.8125-us grid (29, 3, 13)
+    DRDY_MODE=_bit, CRC_EN=_bit,                  # DAT-04, SPI-05
+    ATP_EN=_bit, ATP_SEL=list(range(16)), CHOP_STOP=_bit, ADC_ZERO=_bit, DBG_SEL=list(range(4)), RAW_EN=_bit,   # TST
+    RESET_FLAG=_bit, CMD_ERR=_bit, STATE_ERR=_bit, CFG_ERR=_bit, RANGE_ERR=_bit, ADDR_ERR=_bit, CRC_ERR=_bit,
+    FRAME_ERR=_bit, OVL=_bit, OVERRUN=_bit,       # the W1C flags
+    CMD=None, KEY=None)                           # any code: undefined commands give CMD_ERR, wrong keys lock
+# a mask register's bit k masks its flag register's bit k: every flag needs its mask bit
+MASKS = {"ALERT_MASK": "ERR", "ALERT_MASK_D": "DFLAG"}
 # the read-only fields the requirements and the spec name (with REQUIRED_RESET's fields: every field of the map)
 REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", "SAMPLE"}
 # addresses and bits the requirements name (the host procedure 5.4 and its examples, SPI-03): the host relies on them
@@ -254,7 +275,11 @@ CHECKS = [
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
     "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の電圧（±39／79／159／318 mV、0.311 mV／段）から独立に確かめる",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
-    "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）",
+    "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
+    "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
+    "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
 ]
 
 
@@ -329,6 +354,14 @@ def check(verbose=True):
             elif f["reset"] != REQUIRED_RESET[f["name"]]:
                 errs.append(f"{n}.{f['name']}: reset value {f['reset']}, but the requirements give "
                             f"{REQUIRED_RESET[f['name']]} (REQUIRED_RESET)")
+            if f["name"] not in REQUIRED_LEGAL:
+                errs.append(f"{n}.{f['name']}: a writable field without legal values stated from the requirements "
+                            f"(REQUIRED_LEGAL)")
+            elif f["legal"] != REQUIRED_LEGAL[f["name"]]:
+                lg = f["legal"]
+                errs.append(f"{n}.{f['name']}: legal values "
+                            f"{lg if lg is None or len(lg) < 6 else f'{min(lg)}..{max(lg)} ({len(lg)})'}"
+                            f" differ from those the requirements give (REQUIRED_LEGAL)")
             for v in map(int, re.findall(r"(\d+) は RANGE_ERR", f["desc"])):
                 if f["legal"] is not None and v in f["legal"]:
                     errs.append(f"{n}.{f['name']}: {v} is legal, but the field's text says {v} gives RANGE_ERR")
@@ -347,6 +380,11 @@ def check(verbose=True):
     for n in regs_by:                                    # REG-04: over 8 bits, consecutive addresses, the high byte first
         if n.endswith("_H") and n[:-2] + "_L" in regs_by and regs_by[n[:-2] + "_L"] != regs_by[n] + 1:
             errs.append(f"{n} and {n[:-2]}_L: a field over 8 bits not at consecutive addresses, the high byte first (REG-04)")
+    fbits = lambda rn: {b for a_, n_, *_r, fl, _d in [r for r in REGS if r[1] == rn] for f in fl
+                        for b in range(f["lsb"], f["msb"] + 1)}
+    for mk, fl in MASKS.items():                         # audit round 11: a flag its mask cannot mask
+        if mk in regs_by and fl in regs_by and not fbits(fl) <= fbits(mk):
+            errs.append(f"{mk} does not cover {fl}'s bits {sorted(fbits(fl) - fbits(mk))} (a flag that no mask bit masks)")
     if 0x56 in regs_by.values():
         errs.append("address 0x56 is defined: step 9's mode probe reads it, after IF_CFG, as undefined (0x00)")
     rec = {f["name"]: f["reset"] for *_, f in all_fields()}
@@ -611,6 +649,8 @@ def sv_package():
     wc = OVL_RULE["window"].bit_length()               # the width of a count 0 .. window
     out.append(f"    localparam int OVL_WINDOW = {OVL_RULE['window']};"
                f"  localparam logic [{wc - 1}:0] OVL_THRESHOLD = {wc}'d{OVL_RULE['threshold']};")
+    mask = sum(1 << c for c in OVL_RULE["codes"])      # FLG-04's extreme codes (audit round 11: the RTL had them by hand)
+    out.append(f"    localparam logic [31:0] OVL_EXT_CODES = 32'h{mask:08X};   // bit c: the quantizer code c is extreme")
     out += ["", "endpackage", "", "`default_nettype wire", ""]
     return "\n".join(out)
 
@@ -890,6 +930,16 @@ def selftest():
     def m_status_reset():
         fld("STATUS", "ALERT")["reset"] = 0
 
+    # audit round 11, auditor C: the legal sets, the masks
+    def m_legal_narrow():
+        fld("ADC_CFG", "CHOP1_RATE")["legal"] = rng(0, 4)
+
+    def m_legal_hole():
+        fld("T_REC", "T_REC")["legal"] = [v for v in rng(29, 255) if v != 100]
+
+    def m_mask_cover():
+        fld("DFLAG", "OVL").update(msb=2, lsb=2)
+
     def m_cfg_top():
         f0 = keep_fn["cfg_ok"]
         g["cfg_ok"] = lambda sh: f0(sh) or (sh["RANGE"] >= 1 and sh["M"] == g["RANGE_MAX_M"][sh["RANGE"]] + 1)
@@ -922,7 +972,9 @@ def selftest():
             ("STATUS を 0x0D に移す（手順が 0x03 として読む）", m_move_status), ("VERSION をデータの窓の区画へ", m_region),
             ("ALERT_MASK を施錠する", m_lock_mask), ("T_WARM を書き込み専用に", m_wo_timer),
             ("試験の鍵を命令の区分に", m_cmd_class), ("CRC_EN を bit 2 に（手順 9 は bit 0 を読む）", m_crc_bit),
-            ("読み出し専用の ID を DBG_SEL の端子の出どころに", m_digital_pin), ("STATUS.ALERT の既定値を 0", m_status_reset)]
+            ("読み出し専用の ID を DBG_SEL の端子の出どころに", m_digital_pin), ("STATUS.ALERT の既定値を 0", m_status_reset),
+            ("CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）", m_legal_narrow), ("T_REC の合法な値に穴（100）", m_legal_hole),
+            ("DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）", m_mask_cover)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1012,7 +1064,7 @@ SELFTEST_EXPECT = {
     'cfg_ok が範囲の上限 ＋ 1 を受け付ける': ('cfg_ok wrong at the top of range',),
     'CHOP_STOP の既定値が 1（電源投入からチョッパが止まる）': (', but the requirements give',),
     'ADC_ZERO の既定値が 1（電源投入から ADC の入力が短絡）': (', but the requirements give',),
-    '既定値の定めのない書き込み可能なフィールド': (': a writable field without a reset value stated from the requirements (REQUIRED_RESET)',),
+    '既定値の定めのない書き込み可能なフィールド': (': a writable field without a reset value stated from the requirements (REQUIRED_RESET)', ': a writable field without legal values stated from the requirements (REQUIRED_LEGAL)',),
     'RW のレジスタに読み出し専用の区分': ('(RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)',),
     'RANGE の合法な値に 5': (', but the ranges of RANGE_MAX_M are',),
     'SIGN の合法な値が 0 のみ': (': the offset needs both signs',),
@@ -1031,6 +1083,9 @@ SELFTEST_EXPECT = {
     'CRC_EN を bit 2 に（手順 9 は bit 0 を読む）': (', the requirements read it at bit',),
     '読み出し専用の ID を DBG_SEL の端子の出どころに': ('(a digital-only control needs exactly one, writable)',),
     'STATUS.ALERT の既定値を 0': ('after a reset, where the requirements give',),
+    'CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
+    'T_REC の合法な値に穴（100）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
+    'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
 }
 
 

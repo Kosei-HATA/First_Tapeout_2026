@@ -1,6 +1,7 @@
 // tb_top_r14 - eeg_digital_top (r14) through its pins, with an SPI master on its own time base.
 //
-// CODE is driven once per frame (cycle 16) from build/top_r14.codes (the CT loop model's stream); every CIC input
+// CODE is driven once per frame (it changes at e2, after the TH capture, as eeg_adc_dig's code; audit round 9) from
+// build/top_r14.codes (the CT loop model's stream); every CIC input
 // and every output time are logged (build/top_r14_cic.log) and every sample read over SPI (build/top_r14_samples.log)
 // so that tb/check_top_r14.py compares the samples bit-exactly with the golden CIC (rtl/model/cic_golden.py).
 // Phases (each reports its checks; errors counted):

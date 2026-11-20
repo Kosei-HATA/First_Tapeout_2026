@@ -235,25 +235,58 @@ module tb_seq;
         // every timer setting 0..255: the value loaded on entering its state (T_WARM, T_ELEC x 1024 frames; T_REC,
         // T_PRE, T_RST x 8 frames), and the longest T_WARM and T_ELEC (255 ms) run to expiry
         sweep_timers();
-        // every illegal state value: back to IDLE with STATE_ERR (and AFE_RST = 1 while it lasts)
+        // every illegal state value (NFR-05), off a tick and at a tick, with no command and with each command pending
+        // (audit round 11, auditor C: only off a tick with none pending had been tried, and a copy that took the
+        // pending command away, and one that let a tick act on the illegal value, passed every test): STATE_ERR only
+        // (no apply, flush, store, cmd_ack), back to IDLE with AFE_RST = 1, and the command, still pending, is taken at
+        // the next tick in IDLE as the table's IDLE row gives
+        cfg_ok = 1'b1; nr_ok = 1'b1;
         for (int bad = 9; bad < 16; bad++) begin
-            @(negedge clk);
-            tick = 1'b0; out_stb = 1'b0;
-            force dut.state = 4'(bad);
-            #1;
-            if (state_err !== 1'b1) begin
-                $display("ERROR: illegal state %0d without STATE_ERR", bad);
-                errors = errors + 1;
-            end
-            @(negedge clk);
-            release dut.state;
-            @(posedge clk);
-            #1;
-            if (state !== 4'd0 || afe_rst !== 1'b1) begin
-                $display("ERROR: illegal state %0d not returned to IDLE (state %0d, AFE_RST %b)", bad, state, afe_rst);
-                errors = errors + 1;
+            for (int c = 0; c < 6; c++) begin
+                for (int t = 0; t < 2; t++) begin
+                    @(negedge clk);
+                    out_stb = 1'b0;
+                    tick = t[0];
+                    cmd_valid = (c != 0);
+                    cmd_code = (c == 0) ? 8'h00 : {4'(c), 4'(c)};      // 0x11 START .. 0x55 FLUSH
+                    force dut.state = 4'(bad);
+                    #1;
+                    if (state_err !== 1'b1 || apply !== 1'b0 || flush !== 1'b0 || store !== 1'b0 || cmd_ack !== 1'b0) begin
+                        $display("ERROR: illegal state %0d (tick %0d, command 0x%02h): STATE_ERR %b, apply %b, flush %b, store %b, cmd_ack %b",
+                                 bad, t, cmd_code, state_err, apply, flush, store, cmd_ack);
+                        errors = errors + 1;
+                    end
+                    @(negedge clk);
+                    release dut.state;
+                    tick = 1'b0;
+                    @(posedge clk);
+                    #1;
+                    if (state !== 4'd0 || afe_rst !== 1'b1) begin
+                        $display("ERROR: illegal state %0d not returned to IDLE (state %0d, AFE_RST %b)", bad, state, afe_rst);
+                        errors = errors + 1;
+                    end
+                    if (c != 0) begin                       // the next tick takes the command in IDLE
+                        @(negedge clk);
+                        tick = 1'b1;
+                        #1;
+                        if (cmd_ack !== 1'b1 || state_err !== 1'b0 || cfg_err !== 1'b0 ||
+                            apply !== (c == 1 || c == 3 || c == 4) || flush !== (c == 1 || c == 5)) begin
+                            $display("ERROR: command 0x%02h after the illegal state %0d, at the next tick in IDLE: cmd_ack %b, STATE_ERR %b, CFG_ERR %b, apply %b, flush %b",
+                                     cmd_code, bad, cmd_ack, state_err, cfg_err, apply, flush);
+                            errors = errors + 1;
+                        end
+                        @(negedge clk);
+                        tick = 1'b0;
+                        cmd_valid = 1'b0;
+                        if (state !== ((c == 1) ? 4'd1 : 4'd0)) begin
+                            $display("ERROR: command 0x%02h after the illegal state %0d: state %0d", cmd_code, bad, state);
+                            errors = errors + 1;
+                        end
+                    end
+                end
             end
         end
+        cmd_valid = 1'b0;
         $fclose(fd);
         $display("tb_seq: %0d ticks, %0d output times, %0d resets traced; %0d direct errors", nticks, nouts, nresets,
                  errors);

@@ -65,7 +65,7 @@ MUTATIONS = [
     ("レジスタ：STATUS の固定ビット 6 が 1", "eeg_regs.sv",
      "status_byte[STATUS_MARK0_LSB]       = STATUS_MARK0_RST;", "status_byte[STATUS_MARK0_LSB]       = 1'b1;"),
     ("レジスタ：DFLAG を W1C で消せない", "eeg_regs.sv",
-     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};",
+     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};",
      "dflag <= dflag | {ovl_set, ovr_set};"),
     ("SPI：書き込みの CRC を検査しない", "eeg_spi_slave.sv",
      "if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;",
@@ -135,7 +135,7 @@ MUTATIONS = [
      "empty_status[SMP_OVERRUN_LSB] = dflag_overrun;\n        empty_status[SMP_OVL_LSB]     = ovl_now;\n        empty_status[SMP_ERR_LSB]     = alert;",
      "// the empty word's flags left out"),
     ("レジスタ：ALERT がマスクを無視する", "eeg_regs.sv",
-     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);", "assign alert       = |err || |dflag;"),
+     "assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);", "assign alert       = |err || |dflag_byte;"),
     ("最上位：DRDY_N の解除がフレームの先頭まで遅れる（レベル）", "eeg_digital_top.sv",
      "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
      "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty && (drdy_n_q || cycle == 5'd0)));"),
@@ -201,7 +201,8 @@ MUTATIONS = [
     ("SPI：MISO_OE が CS_N の立ち上がりで直ちに切れない", "eeg_spi_slave.sv",
      "assign miso_oe   = ~cs_n & cs_act;", "assign miso_oe   = cs_act;"),
     ("レジスタ：STATE が下位 3 ビットのみ", "eeg_regs.sv",
-     "A_STATE:          rdata = {4'h0, state};", "A_STATE:          rdata = {5'h00, state[2:0]};"),
+     "A_STATE:          begin rdata = 8'h00; rdata[STATE_STATE_LSB +: STATE_STATE_W] = state; end",
+     "A_STATE:          begin rdata = 8'h00; rdata[STATE_STATE_LSB +: 3] = state[2:0]; end"),
     ("最上位：DRDY_N のパルスを捨てた出力にも出す", "eeg_digital_top.sv",
      "assign drdy_nxt = push_ok ? 3'd4 :", "assign drdy_nxt = seq_store ? 3'd4 :"),
     ("最上位：CHOP_EN が ADC_ZERO でも 0", "eeg_digital_top.sv",
@@ -259,11 +260,11 @@ MUTATIONS = [
     ("最上位：反映でも FIFO を空にする", "eeg_digital_top.sv",
      ".flush(seq_flush), .push(seq_store),", ".flush(seq_flush | apply), .push(seq_store),"),
     ("レジスタ：ALERT が CMD、STATE、CFG、RANGE の ERR を含まない", "eeg_regs.sv",
-     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
-     "assign alert       = |(err[3:0] & r_mask[3:0]) || |(dflag & r_mask_d);"),
+     "assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);",
+     "assign alert       = |(err[3:0] & r_mask[3:0]) || |(dflag_byte & mask_d_byte);"),
     ("レジスタ：ALERT が OVERRUN を含まない", "eeg_regs.sv",
-     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
-     "assign alert       = |(err & r_mask) || (dflag[1] & r_mask_d[1]);"),
+     "assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);",
+     "assign alert       = |(err & r_mask) || (dflag_byte[DFLAG_OVL_LSB] & mask_d_byte[DFLAG_OVL_LSB]);"),
     ("最上位：CHANGED の計数が 8 ビット", "eeg_digital_top.sv", "logic [8:0]  chg_cnt;", "logic [7:0]  chg_cnt;"),
     ("最上位：DFLAG.OVL を WAIT_E と ALIGN でも立てる", "eeg_digital_top.sv",
      ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
@@ -295,8 +296,8 @@ MUTATIONS = [
     ("最上位：空の語の OVL を間隔の印から取る", "eeg_digital_top.sv",
      "empty_status[SMP_OVL_LSB]     = ovl_now;", "empty_status[SMP_OVL_LSB]     = ovl_iv;"),
     ("レジスタ：RESET_FLAG を ALERT から隠せない", "eeg_regs.sv",
-     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
-     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d) || err[ERR_RESET_FLAG_LSB];"),
+     "assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);",
+     "assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte) || err[ERR_RESET_FLAG_LSB];"),
     ("最上位：RAW を SOFT_RESET で戻す", "eeg_digital_top.sv",
      "eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_raw u_raw (.clk(MCLK), .rst_n(rst_n),"),
     ("最上位：SOFT_RESET の確定のサイクルに DRDY_N を High にするのはレベルのモードのみ", "eeg_digital_top.sv",
@@ -307,7 +308,8 @@ MUTATIONS = [
      "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)       seq_cnt <= 16'd0;"),
     # audit round 7, auditor C (each passed all 16 groups before the round's additions) and the SEQ count
     ("レジスタ：FIFO_LEVEL の最上位のビットを落とす（満杯の 8 段が 0 と読める）", "eeg_regs.sv",
-     "A_FIFO_LEVEL:     rdata = {4'h0, fifo_level};", "A_FIFO_LEVEL:     rdata = {5'h00, fifo_level[2:0]};"),
+     "A_FIFO_LEVEL:     begin rdata = 8'h00; rdata[FIFO_LEVEL_LEVEL_LSB +: FIFO_LEVEL_LEVEL_W] = fifo_level; end",
+     "A_FIFO_LEVEL:     begin rdata = 8'h00; rdata[FIFO_LEVEL_LEVEL_LSB +: 3] = fifo_level[2:0]; end"),
     ("レジスタ：未処理の命令の間も OFF_M_H を書ける（ガードの漏れ）", "eeg_regs.sv",
      "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin",
      "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr] && (addr != A_OFF_M_H)) begin"),
@@ -383,6 +385,13 @@ SEQ_MUTATIONS = [
      "if (state > S_PULSE) begin", "if (state > 4'd9) begin"),
     ("シーケンサ：tick でなくても命令の受け取りを返す", "eeg_seq.sv",
      "assign cmd_ack   = a_ack;", "assign cmd_ack   = cmd_valid;"),
+    # audit round 11, auditor C: NFR-05 with a command pending and at a tick (tb_seq's illegal-state loop)
+    ("シーケンサ：不正な状態値で未処理の命令を受け取って捨てる", "eeg_seq.sv",
+     "            nxt    = S_IDLE;\n            a_serr = 1'b1;\n        end else if (tick) begin",
+     "            nxt    = S_IDLE;\n            a_serr = 1'b1;\n            a_ack  = cmd_valid;\n        end else if (tick) begin"),
+    ("シーケンサ：tick では不正な状態値を見ない（tick の分岐が先）", "eeg_seq.sv",
+     "        if (state > S_PULSE) begin                          // illegal value: safe side",
+     "        if (state > S_PULSE && !tick) begin                 // illegal value: safe side"),
 ]
 
 
@@ -396,8 +405,8 @@ REGS_MUTATIONS = [
      "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00)) | ev_err;",
      "err   <= (err & ~((we && w_ok && addr == A_ERR) ? 8'hFF : 8'h00)) | ev_err;"),
     ("レジスタ：DFLAG の W1C でクリアが同じサイクルの事象に勝つ", "eeg_regs.sv",
-     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};",
-     "dflag <= (dflag | {ovl_set, ovr_set}) & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00);"),
+     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};",
+     "dflag <= (dflag | {ovl_set, ovr_set}) & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]} : 2'b00);"),
     # audit round 4, auditor C: cfg_ok / nr_ok against regmap over the full 10-bit M
     ("レジスタ：nr_ok の 1 段を M[7:0] だけで計算", "eeg_regs.sv",
      "    assign sv_s   = s_sign ? -$signed({2'b00, s_m}) : $signed({2'b00, s_m});\n    assign sv_a   = a_sign ? -$signed({2'b00, a_m}) : $signed({2'b00, a_m});",
@@ -550,6 +559,9 @@ OVL_MUTATIONS = [
      "assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);", "assign ovl_hit = en && (cnt_nxt >= OVL_THRESHOLD);"),
     ("過負荷：この符号を数える前の値で判定（検出が 1 フレーム遅れる）", "eeg_ovl.sv",
      "assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);", "assign ovl_hit = en && ext && (cnt >= OVL_THRESHOLD);"),
+    # audit round 11, auditor A: the codes next to the rails counted as extremes (the edge bursts of build/ovl.codes)
+    ("過負荷：両端の隣の符号（1、30）も両端と数える", "eeg_ovl.sv",
+     "assign ext     = OVL_EXT_CODES[code];", "assign ext     = OVL_EXT_CODES[code] || (code == 5'd1) || (code == 5'd30);"),
 ]
 
 TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g", ovl="v")
@@ -617,7 +629,9 @@ def run(i, m, bench="top"):
         nbad = int(head.split(":")[1].split()[0])
         direct = "PASS: tb_seq" in v.stdout
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), head)
-        if f is None:
+        if nbad == 0 and not direct:                 # caught by the bench's direct checks: say which (audit round 11:
+            first = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith("ERROR")), first)   # it showed the
+        if f is None:                                # replay's clean line as the reason)
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
     if bench == "ovl":

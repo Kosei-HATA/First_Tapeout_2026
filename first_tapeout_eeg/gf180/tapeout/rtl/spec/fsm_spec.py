@@ -642,6 +642,15 @@ SPI_PLACES = {"load_status": {("IDLE", "CSF")}, "snapshot": {("HDR", "BYTE")},
               "pop": {("SDONE", "CSR")}, "ADDR_ERR": {("HDR", "BYTE"), ("WDONE", "CSR")}}
 
 
+# The conditions a branch may use at each SPI event (audit rounds 10, 11, auditor C): none at the CS_N fall; at a bit or
+# a byte those fixed by the frame so far (the header's rw, smp, addr_ok, wr_ok; CRC_EN; the sample's last byte); busy
+# (the pending command, cleared by a tick in the middle of a frame), head (the copy still the FIFO's head), crc_ok and
+# mid only at the CS_N rise, where the frame is judged (a table that dropped a write's latch when busy at a byte passed:
+# the model held busy constant over a frame)
+SPI_EVENT_CONDS = {"CSF": set(), "BIT": {"rw", "smp", "addr_ok", "wr_ok", "crc_en", "last"},
+                   "BYTE": {"rw", "smp", "addr_ok", "wr_ok", "crc_en", "last"}}
+
+
 def check_spi_props():
     """Enumerated over every value of every condition (not over the guard strings)."""
     errs, n = [], 0
@@ -671,10 +680,10 @@ def check_spi_props():
             errs.append(f"SPI IDLE/CSF [{b['guard']}]: a frame that does not start with STATUS in HDR (SPI-03)")
     for (s, e), cell in t.items():
         for b in (cell if isinstance(cell, list) else []):
-            v = set(guard_vars(b["guard"]))
-            if (e == "CSF" and v) or (e != "CSR" and "mid" in v):
-                errs.append(f"SPI {s}/{e} [{b['guard']}]: a condition not known at this event (none at the CS_N fall, "
-                            f"mid only at the CS_N rise)")
+            late = set(guard_vars(b["guard"])) - SPI_EVENT_CONDS.get(e, set(SPI_CONDS))
+            if late:
+                errs.append(f"SPI {s}/{e} [{b['guard']}]: {sorted(late)}: a condition not known at this event (none at "
+                            f"the CS_N fall; busy, head, crc_ok and mid only at the CS_N rise)")
     done = ("RDONE", "SDONE", "WDONE")             # no bit after completion (a further bit leaves for OVF)
     for (s, e), cell in t.items():
         if not isinstance(cell, list):
@@ -1013,7 +1022,7 @@ CHECKS = [
     f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
-    "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる",
+    "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
@@ -1626,6 +1635,8 @@ def selftest_runs():
         ("CS_N の立ち下がりで読み出しのときだけ STATUS を写す", lambda t: t.__setitem__(("IDLE", "CSF"), [B("rw", ["load_status"], "HDR"), B("not rw", [], "HDR")])),
         ("CS_N の立ち下がりで STATUS を写さない", lambda t: t.__setitem__(("IDLE", "CSF"), [B(ALWAYS, [], "HDR")])),
         ("連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en and not mid", ["addr_inc", "load_data"]), B("not crc_en and mid", ["addr_inc", "load_zero"])])),
+        # audit round 11, auditor C: busy at a byte (cleared by a tick in the middle of a write frame)
+        ("未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）", lambda t: t.__setitem__(("WDAT", "BYTE"), [B("crc_en and not busy", ["latch_data"], "WCRC"), B("crc_en and busy", [], "WCRC"), B("not crc_en", ["latch_data"], "WDONE")])),
         ("WDAT のバイトで FRAME_ERR を立てる", lambda t: [b.__setitem__("actions", b["actions"] + ["FRAME_ERR"]) for b in t[("WDAT", "BYTE")]]),
     ]
     global fifo_step
@@ -1919,7 +1930,8 @@ SELFTEST_EXPECT = {
     'RREG の CS_N の立ち上がりを起こり得ない（IMP）とする': (': no exit on CS_N rising',),
     'CS_N の立ち下がりで読み出しのときだけ STATUS を写す': (']: a frame that does not start with STATUS in HDR (SPI-03)',),
     'CS_N の立ち下がりで STATUS を写さない': (']: a frame that does not start with STATUS in HDR (SPI-03)',),
-    '連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）': (']: a condition not known at this event (none at the CS_N fall, mid only at the CS_N rise)',),
+    '連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）': (']: the address advances without loading the next byte',),
+    '未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）': (': a condition not known at this event (none at the CS_N fall; busy, head, crc_ok and mid only at the CS_N rise)',),
     'WDAT のバイトで FRAME_ERR を立てる': (']: FRAME_ERR other than at CS_N rising',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
     '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),

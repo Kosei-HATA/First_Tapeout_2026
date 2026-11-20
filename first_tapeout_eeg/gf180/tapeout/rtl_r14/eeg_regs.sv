@@ -105,7 +105,8 @@ module eeg_regs #(
     logic       s_azero, a_azero;
     // immediate
     logic [7:0] r_mask, r_tw, r_te, r_trec, r_tpre, r_trst;
-    logic [1:0] r_mask_d, r_dbg;
+    logic [ALERT_MASK_D_ALERT_MASK_D_W-1:0] r_mask_d;
+    logic [1:0] r_dbg;
     logic       r_raw, r_crc, r_drdy, unlocked;
     // flags
     logic [7:0] err;                         // ERR: 7 CMD 6 STATE 5 CFG 4 RANGE 3 ADDR 2 CRC 1 FRAME 0 RESET_FLAG
@@ -233,7 +234,7 @@ module eeg_regs #(
                     A_TEST_CTRL:    begin s_azero <= wdata[0]; s_cstop <= wdata[1]; end
                     A_DEBUG:        begin r_raw <= wdata[0]; r_dbg <= wdata[2:1]; end
                     A_ALERT_MASK:   r_mask <= wdata;
-                    A_ALERT_MASK_D: r_mask_d <= wdata[1:0];
+                    A_ALERT_MASK_D: r_mask_d <= wdata[ALERT_MASK_D_ALERT_MASK_D_LSB +: ALERT_MASK_D_ALERT_MASK_D_W];
                     A_T_WARM:       r_tw <= wdata;
                     A_T_ELEC:       r_te <= wdata;
                     A_T_REC:        r_trec <= wdata;
@@ -262,7 +263,8 @@ module eeg_regs #(
             end
             // W1C flags: set events win
             err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00)) | ev_err;
-            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? wdata[1:0] : 2'b00)) | {ovl_set, ovr_set};
+            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}
+                                                                : 2'b00)) | {ovl_set, ovr_set};
         end
     end
 
@@ -295,7 +297,17 @@ module eeg_regs #(
     assign t_rst      = r_trst;
     assign dflag_overrun = dflag[0];
 
-    assign alert       = |(err & r_mask) || |(dflag & r_mask_d);
+    // DFLAG and ALERT_MASK_D as bytes at the map's positions (generated *_LSB; audit round 11, auditor C: the positions
+    // were written here by hand, so a field moved in regmap.py passed every test while the chip kept the old bit)
+    logic [7:0] dflag_byte, mask_d_byte;
+    always_comb begin
+        dflag_byte = 8'h00;
+        dflag_byte[DFLAG_OVL_LSB]     = dflag[1];
+        dflag_byte[DFLAG_OVERRUN_LSB] = dflag[0];
+        mask_d_byte = 8'h00;
+        mask_d_byte[ALERT_MASK_D_ALERT_MASK_D_LSB +: ALERT_MASK_D_ALERT_MASK_D_W] = r_mask_d;
+    end
+    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);
     // the bit positions from the generated constants (audit round 8: a hand-written order could differ from the map)
     always_comb begin
         status_byte                         = 8'h00;
@@ -329,12 +341,12 @@ module eeg_regs #(
             A_VERSION:        rdata = VERSION_VERSION_RST;
             A_CAPS:           rdata = {3'b000, 1'b1, DEPTH4};
             A_STATUS:         rdata = status_byte;
-            A_STATE:          rdata = {4'h0, state};
-            A_FIFO_LEVEL:     rdata = {4'h0, fifo_level};
+            A_STATE:          begin rdata = 8'h00; rdata[STATE_STATE_LSB +: STATE_STATE_W] = state; end
+            A_FIFO_LEVEL:     begin rdata = 8'h00; rdata[FIFO_LEVEL_LEVEL_LSB +: FIFO_LEVEL_LEVEL_W] = fifo_level; end
             A_ERR:            rdata = err;
-            A_DFLAG:          rdata = {6'd0, dflag};
+            A_DFLAG:          rdata = dflag_byte;
             A_ALERT_MASK:     rdata = r_mask;
-            A_ALERT_MASK_D:   rdata = {6'd0, r_mask_d};
+            A_ALERT_MASK_D:   rdata = mask_d_byte;
             A_ODR_H:          rdata = ODR_H_ODR_H_RST;
             A_ODR_L:          rdata = ODR_L_ODR_L_RST;
             A_FORMAT:         rdata = {4'h0, FORMAT_QBITS_RST};

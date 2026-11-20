@@ -3,7 +3,7 @@
 
 Writes wave_<name>.json (WaveDrom source) and wave_<name>.png (headless Google Chrome, WaveDrom 3.5.0 from jsDelivr)
 next to this file:
-  frame    one frame (32 MCLK) with every event of the existing frame timing and the new tick (e24)
+  frame    one frame (32 MCLK) with every event of the existing frame timing and the tick (cycle 24, outputs at e25)
   chop     the chopper period at 128 and 64 kHz, the tick in the middle of phase A, the CIC output time
   startup  RESET_N .. RUN (schematic, not to scale; the durations from the timers' reset values in regmap.py)
   apply    APPLY in RUN: PRE, PULSE, RECOVER, ALIGN, FILL, RUN with the FIFO emptied at the APPLY's tick (schematic;

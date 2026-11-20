@@ -174,4 +174,5 @@
         endcase
     endfunction
     localparam int OVL_WINDOW = 32;  localparam logic [5:0] OVL_THRESHOLD = 6'd4;
+    localparam logic [31:0] OVL_EXT_CODES = 32'h80000001;   // bit c: the quantizer code c is extreme
 /* verilator lint_on UNUSEDPARAM */

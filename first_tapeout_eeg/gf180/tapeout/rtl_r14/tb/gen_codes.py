@@ -6,7 +6,10 @@
                        the model's start-up).
   build/ovl.codes      tb_ovl's stream: the two extracted ADC overload runs (gf180/tapeout/pex/runs/adc_overload_r12/*/
                        out.csv, the quantizer's normalized input in column 19, sampled once per frame and quantized to
-                       0..31), then 300,000 frames of s4 (the full scale, where the overload rule must never fire).
+                       0..31); synthetic bursts (audit round 6): 20 extreme codes ending at every phase of tb_ovl's
+                       37-frame intervals (the detector's tail then falls into intervals without an extreme code),
+                       4 extreme codes in 32 frames (detected) and 3 (never); then 300,000 frames of s4 (the full
+                       scale, where the overload rule must never fire).
 
 A missing input is an error (the test that needs the file then fails instead of being skipped).
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/gen_codes.py
@@ -43,13 +46,19 @@ def main():
         runs += 1
     if runs != 2:
         sys.exit(f"expected the two extracted overload runs in {OVL_RUNS}, found {runs}")
+    for p in range(37):                                # a burst whose last frame has index p (mod 37)
+        gap = 64 + ((p - (len(codes) + 64 + 19)) % 37)
+        codes += [16] * gap + [31 if p % 2 else 0] * 20
+    codes += [16] * 64 + [0, 16, 16, 16, 16, 16, 16, 16] * 4 + [16] * 64        # 4 extremes in 32 frames: detected
+    codes += [31] + [16] * 10 + [31] + [16] * 10 + [31] + [16] * 64            # 3 extremes: never
     n_ovl = len(codes)
     codes += list(s4[256000:556000].astype(int))
     with open(os.path.join(R14, "build", "ovl.codes"), "w") as f:
         f.write("\n".join(str(int(c)) for c in codes) + "\n")
     with open(os.path.join(R14, "build", "ovl.split"), "w") as f:
         f.write(f"{n_ovl}\n")                         # frames of the overload runs; the rest is the full scale
-    print(f"build/top_r14.codes: {len(top)} frames; build/ovl.codes: {n_ovl} overload + 300000 full-scale frames")
+    print(f"build/top_r14.codes: {len(top)} frames; build/ovl.codes: {n_ovl} overload (2 runs, 39 synthetic bursts) "
+          f"+ 300000 full-scale frames")
     return 0
 
 

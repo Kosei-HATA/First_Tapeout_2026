@@ -13,18 +13,25 @@ module eeg_ovl (
     input  logic       en,            // one per frame, with the CIC input
     input  logic [4:0] code,
     input  logic       out_stb,       // a CIC output time: ovl_seen restarts after it
-    output logic       ovl_now,
-    output logic       ovl_seen
+    output logic       ovl_now,       // the detector: >= OVL_THRESHOLD extreme codes among the last OVL_WINDOW frames
+    output logic       ovl_hit,       // this frame (en) is an extreme code taken while the detector holds (counting it)
+    output logic       ovl_seen       // a hit since the last output time (this output interval)
 );
 
 `include "eeg_regs_defs.svh"
 
     logic [OVL_WINDOW-1:0] win;
-    logic [5:0]            cnt;
+    logic [5:0]            cnt, cnt_nxt;
     logic                  ext;
 
+    // An interval (and DFLAG.OVL) is marked only for an extreme code taken during a detected overload: the window's
+    // count stays high up to OVL_WINDOW - 1 frames after the last extreme code, and an interval that starts in that
+    // tail holds no overloaded frame (audit round 6, 11/20: it marked a fourth sample, and a tail from ALIGN set
+    // DFLAG.OVL in FILL). The first OVL_THRESHOLD - 1 codes of an overload are not hits (the detection lag, as before)
     assign ext     = (code == 5'd0) || (code == 5'd31);
+    assign cnt_nxt = cnt + {5'd0, ext} - {5'd0, win[OVL_WINDOW-1]};
     assign ovl_now = (cnt >= OVL_THRESHOLD);
+    assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -34,10 +41,10 @@ module eeg_ovl (
         end else begin
             if (en) begin
                 win <= {win[OVL_WINDOW-2:0], ext};
-                cnt <= cnt + {5'd0, ext} - {5'd0, win[OVL_WINDOW-1]};
+                cnt <= cnt_nxt;
             end
-            if (out_stb)      ovl_seen <= ovl_now;     // the new period starts with the current state
-            else if (ovl_now) ovl_seen <= 1'b1;
+            if (out_stb)      ovl_seen <= 1'b0;        // en (cycle 3) and out_stb (cycle 8) never share a cycle
+            else if (ovl_hit) ovl_seen <= 1'b1;
         end
     end
 

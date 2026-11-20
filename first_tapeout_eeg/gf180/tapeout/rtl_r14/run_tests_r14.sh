@@ -11,13 +11,14 @@
 #   tb_chop1    CHOP1: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary on the output grid
 #               (rtl/tb/tb_chop1.sv with the r14 clock generator; ANA-04)
 #   tb_cic_arm  the CIC cleared at an output time == golden CIC (four positions), output grid kept
-#   tb_ovl      the overload detector == the rule (overload runs + full-scale stream)
+#   tb_ovl      the overload detector, the hits and the interval flags == regmap.OVL_RULE (overload runs +
+#               full-scale stream; tb/check_ovl.py)
 #   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
 #               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; cfg_ok and nr_ok against
 #               regmap over the full 10-bit M (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to S, listed in the bench's header); samples == golden
+#   tb_top_r14  the whole block through its pins (phases A to T, listed in the bench's header); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
@@ -65,22 +66,7 @@ chop1_t() { comp build/tb_chop1.vvp eeg_clkgen.sv ../rtl/eeg_chop1.sv ../rtl/tb/
 cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3.sv ../rtl/eeg_rnd_sat.sv tb/tb_cic_arm.sv &&
           for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done; }
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
-ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp > /dev/null &&
-          $PY - <<'EOF'
-import sys
-import numpy as np
-sys.path.insert(0, "../rtl/spec")
-import regmap
-R = regmap.OVL_RULE                                # the rule from the specification source (audit round 5)
-c = np.loadtxt("build/ovl.codes", dtype=int); g = np.loadtxt("build/ovl.out", dtype=int)
-split = int(open("build/ovl.split").read()) + R["window"]   # the full scale after the window left the overload runs
-e = (np.convolve(np.isin(c, R["codes"]).astype(int), np.ones(R["window"], dtype=int))[:len(c)] >= R["threshold"]).astype(int)
-bad = int((g != e).sum()) if len(g) == len(e) else -1
-print(f"{len(g)} of {len(c)} frames compared, {bad} mismatches; detections: overload runs {int(g[:split].sum())}, "
-      f"full scale {int(g[split:].sum())}")
-print("PASS" if bad == 0 and g[:split].sum() > 0 and g[split:].sum() == 0 else "FAIL")
-EOF
-}
+ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp > /dev/null && $PY tb/check_ovl.py; }
 regs_t() { $PY tb/gen_ok_vectors.py && comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }
 rnd_t() { $PY -c "import sys; sys.path.insert(0, '../rtl/model'); import gen_vectors as G; G.gen_rnd_sat('build', sys.stdout)" &&
           comp build/tb_rnd_sat.vvp ../rtl/eeg_rnd_sat.sv ../rtl/tb/tb_rnd_sat.sv && vvp -n build/tb_rnd_sat.vvp +vec=build/rnd_sat.vec; }

@@ -117,19 +117,16 @@ module eeg_digital_top #(
     eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n), .arm(cic_arm & ~soft_req), .en(cic_en), .code(CODE),
                     .dout(cic_data), .dout_stb(cic_stb), .dout_valid(cic_valid), .settling(cic_settling));
 
-    logic ovl_now, ovl_seen;
+    logic ovl_now, ovl_hit, ovl_seen;
     eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n), .en(cic_en), .code(CODE), .out_stb(cic_stb), .ovl_now(ovl_now),
-                   .ovl_seen(ovl_seen));
+                   .ovl_hit(ovl_hit), .ovl_seen(ovl_seen));
 
-    // a sample's OVL: an overload in any of the three output intervals of its sinc^3 window (this one and the two
-    // before; the detection lags by at most 4 frames, whose weight in a window is below 1e-8)
+    // a sample's OVL: an extreme code taken during a detected overload in any of the three output intervals of its
+    // sinc^3 window (this one and the two before; the detection lags by at most 3 frames, whose weight in a window is
+    // below 1e-8). At the output time every input of the interval is in (its last at cycle 3), so ovl_seen holds it
     logic       ovl_iv;                               // this output interval
     logic [1:0] ovl_hist;                             // the two previous intervals
-    assign ovl_iv = ovl_now | ovl_seen;
-    always_ff @(posedge MCLK or negedge tm_rst_n) begin
-        if (!tm_rst_n)    ovl_hist <= 2'b00;
-        else if (cic_stb) ovl_hist <= {ovl_hist[0], ovl_iv};
-    end
+    assign ovl_iv = ovl_seen;                         // (ovl_hist's register follows the FIFO, below)
 
     // ------------------------------------------------------------------ registers and SPI
     logic [6:0]  reg_addr;
@@ -158,7 +155,7 @@ module eeg_digital_top #(
         .wdata(reg_wdata), .frame_err_set(frame_err), .crc_err_set(crc_err), .addr_err_set(addr_err),
         .state(seq_state), .afe_rst(seq_afe_rst), .fifo_nonempty(fifo_nonempty), .fifo_level(fifo_level),
         .ovl_now(ovl_now), .ovr_set(ovr_set),
-        .ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),
+        .ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),
         .seq_state_err(seq_serr), .seq_cfg_err(seq_cerr), .cmd_valid(cmd_valid), .cmd_code(cmd_code),
         .cmd_ack(cmd_ack), .soft_reset(soft_req), .apply(apply), .cfg_ok(cfg_ok), .nr_ok(nr_ok),
         .off_mag(OFM), .off_sign(OFS), .ofen(OFEN), .afe_ibias(AFE_IBIAS), .cpf_trim(CPF_TRIM),
@@ -215,6 +212,12 @@ module eeg_digital_top #(
         .seq_in(seq_cnt), .data_in(cic_data), .ovr_set(ovr_set), .push_ok(push_ok), .snap(smp_snap), .pop(smp_pop),
         .empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000}), .rd_word(smp_word),
         .nonempty(fifo_nonempty), .level(fifo_level));
+
+    // the OVL history advances at every output time (stored or not: the sinc^3 window counts output intervals)
+    always_ff @(posedge MCLK or negedge tm_rst_n) begin
+        if (!tm_rst_n)    ovl_hist <= 2'b00;
+        else if (cic_stb) ovl_hist <= {ovl_hist[0], ovl_iv};
+    end
 
     // DRDY_N: level mode = FIFO not empty (a register, as before); pulse mode = low for exactly 128 MCLK (4 frames)
     // from each stored sample, from its own register (no decode glitch on the pad). In the commit cycle of SOFT_RESET

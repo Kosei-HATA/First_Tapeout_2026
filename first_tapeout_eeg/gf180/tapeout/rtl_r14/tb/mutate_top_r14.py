@@ -3,7 +3,8 @@
 purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be detected, and each bench's unmutated
 baseline must pass. The groups and their benches:
   top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
-  spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (+n=800: branch coverage is not asked for here)
+  spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (as run_tests_r14.sh: +n=1500 +seed=5; the baseline must
+                            also cover every branch)
   seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently)
   fifo   FIFO_MUTATIONS     tb_fifo + check_fifo_trace.py (fsm_spec.fifo_step and an identity model)
   regs   REGS_MUTATIONS     tb_regs (W1C; cfg_ok / nr_ok against regmap over build/ok_vectors.txt)
@@ -16,7 +17,7 @@ run once. Every run's report (also with --only) is printed and written to build/
 arguments, so a recorded result always has its log (audit round 4).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/mutate_top_r14.py [-j N]
-       [--top | --spi | --seq | --fifo | --regs | --chop1 | --rnd | --struct] [--only m03,s11,q02]
+       [--top | --spi | --seq | --fifo | --regs | --chop1 | --rnd | --struct | --ovl] [--only m03,s11,q02]
 """
 import concurrent.futures as cf
 import os
@@ -101,7 +102,7 @@ MUTATIONS = [
     ("最上位：CHANGED の長さに T_ELEC を足さない", "eeg_digital_top.sv",
      "assign chg_new = 9'd3 + {1'b0, t_elec};", "assign chg_new = 9'd3;"),
     ("最上位：IDLE の過負荷でも DFLAG.OVL を立てる", "eeg_digital_top.sv",
-     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),", ".ovl_set(ovl_now),"),
+     ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),", ".ovl_set(ovl_hit),"),
     ("レジスタ：未処理の命令がある間もシャドウとタイマへ書く", "eeg_regs.sv",
      "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin", "end else if (1'b0) begin"),
     ("レジスタ：STATUS の CMD_PENDING が 0 のまま", "eeg_regs.sv",
@@ -155,7 +156,7 @@ MUTATIONS = [
     ("レジスタ：cfg_ok が範囲 2 で M の上限を見ない", "eeg_regs.sv",
      "assign cfg_ok = (s_m <= range_max_m(s_range));", "assign cfg_ok = (s_m <= range_max_m(s_range)) || (s_range == 3'd2);"),
     ("最上位：DFLAG.OVL を IDLE 以外の全ての状態で立てる", "eeg_digital_top.sv",
-     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),", ".ovl_set(ovl_now && (seq_state != ST_IDLE)),"),
+     ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),", ".ovl_set(ovl_hit && (seq_state != ST_IDLE)),"),
     ("最上位：SOFT_RESET で CHOP1 を戻す", "eeg_digital_top.sv",
      "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(rst_n),"),
     ("最上位：SOFT_RESET で ADC_RST_N を下げる", "eeg_digital_top.sv",
@@ -257,11 +258,42 @@ MUTATIONS = [
      "assign alert       = |(err & r_mask) || (dflag[1] & r_mask_d[1]);"),
     ("最上位：CHANGED の計数が 8 ビット", "eeg_digital_top.sv", "logic [8:0]  chg_cnt;", "logic [7:0]  chg_cnt;"),
     ("最上位：DFLAG.OVL を WAIT_E と ALIGN でも立てる", "eeg_digital_top.sv",
-     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
-     ".ovl_set(ovl_now && (seq_state >= ST_WAIT_E) && (seq_state <= ST_RUN)),"),
+     ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
+     ".ovl_set(ovl_hit && (seq_state >= ST_WAIT_E) && (seq_state <= ST_RUN)),"),
     ("SPI：読み出しの CRC を送ったバイトでなくその時のレジスタの値で計算", "eeg_spi_slave.sv",
      "S_RCRC:  tx_next = crc8_step(crc8_step(8'h00, hdr), txd);",
      "S_RCRC:  tx_next = crc8_step(crc8_step(8'h00, hdr), reg_rdata);"),
+    # audit round 6, auditor A: OVL only for extreme codes during a detected overload
+    ("最上位：間隔の OVL に検出の尾を含める（区切りで検出の状態を持ち越す）", "eeg_ovl.sv",
+     "if (out_stb)      ovl_seen <= 1'b0;", "if (out_stb)      ovl_seen <= ovl_now;"),
+    ("最上位：DFLAG.OVL を検出の状態で立てる（ALIGN の尾で FILL に立つ）", "eeg_digital_top.sv",
+     ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
+     ".ovl_set(ovl_now && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),"),
+    # audit round 6, auditor C (each passed all 16 groups before the round's additions)
+    ("最上位：OVL の履歴を格納したサンプルごとに進める", "eeg_digital_top.sv",
+     "else if (cic_stb) ovl_hist <= {ovl_hist[0], ovl_iv};", "else if (push_ok) ovl_hist <= {ovl_hist[0], ovl_iv};"),
+    ("最上位：DFLAG.OVL を ALIGN でも立てる", "eeg_digital_top.sv",
+     ".ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),",
+     ".ovl_set(ovl_hit && ((seq_state == ST_ALIGN) || (seq_state == ST_FILL) || (seq_state == ST_RUN))),"),
+    ("最上位：CHANGED を格納したサンプルで数える", "eeg_digital_top.sv",
+     "else if (cic_stb && chg_now)  chg_cnt <= chg_cnt - 9'd1;", "else if (push_ok && chg_now)  chg_cnt <= chg_cnt - 9'd1;"),
+    ("最上位：CHANGED の印が 255 で飽和", "eeg_digital_top.sv",
+     "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;",
+     "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : ((chg_new > 9'd255) ? 9'd255 : chg_new);"),
+    ("レジスタ：STATUS の READY が FILL でも 1", "eeg_regs.sv",
+     "(state == ST_RUN), fifo_nonempty, ovl_now, afe_rst};", "((state == ST_RUN) || (state == ST_FILL)), fifo_nonempty, ovl_now, afe_rst};"),
+    ("最上位：STATUS の OVL_NOW が次の出力まで残る", "eeg_digital_top.sv",
+     ".ovl_now(ovl_now), .ovr_set(ovr_set),", ".ovl_now(ovl_iv), .ovr_set(ovr_set),"),
+    ("最上位：空の語の OVL を間隔の印から取る", "eeg_digital_top.sv",
+     ".empty_status({1'b0, dflag_overrun, ovl_now, 1'b0, alert, 3'b000})", ".empty_status({1'b0, dflag_overrun, ovl_iv, 1'b0, alert, 3'b000})"),
+    ("レジスタ：RESET_FLAG を ALERT から隠せない", "eeg_regs.sv",
+     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d);",
+     "assign alert       = |(err & r_mask) || |(dflag & r_mask_d) || err[ERR_RESET_FLAG_LSB];"),
+    ("最上位：RAW を SOFT_RESET で戻す", "eeg_digital_top.sv",
+     "eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_raw u_raw (.clk(MCLK), .rst_n(rst_n),"),
+    ("最上位：SOFT_RESET の確定のサイクルに DRDY_N を High にするのはレベルのモードのみ", "eeg_digital_top.sv",
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
+     "drdy_n_q   <= drdy_mode ? ~drdy_pulse : (soft_req ? 1'b1 : ~fifo_nonempty);"),
     ("最上位：SEQ を SOFT_RESET で戻す", "eeg_digital_top.sv",
      "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;",
      "    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)       seq_cnt <= 16'd0;"),
@@ -411,8 +443,19 @@ STRUCT_MUTATIONS = [
      "    assign AFE_RST = (seq_state == ST_IDLE) || (seq_state == ST_WARMUP) || (seq_state == ST_PULSE);"),
 ]
 
-TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g")
-GROUPS = ("top", "spi", "seq", "fifo", "regs", "chop1", "rnd", "struct")
+# the overload detector alone (tb_ovl + check_ovl.py against regmap.OVL_RULE: detector, hits, interval flags)
+OVL_MUTATIONS = [
+    ("（基準：変更なし）", None, None, None),
+    ("過負荷：間隔の印に検出の尾を含める（旧い規則）", "eeg_ovl.sv",
+     "if (out_stb)      ovl_seen <= 1'b0;", "if (out_stb)      ovl_seen <= ovl_now;"),
+    ("過負荷：両端の符号でなくても検出の間は印を付ける", "eeg_ovl.sv",
+     "assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);", "assign ovl_hit = en && (cnt_nxt >= OVL_THRESHOLD);"),
+    ("過負荷：この符号を数える前の値で判定（検出が 1 フレーム遅れる）", "eeg_ovl.sv",
+     "assign ovl_hit = en && ext && (cnt_nxt >= OVL_THRESHOLD);", "assign ovl_hit = en && ext && (cnt >= OVL_THRESHOLD);"),
+]
+
+TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g", ovl="v")
+GROUPS = ("top", "spi", "seq", "fifo", "regs", "chop1", "rnd", "struct", "ovl")
 
 
 def run(i, m, bench="top"):
@@ -430,12 +473,15 @@ def run(i, m, bench="top"):
         if text.count(old) != 1:
             return i, name, "NOT APPLIED", f"the text occurs {text.count(old)} times in {f}"
         open(p, "w", encoding="utf-8").write(text.replace(old, new))
-    for x in ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec"):       # shared generated files
+    for x in ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split"):   # shared generated files
         os.symlink(os.path.join(BUILD, x), os.path.join(d, "build", x))
-    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv"}.get(bench, "tb_top_r14.sv")
+    tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv",
+          "ovl": "tb_ovl.sv"}.get(bench, "tb_top_r14.sv")
     if bench == "struct":                            # the structure: yosys on this copy
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_outputs_registered.py"), d], capture_output=True,
                            text=True)
+        if k.returncode == 2 or k.returncode not in (0, 1):      # the tool did not run: no verdict (audit round 6)
+            return i, name, "TOOL ERROR", (k.stdout.strip().splitlines() or ["no output"])[-1][:150]
         passed = k.returncode == 0 and "PASS" in k.stdout
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  ") or ln.startswith("FAIL")), "")
         if f is None:
@@ -444,7 +490,7 @@ def run(i, m, bench="top"):
     tbp = {"chop1": os.path.join(RTL_OLD, "tb", "tb_chop1.sv"),
            "rnd": os.path.join(RTL_OLD, "tb", "tb_rnd_sat.sv")}.get(bench, os.path.join(R14, "tb", tb))
     srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"],
-             "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"], "rnd": ["eeg_rnd_sat.sv"]}.get(bench)
+             "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"], "rnd": ["eeg_rnd_sat.sv"], "ovl": ["eeg_ovl.sv"]}.get(bench)
             or SRC + OLD)                            # pin_tests.svh: through -I build
     cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
            + [tbp])
@@ -452,8 +498,8 @@ def run(i, m, bench="top"):
     if c.returncode:
         return i, name, "COMPILE ERROR", c.stderr.strip().splitlines()[-1][:150]
     if bench in ("seq", "spi", "fifo"):
-        args = {"seq": ["+n=300000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=1500", "+seed=5"],
-                "fifo": ["+n=100000", "+trace=build/fifo_trace.txt"]}[bench]
+        args = {"seq": ["+n=600000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=1500", "+seed=5"],
+                "fifo": ["+n=400000", "+trace=build/fifo_trace.txt"]}[bench]   # as run_tests_r14.sh (audit round 6)
         try:
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"] + args, cwd=d, capture_output=True,
                                text=True, timeout=3600)
@@ -471,6 +517,18 @@ def run(i, m, bench="top"):
         if f is None:
             return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
+    if bench == "ovl":
+        try:
+            subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
+        except subprocess.TimeoutExpired:
+            return i, name, "TIMEOUT", "no end within 1200 s (undecided: rerun)"
+        k = subprocess.run([sys.executable, os.path.join(HERE, "check_ovl.py"), os.path.join(d, "build")],
+                           capture_output=True, text=True)
+        passed = k.returncode == 0
+        first = (k.stdout.strip().splitlines() or ["no output"])[0][:150]
+        if f is None:
+            return i, name, ("baseline ok" if passed else "BASELINE FAILS"), first
+        return i, name, ("detected" if not passed else "MISSED"), first
     if bench in ("chop1", "rnd"):
         try:
             v = subprocess.run(["vvp", "-n", "build/t.vvp"] + (["+vec=build/rnd_sat.vec"] if bench == "rnd" else []),
@@ -514,8 +572,9 @@ def run(i, m, bench="top"):
         nt = int(timing.split(",")[1].split()[0]) if timing else -1
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  frame")), head)
         failed = "FAIL" in v.stdout                  # e.g. the bench's watchdog (the trace then ends early)
-        if f is None:
-            return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed else "BASELINE FAILS"), head
+        if f is None:                                # the baseline also covers every branch, as in the runner
+            covered = "every branch covered" in k.stdout
+            return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed and covered else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or nt != 0 or failed else "MISSED"), first
     try:                                             # the bench's own watchdog (600 ms simulated) ends a hang
         v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True,
@@ -545,7 +604,8 @@ def run(i, m, bench="top"):
 
 def main():
     jobs = int(sys.argv[sys.argv.index("-j") + 1]) if "-j" in sys.argv else 2
-    for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec"):
+    for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes",
+                 "ovl.split"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
     # every listed mutation must apply to the RTL as it is now (audit round 5: two targets had changed with the RTL
@@ -553,7 +613,7 @@ def main():
     stale = []
     for g, lst in (("top", MUTATIONS), ("spi", SPI_MUTATIONS), ("seq", SEQ_MUTATIONS), ("fifo", FIFO_MUTATIONS),
                    ("regs", REGS_MUTATIONS), ("chop1", CHOP1_MUTATIONS), ("rnd", RND_MUTATIONS),
-                   ("struct", STRUCT_MUTATIONS)):
+                   ("struct", STRUCT_MUTATIONS), ("ovl", OVL_MUTATIONS)):
         for i, (name, f, old, _new) in enumerate(lst):
             if f is not None:
                 src = os.path.join(R14 if f in SRC else RTL_OLD, f)
@@ -580,6 +640,8 @@ def main():
         tasks += [(i, m, "rnd") for i, m in enumerate(RND_MUTATIONS)]
     if which in ("struct", "all"):
         tasks += [(i, m, "struct") for i, m in enumerate(STRUCT_MUTATIONS)]
+    if which in ("ovl", "all"):
+        tasks += [(i, m, "ovl") for i, m in enumerate(OVL_MUTATIONS)]
     if only:
         tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}") in only]
     import datetime
@@ -587,9 +649,18 @@ def main():
     t0 = datetime.datetime.now()
     log = os.path.join(BUILD, f"mutate_{t0:%Y%m%d-%H%M%S}.log")    # every run keeps its record (audit rounds 4, 5)
     lock = threading.Lock()
+    def tool(cmd):
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, cwd=R14)
+            return ((r.stdout or r.stderr).strip().splitlines() or ["?"])[0]
+        except OSError as ex:
+            return f"not found ({ex})"
+    env = (f"commit {tool(['git', 'rev-parse', '--short', 'HEAD'])}"
+           f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '') else ''}; "
+           f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; yosys {os.environ.get('YOSYS', 'default path')}")
     with open(log, "w", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
-                 f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n")
+                 f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n{env}\n")
 
     def run_logged(a):
         r = (a[2],) + run(*a)
@@ -601,11 +672,13 @@ def main():
         res = list(ex.map(run_logged, tasks))
     ok = True
     out = [f"--- summary ({(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min)"]
+    missing_base = []
     title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
              "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
              "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)", "rnd": "tb_rnd_sat (Python golden vectors)",
-             "struct": "check_outputs_registered (every output a flip-flop's, yosys)"}
+             "struct": "check_outputs_registered (every output a flip-flop's, yosys)",
+             "ovl": "tb_ovl + check_ovl (regmap.OVL_RULE: detector, hits, interval flags)"}
     for bench in GROUPS:
         rs = sorted(r for r in res if r[0] == bench)
         if not rs:
@@ -623,7 +696,11 @@ def main():
         out.append(f"{n_det} of {len(muts)} mutations detected; baseline {base_txt}"
                    + (f"; {n_to} undecided (TIMEOUT)" if n_to else ""))
         ok &= n_det == len(muts) and base_txt != "NOT clean" and not n_to
-    out.append("PASS" if ok else "FAIL")
+        if base_txt == "not run":
+            missing_base.append(bench)
+    out.append("FAIL" if not ok else ("INCOMPLETE (baselines not run: " + ", ".join(missing_base) + ")")
+               if missing_base else "PASS")
+    ok &= not missing_base
     with open(log, "a", encoding="utf-8") as fo:
         fo.write("\n".join(out) + "\n")
     print("\n".join(out[:-1]))

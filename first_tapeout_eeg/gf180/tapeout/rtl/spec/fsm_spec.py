@@ -624,17 +624,37 @@ def check_seq_ticks():
 # =====================================================================================================================
 # SPI properties
 # =====================================================================================================================
+# Where each SPI action may happen, written from the frame definitions (spec section 3.2), not from the table
+# (audit round 6: actions added to other cells passed the frame checks, which compared effects and load counts only)
+SPI_PLACES = {"load_status": {("IDLE", "CSF")}, "snapshot": {("HDR", "BYTE")},
+              "load_data": {("HDR", "BYTE"), ("RREG", "BYTE")}, "load_zero": {("HDR", "BYTE")},
+              "load_crc": {("RREG", "BYTE")}, "addr_inc": {("RREG", "BYTE")}, "next_byte": {("RSMP", "BYTE")},
+              "latch_addr": {("HDR", "BYTE")}, "latch_data": {("WDAT", "BYTE")}, "latch_crc": {("WCRC", "BYTE")},
+              "commit": {("WDONE", "CSR")}, "STATE_ERR": {("WDONE", "CSR")}, "CRC_ERR": {("WDONE", "CSR")},
+              "pop": {("SDONE", "CSR")}, "ADDR_ERR": {("HDR", "BYTE"), ("WDONE", "CSR")}}
+
+
 def check_spi_props():
     """Enumerated over every value of every condition (not over the guard strings)."""
     errs, n = [], 0
     t = SPI["table"]
+    for (s, e), cell in t.items():                  # every action only where the frame definitions put it
+        if isinstance(cell, list):
+            for b in cell:
+                for a in b["actions"]:
+                    if a == "FRAME_ERR" and e != "CSR":
+                        errs.append(f"SPI {s}/{e} [{b['guard']}]: FRAME_ERR other than at CS_N rising")
+                    elif a in SPI_PLACES and (s, e) not in SPI_PLACES[a]:
+                        errs.append(f"SPI {s}/{e} [{b['guard']}]: {a} where the frame definitions do not put it")
+                if "addr_inc" in b["actions"] and "load_data" not in b["actions"]:
+                    errs.append(f"SPI {s}/{e} [{b['guard']}]: the address advances without loading the next byte")
     done = ("RDONE", "SDONE", "WDONE")             # no bit after completion (a further bit leaves for OVF)
     for (s, e), cell in t.items():
         if not isinstance(cell, list):
             continue
         for env in all_envs(list(SPI_CONDS), SPI["constraint"]):
-            if s in done and env["mid"]:
-                continue
+            if s in done and env["mid"] and e == "CSR":
+                continue                            # a done state never sees CS_N rising inside a byte
             b = pick(cell, env)
             if b is None:
                 continue                            # reported by check_tables
@@ -714,6 +734,13 @@ def spi_expect(kind, crc_en, nbytes, mid, env):
             E.add("FRAME_ERR")
         # a data byte (or 0x00) after every completed byte; with CRC one data byte, then the CRC
         loads = dict(data=min(nbytes, 1) if crc_en else nbytes, crc=int(crc_en and nbytes >= 2))
+        # the sequence: the header's address (0x00 if undefined), then (CRC off) the following addresses one by one,
+        # or (CRC on) the CRC of the header and the data byte
+        first = ("data" if env["addr_ok"] else "zero", 0)
+        if crc_en:
+            loads["seq"] = ([first] if nbytes >= 1 else []) + ([("crc", 0)] if nbytes >= 2 else [])
+        else:
+            loads["seq"] = ([first] if nbytes >= 1 else []) + [("data", k) for k in range(1, nbytes)]
     else:
         if hdr:
             E.add("snapshot")
@@ -725,11 +752,10 @@ def spi_expect(kind, crc_en, nbytes, mid, env):
     return E, loads
 
 
-def check_spi_frames():
-    """Every kind of frame, CRC mode, condition value and length 0..10 bytes (with and without a partial byte) walked
-    through the table and compared with spi_expect."""
-    errs, n = [], 0
-    effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
+def spi_frame_cases():
+    """The frames check_spi_frames walks: every kind, CRC mode, condition value, 0..10 complete bytes and 0..7 bits of
+    a partial last byte (audit round 6: the partial byte had 0 and 3 bits only). The generated text takes its count
+    from here."""
     for kind in ("write", "read", "sample"):
         for crc_en in (0, 1):
             for vals in itertools.product((0, 1), repeat=5):
@@ -738,25 +764,52 @@ def check_spi_frames():
                 if kind == "sample" and not env["addr_ok"]:
                     continue                             # the sample window is a defined address
                 for nbytes in range(11):
-                    for extra in (0, 3):
-                        n += 1
-                        w = spi_walk(nbytes, extra, env)
-                        tag = f"SPI frame {kind} crc_en={crc_en} {nbytes} bytes + {extra} bits {env}"
-                        if w is None:
-                            errs.append(f"{tag}: the walk meets an impossible or undecided cell")
-                            continue
-                        acts, _ = w
-                        exp, loads = spi_expect(kind, crc_en, nbytes, extra > 0, env)
-                        got = {a for a in acts if a in effects}
-                        if got != exp:
-                            errs.append(f"{tag}: {sorted(got)}, expected {sorted(exp)}")
-                        if loads and not extra:
-                            if kind == "read":
-                                d = acts.count("load_data") + acts.count("load_zero")
-                                if d != loads["data"] or acts.count("load_crc") != loads["crc"]:
-                                    errs.append(f"{tag}: {d} data and {acts.count('load_crc')} CRC loads, expected {loads}")
-                            elif acts.count("next_byte") != loads["next"]:
-                                errs.append(f"{tag}: {acts.count('next_byte')} sample bytes loaded, expected {loads['next']}")
+                    for extra in range(8):
+                        yield kind, crc_en, env, nbytes, extra
+
+
+def check_spi_frames():
+    """Every frame of spi_frame_cases walked through the table and compared with spi_expect."""
+    errs, n = [], 0
+    effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
+    for kind, crc_en, env, nbytes, extra in spi_frame_cases():
+        n += 1
+        w = spi_walk(nbytes, extra, env)
+        tag = f"SPI frame {kind} crc_en={crc_en} {nbytes} bytes + {extra} bits {env}"
+        if w is None:
+            errs.append(f"{tag}: the walk meets an impossible or undecided cell")
+            continue
+        acts, _ = w
+        exp, loads = spi_expect(kind, crc_en, nbytes, extra > 0, env)
+        got = {a for a in acts if a in effects}
+        if got != exp:
+            errs.append(f"{tag}: {sorted(got)}, expected {sorted(exp)}")
+        if loads and not extra:
+            if kind == "read":
+                d = acts.count("load_data") + acts.count("load_zero")
+                if d != loads["data"] or acts.count("load_crc") != loads["crc"]:
+                    errs.append(f"{tag}: {d} data and {acts.count('load_crc')} CRC loads, expected {loads}")
+                seq, off = [], 0              # the MISO byte sequence with the read addresses
+                for a in acts:
+                    if a == "addr_inc":
+                        off += 1
+                    elif a in ("load_data", "load_zero"):
+                        seq.append(("data" if a == "load_data" else "zero", off))
+                    elif a == "load_crc":
+                        seq.append(("crc", off))
+                if seq != loads["seq"]:
+                    errs.append(f"{tag}: MISO loads {seq}, expected {loads['seq']}")
+            elif acts.count("next_byte") != loads["next"]:
+                errs.append(f"{tag}: {acts.count('next_byte')} sample bytes loaded, expected {loads['next']}")
+        if kind in ("write", "sample") and not extra and \
+                any(a in acts for a in ("load_data", "load_zero", "load_crc")):
+            errs.append(f"{tag}: a {kind} frame loads register data or a read CRC onto MISO "
+                        f"(a write's MISO is 0x00, a sample's bytes come from its copy)")
+        if kind == "write" and "commit" in acts:      # a write commits the address and data it latched
+            need = ["latch_addr", "latch_data"] + (["latch_crc"] if crc_en else [])
+            k_c = acts.index("commit")
+            if not all(x in acts[:k_c] for x in need):
+                errs.append(f"{tag}: commit without {[x for x in need if x not in acts[:k_c]]}")
     return errs, n
 
 
@@ -923,9 +976,11 @@ CHECKS = [
     "  T_ELEC ＞ 0 では RECOVER の満了は必ず WAIT_E へ、T_ELEC ＝ 0 では ALIGN へ。RUN の出力の時刻は必ず格納する。FLUSH は全ての状態で FIFO を空にする。RUN へは有効な出力でのみ入る。受け付けた APPLY と APPLY_NR は必ず反映する",
     "RESET の行：リセットの解除でのみ IDLE へ出る。命令は無視、出力の時刻は数えるのみ（格納、クリア、状態の変化なし）、タイマの満了は起こらない",
     "リセットの優先：全ての状態と、上の全ての事象の組み合わせ（全ての条件の値）に RST が加わると、結果は RESET で、状態の変化と制御の動作はない（SOFT_RESET の確定のサイクルの tick と出力の時刻）。その出力の時刻はデータの経路として数えて捨て（seq_inc、discard）、ALIGN では CIC のクリアが出力の時刻のサイクルの始まりの縁で済んでいる（cic_clear）",
+    "分岐ごとの性質（シーケンサ、第 6 回で追加）：出力の時刻の分岐は必ず数え（seq_inc）、格納か破棄のちょうど一方。出力の時刻の動作（store、discard、seq_inc、cic_clear）は出力の時刻のみ。RESET の出力の時刻も数える（DAT-03）。拒否の旗はちょうど 1 個で、CFG_ERR は設定の整合に依る分岐、STATE_ERR は状態による無条件の拒否のみ。待ちの数え直しは、表とは独立に書いた一覧（WARMUP の APPLY と APPLY_NR、WAIT_E の APPLY_NR）のとおり",
     "分岐ごとの性質（シーケンサ）：命令を無視（IGN）してよいのは IDLE の STOP のみ。拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
-    "SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと途中のビット、3,520 通り）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数",
+    "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
+    f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
@@ -953,7 +1008,35 @@ def check_seq_branches():
                 errs.append(f"{where}: CHANGED marked other than by an applied APPLY_NR in RUN")
             if e == "FLUSH" and (acts != {"flush"} or nxt not in (None, s)):
                 errs.append(f"{where}: FLUSH does more than empty the FIFO ({sorted(acts)} -> {nxt})")
+            # audit round 6 (auditor C: single-action edits that passed every other check)
+            if e == "OUT" and ("seq_inc" not in acts or len(acts & {"store", "discard"}) != 1):
+                errs.append(f"{where}: an output time not counted, or not exactly one of stored / discarded (DAT-03)")
+            if e != "OUT" and acts & {"store", "discard", "seq_inc", "cic_clear"}:
+                errs.append(f"{where}: an output-time action ({sorted(acts & {'store', 'discard', 'seq_inc', 'cic_clear'})}) "
+                            f"outside an output time")
+            flags = acts & {"CFG_ERR", "STATE_ERR"}
+            if len(flags) > 1:
+                errs.append(f"{where}: a refusal with two flags")
+            if "CFG_ERR" in acts and not any(c in b["guard"] for c in ("cfg_ok", "nr_ok")):
+                errs.append(f"{where}: CFG_ERR on a branch that does not depend on the settings' consistency")
+            if "STATE_ERR" in acts and b["guard"] not in (ALWAYS, "1"):
+                errs.append(f"{where}: STATE_ERR on a branch that depends on the settings (a state refuses always)")
+            if "restart" in acts and (s, e) not in SEQ_RESTARTS:
+                errs.append(f"{where}: a wait started again where no restart is defined")
+    for (s, e) in SEQ_RESTARTS:                     # and every defined restart is in the table
+        cell = SEQ["table"].get((s, e))
+        if not (isinstance(cell, list) and any("restart" in b["actions"] for b in cell)):
+            errs.append(f"SEQ {s}/{e}: the defined restart is missing")
+    for e in ("OUT",):                              # RESET counts the output time too (the data path runs on RESET_N)
+        cell = SEQ["table"].get(("RESET", e))
+        if not (isinstance(cell, list) and all("seq_inc" in b["actions"] for b in cell)):
+            errs.append("SEQ RESET/OUT: an output time during a reset not counted (DAT-03)")
     return errs
+
+
+# The waits that start again, written independently of the table (SEQ-16, the electrode wait): a change applied while
+# the AFE is held (WARMUP) restarts T_WARM; an offset step in WAIT_E restarts T_ELEC. Nowhere else.
+SEQ_RESTARTS = {("WARMUP", "APPLY"), ("WARMUP", "APPLY_NR"), ("WAIT_E", "APPLY_NR")}
 
 
 def run_checks(verbose=True):
@@ -1288,6 +1371,12 @@ def selftest():
         ("PULSE の APPLY を無視（IGN）", lambda t: t.__setitem__(("PULSE", "APPLY"), IGN)),
         ("RUN の START を無視（IGN）", lambda t: t.__setitem__(("RUN", "START"), IGN)),
         ("WAIT_E の APPLY_NR を無視（IGN）", lambda t: t.__setitem__(("WAIT_E", "APPLY_NR"), IGN)),
+        # audit round 6, auditor C: single-action edits that passed
+        ("RUN の出力の時刻を数えない", lambda t: t.__setitem__(("RUN", "OUT"), [B(ALWAYS, ["store"])])),
+        ("RESET の出力の時刻を数えない", lambda t: t.__setitem__(("RESET", "OUT"), [B(ALWAYS, ["discard"])])),
+        ("RUN の APPLY で格納する", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_ok", ["apply", "flush", "store"], "PRE"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("拒否に旗を 2 つ立てる", lambda t: t.__setitem__(("PULSE", "APPLY"), [B(ALWAYS, ["STATE_ERR", "CFG_ERR"])])),
+        ("RECOVER の APPLY_NR で数え直す", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply", "restart"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
     ]
     spi_mut = [
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
@@ -1310,6 +1399,14 @@ def selftest():
         ("CRC 有効時の短いサンプルを通す", lambda t: t.__setitem__(("RSMP", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
         ("CRC のバイトのない読み出しを通す", lambda t: t.__setitem__(("RCRC", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
         ("CRC 有効時も連続読み出しを続ける", lambda t: t.__setitem__(("RREG", "BYTE"), [B(ALWAYS, ["addr_inc", "load_data"])])),
+        # audit round 6, auditor C: single edits that passed the frame checks (0 and 3 extra bits, load counts only)
+        ("書き込みの完了のあとの 1 ビットで読み出しの完了へ（確定も旗もなし）", lambda t: t.__setitem__(("WDONE", "BIT"), [B(ALWAYS, [], "RDONE")])),
+        ("連続読み出しで先頭バイトに戻る（アドレスを進めない）", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"], "HDR")])),
+        ("書き込みのデータを保持しない", lambda t: t.__setitem__(("WDAT", "BYTE"), [B("crc_en", [], "WCRC"), B("not crc_en", [], "WDONE")])),
+        ("CS_N の立ち上がりで先頭を写す", lambda t: t.__setitem__(("SDONE", "CSR"), [B("head", ["pop", "snapshot"], "IDLE"), B("not head", [], "IDLE")])),
+        ("先頭バイトでアドレスを進める", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["addr_inc", "load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("サンプルの先頭バイトでレジスタのデータを載せる", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot", "load_data"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("CRC 有効の読み出しでもアドレスを進める", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc", "addr_inc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])])),
     ]
     global fifo_step
     fifo_orig = fifo_step

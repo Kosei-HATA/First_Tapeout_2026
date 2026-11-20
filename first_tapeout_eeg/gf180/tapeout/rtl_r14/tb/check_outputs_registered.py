@@ -13,6 +13,7 @@ every output port must come from a flip-flop cell (a type with "dff": $dff, $adf
   MISO_OE     combinational, as in r13 (NFR-06)
 For CHOP_EN and CHOP_BLANK every input of that one gate must itself come from a flip-flop.
 
+Exit: 0 every output a flip-flop's (PASS), 1 an output that is not (FAIL), 2 the tool did not run (TOOL ERROR).
 Usage: check_outputs_registered.py [rtl_r14 directory]   (default: this one; the mutation runner passes its copy,
        which also holds the blocks kept from rtl/)
 """
@@ -38,16 +39,16 @@ def main():
     files = [os.path.join(d, f) for f in SRC]
     files += [os.path.join(d, f) if os.path.exists(os.path.join(d, f)) else os.path.join(RTL_OLD, f) for f in OLD]
     if not os.path.exists(YOSYS):
-        print(f"FAIL: yosys not found at {YOSYS} (set YOSYS)")
-        return 1
+        print(f"TOOL ERROR: yosys not found at {YOSYS} (set YOSYS)")
+        return 2                                     # not a finding about the design (audit round 6)
     with tempfile.TemporaryDirectory() as tmp:
         js = os.path.join(tmp, "top.json")
         cmd = (f"read_verilog -sv -I{SPEC} -I{os.path.join(R14, 'build')} {' '.join(files)}; "
                f"hierarchy -top eeg_digital_top; proc; flatten; opt_clean; opt -purge; write_json {js}")
         r = subprocess.run([YOSYS, "-q", "-p", cmd], capture_output=True, text=True)
         if r.returncode != 0 or not os.path.exists(js):
-            print("FAIL: yosys: " + (r.stderr.strip().splitlines() or ["no output"])[-1])
-            return 1
+            print("TOOL ERROR: yosys: " + (r.stderr.strip().splitlines() or ["no output"])[-1])
+            return 2
         m = json.load(open(js))["modules"]["eeg_digital_top"]
     drv = {}
     for name, c in m["cells"].items():

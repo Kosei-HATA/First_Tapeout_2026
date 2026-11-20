@@ -69,7 +69,7 @@ REGS = [
                                  F("CRC_ERR", 2, 2, 0, [0, 1], "w1c", "書き込みの CRC の不一致（書かない）"),
                                  F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のバイトのない読み出し（先頭バイトだけのフレームを除く）と 8 バイトでないサンプル、SPI の状態機械の不正な状態の値（何も確定しない。NFR-05）"),
                                  F("RESET_FLAG", 0, 0, 1, [0, 1], "w1c", "リセットが起きた（既定値 1）")], "エラー（W1C）"),
-    (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に過負荷を検出した"),
+    (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に、過負荷の検出の成り立つ両端の符号があった（検出の窓の尾だけでは立たない）"),
                                    F("OVERRUN", 0, 0, 0, [0, 1], "w1c", "FIFO が満杯でサンプルを捨てた")], "データのフラグ（W1C）"),
     (0x08, "ALERT_MASK", "RW", False, [F("ALERT_MASK", 7, 0, 0xFF, rng(0, 255), "imm", "ERR のビットごとに ALERT に含める（1）")], "ALERT のマスク"),
     (0x09, "ALERT_MASK_D", "RW", False, [F("ALERT_MASK_D", 1, 0, 0x3, rng(0, 3), "imm", "DFLAG のビットごとに ALERT に含める（1）")], "ALERT のマスク（データ）"),
@@ -126,7 +126,7 @@ SEQ_DRIVEN = {"AFE_RST"}
 DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}       # pads and debug: no analog effect (11/16: +0.64 nV)
 
 SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
-                 ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかで過負荷を検出した"),
+                 ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかに、過負荷の検出の成り立つ両端の符号があった"),
                  ("CHANGED", 4, "APPLY_NR の反映をまたぐ窓と電極の整定（反映の直後の 3 ＋ T_ELEC 個。残りのほうが長ければその長さ。RUN を出ると残りは取り消す）"),
                  ("ERR", 3, "格納の時点で ALERT が立っていた"), ("0", 2, "0"), ("0", 1, "0"), ("0", 0, "0")]
 OVL_RULE = dict(window=32, threshold=4, codes=(0, 31))

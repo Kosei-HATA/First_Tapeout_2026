@@ -59,7 +59,14 @@
 //      T4 CHANGED for T_ELEC 255 (258 outputs, past 8 bits); T5 an overload in WAIT_E leaves DFLAG.OVL; T6 APPLY_NR
 //      in RUN keeps the FIFO, a FLUSH keeps the CHANGED marks; T7 a command committed in the very cycle the tick takes
 //      the pending one (its acknowledge cycle, 64 kHz, the frame start swept in half-MCLK steps) is the new pending
-//      command. Always: CHOP_OUT == CHOP (CHOP_DLY 0)
+//      command. Always: CHOP_OUT == CHOP (CHOP_DLY 0). Audit round 6: T8 an overload in RUN that ends 8 frames before
+//      an output time marks exactly the three samples whose window holds it (the detector's tail marks no fourth);
+//      T9 an overload in ALIGN ending 12 frames before its clear sets neither DFLAG.OVL nor the first sample's OVL;
+//      T10 an overload in the first FILL interval marks the first stored sample (its window is FILL's) and not the
+//      next, and sets DFLAG.OVL; T11 CHANGED counts output times, not stored samples (marks spent on outputs dropped
+//      by a full FIFO); T1 / T2 also mask each flag from ALERT; T2 reads OVL_NOW in STATUS and in the empty word
+//      60 frames after an overload in the same output interval (they follow the detector); T4 the 258 marks as a
+//      count; N4 STATUS in FILL; R4 also in pulse mode; R9 RAW's word runs on through a SOFT_RESET (RST-02)
 // Also (audit round 4): every applied pin (OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, DWA_EN, CHOP_EN, TEST_CFG[5:0])
 // equals regmap.pins_from_active of the active copies at every MCLK in every state (CHOP_EN was seen only in IDLE and
 // RUN); STATUS's READY and AFE_RST bits in WARMUP, PRE, PULSE, RECOVER and ALIGN (N4); APPLY_NR across M's byte
@@ -407,6 +414,10 @@ module tb_top_r14;
         r14_read(7'h06, e);
         if (st[5] !== 1'b1 || (e & bitmask) !== bitmask)
             fail($sformatf("T1 %s: STATUS 0x%02h ERR 0x%02h, expected ALERT with 0x%02h", name, st, e, bitmask));
+        r14_write(7'h08, ~bitmask);                     // this flag masked: no ALERT (audit round 6)
+        r14_read(7'h03, st);
+        if (st[5] !== 1'b0) fail($sformatf("T1 %s: STATUS 0x%02h, ALERT with its mask bit 0", name, st));
+        r14_write(7'h08, 8'hFF);
         r14_write(7'h06, 8'hFF);
         r14_read(7'h03, st);
         if (st[5] !== 1'b0) fail($sformatf("T1 %s: STATUS 0x%02h, ALERT still set after clearing ERR", name, st));
@@ -1361,6 +1372,8 @@ module tb_top_r14;
         check_status(8'h00, 8'h09, "N4 STATUS in RECOVER (READY 0, AFE_RST 0)");
         wait_state(4'd4, 2100.0, "N4 ALIGN");
         check_status(8'h00, 8'h09, "N4 STATUS in ALIGN or FILL (READY 0, AFE_RST 0)");
+        wait_state(4'd5, 1100.0, "N4 FILL");
+        check_status(8'h00, 8'h09, "N4 STATUS in FILL (READY 0, AFE_RST 0)");
         if ((t_state[8] - t_state[7]) / 1000.0 < 1992.13 || (t_state[8] - t_state[7]) / 1000.0 > 1992.25 ||
             (t_afe_fall - t_afe_rise) / 1000.0 < 1992.13 || (t_afe_fall - t_afe_rise) / 1000.0 > 1992.25 ||
             (t_state[4] - t_state[2]) / 1000.0 < 1992.13 || (t_state[4] - t_state[2]) / 1000.0 > 1992.25)
@@ -1647,6 +1660,39 @@ module tb_top_r14;
             if (DRDY_N !== 1'b1 || n_drdy_fall != falls0) fail($sformatf("R4: DRDY_N fell (%0d falls) at the SOFT_RESET",
                                                                         n_drdy_fall - falls0));
             r14_write(7'h06, 8'hFF);
+            // R4b: the same in pulse mode (IF_CFG.DRDY_MODE 1; audit round 6: R4 ran in level mode only)
+            r14_write(7'h55, 8'h02);
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "R4b RUN");
+            r14_cmd(8'h55);
+            repeat (600) @(posedge MCLK);
+            falls0 = n_drdy_fall;
+            k = 0;
+            @(posedge MCLK); #1;
+            while (!(dut.push_ok === 1'b1 && dut.fifo_level === 4'd0) && k < 40000) begin @(posedge MCLK); #1; k++; end
+            @(posedge MCLK); #1;
+            if (k >= 40000 || DRDY_N !== 1'b1) fail("R4b not exercised: no store into an empty FIFO");
+            soft_now();
+            if (DRDY_N !== 1'b1 || n_drdy_fall != falls0) fail($sformatf("R4b: DRDY_N fell (%0d falls) at the SOFT_RESET (pulse mode)",
+                                                                        n_drdy_fall - falls0));
+            r14_write(7'h06, 8'hFF);
+            // R9: RAW's timing runs from RESET_N alone (RST-02): a SOFT_RESET in the middle of a RAW word lets the word
+            // end (8 RAW_CLK rises in that frame); RAW_EN is then 0 (no rise in the next frame)
+            begin
+                integer r0;
+                r14_write(7'h11, 8'h3C); r14_write(7'h62, 8'h01); r14_write(7'h11, 8'h00);
+                repeat (3 * 32) @(posedge MCLK);
+                @(posedge CMP_STROBE);
+                r0 = n_rawclk;
+                repeat (10) @(posedge MCLK); #1;
+                soft_now();
+                @(posedge CMP_STROBE);
+                if (n_rawclk - r0 != 8) fail($sformatf("R9: %0d RAW_CLK rises in the frame of the SOFT_RESET, expected 8", n_rawclk - r0));
+                r0 = n_rawclk;
+                @(posedge CMP_STROBE);
+                if (n_rawclk != r0) fail("R9: RAW_CLK runs after the SOFT_RESET (RAW_EN is reset)");
+                r14_write(7'h06, 8'hFF);
+            end
             // R5: a SOFT_RESET over frame cycles 1..5 (committed in cycle 0): the frame strobes run from RESET_N alone
             // (TH_CAPTURE 1, DAC_LOAD 2, DAC_CLK 4: the strobe monitor checks every frame; RST-02)
             k = 0;
@@ -1704,6 +1750,7 @@ module tb_top_r14;
         phase = "T";
         begin
             logic [7:0] e, st, f, lv0, v1;
+            logic [15:0] seq2;
             integer k;
             bit found;
             real t0f;
@@ -1740,14 +1787,45 @@ module tb_top_r14;
             repeat (600) @(posedge MCLK);
             r14_read(7'h03, st);
             if (st[5] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h, ALERT not set by DFLAG.OVERRUN", st));
+            r14_write(7'h09, 8'h02);                    // OVERRUN masked
+            r14_read(7'h03, st);
+            if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT with OVERRUN masked", st));
+            r14_write(7'h09, 8'h03);
             r14_write(7'h07, 8'h01);
             r14_read(7'h03, st);
             if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT after clearing OVERRUN", st));
-            ovl_force = 1'b1; repeat (20 * 32) @(posedge MCLK); ovl_force = 1'b0; repeat (40 * 32) @(posedge MCLK);
+            // an overload on the inputs 100..119 of an output interval: OVL_NOW in STATUS and in the empty word is the
+            // detector's (1 during, 0 sixty frames after, in the same interval), DFLAG.OVL is set
+            k = 0;
+            while (!(dut.u_cic.dcnt == 10'd100 && dut.cycle > 5'd3 && dut.cycle < 5'd16) && k < 80000) begin @(posedge MCLK); k++; end
+            seq2 = dut.seq_cnt;                         // the checks below lie in this output interval
+            ovl_force = 1'b1;
+            repeat (10 * 32) @(posedge MCLK);
+            r14_read(7'h03, st);
+            if (st[1] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h without OVL_NOW during an overload", st));
+            while (!(dut.u_cic.dcnt == 10'd120 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+            ovl_force = 1'b0;
+            repeat (60 * 32) @(posedge MCLK);
+            r14_read(7'h03, st);
+            if (st[1] !== 1'b0 || st[5] !== 1'b1)
+                fail($sformatf("T2: STATUS 0x%02h 60 frames after the overload: OVL_NOW must be 0, ALERT 1 (DFLAG.OVL)", st));
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T2 drain");            // samples of earlier intervals
+            begin
+                logic [7:0] es;
+                logic [15:0] eq;
+                logic [23:0] ed;
+                bit eok;
+                r14_sample(es, eq, ed, eok);
+                if (!eok || es[7] !== 1'b0 || es[5] !== 1'b0)
+                    fail($sformatf("T2: empty word status 0x%02h 60 frames after the overload (OVL is OVL_NOW, 0)", es));
+            end
+            if (dut.seq_cnt !== seq2) fail("T2 not exercised: an output time came during the checks");
             r14_read(7'h07, f);
             if (f[1] !== 1'b1) fail("T2: no DFLAG.OVL after an overload in RUN");
+            r14_write(7'h09, 8'h01);                    // OVL masked
             r14_read(7'h03, st);
-            if (st[5] !== 1'b1) fail($sformatf("T2: STATUS 0x%02h, ALERT not set by DFLAG.OVL", st));
+            if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT with DFLAG.OVL masked", st));
+            r14_write(7'h09, 8'h03);
             r14_write(7'h07, 8'h02);
             r14_read(7'h03, st);
             if (st[5] !== 1'b0) fail($sformatf("T2: STATUS 0x%02h, ALERT after clearing OVL", st));
@@ -1777,6 +1855,7 @@ module tb_top_r14;
             r14_write(7'h21, 8'h01);                                              // M 0 -> 1: one step
             r14_cmd(8'h44);
             repeat (600) @(posedge MCLK);
+            if (dut.chg_cnt !== 9'd258) fail($sformatf("T4: CHANGED count %0d after a step with T_ELEC 255, expected 258", dut.chg_cnt));
             read_samples(3, 3, "T4 CHANGED of a 258-output mark");
             r14_cmd(8'h22);                                                       // leaving RUN ends the mark
             wait_state(4'd0, 50.0, "T4 IDLE");
@@ -1842,6 +1921,123 @@ module tb_top_r14;
                 r14_write(7'h06, 8'hFF);
             end
             if (!found) fail("T7 not exercised: no START committed in FLUSH's acknowledge cycle");
+            // T8: RUN; extreme codes for the inputs 996..1015 of an output interval (the last 8 inputs normal): the
+            // samples of that interval and the next two carry OVL, the third after it none (the detector's count
+            // stays high 31 frames into the next interval, which holds no extreme code)
+            r14_write(7'h26, 8'h01);
+            r14_cmd(8'h33);
+            repeat (2000) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+            r14_cmd(8'h11);
+            wait_state(4'd6, 10000.0, "T8 RUN");
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T8 drain");
+            begin
+                logic [15:0] k8, sq;
+                logic [7:0] st8;
+                logic [23:0] d8;
+                bit ok8;
+                integer got;
+                k = 0;
+                while (!(dut.u_cic.dcnt == 10'd996 && dut.cycle > 5'd3 && dut.cycle < 5'd16) && k < 80000) begin @(posedge MCLK); k++; end
+                k8 = dut.seq_cnt;                       // the SEQ of this interval's output
+                ovl_force = 1'b1;
+                while (!(dut.u_cic.dcnt == 10'd1016 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+                ovl_force = 1'b0;
+                got = 0;
+                while (got < 5) begin
+                    while (DRDY_N !== 1'b0) @(posedge MCLK);
+                    r14_sample(st8, sq, d8, ok8);
+                    if (!ok8 || st8[7] !== 1'b1) fail($sformatf("T8: sample SEQ %0d not valid", sq));
+                    if (sq >= k8) begin
+                        if (st8[5] !== ((sq - k8) < 16'd3)) fail($sformatf("T8: sample SEQ %0d (interval +%0d) OVL %b, expected %b",
+                                                                         sq, sq - k8, st8[5], (sq - k8) < 16'd3));
+                        got = got + 1;
+                    end
+                end
+            end
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "T8 IDLE");
+            // T9: an overload in ALIGN ending 12 frames before its clear (inputs 992..1011): no DFLAG.OVL (FILL and RUN
+            // only, and the tail holds no extreme code) and no OVL on the first stored sample (its window is after
+            // the clear). ALIGN must have 40 inputs left when it starts (else START again)
+            found = 1'b0;
+            for (k = 0; k < 4 && !found; k++) begin
+                r14_write(7'h06, 8'hFF);
+                r14_write(7'h07, 8'hFF);
+                r14_cmd(8'h11);
+                wait_state(4'd4, 7000.0, "T9 ALIGN");
+                if (dut.u_cic.dcnt <= 10'd984) begin
+                    found = 1'b1;
+                    while (!(dut.u_cic.dcnt == 10'd992 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+                    ovl_force = 1'b1;
+                    while (!(dut.u_cic.dcnt == 10'd1012 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+                    ovl_force = 1'b0;
+                    if (dut.seq_state !== 4'd4) fail("T9 not exercised: the overload left ALIGN");
+                    wait_state(4'd6, 4000.0, "T9 RUN");
+                    begin
+                        logic [7:0] st9;
+                        logic [15:0] sq9;
+                        logic [23:0] d9;
+                        bit ok9;
+                        while (DRDY_N !== 1'b0) @(posedge MCLK);
+                        r14_sample(st9, sq9, d9, ok9);
+                        if (!ok9 || st9[7] !== 1'b1 || st9[5] !== 1'b0)
+                            fail($sformatf("T9: the first stored sample status 0x%02h (OVL from an overload before the clear)", st9));
+                    end
+                    r14_read(7'h07, f);
+                    if (f[1] !== 1'b0) fail($sformatf("T9: DFLAG 0x%02h, OVL set by an overload that ended in ALIGN", f));
+                end
+                r14_cmd(8'h22);
+                wait_state(4'd0, 50.0, "T9 IDLE");
+            end
+            if (!found) fail("T9 not exercised: ALIGN never had 40 inputs left");
+            // T10: an overload on the inputs 100..119 of the first FILL interval: the first stored sample (its window is
+            // FILL's three intervals) carries OVL, the next one not; DFLAG.OVL is set (FILL)
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+            r14_cmd(8'h11);
+            wait_state(4'd5, 7000.0, "T10 FILL");
+            while (!(dut.u_cic.dcnt == 10'd100 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+            if (dut.seq_state !== 4'd5) fail("T10 not exercised: not in FILL");
+            ovl_force = 1'b1;
+            while (!(dut.u_cic.dcnt == 10'd120 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+            ovl_force = 1'b0;
+            wait_state(4'd6, 4000.0, "T10 RUN");
+            begin
+                logic [7:0] s10;
+                logic [15:0] q10;
+                logic [23:0] d10;
+                bit ok10;
+                for (int i = 0; i < 2; i++) begin
+                    while (DRDY_N !== 1'b0) @(posedge MCLK);
+                    r14_sample(s10, q10, d10, ok10);
+                    if (!ok10 || s10[7] !== 1'b1 || s10[5] !== (i == 0))
+                        fail($sformatf("T10: stored sample %0d after FILL: status 0x%02h, OVL expected %0d", i, s10, i == 0));
+                end
+            end
+            r14_read(7'h07, f);
+            if (f[1] !== 1'b1) fail($sformatf("T10: DFLAG 0x%02h without OVL after an overload in FILL", f));
+            r14_write(7'h07, 8'hFF);
+            // T11: CHANGED counts output times: with the FIFO full, a step with T_ELEC 3 marks the next 6 output times,
+            // all dropped (OVERRUN); the samples stored after them carry no CHANGED
+            r14_write(7'h51, 8'd3);
+            f = 8'h00; k = 0;
+            while (f[0] !== 1'b1 && k < 40) begin repeat (16384) @(posedge MCLK); r14_read(7'h07, f); k++; end
+            if (f[0] !== 1'b1) fail("T11 not exercised: the FIFO never full");
+            r14_write(7'h21, 8'h01);                    // M 0 -> 1: one step, 3 + 3 marks
+            r14_cmd(8'h44);
+            repeat (600) @(posedge MCLK);
+            if (dut.chg_cnt !== 9'd6) fail($sformatf("T11: CHANGED count %0d, expected 6", dut.chg_cnt));
+            repeat (7 * 32768) @(posedge MCLK);         // 7 output times, all dropped
+            if (dut.chg_cnt !== 9'd0) fail($sformatf("T11: CHANGED count %0d after 7 dropped output times, expected 0", dut.chg_cnt));
+            r14_write(7'h07, 8'hFF);
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T11 drain");
+            read_samples(3, 0, "T11 no CHANGED after the marks were spent on dropped outputs");
+            r14_write(7'h51, 8'd0);
+            r14_write(7'h21, 8'h00);
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "T11 IDLE");
             r14_write(7'h26, 8'h01);
             r14_cmd(8'h33);
             repeat (2000) @(posedge MCLK);

@@ -36,6 +36,7 @@ module eeg_seq (
     input  logic [7:0] t_rec,
     input  logic [7:0] t_pre,
     input  logic [7:0] t_rst,
+    (* fsm_encoding = "none" *)                // NFR-05: no recoding, so that codes 9..15 stay decoded (audit round 14)
     output logic [3:0] state,
     output logic       afe_rst,           // registered, changes only at a tick (or reset)
     // the following are combinational during the event's cycle, so every register they drive (active settings,

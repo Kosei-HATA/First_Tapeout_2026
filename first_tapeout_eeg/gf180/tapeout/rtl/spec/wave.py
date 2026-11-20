@@ -56,7 +56,7 @@ def frame():
         {"name": "ADC：DAC_CLK", "wave": levels(n, hi({4}))},
         {},
         {"name": "縁のフレーム：CHOP／CHOP_OUT", "wave": levels(n, set(range(1, n)))},
-        {"name": "縁のフレーム：CHOP_BLANK（15）", "wave": levels(n, blank)},
+        {"name": f"縁のフレーム：CHOP_BLANK（{T['blank_max']}）", "wave": levels(n, blank)},   # captions from TIMING (audit round 14)
         {"name": "出力のフレーム：CIC の出力", "wave": levels(n, hi({8}))},
         {"name": "CHOP1 の縁のフレーム：CHOP1", "wave": levels(n, {i for i, c in enumerate(pos) if i > 0 and c >= 16})},
         {},
@@ -65,7 +65,8 @@ def frame():
          "data": ["旧い値", "新しい値"]},
     ]
     return {"signal": sig, "head": {"text": "1 フレーム（32 MCLK ＝ 0.977 µs）：既存の事象と新設の tick"},
-            "foot": {"text": "左端は前のフレームの cycle 31。ストローブは cycle k の間 High、出力はその終わりの縁（e(k+1)）で変わる。tick は cycle 24、出力は e25"},
+            "foot": {"text": "左端は前のフレームの cycle 31。ストローブは cycle k の間 High、出力はその終わりの縁（e(k+1)）で変わる。"
+                             f"tick は cycle {tc}、出力は e{tc + 1}"},
             "config": {"hscale": 1}}
 
 
@@ -92,7 +93,8 @@ def chop():
         {"name": "CIC の出力", "wave": levels(n, out)},
     ]
     return {"signal": sig,
-            "head": {"text": "チョッパの周期と tick：相 A の中ほど（128 kHz で縁から 56 MCLK、64 kHz で 120 MCLK）に 1 周期 1 回"},
+            "head": {"text": f"チョッパの周期と tick：相 A の中ほど（128 kHz で縁から {r128['tick_frame'] * 32 + tc} MCLK、"
+                             f"64 kHz で {r64['tick_frame'] * 32 + tc} MCLK）に 1 周期 1 回"},
             "foot": {"text": "CIC の出力は 1,024 フレーム目（フレーム番号 ≡ 15 mod 16）の cycle 8。tick とは同じサイクルにならない"},
             "config": {"hscale": 1}}
 

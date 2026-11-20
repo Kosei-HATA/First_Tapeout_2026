@@ -371,6 +371,18 @@ MUTATIONS = [
      "end else if (pend && !cmd_ack && (GUARDED_ADDRS[addr] || addr == A_TEST_KEY)) begin"),
     ("SPI：標本の窓への書き込みで CRC のバイトを保持しない", "eeg_spi_slave.sv",
      "                                wcrc <= rx_byte;", "                                if (hdr[6:0] != 7'h40) wcrc <= rx_byte;"),
+    # audit round 14, auditor B: the FIFO sees the SPI's copy one MCLK late (T13's sweep of a copy in a store's cycle)
+    # audit round 14, auditor C: STOP applying the shadows (V12), OVERRUN tied to 1 (G), the empty word's ERR tied to 1 (T4)
+    ("シーケンサ：WARMUP と PULSE の STOP でシャドウを反映する（REG-03）", "eeg_seq.sv",
+     "                if (state != S_IDLE) nxt = S_IDLE;          // IDLE: accepted, does nothing (IGN)",
+     "                if (state != S_IDLE) nxt = S_IDLE;          // IDLE: accepted, does nothing (IGN)\n                if ((state == S_WARMUP || state == S_PULSE) && cfg_ok) a_apply = 1'b1;"),
+    ("最上位：サンプルの OVERRUN を常に 1", "eeg_digital_top.sv",
+     "        smp_status[SMP_OVERRUN_LSB] = dflag_overrun;", "        smp_status[SMP_OVERRUN_LSB] = 1'b1;"),
+    ("最上位：空の語の ERR を常に 1", "eeg_digital_top.sv",
+     "        empty_status[SMP_ERR_LSB]     = alert;", "        empty_status[SMP_ERR_LSB]     = 1'b1;"),
+    ("SPI：標本の写しを 1 MCLK 遅れて FIFO に知らせる（格納と同じサイクルの写しで標本を失う）", "eeg_spi_slave.sv",
+     "    assign smp_snap = !cs_start",
+     "    logic smp_snap_c;\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) smp_snap <= 1'b0; else smp_snap <= smp_snap_c;\n    assign smp_snap_c = !cs_start"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -562,6 +574,9 @@ STRUCT_MUTATIONS = [
     ("CIC：リセットを同期に", "eeg_cic3.sv",
      "    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            i1         <= '0;",
      "    always_ff @(posedge clk) begin\n        if (!rst_n) begin\n            i1         <= '0;"),
+    # audit round 14, auditor A: the state register left to FSM recoding (NFR-05 through synthesis)
+    ("シーケンサ：状態のレジスタの fsm_encoding を外す（合成で符号化し直されうる）", "eeg_seq.sv",
+     "    (* fsm_encoding = \"none\" *)                // NFR-05", "    // (no attribute)                         // NFR-05"),
 ]
 
 def bench_ended(v, closing):
@@ -708,9 +723,12 @@ def run(i, m, bench="top"):
             return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1]
         nbad = int(head.split(":")[1].split()[0])
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), head)
-        if f is None:
-            return i, name, ("baseline ok" if nbad == 0 and "PASS" in k.stdout else "BASELINE FAILS"), head
-        return i, name, ("detected" if nbad != 0 or "PASS" not in k.stdout else "MISSED"), first
+        bench_ok = "PASS: tb_fifo" in v.stdout          # audit round 14, auditor C: the bench's own coverage line
+        if f is None:                                   # ("a pop with a push into a full FIFO never occurred") was ignored
+            return i, name, ("baseline ok" if nbad == 0 and "PASS" in k.stdout and bench_ok else "BASELINE FAILS"), head
+        if nbad == 0 and not bench_ok:
+            first = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), first)
+        return i, name, ("detected" if nbad != 0 or "PASS" not in k.stdout or not bench_ok else "MISSED"), first
     if bench == "spi":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_spi_trace.py"),
                             os.path.join(d, "build", "spi_trace.txt")], capture_output=True, text=True)

@@ -297,7 +297,7 @@ CHECKS = [
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
     "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
-    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数",
+    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）",
 ]
 
 
@@ -576,6 +576,40 @@ def check(verbose=True):
         if hits:
             errs.append(f"overload rule fires {hits} times on the full-scale stream {name}")
         notes.append(f"overload rule on {name}: {len(c)} frames, codes {c.min()}..{c.max()}, {hits} detections")
+    # audit round 14, auditor C: the pin column against the pins the field drives (toggled through pins_from_active,
+    # TEST_CFG bit by bit; a swap of SIGN and RANGE, of the trims, of ATP_EN and ADC_ZERO, or a W1C flag listed as
+    # driving TEST_CFG[7:6], passed); the read-only constants hold their reset value only
+    base = {f["name"]: f["reset"] for *_r, fl_, _d in REGS for f in fl_}
+    tcfg = {"TEST_CFG[3:0]": range(0, 4), "TEST_CFG[4]": range(4, 5), "TEST_CFG[5]": range(5, 6), "TEST_CFG[7:6]": range(6, 8)}
+    for a_, n_, acc_, _l, fl_, _ in REGS:
+        for f in fl_:
+            if not f["pin"] or f["pin"] not in set(PIN_OF_CONTROL) | set(tcfg):
+                continue                               # RAW_DATA／RAW_CLK: not in pins_from_active
+            moved = set()
+            for rng_ in (0, 4):                        # the DAC off and on (BLANK_LEN acts with it off, M and S with it on)
+                b0 = dict(base, RANGE=rng_)
+                other = next((v for v in (f["legal"] or [b0.get(f["name"], 0) ^ 1]) if v != b0.get(f["name"])), None)
+                if other is None or f["name"] not in b0:
+                    continue
+                try:
+                    p0, p1 = pins_from_active(b0), pins_from_active(dict(b0, **{f["name"]: other}))
+                except KeyError:
+                    continue
+                for k in p0:
+                    if p0[k] != p1[k]:
+                        if k == "TEST_CFG":
+                            moved |= {lb for lb, bits in tcfg.items() if any((p0[k] >> i & 1) != (p1[k] >> i & 1) for i in bits)}
+                        else:
+                            moved.add(k)
+            want = {f["pin"]} if f["pin"] in tcfg else {PIN_OF_CONTROL[f["pin"]]}
+            if not want <= moved:
+                errs.append(f"{n_}.{f['name']}: listed as driving {f['pin']}, but changing it moves {sorted(moved) or 'no pin'} "
+                            f"(pins_from_active)")
+    for a_, n_, acc_, _l, fl_, _ in REGS:
+        for f in fl_:
+            if (f["cls"] == "ro" and f["legal"] is not None and f["name"] not in REQUIRED_RO_LEGAL and f["name"] != "SAMPLE"
+                    and f["legal"] != [f["reset"]]):
+                errs.append(f"{n_}.{f['name']}: read-only constant values {f['legal']}, not its reset value alone")
     # audit round 13, auditor C: the codes, the sample status bits, the read-only values, ODR and QBITS
     for c_, v_ in sorted(FIXED_CODES.items()):
         got = TEST_KEY if c_ == "TEST_KEY" else COMMANDS.get(c_)
@@ -1017,6 +1051,15 @@ def selftest():
     def m_qbits():
         fld("FORMAT", "QBITS").update(reset=4, legal=[4])
 
+    def m_pin_swap():                                    # audit round 14, auditor C: the pin column
+        fld("OFF_CTRL", "SIGN")["pin"], fld("OFF_CTRL", "RANGE")["pin"] = "OFEN[3:0]", "OFS"
+
+    def m_pin_w1c():
+        fld("ERR", "CMD_ERR")["pin"], fld("DEBUG", "DBG_SEL")["pin"] = "TEST_CFG[7:6]", None
+
+    def m_ro_const():
+        fld("VERSION", "VERSION")["legal"] = [16, 17]
+
     def m_copy_region():                                 # audit round 12, auditor B: an active copy in no region
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "BLANK")
         r = list(g["REGS"][i]); r[0] = 0x38; g["REGS"][i] = tuple(r)
@@ -1064,7 +1107,9 @@ def selftest():
             ("ERR の FRAME_ERR と CRC_ERR のビットの入れ違い", m_err_swap),
             ("サンプルの状態の VALID と OVERRUN の入れ違い", m_smp_swap), ("サンプルの状態から CHANGED の名を除く", m_smp_missing),
             ("FIFO_LEVEL の値を 0〜7 に", m_level_ro),
-            ("ODR_L を 0xE9 に（1001 SPS）", m_odr), ("QBITS を 4 に", m_qbits)]
+            ("ODR_L を 0xE9 に（1001 SPS）", m_odr), ("QBITS を 4 に", m_qbits),
+            ("SIGN と RANGE の端子の入れ違い", m_pin_swap), ("ERR.CMD_ERR を TEST_CFG[7:6] の出どころに", m_pin_w1c),
+            ("VERSION の値に 17 も", m_ro_const)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1185,6 +1230,9 @@ SELFTEST_EXPECT = {
     'FIFO_LEVEL の値を 0〜7 に': ('are not the ones the requirements give (REQUIRED_RO_LEGAL)',),
     'ODR_L を 0xE9 に（1001 SPS）': ('SPS in ODR_H, ODR_L; fsm_spec.TIMING outputs',),
     'QBITS を 4 に': ("; the quantizer's codes 0..",),
+    'SIGN と RANGE の端子の入れ違い': (', but changing it moves',),
+    'ERR.CMD_ERR を TEST_CFG[7:6] の出どころに': (', but changing it moves',),
+    'VERSION の値に 17 も': (': read-only constant values',),
 }
 
 

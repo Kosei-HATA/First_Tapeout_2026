@@ -582,6 +582,8 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
         P.append("FLUSH does not empty the FIFO")
     if s == "FILL" and nxt == "RUN" and not env.get("valid", 1):
         P.append("RUN entered with an output that is not valid (the window not yet full)")
+    if "apply" in acts and not {"START", "APPLY", "APPLY_NR"} & set(present):   # audit round 14, auditor C: REG-03
+        P.append("settings applied in a tick without START, APPLY or APPLY_NR (REG-03)")
     if s == "FILL" and present == ["OUT"] and env.get("valid", 0) and not (nxt == "RUN" and "store" in acts):
         P.append("the first valid output in FILL is not stored with the entry to RUN (SEQ-04, DAT-01)")   # round 12
     # a command is executed, refused with a flag, or ignored by definition (only STOP in IDLE), judged on the
@@ -1002,9 +1004,18 @@ TIMING = dict(
 )
 
 
+# the tick's place as SEQ-13 gives it (cycle 24, outputs at e25, 57 MCLK after the phase-A edge at 128 kHz and 121 at
+# 64 kHz), at which VER-07 and the APPLY_NR carry runs were made (audit round 14, auditor A: since round 13 the RTL, the
+# benches and the analog decks follow TIMING, and a TIMING moved inside the window passed every check)
+TICK_REQUIRED = {"tick_cycle": 24, "128k": (8, 1), "64k": (16, 3)}       # cycle; rate: (period frames, tick frame)
+
+
 def check_timing():
     T, errs, notes = TIMING, [], []
     tc = T["tick_cycle"]
+    got = {"tick_cycle": tc, **{k: (r["period_frames"], r["tick_frame"]) for k, r in T["rates"].items()}}
+    if got != TICK_REQUIRED:
+        errs.append(f"tick placed at {got}; SEQ-13 and the analog runs (VER-07) fix it at {TICK_REQUIRED}")
     for c in (tc, (tc + 1) % 32):                  # the tick's strobe cycle and the edge its outputs change at
         if c in T["busy_cycles"]:
             errs.append(f"the tick meets a busy frame cycle (tick at cycle {tc}, outputs at e{tc + 1}): "
@@ -1054,7 +1065,7 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -1112,6 +1123,9 @@ def check_seq_branches():
                 errs.append(f"{where}: a refused command has another effect ({sorted(acts)} -> {nxt})")
             if "restart" in acts and "apply" not in acts:
                 errs.append(f"{where}: the wait starts again without a change applied")
+            if "apply" in acts and e not in ("START", "APPLY", "APPLY_NR"):   # audit round 14, auditor C: REG-03
+                errs.append(f"{where}: settings applied on {e} (REG-03: only START, APPLY and APPLY_NR reach the active "
+                            f"copies)")
             if "mark" in acts and not ("apply" in acts and s == "RUN" and e == "APPLY_NR"):
                 errs.append(f"{where}: CHANGED marked other than by an applied APPLY_NR in RUN")
             if e == "FLUSH" and (acts != {"flush"} or nxt not in (None, s)):
@@ -1135,6 +1149,9 @@ def check_seq_branches():
         cell = SEQ["table"].get((s, e))
         if not (isinstance(cell, list) and any("restart" in b["actions"] for b in cell)):
             errs.append(f"SEQ {s}/{e}: the defined restart is missing")
+        elif any("apply" in b["actions"] and "restart" not in b["actions"] for b in cell):   # audit round 14, auditor C
+            errs.append(f"SEQ {s}/{e}: an accepting branch that does not start the wait again (a timer written "
+                        f"meanwhile, e.g. T_ELEC set to 0, would be ignored)")
     for e in ("OUT",):                              # RESET counts the output time too (the data path runs on RESET_N)
         cell = SEQ["table"].get(("RESET", e))
         if not (isinstance(cell, list) and all("seq_inc" in b["actions"] for b in cell)):
@@ -1585,6 +1602,10 @@ def selftest_runs():
         ("WAIT_E の STOP を黙って捨てる", lambda t: t.__setitem__(("WAIT_E", "STOP"), [B(ALWAYS, [])])),
         ("RUN の START を黙って捨てる", lambda t: t.__setitem__(("RUN", "START"), [B(ALWAYS, [])])),
         ("RUN へ入れない", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["discard", "seq_inc"])])),
+        # audit round 14, auditor C: REG-03 (apply only by START, APPLY, APPLY_NR), a restart missing on one branch
+        ("WARMUP の STOP で反映する（REG-03）", lambda t: t.__setitem__(("WARMUP", "STOP"), [B("cfg_ok", ["apply"], "IDLE"), B("not cfg_ok", [], "IDLE")])),
+        ("IDLE の出力の時刻で反映する（REG-03）", lambda t: t.__setitem__(("IDLE", "OUT"), [B("cfg_ok", ["discard", "seq_inc", "apply"]), B("not cfg_ok", ["discard", "seq_inc"])])),
+        ("WAIT_E の APPLY_NR で T_ELEC ＝ 0 なら数え直さない", lambda t: t.__setitem__(("WAIT_E", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"]), B("cfg_ok and nr_ok and not t_elec0", ["apply", "restart"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         # audit round 12, auditor C: a valid output in FILL kept from RUN by another condition, or by a dead branch
         ("FILL の有効な出力で、nr_ok のときのみ RUN へ", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid and nr_ok", ["store", "seq_inc"], "RUN"), B("not (valid and nr_ok)", ["discard", "seq_inc"])])),
         ("FILL から RUN への分岐の条件が成り立たない", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid and not valid", ["store", "seq_inc"], "RUN"), B("not (valid and not valid)", ["discard", "seq_inc"])])),
@@ -1811,6 +1832,8 @@ def selftest_runs():
         ("TIME", "tick を CHOP1 の縁のサイクル（16）に", lambda: setitem(TIMING, "tick_cycle", 16)),
         ("TIME", "tick をブランキングの窓の中（サイクル 12）に", lambda: setitem(TIMING, "tick_cycle", 12)),
         ("TIME", "128 kHz の tick を相 A の終わり近く（フレーム 3）に", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=8, tick_frame=3)})),
+        # audit round 14, auditor A: the tick moved inside the window (88 MCLK, 0.69 of phase A)
+        ("TIME", "128 kHz の tick をフレーム 2 に（窓の中、アナログの評価の位相と異なる）", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=8, tick_frame=2)})),
         ("TIME", "SPI に未処理の規則（busy）がない", without_busy),
         ("TIME", "チョッパの周期が 1 ms を割り切らない（12 フレーム）", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=12, tick_frame=1)})),
         ("TIME", "CHOP1 の周期が 1 ms を割り切らない（384 フレーム）", lambda: setitem(TIMING, "chop1_periods_frames", TIMING["chop1_periods_frames"] + [384])),
@@ -2047,6 +2070,9 @@ SELFTEST_EXPECT = {
     'PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）': (', but SEQ-02, 03 and 14 give',),
     'PRE で AFE_RST を 1 に（状態の表）': (', but ANA-01 and SEQ-13 give',),
     'WARMUP を AFE_ON の中に（状態の表）': (', but SEQ-01 places the state in',),
+    'WARMUP の STOP で反映する（REG-03）': ('(REG-03: only START, APPLY and APPLY_NR reach the active copies)',),
+    'IDLE の出力の時刻で反映する（REG-03）': ('settings applied in a tick without START, APPLY or APPLY_NR (REG-03)',),
+    'WAIT_E の APPLY_NR で T_ELEC ＝ 0 なら数え直さない': (': an accepting branch that does not start the wait again (a timer written meanwhile, e.g. T_ELEC set to 0, would be ignored)',),
     'AFE_ON を ACTIVE の外に': (', but SEQ-01 nests the composite in',),
     '書き込めないアドレスへの書き込みで CRC のバイトを保持しない': ('(the CRC, the address and the range are judged from the held bytes)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
@@ -2062,6 +2088,7 @@ SELFTEST_EXPECT = {
     'tick を CHOP1 の縁のサイクル（16）に': ('the tick meets a busy frame cycle (tick at cycle',),
     'tick をブランキングの窓の中（サイクル 12）に': ('can fall inside an output-chopper blanking window',),
     '128 kHz の tick を相 A の終わり近く（フレーム 3）に': ('of chopper phase A, not in its middle half',),
+    '128 kHz の tick をフレーム 2 に（窓の中、アナログの評価の位相と異なる）': ('; SEQ-13 and the analog runs (VER-07) fix it at',),
     'SPI に未処理の規則（busy）がない': ("us) but the SPI specification has no 'busy' rule",),
     'チョッパの周期が 1 ms を割り切らない（12 フレーム）': (': 1 ms is not a whole number of chopper periods',),
     'CHOP1 の周期が 1 ms を割り切らない（384 フレーム）': ('frames does not divide the decimation ratio',),

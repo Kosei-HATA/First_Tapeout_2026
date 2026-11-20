@@ -102,7 +102,7 @@ module eeg_spi_slave (
     endfunction
 
     // ---------------- transaction
-    logic [3:0]  st;
+    (* fsm_encoding = "none" *) logic [3:0]  st;   // the illegal codes stay decoded (FRAME_ERR; audit round 14)
     logic [2:0]  bit_cnt;
     logic [6:0]  rx_sh;
     logic [7:0]  rx_byte, tx_sh, tx_next, hdr, wdat, wcrc, txd;

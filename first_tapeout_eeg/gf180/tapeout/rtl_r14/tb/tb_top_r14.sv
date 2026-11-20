@@ -422,12 +422,16 @@ module tb_top_r14;
     // round 13, only 128 kHz and a hand-written 57 had been checked)
     real afe_edge_exp;
     always @(negedge AFE_RST or posedge AFE_RST) begin
-        afe_edge_exp = dut.a_chop_fast ? 32.0 * TICK_FRAME_128K + TICK_CYCLE + 1.0 : 32.0 * TICK_FRAME_64K + TICK_CYCLE + 1.0;
+        afe_edge_exp = dut.u_clkgen.fast ? 32.0 * TICK_FRAME_128K + TICK_CYCLE + 1.0 : 32.0 * TICK_FRAME_64K + TICK_CYCLE + 1.0;
+        // (the rate the clock generator runs at: a CHOP_FAST change waits for its 512-MCLK wrap; audit round 14)
         if (RESET_N && dut.rst_n &&
             ((($realtime - t_chop_rise) / TMCLK) < afe_edge_exp - 0.5 || (($realtime - t_chop_rise) / TMCLK) > afe_edge_exp + 0.5))
             fail($sformatf("AFE_RST edge %0.2f MCLK after the CHOP rising edge (expected %0.0f)",
                            ($realtime - t_chop_rise) / TMCLK, afe_edge_exp));
     end
+
+    integer n_coinc13 = 0;                        // T13: sample copies taken in the cycle of a store into the FIFO
+    always @(posedge MCLK) if (dut.smp_snap === 1'b1 && dut.push_ok === 1'b1) n_coinc13 = n_coinc13 + 1;
 
     // ------------------------------------------------------------------ G2 and I: event times
     real t_snap = 0.0, t_flush = 0.0, t_store = 0.0, t_csr = 0.0;
@@ -1143,15 +1147,23 @@ module tb_top_r14;
             if (st[7] !== 1'b0 || st[6] !== 1'b1 || !ok)
                 fail($sformatf("the empty word after an overrun: status 0x%02h, expected VALID 0 and OVERRUN 1", st));
         end
-        while (DRDY_N !== 1'b0) @(posedge MCLK);
-        begin
-            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
+        for (int i = 0; i < 2; i++) begin             // two samples (audit round 14, auditor C: OVERRUN kept only
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;   // until the next store passed every test)
+            while (DRDY_N !== 1'b0) @(posedge MCLK);
             r14_sample(st, sq, d, ok);
-            if (st[6] !== 1'b1) fail("sample status without OVERRUN while DFLAG.OVERRUN is set");
+            if (st[6] !== 1'b1) fail($sformatf("sample %0d status without OVERRUN while DFLAG.OVERRUN is set", i));
         end
         r14_write(7'h07, 8'hFF);
         r14_read(7'h07, v);
         if (v !== 8'h00) fail($sformatf("DFLAG 0x%02h after writing 0xFF (W1C)", v));
+        begin                                           // a sample stored after the clear: OVERRUN 0 (audit round 14,
+            logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;   // auditor C: never checked; an OVERRUN tied to 1
+            while (DRDY_N === 1'b0) r14_sample(st, sq, d, ok);          // passed every test)
+            while (DRDY_N !== 1'b0) @(posedge MCLK);
+            r14_sample(st, sq, d, ok);
+            if (!ok || st[7] !== 1'b1 || st[6] !== 1'b0)
+                fail($sformatf("G: a sample stored after DFLAG.OVERRUN was cleared: status 0x%02h, expected VALID 1 and OVERRUN 0", st));
+        end
         r14_write(7'h06, 8'hFF);
         // G2: a sample read whose header copies the old head, a FLUSH taken during the read, a sample stored after
         // the flush and before CS_N rises: the read must not pop the new sample
@@ -2052,7 +2064,10 @@ module tb_top_r14;
             read_samples(1, -1, "T4 just after an output");                // (audit round 8: CHANGED 0 in it)
             begin
                 logic [7:0] es; logic [15:0] eq; logic [23:0] ed; bit eok;
+                r14_write(7'h06, 8'hFF); r14_write(7'h07, 8'hFF);       // no flag: the empty word's ERR (= ALERT) is 0
                 r14_sample(es, eq, ed, eok);
+                if (es[3] !== 1'b0 || spi_status[5] !== 1'b0)            // (audit round 14, auditor C: ERR tied to 1 passed)
+                    fail($sformatf("T4: the empty word's ERR %b with STATUS.ALERT %b, both 0 expected (no flag set)", es[3], spi_status[5]));
                 if (dut.chg_cnt == 9'd0) fail("T4 not exercised: no mark left at the empty word");
                 if (!eok || es[7] !== 1'b0 || es[4] !== 1'b0 || es[2:0] !== 3'b000 || eq !== 16'd0 || ed !== 24'd0)
                     fail($sformatf("T4: the empty word while a mark runs: status 0x%02h SEQ %0d DATA %0d (VALID 0, CHANGED 0, reserved 0, SEQ 0, DATA 0 expected)", es, eq, ed));
@@ -2182,6 +2197,46 @@ module tb_top_r14;
                         got = got + 1;
                     end
                 end
+            end
+            // T13 (audit round 14, auditor B): a sample read whose header's copy falls in the very cycle of a store into
+            // the empty FIFO. The CS_N fall stepped by a quarter MCLK over 6 MCLK around the store, one point per output
+            // time; every stored sample reaches the host (SEQ without a gap). A copy the FIFO saw one MCLK late lost the
+            // sample silently and passed every test
+            begin
+                logic [15:0] sq13, last13;
+                logic [7:0] st13;
+                logic [23:0] d13;
+                bit ok13, have13;
+                integer gap13, coinc0;
+                real t0_13, t_fall13, tm13;
+                have13 = 1'b0; gap13 = 0; coinc0 = n_coinc13;
+                @(posedge MCLK); tm13 = $realtime; @(posedge MCLK); tm13 = $realtime - tm13;   // the simulated MCLK period
+                @(posedge dut.push_ok);                 // (its half period rounds to 1 ps: 32768 MCLK are 1.0000138 ms)
+                t0_13 = $realtime;
+                for (int p = 0; p < 24; p++) begin
+                    do begin                                // drain: the FIFO empty before the next store
+                        r14_sample(st13, sq13, d13, ok13);
+                        if (ok13 && st13[7] === 1'b1) begin
+                            if (have13 && sq13 !== last13 + 16'd1) begin
+                                gap13 = gap13 + 1;
+                                fail($sformatf("T13 point %0d: SEQ %0d after %0d (a sample lost)", p, sq13, last13));
+                            end
+                            last13 = sq13; have13 = 1'b1;
+                        end
+                    end while (!(ok13 && st13[7] === 1'b0 && spi_status[2] === 1'b0));
+                    t_fall13 = t0_13 + (p + 1) * 32768.0 * tm13 - (spi_tcss + 7.0 * (spi_high + spi_low))
+                               - 3.0 * tm13 + 0.25 * tm13 * p;
+                    #(t_fall13 - $realtime);
+                    r14_sample(st13, sq13, d13, ok13);
+                    if (ok13 && st13[7] === 1'b1) begin
+                        if (have13 && sq13 !== last13 + 16'd1) begin
+                            gap13 = gap13 + 1;
+                            fail($sformatf("T13 point %0d: SEQ %0d after %0d (a sample lost)", p, sq13, last13));
+                        end
+                        last13 = sq13; have13 = 1'b1;
+                    end
+                end
+                if (n_coinc13 == coinc0) fail("T13 not exercised: no copy in the cycle of a store");
             end
             r14_cmd(8'h22);
             wait_state(4'd0, 50.0, "T8 IDLE");
@@ -2450,8 +2505,54 @@ module tb_top_r14;
             r14_write(7'h21, 8'h00); r14_write(7'h22, 8'h00); r14_cmd(8'h33);
             repeat (600) @(posedge MCLK);
             r14_write(7'h06, 8'hFF);
+            // V11 (audit round 14, auditors A and B: the host procedure's step 4): an APPLY executed in FILL and issued
+            // again by the host at 1 MHz once CMD_PENDING is 0: the second is refused with STATE_ERR alone (the chip is
+            // in PRE or PULSE, which only an APPLY enters), and the active copy holds the setting; STATE is not read
+            begin
+                logic [7:0] v11;
+                r14_cmd(8'h11);
+                wait_state(4'd5, 12000.0, "V11 FILL");
+                r14_write(7'h24, 8'h06);                // CPF_TRIM shadow 6
+                spi_high = 500.0; spi_low = 500.0;      // 1 MHz
+                r14_cmd(8'h33);
+                do r14_read(7'h03, v11); while (v11[4] === 1'b1);    // CMD_PENDING
+                r14_cmd(8'h33);                         // the host's re-issue
+                do r14_read(7'h03, v11); while (v11[4] === 1'b1);
+                expect_err_exact(8'h40, "V11 the re-issued APPLY after an executed one: STATE_ERR alone");
+                rt_read_expect(7'h34, 8'h06, "V11 the active CPF_TRIM after the APPLY");
+                spi_high = 250.0; spi_low = 250.0;
+                r14_cmd(8'h22);
+                wait_state(4'd0, 50.0, "V11 IDLE");
+                r14_write(7'h24, 8'h08); r14_cmd(8'h33);
+                repeat (600) @(posedge MCLK);
+                r14_write(7'h06, 8'hFF);
+            end
+            // V12 (audit round 14, auditor C: REG-03 was not checked, and a STOP that applied the shadows in WARMUP or
+            // PULSE passed every test, every STOP there being sent with the shadows equal to the active copies): STOP in
+            // WARMUP and in PULSE with a shadow differing from its active copy applies nothing
+            r14_write(7'h24, 8'h05); r14_cmd(8'h11);   // START: CPF_TRIM 5 applied
+            wait_state(4'd1, 50.0, "V12 WARMUP");
+            r14_write(7'h24, 8'h09);                    // the shadow differs from the active copy
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "V12 IDLE after a STOP in WARMUP");
+            repeat (300) @(posedge MCLK);
+            if (CPF_TRIM !== 4'd5) fail($sformatf("V12: CPF_TRIM %0d after a STOP in WARMUP, expected 5 (REG-03)", CPF_TRIM));
+            rt_read_expect(7'h34, 8'h05, "V12 the active CPF_TRIM after a STOP in WARMUP");
+            r14_write(7'h24, 8'h06); r14_cmd(8'h11);
+            wait_state(4'd6, 12000.0, "V12 RUN");
+            r14_write(7'h24, 8'h07); r14_cmd(8'h33);   // APPLY: CPF_TRIM 7, PRE, PULSE
+            wait_state(4'd8, 300.0, "V12 PULSE");
+            r14_write(7'h24, 8'h0A);                    // the shadow differs
+            r14_cmd(8'h22);
+            wait_state(4'd0, 300.0, "V12 IDLE after a STOP in PULSE");
+            repeat (300) @(posedge MCLK);
+            if (CPF_TRIM !== 4'd7) fail($sformatf("V12: CPF_TRIM %0d after a STOP in PULSE, expected 7 (REG-03)", CPF_TRIM));
+            rt_read_expect(7'h34, 8'h07, "V12 the active CPF_TRIM after a STOP in PULSE");
+            r14_write(7'h24, 8'h08); r14_cmd(8'h33);
+            repeat (600) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
         end
-        $display("V  APPLY and APPLY_NR in IDLE, RECOVER, WAIT_E, ALIGN, FILL (errors %0d)", errors);
+        $display("V  APPLY and APPLY_NR in IDLE, RECOVER, WAIT_E, ALIGN, FILL; a re-issued APPLY; STOP applies nothing (errors %0d)", errors);
 
         // ---------------- K: SEQ wraps from 0xFFFF to 0 (forced; the last phase, outside the golden comparison)
         phase = "K";

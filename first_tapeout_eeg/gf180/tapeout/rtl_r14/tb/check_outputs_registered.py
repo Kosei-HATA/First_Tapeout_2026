@@ -45,6 +45,7 @@ SRC = ["eeg_digital_top.sv", "eeg_seq.sv", "eeg_regs.sv", "eeg_spi_slave.sv", "e
 OLD = ["eeg_chop1.sv", "eeg_raw.sv", "eeg_rnd_sat.sv"]
 YOSYS = os.environ.get("YOSYS", "/nix/store/0inxmdvzndxxzsiyjrfjzslay6qllx96-yosys-0.69/bin/yosys")
 ALLOWED = {"CHOP_EN": ("$not", True), "CHOP_BLANK": ("$or", True), "MISO_OE": (None, False)}
+FSM_NOT_RECODED = ("u_seq.state", "u_spi.st")          # (* fsm_encoding = "none" *) in the RTL (NFR-05)
 
 
 def main():
@@ -99,6 +100,13 @@ def main():
     print("synchronizers: " + "; ".join(snotes))
     rbad, rnote = check_resets(m)
     print("resets: " + rnote)
+    # NFR-05 through synthesis (audit round 14, auditor A: the illegal codes' recovery survived only because yosys judged
+    # recoding of no benefit; a recoded FSM drops the unreachable codes 9..15 and the FRAME_ERR of the SPI's illegal codes)
+    for net in FSM_NOT_RECODED:
+        a = m["netnames"].get(net, {}).get("attributes", {})
+        if a.get("fsm_encoding") != "none":
+            rbad.append(f"{net}: fsm_encoding {a.get('fsm_encoding')!r}, not \"none\" (synthesis may recode the state "
+                        f"and drop the illegal codes' recovery, NFR-05)")
     for x in bad + sbad + rbad:
         print("  " + x)
     if bad or sbad or rbad:

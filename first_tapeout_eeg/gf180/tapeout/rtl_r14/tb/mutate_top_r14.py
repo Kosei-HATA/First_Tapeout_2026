@@ -41,7 +41,9 @@ SRC = ["eeg_digital_top.sv", "eeg_seq.sv", "eeg_regs.sv", "eeg_spi_slave.sv", "e
        "eeg_cic3.sv", "eeg_clkgen.sv"]
 OLD = ["eeg_chop1.sv", "eeg_raw.sv", "eeg_rnd_sat.sv"]
 
-# (name, file, text in the RTL (must occur exactly once), replacement)
+# (name, file, text in the RTL (must occur exactly once), replacement); a mutation of several edits (audit round 15:
+# a RESET_N-only reset port in eeg_regs and its wiring in the top): (name, [(file, text, replacement), ...], None, None),
+# applied in order, each text occurring exactly once when its turn comes
 MUTATIONS = [
     ("FIFO：先頭でなくなった写しでも取り出す（旧い挙動）", "eeg_fifo.sv",
      "assign pop_ok    = pop && held && !flush;", "assign pop_ok    = pop && (level != 4'd0) && !flush;"),
@@ -383,6 +385,42 @@ MUTATIONS = [
     ("SPI：標本の写しを 1 MCLK 遅れて FIFO に知らせる（格納と同じサイクルの写しで標本を失う）", "eeg_spi_slave.sv",
      "    assign smp_snap = !cs_start",
      "    logic smp_snap_c;\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) smp_snap <= 1'b0; else smp_snap <= smp_snap_c;\n    assign smp_snap_c = !cs_start"),
+    # audit round 15, auditor B: an illegal SPI state value between frames kept through the next frame (NFR-05)
+    ("SPI：フレームの間の不正な状態値を次のフレームの始まりで戻さない（そのフレームは FRAME_ERR）", "eeg_spi_slave.sv",
+     "            if (cs_start) begin\n                st      <= S_HDR;",
+     "            if (cs_start && st <= S_OVF) begin\n                st      <= S_HDR;"),
+    # audit round 15, auditor C: the write-only registers read back (a01, a02), a key dropped while a command waits
+    # (a03), RANGE's legality decoded by hand (a04), READY and DATA crosswise in STATUS, registers and flags kept
+    # through a SOFT_RESET by a RESET_N-only reset (a06: the timers and the ALERT masks; a07: DFLAG and DRDY_MODE)
+    ('レジスタ：COMMAND が最後の命令のコードを返す（書き込み専用は 0x00）', 'eeg_regs.sv',
+     "            A_COMMAND, A_TEST_KEY, A_SAMPLE: rdata = 8'h00;    // write only; the window is the SPI's",
+     "            A_COMMAND:        rdata = pcode;               \n            A_TEST_KEY, A_SAMPLE: rdata = 8'h00;"),
+    ('レジスタ：TEST_KEY が施錠の状態を返す', 'eeg_regs.sv',
+     "            A_COMMAND, A_TEST_KEY, A_SAMPLE: rdata = 8'h00;    // write only; the window is the SPI's",
+     "            A_TEST_KEY:       rdata = {7'd0, unlocked};\n            A_COMMAND, A_SAMPLE: rdata = 8'h00;"),
+    ('レジスタ：未処理の命令の間に送られた試験の鍵を黙って捨てる', 'eeg_regs.sv',
+     '                    A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE);',
+     '                    A_TEST_KEY:     if (!pend) unlocked <= (wdata == TEST_KEY_VALUE);'),
+    ('レジスタ：RANGE の合法性を bit 2 と bit 0 から手で（6 を旗なしに書く）', 'eeg_regs.sv',
+     '            A_OFF_CTRL:  wr_range_bad = (wdata[2:0] > OFF_CTRL_RANGE_MAX);',
+     '            A_OFF_CTRL:  wr_range_bad = wdata[2] & wdata[0];'),
+    ('レジスタ：STATUS の READY と DATA の入れ違い', 'eeg_regs.sv',
+     '        status_byte[STATUS_READY_LSB]       = (state == ST_RUN);\n        status_byte[STATUS_DATA_LSB]        = fifo_nonempty;',
+     '        status_byte[STATUS_READY_LSB]       = fifo_nonempty;\n        status_byte[STATUS_DATA_LSB]        = (state == ST_RUN);'),
+    ('レジスタ：タイマと ALERT のマスクを SOFT_RESET で戻さない（RESET_N のみ）', [
+      ('eeg_regs.sv', '    input  logic       rst_n,\n    // SPI slave', "    input  logic       rst_n,\n    input  logic       pin_rst_n = 1'b1,   // (mutant) RESET_N only\n    // SPI slave"),
+      ('eeg_regs.sv', '            r_mask <= ALERT_MASK_ALERT_MASK_RST;            r_mask_d <= ALERT_MASK_D_ALERT_MASK_D_RST;\n            r_tw <= T_WARM_T_WARM_RST;  r_te <= T_ELEC_T_ELEC_RST;  r_trec <= T_REC_T_REC_RST;\n            r_tpre <= T_PRE_T_PRE_RST;  r_trst <= T_RST_T_RST_RST;\n', ''),
+      ('eeg_regs.sv', '                    A_ALERT_MASK:   r_mask <= wdata;\n                    A_ALERT_MASK_D: r_mask_d <= wdata[ALERT_MASK_D_ALERT_MASK_D_LSB +: ALERT_MASK_D_ALERT_MASK_D_W];\n                    A_T_WARM:       r_tw <= wdata;\n                    A_T_ELEC:       r_te <= wdata;\n                    A_T_REC:        r_trec <= wdata;\n                    A_T_PRE:        r_tpre <= wdata;\n                    A_T_RST:        r_trst <= wdata;\n', ''),
+      ('eeg_regs.sv', '    // ---------------- outputs\n', "    // (mutant) the host's settings: RESET_N only\n    always_ff @(posedge clk or negedge pin_rst_n) begin\n        if (!pin_rst_n) begin\n            r_mask <= ALERT_MASK_ALERT_MASK_RST;            r_mask_d <= ALERT_MASK_D_ALERT_MASK_D_RST;\n            r_tw <= T_WARM_T_WARM_RST;  r_te <= T_ELEC_T_ELEC_RST;  r_trec <= T_REC_T_REC_RST;\n            r_tpre <= T_PRE_T_PRE_RST;  r_trst <= T_RST_T_RST_RST;\n        end else if (w_ok) begin\n            case (addr)\n                A_ALERT_MASK:   r_mask <= wdata;\n                A_ALERT_MASK_D: r_mask_d <= wdata[ALERT_MASK_D_ALERT_MASK_D_LSB +: ALERT_MASK_D_ALERT_MASK_D_W];\n                A_T_WARM:       r_tw <= wdata;\n                A_T_ELEC:       r_te <= wdata;\n                A_T_REC:        r_trec <= wdata;\n                A_T_PRE:        r_tpre <= wdata;\n                A_T_RST:        r_trst <= wdata;\n                default:        ;\n            endcase\n        end\n    end\n\n    // ---------------- outputs\n"),
+      ('eeg_digital_top.sv', '        .clk(MCLK), .rst_n(rst_n), .addr(reg_addr), .rdata(reg_rdata),', '        .clk(MCLK), .rst_n(rst_n), .pin_rst_n(tm_rst_n), .addr(reg_addr), .rdata(reg_rdata),')], None, None),
+    ('レジスタ：DFLAG と DRDY_MODE を SOFT_RESET で戻さない（RESET_N のみ）', [
+      ('eeg_regs.sv', '    input  logic       rst_n,\n    // SPI slave', "    input  logic       rst_n,\n    input  logic       pin_rst_n = 1'b1,   // (mutant) RESET_N only\n    // SPI slave"),
+      ('eeg_regs.sv', '            r_crc <= IF_CFG_CRC_EN_RST; r_drdy <= IF_CFG_DRDY_MODE_RST;\n', '            r_crc <= IF_CFG_CRC_EN_RST;\n'),
+      ('eeg_regs.sv', "            dflag <= 2'b00;\n            pend <= 1'b0;", "            pend <= 1'b0;"),
+      ('eeg_regs.sv', '                    A_IF_CFG:       begin r_crc <= wdata[0]; r_drdy <= wdata[1]; end', '                    A_IF_CFG:       r_crc <= wdata[0];'),
+      ('eeg_regs.sv', "            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};\n", ''),
+      ('eeg_regs.sv', '    // ---------------- outputs\n', "    // (mutant) DFLAG and DRDY_MODE: RESET_N only\n    always_ff @(posedge clk or negedge pin_rst_n) begin\n        if (!pin_rst_n) begin\n            dflag  <= 2'b00;\n            r_drdy <= IF_CFG_DRDY_MODE_RST;\n        end else begin\n            if (w_ok && addr == A_IF_CFG) r_drdy <= wdata[1];\n            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};\n        end\n    end\n\n    // ---------------- outputs\n"),
+      ('eeg_digital_top.sv', '        .clk(MCLK), .rst_n(rst_n), .addr(reg_addr), .rdata(reg_rdata),', '        .clk(MCLK), .rst_n(rst_n), .pin_rst_n(tm_rst_n), .addr(reg_addr), .rdata(reg_rdata),')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -608,6 +646,14 @@ TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g",
 GROUPS = ("top", "spi", "seq", "fifo", "regs", "chop1", "rnd", "struct", "ovl")
 
 
+def edits_of(m):
+    """A mutation's edits in order: [] for a baseline, one (file, text, replacement) or the listed ones."""
+    _name, f, old, new = m
+    if f is None:
+        return []
+    return list(f) if isinstance(f, list) else [(f, old, new)]
+
+
 def run(i, m, bench="top"):
     name, f, old, new = m
     d = os.path.join(BUILD, "mut", "b00" if i < 0 else f"{TAG.get(bench, 'm')}{i:02d}")
@@ -617,12 +663,12 @@ def run(i, m, bench="top"):
         shutil.copy(os.path.join(R14, s), d)
     for s in OLD:                                    # the blocks kept from r13 (rtl/), copied so they can be mutated
         shutil.copy(os.path.join(RTL_OLD, s), d)
-    if f is not None:
-        p = os.path.join(d, f)
+    for f_, old_, new_ in edits_of(m):
+        p = os.path.join(d, f_)
         text = open(p, encoding="utf-8").read()
-        if text.count(old) != 1:
-            return i, name, "NOT APPLIED", f"the text occurs {text.count(old)} times in {f}"
-        open(p, "w", encoding="utf-8").write(text.replace(old, new))
+        if text.count(old_) != 1:
+            return i, name, "NOT APPLIED", f"the text occurs {text.count(old_)} times in {f_}"
+        open(p, "w", encoding="utf-8").write(text.replace(old_, new_))
     for x in ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split"):   # shared generated files
         os.symlink(os.path.join(BUILD, x), os.path.join(d, "build", x))
     tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv",
@@ -788,11 +834,15 @@ def main():
     for g, lst in (("top", MUTATIONS), ("spi", SPI_MUTATIONS), ("seq", SEQ_MUTATIONS), ("fifo", FIFO_MUTATIONS),
                    ("regs", REGS_MUTATIONS), ("chop1", CHOP1_MUTATIONS), ("rnd", RND_MUTATIONS),
                    ("struct", STRUCT_MUTATIONS), ("ovl", OVL_MUTATIONS)):
-        for i, (name, f, old, _new) in enumerate(lst):
-            if f is not None:
+        for i, m in enumerate(lst):
+            texts = {}                                    # several edits: each applied before the next is looked for
+            for f, old, new in edits_of(m):
                 src = os.path.join(R14 if f in SRC else RTL_OLD, f)
-                if open(src, encoding="utf-8").read().count(old) != 1:
-                    stale.append(f"{TAG.get(g, 'm')}{i:02d} {name} ({f})")
+                t = texts[src] if src in texts else open(src, encoding="utf-8").read()
+                if t.count(old) != 1:
+                    stale.append(f"{TAG.get(g, 'm')}{i:02d} {m[0]} ({f})")
+                    break
+                texts[src] = t.replace(old, new)
     if stale:
         sys.exit("mutations whose text does not occur exactly once in the RTL (update them first):\n  " + "\n  ".join(stale))
     which = next((w for w in GROUPS if f"--{w}" in sys.argv), "all")

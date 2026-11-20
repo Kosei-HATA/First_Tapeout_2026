@@ -74,7 +74,7 @@ REGS = [
                                  F("RANGE_ERR", 4, 4, 0, [0, 1], "w1c", "範囲外の値の書き込み（書かない）"),
                                  F("ADDR_ERR", 3, 3, 0, [0, 1], "w1c", "未定義のアドレス、読み出し専用への書き込み、鍵なしの試験のレジスタへの書き込み"),
                                  F("CRC_ERR", 2, 2, 0, [0, 1], "w1c", "書き込みの CRC の不一致（書かない）"),
-                                 F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のバイトのない読み出し（先頭バイトだけのフレームを除く）と 8 バイトでないサンプル、SPI の状態機械の不正な状態の値（何も確定しない。NFR-05）"),
+                                 F("FRAME_ERR", 1, 1, 0, [0, 1], "w1c", "バイトの途中の CS_N、不完全または過長な書き込み、完了したフレーム（書き込み、CRC 付きの読み出し、8 バイトのサンプル）のあとのビット、CRC 有効時の CRC のバイトのない読み出し（先頭バイトだけのフレームを除く）と 8 バイトでないサンプル、フレームの中（CS_N の立ち上がりの時点）の SPI の状態機械の不正な状態の値（何も確定しない。フレームの間の不正な値は次の CS_N の立ち下がりで先頭バイトの状態に戻り、旗は立たない。NFR-05）"),
                                  F("RESET_FLAG", 0, 0, 1, [0, 1], "w1c", "リセットが起きた（既定値 1）")], "エラー（W1C）"),
     (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に、過負荷の検出の成り立つ両端の符号があった（検出の窓の尾だけでは立たない）"),
                                    F("OVERRUN", 0, 0, 0, [0, 1], "w1c", "FIFO が満杯でサンプルを捨てた")], "データのフラグ（W1C）"),
@@ -200,7 +200,13 @@ FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
               # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
               "CMD_ERR": 7, "STATE_ERR": 6, "CFG_ERR": 5, "RANGE_ERR": 4, "ADDR_ERR": 3, "CRC_ERR": 2, "FRAME_ERR": 1,
-              "RESET_FLAG": 0, "OVL": 1, "OVERRUN": 0, "STATE": 0, "LEVEL": 0}
+              "RESET_FLAG": 0, "OVL": 1, "OVERRUN": 0, "STATE": 0, "LEVEL": 0,
+              # audit round 15, auditor C: STATUS's other six bits (the host reads READY, DATA, CMD_PENDING and ALERT by
+              # position; READY and DATA exchanged in the map passed every check, the RTL and the benches following it)
+              "ALERT": 5, "CMD_PENDING": 4, "READY": 3, "DATA": 2, "OVL_NOW": 1, "AFE_RST": 0}
+# the fields the requirements compare as whole bytes (REG-02, SPI-09, REG-08: the command codes, 0xA5 among them, and
+# the test key; audit round 15, auditor C: either narrowed to 7 bits passed every check)
+WHOLE_BYTE = {"CMD", "KEY"}
 # the codes the requirements give (REG-01, REG-02, SPI-09, REG-08; audit round 13: a two-bit change of a code, which
 # keeps the distance check, passed every check)
 FIXED_CODES = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5,
@@ -297,7 +303,7 @@ CHECKS = [
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
     "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
-    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）",
+    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）",
 ]
 
 
@@ -632,6 +638,16 @@ def check(verbose=True):
     odr_t = round(FS.MCLK / FS.FRAME / FS.TIMING["decimation"])
     if odr != odr_t:
         errs.append(f"ODR {odr} SPS in ODR_H, ODR_L; fsm_spec.TIMING outputs {odr_t} SPS (MCLK / frame / decimation)")
+    for a_, n_, acc_, _l, fl_, _ in REGS:               # audit round 15, auditor C: whole bytes, read values, the window
+        for f in fl_:
+            if f["name"] in WHOLE_BYTE and (f["msb"], f["lsb"]) != (7, 0):
+                errs.append(f"{n_}.{f['name']}: bits {f['msb']}:{f['lsb']}; the requirements compare the whole byte "
+                            f"(REG-02, SPI-09, REG-08: the command codes and the test key)")
+            if f["cls"] == "ro" and n_ != "SAMPLE" and f["legal"] is None:
+                errs.append(f"{n_}.{f['name']}: a read-only field without its read values (legal None)")
+            if n_ == "SAMPLE" and f["reset"] != 0:
+                errs.append(f"SAMPLE.{f['name']}: reset {f['reset']}; the window reads 0x00 inside a burst and alone "
+                            f"(spec 3.2), so the map holds 0 for it")
     q_t = max(OVL_RULE["codes"]).bit_length()
     if fv.get("QBITS") != q_t:
         errs.append(f"QBITS {fv.get('QBITS')}; the quantizer's codes 0..{max(OVL_RULE['codes'])} take {q_t} bits")
@@ -703,6 +719,11 @@ def sv_package():
     for n_, b_, _d in SAMPLE_STATUS:                   # the sample word's status byte (audit round 8: the RTL builds it
         if n_ != "0":                                  # from these, so the map and the RTL cannot differ)
             out.append(f"    localparam int SMP_{n_}_LSB = {b_};")
+    pos = 1                                            # the sample frame's bytes after its header (SPI-07,
+    for ident, _lab, nb in FS.SAMPLE_BYTES:            # fsm_spec.SAMPLE_BYTES; audit round 15: the bench decodes a
+        out.append(f"    localparam int SMP_BYTE_{ident} = {pos};")   # sample by these, the diagram draws them)
+        pos += nb
+    out.append(f"    localparam int SMP_FRAME_LEN = {pos};")
     out.append("")
     for c, v in COMMANDS.items():
         out.append(f"    localparam logic [7:0] CMD_{c} = 8'h{v:02X};")
@@ -1060,6 +1081,22 @@ def selftest():
     def m_ro_const():
         fld("VERSION", "VERSION")["legal"] = [16, 17]
 
+    def m_status_swap():                                 # audit round 15, auditor C: STATUS, whole bytes, the window
+        fld("STATUS", "READY").update(msb=2, lsb=2)
+        fld("STATUS", "DATA").update(msb=3, lsb=3)
+
+    def m_cmd_narrow():
+        fld("COMMAND", "CMD").update(msb=6)
+
+    def m_key_narrow():
+        fld("TEST_KEY", "KEY").update(msb=6)
+
+    def m_ro_none():
+        fld("ID", "ID")["legal"] = None
+
+    def m_sample_reset():
+        fld("SAMPLE", "SAMPLE")["reset"] = 0x5A
+
     def m_copy_region():                                 # audit round 12, auditor B: an active copy in no region
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "BLANK")
         r = list(g["REGS"][i]); r[0] = 0x38; g["REGS"][i] = tuple(r)
@@ -1109,7 +1146,10 @@ def selftest():
             ("FIFO_LEVEL の値を 0〜7 に", m_level_ro),
             ("ODR_L を 0xE9 に（1001 SPS）", m_odr), ("QBITS を 4 に", m_qbits),
             ("SIGN と RANGE の端子の入れ違い", m_pin_swap), ("ERR.CMD_ERR を TEST_CFG[7:6] の出どころに", m_pin_w1c),
-            ("VERSION の値に 17 も", m_ro_const)]
+            ("VERSION の値に 17 も", m_ro_const),
+            ("STATUS の READY と DATA の入れ違い", m_status_swap), ("COMMAND の CMD を 7 ビットに（0xA5 が入らない）", m_cmd_narrow),
+            ("TEST_KEY の KEY を 7 ビットに", m_key_narrow), ("ID の読み値を定めない（legal None）", m_ro_none),
+            ("SAMPLE の既定値を 0x5A に", m_sample_reset)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1233,6 +1273,11 @@ SELFTEST_EXPECT = {
     'SIGN と RANGE の端子の入れ違い': (', but changing it moves',),
     'ERR.CMD_ERR を TEST_CFG[7:6] の出どころに': (', but changing it moves',),
     'VERSION の値に 17 も': (': read-only constant values',),
+    'STATUS の READY と DATA の入れ違い': (', the requirements read it at bit',),
+    'COMMAND の CMD を 7 ビットに（0xA5 が入らない）': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
+    'TEST_KEY の KEY を 7 ビットに': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
+    'ID の読み値を定めない（legal None）': (': a read-only field without its read values (legal None)',),
+    'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 
 

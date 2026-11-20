@@ -102,19 +102,24 @@ def main():
     print("resets: " + rnote)
     # NFR-05 through synthesis (audit round 14, auditor A: the illegal codes' recovery survived only because yosys judged
     # recoding of no benefit; a recoded FSM drops the unreachable codes 9..15 and the FRAME_ERR of the SPI's illegal codes)
+    fbad = []                                           # (audit round 15, auditor C: named in the log and the summary)
     for net in FSM_NOT_RECODED:
         a = m["netnames"].get(net, {}).get("attributes", {})
         if a.get("fsm_encoding") != "none":
-            rbad.append(f"{net}: fsm_encoding {a.get('fsm_encoding')!r}, not \"none\" (synthesis may recode the state "
+            fbad.append(f"{net}: fsm_encoding {a.get('fsm_encoding')!r}, not \"none\" (synthesis may recode the state "
                         f"and drop the illegal codes' recovery, NFR-05)")
-    for x in bad + sbad + rbad:
+    print("state registers: " + (f"{', '.join(FSM_NOT_RECODED)} keep fsm_encoding \"none\" (NFR-05 through synthesis)"
+                                 if not fbad else f"{len(fbad)} of {len(FSM_NOT_RECODED)} open to recoding"))
+    for x in bad + sbad + rbad + fbad:
         print("  " + x)
-    if bad or sbad or rbad:
-        print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults, {len(rbad)} reset faults")
+    if bad or sbad or rbad or fbad:
+        print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults, {len(rbad)} reset faults, "
+              f"{len(fbad)} state registers open to recoding")
     else:
         print("PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops; every flip-flop "
-              "resets asynchronously from the RESET_N release (RST-01)")
-    return 1 if bad or sbad or rbad else 0
+              "resets asynchronously from the RESET_N release (RST-01); the state registers keep fsm_encoding \"none\" "
+              "(NFR-05)")
+    return 1 if bad or sbad or rbad or fbad else 0
 
 
 def check_resets(m):

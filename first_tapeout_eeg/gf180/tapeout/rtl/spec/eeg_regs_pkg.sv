@@ -141,6 +141,11 @@ package eeg_regs_pkg;
     localparam int SMP_OVL_LSB = 5;
     localparam int SMP_CHANGED_LSB = 4;
     localparam int SMP_ERR_LSB = 3;
+    localparam int SMP_BYTE_SSTAT = 1;
+    localparam int SMP_BYTE_SEQ = 2;
+    localparam int SMP_BYTE_DATA = 4;
+    localparam int SMP_BYTE_CRC = 7;
+    localparam int SMP_FRAME_LEN = 8;
 
     localparam logic [7:0] CMD_START = 8'h11;
     localparam logic [7:0] CMD_STOP = 8'h22;

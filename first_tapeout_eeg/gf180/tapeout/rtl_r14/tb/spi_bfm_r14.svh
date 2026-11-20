@@ -106,15 +106,17 @@ endtask
 task automatic r14_sample(output logic [7:0] sstat, output logic [15:0] seq, output logic [23:0] data,
                           output bit crc_ok);
     logic [7:0] crc;
+    // the frame's bytes from fsm_spec.SAMPLE_BYTES (regmap generates SMP_BYTE_* and SMP_FRAME_LEN; audit round 15:
+    // the diagram and the bench take the frame from one definition, which the RTL must then match)
     spi_tx[0] = 8'hC0;
-    for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
-    spi_xfer(8, 0);
-    sstat = spi_rx[1];
-    seq   = {spi_rx[2], spi_rx[3]};
-    data  = {spi_rx[4], spi_rx[5], spi_rx[6]};
-    crc   = tb_crc8_update(8'h00, 8'hC0);           // the sample's CRC covers its header 0xC0 and the six bytes
-    for (int i = 1; i <= 6; i++) crc = tb_crc8_update(crc, spi_rx[i]);
-    crc_ok = (crc === spi_rx[7]);
+    for (int i = 1; i < SMP_FRAME_LEN; i++) spi_tx[i] = 8'h00;
+    spi_xfer(SMP_FRAME_LEN, 0);
+    sstat = spi_rx[SMP_BYTE_SSTAT];
+    seq   = {spi_rx[SMP_BYTE_SEQ], spi_rx[SMP_BYTE_SEQ + 1]};
+    data  = {spi_rx[SMP_BYTE_DATA], spi_rx[SMP_BYTE_DATA + 1], spi_rx[SMP_BYTE_DATA + 2]};
+    crc   = tb_crc8_update(8'h00, 8'hC0);           // the sample's CRC covers its header 0xC0 and the bytes before it
+    for (int i = 1; i < SMP_BYTE_CRC; i++) crc = tb_crc8_update(crc, spi_rx[i]);
+    crc_ok = (crc === spi_rx[SMP_BYTE_CRC]);
 `ifdef R14_SAMPLE_HOOK
     r14_sample_hook(sstat, seq, data, crc_ok);       // tb_top_r14: every sample read goes to the golden log
 `endif

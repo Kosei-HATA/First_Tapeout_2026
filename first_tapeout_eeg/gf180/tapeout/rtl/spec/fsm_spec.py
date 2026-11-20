@@ -197,14 +197,29 @@ SEQ = dict(name="SEQ", states=SEQ_STATES, composites=SEQ_COMPOSITES, events=SEQ_
 # =====================================================================================================================
 # SPI transaction (byte level)
 # =====================================================================================================================
+# the bytes of a sample frame after its header (SPI-07: the sample status 1, SEQ 2, DATA 3, CRC 1): (identifier, the
+# label in the SPI timing diagram, bytes). spi_walk's last byte, spi_expect, the bench's decoding (regmap generates
+# SMP_BYTE_* and SMP_FRAME_LEN) and the diagram (wave.py) take the frame from here (audit round 15, auditor B: the
+# diagram typed the five frames by hand, so a changed frame definition left it stale while every check passed)
+SAMPLE_BYTES = [("SSTAT", "状態", 1), ("SEQ", "SEQ", 2), ("DATA", "DATA", 3), ("CRC", "CRC", 1)]
+SAMPLE_BYTES_REQUIRED = [("SSTAT", 1), ("SEQ", 2), ("DATA", 3), ("CRC", 1)]     # SPI-07, from the requirements
+
+
+# the sample states' text in the SPI table, from SAMPLE_BYTES (audit round 15)
+_SMP_TEXT = "、".join("サンプルの状態" if i_ == "SSTAT" else (f"{l_} {n_}" if n_ > 1 else l_)
+                      for i_, l_, n_ in SAMPLE_BYTES)
+_SMP_LEN = 1 + sum(n_ for *_x, n_ in SAMPLE_BYTES)
+
 SPI_STATES = [
     ("IDLE", None, None, None, None, "CS_N = 1。MISO は高インピーダンス"),
     ("HDR", None, "FRAME", None, None, "先頭バイト。MOSI は R/W とアドレス、MISO は STATUS"),
     ("RREG", None, "FRAME", None, None, "レジスタの読み出し（CRC 無効時はアドレスを自動加算して連続）"),
     ("RCRC", None, "FRAME", None, None, "CRC 有効時、データ 1 バイトのあとの CRC"),
     ("RDONE", None, "FRAME", None, None, "CRC 付きの読み出しの完了"),
-    ("RSMP", None, "FRAME", None, None, "サンプルの窓の読み出し（先頭バイトのあとの 7 バイト：サンプルの状態、SEQ 2、DATA 3、CRC（先頭バイト 0xC0 と 6 バイトの CRC-8）。フレームは 8 バイト）"),
-    ("SDONE", None, "FRAME", None, None, "サンプルの 8 バイト（先頭バイトと 7 バイト）の完了（CS_N の立ち上がりで FIFO から取り出す）"),
+    ("RSMP", None, "FRAME", None, None, f"サンプルの窓の読み出し（先頭バイトのあとの {_SMP_LEN - 1} バイト：{_SMP_TEXT}（先頭バイト 0xC0 と "
+                                        f"{_SMP_LEN - 2} バイトの CRC-8）。フレームは {_SMP_LEN} バイト）"),
+    ("SDONE", None, "FRAME", None, None, f"サンプルの {_SMP_LEN} バイト（先頭バイトと {_SMP_LEN - 1} バイト）の完了（CS_N の立ち上がりで "
+                                         f"FIFO から取り出す）"),
     ("WDAT", None, "FRAME", None, None, "書き込みのデータ 1 バイト"),
     ("WCRC", None, "FRAME", None, None, "CRC 有効時の CRC の受信"),
     ("WDONE", None, "FRAME", None, None, "書き込みのフレームの完了（CS_N の立ち上がりで確定）"),
@@ -752,9 +767,15 @@ def check_spi_props():
     return errs, n
 
 
-def spi_walk(nbytes, extra, env):
+def sample_len():
+    """The bytes of a sample frame: the header and SAMPLE_BYTES (8)."""
+    return 1 + sum(n for *_x, n in SAMPLE_BYTES)
+
+
+def spi_walk(nbytes, extra, env, trace=None):
     """One frame through the SPI table: CSF, one BIT or BYTE per SCLK rising edge (BYTE on every 8th), CSR.
-    Returns (actions in order, the state at CS_N rising) or None if an impossible or undecided cell is met."""
+    Returns (actions in order, the state at CS_N rising) or None if an impossible or undecided cell is met. trace: a
+    list that gets (event, actions) of every event taken (the SPI timing diagram, wave.py)."""
     t = SPI["table"]
     state, acts, k = "IDLE", [], 0
     e_env = dict(env, mid=int(extra > 0), last=0)
@@ -764,7 +785,7 @@ def spi_walk(nbytes, extra, env):
         if e == "CSR":
             at_csr = state
         if e == "BYTE" and state == "RSMP":
-            e_env["last"] = int(k == 6)
+            e_env["last"] = int(k == sample_len() - 2)    # the frame's last byte (6 next bytes)
         cell = t[(state, e)]
         if cell == IMP:
             return None
@@ -774,6 +795,8 @@ def spi_walk(nbytes, extra, env):
         if b is None:
             return None
         acts += b["actions"]
+        if trace is not None:
+            trace.append((e, list(b["actions"])))
         k += "next_byte" in b["actions"]
         if b["next"] is not None:
             state = b["next"]
@@ -813,13 +836,14 @@ def spi_expect(kind, crc_en, nbytes, mid, env):
         else:
             loads["seq"] = ([first] if nbytes >= 1 else []) + [("data", k) for k in range(1, nbytes)]
     else:
+        L = sample_len()                                 # 8: the header and SAMPLE_BYTES (SPI-07)
         if hdr:
             E.add("snapshot")
-        if mid or nbytes > 8 or (crc_en and hdr and nbytes != 8):
+        if mid or nbytes > L or (crc_en and hdr and nbytes != L):
             E.add("FRAME_ERR")
-        elif nbytes == 8 and env["head"]:
+        elif nbytes == L and env["head"]:
             E.add("pop")
-        loads = dict(next=max(0, min(nbytes, 7) - 1))
+        loads = dict(next=max(0, min(nbytes, L - 1) - 1))
     return E, loads
 
 
@@ -860,6 +884,10 @@ def spi_frames_wanted():
 def check_spi_frames():
     """Every frame of spi_frame_cases walked through the table and compared with spi_expect."""
     errs, n = [], 0
+    got_b = [(i_, n_) for i_, _l, n_ in SAMPLE_BYTES]
+    if got_b != SAMPLE_BYTES_REQUIRED:                  # audit round 15: the one definition of the sample frame
+        errs.append(f"sample frame {got_b} after the header, but SPI-07 orders it {SAMPLE_BYTES_REQUIRED} "
+                    f"(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)")
     effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
     seen = set()
     for kind, crc_en, env, nbytes, extra in spi_frame_cases():
@@ -1092,7 +1120,7 @@ CHECKS = [
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "第 7 回で追加（その時の掃引の 1 か所の書き換え、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる。第 9 回の C の掃引 6,267 通りでは、整合する設定の命令を拒否とする 12 通りが通っていた：下の命令の結果の照合で塞いだ）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
-    f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
+    f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること。サンプルのフレームのバイト（SAMPLE_BYTES：状態 1、SEQ 2、DATA 3、CRC 1）は SPI-07 の値（第 15 回。SPI のタイミング図と試験台のサンプルの取り出しもこの定義から）",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
@@ -1822,6 +1850,11 @@ def selftest_runs():
             spi_frame_cases = orig
         return undo
 
+    def swap_sample_bytes():                           # audit round 15: SEQ and DATA exchanged in the frame
+        saved = list(SAMPLE_BYTES)
+        SAMPLE_BYTES[1], SAMPLE_BYTES[2] = SAMPLE_BYTES[2], SAMPLE_BYTES[1]
+        return lambda: SAMPLE_BYTES.__setitem__(slice(None), saved)
+
     def without_busy():
         saved = dict(SPI_CONDS)
         SPI_CONDS.pop("busy")
@@ -1845,6 +1878,8 @@ def selftest_runs():
         ("SEQ", "WARMUP を AFE_ON の中に（状態の表）", lambda: setitem(SEQ_STATES, i_warm, SEQ_STATES[i_warm][:2] + ("AFE_ON",) + SEQ_STATES[i_warm][3:])),
         ("SEQ", "AFE_ON を ACTIVE の外に", lambda: setitem(SEQ_COMPOSITES, "AFE_ON", (None,) + SEQ_COMPOSITES["AFE_ON"][1:])),
         ("SPI", "フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）", narrow_frames),
+        # audit round 15, auditor B: the sample frame's one definition (the diagram, spi_expect, the bench)
+        ("SPI", "サンプルのフレームで SEQ と DATA の順の入れ違い", swap_sample_bytes),
     ]
     results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
@@ -2075,6 +2110,7 @@ SELFTEST_EXPECT = {
     'WAIT_E の APPLY_NR で T_ELEC ＝ 0 なら数え直さない': (': an accepting branch that does not start the wait again (a timer written meanwhile, e.g. T_ELEC set to 0, would be ignored)',),
     'AFE_ON を ACTIVE の外に': (', but SEQ-01 nests the composite in',),
     '書き込めないアドレスへの書き込みで CRC のバイトを保持しない': ('(the CRC, the address and the range are judged from the held bytes)',),
+    'サンプルのフレームで SEQ と DATA の順の入れ違い': ('(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
     '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),

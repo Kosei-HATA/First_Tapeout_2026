@@ -8,9 +8,10 @@ next to this file:
   startup  RESET_N .. RUN (schematic, not to scale; the durations from the timers' reset values in regmap.py)
   apply    APPLY in RUN: PRE, PULSE, RECOVER, ALIGN, FILL, RUN with the FIFO emptied at the APPLY's tick (schematic;
            the durations from regmap.py)
-  spi      the SPI frames at byte level: write, write with CRC, register read (burst), sample read
+  spi      the SPI frames at byte level: write, write with CRC, register read (burst), read with CRC, sample read
+           (generated from fsm_spec's SPI table and SAMPLE_BYTES; audit round 15)
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/wave.py
+Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/wave.py [fresh | selftest]
 """
 import json
 import os
@@ -145,6 +146,74 @@ def apply_seq():
             "config": {"hscale": 2}}
 
 
+# the frames of the SPI diagram: (title, kind, CRC on, length). A write and a sample take the length at which the
+# table commits or pops (None); the reads show 3 bytes (CRC on: the data and its CRC; off: two addresses).
+SPI_FRAMES = [("書き込み", "write", 0, None), ("書き込み（CRC）", "write", 1, None), ("読み出し（連続）", "read", 0, 3),
+              ("読み出し（CRC）", "read", 1, 3), ("サンプル", "sample", 1, None)]
+# check's messages (selftest: each is expected by a mutation, each mutation gives its own)
+MSG = {"path": "is not a transition of the table", "lane": ", but the table gives",
+       "spi_accept": "that the table completes without an error flag",
+       "spi_status": "MISO does not load STATUS at the frame's start (CS_N falling)",
+       "spi_sample": "sample bytes loaded by the table, but fsm_spec.SAMPLE_BYTES names"}
+
+
+def sample_labels():
+    """The sample bytes' labels from fsm_spec.SAMPLE_BYTES (a 2-byte field: 上, 下; a 3-byte one: 上, 中, 下)."""
+    out = []
+    for _id, lab, n in FS.SAMPLE_BYTES:
+        sfx = {1: [""], 2: [" 上", " 下"], 3: [" 上", " 中", " 下"]}.get(n) or [f" {i + 1}" for i in range(n)]
+        out += [lab + x for x in sfx]
+    return out
+
+
+def spi_lanes(kind, crc_en, length):
+    """One frame of the SPI diagram from fsm_spec's SPI table (audit round 15, auditor B: the five frames were typed
+    here by hand, so a changed frame definition left the diagram stale while every check passed). Returns (MOSI
+    labels, MISO labels, problems). MOSI: the header, then what the table latches (データ, CRC) or 0x00. MISO: STATUS
+    during the header, then what the table loads at the end of each byte (a write loads nothing: 0x00; a sample
+    loads its copy's bytes, named from fsm_spec.SAMPLE_BYTES)."""
+    tag = f"wave_spi: {kind} frame (CRC {'on' if crc_en else 'off'})"
+    env = dict(rw=int(kind != "write"), smp=int(kind == "sample"), crc_en=crc_en, addr_ok=1,
+               wr_ok=int(kind == "write"), busy=0, crc_ok=1, head=1)
+    goal = {"write": "commit", "sample": "pop"}.get(kind)
+    found = None
+    for n in ([length] if length else range(1, 11)):
+        tr = []
+        w = FS.spi_walk(n, 0, env, trace=tr)
+        if w and not {"FRAME_ERR", "ADDR_ERR", "CRC_ERR", "STATE_ERR"} & set(w[0]) and (goal is None or goal in w[0]):
+            found = (n, tr)
+            break
+    if found is None:
+        return None, None, [f"{tag}: no {length or '1..10'}-byte frame {MSG['spi_accept']}"]
+    n, tr = found
+    smp_addr = next(a for a, nm, *_ in RM.REGS if nm == "SAMPLE")
+    mosi = [{"write": "W＋adr", "read": "R＋adr"}.get(kind, f"R＋0x{smp_addr:02X}")]
+    csf = [a for e, a in tr if e == "CSF"]
+    miso, probs = ["STATUS" if csf and "load_status" in csf[0] else "?"], []
+    if miso[0] != "STATUS":
+        probs.append(f"{tag}: {MSG['spi_status']}")
+    byte_acts = [a for e, a in tr if e == "BYTE"]
+    names, k_s, off = sample_labels(), 0, 0
+    for i, acts in enumerate(byte_acts):
+        if i:
+            mosi.append("データ" if "latch_data" in acts else "CRC" if "latch_crc" in acts else "0x00")
+        off += acts.count("addr_inc")
+        smp = "snapshot" in acts or "next_byte" in acts
+        if i < n - 1:                                     # what the last byte loads is not shifted out
+            if "load_data" in acts:
+                miso.append("[adr]" if off == 0 else f"[adr＋{off}]")
+            elif "load_crc" in acts:
+                miso.append("CRC")
+            elif smp:
+                miso.append(names[k_s] if k_s < len(names) else "?")
+            else:
+                miso.append("0x00")                       # load_zero, or a write (its MISO is 0x00)
+        k_s += smp
+    if kind == "sample" and k_s != len(names):
+        probs.append(f"{tag}: {k_s} {MSG['spi_sample']} {len(names)}")
+    return mosi, miso, probs
+
+
 def spi():
     def frame_(name, mosi, miso):
         k = len(mosi)
@@ -152,18 +221,10 @@ def spi():
                 {"name": "CS_N", "wave": "1" + "0" + "." * (2 * k - 1) + "1"},
                 {"name": "MOSI", "wave": "x" + "=." * k + "x", "data": mosi},
                 {"name": "MISO", "wave": "z" + "=." * k + "z", "data": miso}]
-    sig = [
-        frame_("書き込み", ["W＋adr", "データ"], ["STATUS", "0x00"]),
-        {},
-        frame_("書き込み（CRC）", ["W＋adr", "データ", "CRC"], ["STATUS", "0x00", "0x00"]),
-        {},
-        frame_("読み出し（連続）", ["R＋adr", "0x00", "0x00"], ["STATUS", "[adr]", "[adr＋1]"]),
-        {},
-        frame_("読み出し（CRC）", ["R＋adr", "0x00", "0x00"], ["STATUS", "[adr]", "CRC"]),
-        {},
-        frame_("サンプル", ["R＋0x40", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00"],
-               ["STATUS", "状態", "SEQ 上", "SEQ 下", "DATA 上", "DATA 中", "DATA 下", "CRC"]),
-    ]
+    sig = []
+    for title, kind, crc_en, length in SPI_FRAMES:      # each frame from fsm_spec's SPI table (audit round 15)
+        mosi, miso, _p = spi_lanes(kind, crc_en, length)
+        sig += ([{}] if sig else []) + [frame_(title, mosi or ["?"], miso or ["?"])]
     return {"signal": sig, "head": {"text": "SPI のフレーム（1 区切り ＝ 8 SCLK、モード 0、MSB 先頭）"},
             "foot": {"text": "先頭バイト：bit 7 ＝ R/W（1 ＝ 読み出し）、bit 6:0 ＝ アドレス"},
             "config": {"hscale": 2}}
@@ -225,7 +286,9 @@ def lane_values(wave, data=None):
 def check():
     """The startup and APPLY diagrams against fsm_spec's table (audit round 4: the waveforms are written here, only
     their durations came from the timers): the drawn states form a path of the table, and the AFE_RST and READY lanes
-    are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN)."""
+    are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN). The SPI diagram's frames are generated
+    from the SPI table (spi_lanes): each must complete without an error flag, load STATUS during its header, and a
+    sample load as many bytes as fsm_spec.SAMPLE_BYTES names (audit round 15)."""
     errs = []
     afe = {x[0]: str(x[3]) for x in FS.SEQ_STATES}
     for name, fn in (("startup", startup), ("apply", apply_seq)):
@@ -235,12 +298,69 @@ def check():
         for a, b in zip(seq, seq[1:]):
             if not any(isinstance(c, list) and any(br["next"] == b for br in c)
                        for (s0, _e), c in FS.SEQ["table"].items() if s0 == a):
-                errs.append(f"wave_{name}: {a} -> {b} is not a transition of the table")
+                errs.append(f"wave_{name}: {a} -> {b} {MSG['path']}")
         for lane, want in (("AFE_RST", lambda x: afe[x]), ("READY", lambda x: "1" if x == "RUN" else "0")):
             for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
                 if x is not None and v is not None and v != want(x):
-                    errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}, the table gives {want(x)}")
+                    errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}{MSG['lane']} {want(x)}")
+    for _t, kind, crc_en, length in SPI_FRAMES:           # the SPI diagram (audit round 15)
+        errs += spi_lanes(kind, crc_en, length)[2]
     return errs
+
+
+def selftest():
+    """Mutation test of check (audit round 15): each mutation is a plausible specification change the diagrams must
+    follow and is detected by the message it is written for; every message is expected by a mutation; the unmutated
+    sources give none."""
+    import copy
+    B, A = FS.B, FS.ALWAYS
+    i_pre = [x[0] for x in FS.SEQ_STATES].index("PRE")
+
+    def table(F, key, cell):                       # cell None: drop every cell of the state key
+        def apply():
+            orig = F["table"]
+            t = copy.deepcopy(orig)
+            if cell is None:
+                t = {k: v for k, v in t.items() if k[0] != key}
+            else:
+                t[key] = cell
+            F["table"] = t
+            return lambda: F.__setitem__("table", orig)
+        return apply
+
+    def afe_rst_pre():
+        saved = FS.SEQ_STATES[i_pre]
+        FS.SEQ_STATES[i_pre] = saved[:3] + (1,) + saved[4:]
+        return lambda: FS.SEQ_STATES.__setitem__(i_pre, saved)
+
+    muts = [
+        ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
+        ("APPLY の図：PRE で AFE_RST を 1 に（状態の表）", afe_rst_pre, "lane"),
+        ("SPI の図：CRC 付きの読み出しの CRC のあとを長すぎるフレームに",
+         table(FS.SPI, ("RCRC", "BYTE"), [B(A, [], "OVF")]), "spi_accept"),
+        ("SPI の図：先頭バイトの間に STATUS を載せない", table(FS.SPI, ("IDLE", "CSF"), [B(A, [], "HDR")]), "spi_status"),
+        ("SPI の図：サンプルの最後のバイトでも次のバイトを載せる",
+         table(FS.SPI, ("RSMP", "BYTE"), [B("not last", ["next_byte"]), B("last", ["next_byte"], "SDONE")]), "spi_sample"),
+    ]
+    base, missed, used = check(), 0, set()
+    for name, apply, key in muts:
+        undo = apply()
+        try:
+            got = check()
+        finally:
+            undo()
+        det = any(MSG[key] in r for r in got)
+        used.add(key)
+        missed += not det
+        print(f"{'detected' if det else 'MISSED  '} {name}: {len(got)} violations")
+    unused = sorted(set(MSG) - used)
+    for k in unused:
+        print(f"PROBLEM  no mutation expects the message {MSG[k]!r}")
+    for e in base:
+        print(f"PROBLEM  unmutated: {e}")
+    print(f"{len(muts) - missed} of {len(muts)} mutations detected by their expected messages; {len(MSG)} check "
+          f"messages; unmutated sources: {len(base)} violations")
+    return 0 if not missed and not unused and not base else 1
 
 
 def fresh():
@@ -263,6 +383,8 @@ def fresh():
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "fresh":
         return fresh()
+    if len(sys.argv) > 1 and sys.argv[1] == "selftest":
+        return selftest()
     errs = check()
     if errs:
         print("not writing: the diagrams disagree with fsm_spec's table:\n  " + "\n  ".join(errs))

@@ -6,7 +6,9 @@
 // so that tb/check_top_r14.py compares the samples bit-exactly with the golden CIC (rtl/model/cic_golden.py).
 // Phases (each reports its checks; errors counted):
 //   A  registers: the generated tests (build/reg_tests.svh, from regmap.py), CRC, frame errors, unknown command,
-//      a wrong key, a burst read (address incrementing, CRC off)
+//      a wrong key, a burst read (address incrementing, CRC off); audit round 15 (auditor C): every illegal value of
+//      every field (RANGE_ERR, nothing written), the write-only COMMAND and TEST_KEY read 0x00 while unlocked and
+//      after a committed FLUSH (alone and in a burst)
 //   B  START: WARMUP exactly T_WARM, RECOVER T_REC, ALIGN to the next output time, FILL three outputs, RUN;
 //      samples (VALID, SEQ, CRC); a sample read stopped after 4 bytes neither pops nor flags an error
 //   C  APPLY in RUN: the settings at the tick, AFE_RST high after T_PRE for exactly T_RST, the re-settling, samples
@@ -18,7 +20,8 @@
 //   F  one pending command: at 64 kHz a second command before the tick gets STATE_ERR, an unknown code CMD_ERR only
 //   G  FLUSH, overrun (OVERRUN in DFLAG and in the next sample's status); a sample read across a FLUSH: the sample
 //      stored after the flush is not popped by the read of the old head; DRDY_N pulse mode (128 MCLK per store)
-//   H  SOFT_RESET: back to the reset values (RESET_FLAG); SEQ, the frame counter and the choppers keep running
+//   H  SOFT_RESET: ERR (RESET_FLAG), CPF_TRIM, FIFO_LEVEL and the pins back to their reset values (every register
+//      and flag: Y); SEQ, the frame counter and the choppers keep running
 //   I  SOFT_RESET while a command is pending (64 kHz): taken at once, no STATE_ERR
 //   J  audit round 1 (11/20): every STATUS bit; at 64 kHz a write to a shadow or a timer while a command is pending
 //      gets STATE_ERR (other registers are written); CRC on: a header-only read is legal, a read without its CRC
@@ -30,7 +33,10 @@
 //      replay had none of them), each with its effect (pins, STATE) and no flag. Also: CODE changes at e2 as the ADC's;
 //      the RESET_N release reaches the first CMP_STROBE in 3 MCLK (2 synchronizer flops); the control reset of a
 //      SOFT_RESET lasts 5 MCLK (H); RAW's bits change at e1, e5, ... and RAW_CLK rises at e3, e7, ... (O); T12 an
-//      overload ending at the interval's last input; U3 / U4 CRC-off read flips
+//      overload ending at the interval's last input; U3 / U4 CRC-off read flips. V13 (audit round 15, auditor A): an
+//      APPLY changing the chopper to 64 kHz, then a STOP in PRE, taken at the next 128 kHz tick before the rate's wrap
+//      (the active copy already 64 kHz) and at the first 64 kHz tick after it: AFE_RST 256 and 320 MCLK after the
+//      APPLY's tick, its edge where the monitor expects it at the rate the clock generator runs, held into WARMUP
 //   K  SEQ wraps from 0xFFFF to 0 (forced; after every phase whose samples are compared with the golden CIC: audit
 //      round 8, the comparison had stopped at K, in the middle of the bench)
 //   W  audit round 10: a reset released inside a frame (RESET_N at 48 points of a CRC write and of a CRC FLUSH, a
@@ -39,13 +45,21 @@
 //   X  audit round 12 (auditor C): RESET_N resets asynchronously (RST-01): every control pin set away from its
 //      reset value in RUN (a sample stored, a frame open), MCLK stopped, RESET_N low: without any MCLK edge every
 //      pin is at its reset value (a register block with a synchronous reset passed every test)
+//   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
+//      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
+//      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
+//      DFLAG 0x00, STATUS 0xA1, the timers, masks, settings and active copies), the pins, DRDY_N high, the test
+//      registers locked (a register block keeping the timers, the ALERT masks, DFLAG or DRDY_MODE through a SOFT_RESET
+//      passed every test). On the way, STATUS with READY and DATA apart: RUN with the FIFO empty (READY 1, DATA 0),
+//      IDLE with samples left (READY 0, DATA 1); no check had told them apart
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
 //      ALERT_MASK_D, the empty word (VALID 0, OVERRUN, OVL_NOW, ERR = ALERT, SEQ 0, DATA 0, CRC), the DRDY_N release in
 //      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
 //   L  SPI at the specification's limits (VER-02): 2 MHz with the minimum high (4 MCLK) or the minimum low (5 MCLK),
 //      and 1 MHz; CS_N setup 5 MCLK, hold 3 MCLK, high 4 MCLK; MISO through the 15 ns pad delay; CRC off and on
 //   A also (audit round 3): a burst read of the whole map at reset against the map's reset values (generated), MISO
-//      0x00 after a completed frame, an illegal SPI state value -> FRAME_ERR and nothing written; H: SOFT_RESET with
+//      0x00 after a completed frame, an illegal SPI state value -> FRAME_ERR and nothing written (inside a frame;
+//      between frames the next frame is processed normally and nothing is flagged, audit round 15); H: SOFT_RESET with
 //      samples in the FIFO empties it (level 0, DRDY_N high, the next read is the empty word)
 //   N  audit round 2 (auditor C): every analog control pin against the specification (build/pin_tests.svh, generated
 //      from regmap.pins_from_active: OFM / OFS / OFEN per range, trims, CHOP_EN, DWA_EN, TEST_CFG, the CHOP_BLANK
@@ -102,7 +116,8 @@
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); no register-driven pin (those and
 // DRDY_N, TEST_CFG[7:6]) changes twice at one simulation time (a runt: NFR-06); the SPI timing (spi_bfm_r14.svh).
-// A watchdog ends the run as FAIL if it has not finished by 600 ms of simulated time (about 1.6 times the normal length),
+// A watchdog ends the run as FAIL if it has not finished by 800 ms of simulated time (the run ends near 0.6 s; audit
+// round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
@@ -281,8 +296,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(600.0e6);
-        fail($sformatf("watchdog: not finished after 600 ms of simulated time (phase %s)", phase));
+        #(800.0e6);
+        fail($sformatf("watchdog: not finished after 800 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -430,6 +445,8 @@ module tb_top_r14;
                            ($realtime - t_chop_rise) / TMCLK, afe_edge_exp));
     end
 
+    logic afe_rise_fast = 1'b1, afe_rise_act = 1'b1;   // V13: at each AFE_RST rise, the rate the clock generator runs
+    always @(posedge AFE_RST) begin afe_rise_fast = dut.u_clkgen.fast; afe_rise_act = dut.a_chop_fast; end  // and the copy's
     integer n_coinc13 = 0;                        // T13: sample copies taken in the cycle of a store into the FIFO
     always @(posedge MCLK) if (dut.smp_snap === 1'b1 && dut.push_ok === 1'b1) n_coinc13 = n_coinc13 + 1;
 
@@ -921,6 +938,28 @@ module tb_top_r14;
             join
             expect_err_now(8'h02, $sformatf("FRAME_ERR for the illegal SPI state value %0d", bad));
             rt_read_expect(7'h24, 8'h08, $sformatf("CPF_TRIM not written by a frame with the illegal SPI state %0d", bad));
+        end
+        // ... and between frames (CS_N high; audit round 15, auditor B): the value stays until the next CS_N fall, which
+        // starts that frame in the header state; the frame is processed normally and nothing is flagged (NFR-05)
+        for (int bad = 11; bad < 16; bad++) begin
+            @(posedge MCLK); #1;
+            case (bad)                                  // constant forces (Icarus)
+                11:      force dut.u_spi.st = 4'd11;
+                12:      force dut.u_spi.st = 4'd12;
+                13:      force dut.u_spi.st = 4'd13;
+                14:      force dut.u_spi.st = 4'd14;
+                default: force dut.u_spi.st = 4'd15;
+            endcase
+            @(posedge MCLK);
+            release dut.u_spi.st;
+            #(4.0 * TMCLK);
+            if (dut.u_spi.st !== bad[3:0])
+                fail($sformatf("SPI state value %0d forced between frames was %0d before the next frame", bad, dut.u_spi.st));
+            spi_tx[0] = 8'h24; spi_tx[1] = 8'h0E; spi_xfer(2, 0);
+            expect_noerr($sformatf("the frame after the illegal SPI state value %0d between frames", bad));
+            rt_read_expect(7'h24, 8'h0E, $sformatf("CPF_TRIM written by the frame after the illegal SPI state %0d between frames", bad));
+            spi_tx[0] = 8'h24; spi_tx[1] = 8'h08; spi_xfer(2, 0);
+            expect_noerr($sformatf("CPF_TRIM restored after the illegal SPI state %0d between frames", bad));
         end
         r14_cmd(8'h77);
         expect_err_now(8'h80, "CMD_ERR (unknown code)");
@@ -2066,8 +2105,8 @@ module tb_top_r14;
                 logic [7:0] es; logic [15:0] eq; logic [23:0] ed; bit eok;
                 r14_write(7'h06, 8'hFF); r14_write(7'h07, 8'hFF);       // no flag: the empty word's ERR (= ALERT) is 0
                 r14_sample(es, eq, ed, eok);
-                if (es[3] !== 1'b0 || spi_status[5] !== 1'b0)            // (audit round 14, auditor C: ERR tied to 1 passed)
-                    fail($sformatf("T4: the empty word's ERR %b with STATUS.ALERT %b, both 0 expected (no flag set)", es[3], spi_status[5]));
+                if (es[SMP_ERR_LSB] !== 1'b0 || spi_status[STATUS_ALERT_LSB] !== 1'b0)            // (audit round 14, auditor C: ERR tied to 1 passed)
+                    fail($sformatf("T4: the empty word's ERR %b with STATUS.ALERT %b, both 0 expected (no flag set)", es[SMP_ERR_LSB], spi_status[STATUS_ALERT_LSB]));
                 if (dut.chg_cnt == 9'd0) fail("T4 not exercised: no mark left at the empty word");
                 if (!eok || es[7] !== 1'b0 || es[4] !== 1'b0 || es[2:0] !== 3'b000 || eq !== 16'd0 || ed !== 24'd0)
                     fail($sformatf("T4: the empty word while a mark runs: status 0x%02h SEQ %0d DATA %0d (VALID 0, CHANGED 0, reserved 0, SEQ 0, DATA 0 expected)", es, eq, ed));
@@ -2207,6 +2246,7 @@ module tb_top_r14;
                 logic [7:0] st13;
                 logic [23:0] d13;
                 bit ok13, have13;
+                int nd13;                               // drain reads (bounded: audit round 15)
                 integer gap13, coinc0;
                 real t0_13, t_fall13, tm13;
                 have13 = 1'b0; gap13 = 0; coinc0 = n_coinc13;
@@ -2214,21 +2254,25 @@ module tb_top_r14;
                 @(posedge dut.push_ok);                 // (its half period rounds to 1 ps: 32768 MCLK are 1.0000138 ms)
                 t0_13 = $realtime;
                 for (int p = 0; p < 24; p++) begin
+                    nd13 = 0;
                     do begin                                // drain: the FIFO empty before the next store
                         r14_sample(st13, sq13, d13, ok13);
-                        if (ok13 && st13[7] === 1'b1) begin
+                        nd13 = nd13 + 1;
+                        if (ok13 && st13[SMP_VALID_LSB] === 1'b1) begin
                             if (have13 && sq13 !== last13 + 16'd1) begin
                                 gap13 = gap13 + 1;
                                 fail($sformatf("T13 point %0d: SEQ %0d after %0d (a sample lost)", p, sq13, last13));
                             end
                             last13 = sq13; have13 = 1'b1;
                         end
-                    end while (!(ok13 && st13[7] === 1'b0 && spi_status[2] === 1'b0));
+                    end while (!(ok13 && st13[SMP_VALID_LSB] === 1'b0 && spi_status[STATUS_DATA_LSB] === 1'b0) && nd13 < 3 * FD);
+                    if (nd13 >= 3 * FD)                     // (audit round 15: READY and DATA crosswise hung here until the watchdog)
+                        fail($sformatf("T13 point %0d: no empty word with STATUS.DATA 0 in %0d reads (the FIFO holds %0d)", p, nd13, FD));
                     t_fall13 = t0_13 + (p + 1) * 32768.0 * tm13 - (spi_tcss + 7.0 * (spi_high + spi_low))
                                - 3.0 * tm13 + 0.25 * tm13 * p;
                     #(t_fall13 - $realtime);
                     r14_sample(st13, sq13, d13, ok13);
-                    if (ok13 && st13[7] === 1'b1) begin
+                    if (ok13 && st13[SMP_VALID_LSB] === 1'b1) begin
                         if (have13 && sq13 !== last13 + 16'd1) begin
                             gap13 = gap13 + 1;
                             fail($sformatf("T13 point %0d: SEQ %0d after %0d (a sample lost)", p, sq13, last13));
@@ -2515,9 +2559,9 @@ module tb_top_r14;
                 r14_write(7'h24, 8'h06);                // CPF_TRIM shadow 6
                 spi_high = 500.0; spi_low = 500.0;      // 1 MHz
                 r14_cmd(8'h33);
-                do r14_read(7'h03, v11); while (v11[4] === 1'b1);    // CMD_PENDING
+                do r14_read(7'h03, v11); while (v11[STATUS_CMD_PENDING_LSB] === 1'b1);    // CMD_PENDING
                 r14_cmd(8'h33);                         // the host's re-issue
-                do r14_read(7'h03, v11); while (v11[4] === 1'b1);
+                do r14_read(7'h03, v11); while (v11[STATUS_CMD_PENDING_LSB] === 1'b1);
                 expect_err_exact(8'h40, "V11 the re-issued APPLY after an executed one: STATE_ERR alone");
                 rt_read_expect(7'h34, 8'h06, "V11 the active CPF_TRIM after the APPLY");
                 spi_high = 250.0; spi_low = 250.0;
@@ -2551,8 +2595,50 @@ module tb_top_r14;
             r14_write(7'h24, 8'h08); r14_cmd(8'h33);
             repeat (600) @(posedge MCLK);
             r14_write(7'h06, 8'hFF);
+            // V13 (audit round 15, auditor A: round 14's AFE_RST edge monitor, its rate taken from the clock generator,
+            // was exercised by no phase): in RUN at 128 kHz an APPLY that changes the chopper to 64 kHz, then a STOP
+            // taken in PRE at the next tick (the host's SPI at its fastest: SCLK high 4, low 5 MCLK; the APPLY written
+            // just after a tick of the other half of the 512-MCLK superperiod is taken at the next tick, the STOP written
+            // as PRE begins commits about 150 MCLK later). The APPLY taken in frame 1 (k 0): the STOP's tick is the next
+            // 128 kHz one, before the rate's wrap, with the active copy already at 64 kHz; in frame 9 (k 1): the first
+            // 64 kHz tick after the wrap. AFE_RST rises 256 or 320 MCLK after the APPLY's tick (7.8 and 9.8 us after the
+            // DAC change, requirements 4.10), its edge where the monitor expects it, nothing flagged, and it stays high
+            // into the next START's WARMUP
+            for (int k = 0; k < 2; k++) begin
+                real t_dac;
+                r14_write(7'h26, 8'h01); r14_cmd(8'h11);           // START at 128 kHz
+                wait_state(4'd6, 12000.0, "V13 RUN");
+                if (dut.u_clkgen.fast !== 1'b1) fail("V13: not at 128 kHz in RUN");
+                r14_write(7'h26, 8'h00);                            // the shadow: 64 kHz
+                spi_high = 4.0 * TMCLK + 0.3; spi_low = 5.0 * TMCLK + 0.3;
+                spi_tcss = 5.0 * TMCLK + 0.3; spi_tcsh = 3.0 * TMCLK + 0.3; spi_tidle = 4.0 * TMCLK + 0.3;
+                do @(posedge dut.tick); while (dut.u_clkgen.cnt[8] !== (k == 0 ? 1'b1 : 1'b0));   // the other half
+                r14_cmd(8'h33);                                     // APPLY: taken at the next tick, frame 1 or 9
+                wait_state(4'd7, 50.0, "V13 PRE");
+                r14_cmd(8'h22);                                     // STOP: before the next tick
+                spi_high = 250.0; spi_low = 250.0; spi_tcss = 300.0; spi_tcsh = 200.0; spi_tidle = 600.0;
+                wait_state(4'd0, 100.0, "V13 IDLE after a STOP in PRE");
+                t_dac = t_state[4'd7];                              // PRE entered at the APPLY's tick (the DAC change)
+                if (AFE_RST !== 1'b1) fail("V13: AFE_RST low after the STOP in PRE");
+                if (afe_rise_fast !== (k == 0) || afe_rise_act !== 1'b0)
+                    fail($sformatf("V13 case %0d not exercised as designed: at the AFE_RST rise the clock generator ran at %s kHz, the active copy at %s kHz",
+                                   k, afe_rise_fast ? "128" : "64", afe_rise_act ? "128" : "64"));
+                if ((t_afe_rise - t_dac) / TMCLK < (k == 0 ? 255.5 : 319.5) || (t_afe_rise - t_dac) / TMCLK > (k == 0 ? 256.5 : 320.5))
+                    fail($sformatf("V13 case %0d: AFE_RST rose %0.1f MCLK after the APPLY's tick, expected %0d", k,
+                                   (t_afe_rise - t_dac) / TMCLK, k == 0 ? 256 : 320));
+                expect_err_exact(8'h00, $sformatf("V13 case %0d: the APPLY and the STOP in PRE", k));
+                r14_cmd(8'h11);                                     // START: AFE_RST stays high into WARMUP
+                wait_state(4'd1, 50.0, "V13 WARMUP");
+                if (AFE_RST !== 1'b1 || t_afe_fall > t_afe_rise) fail("V13: AFE_RST released between the STOP in PRE and WARMUP");
+                r14_cmd(8'h22);
+                wait_state(4'd0, 50.0, "V13 IDLE");
+            end
+            r14_write(7'h26, 8'h01); r14_cmd(8'h33);                // 128 kHz again (APPLY in IDLE): its tick (up to
+            repeat (1200) @(posedge MCLK);                          // 512 MCLK at 64 kHz), then the wrap (512 more)
+            if (dut.u_clkgen.fast !== 1'b1) fail("V13: 128 kHz not back");
+            r14_write(7'h06, 8'hFF);
         end
-        $display("V  APPLY and APPLY_NR in IDLE, RECOVER, WAIT_E, ALIGN, FILL; a re-issued APPLY; STOP applies nothing (errors %0d)", errors);
+        $display("V  APPLY and APPLY_NR in IDLE, RECOVER, WAIT_E, ALIGN, FILL; a re-issued APPLY; STOP applies nothing; STOP in PRE across a rate change (errors %0d)", errors);
 
         // ---------------- K: SEQ wraps from 0xFFFF to 0 (forced; the last phase, outside the golden comparison)
         phase = "K";
@@ -2693,6 +2779,49 @@ module tb_top_r14;
         if (v !== 8'h01) fail($sformatf("X: ERR 0x%02h after the release, expected RESET_FLAG only", v));
         r14_write(7'h06, v);
         $display("X  RESET_N with MCLK stopped: every pin at its reset value at once (errors %0d)", errors);
+
+        // ---------------- Y: SOFT_RESET returns every register and flag (RST-02; audit round 15, auditor C: after a
+        // SOFT_RESET only ERR, CPF_TRIM, FIFO_LEVEL, IF_CFG, AFE_IBIAS, OFF_M_L and the applied pins were read, and an
+        // eeg_regs keeping the timers, the ALERT masks, DFLAG or DRDY_MODE through a SOFT_RESET passed all 16 groups).
+        // The SOFT_RESET written with CRC off, then on: before it every writable register away from its reset value
+        // (soft_set_all, generated; START applies the shadows), both DFLAG bits set (an overload forced on the code
+        // stream, the FIFO overflowed), samples in the FIFO, ERR holding ADDR_ERR without RESET_FLAG, the test key open;
+        // after it the generated burst over the whole map (as A0), every pin at its reset value, DRDY_N high, the test
+        // registers locked. On the way, STATUS with READY and DATA apart (audit round 15, auditor C: no check told them
+        // apart, and the two wired crosswise passed): RUN with the FIFO empty, IDLE with samples left
+        phase = "Y";
+        for (int pass = 0; pass < 2; pass++) begin
+            logic [7:0] ys, smask; logic [15:0] yq; logic [23:0] yd; bit yok;
+            smask = 8'hFF & ~((8'h01 << STATUS_ALERT_LSB) | (8'h01 << STATUS_OVL_NOW_LSB));
+            soft_set_all(pass[0]);
+            r14_cmd(8'h11);                                     // START: the settings applied
+            wait_state(4'd6, 15000.0, "Y RUN");
+            @(posedge dut.push_ok);                             // just after a store: the next one is 1 ms away
+            @(posedge MCLK);
+            do r14_sample(ys, yq, yd, yok); while (!(yok && ys[SMP_VALID_LSB] === 1'b0));
+            check_status(8'h80 | (8'h01 << STATUS_READY_LSB), smask, $sformatf("Y%0d: STATUS in RUN with the FIFO empty (READY 1, DATA 0)", pass));
+            ovl_force = 1'b1;                                   // DFLAG.OVL
+            repeat (40 * 32) @(posedge MCLK);
+            ovl_force = 1'b0;
+            repeat ((FD + 2) * 32768) @(posedge MCLK);          // the FIFO overflows: DFLAG.OVERRUN
+            rt_read_expect(7'h07, 8'h03, $sformatf("Y%0d: DFLAG with an overload and an overrun", pass));
+            r14_cmd(8'h22);                                     // STOP: IDLE, the samples kept
+            wait_state(4'd0, 50.0, "Y IDLE");
+            check_status(8'h80 | (8'h01 << STATUS_DATA_LSB) | (8'h01 << STATUS_AFE_RST_LSB), smask,
+                         $sformatf("Y%0d: STATUS in IDLE with samples left (READY 0, DATA 1)", pass));
+            r14_write(7'h7F, 8'h00);                            // undefined: ADDR_ERR
+            r14_write(7'h06, 8'h01);                            // RESET_FLAG cleared: the SOFT_RESET must set it
+            rt_read_expect(7'h06, 8'h08, $sformatf("Y%0d: ERR before the SOFT_RESET", pass));
+            r14_cmd(8'hA5);                                     // SOFT_RESET, in the chip's CRC mode
+            bfm_crc_en = 1'b0;
+            #(1000.0);
+            run_reset_burst($sformatf("Y%0d after SOFT_RESET", pass));
+            check_reset_pins($sformatf("Y%0d: after SOFT_RESET", pass));
+            if (DRDY_N !== 1'b1) fail($sformatf("Y%0d: DRDY_N %b after SOFT_RESET (level mode, FIFO empty)", pass, DRDY_N));
+            r14_write(7'h06, 8'h01);
+            rt_write_check(7'h60, 8'h11, 8'h00, 8'h08, $sformatf("Y%0d: TEST_MUX locked after SOFT_RESET", pass));
+        end
+        $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart (errors %0d)", errors);
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
 
         $fclose(flog);

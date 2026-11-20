@@ -2,7 +2,8 @@
 # r14 digital control: the specification checks and every RTL test, with a summary. A group passes only if every
 # command in it exits 0 (a failed compile included) and its log has PASS and no FAIL or ERROR.
 #   spec        gf180/tapeout/rtl/spec: fsm_spec.py check, selftest, fresh; regmap.py check, selftest, fresh;
-#               wave.py fresh (the generated diagrams, tables and timing diagrams equal what the sources give)
+#               wave.py selftest, fresh (the generated diagrams, tables and timing diagrams equal what the sources
+#               give; the timing diagrams agree with the tables, audit round 15)
 #   codes       the CT loop model's code streams (tb/gen_codes.py)
 #   tb_seq      the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table; the
 #               timer modelled independently: every load, decrement and restart)
@@ -23,8 +24,12 @@
 #   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
 #   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06); every asynchronous input passes 2 flops; every
-#               flip-flop resets asynchronously from RESET_N's release (RST-01) (yosys, tb/check_outputs_registered.py)
+#               flip-flop resets asynchronously from RESET_N's release (RST-01); the state registers of eeg_seq and
+#               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis) (yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
+#   A bench run alone needs this script's generated inputs first (codes: build/top_r14.codes and ovl.codes;
+#   tb/gen_reg_tests.py: build/reg_tests.svh and pin_tests.svh): without the code stream tb_top_r14's CODE is X and
+#   every phase fails (audit round 15)
 # usage: ./run_tests_r14.sh
 set -u
 cd "$(dirname "$0")"
@@ -55,7 +60,8 @@ run() {   # name, command
 }
 # spec: every checker and self-test must exit 0 (PASS is printed only then)
 spec() { (cd ../rtl/spec && $PY fsm_spec.py check && $PY fsm_spec.py selftest && $PY regmap.py check &&
-          $PY regmap.py selftest && $PY fsm_spec.py fresh && $PY regmap.py fresh && $PY wave.py fresh) &&
+          $PY regmap.py selftest && $PY wave.py selftest && $PY fsm_spec.py fresh && $PY regmap.py fresh &&
+          $PY wave.py fresh) &&
         echo "PASS: spec checks, self-tests, generated files up to date"; }
 codes() { $PY tb/gen_codes.py && echo "PASS: code streams"; }
 seq_t() { comp build/tb_seq.vvp eeg_seq.sv tb/tb_seq.sv &&

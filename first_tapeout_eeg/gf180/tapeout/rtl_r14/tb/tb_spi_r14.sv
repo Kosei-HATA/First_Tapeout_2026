@@ -15,6 +15,7 @@
 `default_nettype none
 
 module tb_spi_r14;
+`include "eeg_regs_defs.svh"
     localparam real TMCLK = 1000.0 / 32.768;
     logic MCLK = 1'b0, RESET_N = 1'b0, SCLK = 1'b0, CS_N = 1'b1, MOSI = 1'b0;
     wire  MISO, MISO_OE, DRDY_N, RAW_DATA, RAW_CLK, ADC_RST_N, TH_CAPTURE, DAC_LOAD, DWA_EN;

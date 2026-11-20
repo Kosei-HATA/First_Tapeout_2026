@@ -36,6 +36,9 @@
 //   W  audit round 10: a reset released inside a frame (RESET_N at 48 points of a CRC write and of a CRC FLUSH, a
 //      SOFT_RESET whose control reset ends inside the next frame): the frame is ignored up to its CS_N rise, MISO_OE
 //      stays off, nothing is committed, the registers keep their reset values (after K: the golden log is off)
+//   X  audit round 12 (auditor C): RESET_N resets asynchronously (RST-01): every control pin set away from its
+//      reset value in RUN (a sample stored, a frame open), MCLK stopped, RESET_N low: without any MCLK edge every
+//      pin is at its reset value (a register block with a synchronous reset passed every test)
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
 //      ALERT_MASK_D, the empty word (VALID 0, OVERRUN, OVL_NOW, ERR = ALERT, SEQ 0, DATA 0, CRC), the DRDY_N release in
 //      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
@@ -122,7 +125,8 @@ module tb_top_r14;
 `endif
     eeg_digital_top #(.DAC_LOAD_CYCLE(2), .FIFO_DEPTH(FD)) dut (.*);
 
-    always #(TMCLK / 2.0) MCLK = ~MCLK;
+    bit mclk_run = 1'b1;                          // X: MCLK stopped to see RESET_N's asynchronous reset (RST-01)
+    always #(TMCLK / 2.0) if (mclk_run) MCLK = ~MCLK;
 
     `define R14_SAMPLE_HOOK                       // r14_sample logs every sample it reads (audit round 8)
     `include "spi_bfm_r14.svh"
@@ -2482,6 +2486,57 @@ module tb_top_r14;
             end
         end
         $display("W  a reset released inside a frame: the frame ignored, nothing committed (errors %0d)", errors);
+
+        // ---------------- X (audit round 12, auditor C): RESET_N resets asynchronously (RST-01). Every control pin
+        // away from its reset value (the settings applied by START, RUN with a sample stored, a frame open), then
+        // MCLK stopped and RESET_N low: with no MCLK edge, every pin must be at its reset value (an eeg_regs whose
+        // reset was synchronous passed all 16 groups: every bench held RESET_N across MCLK edges)
+        phase = "X";
+        r14_write(7'h21, 8'h05);                        // OFF_M_L: M 5
+        r14_write(7'h22, 8'h11);                        // OFF_CTRL: range 1, sign 1
+        r14_write(7'h23, 8'h02);                        // AFE_IBIAS 2
+        r14_write(7'h24, 8'h03);                        // CPF_TRIM 3
+        r14_write(7'h25, 8'h12);                        // BOOST_TRIM: BTRIM_P 2, BTRIM_N 1
+        r14_write(7'h27, 8'h04);                        // ADC_CFG: CHOP1 rate 4, DWA_EN 0
+        r14_write(7'h11, 8'h3C);                        // TEST_KEY: the test registers
+        r14_write(7'h60, 8'h15);                        // TEST_MUX: ATP_EN 1, ATP_SEL 5
+        r14_write(7'h61, 8'h03);                        // TEST_CTRL: ADC_ZERO 1, CHOP_STOP 1
+        r14_write(7'h62, 8'h03);                        // DEBUG: RAW_EN 1, DBG_SEL 1
+        r14_write(7'h11, 8'h00);                        // lock
+        r14_cmd(8'h11);                                 // START: the shadows applied at its tick
+        wait_state(4'd6, 12000.0, "X RUN");
+        t0 = $realtime;
+        while (DRDY_N !== 1'b0 && $realtime - t0 < 3.0e6) @(posedge MCLK);
+        CS_N = 1'b0;                                    // a frame open: MISO_OE on
+        repeat (5) @(posedge MCLK);
+        #1;
+        if (OFEN !== 4'b0001 || OFM !== 10'd5 || OFS !== 1'b1 || AFE_IBIAS !== 2'd2 || CPF_TRIM !== 4'd3 ||
+            BTRIM_P !== 2'd2 || BTRIM_N !== 2'd1 || DWA_EN !== 1'b0 || CHOP_EN !== 1'b0 || TEST_CFG !== 8'h75 ||
+            CHOP_BLANK !== 1'b1 || AFE_RST !== 1'b0 || DRDY_N !== 1'b0 || MISO_OE !== 1'b1 || ADC_RST_N !== 1'b1)
+            fail($sformatf("X: the pins before the reset are not all away from their reset values (OFEN %b OFM %0d OFS %b IBIAS %0d CPF %0d BTRIM %0d/%0d DWA %b CHOP_EN %b TEST_CFG 0x%02h CHOP_BLANK %b AFE_RST %b DRDY_N %b MISO_OE %b)",
+                           OFEN, OFM, OFS, AFE_IBIAS, CPF_TRIM, BTRIM_P, BTRIM_N, DWA_EN, CHOP_EN, TEST_CFG, CHOP_BLANK, AFE_RST, DRDY_N, MISO_OE));
+        mclk_run = 1'b0;                                // MCLK stops (at whichever level)
+        #(2.0 * TMCLK);
+        seq_before = mclk_count;
+        RESET_N = 1'b0;
+        #1000.0;                                        // 1 us without an MCLK edge
+        if (mclk_count != seq_before) fail("X: MCLK was not stopped");
+        check_reset_pins("X: RESET_N low, MCLK stopped");
+        if (TEST_CFG[7:6] !== 2'd0 || DRDY_N !== 1'b1 || MISO_OE !== 1'b0 || CHOP_BLANK !== 1'b0 || ADC_RST_N !== 1'b0 ||
+            RAW_DATA !== 1'b0 || RAW_CLK !== 1'b0)
+            fail($sformatf("X: RESET_N low, MCLK stopped: TEST_CFG[7:6] %b, DRDY_N %b, MISO_OE %b, CHOP_BLANK %b, ADC_RST_N %b, RAW %b/%b; reset values 0, 1, 0, 0, 0, 0/0",
+                           TEST_CFG[7:6], DRDY_N, MISO_OE, CHOP_BLANK, ADC_RST_N, RAW_DATA, RAW_CLK));
+        CS_N = 1'b1;
+        mclk_run = 1'b1;
+        repeat (5) @(negedge MCLK);
+        RESET_N = 1'b1;
+        repeat (20) @(negedge MCLK);
+        check_reset_pins("X: after the release");
+        if (DRDY_N !== 1'b1 || TEST_CFG[7:6] !== 2'd0) fail($sformatf("X: after the release: DRDY_N %b, TEST_CFG[7:6] %b", DRDY_N, TEST_CFG[7:6]));
+        r14_read(7'h06, v);
+        if (v !== 8'h01) fail($sformatf("X: ERR 0x%02h after the release, expected RESET_FLAG only", v));
+        r14_write(7'h06, v);
+        $display("X  RESET_N with MCLK stopped: every pin at its reset value at once (errors %0d)", errors);
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
 
         $fclose(flog);

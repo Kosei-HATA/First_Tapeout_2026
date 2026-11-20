@@ -17,8 +17,9 @@
 // Resets: RESET_N (asynchronous assert, 2-FF release) resets everything. SOFT_RESET (the command; a registered reset
 // for 5 MCLK) resets only the control side: registers, sequencer, SPI, FIFO, flags, CHANGED, DRDY_N. The timing and
 // the data path keep running from RESET_N: frame counter and choppers (eeg_clkgen), CHOP1, the CIC, the overload
-// detector, SEQ, the raw stream and eeg_adc_dig (ADC_RST_N), so chips sharing MCLK and RESET_N stay aligned (same SEQ
-// = same time) through a SOFT_RESET of one of them.
+// detector, SEQ, the raw serializer's timing and eeg_adc_dig (ADC_RST_N), so chips sharing MCLK and RESET_N stay
+// aligned (same SEQ = same time) through a SOFT_RESET of one of them. RAW_EN and DBG_SEL are control registers: a
+// SOFT_RESET stops the raw stream at the end of the word in progress (RST-02; audit round 12).
 `timescale 1ns / 1ps
 `default_nettype none
 

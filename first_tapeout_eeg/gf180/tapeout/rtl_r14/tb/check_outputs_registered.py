@@ -20,6 +20,12 @@ functional test; their metastability cannot be simulated):
   CS_N, SCLK, MOSI   each feeds exactly one first flop, whose output feeds only the next flop (logic sees the second
             flop or later); CS_N also goes, combinationally, to MISO_OE only (its cut at the CS_N rise, as in r13)
 
+And the resets (audit round 12, auditor C: an eeg_regs whose reset was synchronous passed every functional test, as
+every bench held RESET_N across MCLK edges; RST-01 asks for an asynchronous one): every flip-flop has an asynchronous,
+active-low reset ($adff, $adffe), from RESET_N (the release chain's 2 flops only), from the release chain's output
+(the timing and data path), or from a flop reset by that output (the control reset of SOFT_RESET, used only as a
+reset); the only storage without a reset is the FIFO's memory (its words are read only below the level).
+
 Exit: 0 every output a flip-flop's (PASS), 1 an output that is not (FAIL), 2 the tool did not run (TOOL ERROR).
 Usage: check_outputs_registered.py [rtl_r14 directory]   (default: this one; the mutation runner passes its copy,
        which also holds the blocks kept from rtl/)
@@ -91,13 +97,73 @@ def main():
     print(f"{nbits} output bits of eeg_digital_top: {nbits - len(bad) - len(notes)} from flip-flops; " + "; ".join(notes))
     sbad, snotes = check_synchronizers(m)
     print("synchronizers: " + "; ".join(snotes))
-    for x in bad + sbad:
+    rbad, rnote = check_resets(m)
+    print("resets: " + rnote)
+    for x in bad + sbad + rbad:
         print("  " + x)
-    if bad or sbad:
-        print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults")
+    if bad or sbad or rbad:
+        print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults, {len(rbad)} reset faults")
     else:
-        print("PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops")
-    return 1 if bad or sbad else 0
+        print("PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops; every flip-flop "
+              "resets asynchronously from the RESET_N release (RST-01)")
+    return 1 if bad or sbad or rbad else 0
+
+
+def check_resets(m):
+    """Every flip-flop resets asynchronously (active low) from RESET_N's release chain, directly or through the control
+    reset's flop; no other storage than the FIFO's memory (audit round 12)."""
+    names = {}
+    for n, v in m["netnames"].items():
+        for i, b in enumerate(v["bits"]):
+            if isinstance(b, int):
+                names.setdefault(b, f"{n}[{i}]" if len(v["bits"]) > 1 else n)
+    rn = m["ports"]["RESET_N"]["bits"][0]
+    ffs = {cn: c for cn, c in m["cells"].items() if "dff" in c["type"] or "latch" in c["type"]}
+    other = [cn for cn, c in m["cells"].items() if c["type"].startswith(("$mem", "$sr", "$aldff"))]
+    bad, nbits = [], 0
+    arst_of = lambda c: c["connections"]["ARST"][0] if "ARST" in c["connections"] else None
+    chain = [cn for cn, c in ffs.items() if arst_of(c) == rn]          # RESET_N's release chain (checked above)
+    # the release chain's output: the bit whose D is not the constant 1 (the second flop)
+    q_chain = {c["connections"]["Q"][i] for cn, c in ffs.items() if cn in chain
+               for i, d in enumerate(c["connections"]["D"]) if d != "1"}
+    if len(q_chain) != 1:
+        bad.append(f"RESET_N's release chain has {len(q_chain)} output bits, expected 1")
+    outbits = {b for pp in m["ports"].values() if pp["direction"] == "output" for b in pp["bits"] if isinstance(b, int)}
+    uses = {}                                          # bit -> the input ports it reaches
+    for cc in m["cells"].values():
+        for pn, bb in cc["connections"].items():
+            if cc["port_directions"][pn] == "input":
+                for b in bb:
+                    if isinstance(b, int):
+                        uses.setdefault(b, []).append(pn)
+    # the control reset (SOFT_RESET's): a 1-bit flop reset by the release chain whose output is the asynchronous reset
+    # of other flops, and nothing else (a synchronous use, e.g. a block reset synchronously, is reported as such)
+    ctrl = {c["connections"]["Q"][0] for cn, c in ffs.items() if arst_of(c) in q_chain and len(c["connections"]["Q"]) == 1
+            and "ARST" in uses.get(c["connections"]["Q"][0], [])}
+    for q in sorted(ctrl):
+        other = sorted({pn for pn in uses[q] if pn != "ARST"})
+        if other or q in outbits:
+            bad.append(f"{names.get(q, q)}: the control reset also reaches {other or ['an output']} "
+                       f"(only asynchronous resets may use it)")
+    allowed = q_chain | ctrl
+    for cn, c in ffs.items():
+        w = len(c["connections"].get("Q", []))
+        nbits += w
+        if cn in chain:
+            continue
+        q = c["connections"].get("Q", [None])[0]
+        who = names.get(q, cn) if isinstance(q, int) else cn
+        if c["type"] not in ("$adff", "$adffe"):
+            bad.append(f"{who} ({w} bits): {c['type']}, not a flip-flop with an asynchronous reset")
+        elif str(c["parameters"].get("ARST_POLARITY", "")).strip("0") != "":
+            bad.append(f"{who} ({w} bits): an active-high asynchronous reset")
+        elif arst_of(c) not in allowed:
+            bad.append(f"{who} ({w} bits): reset from {names.get(arst_of(c), arst_of(c))}, not from RESET_N's release")
+    for cn in other:
+        if not cn.startswith("$flatten\\u_fifo."):
+            bad.append(f"{cn}: storage without a reset outside the FIFO's memory")
+    return bad, (f"{nbits} flip-flop bits, all with an asynchronous reset from RESET_N's release ("
+                 f"{len(ctrl)} control-reset flop); the FIFO's memory without one" if not bad else f"{len(bad)} faults")
 
 
 def check_synchronizers(m):

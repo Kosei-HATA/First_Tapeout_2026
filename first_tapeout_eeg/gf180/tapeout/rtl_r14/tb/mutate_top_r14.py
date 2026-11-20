@@ -354,6 +354,10 @@ MUTATIONS = [
     ("レジスタ：ADC_ZERO のリセット値が 1（電源投入から ADC の入力が短絡）", "eeg_regs.sv",
      "s_azero <= TEST_CTRL_ADC_ZERO_RST;              a_azero <= TEST_CTRL_ADC_ZERO_RST;",
      "s_azero <= 1'b1;              a_azero <= 1'b1;"),
+    # audit round 12, auditor C: RESET_N's reset of the registers made synchronous (phase X: MCLK stopped, RESET_N low)
+    ("レジスタ：RESET_N のリセットを同期に（MCLK がないと端子が既定値に戻らない）", "eeg_regs.sv",
+     "    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            s_m <= ",
+     "    always_ff @(posedge clk) begin\n        if (!rst_n) begin\n            s_m <= "),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -537,6 +541,14 @@ STRUCT_MUTATIONS = [
     ("SPI：CS_N と SCLK を 1 段で同期", "eeg_spi_slave.sv", SYNC_OLD, SYNC_NEW),
     ("SPI：MOSI を 1 段で同期", "eeg_spi_slave.sv",
      "assign mosi_s    = mosi_q[1];", "assign mosi_s    = mosi_q[0];"),
+    # audit round 12, auditor C: synchronous resets (RST-01 asks for an asynchronous one; every bench held RESET_N across
+    # MCLK edges): check_outputs_registered.check_resets
+    ("SPI：フレームの処理のリセットを同期に", "eeg_spi_slave.sv",
+     "    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            st        <= S_IDLE;",
+     "    always_ff @(posedge clk) begin\n        if (!rst_n) begin\n            st        <= S_IDLE;"),
+    ("CIC：リセットを同期に", "eeg_cic3.sv",
+     "    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            i1         <= '0;",
+     "    always_ff @(posedge clk) begin\n        if (!rst_n) begin\n            i1         <= '0;"),
 ]
 
 def bench_ended(v, closing):

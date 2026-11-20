@@ -198,8 +198,10 @@ FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "ERR": 0x06, "DFLAG": 0
               "IF_CFG": 0x55}
 FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1}
 # REG-01's regions (stated with these ranges in the requirements): the kind of a register from its fields
+# the regions hold their registers' active copies (addr + SHADOW_MIRROR): settings 0x20-0x2F and copies 0x30-0x3F,
+# test registers 0x60-0x6F and copies 0x70-0x7F (audit round 12, auditor B: the copies 0x70, 0x71 were in no region)
 REGIONS = {"status": range(0x00, 0x10), "command": range(0x10, 0x20), "settings": range(0x20, 0x40),
-           "data": range(0x40, 0x41), "timers": range(0x50, 0x60), "test": range(0x60, 0x70)}
+           "data": range(0x40, 0x41), "timers": range(0x50, 0x60), "test": range(0x60, 0x80)}
 
 
 def region_of(n, acc, lock, fields):
@@ -278,7 +280,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
 ]
 
@@ -330,7 +332,9 @@ def check(verbose=True):
         if a not in REGIONS[rg]:
             errs.append(f"{n} at 0x{a:02X}: outside the {rg} region of REG-01 (0x{REGIONS[rg][0]:02X}-0x{REGIONS[rg][-1]:02X})")
         if bool(lock) != (a in REGIONS["test"]):
-            errs.append(f"{n}: lock {lock} at 0x{a:02X} (REG-08: exactly the test registers, 0x60-0x6F, are locked)")
+            errs.append(f"{n}: lock {lock} at 0x{a:02X} (REG-08: exactly the registers of the test region are locked)")
+        if any(f["cls"] == "apply" for f in fields) and a + SHADOW_MIRROR not in REGIONS[rg]:
+            errs.append(f"{n}: active copy 0x{a + SHADOW_MIRROR:02X} outside its register's {rg} region (REG-01)")
         if (acc == "WO") != (n in ("COMMAND", "TEST_KEY")):
             errs.append(f"{n}: access {acc}; only the command register and the test key are write-only")
         for f in fields:
@@ -937,6 +941,10 @@ def selftest():
     def m_legal_hole():
         fld("T_REC", "T_REC")["legal"] = [v for v in rng(29, 255) if v != 100]
 
+    def m_copy_region():                                 # audit round 12, auditor B: an active copy in no region
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "BLANK")
+        r = list(g["REGS"][i]); r[0] = 0x38; g["REGS"][i] = tuple(r)
+
     def m_mask_cover():
         fld("DFLAG", "OVL").update(msb=2, lsb=2)
 
@@ -974,7 +982,8 @@ def selftest():
             ("試験の鍵を命令の区分に", m_cmd_class), ("CRC_EN を bit 2 に（手順 9 は bit 0 を読む）", m_crc_bit),
             ("読み出し専用の ID を DBG_SEL の端子の出どころに", m_digital_pin), ("STATUS.ALERT の既定値を 0", m_status_reset),
             ("CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）", m_legal_narrow), ("T_REC の合法な値に穴（100）", m_legal_hole),
-            ("DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）", m_mask_cover)]
+            ("DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）", m_mask_cover),
+            ("BLANK を 0x38 に（写し 0x48 が設定の区画の外）", m_copy_region)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1077,7 +1086,7 @@ SELFTEST_EXPECT = {
     '要件にない読み出し専用のフィールド': (': a read-only field the requirements do not name',),
     'STATUS を 0x0D に移す（手順が 0x03 として読む）': (': the host procedure names it at 0x',),
     'VERSION をデータの窓の区画へ': ('region of REG-01 (0x',),
-    'ALERT_MASK を施錠する': ('(REG-08: exactly the test registers, 0x60-0x6F, are locked)',),
+    'ALERT_MASK を施錠する': ('(REG-08: exactly the registers of the test region are locked)',),
     'T_WARM を書き込み専用に': ('; only the command register and the test key are write-only',),
     '試験の鍵を命令の区分に': ("; the class cmd is the command register's alone",),
     'CRC_EN を bit 2 に（手順 9 は bit 0 を読む）': (', the requirements read it at bit',),
@@ -1086,6 +1095,7 @@ SELFTEST_EXPECT = {
     'CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'T_REC の合法な値に穴（100）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
+    'BLANK を 0x38 に（写し 0x48 が設定の区画の外）': ("outside its register's",),
 }
 
 

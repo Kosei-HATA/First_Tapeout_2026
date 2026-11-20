@@ -71,6 +71,11 @@ SEQ_STATES = [
     ("PRE", 7, "ACTIVE", 0, "T_PRE", "一括反映の直後、AFE_RST の前の待ち"),
     ("PULSE", 8, "ACTIVE", 1, "T_RST", "AFE_RST のワンショット"),
 ]
+# The timer and AFE_RST columns of SEQ_STATES as the requirements give them (SEQ-02, 03, 14; ANA-01, SEQ-13), written
+# apart from the table (audit round 12, auditor C: PRE's T_PRE and PULSE's T_RST swapped passed every check, as the RTL,
+# the trace checker and the timing diagrams name the timers by hand)
+SEQ_TIMERS_REQUIRED = {"WARMUP": "T_WARM", "RECOVER": "T_REC", "WAIT_E": "T_ELEC", "PRE": "T_PRE", "PULSE": "T_RST"}
+SEQ_AFE_RST_REQUIRED = {"RESET": 1, "IDLE": 1, "WARMUP": 1, "PULSE": 1}      # held in reset; released in the others
 SEQ_COMPOSITES = {           # name: (parent, initial substate, meaning)
     "ACTIVE": (None, "WARMUP", "START 後の動作中（STOP で IDLE へ）"),
     "AFE_ON": ("ACTIVE", "RECOVER", "AFE が動作している状態（APPLY で PRE へ）"),
@@ -90,7 +95,7 @@ SEQ_PRIORITY = ["STOP", "START", "APPLY", "APPLY_NR", "FLUSH", "TMR"]           
 SEQ_COMMANDS = ["START", "STOP", "APPLY", "APPLY_NR", "FLUSH"]                        # at most one per tick
 SEQ_CONDS = {
     "cfg_ok": "シャドウの設定が整合（オフセット DAC の M が、選んだ範囲の上限以下）",
-    "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段のみ（範囲は同じ）",
+    "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段以内（変化なしと、M ＝ 0 の符号のみの変化を含む。範囲は同じ）",
     "t_elec0": "T_ELEC = 0",
     "valid": "CIC の出力が有効（クリアのあと 3 個目以降）",
 }
@@ -359,6 +364,9 @@ def check_tables(F):
                     n = sum(guard_true(b["guard"], env) for b in cell)
                     if n != 1:
                         errs.append(f"{where}: {n} branches hold for {env} (guards must be exclusive and exhaustive)")
+                for b in cell:                    # audit round 12, auditor C: a dead branch counted as a path (to RUN)
+                    if not any(guard_true(b["guard"], env) for env in all_envs(vs, F["constraint"])):
+                        errs.append(f"{where} [{b['guard']}]: the guard never holds (a dead branch)")
                 for b in cell:
                     if b["next"] is not None and b["next"] not in names:
                         errs.append(f"{where}: unknown next state {b['next']}")
@@ -402,6 +410,19 @@ def reach(F, start, exclude=()):
                 seen.add(b)
                 todo.append(b)
     return seen
+
+
+def check_seq_columns():
+    """SEQ_STATES' timer and AFE_RST columns equal the requirements' (SEQ_TIMERS_REQUIRED, SEQ_AFE_RST_REQUIRED)."""
+    errs = []
+    for name, _code, _parent, afe_rst, timer, _meaning in SEQ_STATES:
+        if timer != SEQ_TIMERS_REQUIRED.get(name):
+            errs.append(f"SEQ {name}: timer {timer}, but SEQ-02, 03 and 14 give {SEQ_TIMERS_REQUIRED.get(name)} "
+                        f"(the timer column)")
+        if afe_rst != SEQ_AFE_RST_REQUIRED.get(name, 0):
+            errs.append(f"SEQ {name}: AFE_RST {afe_rst}, but ANA-01 and SEQ-13 give {SEQ_AFE_RST_REQUIRED.get(name, 0)} "
+                        f"(the AFE_RST column)")
+    return errs
 
 
 def check_graph(F, must_reach, exclude=()):
@@ -551,6 +572,8 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
         P.append("FLUSH does not empty the FIFO")
     if s == "FILL" and nxt == "RUN" and not env.get("valid", 1):
         P.append("RUN entered with an output that is not valid (the window not yet full)")
+    if s == "FILL" and present == ["OUT"] and env.get("valid", 0) and not (nxt == "RUN" and "store" in acts):
+        P.append("the first valid output in FILL is not stored with the entry to RUN (SEQ-04, DAT-01)")   # round 12
     # a command is executed, refused with a flag, or ignored by definition (only STOP in IDLE), judged on the
     # resolved result of the tick, not on its own cell (audit round 5: an IGN cell, and a command losing its
     # transition to the timer by a wrong priority, passed the per-cell form)
@@ -792,24 +815,44 @@ def spi_frame_cases():
     """The frames check_spi_frames walks: every kind, CRC mode, condition value, 0..10 complete bytes and 0..7 bits of
     a partial last byte (audit round 6: the partial byte had 0 and 3 bits only). The generated text takes its count
     from here."""
-    for kind in ("write", "read", "sample"):
-        for crc_en in (0, 1):
-            for vals in itertools.product((0, 1), repeat=5):
-                env = dict(zip(("addr_ok", "wr_ok", "busy", "crc_ok", "head"), vals))
-                env.update(rw=int(kind != "write"), smp=int(kind == "sample"), crc_en=crc_en)
-                if kind == "sample" and not env["addr_ok"]:
-                    continue                             # the sample window is a defined address
-                for nbytes in range(11):
-                    for extra in range(8):
-                        yield kind, crc_en, env, nbytes, extra
+    for rw in (0, 1):                     # audit round 12, auditor C: rw and smp independent (the kind followed from
+        for smp in (0, 1):                # them, so a write header to the sample window was never walked)
+            kind = "sample" if rw and smp else ("read" if rw else "write")
+            for crc_en in (0, 1):
+                for vals in itertools.product((0, 1), repeat=5):
+                    env = dict(zip(("addr_ok", "wr_ok", "busy", "crc_ok", "head"), vals))
+                    env.update(rw=rw, smp=smp, crc_en=crc_en)
+                    if smp and (not env["addr_ok"] or env["wr_ok"]):
+                        continue                         # the sample window: a defined, read-only address
+                    for nbytes in range(11):
+                        for extra in range(8):
+                            yield kind, crc_en, env, nbytes, extra
+
+
+SPI_FRAME_KEYS = ("rw", "smp", "crc_en", "addr_ok", "wr_ok", "busy", "crc_ok", "head")
+
+
+def spi_frames_wanted():
+    """The frames the enumeration must cover, written apart from spi_frame_cases (audit round 12: a narrowed enumeration
+    passed every check and the self-test): every header bit and condition value with the window's constraint, 0..10
+    bytes, 0..7 bits of a last partial byte."""
+    out = set()
+    for vals in itertools.product((0, 1), repeat=len(SPI_FRAME_KEYS)):
+        e = dict(zip(SPI_FRAME_KEYS, vals))
+        if e["smp"] and (not e["addr_ok"] or e["wr_ok"]):
+            continue
+        out |= {vals + (nb, ex) for nb in range(11) for ex in range(8)}
+    return out
 
 
 def check_spi_frames():
     """Every frame of spi_frame_cases walked through the table and compared with spi_expect."""
     errs, n = [], 0
     effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
+    seen = set()
     for kind, crc_en, env, nbytes, extra in spi_frame_cases():
         n += 1
+        seen.add(tuple(env[k] for k in SPI_FRAME_KEYS) + (nbytes, extra))
         w = spi_walk(nbytes, extra, env)
         tag = f"SPI frame {kind} crc_en={crc_en} {nbytes} bytes + {extra} bits {env}"
         if w is None:
@@ -846,6 +889,10 @@ def check_spi_frames():
             k_c = acts.index("commit")
             if not all(x in acts[:k_c] for x in need):
                 errs.append(f"{tag}: commit without {[x for x in need if x not in acts[:k_c]]}")
+    want = spi_frames_wanted()
+    if seen != want:
+        errs.append(f"SPI frames: {len(want - seen)} of the {len(want)} header kinds, condition values and lengths "
+                    f"never walked (spi_frame_cases narrower than every header bit and condition)")
     return errs, n
 
 
@@ -989,10 +1036,10 @@ def check_timing():
 CHECKS = [
     "完全性：全ての（状態、イベント）の欄が定義されている",
     "起こり得ない事象（IMP）の正しさ：IMP はその状態で起こり得ない事象にのみ使われている",
-    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）",
+    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -1002,7 +1049,7 @@ CHECKS = [
     "  AFE の動作中に AFE_RST なしで反映するのは、オフセット DAC の ±1 段の変更（nr_ok）のみ",
     "  FILL へは CIC のクリアとともにのみ入る",
     "  FIFO への格納は RUN と、FILL から RUN への遷移（最初の有効な出力）のみ",
-    "  RUN へ入るのは最初の有効な出力のときのみ。RUN を出るのは STOP と APPLY（と RST）のみ",
+    "  RUN へ入るのは最初の有効な出力のときのみ。FILL の有効な出力は必ず格納して RUN へ入る（SEQ-04、DAT-01。第 12 回）。RUN を出るのは STOP と APPLY（と RST）のみ",
     "  RUN のままの設定の反映には必ず CHANGED の印が付く。充填中の窓の中では設定を変えない",
     "  不整合な設定は反映されない",
     "  CIC のクリアは出力の時刻の格子の上（ALIGN から FILL）でのみ",
@@ -1019,7 +1066,7 @@ CHECKS = [
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "第 7 回で追加（その時の掃引の 1 か所の書き換え、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる。第 9 回の C の掃引 6,267 通りでは、整合する設定の命令を拒否とする 12 通りが通っていた：下の命令の結果の照合で塞いだ）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
-    f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
+    f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる",
@@ -1145,7 +1192,7 @@ MALFORMED = (": undefined conditions", ": unknown next state", ": undefined acti
 def run_checks(verbose=True):
     report = check_tables(SEQ) + check_tables(SPI)
     well_formed = not any(k in r for r in report for k in MALFORMED)
-    report += check_vocab(SEQ) + check_vocab(SPI)
+    report += check_vocab(SEQ) + check_vocab(SPI) + check_seq_columns()
     n1 = n2 = n2b = 0
     if well_formed:
         report += check_seq_commands()
@@ -1413,7 +1460,8 @@ def fresh():
 
 
 # The functions whose messages are violations (each errs / P append, or a list of them, in these functions)
-CHECK_FUNCS = ("check_tables", "check_vocab", "check_graph", "seq_properties", "check_seq_ticks", "check_seq_branches",
+CHECK_FUNCS = ("check_tables", "check_vocab", "check_seq_columns", "check_graph", "seq_properties", "check_seq_ticks",
+               "check_seq_branches",
                "check_seq_commands", "check_spi_props", "check_spi_frames", "check_fifo", "check_timing")
 
 
@@ -1522,6 +1570,9 @@ def selftest_runs():
         ("WAIT_E の STOP を黙って捨てる", lambda t: t.__setitem__(("WAIT_E", "STOP"), [B(ALWAYS, [])])),
         ("RUN の START を黙って捨てる", lambda t: t.__setitem__(("RUN", "START"), [B(ALWAYS, [])])),
         ("RUN へ入れない", lambda t: t.__setitem__(("FILL", "OUT"), [B(ALWAYS, ["discard", "seq_inc"])])),
+        # audit round 12, auditor C: a valid output in FILL kept from RUN by another condition, or by a dead branch
+        ("FILL の有効な出力で、nr_ok のときのみ RUN へ", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid and nr_ok", ["store", "seq_inc"], "RUN"), B("not (valid and nr_ok)", ["discard", "seq_inc"])])),
+        ("FILL から RUN への分岐の条件が成り立たない", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid and not valid", ["store", "seq_inc"], "RUN"), B("not (valid and not valid)", ["discard", "seq_inc"])])),
         ("START で FIFO を空にしない", lambda t: t.__setitem__(("IDLE", "START"), [B("cfg_ok", ["apply"], "WARMUP"), B("not cfg_ok", ["CFG_ERR"])])),
         ("RUN から SETTLE へ黙って戻る", lambda t: t.__setitem__(("RUN", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply"], "ALIGN"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         # audit round 1 (11/20)
@@ -1638,6 +1689,8 @@ def selftest_runs():
         # audit round 11, auditor C: busy at a byte (cleared by a tick in the middle of a write frame)
         ("未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）", lambda t: t.__setitem__(("WDAT", "BYTE"), [B("crc_en and not busy", ["latch_data"], "WCRC"), B("crc_en and busy", [], "WCRC"), B("not crc_en", ["latch_data"], "WDONE")])),
         ("WDAT のバイトで FRAME_ERR を立てる", lambda t: [b.__setitem__("actions", b["actions"] + ["FRAME_ERR"]) for b in t[("WDAT", "BYTE")]]),
+        # audit round 12, auditor C: a write header to the sample window taken as a sample read
+        ("標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）", lambda t: t.__setitem__(("HDR", "BYTE"), [B("smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw and not smp", ["latch_addr"], "WDAT")])),
     ]
     global fifo_step
     fifo_orig = fifo_step
@@ -1700,6 +1753,36 @@ def selftest_runs():
         obj[key] = val
         return lambda: obj.__setitem__(key, old)
 
+    i_pre = next(k for k, x in enumerate(SEQ_STATES) if x[0] == "PRE")
+
+    def swap_timers():                                # audit round 12
+        i, j = [k for k, x in enumerate(SEQ_STATES) if x[0] in ("PRE", "PULSE")]
+        a, b = SEQ_STATES[i], SEQ_STATES[j]
+        SEQ_STATES[i], SEQ_STATES[j] = a[:4] + (b[4],) + a[5:], b[:4] + (a[4],) + b[5:]
+        return lambda: (SEQ_STATES.__setitem__(i, a), SEQ_STATES.__setitem__(j, b))
+
+    def narrow_frames():                              # audit round 12: the kind-based enumeration of rounds 6 to 11
+        global spi_frame_cases
+        orig = spi_frame_cases
+
+        def kind_cases():
+            for kind in ("write", "read", "sample"):
+                for crc_en in (0, 1):
+                    for vals in itertools.product((0, 1), repeat=5):
+                        env = dict(zip(("addr_ok", "wr_ok", "busy", "crc_ok", "head"), vals))
+                        env.update(rw=int(kind != "write"), smp=int(kind == "sample"), crc_en=crc_en)
+                        if kind == "sample" and (not env["addr_ok"] or env["wr_ok"]):
+                            continue
+                        for nbytes in range(11):
+                            for extra in range(8):
+                                yield kind, crc_en, env, nbytes, extra
+        spi_frame_cases = kind_cases
+
+        def undo():
+            global spi_frame_cases
+            spi_frame_cases = orig
+        return undo
+
     def without_busy():
         saved = dict(SPI_CONDS)
         SPI_CONDS.pop("busy")
@@ -1714,6 +1797,10 @@ def selftest_runs():
         ("TIME", "チョッパの周期が 1 ms を割り切らない（12 フレーム）", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=12, tick_frame=1)})),
         ("TIME", "CHOP1 の周期が 1 ms を割り切らない（384 フレーム）", lambda: setitem(TIMING, "chop1_periods_frames", TIMING["chop1_periods_frames"] + [384])),
         ("TIME", "CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）", lambda: setitem(TIMING, "cic_order", 1)),
+        # audit round 12, auditor C: the state table's columns and the frame enumeration
+        ("SEQ", "PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）", swap_timers),
+        ("SEQ", "PRE で AFE_RST を 1 に（状態の表）", lambda: setitem(SEQ_STATES, i_pre, SEQ_STATES[i_pre][:3] + (1,) + SEQ_STATES[i_pre][4:])),
+        ("SPI", "フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）", narrow_frames),
     ]
     results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
@@ -1933,6 +2020,12 @@ SELFTEST_EXPECT = {
     '連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）': (']: the address advances without loading the next byte',),
     '未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）': (': a condition not known at this event (none at the CS_N fall; busy, head, crc_ok and mid only at the CS_N rise)',),
     'WDAT のバイトで FRAME_ERR を立てる': (']: FRAME_ERR other than at CS_N rising',),
+    'FILL の有効な出力で、nr_ok のときのみ RUN へ': ('the first valid output in FILL is not stored with the entry to RUN (SEQ-04, DAT-01)',),
+    'FILL から RUN への分岐の条件が成り立たない': (']: the guard never holds (a dead branch)',),
+    '標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）': (', but spi_expect gives',),
+    'PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）': (', but SEQ-02, 03 and 14 give',),
+    'PRE で AFE_RST を 1 に（状態の表）': (', but ANA-01 and SEQ-13 give',),
+    'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
     '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),
     'フラッシュで写しの印を消さない（送っていない語を取り出しうる）': (': the copy is marked',),

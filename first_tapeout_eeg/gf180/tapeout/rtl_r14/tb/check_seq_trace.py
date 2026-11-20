@@ -28,7 +28,11 @@ NAME = {x[1]: x[0] for x in FS.SEQ_STATES if x[1] is not None}
 CMD = {0x11: "START", 0x22: "STOP", 0x33: "APPLY", 0x44: "APPLY_NR", 0x55: "FLUSH"}
 TIMED = {x[0] for x in FS.SEQ_STATES if x[4]}
 RTL_ACTS = ["apply", "flush", "store", "mark", "STATE_ERR", "CFG_ERR", "cic_clear", "restart"]
-UNIT = {"WARMUP": (0, 1024), "WAIT_E": (1, 1024), "RECOVER": (2, 8), "PRE": (3, 8), "PULSE": (4, 8)}   # setting, frames
+# the trace's setting order and each timer register's unit in frames (1 ms = 1024, 7.8125 us = 8); the state's timer
+# from the table (audit round 12, auditor C: the states' timers were written here by hand, so a table that swapped
+# PRE's and PULSE's timers was never compared with the RTL)
+TIMER_SLOT = {"T_WARM": (0, 1024), "T_ELEC": (1, 1024), "T_REC": (2, 8), "T_PRE": (3, 8), "T_RST": (4, 8)}
+UNIT = {x[0]: TIMER_SLOT[x[4]] for x in FS.SEQ_STATES if x[4]}   # state -> (setting, frames)
 
 
 def load(s, tset):

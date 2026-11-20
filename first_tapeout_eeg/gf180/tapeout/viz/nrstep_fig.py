@@ -83,12 +83,14 @@ def main():
     fig = V.figure(7.6, 6.4, "APPLY_NR across the offset DAC's carry 511 <-> 512",
                    "afe_nr_step.py: power-on start deck, extracted afe_top r13 with eeg_bias and eeg_ref on the chip wiring, "
                    "typical, legs 100 Ω, electrode offset +159.1 mV, range 4; at 6.497 ms one step at the sequencer's tick "
-                   "with no AFE_RST pulse (APPLY_NR)",
+                   "with no AFE_RST pulse (APPLY_NR). Operating point beyond the ADC's range (see the note)",
                    note="Runs: gf180/tapeout/pex/runs/startup/start_…_nr<m1>to<m2>_chip_r13 (run_nr_step.sh, 11/20). "
                         "Chopper-period means from the exact integral of OUTP − OUTN, on a grid a quarter period after the "
                         "tick. (c): 512 -> 511 minus 510 -> 511, which end at the same code; its tail near 0.1 mV is the "
                         "two runs' slow settling after the release at 5.0 ms (about 0.4 mV in every run, slightly different "
-                        "per code), not the carry.")
+                        "per code), not the carry. Audit round 16: 159.1 mV against M 511 with the measured step of about "
+                        "0.301 mV (not the nominal 0.3113 mV) leaves the ADC input at about +0.94 V, beyond its +-0.484 V range, "
+                        "where values are compressed: an in-range rerun (154.0 mV, r14's reset trims) replaces this figure.")
     gs = fig.add_gridspec(2, 2)
     us = lambda t: (t - ts) * 1e6
 
@@ -124,7 +126,7 @@ def main():
     ax.set_ylim(1e-3, 30)
     ax.set_xlabel("time after the step's tick (µs)")
     ax.set_ylabel("|carry's transient| at the output (mV)")
-    ax.set_title(f"(c) The carry's own transient (chopper-period means):\n{e[np.searchsorted(tk, ts)]:.1f} mV "
+    ax.set_title(f"(c) The carry's transient, chopper-period means:\n{e[np.searchsorted(tk, ts)]:.1f} mV "
                  f"in the first period, below 1 mV after {last[1.0]:.0f} µs", loc="left")
 
     ax = fig.add_subplot(gs[1, 1])
@@ -137,8 +139,8 @@ def main():
     ax.set_xlabel("offset-DAC code M (range 4)")
     ax.set_ylabel("output, chopper-period mean (mV)")
     d512 = np.mean(level[512]) - np.mean(level[511])
-    ax.set_title(f"(d) The static output: 512 gives the output of 511\n(the carry step {d512:+.2f} mV, "
-                 f"{d512 / -step1:+.3f} of a {step1:.1f} mV unit: DNL ≈ −1 LSB)", loc="left")
+    ax.set_title(f"(d) The static output (compressed): 512 gives the output of 511\n(the carry step {d512:+.2f} mV, "
+                 f"{d512 / -step1:+.3f} of a {step1:.1f} mV unit: DNL ≈ −1 LSB?)", loc="left")
     ax.legend(loc="upper right")
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, f"gf180_viz_{V.CHIP}_49_nr_carry.png")

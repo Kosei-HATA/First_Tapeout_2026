@@ -81,6 +81,13 @@ SEQ_AFE_RST_REQUIRED = {"RESET": 1, "IDLE": 1, "WARMUP": 1, "PULSE": 1}      # h
 SEQ_PARENT_REQUIRED = {"RESET": None, "IDLE": None, "WARMUP": "ACTIVE", "PRE": "ACTIVE", "PULSE": "ACTIVE",
                        "RECOVER": "AFE_ON", "WAIT_E": "AFE_ON", "ALIGN": "AFE_ON", "FILL": "AFE_ON", "RUN": "AFE_ON"}
 SEQ_COMPOSITE_PARENT_REQUIRED = {"ACTIVE": None, "AFE_ON": "ACTIVE"}
+# audit round 16, auditor C: the composites' initial substates (SEQ-01: START enters WARMUP, the AFE starts in RECOVER;
+# a frame starts with its header) and the SPI states' frame membership were checked by nothing: AFE_ON starting in
+# PULSE, FRAME in WDONE, or IDLE inside the frame passed every check, and the diagrams drew them
+SEQ_INITIAL_REQUIRED = {"ACTIVE": "WARMUP", "AFE_ON": "RECOVER"}
+SPI_INITIAL_REQUIRED = {"FRAME": "HDR"}
+SPI_PARENT_REQUIRED = {"IDLE": None, **{s: "FRAME" for s in ("HDR", "RREG", "RCRC", "RDONE", "RSMP", "SDONE", "WDAT",
+                                                            "WCRC", "WDONE", "OVF")}}
 SEQ_COMPOSITES = {           # name: (parent, initial substate, meaning)
     "ACTIVE": (None, "WARMUP", "START 後の動作中（STOP で IDLE へ）"),
     "AFE_ON": ("ACTIVE", "RECOVER", "AFE が動作している状態（APPLY で PRE へ）"),
@@ -433,7 +440,9 @@ def reach(F, start, exclude=()):
 
 
 def check_seq_columns():
-    """SEQ_STATES' timer and AFE_RST columns equal the requirements' (SEQ_TIMERS_REQUIRED, SEQ_AFE_RST_REQUIRED)."""
+    """SEQ_STATES' timer and AFE_RST columns equal the requirements' (SEQ_TIMERS_REQUIRED, SEQ_AFE_RST_REQUIRED); the
+    composites' parents and initial substates and the SPI states' frame membership equal the requirements'; SEQ_PRIORITY
+    orders every command and the timer, and a lone timer expiry takes its cell's next state (audit round 16)."""
     errs = []
     for name, _code, _parent, afe_rst, timer, _meaning in SEQ_STATES:
         if timer != SEQ_TIMERS_REQUIRED.get(name):
@@ -447,6 +456,32 @@ def check_seq_columns():
     for c_, (par, _init, _m) in SEQ_COMPOSITES.items():
         if par != SEQ_COMPOSITE_PARENT_REQUIRED.get(c_, "?"):
             errs.append(f"SEQ composite {c_}: in {par}, but SEQ-01 nests the composite in {SEQ_COMPOSITE_PARENT_REQUIRED.get(c_)}")
+    for F_, comps, req in ((SEQ, SEQ_COMPOSITES, SEQ_INITIAL_REQUIRED), (SPI, SPI_COMPOSITES, SPI_INITIAL_REQUIRED)):
+        for c_, (_par, init, _m) in comps.items():
+            if init != req.get(c_, "?"):
+                errs.append(f"{F_['name']} composite {c_}: starts in {init}; the requirements start it in {req.get(c_)} "
+                            f"(SEQ-01, SPI-03: the initial substate)")
+            if c_ not in parent_chain(F_, init):
+                errs.append(f"{F_['name']} composite {c_}: its initial substate {init} is not inside it")
+    for name, _c, par, *_r in SPI_STATES:
+        if par != SPI_PARENT_REQUIRED.get(name, "?"):
+            errs.append(f"SPI {name}: in {par}, but a frame (CS_N low) holds every state but IDLE "
+                        f"({SPI_PARENT_REQUIRED.get(name)} required)")
+    if sorted(SEQ_PRIORITY) != sorted(SEQ_COMMANDS + ["TMR"]):
+        errs.append(f"SEQ_PRIORITY {SEQ_PRIORITY} is not an order of the five commands and TMR")
+    for name, _c, _p, _a, timer, _m in SEQ_STATES:   # a lone expiry moves as its cell says (a TMR left out of
+        cell = SEQ["table"].get((name, "TMR"))      # SEQ_PRIORITY was never taken, and nothing failed)
+        if timer is None or not isinstance(cell, list):
+            continue
+        for vals in itertools.product((0, 1), repeat=len(SEQ_CONDS)):
+            env = dict(zip(SEQ_CONDS, vals))
+            b = pick(cell, env)
+            if not isinstance(b, dict):
+                continue
+            nxt, _acts = seq_tick(name, ["TMR"], env)
+            if nxt != (b["next"] or name):
+                errs.append(f"SEQ {name}: a lone timer expiry goes to {nxt}, its cell gives {b['next'] or name}")
+                break
     return errs
 
 
@@ -1093,7 +1128,7 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並び、単独のタイマの満了はその欄の行き先へ（第 16 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -1486,6 +1521,7 @@ def generate(write=True):
         "spi_states": spi_tabs[0], "spi_table": spi_tabs[1], "spi_events": spi_tabs[2], "spi_conds": spi_tabs[3],
         "spi_actions": spi_tabs[4],
         "checks": "\n".join(f"- {c}" if not c.startswith("  ") else f"  - {c.strip()}" for c in CHECKS),
+        "seq_priority": "- 同じ tick の事象の優先順位は、" + " ＞ ".join(SEQ_PRIORITY) + "（`fsm_spec.SEQ_PRIORITY` から生成。第 16 回）。",
     }
     with open(DOC, encoding="utf-8") as f:
         doc = f.read()
@@ -1855,6 +1891,17 @@ def selftest_runs():
         SAMPLE_BYTES[1], SAMPLE_BYTES[2] = SAMPLE_BYTES[2], SAMPLE_BYTES[1]
         return lambda: SAMPLE_BYTES.__setitem__(slice(None), saved)
 
+    def drop_tmr():                                    # audit round 16, auditor C: the timer left out of the order
+        saved = list(SEQ_PRIORITY)
+        SEQ_PRIORITY.remove("TMR")
+        return lambda: SEQ_PRIORITY.__setitem__(slice(None), saved)
+
+    def spi_idle_in_frame():
+        i = [x[0] for x in SPI_STATES].index("IDLE")
+        saved = SPI_STATES[i]
+        SPI_STATES[i] = (saved[0], saved[1], "FRAME") + saved[3:]
+        return lambda: SPI_STATES.__setitem__(i, saved)
+
     def without_busy():
         saved = dict(SPI_CONDS)
         SPI_CONDS.pop("busy")
@@ -1880,6 +1927,11 @@ def selftest_runs():
         ("SPI", "フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）", narrow_frames),
         # audit round 15, auditor B: the sample frame's one definition (the diagram, spi_expect, the bench)
         ("SPI", "サンプルのフレームで SEQ と DATA の順の入れ違い", swap_sample_bytes),
+        # audit round 16, auditor C: initial substates, the frame's membership, the priority's completeness
+        ("SEQ", "AFE_ON の始まりを PULSE に", lambda: setitem(SEQ_COMPOSITES, "AFE_ON", SEQ_COMPOSITES["AFE_ON"][:1] + ("PULSE",) + SEQ_COMPOSITES["AFE_ON"][2:])),
+        ("SPI", "フレームの始まりを WDONE に", lambda: setitem(SPI_COMPOSITES, "FRAME", SPI_COMPOSITES["FRAME"][:1] + ("WDONE",) + SPI_COMPOSITES["FRAME"][2:])),
+        ("SPI", "IDLE をフレームの中に", spi_idle_in_frame),
+        ("SEQ", "TMR を優先順位から除く", drop_tmr),
     ]
     results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
@@ -2110,6 +2162,10 @@ SELFTEST_EXPECT = {
     'WAIT_E の APPLY_NR で T_ELEC ＝ 0 なら数え直さない': (': an accepting branch that does not start the wait again (a timer written meanwhile, e.g. T_ELEC set to 0, would be ignored)',),
     'AFE_ON を ACTIVE の外に': (', but SEQ-01 nests the composite in',),
     '書き込めないアドレスへの書き込みで CRC のバイトを保持しない': ('(the CRC, the address and the range are judged from the held bytes)',),
+    'AFE_ON の始まりを PULSE に': ('(SEQ-01, SPI-03: the initial substate)', ': its initial substate'),
+    'フレームの始まりを WDONE に': ('(SEQ-01, SPI-03: the initial substate)',),
+    'IDLE をフレームの中に': (', but a frame (CS_N low) holds every state but IDLE (',),
+    'TMR を優先順位から除く': ('is not an order of the five commands and TMR', ': a lone timer expiry goes to'),
     'サンプルのフレームで SEQ と DATA の順の入れ違い': ('(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),

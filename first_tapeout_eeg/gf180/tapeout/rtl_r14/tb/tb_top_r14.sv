@@ -22,7 +22,8 @@
 //      stored after the flush is not popped by the read of the old head; DRDY_N pulse mode (128 MCLK per store)
 //   H  SOFT_RESET: ERR (RESET_FLAG), CPF_TRIM, FIFO_LEVEL and the pins back to their reset values (every register
 //      and flag: Y); SEQ, the frame counter and the choppers keep running
-//   I  SOFT_RESET while a command is pending (64 kHz): taken at once, no STATE_ERR
+//   I  SOFT_RESET while a command is pending (64 kHz): taken at once, no STATE_ERR; the pending START goes with it
+//      (CMD_PENDING 0 at once, IDLE two ticks on; audit round 16)
 //   J  audit round 1 (11/20): every STATUS bit; at 64 kHz a write to a shadow or a timer while a command is pending
 //      gets STATE_ERR (other registers are written); CRC on: a header-only read is legal, a read without its CRC
 //      byte and a short sample read are FRAME_ERR; APPLY in WARMUP restarts T_WARM (AFE_RST released T_WARM after
@@ -52,6 +53,8 @@
 //      registers locked (a register block keeping the timers, the ALERT masks, DFLAG or DRDY_MODE through a SOFT_RESET
 //      passed every test). On the way, STATUS with READY and DATA apart: RUN with the FIFO empty (READY 1, DATA 0),
 //      IDLE with samples left (READY 0, DATA 1); no check had told them apart
+//      Audit round 16 (auditor B): in Y0, a sample read in which the chip misses one SCLK pulse (an 8 ns runt), then
+//      one extra byte of SCLK (the host's re-read rule, 5.4 step 6): FRAME_ERR and no pop
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
 //      ALERT_MASK_D, the empty word (VALID 0, OVERRUN, OVL_NOW, ERR = ALERT, SEQ 0, DATA 0, CRC), the DRDY_N release in
 //      level mode (at most 5 MCLK after the CS_N rise of the read that emptied the FIFO)
@@ -760,6 +763,7 @@ module tb_top_r14;
     endtask
 
 
+    logic [7:0] bad_codes [0:5] = '{8'h91, 8'hA2, 8'hB3, 8'hC4, 8'hD5, 8'h25};   // A: whole-byte codes (round 16)
     // ------------------------------------------------------------------ STATUS against what the pins and state show
     task automatic check_status(input logic [7:0] exp, input logic [7:0] mask, input string name);
         logic [7:0] st;
@@ -965,6 +969,18 @@ module tb_top_r14;
         expect_err_now(8'h80, "CMD_ERR (unknown code)");
         r14_write(7'h11, 8'h3D);                        // TEST_KEY one bit off: locks and flags CMD_ERR
         expect_err_now(8'h80, "CMD_ERR for a wrong key");
+        // the codes and the key are whole bytes (REG-01; audit round 16, auditor C: a 7-bit compare of the key passed
+        // every test, and those of the codes were caught only by chance random bytes): the key with bit 7 set, and
+        // each code (SOFT_RESET's too) with bit 7 flipped, are unknown: CMD_ERR alone, nothing unlocked or done
+        r14_write(7'h11, 8'hBC);
+        expect_err_exact(8'h80, "CMD_ERR for the key with bit 7 set (0xBC)");
+        rt_write_check(7'h60, 8'h05, 8'h00, 8'h08, "TEST_MUX locked after the key with bit 7 set");
+        foreach (bad_codes[k]) begin
+            r14_cmd(bad_codes[k]);
+            repeat (600) @(posedge MCLK);               // past a tick at either rate
+            expect_err_exact(8'h80, $sformatf("CMD_ERR alone for the code 0x%02h (a command's with bit 7 flipped)", bad_codes[k]));
+            if (dut.seq_state !== 4'd0) fail($sformatf("the code 0x%02h moved the sequencer to %0d", bad_codes[k], dut.seq_state));
+        end
         r14_write(7'h60, 8'h05);
         expect_err_now(8'h08, "TEST_MUX locked after a wrong key");
         rt_read_expect(7'h60, 8'h00, "TEST_MUX unchanged after a wrong key");
@@ -1306,12 +1322,24 @@ module tb_top_r14;
         @(posedge dut.tick);
         #(8000.0);
         spi_tidle = 125.0;
-        r14_cmd(8'h55);                                 // FLUSH, pending until the next tick
-        r14_cmd(8'hA5);                                 // SOFT_RESET while FLUSH is pending
+        r14_cmd(8'h11);                                 // START, pending until the next tick (audit round 16: a FLUSH
+        r14_cmd(8'hA5);                                 // run late in IDLE showed nothing); SOFT_RESET while it waits
         spi_tidle = 600.0;
         repeat (50) @(posedge MCLK);
         if (soft_pend !== 1'b1) fail("I not exercised: no command pending when SOFT_RESET was taken");
         if (dut.seq_state !== 4'd0 || dut.a_chop_fast !== 1'b1) fail("I: SOFT_RESET with a pending command not taken");
+        // the pending command goes with the SOFT_RESET (RST-02; audit round 16, auditor C: a pending command kept
+        // through it passed every test, and the next tick started the chip with the reset values): CMD_PENDING 0 at
+        // once, IDLE with AFE_RST high two ticks on
+        check_status(8'h80 | (8'h01 << STATUS_AFE_RST_LSB),
+                     8'hC0 | (8'h01 << STATUS_CMD_PENDING_LSB) | (8'h01 << STATUS_READY_LSB) | (8'h01 << STATUS_AFE_RST_LSB),
+                     "I: STATUS right after the SOFT_RESET (no command pending)");
+        repeat (2) @(posedge dut.tick);
+        repeat (3) @(posedge MCLK);
+        if (dut.seq_state !== 4'd0 || AFE_RST !== 1'b1)
+            fail($sformatf("I: two ticks after the SOFT_RESET: state %0d, AFE_RST %b (the START pending at the reset ran)",
+                           dut.seq_state, AFE_RST));
+        rt_read_expect(7'h04, 8'h00, "I: STATE two ticks after the SOFT_RESET");
         rt_read_expect(7'h06, 8'h01, "I: ERR after SOFT_RESET with a pending command (RESET_FLAG only)");
         $display("I  SOFT_RESET with a pending command (errors %0d)", errors);
 
@@ -2800,6 +2828,36 @@ module tb_top_r14;
             @(posedge MCLK);
             do r14_sample(ys, yq, yd, yok); while (!(yok && ys[SMP_VALID_LSB] === 1'b0));
             check_status(8'h80 | (8'h01 << STATUS_READY_LSB), smask, $sformatf("Y%0d: STATUS in RUN with the FIFO empty (READY 1, DATA 0)", pass));
+            if (pass == 0) begin
+                // audit round 16, auditor B: the host's re-read after a failed sample CRC (requirements 5.4 step 6) when
+                // the chip missed one SCLK pulse (an 8 ns runt as pulse 20): one extra byte of SCLK makes the frame
+                // overlong for the chip (71 bits): FRAME_ERR, no pop (one extra edge would make it 64 bits: popped)
+                logic [3:0] lvl0;
+                logic [7:0] yer;
+                @(posedge dut.push_ok);
+                @(posedge MCLK); #1;
+                lvl0 = dut.fifo_level;
+                spi_tx[0] = 8'hC0;
+                for (int i = 1; i < 9; i++) spi_tx[i] = 8'h00;
+                CS_N = 1'b0;
+                MOSI = spi_bit(0, 9);
+                #(spi_tcss);
+                for (int n = 0; n < 72; n++) begin
+                    SCLK = 1'b1;
+                    #(n == 20 ? 8.0 : spi_high);           // the runt: shorter than the 2-flop synchronizer sees
+                    SCLK = 1'b0;
+                    MOSI = spi_bit(n + 1, 9);
+                    if (n + 1 < 72) #(spi_low);
+                end
+                #(spi_tcsh);
+                CS_N = 1'b1;
+                #(spi_tidle);
+                if (dut.fifo_level !== lvl0)
+                    fail($sformatf("Y: a sample read with a missed SCLK and one extra byte popped (level %0d -> %0d)", lvl0, dut.fifo_level));
+                r14_read(7'h06, yer);
+                if (yer !== 8'h02) fail($sformatf("Y: ERR 0x%02h after a sample read with a missed SCLK and one extra byte, expected FRAME_ERR", yer));
+                r14_write(7'h06, 8'h02);
+            end
             ovl_force = 1'b1;                                   // DFLAG.OVL
             repeat (40 * 32) @(posedge MCLK);
             ovl_force = 1'b0;

@@ -425,20 +425,26 @@ def deck(a, mode, seed):
     afe = dut(a.variant, mc, chip)
     bias = open(BIAS_PEX if pex else P.BIAS).read()
     bias = par_m(bias) if mc else bias
-    rng = next((r for r, full in ((1, 39), (2, 79), (3, 159), (4, 318)) if abs(a.vin) <= full), 4) if a.vin else 0
+    rng = getattr(a, "range", None) or (next((r for r, full in ((1, 39), (2, 79), (3, 159), (4, 318)) if abs(a.vin) <= full), 4)
+                                         if a.vin else 0)  # --range (audit round 16: 154 mV picks range 3, max M 511)
     vos = a.vin if a.dac_mag is None else (1 if a.vin >= 0 else -1) * a.dac_mag * P.UNIT_MV
     blank = (15 if rng else 7) * P.MCLK
     e = [P.RIN_EXTRACTED["E"][k] - STRAP_RIN[k] for k in range(2)] if pex else (0.0, 0.0)   # the chopper's part
     rafe = a.rafe if pex else (0.0, 0.0)
     sine = f" SIN({a.vin * 1e-3:.6g} {a.sine * 1e-3:.9e} {a.fsig:g} {a.t_afe + 20e-6:.9e})" if a.sine else ""
-    # AFE_IBIAS: its reset value (code 2) until the firmware writes --ibias, --t-write after RESET_N
+    # AFE_IBIAS: its reset value (--ibias-reset: r13's code 2, r14's code 3) until the firmware writes --ibias,
+    # --t-write after RESET_N
     tw = a.t_reset + a.t_write
     trim = ""
+    ibr = getattr(a, "ibias_reset", 2)
     for b in (1, 0):
-        r, n = (2 >> b) & 1, (a.ibias >> b) & 1
+        r, n = (ibr >> b) & 1, (a.ibias >> b) & 1
         if mode == "start" and r != n:
             trim += f"VUIB{b} UIB{b} 0 PWL(0 {r} {tw:.9e} {r} {tw + 2e-9:.9e} {n})\n"
-    ib = {b: f"UIB{b}" if f"VUIB{b} " in trim else ("ONE" if (2 >> b) & 1 else "ZERO") for b in (1, 0)}
+    ib = {b: f"UIB{b}" if f"VUIB{b} " in trim else ("ONE" if (ibr >> b) & 1 else "ZERO") for b in (1, 0)}
+    btp, btn = getattr(a, "btrim_p", 1), getattr(a, "btrim_n", 1)        # the boosters (r13: 1 / 1, r14: 1 / 0)
+    bt = {k: "ONE" if v else "ZERO" for k, v in (("BP1", btp >> 1 & 1), ("BP0", btp & 1), ("BN1", btn >> 1 & 1),
+                                                   ("BN0", btn & 1))}
     if mode == "power":
         units = "VUCHOP UCHOP 0 0\nVUCHOPO UCHOPO 0 0\nVUBLK UBLK 0 0\nVURST URST 0 1\n"
         tmax = min(10e-6, a.tstop / 5000)
@@ -473,8 +479,8 @@ VITST ITST AVSS_TM 0
 VONE ONE 0 1
 VZERO ZERO 0 0
 {trim}{digital('IB1', 'IB1', ib[1])}{digital('IB0', 'IB0', ib[0])}\
-{digital('BP1', 'BP1', 'ZERO')}{digital('BP0', 'BP0', 'ONE')}\
-{digital('BN1', 'BN1', 'ZERO')}{digital('BN0', 'BN0', 'ONE')}{digital('CHEN', 'CHOP_EN', 'ONE')}\
+{digital('BP1', 'BP1', bt['BP1'])}{digital('BP0', 'BP0', bt['BP0'])}\
+{digital('BN1', 'BN1', bt['BN1'])}{digital('BN0', 'BN0', bt['BN0'])}{digital('CHEN', 'CHOP_EN', 'ONE')}\
 {units}{digital('CHOP', 'CHOP', 'UCHOP')}{digital('CHOPO', 'CHOP_OUT', 'UCHOPO')}{digital('BLK', 'CHOP_BLANK', 'UBLK')}\
 {digital('RST', 'AFE_RST', 'URST')}VSRC SRC 0 DC {a.vin * 1e-3:.6g}{sine}
 {electrodes(a)}{''.join(wire(f'{n}{k}', f'{n}_BRD', f'{n}_P{k}') for n in ('ELP', 'ELN') for k in PADS[n])}\
@@ -516,6 +522,9 @@ def run(a, mode, cvcm, seed):
             (f"_sine{a.sine:g}mV{a.fsig:g}Hz" if a.sine else "") +
             (f"_afe{a.t_afe0 * 1e3:g}ms" if mode == "start" else "") + ("_pdkcap" if a.moscap == "pdk" else "") +
             (f"_chip{a.chip}" if a.chip != "fill" else "") + (f"_ib{a.ibias}" if a.ibias != 2 else "") +
+            (f"_ibr{a.ibias_reset}" if a.ibias_reset != 2 else "") +
+            (f"_bt{a.btrim_p}{a.btrim_n}" if (a.btrim_p, a.btrim_n) != (1, 1) else "") +
+            (f"_rng{a.range}" if a.range else "") +
             (f"_cm{a.cm:g}mV{a.fcm:g}Hz" if a.cm is not None else "") +
             "".join(f"_{k}{getattr(a, k).replace('|', '_')}" for k in ("zp", "zn") if getattr(a, k) != "100") +
             (f"_rip{a.rip}{a.rip_mv:g}mV" + ("" if list(a.rip_f) == RIP_F else "_f" + "_".join(f"{f:g}" for f in a.rip_f))
@@ -528,7 +537,8 @@ def run(a, mode, cvcm, seed):
     json.dump({k: getattr(a, k) for k in ("cvcm", "vdd", "corner", "temp", "vin", "variant", "sine", "fsig", "tramp",
                                           "t_afe", "t_reset", "tstop", "tmax", "moscap", "chip", "rafe", "iadc", "ibias",
                                           "t_write", "mim_a", "res_a", "dac_mag", "cm", "fcm", "t_cm", "cm_ramp", "zp",
-                                          "zn", "rip", "rip_mv", "rip_f", "t_rip", "rip_ramp")}
+                                          "zn", "rip", "rip_mv", "rip_f", "t_rip", "rip_ramp", "ibias_reset",
+                                          "btrim_p", "btrim_n", "range")}
               | {"mode": mode, "seed": seed, "vectors": vecs},
               open(os.path.join(d, "meta.json"), "w"), indent=1)
     t = time.time()
@@ -567,6 +577,12 @@ def main():
     ap.add_argument("--ibias", type=int, default=2, choices=range(4),
                     help="AFE_IBIAS code the firmware writes after RESET_N (2: the register's reset value, no write)")
     ap.add_argument("--t-write", type=float, default=20e-6, help="start: the firmware's register write, after RESET_N (s)")
+    ap.add_argument("--ibias-reset", type=int, default=2, choices=range(4),
+                    help="AFE_IBIAS's register reset value (r13: 2; r14: 3, REG-05), held until the --ibias write")
+    ap.add_argument("--btrim-p", type=int, default=1, choices=range(4), help="BOOST_TRIM.BTRIM_P (r13 and r14: 1)")
+    ap.add_argument("--btrim-n", type=int, default=1, choices=range(4), help="BOOST_TRIM.BTRIM_N (r13: 1; r14: 0)")
+    ap.add_argument("--range", type=int, default=None, choices=range(1, 5),
+                    help="the offset DAC's range (default from |vin| against the nominal full scales 39 / 79 / 159 / 318 mV)")
     ap.add_argument("--moscap", choices=["lin", "pdk"], default="lin")
     ap.add_argument("--mim-a", type=float, default=1.41, help="Monte Carlo: MIM mismatch, pair coefficient (%%·um; a stand-in)")
     ap.add_argument("--res-a", type=float, default=3.0, help="Monte Carlo: poly-resistor mismatch, pair coefficient (%%·um; a stand-in)")

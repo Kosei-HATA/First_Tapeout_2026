@@ -65,7 +65,8 @@ REGS = [
                                    F("AFE_RST", 0, 0, 1, [0, 1], "ro", "AFE_RST の出力の現在値")],
      "状態（フレームの先頭バイトで MISO から返す値と同じ）"),
     (0x04, "STATE", "RO", False, [F("STATE", 3, 0, 0, [x[1] for x in FS.SEQ_STATES if x[1] is not None], "ro",
-                                    "シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 RUN、7 PRE、8 PULSE）")],
+                                    "シーケンサの状態（" + "、".join(f"{c} {n}" for c, n in sorted((x[1], x[0]) for x in FS.SEQ_STATES
+                                                                                            if x[1] is not None)) + "）")],
      "シーケンサの状態"),
     (0x05, "FIFO_LEVEL", "RO", False, [F("LEVEL", 3, 0, 0, rng(0, 8), "ro", "FIFO のサンプルの数")], "FIFO の占有数"),
     (0x06, "ERR", "W1C", False, [F("CMD_ERR", 7, 7, 0, [0, 1], "w1c", "未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値"),
@@ -88,8 +89,8 @@ REGS = [
     # analog configuration (shadow; the active copies are read at addr + 0x10)
     (0x20, "OFF_M_H", "RW", False, [F("M_H", 1, 0, 0, rng(0, 3), "apply", "オフセット DAC の大きさ M[9:8]", "OFM[9:8]")], "オフセット DAC（上位）"),
     (0x21, "OFF_M_L", "RW", False, [F("M_L", 7, 0, 0, rng(0, 255), "apply", "M[7:0]", "OFM[7:0]")], "オフセット DAC（下位）"),
-    (0x22, "OFF_CTRL", "RW", False, [F("SIGN", 4, 4, 0, [0, 1], "apply", "符号 S（打ち消す量は (1 − 2 S) × M × 0.311 mV）", "OFS"),
-                                     F("RANGE", 2, 0, 0, rng(0, 4), "apply", "範囲（0 切、1〜4 で ±39／79／159／318 mV。5〜7 は RANGE_ERR）", "OFEN[3:0]")],
+    (0x22, "OFF_CTRL", "RW", False, [F("SIGN", 4, 4, 0, [0, 1], "apply", "符号 S（打ち消す量は (1 − 2 S) × M × 公称 0.311 mV。実測の 1 段は増幅器の入力で約 0.301 mV）", "OFS"),
+                                     F("RANGE", 2, 0, 0, rng(0, 4), "apply", "範囲（0 切、1〜4 で公称 ±39／79／159／318 mV（範囲 4 は実測で約 ±308 mV）。5〜7 は RANGE_ERR）", "OFEN[3:0]")],
      "オフセット DAC（符号と範囲）"),
     (0x23, "AFE_IBIAS", "RW", False, [F("AFE_IBIAS", 1, 0, 3, rng(0, 3), "apply", "AFE のバイアス電流（通常の動作は 3。0〜2 は評価用で性能を保証しない。書き込みは拒否しない）", "AFE_IBIAS[1:0]")], "AFE のバイアス"),
     (0x24, "CPF_TRIM", "RW", False, [F("CPF_TRIM", 3, 0, 8, rng(0, 15), "apply", "入力インピーダンスの補償容量のトリム", "CPF_TRIM[3:0]")], "補償容量のトリム"),
@@ -207,6 +208,10 @@ FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
 # the fields the requirements compare as whole bytes (REG-02, SPI-09, REG-08: the command codes, 0xA5 among them, and
 # the test key; audit round 15, auditor C: either narrowed to 7 bits passed every check)
 WHOLE_BYTE = {"CMD", "KEY"}
+# the defined readable addresses one bit away from the sample window (0x40): a read header of theirs that loses a bit
+# becomes 0xC0, a short sample read whose third byte (SEQ_H) passes the host's CRC for one SEQ_H in 256; the host
+# procedure confirms exactly these by a second read (requirements 5.4 (b); audit round 16, auditor B)
+WINDOW_NEIGHBOURS_REQUIRED = [0x00, 0x50, 0x60]
 # the codes the requirements give (REG-01, REG-02, SPI-09, REG-08; audit round 13: a two-bit change of a code, which
 # keeps the distance check, passed every check)
 FIXED_CODES = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5,
@@ -296,14 +301,14 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の電圧（±39／79／159／318 mV、0.311 mV／段）から独立に確かめる",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレスは、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
     "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
-    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）",
+    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
 ]
 
 
@@ -648,6 +653,11 @@ def check(verbose=True):
             if n_ == "SAMPLE" and f["reset"] != 0:
                 errs.append(f"SAMPLE.{f['name']}: reset {f['reset']}; the window reads 0x00 inside a burst and alone "
                             f"(spec 3.2), so the map holds 0 for it")
+    win = next(a_ for a_, n_, *_ in REGS if n_ == "SAMPLE")
+    nb = sorted(a_ for a_, n_, acc_, *_ in REGS if acc_ != "WO" and n_ != "SAMPLE" and bin(a_ ^ win).count("1") == 1)
+    if nb != WINDOW_NEIGHBOURS_REQUIRED:
+        errs.append(f"readable addresses one bit from the sample window: {[hex(x) for x in nb]}; the host procedure "
+                    f"confirms {[hex(x) for x in WINDOW_NEIGHBOURS_REQUIRED]} by a second read (5.4 (b), audit round 16)")
     q_t = max(OVL_RULE["codes"]).bit_length()
     if fv.get("QBITS") != q_t:
         errs.append(f"QBITS {fv.get('QBITS')}; the quantizer's codes 0..{max(OVL_RULE['codes'])} take {q_t} bits")
@@ -1094,6 +1104,10 @@ def selftest():
     def m_ro_none():
         fld("ID", "ID")["legal"] = None
 
+    def m_window_neighbour():                            # audit round 16, auditor B: TEST_MUX moved to 0x68
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "TEST_MUX")
+        r = list(g["REGS"][i]); r[0] = 0x68; g["REGS"][i] = tuple(r)
+
     def m_sample_reset():
         fld("SAMPLE", "SAMPLE")["reset"] = 0x5A
 
@@ -1149,7 +1163,7 @@ def selftest():
             ("VERSION の値に 17 も", m_ro_const),
             ("STATUS の READY と DATA の入れ違い", m_status_swap), ("COMMAND の CMD を 7 ビットに（0xA5 が入らない）", m_cmd_narrow),
             ("TEST_KEY の KEY を 7 ビットに", m_key_narrow), ("ID の読み値を定めない（legal None）", m_ro_none),
-            ("SAMPLE の既定値を 0x5A に", m_sample_reset)]
+            ("SAMPLE の既定値を 0x5A に", m_sample_reset), ("TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）", m_window_neighbour)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1277,6 +1291,7 @@ SELFTEST_EXPECT = {
     'COMMAND の CMD を 7 ビットに（0xA5 が入らない）': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
     'TEST_KEY の KEY を 7 ビットに': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
     'ID の読み値を定めない（legal None）': (': a read-only field without its read values (legal None)',),
+    'TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）': ('readable addresses one bit from the sample window:',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

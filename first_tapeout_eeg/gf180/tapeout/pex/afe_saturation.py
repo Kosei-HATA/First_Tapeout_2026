@@ -100,6 +100,10 @@ def main():
     ap.add_argument("--zp", default="100", help="ELP leg (afe_startup's), e.g. 100+51k|47n")
     ap.add_argument("--zn", default="100", help="ELN leg")
     ap.add_argument("--chop-hold", action="store_true", help="CHOP_EN low whenever AFE_RST is high")
+    ap.add_argument("--ibias-reset", type=int, default=2, choices=range(4), help="afe_startup's (r14: 3)")
+    ap.add_argument("--btrim-p", type=int, default=1, choices=range(4), help="afe_startup's (r14: 1)")
+    ap.add_argument("--btrim-n", type=int, default=1, choices=range(4), help="afe_startup's (r14: 0)")
+    ap.add_argument("--range", type=int, default=None, choices=range(1, 5), help="afe_startup's")
     ap.add_argument("--seq", action="store_true",
                     help="11/19: the new sequencer's timing (gf180/tapeout/rtl/spec): the first release, the write and "
                          "the pulse at its tick (frame cycle 24 of the frame in the middle of chopper phase A, outputs "
@@ -143,6 +147,9 @@ def main():
             "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag, "--zp", s.zp, "--zn", s.zn] + t_afe_arg
     if s.dac_mag is not None:
         args += ["--dac-mag", str(s.dac_mag)]
+    args += ["--ibias-reset", str(s.ibias_reset), "--btrim-p", str(s.btrim_p), "--btrim-n", str(s.btrim_n)]
+    if s.range:
+        args += ["--range", str(s.range)]
     if s.mc is not None:
         args += ["--mc", str(s.mc)]
     deck0 = A.deck

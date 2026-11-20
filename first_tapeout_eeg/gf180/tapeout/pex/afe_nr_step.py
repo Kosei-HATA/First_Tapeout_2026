@@ -75,6 +75,10 @@ def main():
     ap.add_argument("--zp", default="100", help="ELP leg (afe_startup's), e.g. 100+51k|47n")
     ap.add_argument("--zn", default="100", help="ELN leg")
     ap.add_argument("--tag", default=None, help="default _nr<m1>to<m2>_chip_<rev>")
+    ap.add_argument("--ibias-reset", type=int, default=2, choices=range(4), help="afe_startup's (r14: 3)")
+    ap.add_argument("--btrim-p", type=int, default=1, choices=range(4), help="afe_startup's (r14: 1)")
+    ap.add_argument("--btrim-n", type=int, default=1, choices=range(4), help="afe_startup's (r14: 0)")
+    ap.add_argument("--range", type=int, default=None, choices=range(1, 5), help="afe_startup's")
     s = ap.parse_args()
     if abs(s.m2 - s.m1) != 1:
         sys.exit("--m1 / --m2: APPLY_NR's step is one code")
@@ -93,7 +97,10 @@ def main():
           f"({phase * 1e9:.1f} ns after a phase-A edge), tstop {tstop * 1e3:.3f} ms", flush=True)
     args = ["start", "--vin", f"{s.vin:g}", "--corner", s.corner, "--vdd", f"{s.vdd:g}", "--ibias", str(s.ibias),
             "--cvcm", s.cvcm, "--tstop", f"{tstop:.9e}", "--jobs", "1", "--tag", tag, "--zp", s.zp, "--zn", s.zn,
-            "--t-afe", f"{t_afe:.9e}", "--t-reset", f"{t_reset:.9e}", "--dac-mag", str(s.m1)]
+            "--t-afe", f"{t_afe:.9e}", "--t-reset", f"{t_reset:.9e}", "--dac-mag", str(s.m1),
+            "--ibias-reset", str(s.ibias_reset), "--btrim-p", str(s.btrim_p), "--btrim-n", str(s.btrim_n)]
+    if s.range:
+        args += ["--range", str(s.range)]
     deck0 = A.deck
     switched = []
 

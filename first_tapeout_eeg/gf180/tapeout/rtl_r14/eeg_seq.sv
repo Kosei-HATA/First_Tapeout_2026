@@ -7,7 +7,8 @@
 // Events
 //   tick     once per chopper period, frame cycle 24 of the frame in the middle of chopper phase A (eeg_clkgen):
 //            the pending command (cmd_valid, cmd_code; at most one) and the state's timer are resolved here,
-//            by the priority STOP > START > APPLY > APPLY_NR > FLUSH > TMR. Registered outputs change at e25.
+//            in the order of fsm_spec.SEQ_PRIORITY (the requirements' section 5.0 is generated from it; tb_seq
+//            replays every tick against it). Registered outputs change at e25.
 //   out_stb  a CIC output time (frame cycle 8); never in the same MCLK cycle as tick.
 //   rst_n    asynchronous (RESET_N or SOFT_RESET): the reset state is IDLE with AFE_RST = 1.
 // Timer: one down-counter in frames, loaded on entering a timed state and on a restart (APPLY or APPLY_NR in

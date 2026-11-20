@@ -11,5 +11,5 @@
 - ここの図
   - 48（クロックとデータの線と敏感な網、11/19）：`gf180/tapeout/viz/clocklines_fig.py extract` のあと `plot`。データは `gf180/tapeout/viz/data_r13/clock_lines.json`。(e) の波形は r12 の typical の起動のラン（チップの配線は r13 と同じ形）。
   - 46（電源の除去、途中の版、11/19 夜）：`EEG_PEX_REV=r13 gf180/tools/venv310/bin/python gf180/tapeout/viz/psrr_fig.py`（`psrr.py` を同じ環境変数で回したあと）。ランは `gf180/tapeout/pex/runs/psrr_r13/`（`run_psrr_r13.sh`）。最初の 4 本（typical の釣り合いと ELP に 51 kΩ ∥ 47 nF、ff、ss）とモンテカルロ 1〜4（11/19 21 時 51 分に更新）。モンテカルロ 5〜8 と sf、fs は実行中、DVDD は未実行。
-  - 49（APPLY_NR の桁上がりの過渡、11/21。r14 のデジタル制御の監査の第 10 回の A1）：`gf180/tools/venv310/bin/python gf180/tapeout/viz/nrstep_fig.py`。ランは `gf180/tapeout/pex/runs/startup/start_…_nr<m1>to<m2>_chip_r13`（`pex/runs/nr_step/run_nr_step.sh`、11/20）。
+  - 49（APPLY_NR の桁上がりの過渡、11/21。r14 のデジタル制御の監査の第 10 回の A1）：`gf180/tools/venv310/bin/python gf180/tapeout/viz/nrstep_fig.py`。ランは `gf180/tapeout/pex/runs/startup/start_…_nr<m1>to<m2>_chip_r13`（`pex/runs/nr_step/run_nr_step.sh`、11/20）。11/21 の監査の第 16 回：このランは電極のオフセットを公称の 1 段の 511 倍（159.1 mV）としたため、ADC の入力が約 ＋0.94 V（範囲の外、圧縮）の動作点であった。範囲の中の再実行（154.0 mV、範囲 4、r14 の既定のトリム。`run_nr_step_r14.sh`）の結果で描き直す。
   - ほかの番号は、r13 の評価（PSRR から）がそろってから、この版の図としてひとそろい描く。

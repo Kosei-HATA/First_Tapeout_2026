@@ -3,6 +3,7 @@
 purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be detected, and each bench's unmutated
 baseline must pass. The groups and their benches:
   top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
+                            (the 8-deep FIFO; run_tests_r14.sh also runs the 4-deep bench)
   spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (as run_tests_r14.sh: +n=1500 +seed=5; the baseline must
                             also cover every branch)
   seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently)
@@ -12,8 +13,8 @@ baseline must pass. The groups and their benches:
   rnd    RND_MUTATIONS      rtl/tb/tb_rnd_sat.sv (build/rnd_sat.vec from rtl/model/gen_vectors.py)
   struct STRUCT_MUTATIONS   check_outputs_registered.py (every output a flip-flop's: NFR-06, yosys)
 Each mutation runs in build/mut/<tag>/ (its own copy of the RTL and its own logs); the generated files (build/
-reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared, so run_tests_r14.sh must have
-run once. Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
+reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared and made afresh at the start
+(as run_tests_r14.sh makes them; audit round 16). Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
 arguments, so a recorded result always has its log (audit round 4).
 Verdicts: detected / MISSED for a mutation, baseline ok / BASELINE FAILS for a baseline. A run without a verdict fails
 the whole run (audit rounds 5, 6, 9): NOT APPLIED (the text is not in the RTL), COMPILE ERROR, TIMEOUT (undecided),
@@ -421,6 +422,23 @@ MUTATIONS = [
       ('eeg_regs.sv', "            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};\n", ''),
       ('eeg_regs.sv', '    // ---------------- outputs\n', "    // (mutant) DFLAG and DRDY_MODE: RESET_N only\n    always_ff @(posedge clk or negedge pin_rst_n) begin\n        if (!pin_rst_n) begin\n            dflag  <= 2'b00;\n            r_drdy <= IF_CFG_DRDY_MODE_RST;\n        end else begin\n            if (w_ok && addr == A_IF_CFG) r_drdy <= wdata[1];\n            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};\n        end\n    end\n\n    // ---------------- outputs\n"),
       ('eeg_digital_top.sv', '        .clk(MCLK), .rst_n(rst_n), .addr(reg_addr), .rdata(reg_rdata),', '        .clk(MCLK), .rst_n(rst_n), .pin_rst_n(tm_rst_n), .addr(reg_addr), .rdata(reg_rdata),')], None, None),
+    # audit round 16, auditor C: the pending command kept through a SOFT_RESET (a RESET_N-only reset), and the codes,
+    # the key and SOFT_RESET's code compared on 7 bits
+    ('レジスタ：未処理の命令を SOFT_RESET で消さない（RESET_N のみ）', [
+      ('eeg_regs.sv', '    input  logic       rst_n,\n    // SPI slave', '    input  logic       rst_n,\n    input  logic       pin_rst_n,          // RESET_N only (the pending command)\n    // SPI slave'),
+      ('eeg_regs.sv', "            pend <= 1'b0;\n            pcode <= 8'h00;\n        end else begin", '        end else begin'),
+      ('eeg_regs.sv', "            // command: taken by the sequencer at a tick; a new one only when none is pending (else STATE_ERR)\n            if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end else if (cmd_ack) begin\n                pend  <= 1'b0;\n            end\n", ''),
+      ('eeg_regs.sv', '    // ---------------- outputs\n', "    // the pending command: RESET_N only (a SOFT_RESET leaves it)\n    always_ff @(posedge clk or negedge pin_rst_n) begin\n        if (!pin_rst_n) begin\n            pend <= 1'b0;\n            pcode <= 8'h00;\n        end else begin\n            if (w_ok && addr == A_COMMAND) begin\n                pend  <= 1'b1;\n                pcode <= wdata;\n            end else if (cmd_ack) begin\n                pend  <= 1'b0;\n            end\n        end\n    end\n\n    // ---------------- outputs\n"),
+      ('eeg_digital_top.sv', '        .clk(MCLK), .rst_n(rst_n), .addr(reg_addr), .rdata(reg_rdata),', '        .clk(MCLK), .rst_n(rst_n), .pin_rst_n(tm_rst_n), .addr(reg_addr), .rdata(reg_rdata),')], None, None),
+    ('レジスタ：命令のコードを下位 7 ビットで比べる', 'eeg_regs.sv',
+     '    assign is_cmd_code = (wdata == CMD_START) || (wdata == CMD_STOP) || (wdata == CMD_APPLY) ||\n                         (wdata == CMD_APPLY_NR) || (wdata == CMD_FLUSH);',
+     '    assign is_cmd_code = (wdata[6:0] == CMD_START[6:0]) || (wdata[6:0] == CMD_STOP[6:0]) || (wdata[6:0] == CMD_APPLY[6:0]) ||\n                         (wdata[6:0] == CMD_APPLY_NR[6:0]) || (wdata[6:0] == CMD_FLUSH[6:0]);'),
+    ('レジスタ：試験の鍵を下位 7 ビットで比べる', [
+      ('eeg_regs.sv', '                    A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE);', '                    A_TEST_KEY:     unlocked <= (wdata[6:0] == TEST_KEY_VALUE[6:0]);'),
+      ('eeg_regs.sv', "                if (wdata != TEST_KEY_VALUE && wdata != 8'h00) ev_err[ERR_CMD_ERR_LSB] = 1'b1;", "                if (wdata[6:0] != TEST_KEY_VALUE[6:0] && wdata != 8'h00) ev_err[ERR_CMD_ERR_LSB] = 1'b1;")], None, None),
+    ('レジスタ：SOFT_RESET のコードを下位 7 ビットで比べる', 'eeg_regs.sv',
+     '    assign is_soft     = (wdata == CMD_SOFT_RESET);',
+     '    assign is_soft     = (wdata[6:0] == CMD_SOFT_RESET[6:0]);'),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -824,10 +842,20 @@ def run(i, m, bench="top"):
 
 def main():
     jobs = int(sys.argv[sys.argv.index("-j") + 1]) if "-j" in sys.argv else 2
+    # the shared generated inputs, made afresh as run_tests_r14.sh makes them (audit round 16, auditor C: only their
+    # presence was checked, so a run after an edit of regmap.py or gen_reg_tests.py could use stale tests)
+    py = sys.executable
+    for cmd in ([py, "tb/gen_codes.py"], [py, "tb/gen_reg_tests.py"], [py, "tb/gen_ok_vectors.py"],
+                [py, "-c", "import sys; sys.path.insert(0, '../rtl/model'); import gen_vectors as G; "
+                             "G.gen_rnd_sat('build', sys.stdout)"]):
+        r = subprocess.run(cmd, cwd=R14, capture_output=True, text=True)
+        if r.returncode:
+            sys.exit(f"generating the shared inputs failed ({' '.join(cmd[1:])[:60]}): "
+                     + ((r.stdout + r.stderr).strip().splitlines() or ['no output'])[-1])
     for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes",
                  "ovl.split"):
         if not os.path.exists(os.path.join(BUILD, need)):
-            sys.exit(f"build/{need} missing: run run_tests_r14.sh first")
+            sys.exit(f"build/{need} missing after generating it")
     # every listed mutation must apply to the RTL as it is now (audit round 5: two targets had changed with the RTL
     # and would have shown only as NOT APPLIED at the end of a long run)
     stale = []

@@ -18,11 +18,12 @@
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; cfg_ok and nr_ok against
 #               regmap over the full 10-bit M (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, listed in the bench's header); samples == golden
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W and X, listed in the bench's header); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
-#   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06; yosys, tb/check_outputs_registered.py)
+#   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06); every asynchronous input passes 2 flops; every
+#               flip-flop resets asynchronously from RESET_N's release (RST-01) (yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 # usage: ./run_tests_r14.sh
 set -u

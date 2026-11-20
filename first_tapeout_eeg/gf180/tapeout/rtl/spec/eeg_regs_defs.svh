@@ -175,4 +175,5 @@
     endfunction
     localparam int OVL_WINDOW = 32;  localparam logic [5:0] OVL_THRESHOLD = 6'd4;
     localparam logic [31:0] OVL_EXT_CODES = 32'h80000001;   // bit c: the quantizer code c is extreme
+    localparam logic [4:0] TICK_CYCLE = 5'd24;  localparam logic [2:0] TICK_FRAME_128K = 3'd1;  localparam logic [3:0] TICK_FRAME_64K = 4'd3;
 /* verilator lint_on UNUSEDPARAM */

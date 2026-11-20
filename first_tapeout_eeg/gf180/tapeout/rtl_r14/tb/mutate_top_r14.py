@@ -94,7 +94,7 @@ MUTATIONS = [
     ("最上位：サンプルの状態に OVERRUN を入れない", "eeg_digital_top.sv",
      "smp_status[SMP_OVERRUN_LSB] = dflag_overrun;", "smp_status[SMP_OVERRUN_LSB] = 1'b0;"),
     ("クロック：tick が 1 サイクル早い（サイクル 23）", "eeg_clkgen.sv",
-     "tick       <= (cnt_nxt[4:0] == 5'd24) &&", "tick       <= (cnt_nxt[4:0] == 5'd23) &&"),
+     "tick       <= (cnt_nxt[4:0] == TICK_CYCLE) &&", "tick       <= (cnt_nxt[4:0] == TICK_CYCLE - 5'd1) &&"),
     # audit round 1 (11/20)
     ("シーケンサ：WARMUP の APPLY で解除までの待ちを数え直さない", "eeg_seq.sv",
      "a_restart = (state == S_WARMUP);", "a_restart = 1'b0;"),
@@ -358,6 +358,19 @@ MUTATIONS = [
     ("レジスタ：RESET_N のリセットを同期に（MCLK がないと端子が既定値に戻らない）", "eeg_regs.sv",
      "    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            s_m <= ",
      "    always_ff @(posedge clk) begin\n        if (!rst_n) begin\n            s_m <= "),
+    # audit round 13, auditor A: the tick's frame at 64 kHz (the AFE_RST edges at 64 kHz are now checked too)
+    ("クロック：64 kHz の tick がフレーム 4（相 A の後半）", "eeg_clkgen.sv",
+     "(cnt_nxt[8:5] == TICK_FRAME_64K));", "(cnt_nxt[8:5] == TICK_FRAME_64K + 4'd1));"),
+    # audit round 13, auditor C: the guard widened (J2's run_free_tests), a write's CRC byte not held (A's CRC-on write
+    # to the sample window)
+    ("レジスタ：0x20 以上の全てのアドレスを守る（IF_CFG と DEBUG も STATE_ERR）", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin",
+     "end else if (pend && !cmd_ack && (addr >= 7'h20)) begin"),
+    ("レジスタ：試験の鍵も守る（未処理の命令の間は STATE_ERR）", "eeg_regs.sv",
+     "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin",
+     "end else if (pend && !cmd_ack && (GUARDED_ADDRS[addr] || addr == A_TEST_KEY)) begin"),
+    ("SPI：標本の窓への書き込みで CRC のバイトを保持しない", "eeg_spi_slave.sv",
+     "                                wcrc <= rx_byte;", "                                if (hdr[6:0] != 7'h40) wcrc <= rx_byte;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

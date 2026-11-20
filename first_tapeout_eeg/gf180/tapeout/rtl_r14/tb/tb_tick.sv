@@ -1,9 +1,11 @@
 // tb_tick - the r14 clock generator's tick: at both chopper rates and across random rate changes, every tick is
-// 56 (128 kHz) or 120 (64 kHz) MCLK cycles after a rising CHOP edge (the middle of phase A, CHOP high), and every
-// chopper period has exactly one tick. CHOP_OUT equals CHOP (CHOP_DLY tied to 0).
+// TICK_FRAME * 32 + TICK_CYCLE MCLK cycles after a rising CHOP edge (56 at 128 kHz, 120 at 64 kHz: the middle of
+// phase A, CHOP high; the constants generated from fsm_spec.TIMING, audit round 13), and every chopper period has
+// exactly one tick. CHOP_OUT equals CHOP (CHOP_DLY tied to 0).
 `timescale 1ns / 1ps
 `default_nettype none
 module tb_tick;
+`include "eeg_regs_defs.svh"
     logic clk = 0, rst_n = 0, chop_fast = 1;
     logic [4:0] cycle;
     logic cmp_strobe, th_capture, dac_load, cic_en, chop, chop_out, chop_blank, raw_clk, tick;
@@ -41,8 +43,8 @@ module tb_tick;
             if (tick) begin
                 nticks = nticks + 1;
                 ticks_in_period = ticks_in_period + 1;
-                if (cycle !== 5'd24 || chop !== 1'b1 ||
-                    since_rise != (rate_of_period ? 56 : 120)) begin
+                if (cycle !== TICK_CYCLE || chop !== 1'b1 ||
+                    since_rise != (rate_of_period ? 32 * TICK_FRAME_128K + TICK_CYCLE : 32 * TICK_FRAME_64K + TICK_CYCLE)) begin
                     $display("ERROR: tick at cycle %0d, %0d MCLK after the rising edge, CHOP %b, rate %0d",
                              cycle, since_rise, chop, rate_of_period);
                     errors = errors + 1;

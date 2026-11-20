@@ -76,6 +76,11 @@ SEQ_STATES = [
 # the trace checker and the timing diagrams name the timers by hand)
 SEQ_TIMERS_REQUIRED = {"WARMUP": "T_WARM", "RECOVER": "T_REC", "WAIT_E": "T_ELEC", "PRE": "T_PRE", "PULSE": "T_RST"}
 SEQ_AFE_RST_REQUIRED = {"RESET": 1, "IDLE": 1, "WARMUP": 1, "PULSE": 1}      # held in reset; released in the others
+# the composite states (SEQ-01: ACTIVE from START to STOP, AFE_ON while the AFE runs; audit round 13, auditor C: WARMUP
+# moved into AFE_ON passed every check, and the diagram drew it inside "the AFE running")
+SEQ_PARENT_REQUIRED = {"RESET": None, "IDLE": None, "WARMUP": "ACTIVE", "PRE": "ACTIVE", "PULSE": "ACTIVE",
+                       "RECOVER": "AFE_ON", "WAIT_E": "AFE_ON", "ALIGN": "AFE_ON", "FILL": "AFE_ON", "RUN": "AFE_ON"}
+SEQ_COMPOSITE_PARENT_REQUIRED = {"ACTIVE": None, "AFE_ON": "ACTIVE"}
 SEQ_COMPOSITES = {           # name: (parent, initial substate, meaning)
     "ACTIVE": (None, "WARMUP", "START 後の動作中（STOP で IDLE へ）"),
     "AFE_ON": ("ACTIVE", "RECOVER", "AFE が動作している状態（APPLY で PRE へ）"),
@@ -237,7 +242,7 @@ SPI_ACTIONS = {
     "latch_addr": "アドレスを保持",
     "latch_data": "データを保持",
     "latch_crc": "CRC を保持",
-    "commit": "書き込みを確定（値の範囲が不正なら RANGE_ERR として書かない。命令レジスタなら命令を次の tick に渡す。ただし SOFT_RESET は直ちにリセット、未定義のコードは CMD_ERR。TEST_KEY は 0x3C で解錠、0x00 で施錠、その他の値は施錠して CMD_ERR）",
+    "commit": "書き込みを確定（値の範囲が不正なら RANGE_ERR として書かない。命令レジスタなら命令を次の tick に渡す。ただし SOFT_RESET は直ちにリセット、未定義のコードは CMD_ERR。TEST_KEY は鍵の値（`regmap.TEST_KEY`）で解錠、0x00 で施錠、その他の値は施錠して CMD_ERR）",
     "pop": "FIFO の先頭（送ったサンプル）を取り出す",
     "FRAME_ERR": "エラー FRAME_ERR を立てる",
     "CRC_ERR": "エラー CRC_ERR を立てる（書かない）",
@@ -422,6 +427,11 @@ def check_seq_columns():
         if afe_rst != SEQ_AFE_RST_REQUIRED.get(name, 0):
             errs.append(f"SEQ {name}: AFE_RST {afe_rst}, but ANA-01 and SEQ-13 give {SEQ_AFE_RST_REQUIRED.get(name, 0)} "
                         f"(the AFE_RST column)")
+        if _parent != SEQ_PARENT_REQUIRED.get(name, "?"):
+            errs.append(f"SEQ {name}: in {_parent}, but SEQ-01 places the state in {SEQ_PARENT_REQUIRED.get(name)}")
+    for c_, (par, _init, _m) in SEQ_COMPOSITES.items():
+        if par != SEQ_COMPOSITE_PARENT_REQUIRED.get(c_, "?"):
+            errs.append(f"SEQ composite {c_}: in {par}, but SEQ-01 nests the composite in {SEQ_COMPOSITE_PARENT_REQUIRED.get(c_)}")
     return errs
 
 
@@ -858,7 +868,7 @@ def check_spi_frames():
         if w is None:
             errs.append(f"{tag}: the walk meets an impossible or undecided cell")
             continue
-        acts, _ = w
+        acts, at_csr = w
         exp, loads = spi_expect(kind, crc_en, nbytes, extra > 0, env)
         got = {a for a in acts if a in effects}
         if got != exp:
@@ -884,6 +894,11 @@ def check_spi_frames():
                 any(a in acts for a in ("load_data", "load_zero", "load_crc")):
             errs.append(f"{tag}: a {kind} frame loads register data or a read CRC onto MISO "
                         f"(a write's MISO is 0x00, a sample's bytes come from its copy)")
+        if kind == "write" and at_csr == "WDONE":     # audit round 13, auditor C: every complete write holds its bytes,
+            need = ["latch_addr", "latch_data"] + (["latch_crc"] if crc_en else [])   # committed or not (the chip
+            if not all(x in acts for x in need):          # judges CRC, address and range from the held bytes)
+                errs.append(f"{tag}: a complete write that does not hold {[x for x in need if x not in acts]} "
+                            f"(the CRC, the address and the range are judged from the held bytes)")
         if kind == "write" and "commit" in acts:      # a write commits the address and data it latched
             need = ["latch_addr", "latch_data"] + (["latch_crc"] if crc_en else [])
             k_c = acts.index("commit")
@@ -1039,7 +1054,7 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -1069,7 +1084,7 @@ CHECKS = [
     f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
-    "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる",
+    "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
@@ -1689,6 +1704,8 @@ def selftest_runs():
         # audit round 11, auditor C: busy at a byte (cleared by a tick in the middle of a write frame)
         ("未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）", lambda t: t.__setitem__(("WDAT", "BYTE"), [B("crc_en and not busy", ["latch_data"], "WCRC"), B("crc_en and busy", [], "WCRC"), B("not crc_en", ["latch_data"], "WDONE")])),
         ("WDAT のバイトで FRAME_ERR を立てる", lambda t: [b.__setitem__("actions", b["actions"] + ["FRAME_ERR"]) for b in t[("WDAT", "BYTE")]]),
+        # audit round 13, auditor C: a write that does not commit skips a latch
+        ("書き込めないアドレスへの書き込みで CRC のバイトを保持しない", lambda t: t.__setitem__(("WCRC", "BYTE"), [B("wr_ok", ["latch_crc"], "WDONE"), B("not wr_ok", [], "WDONE")])),
         # audit round 12, auditor C: a write header to the sample window taken as a sample read
         ("標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）", lambda t: t.__setitem__(("HDR", "BYTE"), [B("smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw and not smp", ["latch_addr"], "WDAT")])),
     ]
@@ -1754,6 +1771,7 @@ def selftest_runs():
         return lambda: obj.__setitem__(key, old)
 
     i_pre = next(k for k, x in enumerate(SEQ_STATES) if x[0] == "PRE")
+    i_warm = next(k for k, x in enumerate(SEQ_STATES) if x[0] == "WARMUP")
 
     def swap_timers():                                # audit round 12
         i, j = [k for k, x in enumerate(SEQ_STATES) if x[0] in ("PRE", "PULSE")]
@@ -1800,6 +1818,9 @@ def selftest_runs():
         # audit round 12, auditor C: the state table's columns and the frame enumeration
         ("SEQ", "PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）", swap_timers),
         ("SEQ", "PRE で AFE_RST を 1 に（状態の表）", lambda: setitem(SEQ_STATES, i_pre, SEQ_STATES[i_pre][:3] + (1,) + SEQ_STATES[i_pre][4:])),
+        # audit round 13, auditor C: the composites
+        ("SEQ", "WARMUP を AFE_ON の中に（状態の表）", lambda: setitem(SEQ_STATES, i_warm, SEQ_STATES[i_warm][:2] + ("AFE_ON",) + SEQ_STATES[i_warm][3:])),
+        ("SEQ", "AFE_ON を ACTIVE の外に", lambda: setitem(SEQ_COMPOSITES, "AFE_ON", (None,) + SEQ_COMPOSITES["AFE_ON"][1:])),
         ("SPI", "フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）", narrow_frames),
     ]
     results = []
@@ -2025,6 +2046,9 @@ SELFTEST_EXPECT = {
     '標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）': (', but spi_expect gives',),
     'PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）': (', but SEQ-02, 03 and 14 give',),
     'PRE で AFE_RST を 1 に（状態の表）': (', but ANA-01 and SEQ-13 give',),
+    'WARMUP を AFE_ON の中に（状態の表）': (', but SEQ-01 places the state in',),
+    'AFE_ON を ACTIVE の外に': (', but SEQ-01 nests the composite in',),
+    '書き込めないアドレスへの書き込みで CRC のバイトを保持しない': ('(the CRC, the address and the range are judged from the held bytes)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
     '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),

@@ -108,6 +108,7 @@
 `default_nettype none
 
 module tb_top_r14;
+`include "eeg_regs_defs.svh"
     localparam real TMCLK = 1000.0 / 32.768;
     logic MCLK = 1'b0, RESET_N = 1'b0, SCLK = 1'b0, CS_N = 1'b1, MOSI = 1'b0;
     wire  MISO, MISO_OE, DRDY_N, RAW_DATA, RAW_CLK, ADC_RST_N, TH_CAPTURE, DAC_LOAD, DWA_EN;
@@ -218,6 +219,52 @@ module tb_top_r14;
         spi_tidle = 600.0;
         expect_err_exact(8'h08, $sformatf("J2 %s locked while a command is pending", name));
         rt_read_expect(a, v0, $sformatf("J2 %s not written (locked, a command pending)", name));
+    endtask
+    // J2 (audit round 13, auditor C): a register the guard does not cover, written while FLUSH waits for its tick
+    // (64 kHz): exactly no flag (ERR 0x00) and written; restored after (only ALERT_MASK had been tried, and a guard
+    // widened to IF_CFG and DEBUG, or to the test key, passed every test)
+    task automatic free_wait_flush();
+        @(posedge dut.tick); #(8000.0); spi_tidle = 125.0;
+        r14_cmd(8'h55);                                 // FLUSH: pending until the next tick
+    endtask
+    task automatic free_one(input logic [6:0] a, input logic [7:0] w, input string name);
+        logic [7:0] v0;
+        r14_read(a, v0);
+        free_wait_flush();
+        r14_write(a, w);
+        spi_tidle = 600.0;
+        expect_err_exact(8'h00, $sformatf("J2 %s written while a command is pending (not guarded)", name));
+        rt_read_expect(a, w, $sformatf("J2 %s written while a command is pending", name));
+        r14_write(a, v0);
+    endtask
+    task automatic free_w1c(input logic [6:0] a, input logic [7:0] w, input string name);
+        free_wait_flush();
+        r14_write(a, w);
+        spi_tidle = 600.0;
+        expect_err_exact(8'h00, $sformatf("J2 %s (W1C) written while a command is pending (not guarded)", name));
+    endtask
+    task automatic free_err();                          // ERR: an ADDR_ERR made first, then cleared by its W1C
+        r14_write(7'h7F, 8'h00);                        // undefined: ADDR_ERR
+        free_wait_flush();
+        r14_write(7'h06, 8'h08);
+        spi_tidle = 600.0;
+        expect_err_exact(8'h00, "J2 ERR's W1C while a command is pending (not guarded): ADDR_ERR cleared, no STATE_ERR");
+    endtask
+    task automatic free_key(input logic [7:0] w, input logic [7:0] e, input string name);
+        free_wait_flush();
+        r14_write(7'h11, w);
+        spi_tidle = 600.0;
+        expect_err_exact(e, $sformatf("J2 %s while a command is pending", name));
+    endtask
+    task automatic free_ifcfg();                        // IF_CFG: DRDY_MODE toggled, CRC_EN kept
+        logic [7:0] v0;
+        r14_read(7'h55, v0);
+        free_wait_flush();
+        r14_write(7'h55, v0 ^ 8'h02);
+        spi_tidle = 600.0;
+        expect_err_exact(8'h00, "J2 IF_CFG written while a command is pending (not guarded)");
+        rt_read_expect(7'h55, v0 ^ 8'h02, "J2 IF_CFG written while a command is pending");
+        r14_write(7'h55, v0);
     endtask
     task automatic expect_err_now(input logic [7:0] mask, input string name);
         logic [7:0] e;
@@ -370,12 +417,16 @@ module tb_top_r14;
     always @(posedge CHOP) t_chop_rise = $realtime;
     real t_cpf = 0.0;                             // J4: the time of the last CPF_TRIM pin change
     always @(CPF_TRIM) t_cpf = $realtime;
+    // every AFE_RST edge: one MCLK after the tick, TICK_FRAME * 32 + TICK_CYCLE + 1 MCLK after a rising CHOP edge (57 at
+    // 128 kHz, 121 at 64 kHz; the constants generated from fsm_spec.TIMING, which the analog decks also use: audit
+    // round 13, only 128 kHz and a hand-written 57 had been checked)
+    real afe_edge_exp;
     always @(negedge AFE_RST or posedge AFE_RST) begin
-        // every AFE_RST edge: 57 MCLK after a rising CHOP edge (the tick, outputs at e25) at 128 kHz
-        if (RESET_N && dut.rst_n && dut.a_chop_fast &&
-            ((($realtime - t_chop_rise) / TMCLK) < 56.5 || (($realtime - t_chop_rise) / TMCLK) > 57.5))
-            fail($sformatf("AFE_RST edge %0.2f MCLK after the CHOP rising edge (expected 57)",
-                           ($realtime - t_chop_rise) / TMCLK));
+        afe_edge_exp = dut.a_chop_fast ? 32.0 * TICK_FRAME_128K + TICK_CYCLE + 1.0 : 32.0 * TICK_FRAME_64K + TICK_CYCLE + 1.0;
+        if (RESET_N && dut.rst_n &&
+            ((($realtime - t_chop_rise) / TMCLK) < afe_edge_exp - 0.5 || (($realtime - t_chop_rise) / TMCLK) > afe_edge_exp + 0.5))
+            fail($sformatf("AFE_RST edge %0.2f MCLK after the CHOP rising edge (expected %0.0f)",
+                           ($realtime - t_chop_rise) / TMCLK, afe_edge_exp));
     end
 
     // ------------------------------------------------------------------ G2 and I: event times
@@ -813,6 +864,8 @@ module tb_top_r14;
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM with CRC");
         r14_write(7'h24, 8'h05);
         rt_read_expect(7'h24, 8'h05, "CPF_TRIM written with CRC");
+        r14_write(7'h40, 8'h5A);                        // the sample window, CRC on (audit round 13, auditor C: no bench
+        expect_err_exact(8'h08, "A: a CRC-on write to the sample window (read only): exactly ADDR_ERR");   // sent one)
         spi_tx[0] = 8'h24; spi_tx[1] = 8'h09; spi_tx[2] = 8'h00;   // wrong CRC
         spi_xfer(3, 0);
         rt_read_expect(7'h24, 8'h05, "CPF_TRIM not written with a wrong CRC");
@@ -1251,6 +1304,7 @@ module tb_top_r14;
             rt_read_expect(7'h08, 8'hFD, "J2 ALERT_MASK written");
             r14_write(7'h08, mask0);
             run_guard_tests();                          // every guarded register (audit round 7)
+            run_free_tests();                           // every other writable register (audit round 13)
             r14_write(7'h26, 8'h01);
             r14_cmd(8'h33);
             repeat (2000) @(posedge MCLK);
@@ -1267,8 +1321,11 @@ module tb_top_r14;
         for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
         spi_xfer(4, 0);
         expect_err_now(8'h02, "J3 FRAME_ERR for a sample read of 4 bytes with CRC on");
-        spi_tx[0] = 8'hC0;
-        spi_xfer(8, 0);
+        begin                                           // through r14_sample (audit round 13: the sample it popped was
+            logic [7:0] st3; logic [15:0] sq3; logic [23:0] d3; bit ok3;   // not checked): its CRC, and a VALID one goes
+            r14_sample(st3, sq3, d3, ok3);              // to the golden comparison by the hook
+            if (!ok3) fail("J3 complete sample read with CRC on: the sample's CRC");
+        end
         expect_noerr("J3 complete sample read with CRC on");
         spi_tx[0] = 8'h84; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_tx[3] = 8'h00; spi_xfer(4, 0);
         if (spi_rx[3] !== 8'h00) fail($sformatf("J3 MISO after a completed CRC read: %02h, expected 00", spi_rx[3]));
@@ -1324,9 +1381,7 @@ module tb_top_r14;
                 if (!ok || st[7] !== 1'b1) fail("J7 sample CRC or VALID");
                 if (st[5] !== (16'(sq - 16'(k)) < 16'd3))
                     fail($sformatf("J7 sample SEQ %0d (overload before SEQ %0d): OVL %b", sq, k, st[5]));
-                $fdisplay(fsmp, "%0d %0d %0d", sq, $signed(d), st);
-                nsamples = nsamples + 1;
-            end
+            end                                         // (logged by r14_sample's hook; audit round 13: logged twice)
         end
         r14_write(7'h07, 8'hFF);
         r14_write(7'h06, 8'hFF);

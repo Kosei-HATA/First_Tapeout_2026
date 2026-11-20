@@ -90,6 +90,7 @@ module eeg_clkgen #(
 );
 
     localparam logic [4:0] DLC = 5'(DAC_LOAD_CYCLE);
+`include "eeg_regs_defs.svh"
 
     logic [8:0] cnt;
     logic       fast;                     // chop rate of the current superperiod
@@ -194,8 +195,8 @@ module eeg_clkgen #(
             th_capture <= (cnt_nxt[4:0] == 5'd1);
             dac_load   <= (cnt_nxt[4:0] == DLC);
             cic_en     <= (cnt_nxt[4:0] == 5'd3);
-            tick       <= (cnt_nxt[4:0] == 5'd24) &&
-                          (fast_nxt ? (cnt_nxt[7:5] == 3'd1) : (cnt_nxt[8:5] == 4'd3));
+            tick       <= (cnt_nxt[4:0] == TICK_CYCLE) &&      // fsm_spec.TIMING, generated (audit round 13)
+                          (fast_nxt ? (cnt_nxt[7:5] == TICK_FRAME_128K) : (cnt_nxt[8:5] == TICK_FRAME_64K));
             chop       <= chop_wave(cnt_nxt, fast_nxt);
             chop_out   <= chop_out_nxt;
             dly_q      <= chop_dly;

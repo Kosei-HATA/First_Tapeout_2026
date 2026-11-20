@@ -196,7 +196,22 @@ REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", 
 FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "ERR": 0x06, "DFLAG": 0x07, "ALERT_MASK": 0x08,
               "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51,
               "IF_CFG": 0x55}
-FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1}
+FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
+              # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
+              # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
+              "CMD_ERR": 7, "STATE_ERR": 6, "CFG_ERR": 5, "RANGE_ERR": 4, "ADDR_ERR": 3, "CRC_ERR": 2, "FRAME_ERR": 1,
+              "RESET_FLAG": 0, "OVL": 1, "OVERRUN": 0, "STATE": 0, "LEVEL": 0}
+# the codes the requirements give (REG-01, REG-02, SPI-09, REG-08; audit round 13: a two-bit change of a code, which
+# keeps the distance check, passed every check)
+FIXED_CODES = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5,
+               "TEST_KEY": 0x3C}
+# the sample status byte (DAT-02, spec 3.4: VALID, OVERRUN, OVL, CHANGED, ERR, then three zeros)
+FIXED_SAMPLE_STATUS = {"VALID": 7, "OVERRUN": 6, "OVL": 5, "CHANGED": 4, "ERR": 3}
+# the values a read-only field may return, from the requirements (ID, VERSION and the data window are free; ODR and
+# QBITS are checked against fsm_spec.TIMING and the overload rule's codes)
+REQUIRED_RO_LEGAL = {"STATE": list(range(9)), "LEVEL": list(range(9)), "FIFO_DEPTH": [4, 8], "CRC": [1], "MARK1": [1],
+                     "MARK0": [0], "ALERT": [0, 1], "CMD_PENDING": [0, 1], "READY": [0, 1], "DATA": [0, 1],
+                     "OVL_NOW": [0, 1], "AFE_RST": [0, 1]}
 # REG-01's regions (stated with these ranges in the requirements): the kind of a register from its fields
 # the regions hold their registers' active copies (addr + SHADOW_MIRROR): settings 0x20-0x2F and copies 0x30-0x3F,
 # test registers 0x60-0x6F and copies 0x70-0x7F (audit round 12, auditor B: the copies 0x70, 0x71 were in no region)
@@ -282,6 +297,7 @@ CHECKS = [
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
     "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
+    "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数",
 ]
 
 
@@ -560,6 +576,31 @@ def check(verbose=True):
         if hits:
             errs.append(f"overload rule fires {hits} times on the full-scale stream {name}")
         notes.append(f"overload rule on {name}: {len(c)} frames, codes {c.min()}..{c.max()}, {hits} detections")
+    # audit round 13, auditor C: the codes, the sample status bits, the read-only values, ODR and QBITS
+    for c_, v_ in sorted(FIXED_CODES.items()):
+        got = TEST_KEY if c_ == "TEST_KEY" else COMMANDS.get(c_)
+        if got != v_:
+            errs.append(f"code {c_} {got if got is None else f'0x{got:02X}'}: the requirements fix it at 0x{v_:02X} "
+                        f"(REG-02, REG-08, SPI-09)")
+    for n_, b_, _d in SAMPLE_STATUS:
+        if n_ in FIXED_SAMPLE_STATUS and b_ != FIXED_SAMPLE_STATUS[n_]:
+            errs.append(f"sample status {n_} at bit {b_}; DAT-02 orders the byte VALID, OVERRUN, OVL, CHANGED, ERR "
+                        f"(bit {FIXED_SAMPLE_STATUS[n_]})")
+    if sorted(n_ for n_, *_ in SAMPLE_STATUS if n_ in FIXED_SAMPLE_STATUS) != sorted(FIXED_SAMPLE_STATUS):
+        errs.append("sample status: a bit DAT-02 names is missing")
+    for a_, n_, acc_, _l, fl_, _ in REGS:
+        for f in fl_:
+            if f["cls"] == "ro" and f["name"] in REQUIRED_RO_LEGAL and f["legal"] != REQUIRED_RO_LEGAL[f["name"]]:
+                errs.append(f"{n_}.{f['name']}: read values {f['legal']} are not the ones the requirements give "
+                            f"(REQUIRED_RO_LEGAL)")
+    fv = {f["name"]: f["reset"] for *_r, fl_, _d in REGS for f in fl_}
+    odr = (fv.get("ODR_H", 0) << 8) | fv.get("ODR_L", 0)
+    odr_t = round(FS.MCLK / FS.FRAME / FS.TIMING["decimation"])
+    if odr != odr_t:
+        errs.append(f"ODR {odr} SPS in ODR_H, ODR_L; fsm_spec.TIMING outputs {odr_t} SPS (MCLK / frame / decimation)")
+    q_t = max(OVL_RULE["codes"]).bit_length()
+    if fv.get("QBITS") != q_t:
+        errs.append(f"QBITS {fv.get('QBITS')}; the quantizer's codes 0..{max(OVL_RULE['codes'])} take {q_t} bits")
     if verbose:
         for n_ in notes:
             print("  " + n_)
@@ -655,6 +696,14 @@ def sv_package():
                f"  localparam logic [{wc - 1}:0] OVL_THRESHOLD = {wc}'d{OVL_RULE['threshold']};")
     mask = sum(1 << c for c in OVL_RULE["codes"])      # FLG-04's extreme codes (audit round 11: the RTL had them by hand)
     out.append(f"    localparam logic [31:0] OVL_EXT_CODES = 32'h{mask:08X};   // bit c: the quantizer code c is extreme")
+    # the sequencer's tick (fsm_spec.TIMING; audit round 13, auditor A: eeg_clkgen and the benches wrote it by hand, so
+    # an edit of TIMING moved the analog decks' events (VER-07, the APPLY_NR carry runs) and not the chip). eeg_clkgen
+    # decodes the frame of the chopper period from its counter: cnt[7:5] at 128 kHz (8 frames), cnt[8:5] at 64 kHz (16)
+    rt = FS.TIMING["rates"]
+    assert rt["128k"]["period_frames"] == 8 and rt["64k"]["period_frames"] == 16, "eeg_clkgen's counter fields"
+    out.append(f"    localparam logic [4:0] TICK_CYCLE = 5'd{FS.TIMING['tick_cycle']};"
+               f"  localparam logic [2:0] TICK_FRAME_128K = 3'd{rt['128k']['tick_frame']};"
+               f"  localparam logic [3:0] TICK_FRAME_64K = 4'd{rt['64k']['tick_frame']};")
     out += ["", "endpackage", "", "`default_nettype wire", ""]
     return "\n".join(out)
 
@@ -735,7 +784,7 @@ def selftest():
     import shutil
     import tempfile
     g = globals()
-    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "PIN_OF_CONTROL",
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL",
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
                "ofen_of_range": ofen_of_range}
@@ -941,6 +990,33 @@ def selftest():
     def m_legal_hole():
         fld("T_REC", "T_REC")["legal"] = [v for v in rng(29, 255) if v != 100]
 
+    def m_soft_code():                                   # audit round 13, auditor C: codes, bits and values
+        g["COMMANDS"]["SOFT_RESET"] = 0xA6
+
+    def m_key_code():
+        g["TEST_KEY"] = 0x3D
+
+    def m_err_swap():
+        fld("ERR", "FRAME_ERR").update(msb=2, lsb=2)
+        fld("ERR", "CRC_ERR").update(msb=1, lsb=1)
+
+    def m_smp_swap():
+        ss = list(g["SAMPLE_STATUS"])
+        ss[0], ss[1] = (ss[0][0], ss[1][1], ss[0][2]), (ss[1][0], ss[0][1], ss[1][2])
+        g["SAMPLE_STATUS"] = ss
+
+    def m_smp_missing():
+        g["SAMPLE_STATUS"] = [("0", b, d) if n == "CHANGED" else (n, b, d) for n, b, d in g["SAMPLE_STATUS"]]
+
+    def m_level_ro():
+        fld("FIFO_LEVEL", "LEVEL")["legal"] = rng(0, 7)
+
+    def m_odr():
+        fld("ODR_L", "ODR_L").update(reset=0xE9, legal=[0xE9])
+
+    def m_qbits():
+        fld("FORMAT", "QBITS").update(reset=4, legal=[4])
+
     def m_copy_region():                                 # audit round 12, auditor B: an active copy in no region
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "BLANK")
         r = list(g["REGS"][i]); r[0] = 0x38; g["REGS"][i] = tuple(r)
@@ -983,7 +1059,12 @@ def selftest():
             ("読み出し専用の ID を DBG_SEL の端子の出どころに", m_digital_pin), ("STATUS.ALERT の既定値を 0", m_status_reset),
             ("CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）", m_legal_narrow), ("T_REC の合法な値に穴（100）", m_legal_hole),
             ("DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）", m_mask_cover),
-            ("BLANK を 0x38 に（写し 0x48 が設定の区画の外）", m_copy_region)]
+            ("BLANK を 0x38 に（写し 0x48 が設定の区画の外）", m_copy_region),
+            ("SOFT_RESET のコードを 0xA6 に（2 ビットの差は保つ）", m_soft_code), ("試験の鍵を 0x3D に", m_key_code),
+            ("ERR の FRAME_ERR と CRC_ERR のビットの入れ違い", m_err_swap),
+            ("サンプルの状態の VALID と OVERRUN の入れ違い", m_smp_swap), ("サンプルの状態から CHANGED の名を除く", m_smp_missing),
+            ("FIFO_LEVEL の値を 0〜7 に", m_level_ro),
+            ("ODR_L を 0xE9 に（1001 SPS）", m_odr), ("QBITS を 4 に", m_qbits)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1096,6 +1177,14 @@ SELFTEST_EXPECT = {
     'T_REC の合法な値に穴（100）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
     'BLANK を 0x38 に（写し 0x48 が設定の区画の外）': ("outside its register's",),
+    'SOFT_RESET のコードを 0xA6 に（2 ビットの差は保つ）': (': the requirements fix it at 0x',),
+    '試験の鍵を 0x3D に': (': the requirements fix it at 0x',),
+    'ERR の FRAME_ERR と CRC_ERR のビットの入れ違い': (', the requirements read it at bit',),
+    'サンプルの状態の VALID と OVERRUN の入れ違い': ('; DAT-02 orders the byte VALID, OVERRUN, OVL, CHANGED, ERR (bit',),
+    'サンプルの状態から CHANGED の名を除く': ('sample status: a bit DAT-02 names is missing',),
+    'FIFO_LEVEL の値を 0〜7 に': ('are not the ones the requirements give (REQUIRED_RO_LEGAL)',),
+    'ODR_L を 0xE9 に（1001 SPS）': ('SPS in ODR_H, ODR_L; fsm_spec.TIMING outputs',),
+    'QBITS を 4 に': ("; the quantizer's codes 0..",),
 }
 
 

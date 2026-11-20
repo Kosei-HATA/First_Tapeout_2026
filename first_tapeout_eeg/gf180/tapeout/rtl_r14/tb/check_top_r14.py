@@ -42,17 +42,23 @@ def main():
         out, _ = G.cic3_run(codes[s0 * R: s1 * R])
         for j, (d, valid) in enumerate(out):
             gold[s0 + j] = (d, valid)
-    n, bad = 0, []
+    n, bad, seen, dup = 0, [], set(), []
     for line in open(os.path.join(B, "top_r14_samples.log")):
         seq, data, st = map(int, line.split())
         n += 1
+        if seq in seen:                                # audit round 13: J7 logged its samples twice (counts of 123
+            dup.append(seq)                            # samples were 118 distinct ones)
+        seen.add(seq)
         g = gold.get(seq)
         if g is None or g[0] != data or not g[1]:
             bad.append((seq, data, g))
-    print(f"{n} samples compared with the golden CIC ({len(clears)} clears at SEQ {clears}): {len(bad)} mismatches")
+    print(f"{n} samples compared with the golden CIC ({len(clears)} clears at SEQ {clears}): {len(bad)} mismatches, "
+          f"{len(dup)} logged twice")
     for b in bad[:10]:
         print(f"  SEQ {b[0]}: RTL {b[1]}, golden {b[2]}")
-    ok = n > 0 and not bad
+    if dup:
+        print(f"  logged twice (a sample read twice, or logged twice): SEQ {dup[:10]}")
+    ok = n > 0 and not bad and not dup
     print("PASS: every sample == golden CIC output of its SEQ" if ok else "FAIL")
     return 0 if ok else 1
 

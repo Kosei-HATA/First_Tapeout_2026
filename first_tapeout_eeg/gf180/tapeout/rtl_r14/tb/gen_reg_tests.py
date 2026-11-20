@@ -27,6 +27,7 @@ import regmap as RM  # noqa: E402
 OUT = os.path.join(HERE, "..", "build", "reg_tests.svh")
 A_ERR, A_KEY = 0x06, 0x11
 E_ADDR, E_RANGE = 0x08, 0x10
+E_CMD = 1 << next(f["lsb"] for r in RM.REGS if r[1] == "ERR" for f in r[4] if f["name"] == "CMD_ERR")   # the wrong key
 
 
 def reset_byte(fields):
@@ -203,11 +204,36 @@ def main():
         if regs[a][3]:
             L.append(f"    guard_locked(7'h{a:02X}, 8'h{legal_other(regs[a][4]):02X}, \"{regs[a][1]}\");")
     L.append("endtask")
+    # 6. the writes the guard does not cover (audit round 13, auditor C: only ALERT_MASK had been written while a command
+    #    was pending, and a guard widened to IF_CFG and DEBUG, or to the test key, passed every test): every writable
+    #    register outside regmap.guarded_addrs() but the command register, written while FLUSH waits: no flag and
+    #    written (free_* in tb_top_r14; the test key first, as it unlocks DEBUG)
+    free = [r for r in RM.REGS if r[2] in ("RW", "W1C", "WO") and r[0] not in RM.guarded_addrs() and r[1] != "COMMAND"]
+    L.append("task automatic run_free_tests();")
+    for r in free:
+        if r[1] == "TEST_KEY":
+            L += [f"    free_key(8'h{RM.TEST_KEY:02X}, 8'h00, \"TEST_KEY: the key\");",
+                  "    free_key(8'h00, 8'h00, \"TEST_KEY: lock\");",
+                  f"    free_key(8'h5A, 8'h{E_CMD:02X}, \"TEST_KEY: a wrong key (CMD_ERR, not STATE_ERR)\");"]
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    for r in free:
+        if r[1] == "TEST_KEY":
+            continue
+        if r[1] == "ERR":
+            L.append("    free_err();")
+        elif r[2] == "W1C":
+            L.append(f"    free_w1c(7'h{r[0]:02X}, 8'h{sum(field_mask(f) for f in r[4]):02X}, \"{r[1]}\");")
+        elif r[1] == "IF_CFG":
+            L.append("    free_ifcfg();")
+        else:
+            L.append(f"    free_one(7'h{r[0]:02X}, 8'h{legal_other(r[4]):02X}, \"{r[1]}\");")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    L.append("endtask")
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
     chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "rt_write_check(", "guard_one(", "guard_range(",
-           "guard_locked(")
+           "guard_locked(", "free_one(", "free_w1c(", "free_err(", "free_key(", "free_ifcfg(")
     total, per, skip = 0, {"": 0, "FIFO4": 0}, None
     for ln in L:                                       # checks in the file, and those each FIFO configuration runs
         t = ln.strip()

@@ -18,7 +18,7 @@
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; cfg_ok and nr_ok against
 #               regmap over the full 10-bit M (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to T, listed in the bench's header); samples == golden
+#   tb_top_r14  the whole block through its pins (phases A to V and K last, listed in the bench's header); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  random SPI frames into the whole block, replayed through fsm_spec's SPI table (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)

@@ -3,8 +3,8 @@
 // DEPTH entries of {status[7:0], seq[15:0], data[23:0]} (48 bits); the status byte and SEQ are built by the top
 // (gf180/tapeout/rtl/spec/regmap.py SAMPLE_STATUS; SEQ = the output's number since RESET_N release).
 // One MCLK cycle: flush, then pop, then push (gf180/tapeout/rtl/spec/fsm_spec.py fifo_step: a new sample is never
-// lost to a flush or a pop in the same cycle). A push into a full FIFO without a pop in the same cycle drops the
-// new sample and pulses ovr_set. Empty: rd_word = {empty_status, 16'h0, 24'h0}.
+// lost to a flush or a pop in the same cycle). A push into a full FIFO without a pop or a flush in the same cycle
+// drops the new sample and pulses ovr_set. Empty: rd_word = {empty_status, 16'h0, 24'h0}.
 // The SPI copies rd_word at the header of a sample read (snap) and requests the pop at CS_N rising after exactly 8
 // bytes. `held` (fsm_spec SPI condition `head`, fifo_step): the copy is a stored entry that is still the head - set by
 // a snap of a non-empty FIFO, cleared by a flush or a pop - and a pop removes the head only then (never the empty

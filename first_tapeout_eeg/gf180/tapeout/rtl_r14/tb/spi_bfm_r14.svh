@@ -131,6 +131,10 @@ always @(miso_pin) begin                     // at the pin: a change while SCLK 
         if ($realtime - spi_t_fall > spi_miso_lat_max) spi_miso_lat_max = $realtime - spi_t_fall;
         if ($realtime - spi_t_fall > 3.0 * TMCLK + SPI_TPAD + 0.01)
             spi_err($sformatf("MISO %0.1f ns after the SCLK fall (at most 3 MCLK and the pad delay)", $realtime - spi_t_fall));
+        // and from below (audit round 9: a single-flop synchronizer passed every test): SCLK passes 2 flops before its
+        // fall is seen, so MISO changes more than 2 MCLK after the fall
+        if ($realtime - spi_t_fall < 2.0 * TMCLK + SPI_TPAD - 0.5)
+            spi_err($sformatf("MISO %0.1f ns after the SCLK fall: earlier than 2 synchronizer flops", $realtime - spi_t_fall));
     end
 end
 always @(negedge CS_N) spi_t_csfall = $realtime;
@@ -142,4 +146,6 @@ always @(posedge MISO_OE) begin
     if (CS_N !== 1'b0) spi_err("MISO_OE raised while CS_N is high");
     if ($realtime - spi_t_csfall > spi_oe_lat_max) spi_oe_lat_max = $realtime - spi_t_csfall;
     if ($realtime - spi_t_csfall > 4.0 * TMCLK) spi_err("MISO_OE later than 4 MCLK after CS_N fell");
+    if ($realtime - spi_t_csfall < 1.0 * TMCLK - 0.5)       // audit round 9: CS_N passes 2 synchronizer flops
+        spi_err($sformatf("MISO_OE %0.1f ns after CS_N fell: earlier than 2 synchronizer flops", $realtime - spi_t_csfall));
 end

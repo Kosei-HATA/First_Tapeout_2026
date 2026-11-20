@@ -35,6 +35,7 @@ module tb_ovl;
         end
         $fclose(fo);
         $fclose(fv);
+        $display("tb_ovl: %0d frames", nf);       // the closing line (the mutation runner requires it; audit round 9)
         $finish;
     end
 endmodule

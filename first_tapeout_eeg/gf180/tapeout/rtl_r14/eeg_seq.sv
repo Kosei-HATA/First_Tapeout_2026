@@ -93,7 +93,7 @@ module eeg_seq (
             a_ack = cmd_valid;
             // the command (highest priority; at most one)
             if (is_stop) begin
-                if (state != S_IDLE) nxt = S_IDLE;          // IDLE: stays (cancel)
+                if (state != S_IDLE) nxt = S_IDLE;          // IDLE: accepted, does nothing (IGN)
             end else if (is_start) begin
                 if (state == S_IDLE) begin
                     if (cfg_ok) begin

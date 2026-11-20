@@ -7,13 +7,14 @@
 *
 * Outputs:
 *   VBN   AFE NMOS tail gate: NMOS diode W10/L1 x10 fed with 6/7/8/10 units,
-*         selected by AFE_IBIAS[1:0] = IB1 IB0 (00 6, 01 7, 10 8 (reset), 11 10).
-*         The AFE tail (W10/L1 x768) mirrors it: 8 units -> 19.2 mA.
+*         selected by AFE_IBIAS[1:0] = IB1 IB0 (00 6, 01 7, 10 8, 11 10; the r14 digital resets to
+*         11 = 10 units, r13 to 10 = 8). The AFE tail (W10/L1 x768) mirrors it: 8 units -> 19.2 mA,
+*         10 units -> 24 mA (comment updated 11/20).
 *   VBCM  AFE CMFB tail gate: NMOS diode W10/L2 x3 fed with 1 unit
 *         (each CMFB tail W10/L2 x2 carries about 21 uA).
 *   BLN   sources 2/4/6/8 units (BP1:BP0, reset 4 = 125 uA) into the AFE booster NMOS
 *         mirror diode; this sets the PMOS-cascode booster currents.
-*   BLP   sinks 2/4/6/8 units (BN1:BN0, reset 4) from the AFE booster PMOS mirror
+*   BLP   sinks 2/4/6/8 units (BN1:BN0; r14 resets to 00 = 2, r13 to 4) from the AFE booster PMOS mirror
 *         diode; this sets the NMOS-cascode booster currents.
 *   VBN1  ADC OTA tail gate (5 units into W10/L1 x6: 26 uA per W10/L1 finger)
 *   VBCM1 ADC CMFB tail gate (1 unit into W10/L2 x3)

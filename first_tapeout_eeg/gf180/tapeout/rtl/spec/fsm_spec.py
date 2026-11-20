@@ -376,8 +376,9 @@ def check_vocab(F):
             for b in cell:
                 used_a |= set(b["actions"])
                 used_c |= set(guard_vars(b["guard"]))
-    errs = [f"{F['name']}: action {a} is defined but never used" for a in F["actions"] if a not in used_a]
-    errs += [f"{F['name']}: condition {c} is defined but never used" for c in F["conds"] if c not in used_c]
+    errs = [f"{F['name']}: action {a} is in the list of actions but never used" for a in F["actions"] if a not in used_a]
+    errs += [f"{F['name']}: condition {c} is in the list of conditions but never used" for c in F["conds"]
+             if c not in used_c]
     return errs
 
 
@@ -796,7 +797,7 @@ def check_spi_frames():
         exp, loads = spi_expect(kind, crc_en, nbytes, extra > 0, env)
         got = {a for a in acts if a in effects}
         if got != exp:
-            errs.append(f"{tag}: {sorted(got)}, expected {sorted(exp)}")
+            errs.append(f"{tag}: effects {sorted(got)}, but spi_expect gives {sorted(exp)}")
         if loads and not extra:
             if kind == "read":
                 d = acts.count("load_data") + acts.count("load_zero")
@@ -879,9 +880,9 @@ def check_fifo():
                 if not 0 <= c2 <= DEPTH:
                     errs.append(f"{tag}: occupancy {c2} out of range")
                 if c2 != len(q):
-                    errs.append(f"{tag}: occupancy {c2}, expected {len(q)}")
+                    errs.append(f"{tag}: occupancy {c2}, but the model's occupancy is {len(q)}")
                 if ovr != e_ovr:
-                    errs.append(f"{tag}: OVERRUN {ovr}, expected {e_ovr}")
+                    errs.append(f"{tag}: OVERRUN {ovr}, but the model's OVERRUN is {e_ovr}")
                 if push and not ovr and c2 == 0:
                     errs.append(f"{tag}: a pushed sample was lost")
                 if popped and not e_pop:
@@ -921,7 +922,8 @@ def check_timing():
     tc = T["tick_cycle"]
     for c in (tc, (tc + 1) % 32):                  # the tick's strobe cycle and the edge its outputs change at
         if c in T["busy_cycles"]:
-            errs.append(f"tick (cycle {tc}, outputs at e{tc + 1}) meets {T['busy_cycles'][c]} at cycle {c}")
+            errs.append(f"the tick meets a busy frame cycle (tick at cycle {tc}, outputs at e{tc + 1}): "
+                        f"{T['busy_cycles'][c]} at cycle {c}")
     if tc <= T["blank_max"] or tc == 31:
         errs.append(f"tick at frame cycle {tc} can fall inside an output-chopper blanking window")
     for name, r in T["rates"].items():
@@ -992,10 +994,12 @@ CHECKS = [
     "分岐ごとの性質（シーケンサ、第 6 回で追加）：出力の時刻の分岐は必ず数え（seq_inc）、格納か破棄のちょうど一方。出力の時刻の動作（store、discard、seq_inc、cic_clear）は出力の時刻のみ。RESET の出力の時刻も数える（DAT-03）。拒否の旗はちょうど 1 個で、CFG_ERR は設定の整合に依る分岐、STATE_ERR は状態による無条件の拒否のみ。待ちの数え直しは、表とは独立に書いた一覧（WARMUP の APPLY と APPLY_NR、WAIT_E の APPLY_NR）のとおり",
     "分岐ごとの性質（シーケンサ）：命令を無視（IGN）してよいのは IDLE の STOP のみ。拒否した命令（CFG_ERR、STATE_ERR）はほかの動作を伴わず状態を変えない（SEQ-09）。待ちの数え直し（restart）は反映（apply）とともにのみ。CHANGED の印（mark）は RUN の受け付けた APPLY_NR のみ。FLUSH は FIFO を空にするのみ（数え直し、印、反映、遷移なし）",
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
-    "第 7 回で追加（1 か所の書き換えの全数、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
+    "第 7 回で追加（その時の掃引の 1 か所の書き換え、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる。第 9 回の C の掃引 6,267 通りでは、整合する設定の命令を拒否とする 12 通りが通っていた：下の命令の結果の照合で塞いだ）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
     f"SPI のフレーム（書き込み・読み出し・サンプル × CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
+    "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）",
+    "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
 ]
 
@@ -1057,17 +1061,78 @@ def check_seq_branches():
 SEQ_RESTARTS = {("WARMUP", "APPLY"), ("WARMUP", "APPLY_NR"), ("WAIT_E", "APPLY_NR")}
 
 
+# What each command must do in each state, written from the requirements and not from the table (audit round 9,
+# auditor C: a table that refused a consistent APPLY or APPLY_NR with CFG_ERR or STATE_ERR passed every check, and with
+# the RTL changed to match it passed every test). SEQ-05 (START from IDLE only, refused when the settings do not fit),
+# SEQ-07 / 08 (APPLY: in IDLE and WARMUP applied, in RECOVER..RUN with its pulse, refused in PRE and PULSE), SEQ-15
+# (APPLY_NR: one offset step while the AFE runs), the round-1 rule for STOP in IDLE, FLUSH in every state.
+SEQ_AFE_RUNNING = ("RECOVER", "WAIT_E", "ALIGN", "FILL", "RUN")
+
+
+def seq_command_outcome(s, c, env):
+    """'accept', 'CFG_ERR', 'STATE_ERR' or 'IGN' for command c in state s under the conditions env."""
+    if c == "STOP":
+        return "IGN" if s == "IDLE" else "accept"
+    if c == "FLUSH":
+        return "accept"
+    if c == "START":
+        return ("accept" if env["cfg_ok"] else "CFG_ERR") if s == "IDLE" else "STATE_ERR"
+    if s in ("PRE", "PULSE"):
+        return "STATE_ERR"                          # APPLY and APPLY_NR while the pulse is made
+    if c == "APPLY" or s in ("IDLE", "WARMUP"):
+        return "accept" if env["cfg_ok"] else "CFG_ERR"
+    return "accept" if env["cfg_ok"] and env["nr_ok"] else "CFG_ERR"     # APPLY_NR while the AFE runs
+
+
+def check_seq_commands():
+    """Every state x command x condition value against seq_command_outcome; an accepted command also does what the
+    requirements give (START -> WARMUP, APPLY in RECOVER..RUN -> PRE, APPLY and APPLY_NR apply)."""
+    errs, t = [], SEQ["table"]
+    for s_ in [x[0] for x in SEQ_STATES if x[0] != "RESET"]:
+        for c in SEQ_COMMANDS:
+            cell = t.get((s_, c))
+            for env in all_envs(list(SEQ_CONDS), SEQ["constraint"]):
+                want = seq_command_outcome(s_, c, env)
+                if cell == IGN:
+                    got, b = "IGN", None
+                else:
+                    b = pick(cell, env)
+                    if not isinstance(b, dict):
+                        continue                    # reported by check_tables
+                    a = set(b["actions"])
+                    got = "STATE_ERR" if "STATE_ERR" in a else ("CFG_ERR" if "CFG_ERR" in a else "accept")
+                bad = got != want
+                if not bad and got == "accept" and b is not None:
+                    bad = ((c == "START" and b["next"] != "WARMUP")
+                           or (c == "APPLY" and s_ in SEQ_AFE_RUNNING and b["next"] != "PRE")
+                           or (c in ("APPLY", "APPLY_NR") and "apply" not in b["actions"]))
+                if bad:
+                    errs.append(f"SEQ {s_}/{c} {env}: {got} -> {b['next'] if b else None}; the requirements give "
+                                f"{want} (command outcome, SEQ-05/07/08/15)")
+                    break
+    return errs
+
+
+# A table that uses an undefined condition, next state or action: the checks that evaluate the guards and follow the
+# next states cannot run on it (an undefined name stops them), so only the table checks report (audit round 9).
+MALFORMED = (": undefined conditions", ": unknown next state", ": undefined action")
+
+
 def run_checks(verbose=True):
-    report, total = [], 0
-    report += check_seq_branches()
-    for F, must, excl in ((SEQ, ["IDLE", "RUN"], ("RST",)), (SPI, ["IDLE"], ())):
-        report += check_tables(F) + check_graph(F, must, excl) + check_vocab(F)
-    e, n1 = check_seq_ticks()
-    report += e
-    e, n2 = check_spi_props()
-    report += e
-    e, n2b = check_spi_frames()
-    report += e
+    report = check_tables(SEQ) + check_tables(SPI)
+    well_formed = not any(k in r for r in report for k in MALFORMED)
+    report += check_vocab(SEQ) + check_vocab(SPI)
+    n1 = n2 = n2b = 0
+    if well_formed:
+        report += check_seq_commands()
+        report += check_seq_branches()
+        report += check_graph(SEQ, ["IDLE", "RUN"], ("RST",)) + check_graph(SPI, ["IDLE"], ())
+        e, n1 = check_seq_ticks()
+        report += e
+        e, n2 = check_spi_props()
+        report += e
+        e, n2b = check_spi_frames()
+        report += e
     e, n3 = check_fifo()
     report += e
     e, tnotes = check_timing()
@@ -1078,6 +1143,8 @@ def run_checks(verbose=True):
               f"SPI {len(SPI_STATES)} states x {len(SPI_EVENTS)} events, {n2} branches, {n2b} frames; FIFO {n3} cases")
         for t_ in tnotes:
             print("  timing: " + t_)
+        if not well_formed:
+            print("the tables use undefined names: only the table, FIFO and timing checks ran")
         if report:
             print(f"{len(report)} violations:")
             for r in report:
@@ -1321,9 +1388,74 @@ def fresh():
     return 1 if stale else 0
 
 
-def selftest():
-    """Mutation test of the checker: each mutation below is a plausible specification error and must be detected."""
+# The functions whose messages are violations (each errs / P append, or a list of them, in these functions)
+CHECK_FUNCS = ("check_tables", "check_vocab", "check_graph", "seq_properties", "check_seq_ticks", "check_seq_branches",
+               "check_seq_commands", "check_spi_props", "check_spi_frames", "check_fifo", "check_timing")
+
+
+def check_messages():
+    """(function, line, fixed text) of every violation message of the checks; the fixed text is the longest literal
+    piece of the message. Audit round 9, auditor C: 25 of 100 messages were produced by no self-test mutation, so a
+    check could be lost or broken without the self-test noticing; the self-test now requires each message to be the
+    expected message of a mutation that produces it. check_seq_ticks' wrapper of seq_properties' messages (it formats
+    p, a property message) is not one of its own."""
+    import ast
+    import inspect
+    import textwrap
+    out = []
+    for name in CHECK_FUNCS:
+        fn = globals()[name]
+        first = fn.__code__.co_firstlineno
+        for n in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(fn)))):
+            arg = None
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "append"
+                    and isinstance(n.func.value, ast.Name) and n.func.value.id in ("errs", "P") and n.args):
+                arg = n.args[0]
+            elif isinstance(n, (ast.Assign, ast.AugAssign)) and isinstance(n.value, ast.ListComp):
+                tgt = n.targets[0] if isinstance(n, ast.Assign) else n.target
+                if isinstance(tgt, ast.Name) and tgt.id == "errs":
+                    arg = n.value.elt
+            if arg is None:
+                continue
+            parts = arg.values if isinstance(arg, ast.JoinedStr) else [arg]
+            if any(isinstance(v, ast.FormattedValue) and isinstance(v.value, ast.Name) and v.value.id == "p"
+                   for v in parts):
+                continue                                   # the wrapper of a property message
+            lits = [v.value for v in parts if isinstance(v, ast.Constant) and isinstance(v.value, str)]
+            out.append((name, first + n.lineno - 1, max(lits, key=len).strip() if lits else "", "\x00".join(lits)))
+    return out
+
+
+def refusal_mutations():
+    """Audit round 9, auditor C: each consistent branch of APPLY / APPLY_NR refused with CFG_ERR, and each such cell
+    refused whole with STATE_ERR (all passed every check before the command-outcome rules)."""
     import copy
+    out = []
+    cells = [("IDLE", "APPLY"), ("IDLE", "APPLY_NR"), ("RECOVER", "APPLY"), ("RECOVER", "APPLY_NR"), ("WAIT_E", "APPLY"),
+             ("ALIGN", "APPLY"), ("ALIGN", "APPLY_NR"), ("FILL", "APPLY"), ("FILL", "APPLY_NR"), ("RUN", "APPLY")]
+    for key in cells:
+        for i, b in enumerate(SEQ["table"][key]):
+            if "CFG_ERR" in b["actions"]:
+                continue
+
+            def m(t, key=key, i=i):
+                t[key][i] = B(t[key][i]["guard"], ["CFG_ERR"])
+            out.append((f"{key[0]} の {key[1]} の整合する分岐を CFG_ERR で拒む（{b['guard']}）", m))
+    for key in cells:
+        out.append((f"{key[0]} の {key[1]} を STATE_ERR で拒む", lambda t, key=key: t.__setitem__(key, [B(ALWAYS, ["STATE_ERR"])])))
+    return out
+
+
+def selftest_runs():
+    """Every self-test mutation, run: [(machine, name, report)]. Each is a plausible specification error: a table edit,
+    a FIFO rule, the resolution of a tick and its order, the state codes, or the timing record."""
+    import copy
+
+    def add_act(key, guard, act):                     # one more action on the branch with this guard
+        def m(t):
+            b = next(b for b in t[key] if b["guard"] == guard)
+            b["actions"] = b["actions"] + [act]
+        return m
     seq_mut = [
         ("RUN/STOP の欄の欠落", lambda t: t.pop(("RUN", "STOP"))),
         ("起こり得る FLUSH を IMP にする", lambda t: t.__setitem__(("RUN", "FLUSH"), IMP)),
@@ -1403,7 +1535,19 @@ def selftest():
         ("FILL の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ", lambda t: t.__setitem__(("FILL", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "WAIT_E"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         ("IDLE の STOP を STATE_ERR で拒む", lambda t: t.__setitem__(("IDLE", "STOP"), [B(ALWAYS, ["STATE_ERR"])])),
         ("WARMUP のタイマの満了を無視（IGN）", lambda t: t.__setitem__(("WARMUP", "TMR"), IGN)),
-    ]
+        # audit round 9, auditor C: the messages no mutation produced (each now the expected message of one)
+        ("IDLE のタイマの満了の欄を定義する（IDLE にタイマはない）", lambda t: t.__setitem__(("IDLE", "TMR"), IGN)),
+        ("RUN の APPLY の条件に未定義の名前", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_okay", ["apply", "flush"], "PRE"), B("not cfg_okay", ["CFG_ERR"])])),
+        ("RUN の STOP の行き先が未定義の状態", lambda t: t.__setitem__(("RUN", "STOP"), [B(ALWAYS, [], "HALT")])),
+        ("RUN の FLUSH に未定義の動作", lambda t: t.__setitem__(("RUN", "FLUSH"), [B(ALWAYS, ["flush_all"])])),
+        ("RUN の APPLY_NR で数え直す（RUN にタイマはない）", add_act(("RUN", "APPLY_NR"), "cfg_ok and nr_ok", "restart")),
+        ("ALIGN の出力の時刻で格納する", lambda t: t.__setitem__(("ALIGN", "OUT"), [B(ALWAYS, ["cic_clear", "store", "seq_inc"], "FILL")])),
+        ("FILL の有効でない出力の時刻で CIC をクリアする", add_act(("FILL", "OUT"), "not valid", "cic_clear")),
+        ("RUN の APPLY で PRE を飛ばして PULSE へ", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_ok", ["apply", "flush"], "PULSE"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("RUN の APPLY が反映せずに PRE へ", lambda t: t.__setitem__(("RUN", "APPLY"), [B("cfg_ok", ["flush"], "PRE"), B("not cfg_ok", ["CFG_ERR"])])),
+        ("RUN の APPLY_NR で FIFO を空にする", add_act(("RUN", "APPLY_NR"), "cfg_ok and nr_ok", "flush")),
+        ("PULSE の APPLY を設定によって STATE_ERR で拒む", lambda t: t.__setitem__(("PULSE", "APPLY"), [B("cfg_ok", ["STATE_ERR"]), B("not cfg_ok", ["CFG_ERR"])])),
+    ] + refusal_mutations()
     spi_mut = [
         ("CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）", lambda t: t.__setitem__(("IDLE", "BIT"), [B(ALWAYS, [], "HDR")])),
         ("読み出しの先頭バイトで書き込みのアドレスを取り込む", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data", "latch_addr"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
@@ -1436,6 +1580,9 @@ def selftest():
         ("先頭バイトでアドレスを進める", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["addr_inc", "load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
         ("サンプルの先頭バイトでレジスタのデータを載せる", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot", "load_data"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
         ("CRC 有効の読み出しでもアドレスを進める", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc", "addr_inc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])])),
+        # audit round 9, auditor C
+        ("RREG の CS_N の立ち上がりを起こり得ない（IMP）とする", lambda t: t.__setitem__(("RREG", "CSR"), IMP)),
+        ("WDAT のバイトで FRAME_ERR を立てる", lambda t: [b.__setitem__("actions", b["actions"] + ["FRAME_ERR"]) for b in t[("WDAT", "BYTE")]]),
     ]
     global fifo_step
     fifo_orig = fifo_step
@@ -1467,41 +1614,282 @@ def selftest():
         c2, ovr, popped, h2 = fifo_orig(count, push, pop, flush, held, snap)
         return c2, ovr, popped, (1 if snap and not flush and not popped and c2 else h2)
 
+    def fifo_bad_no_depth(count, push, pop, flush, held=0, snap=0):     # audit round 9: a push past the depth
+        c2, ovr, popped, h2 = fifo_orig(count, push, pop, flush, held, snap)
+        return (c2 + 1 if ovr else c2), False, popped, h2
+
+    def fifo_bad_pop_unheld(count, push, pop, flush, held=0, snap=0):   # pops the head the SPI did not send
+        return fifo_orig(count, push, pop, flush, 1 if count else held, snap)
+
+    def fifo_bad_never_pop(count, push, pop, flush, held=0, snap=0):
+        return fifo_orig(count, push, 0, flush, held, snap)
+
     fifo_mut = [("FLUSH と同じサイクルの格納を捨てる", fifo_bad_flush_drops_push),
                 ("取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）", fifo_bad_pop_after_push),
                 ("フラッシュで写しの印を消さない（送っていない語を取り出しうる）", fifo_bad_flush_keeps_held),
-                ("空の語の写しにも印を付ける（あとの格納を取り出しうる）", fifo_bad_snap_empty)]
-    results, ok = [], True
+                ("空の語の写しにも印を付ける（あとの格納を取り出しうる）", fifo_bad_snap_empty),
+                ("満杯への格納で深さを超える", fifo_bad_no_depth),
+                ("SPI が送っていない先頭も取り出す（写しの印を見ない）", fifo_bad_pop_unheld),
+                ("送った語を取り出さない", fifo_bad_never_pop)]
+    # the resolution of one tick (audit round 9): the timer's expiry, winning the tick, drops a refusal's flag
+    global seq_resolve
+    resolve_orig = seq_resolve
+
+    def resolve_timer_drops_flags(s, present, env):
+        nxt, acts, w = resolve_orig(s, present, env)
+        return nxt, ([a for a in acts if a not in ("CFG_ERR", "STATE_ERR")] if w == "TMR" else acts), w
+
+    # the state codes and the timing record (audit round 9); each returns its undo
+    def setitem(obj, key, val):
+        old = obj[key]
+        obj[key] = val
+        return lambda: obj.__setitem__(key, old)
+
+    def without_busy():
+        saved = dict(SPI_CONDS)
+        SPI_CONDS.pop("busy")
+        return lambda: (SPI_CONDS.clear(), SPI_CONDS.update(saved))
+
+    data_mut = [
+        ("SEQ", "STATE の符号の重複（RECOVER を WARMUP と同じ 1 に）", lambda: setitem(SEQ_STATES, 3, ("RECOVER", 1) + SEQ_STATES[3][2:])),
+        ("TIME", "tick を CHOP1 の縁のサイクル（16）に", lambda: setitem(TIMING, "tick_cycle", 16)),
+        ("TIME", "tick をブランキングの窓の中（サイクル 12）に", lambda: setitem(TIMING, "tick_cycle", 12)),
+        ("TIME", "128 kHz の tick を相 A の終わり近く（フレーム 3）に", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=8, tick_frame=3)})),
+        ("TIME", "SPI に未処理の規則（busy）がない", without_busy),
+        ("TIME", "チョッパの周期が 1 ms を割り切らない（12 フレーム）", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=12, tick_frame=1)})),
+        ("TIME", "CHOP1 の周期が 1 ms を割り切らない（384 フレーム）", lambda: setitem(TIMING, "chop1_periods_frames", TIMING["chop1_periods_frames"] + [384])),
+        ("TIME", "CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）", lambda: setitem(TIMING, "cic_order", 1)),
+    ]
+    results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
     prio_orig = list(SEQ_PRIORITY)
     for name, order in (("同じ tick でタイマの満了を APPLY より優先", ["STOP", "START", "TMR", "APPLY", "APPLY_NR", "FLUSH"]),
                         ("同じ tick でタイマの満了を START より優先", ["STOP", "TMR", "START", "APPLY", "APPLY_NR", "FLUSH"])):
         SEQ_PRIORITY[:] = order
-        rep, _ = run_checks(verbose=False)
-        results.append(("SEQ", name, len(rep), rep[0] if rep else ""))
-        ok &= bool(rep)
+        results.append(("SEQ", name, run_checks(verbose=False)[0]))
     SEQ_PRIORITY[:] = prio_orig
     for F, muts in ((SEQ, seq_mut), (SPI, spi_mut)):
         orig = F["table"]
         for name, m in muts:
             F["table"] = copy.deepcopy(orig)
             m(F["table"])
-            rep, _ = run_checks(verbose=False)
-            results.append((F["name"], name, len(rep), rep[0] if rep else ""))
-            ok &= bool(rep)
+            results.append((F["name"], name, run_checks(verbose=False)[0]))
         F["table"] = orig
     for name, f in fifo_mut:
         fifo_step = f
-        rep, _ = run_checks(verbose=False)
-        results.append(("FIFO", name, len(rep), rep[0] if rep else ""))
-        ok &= bool(rep)
+        results.append(("FIFO", name, run_checks(verbose=False)[0]))
     fifo_step = fifo_orig
-    for m, name, n, first in results:
-        print(f"{'detected' if n else 'MISSED  '} {m:4s} {name}: {n} violations" + (f" (e.g. {first[:110]})" if n else ""))
+    seq_resolve = resolve_timer_drops_flags
+    results.append(("SEQ", "同じ tick でタイマの満了が拒否の旗を消す", run_checks(verbose=False)[0]))
+    seq_resolve = resolve_orig
+    for m, name, apply in data_mut:
+        undo = apply()
+        try:
+            results.append((m, name, run_checks(verbose=False)[0]))
+        finally:
+            undo()
+    return results
+
+
+def selftest():
+    """Mutation test of the checker: each mutation is a plausible specification error and must be detected by the
+    message it is written for (SELFTEST_EXPECT), and every check message must be the expected message of a mutation
+    (audit round 9, auditor C: a mutation counted as detected by any violation, and a quarter of the messages were
+    produced by none, so a check could be lost or broken without notice)."""
+    results = selftest_runs()
+    msgs = check_messages()
+    texts = [m[2] for m in msgs]
+    problems = [f"{fn} line {ln}: a message without 12 fixed characters (it cannot be told apart)"
+                for fn, ln, t, _ in msgs if len(t) < 12]
+    problems += [f"two check messages share the fixed text {t!r}" for t in sorted(set(texts)) if texts.count(t) > 1]
+    problems += [f"{fn} line {ln}: the fixed text {t!r} also occurs in the message of {f2} line {l2}"
+                 for fn, ln, t, _ in msgs for f2, l2, _, whole in msgs if (f2, l2) != (fn, ln) and t in whole]
+    names = [r[1] for r in results]
+    problems += [f"two mutations share the name {n}" for n in sorted(set(names)) if names.count(n) > 1]
+    expected, n_det = set(), 0
+    for m, name, rep in results:
+        want = SELFTEST_EXPECT.get(name)
+        if not want:
+            problems.append(f"mutation {name}: no expected message (SELFTEST_EXPECT)")
+            want = ()
+        expected |= set(want)
+        unknown = [w for w in want if w not in texts]
+        problems += [f"mutation {name}: expects {w!r}, which is not a check message" for w in unknown]
+        lacking = [w for w in want if not any(w in r for r in rep)]
+        det = bool(want) and not lacking and not unknown
+        n_det += det
+        print(f"{'detected' if det else 'MISSED  '} {m:4s} {name}: {len(rep)} violations"
+              + (f", the expected one(s) among them" if det else
+                 f", without the expected {lacking[0]!r}" if lacking else ""))
+    unexpected = [(fn, ln, t) for fn, ln, t, _ in msgs if t not in expected]
+    for fn, ln, t in unexpected:
+        problems.append(f"{fn} line {ln}: no mutation expects the message {t!r}")
     rep, _ = run_checks(verbose=False)
-    print(f"{sum(1 for r in results if r[2])} of {len(results)} mutations detected; unmutated specification: "
-          f"{len(rep)} violations")
-    return 0 if ok and not rep else 1
+    for p_ in problems:
+        print("PROBLEM  " + p_)
+    print(f"{n_det} of {len(results)} mutations detected by their expected messages; {len(msgs)} check messages, "
+          f"{len(msgs) - len(unexpected)} expected by a mutation; unmutated specification: {len(rep)} violations")
+    return 0 if n_det == len(results) and not problems and not rep else 1
+
+
+# The message each self-test mutation is written for, by its fixed text (audit round 9, auditor C). Generated from
+# the messages each mutation produces (the one the fewest mutations produce, so that every message is someone's), then
+# set by hand where the intended message differs; the self-test checks that each is produced and that every check
+# message is expected by a mutation.
+SELFTEST_EXPECT = {
+    '同じ tick でタイマの満了を APPLY より優先': ('accepted but its actions not taken (', 'accepted but its transition lost to', 'accepted without applying the settings',),
+    '同じ tick でタイマの満了を START より優先': ('accepted but its actions not taken (',),
+    'RUN/STOP の欄の欠落': (': the cell is not defined',),
+    '起こり得る FLUSH を IMP にする': ('FLUSH does not empty the FIFO', ': marked impossible, but the event can occur',),
+    'FILL/OUT の条件が網羅的でない': ('(guards must be exclusive and exhaustive)',),
+    'RECOVER/TMR の条件の重なり': ('(guards must be exclusive and exhaustive)',),
+    'WARMUP から RUN へ直行': ('AFE_RST is released without passing RECOVER (ADC recovery wait)', 'RUN is entered other than with the first valid output',),
+    'RUN の APPLY_NR に印なし': ('settings change in RUN without CHANGED marks',),
+    'FILL のまま APPLY_NR': ('settings change inside a CIC window being filled',),
+    'AFE 動作中の APPLY_NR で段数を検査しない': ('a change beyond one offset-DAC step is applied while the AFE runs, without AFE_RST',),
+    'APPLY で整合を検査しない': ('an inconsistent configuration is applied',),
+    'PRE から PULSE を飛ばす': ('RECOVER entered other than after AFE_RST', 'is not reachable from',),
+    'STOP で IDLE に戻らない': ('STOP does not lead to IDLE',),
+    'ALIGN で CIC をクリアしない': ('FILL entered without clearing the CIC',),
+    'PULSE のタイマが状態を出ない': (": the timer's expiry does not always leave the state (",),
+    'WAIT_E の STOP を黙って捨てる': ('STOP does not lead to IDLE', ': one branch with no action that stays (write it IGN)',),
+    'RUN の START を黙って捨てる': ('silently dropped',),
+    'RUN へ入れない': (': no path from',),
+    'START で FIFO を空にしない': ('START without applying the settings and emptying the FIFO',),
+    'RUN から SETTLE へ黙って戻る': ('RUN left other than by STOP or APPLY',),
+    'WARMUP の APPLY で解除までの待ちを数え直さない': ('settings applied in the tick that releases AFE_RST (no reset after the change)', 'settings applied while AFE_RST is held, without restarting the wait before its release',),
+    'WARMUP の APPLY_NR で解除までの待ちを数え直さない': ('settings applied in the tick that releases AFE_RST (no reset after the change)',),
+    'APPLY（パルスあり）で FIFO を空にしない': ('APPLY with a pulse keeps the samples of the old setting in the FIFO',),
+    'WAIT_E の APPLY_NR で電極の待ちを数え直さない': ('an offset step before RUN does not wait for the electrode again (T_ELEC)', ': the defined restart is missing',),
+    'FILL の APPLY_NR で電極を待たない': ('an offset step before RUN does not wait for the electrode again (T_ELEC)',),
+    'ALIGN の APPLY_NR で電極を待たない': ('an offset step before RUN does not wait for the electrode again (T_ELEC)',),
+    'PULSE の満了の一部の分岐が状態を出ない': (": the timer's expiry does not always leave the state (",),
+    'FILL/OUT で有効の条件を使わない（条件 valid が未使用）': ('RUN entered with an output that is not valid (the window not yet full)', 'is in the list of conditions but never used',),
+    'ALIGN から WAIT_E へ黙って戻る': ('WAIT_E entered other than after RECOVER or an offset step before RUN',),
+    'WARMUP の FLUSH で AFE_RST を解除（T_WARM より前）': (': FLUSH does more than empty the FIFO (',),
+    'PULSE の FLUSH でパルスを短くする': (': FLUSH does more than empty the FIFO (',),
+    'PRE の FLUSH で T_PRE を飛ばす': (': FLUSH does more than empty the FIFO (',),
+    'RECOVER の FLUSH で復帰待ちを飛ばす': (': FLUSH does more than empty the FIFO (',),
+    'WAIT_E の FLUSH で電極の待ちを飛ばす': (': FLUSH does more than empty the FIFO (',),
+    'RUN の FLUSH で IDLE へ': (': FLUSH does more than empty the FIFO (',),
+    'WARMUP の START で AFE_RST を解除': (': not an allowed exit (SEQ_EXITS: a timed wait is left only by its timer, STOP or a pulsed APPLY; FLUSH never moves; START only from IDLE; RUN only by STOP or APPLY)',),
+    'PULSE の START でパルスを短くする': (': not an allowed exit (SEQ_EXITS: a timed wait is left only by its timer, STOP or a pulsed APPLY; FLUSH never moves; START only from IDLE; RUN only by STOP or APPLY)',),
+    'RECOVER の APPLY_NR で復帰待ちを飛ばす': ('T_ELEC > 0 but RECOVER goes to the clear without the electrode wait (WAIT_E)',),
+    'SOFT_RESET の間の出力の時刻を数えない（RESET/OUT を IMP）': ('SEQ RESET/OUT: an output time during a reset not counted (DAT-03)',),
+    'RECOVER の満了の分岐の入れ違い（T_ELEC ＞ 0 で電極の待ちを飛ばす）': ('T_ELEC > 0 but RECOVER goes to the clear without the electrode wait (WAIT_E)',),
+    'RUN の出力を格納しない': ('an output time in RUN is not stored',),
+    'IDLE の FLUSH を無視する': ('FLUSH does not empty the FIFO',),
+    '有効でない出力で RUN に入る': ('RUN entered with an output that is not valid (the window not yet full)',),
+    'WARMUP の APPLY が数え直すだけで反映しない': (': the wait starts again without a change applied',),
+    'RECOVER の APPLY_NR が反映しない': ('silently dropped',),
+    'RUN の APPLY_NR が印を付けるだけ': (': CHANGED marked other than by an applied APPLY_NR in RUN',),
+    'RESET の出力の時刻で格納する': (': not what a reset allows (release to IDLE; output times only counted; commands ignored; no timer)',),
+    'RESET の APPLY を反映する': (': not what a reset allows (release to IDLE; output times only counted; commands ignored; no timer)',),
+    'RUN のリセットで、そのサイクルの出力を格納する': (': an output-time action (',),
+    'PULSE のリセットで RECOVER へ（AFE_RST を解除）': (': a reset that does not win over the events of its cycle ->',),
+    'RUN の拒否した APPLY_NR が CHANGED の印を付ける': (': CHANGED marked other than by an applied APPLY_NR in RUN',),
+    'WARMUP の拒否した APPLY が T_WARM を数え直す': (': a refused command has another effect (',),
+    'PULSE の拒否した APPLY が T_RST を数え直す（パルスが伸びる）': (': a refused command has another effect (',),
+    'WAIT_E の拒否した START が T_ELEC を数え直す': (': a refused command has another effect (',),
+    'FILL の拒否した APPLY_NR が ALIGN へ': (': a refused command has another effect (',),
+    'PRE の FLUSH が T_PRE を数え直す': (': the wait starts again without a change applied',),
+    'RUN の FLUSH が CHANGED の印を付ける': (': CHANGED marked other than by an applied APPLY_NR in RUN',),
+    'PULSE の APPLY を無視（IGN）': ('(no effect and no flag)', ': a command ignored without effect or flag (only STOP in IDLE is)',),
+    'RUN の START を無視（IGN）': ('(no effect and no flag)',),
+    'WAIT_E の APPLY_NR を無視（IGN）': ('(no effect and no flag)',),
+    'RUN の出力の時刻を数えない': (': an output time not counted, or not exactly one of stored / discarded (DAT-03)',),
+    'RESET の出力の時刻を数えない': ('SEQ RESET/OUT: an output time during a reset not counted (DAT-03)',),
+    'RUN の APPLY で格納する': (': an output-time action (',),
+    '拒否に旗を 2 つ立てる': (': a refusal with two flags', ": CFG_ERR on a branch that does not depend on the settings' consistency",),
+    'RECOVER の APPLY_NR で数え直す': (': a wait started again where no restart is defined',),
+    'IDLE の出力の時刻を無視（IGN）': ('; every output time is counted in every state (DAT-03)',),
+    'PULSE の出力の時刻を無視（IGN）': ('; every output time is counted in every state (DAT-03)',),
+    'リセット中の出力の時刻を捨てない': (': not what a reset allows (release to IDLE; output times only counted; commands ignored; no timer)',),
+    'ALIGN の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ': ('goes to WAIT_E (0 で WAIT_E を通らない)',),
+    'FILL の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ': ('goes to WAIT_E (0 で WAIT_E を通らない)',),
+    'IDLE の STOP を STATE_ERR で拒む': ('; STOP in IDLE is accepted and does nothing (IGN)',),
+    'WARMUP のタイマの満了を無視（IGN）': (': no path from',),
+    'IDLE のタイマの満了の欄を定義する（IDLE にタイマはない）': (': the event cannot occur, but the cell is defined',),
+    'RUN の APPLY の条件に未定義の名前': (': undefined conditions',),
+    'RUN の STOP の行き先が未定義の状態': (': unknown next state',),
+    'RUN の FLUSH に未定義の動作': (': undefined action',),
+    'RUN の APPLY_NR で数え直す（RUN にタイマはない）': ('restart in a state without a timer',),
+    'ALIGN の出力の時刻で格納する': ('a sample is stored outside RUN',),
+    'FILL の有効でない出力の時刻で CIC をクリアする': ('the CIC is cleared off the output grid',),
+    'RUN の APPLY で PRE を飛ばして PULSE へ': ('AFE_RST pulse not preceded by PRE',),
+    'RUN の APPLY が反映せずに PRE へ': ('PRE entered without applying settings',),
+    'RUN の APPLY_NR で FIFO を空にする': ('FIFO flushed by something other than START, APPLY (with its pulse) or FLUSH',),
+    'PULSE の APPLY を設定によって STATE_ERR で拒む': (': STATE_ERR on a branch that depends on the settings (a state refuses always)',),
+    'IDLE の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'IDLE の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'RECOVER の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'RECOVER の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'WAIT_E の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'ALIGN の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'ALIGN の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and t_elec0）': ('(command outcome, SEQ-05/07/08/15)',),
+    'ALIGN の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and not t_elec0）': ('(command outcome, SEQ-05/07/08/15)',),
+    'FILL の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'FILL の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and t_elec0）': ('(command outcome, SEQ-05/07/08/15)',),
+    'FILL の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and not t_elec0）': ('(command outcome, SEQ-05/07/08/15)',),
+    'RUN の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）': ('(command outcome, SEQ-05/07/08/15)',),
+    'IDLE の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'IDLE の APPLY_NR を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'RECOVER の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'RECOVER の APPLY_NR を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'WAIT_E の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'ALIGN の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'ALIGN の APPLY_NR を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'FILL の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'FILL の APPLY_NR を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'RUN の APPLY を STATE_ERR で拒む': ('(command outcome, SEQ-05/07/08/15)',),
+    'CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）': ("(with CS_N high an SCLK edge of another chip's frame does nothing; SCLK and MISO are shared)",),
+    '読み出しの先頭バイトで書き込みのアドレスを取り込む': (']: the write address latched on a branch that is not a write',),
+    'WDAT の BIT を自分自身への遷移と書く（IGN と同じ意味の別の書き方）': (': a transition to its own state (write the stay as next None)',),
+    'CRC を検査せずに確定': (': a CRC mismatch is not flagged',),
+    '不完全な書き込みを通知しない': (': an incomplete or overlong write is not flagged',),
+    '短い読み出しで取り出す': (': pop outside a complete read of the entry still at the head',),
+    '先頭バイトの条件が網羅的でない': (': the walk meets an impossible or undecided cell',),
+    'CS_N の立ち上がりで IDLE に戻らない': (': CS_N rising does not end the transaction',),
+    'バイトの途中の CS_N を通知しない': (': a partial byte is not flagged',),
+    '読み出し専用への書き込みを確定': (': commit outside a complete, checked write to a writable address',),
+    '未処理の命令を上書き': (': commit outside a complete, checked write to a writable address',),
+    '先頭でなくなった写しでも取り出す': (': pop outside a complete read of the entry still at the head',),
+    '読み終えたサンプルを取り出さない': (': a sample read completely is not removed (it would be read twice)',),
+    '2 バイト目でサンプルを終える': ('sample bytes loaded, expected',),
+    'CRC 無効でも CRC のバイトを待つ（3 バイトの書き込み）': (', but spi_expect gives',),
+    '未処理の間の書き込みを STATE_ERR なしで捨てる': (', but spi_expect gives', 'is in the list of actions but never used',),
+    '書き込めないアドレスへの書き込みを ADDR_ERR なしで捨てる': (', but spi_expect gives',),
+    '未定義のアドレスの読み出しで ADDR_ERR を立てない': (', but spi_expect gives',),
+    'サンプルの読み出しで FIFO の先頭を写さない': (', but spi_expect gives',),
+    'CRC 有効時の短いサンプルを通す': (', but spi_expect gives',),
+    'CRC のバイトのない読み出しを通す': (', but spi_expect gives',),
+    'CRC 有効時も連続読み出しを続ける': ('CRC loads, expected',),
+    '書き込みの完了のあとの 1 ビットで読み出しの完了へ（確定も旗もなし）': (', but spi_expect gives',),
+    '連続読み出しで先頭バイトに戻る（アドレスを進めない）': (': MISO loads',),
+    '書き込みのデータを保持しない': (': commit without',),
+    'CS_N の立ち上がりで先頭を写す': ('where the frame definitions do not put it',),
+    '先頭バイトでアドレスを進める': ('where the frame definitions do not put it',),
+    'サンプルの先頭バイトでレジスタのデータを載せる': ("frame loads register data or a read CRC onto MISO (a write's MISO is 0x00, a sample's bytes come from its copy)",),
+    'CRC 有効の読み出しでもアドレスを進める': (']: the address advances without loading the next byte',),
+    'RREG の CS_N の立ち上がりを起こり得ない（IMP）とする': (': no exit on CS_N rising',),
+    'WDAT のバイトで FRAME_ERR を立てる': (']: FRAME_ERR other than at CS_N rising',),
+    'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),
+    '取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）': (", but the model's OVERRUN is",),
+    'フラッシュで写しの印を消さない（送っていない語を取り出しうる）': (': the copy is marked',),
+    '空の語の写しにも印を付ける（あとの格納を取り出しうる）': (': the copy is marked',),
+    '満杯への格納で深さを超える': ('out of range',),
+    'SPI が送っていない先頭も取り出す（写しの印を見ない）': (': removed an entry the SPI did not send',),
+    '送った語を取り出さない': (': the entry sent is not removed',),
+    '同じ tick でタイマの満了が拒否の旗を消す': ("refused without its flag in the tick's result",),
+    'STATE の符号の重複（RECOVER を WARMUP と同じ 1 に）': ('SEQ: STATE codes are not unique',),
+    'tick を CHOP1 の縁のサイクル（16）に': ('the tick meets a busy frame cycle (tick at cycle',),
+    'tick をブランキングの窓の中（サイクル 12）に': ('can fall inside an output-chopper blanking window',),
+    '128 kHz の tick を相 A の終わり近く（フレーム 3）に': ('of chopper phase A, not in its middle half',),
+    'SPI に未処理の規則（busy）がない': ("us) but the SPI specification has no 'busy' rule",),
+    'チョッパの周期が 1 ms を割り切らない（12 フレーム）': (': 1 ms is not a whole number of chopper periods',),
+    'CHOP1 の周期が 1 ms を割り切らない（384 フレーム）': ('frames does not divide the decimation ratio',),
+    'CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）': ('CHOP1 rate change leaves a visible part of a CIC window on the old rate',),
+}
 
 
 def source_sha(text):

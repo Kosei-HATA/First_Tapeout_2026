@@ -15,6 +15,11 @@ Each mutation runs in build/mut/<tag>/ (its own copy of the RTL and its own logs
 reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared, so run_tests_r14.sh must have
 run once. Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
 arguments, so a recorded result always has its log (audit round 4).
+Verdicts: detected / MISSED for a mutation, baseline ok / BASELINE FAILS for a baseline. A run without a verdict fails
+the whole run (audit rounds 5, 6, 9): NOT APPLIED (the text is not in the RTL), COMPILE ERROR, TIMEOUT (undecided),
+SIM ERROR (the bench ended without its closing line: a crash is no detection), CHECKER ERROR (a checker ended without
+its PASS / FAIL line and nothing else judged the mutant), TOOL ERROR (yosys did not run). --only with a tag that is
+not in the selected groups, or a selection with nothing to run, is a FAIL.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/mutate_top_r14.py [-j N]
        [--top | --spi | --seq | --fifo | --regs | --chop1 | --rnd | --struct | --ovl] [--only m03,s11,q02]
@@ -26,6 +31,8 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from check_outputs_registered import YOSYS  # noqa: E402  (the same yosys as the structural check, for the record)
 R14 = os.path.normpath(os.path.join(HERE, ".."))
 RTL_OLD = os.path.normpath(os.path.join(R14, "..", "rtl"))
 SPEC = os.path.join(RTL_OLD, "spec")
@@ -321,6 +328,18 @@ MUTATIONS = [
     ('RAW：止めていても語を読み込む（RAW_DATA が動く）', 'eeg_raw.sv',
      "sh <= raw_en ? {3'b101, code} : 8'h00;",
      "sh <= {3'b101, code};"),
+    # audit round 9, auditor C: errors that passed every test (the bench now checks the control reset's length, drives
+    # CODE so that it changes at e2, after the TH capture, checks the RAW word's load and clock cycles, and phase V
+    # takes APPLY and APPLY_NR in every running state)
+    ("最上位：SOFT_RESET の制御のリセットが 1 MCLK", "eeg_digital_top.sv",
+     "if (soft_req)              soft_cnt <= 3'd4;", "if (soft_req)              soft_cnt <= 3'd0;"),
+    ("最上位：CIC が TH の取り込みのサイクルで符号を取る", "eeg_digital_top.sv",
+     ".arm(cic_arm & ~soft_req), .en(cic_en), .code(CODE),", ".arm(cic_arm & ~soft_req), .en(th_capture), .code(CODE),"),
+    ("最上位：過負荷の検出が TH の取り込みのサイクルで符号を取る", "eeg_digital_top.sv",
+     "eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n), .en(cic_en),", "eeg_ovl u_ovl (.clk(MCLK), .rst_n(tm_rst_n), .en(th_capture),"),
+    ("RAW：語を cycle 0 で読み込む", "eeg_raw.sv", "if (cycle == 5'd31) begin", "if (cycle == 5'd0) begin"),
+    ("シーケンサ：RECOVER の APPLY_NR を CFG_ERR で拒む", "eeg_seq.sv",
+     "if (cfg_ok && nr_ok) begin", "if (cfg_ok && nr_ok && state != S_RECOVER) begin"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -402,6 +421,10 @@ FIFO_MUTATIONS = [
 ]
 
 
+# one flip-flop less on CS_N and SCLK (audit round 9: in the SPI and the structural groups)
+SYNC_OLD = '    assign cs_act    = ~cs_q[1];\n    assign cs_start  = ~cs_q[1] &  cs_q[2];\n    assign cs_end    =  cs_q[1] & ~cs_q[2];\n    assign sclk_rise = cs_act &  sclk_q[1] & ~sclk_q[2];\n    assign sclk_fall = cs_act & ~sclk_q[1] &  sclk_q[2];'
+SYNC_NEW = '    assign cs_act    = ~cs_q[0];\n    assign cs_start  = ~cs_q[0] &  cs_q[1];\n    assign cs_end    =  cs_q[0] & ~cs_q[1];\n    assign sclk_rise = cs_act &  sclk_q[0] & ~sclk_q[1];\n    assign sclk_fall = cs_act & ~sclk_q[0] &  sclk_q[1];'
+
 SPI_MUTATIONS = [
     ("（基準：変更なし）", None, None, None),
     ("SPI：バイトの途中の CS_N を通知しない", "eeg_spi_slave.sv",
@@ -441,6 +464,9 @@ SPI_MUTATIONS = [
     ('SPI：MISO をもう 1 段のレジスタから出す', 'eeg_spi_slave.sv',
      '    assign miso      = tx_sh[7];',
      '    logic miso_q;\n    always_ff @(posedge clk or negedge rst_n) begin\n        if (!rst_n) miso_q <= 1\'b0;\n        else        miso_q <= tx_sh[7];\n    end\n    assign miso      = miso_q;'),
+    # audit round 9, auditor C: one flip-flop less on CS_N and SCLK (MISO and MISO_OE one MCLK early: the BFM's lower
+    # bounds on the latencies)
+    ("SPI：CS_N と SCLK を 1 段で同期（MISO が 1 MCLK 早い）", "eeg_spi_slave.sv", SYNC_OLD, SYNC_NEW),
 ]
 
 
@@ -474,7 +500,25 @@ STRUCT_MUTATIONS = [
     ("最上位：AFE_RST を状態の復号で出す", "eeg_digital_top.sv",
      "    assign AFE_RST = seq_afe_rst;",
      "    assign AFE_RST = (seq_state == ST_IDLE) || (seq_state == ST_WARMUP) || (seq_state == ST_PULSE);"),
+    # audit round 9, auditor C: single-flop synchronizers (their metastability cannot be simulated; the structure shows
+    # them: check_outputs_registered.check_synchronizers)
+    ("最上位：RESET_N の解除を 1 段で同期", "eeg_digital_top.sv",
+     "assign pin_rst_n = rst_sync[1];", "assign pin_rst_n = rst_sync[0];"),
+    ("SPI：CS_N と SCLK を 1 段で同期", "eeg_spi_slave.sv", SYNC_OLD, SYNC_NEW),
+    ("SPI：MOSI を 1 段で同期", "eeg_spi_slave.sv",
+     "assign mosi_s    = mosi_q[1];", "assign mosi_s    = mosi_q[0];"),
 ]
+
+def bench_ended(v, closing):
+    """The bench printed its closing line (its verdict or summary). Without it the simulation crashed or stopped, which
+    is no verdict about the mutant (audit round 9, auditor C: a crash counted as a detection)."""
+    return any(ln.startswith(closing) for ln in v.stdout.splitlines())
+
+
+def sim_tail(v, tb):
+    return f"{tb} ended without its closing line: " + ((v.stderr.strip().splitlines() or v.stdout.strip().splitlines()
+                                                         or ["no output"])[-1])[:110]
+
 
 # the overload detector alone (tb_ovl + check_ovl.py against regmap.OVL_RULE: detector, hits, interval flags)
 OVL_MUTATIONS = [
@@ -513,8 +557,9 @@ def run(i, m, bench="top"):
     if bench == "struct":                            # the structure: yosys on this copy
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_outputs_registered.py"), d], capture_output=True,
                            text=True)
-        if k.returncode == 2 or k.returncode not in (0, 1):      # the tool did not run: no verdict (audit round 6)
-            return i, name, "TOOL ERROR", (k.stdout.strip().splitlines() or ["no output"])[-1][:150]
+        if k.returncode == 2 or k.returncode not in (0, 1) or not any(  # the tool did not run, or crashed: no verdict
+                ln.startswith(("PASS:", "FAIL:")) for ln in k.stdout.splitlines()):   # (audit rounds 6, 9)
+            return i, name, "TOOL ERROR", ((k.stdout + k.stderr).strip().splitlines() or ["no output"])[-1][:150]
         passed = k.returncode == 0 and "PASS" in k.stdout
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  ") or ln.startswith("FAIL")), "")
         if f is None:
@@ -538,6 +583,10 @@ def run(i, m, bench="top"):
                                text=True, timeout=3600)
         except subprocess.TimeoutExpired:
             return i, name, "TIMEOUT", "no end within 3600 s (undecided: rerun)"
+        closing = {"seq": ("PASS: tb_seq", "FAIL: tb_seq"), "spi": ("tb_spi_r14: ", "FAIL: tb_spi_r14 watchdog"),
+                   "fifo": ("PASS: tb_fifo", "FAIL: ")}[bench]
+        if not bench_ended(v, closing):
+            return i, name, "SIM ERROR", sim_tail(v, "tb_" + bench)
     if bench == "seq":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
                             os.path.join(d, "build", "seq_trace.txt")], capture_output=True, text=True)
@@ -552,13 +601,17 @@ def run(i, m, bench="top"):
         return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
     if bench == "ovl":
         try:
-            subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
+            v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
             return i, name, "TIMEOUT", "no end within 1200 s (undecided: rerun)"
+        if not bench_ended(v, ("tb_ovl: ",)):
+            return i, name, "SIM ERROR", sim_tail(v, "tb_ovl")
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_ovl.py"), os.path.join(d, "build")],
                            capture_output=True, text=True)
         passed = k.returncode == 0
         first = (k.stdout.strip().splitlines() or ["no output"])[0][:150]
+        if not k.stdout.strip().endswith(("PASS", "FAIL")):     # audit round 9: a crash is no verdict
+            return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1][:150]
         if f is None:
             return i, name, ("baseline ok" if passed else "BASELINE FAILS"), first
         return i, name, ("detected" if not passed else "MISSED"), first
@@ -568,6 +621,8 @@ def run(i, m, bench="top"):
                                cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
             return i, name, "TIMEOUT", "no end within 1200 s (undecided: rerun)"
+        if not bench_ended(v, ("PASS: chop1", "FAIL: ") if bench == "chop1" else ("PASS: tb_rnd_sat", "FAIL: tb_rnd_sat")):
+            return i, name, "SIM ERROR", sim_tail(v, "tb_" + bench)
         passed = ("PASS: chop1" if bench == "chop1" else "PASS: tb_rnd_sat") in v.stdout and "FAIL" not in v.stdout
         first = next((ln for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), "")
         if f is None:
@@ -578,6 +633,8 @@ def run(i, m, bench="top"):
             v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=600)
         except subprocess.TimeoutExpired:
             return i, name, "TIMEOUT", "no end within 600 s (undecided: rerun)"
+        if not bench_ended(v, ("PASS: tb_regs", "FAIL: tb_regs")):
+            return i, name, "SIM ERROR", sim_tail(v, "tb_regs")
         head = next((ln for ln in v.stdout.splitlines() if ln.startswith("tb_regs:")), "no summary")
         first = next((ln for ln in v.stdout.splitlines() if ln.startswith("ERROR")), head)
         if f is None:
@@ -604,6 +661,8 @@ def run(i, m, bench="top"):
         timing = next((ln for ln in v.stdout.splitlines() if "SPI timing errors" in ln), "")
         nt = int(timing.split(",")[1].split()[0]) if timing else -1
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  frame")), head)
+        if nbad == 0 and nt != 0:                    # caught by the BFM's timing checks: say so (audit round 9)
+            first = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith("SPI ERROR")), timing)
         failed = "FAIL" in v.stdout                  # e.g. the bench's watchdog (the trace then ends early)
         if f is None:                                # the baseline also covers every branch, as in the runner
             covered = "every branch covered" in k.stdout
@@ -615,18 +674,22 @@ def run(i, m, bench="top"):
     except subprocess.TimeoutExpired:
         return i, name, "TIMEOUT", "no end within 5400 s (undecided: rerun)"
     out = v.stdout
+    if not bench_ended(v, ("PASS: tb_top_r14", "FAIL")):
+        return i, name, "SIM ERROR", sim_tail(v, "tb_top_r14")
     k = subprocess.run([sys.executable, os.path.join(HERE, "check_top_r14.py"), os.path.join(d, "build")],
                        capture_output=True, text=True)
-    tb_pass = "PASS: tb_top_r14" in out
-    gold_pass = k.returncode == 0
-    if f is None:
-        k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
-                             os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
-        ok = tb_pass and gold_pass and k2.returncode == 0
-        return i, name, ("baseline ok" if ok else "BASELINE FAILS"), next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
     k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
                          os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
-    seq_pass = k2.returncode == 0
+    tb_pass = "PASS: tb_top_r14" in out
+    gold_pass, seq_pass = k.returncode == 0, k2.returncode == 0
+    verdict = lambda kk: any(ln.startswith(("PASS:", "FAIL")) for ln in kk.stdout.splitlines())   # it ran to its end
+    judged = (not tb_pass) or (verdict(k) and not gold_pass) or (verdict(k2) and not seq_pass)
+    if not judged and not (verdict(k) and verdict(k2)):     # a checker crashed and nothing else judged (audit round 9)
+        kk, nm = (k, "check_top_r14") if not verdict(k) else (k2, "check_seq_trace")
+        return i, name, "CHECKER ERROR", f"{nm}: " + ((kk.stderr.strip().splitlines() or ["no output"])[-1])[:140]
+    if f is None:
+        return i, name, ("baseline ok" if tb_pass and gold_pass and seq_pass else "BASELINE FAILS"), \
+            next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
     first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
     if tb_pass and not gold_pass:
         first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL")
@@ -675,8 +738,14 @@ def main():
         tasks += [(i, m, "struct") for i, m in enumerate(STRUCT_MUTATIONS)]
     if which in ("ovl", "all"):
         tasks += [(i, m, "ovl") for i, m in enumerate(OVL_MUTATIONS)]
-    if only:
-        tasks = [t for t in tasks if ("b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}") in only]
+    if only:                                          # audit round 9: an unknown tag, or nothing to run, is an error
+        tagof = lambda t: "b00" if t[0] < 0 else f"{TAG.get(t[2], 'm')}{t[0]:02d}"
+        unknown = only - {tagof(t) for t in tasks}
+        if unknown:
+            sys.exit(f"FAIL: --only names tags not in the selected groups: {', '.join(sorted(unknown))}")
+        tasks = [t for t in tasks if tagof(t) in only]
+    if not tasks:
+        sys.exit("FAIL: nothing to run")
     import datetime
     import threading
     t0 = datetime.datetime.now()
@@ -691,9 +760,11 @@ def main():
             return ((r.stdout or r.stderr).strip().splitlines() or ["?"])[0]
         except OSError as ex:
             return f"not found ({ex})"
+    yv = tool([YOSYS, '-V'])                            # e.g. "Yosys 0.69 (git sha1 9f75ca1f..., Release, Clang ...)"
+    yv = yv.split(", Release")[0] + ")" if ", Release" in yv else yv
     env = (f"commit {tool(['git', 'rev-parse', '--short', 'HEAD'])}"
            f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '', 'unknown') else ''}; "
-           f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; yosys {os.environ.get('YOSYS', 'default path')}")
+           f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; {yv}")
     with open(log, "x", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
                  f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n{env}\n")

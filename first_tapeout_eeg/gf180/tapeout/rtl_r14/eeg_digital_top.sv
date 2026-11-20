@@ -1,6 +1,7 @@
 // eeg_digital_top - digital block of the GF180 EEG ADC, r14 (the new digital control).
 //
-// Same ports as rtl/eeg_digital_top.sv (the macro outline and pins stay; NFR-08). Specification:
+// Same ports (names and functions) as rtl/eeg_digital_top.sv (NFR-08); the macro outline is 440 x 900 um (NFR-02,
+// decided 11/19; r13: 440 x 700 um). Specification:
 // documentation/gf180_digital_control_requirements_20261119.md (r3) and gf180_digital_control_spec_20261119.md, with
 // the machine-readable sources in gf180/tapeout/rtl/spec/.
 //   * eeg_seq (new): the sequencer; ticks from eeg_clkgen (the middle of chopper phase A, frame cycle 24), output

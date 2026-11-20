@@ -136,7 +136,7 @@ def apply_seq():
         {"name": "AFE_RST", "wave": "0...1.0........."},
         {"name": "READY", "wave": "1.0.........1..."},
         {"name": "FIFO", "wave": "=.=.........=...", "data": ["旧い設定のサンプル", "空（APPLY の tick で空にする）", "格納"]},
-        {"name": "格納（DRDY_N のパルス）", "wave": "10..........1010"},
+        {"name": "DRDY_N（パルス）", "wave": "01..........0101"},   # active low, as wave_startup (audit round 9)
     ]
     return {"signal": sig, "head": {"text": "APPLY（パルス付きの一括反映、模式図。T_ELEC ＞ 0 なら RECOVER のあとに WAIT_E）"},
             "foot": {"text": "再整定の間の出力は格納しない（SEQ は 1 ms ごとに数え続け、欠けた数が分かる）"},

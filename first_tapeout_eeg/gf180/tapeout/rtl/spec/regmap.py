@@ -91,7 +91,7 @@ REGS = [
     (0x22, "OFF_CTRL", "RW", False, [F("SIGN", 4, 4, 0, [0, 1], "apply", "符号 S（打ち消す量は (1 − 2 S) × M × 0.311 mV）", "OFS"),
                                      F("RANGE", 2, 0, 0, rng(0, 4), "apply", "範囲（0 切、1〜4 で ±39／79／159／318 mV。5〜7 は RANGE_ERR）", "OFEN[3:0]")],
      "オフセット DAC（符号と範囲）"),
-    (0x23, "AFE_IBIAS", "RW", False, [F("AFE_IBIAS", 1, 0, 3, rng(0, 3), "apply", "AFE のバイアス電流（3 が推奨）", "AFE_IBIAS[1:0]")], "AFE のバイアス"),
+    (0x23, "AFE_IBIAS", "RW", False, [F("AFE_IBIAS", 1, 0, 3, rng(0, 3), "apply", "AFE のバイアス電流（通常の動作は 3。0〜2 は評価用で性能を保証しない。書き込みは拒否しない）", "AFE_IBIAS[1:0]")], "AFE のバイアス"),
     (0x24, "CPF_TRIM", "RW", False, [F("CPF_TRIM", 3, 0, 8, rng(0, 15), "apply", "入力インピーダンスの補償容量のトリム", "CPF_TRIM[3:0]")], "補償容量のトリム"),
     (0x25, "BOOST_TRIM", "RW", False, [F("BTRIM_N", 5, 4, 0, rng(0, 3), "apply", "NMOS カスコードのブースタ（00 ＝ 2 単位 … 11 ＝ 8 単位。既定 2）", "BTRIM_N[1:0]"),
                                        F("BTRIM_P", 1, 0, 1, rng(0, 3), "apply", "PMOS カスコードのブースタ（既定 01 ＝ 4 単位）", "BTRIM_P[1:0]")],
@@ -217,7 +217,7 @@ def check(verbose=True):
     addrs = {}
     for a, n, acc, lock, fields, _ in REGS:
         if a in addrs:
-            errs.append(f"address 0x{a:02X} used by {addrs[a]} and {n}")
+            errs.append(f"address 0x{a:02X} used by two registers: {addrs[a]} and {n}")
         addrs[a] = n
     for a, n, acc, lock, fields, _ in REGS:
         if any(f["cls"] == "apply" for f in fields):
@@ -235,9 +235,9 @@ def check(verbose=True):
             used |= mask
             width = f["msb"] - f["lsb"] + 1
             if f["reset"] >= 1 << width:
-                errs.append(f"{n}.{f['name']}: reset value {f['reset']} does not fit {width} bits")
+                errs.append(f"{n}.{f['name']}: reset value {f['reset']} wider than the field ({width} bits)")
             if f["legal"] is not None and f["reset"] not in f["legal"]:
-                errs.append(f"{n}.{f['name']}: reset value {f['reset']} is not legal")
+                errs.append(f"{n}.{f['name']}: reset value {f['reset']} is not among the legal values")
             if f["legal"] is not None and any(v >= 1 << width for v in f["legal"]):
                 errs.append(f"{n}.{f['name']}: a legal value does not fit the field")
     rec = {f["name"]: f["reset"] for *_, f in all_fields()}
@@ -273,7 +273,8 @@ def check(verbose=True):
                 per = r["period_frames"]                                          # the expiry waits for a tick
                 frames = -(-(code * u) // per) * per                              # integers: exact
                 if frames * frame_s < mn - 1e-12:
-                    errs.append(f"{tn} {label} code {code}: {frames * frame_s * 1e6:.2f} us at {rate} is below {mn * 1e6:g} us")
+                    errs.append(f"{tn} {label} code {code}: {frames * frame_s * 1e6:.2f} us at {rate}, below the analog "
+                                f"minimum of {mn * 1e6:g} us")
             notes.append(f"{tn} {label}: code {code} = {code * u * frame_s * 1e6:.4f} us")
         if abs(max(f["legal"]) * u * frame_s - mx) > 1e-12:
             errs.append(f"{tn}: the register reaches {max(f['legal']) * u * frame_s * 1e3:.4f} ms, TIMING says {mx * 1e3:.4f} ms")
@@ -299,7 +300,8 @@ def check(verbose=True):
         for j in range(i + 1, len(vals)):
             d = bin(vals[i][1] ^ vals[j][1]).count("1")
             if d < 2:
-                errs.append(f"{vals[i][0]} 0x{vals[i][1]:02X} and {vals[j][0]} 0x{vals[j][1]:02X} differ in {d} bit")
+                errs.append(f"{vals[i][0]} 0x{vals[i][1]:02X} and {vals[j][0]} 0x{vals[j][1]:02X} differ in {d} bit "
+                            f"(codes must differ in 2 bits or more)")
     # the range table against the DAC's groups (independent of RANGE_MAX_M): range r uses G0 (M0..M6) .. G(r-1)
     # (M7, M8, M9), so M fits 6 + r bits; and the documented ranges +-39 / 79 / 159 / 318 mV at 0.311 mV per step
     for r_, mv in {1: 39, 2: 79, 3: 159, 4: 318}.items():
@@ -364,7 +366,7 @@ def check(verbose=True):
             errs.append(f"{os.path.basename(path)}: the overload rule's statement not found")
         elif (int(mt.group(1)), int(mt.group(2))) != (R["window"], R["threshold"]) or \
                 (int(mc.group(1)), int(mc.group(2))) != tuple(R["codes"]):
-            errs.append(f"OVL_RULE {R} differs from {os.path.basename(path)}: window {mt.group(1)}, threshold "
+            errs.append(f"OVL_RULE {R} differs from the rule stated in {os.path.basename(path)}: window {mt.group(1)}, threshold "
                         f"{mt.group(2)}, codes {mc.group(1)} / {mc.group(2)}")
     ovl_txt = next(f["desc"] for *_, f in all_fields() if f["name"] == "OVL_NOW")
     if f"直近 {R['window']} フレームに両端の符号が {R['threshold']} 個以上" not in ovl_txt:
@@ -381,7 +383,8 @@ def check(verbose=True):
              (dict(base, M=1, CPF_TRIM=9), False), (dict(base, M=2, CHOP1_RATE=4), False)]
     for sh, want in cases:
         if nr_ok(sh, ac) != want:
-            errs.append(f"nr_ok({sh['M']}, S{sh['SIGN']}, R{sh['RANGE']}) is {nr_ok(sh, ac)}, expected {want}")
+            errs.append(f"nr_ok({sh['M']}, S{sh['SIGN']}, R{sh['RANGE']}) is {nr_ok(sh, ac)}, but the boundary case "
+                        f"gives {want}")
     if set(base) != {f["name"] for *_, f in all_fields() if f["cls"] == "apply"} - {"M_H", "M_L"} | {"M"}:
         errs.append("the nr_ok model does not list exactly the shadowed settings")
     # overload rule against the full-scale code streams
@@ -547,12 +550,41 @@ def fresh():
     return 1 if stale else 0
 
 
+def check_messages():
+    """(line, fixed text) of every violation message of check(): the longest literal piece of each errs append. The
+    self-test requires each to be the expected message of a mutation that produces it (audit round 9, auditor C, as
+    fsm_spec.check_messages)."""
+    import ast
+    import inspect
+    import textwrap
+    out, first = [], check.__code__.co_firstlineno
+    for n in ast.walk(ast.parse(textwrap.dedent(inspect.getsource(check)))):
+        if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "append"
+                and isinstance(n.func.value, ast.Name) and n.func.value.id == "errs" and n.args):
+            arg = n.args[0]
+            if isinstance(arg, ast.BinOp):              # "text " + ", ".join(...)
+                arg = arg.left
+            parts = arg.values if isinstance(arg, ast.JoinedStr) else [arg]
+            lits = [v.value for v in parts if isinstance(v, ast.Constant) and isinstance(v.value, str)]
+            out.append((first + n.lineno - 1, max(lits, key=len).strip() if lits else "", "\x00".join(lits)))
+    return out
+
+
 def selftest():
-    """Mutation test of the checker: each mutation is a plausible register-map error and must be detected."""
+    """Mutation test of the checker: each mutation is a plausible register-map error and must be detected by the
+    message it is written for (SELFTEST_EXPECT); every message of check() must be the expected message of a mutation,
+    and a crash of check() is no detection (audit round 9, auditor C)."""
     import copy
+    import tempfile
     g = globals()
-    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY")}
-    keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active}
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "PIN_OF_CONTROL",
+                                             "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256")}
+    keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
+               "ofen_of_range": ofen_of_range}
+    tmp = tempfile.mkdtemp()
+    no_rule = os.path.join(tmp, "no_rule.md")
+    with open(no_rule, "w", encoding="utf-8") as fo:
+        fo.write("過負荷の規則の文のない文書\n")
 
     def fld(reg, name):
         return next(f for f in next(r for r in g["REGS"] if r[1] == reg)[4] if f["name"] == name)
@@ -620,6 +652,63 @@ def selftest():
     def m_mirror():
         g["REGS"].append((0x30, "EXTRA", "RO", False, [F("X", 7, 0, 0, [0], "ro", "x")], "x"))
 
+    # audit round 9, auditor C: the messages no mutation produced
+    def m_outside():
+        fld("BLANK", "BLANK_LEN").update(msb=8, lsb=5)
+
+    def m_reset_wide():
+        fld("AFE_IBIAS", "AFE_IBIAS")["reset"] = 4
+
+    def m_legal_wide():
+        fld("AFE_IBIAS", "AFE_IBIAS")["legal"] = [0, 1, 2, 3, 4]
+
+    def m_seq_pin():
+        fld("TEST_CTRL", "ADC_ZERO")["pin"] = "AFE_RST"
+
+    def m_stray_pin():
+        fld("DEBUG", "DBG_SEL")["pin"] = "TEST_CFG[7]"
+
+    def m_twarm_max():
+        f = fld("T_WARM", "T_WARM")
+        f["legal"] = [v for v in f["legal"] if v != max(f["legal"])]
+
+    def m_guard():
+        f0 = keep_fn["guarded_addrs"]
+        g["guarded_addrs"] = lambda: f0()[:-1]
+
+    def m_ofen():
+        f0 = keep_fn["ofen_of_range"]
+        g["ofen_of_range"] = lambda r: 0b0111 if r == 4 else f0(r)
+
+    def m_pin_of_control():
+        g["PIN_OF_CONTROL"] = {k: v for k, v in keep["PIN_OF_CONTROL"].items() if k != "DWA_EN"}
+
+    def m_pins_lack():
+        f0 = keep_fn["pins_from_active"]
+        g["pins_from_active"] = lambda ac: {k: v for k, v in f0(ac).items() if k != "DWA_EN"}
+
+    def m_blank_dac():
+        g["BLANK_WITH_DAC"] = keep["BLANK_WITH_DAC"] - 1
+
+    def m_req_missing():
+        g["REQ_DOC"] = os.path.join(tmp, "missing.md")
+
+    def m_doc_no_rule():
+        g["DOC"] = no_rule
+
+    def m_extra_apply():
+        next(r for r in g["REGS"] if r[1] == "CHOP_CFG")[4].append(F("CHOP_X", 1, 1, 0, [0, 1], "apply", "x"))
+
+    def m_codes_missing():
+        g["HERE"] = os.path.join(tmp, "nowhere")
+
+    def m_codes_other():
+        g["FULLSCALE_SHA256"] = {k: "0" * 64 for k in keep["FULLSCALE_SHA256"]}
+
+    def m_cfg_top():
+        f0 = keep_fn["cfg_ok"]
+        g["cfg_ok"] = lambda sh: f0(sh) or (sh["RANGE"] >= 1 and sh["M"] == g["RANGE_MAX_M"][sh["RANGE"]] + 1)
+
     muts = [("アドレスの重なり", m_dup_addr), ("フィールドの重なり", m_overlap), ("合法でない既定値", m_reset_illegal),
             ("アナログに効く設定が即時", m_imm_analog), ("アナログの端子の出どころの欠落", m_no_source),
             ("T_RST の最小値が 100 µs 未満", m_short_rst), ("既定値が推奨値でない（AFE_IBIAS 2）", m_bad_default),
@@ -627,8 +716,17 @@ def selftest():
             ("STATE のコードの欠落", m_state), ("範囲 1 の上限の誤り", m_range), ("nr_ok が範囲の変更を許す", m_nr_range),
             ("nr_ok が 2 段を許す", m_nr_two_steps), ("過負荷の規則が常に成立", m_ovl), ("写しのアドレスとの重なり", m_mirror),
             ("過負荷の閾値が 2", m_ovl2), ("過負荷の窓が 8 で閾値が 8", m_ovl_window), ("範囲 0 の M の上限が 0", m_range0),
-            ("CHOP_BLANK の幅に 1 を足さない", m_blank), ("TEST_CFG[4] を CHOP_STOP から取る", m_tcfg4)]
-    results, ok = [], True
+            ("CHOP_BLANK の幅に 1 を足さない", m_blank), ("TEST_CFG[4] を CHOP_STOP から取る", m_tcfg4),
+            ("フィールドがバイトの外", m_outside), ("既定値がフィールドの幅を超える", m_reset_wide),
+            ("合法な値がフィールドの幅を超える", m_legal_wide), ("シーケンサの駆動する AFE_RST をレジスタも駆動", m_seq_pin),
+            ("どちらの一覧にもない端子", m_stray_pin), ("T_WARM の最大が TIMING と合わない", m_twarm_max),
+            ("ガードするアドレスの欠落", m_guard), ("範囲 4 の OFEN が G3 を入れない", m_ofen),
+            ("PIN_OF_CONTROL の欠落", m_pin_of_control), ("pins_from_active の端子の欠落", m_pins_lack),
+            ("BLANK_WITH_DAC がフレームの最長のブランキングでない", m_blank_dac),
+            ("要件定義が読めない", m_req_missing), ("詳細仕様に過負荷の規則の文がない", m_doc_no_rule),
+            ("nr_ok の模型にない反映の設定", m_extra_apply), ("全振幅の符号の列がない", m_codes_missing),
+            ("全振幅の符号の列が 11/19 のものでない", m_codes_other), ("cfg_ok が範囲の上限 ＋ 1 を受け付ける", m_cfg_top)]
+    results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
             g[k] = copy.deepcopy(v)
@@ -636,18 +734,85 @@ def selftest():
         m()
         try:
             e = check(verbose=False)
-        except Exception as ex:                        # a crash on a broken map counts as detected
-            e = [f"exception {ex!r}"]
-        results.append((name, len(e), e[0] if e else ""))
-        ok &= bool(e)
+        except Exception as ex:                        # a crash is no detection (audit round 9)
+            e = None
+            problems.append(f"mutation {name}: check() crashed ({ex!r})")
+        results.append((name, e))
     for k, v in keep.items():
         g[k] = copy.deepcopy(v)
     g.update(keep_fn)
-    for name, n, first in results:
-        print(f"{'detected' if n else 'MISSED  '} {name}: {n} violations" + (f" (e.g. {first[:100]})" if n else ""))
+    msgs = check_messages()
+    texts = [t for _, t, _ in msgs]
+    problems += [f"line {ln}: a message without 12 fixed characters (it cannot be told apart)" for ln, t, _ in msgs
+                 if len(t) < 12]
+    problems += [f"two messages share the fixed text {t!r}" for t in sorted(set(texts)) if texts.count(t) > 1]
+    problems += [f"line {ln}: the fixed text {t!r} also occurs in the message of line {l2}" for ln, t, _ in msgs
+                 for l2, _, whole in msgs if l2 != ln and t in whole]
+    expected, n_det = set(), 0
+    for name, e in results:
+        want = SELFTEST_EXPECT.get(name, ())
+        if not want:
+            problems.append(f"mutation {name}: no expected message (SELFTEST_EXPECT)")
+        expected |= set(want)
+        problems += [f"mutation {name}: expects {w!r}, which is not a message of check()" for w in want if w not in texts]
+        lacking = [w for w in want if e is None or not any(w in x for x in e)]
+        det = bool(want) and e is not None and not lacking and all(w in texts for w in want)
+        n_det += det
+        print(f"{'detected' if det else 'MISSED  '} {name}: " + ("crashed" if e is None else f"{len(e)} violations")
+              + (", the expected one(s) among them" if det else f", without the expected {lacking[0]!r}" if lacking else ""))
+    for ln, t, _ in msgs:
+        if t not in expected:
+            problems.append(f"line {ln}: no mutation expects the message {t!r}")
     e = check(verbose=False)
-    print(f"{sum(1 for r in results if r[1])} of {len(results)} mutations detected; unmutated map: {len(e)} violations")
-    return 0 if ok and not e else 1
+    for p_ in problems:
+        print("PROBLEM  " + p_)
+    print(f"{n_det} of {len(results)} mutations detected by their expected messages; {len(msgs)} messages, "
+          f"{len(set(texts) & expected)} expected by a mutation; unmutated map: {len(e)} violations")
+    return 0 if n_det == len(results) and not problems and not e else 1
+
+
+# The message each self-test mutation is written for, by its fixed text (audit round 9, auditor C; as in
+# fsm_spec.SELFTEST_EXPECT): the self-test checks that each is produced and that every message of check() is
+# expected by a mutation.
+SELFTEST_EXPECT = {
+    'アドレスの重なり': ('used by two registers:',),
+    'フィールドの重なり': (': overlaps another field',),
+    '合法でない既定値': ('is not among the legal values',),
+    'アナログに効く設定が即時': ('(analog controls change only through START / APPLY / APPLY_NR)',),
+    'アナログの端子の出どころの欠落': ('(exactly one required)',),
+    'T_RST の最小値が 100 µs 未満': (', below the analog minimum of',),
+    '既定値が推奨値でない（AFE_IBIAS 2）': (', the recommended operating value is',),
+    '命令コードが 1 ビット違い': ('bit (codes must differ in 2 bits or more)',),
+    'STATUS の固定ビットがない': ('STATUS has no fixed 1 and 0 bits (cannot tell it from a dead MISO)',),
+    'STATE のコードの欠落': ("STATE field does not match the sequencer's state codes",),
+    '範囲 1 の上限の誤り': (', the DAC groups give',),
+    'nr_ok が範囲の変更を許す': (', but the boundary case gives',),
+    'nr_ok が 2 段を許す': (', but the boundary case gives',),
+    '過負荷の規則が常に成立': ('times on the full-scale stream',),
+    '写しのアドレスとの重なり': (': the active copy 0x',),
+    '過負荷の閾値が 2': ("STATUS.OVL_NOW's text does not state OVL_RULE:", 'differs from the rule stated in',),
+    '過負荷の窓が 8 で閾値が 8': ("STATUS.OVL_NOW's text does not state OVL_RULE:",),
+    '範囲 0 の M の上限が 0': ('; the DAC is off, so every M (0..',),
+    'CHOP_BLANK の幅に 1 を足さない': ('pins_from_active differs from the independent derivation for',),
+    'TEST_CFG[4] を CHOP_STOP から取る': ('pins_from_active differs from the independent derivation for',),
+    'フィールドがバイトの外': ('outside the byte',),
+    '既定値がフィールドの幅を超える': ('wider than the field (',),
+    '合法な値がフィールドの幅を超える': (': a legal value does not fit the field',),
+    'シーケンサの駆動する AFE_RST をレジスタも駆動': (': driven by the sequencer but also by',),
+    'どちらの一覧にもない端子': (': a pin that is in neither list of controls',),
+    'T_WARM の最大が TIMING と合わない': (': the register reaches',),
+    'ガードするアドレスの欠落': ('guarded addresses',),
+    '範囲 4 の OFEN が G3 を入れない': ('does not switch on the groups G0..G',),
+    'PIN_OF_CONTROL の欠落': ('PIN_OF_CONTROL does not list exactly the analog controls',),
+    'pins_from_active の端子の欠落': ('pins_from_active lacks',),
+    'BLANK_WITH_DAC がフレームの最長のブランキングでない': ("is not the frame's longest blanking",),
+    '要件定義が読めない': ('the overload rule cannot be compared with',),
+    '詳細仕様に過負荷の規則の文がない': (": the overload rule's statement not found",),
+    'nr_ok の模型にない反映の設定': ('the nr_ok model does not list exactly the shadowed settings',),
+    '全振幅の符号の列がない': ('.codes not found: the overload false-alarm check cannot run',),
+    '全振幅の符号の列が 11/19 のものでない': ('.codes is not the stream checked on 11/19 (SHA-256',),
+    'cfg_ok が範囲の上限 ＋ 1 を受け付ける': ('cfg_ok wrong at the top of range',),
+}
 
 
 if __name__ == "__main__":

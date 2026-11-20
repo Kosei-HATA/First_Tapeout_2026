@@ -24,6 +24,11 @@
 //      byte and a short sample read are FRAME_ERR; APPLY in WARMUP restarts T_WARM (AFE_RST released T_WARM after
 //      the change); APPLY empties the FIFO; an injected overload sets OVL_NOW, DFLAG.OVL (only in FILL / RUN) and
 //      the OVL bit of exactly the three samples whose window contains it
+//   V  audit round 9: APPLY_NR in IDLE, and APPLY and APPLY_NR in RECOVER, WAIT_E, ALIGN and FILL (the end-to-end
+//      replay had none of them), each with its effect (pins, STATE) and no flag. Also: CODE changes at e2 as the ADC's;
+//      the RESET_N release reaches the first CMP_STROBE in 3 MCLK (2 synchronizer flops); the control reset of a
+//      SOFT_RESET lasts 5 MCLK (H); RAW's bits change at e1, e5, ... and RAW_CLK rises at e3, e7, ... (O); T12 an
+//      overload ending at the interval's last input; U3 / U4 CRC-off read flips
 //   K  SEQ wraps from 0xFFFF to 0 (forced; the last phase, so that every other phase's samples are compared with the
 //      golden CIC: audit round 8, the comparison had stopped at K, in the middle of the bench)
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
@@ -252,8 +257,8 @@ module tb_top_r14;
     logic cic_clear_taken = 1'b0;                 // the CIC's clear at this output (its arm input at step 3; audit
     always @(posedge MCLK) if (dut.u_cic.step[3]) cic_clear_taken <= dut.u_cic.arm;   // round 8: a SOFT_RESET can cancel it)
     always @(posedge MCLK) begin
-        if (dut.cycle == 5'd16 && RESET_N) begin
-            CODE <= ovl_force ? 5'd31 : codes[cidx % ncodes];
+        if (dut.cycle == 5'd1 && RESET_N) begin      // changes at e2, as eeg_adc_dig's code (audit round 9: at e17 a
+            CODE <= ovl_force ? 5'd31 : codes[cidx % ncodes];   // block sampling at cycle 1 instead of 3 saw the same code)
             cidx <= cidx + 1;
         end
         if (log_on && dut.cic_en) $fdisplay(flog, "I %0d", CODE);
@@ -713,6 +718,35 @@ module tb_top_r14;
         end
     endtask
 
+    // the RESET_N release reaches the first CMP_STROBE after exactly 3 MCLK: 2 synchronizer flops and the strobe's
+    // register (audit round 9: a single-flop release passed every test); the control reset of a SOFT_RESET lasts 5 MCLK
+    integer n_release = -1;
+    initial begin
+        @(posedge RESET_N);
+        n_release = 0;
+        while (CMP_STROBE !== 1'b1 && n_release < 40) begin @(posedge MCLK); n_release = n_release + 1; #1; end
+    end
+    real t_rstn_fall = 0.0, rstn_low = 0.0;
+    always @(negedge dut.rst_n) t_rstn_fall = $realtime;
+    always @(posedge dut.rst_n) rstn_low = $realtime - t_rstn_fall;
+    // RAW's bit timing while the stream runs (audit round 9: a word loaded at cycle 0 instead of 31 passed): RAW_DATA
+    // changes only at e1, e5, ..., e29 and RAW_CLK rises only at e3, e7, ..., e31
+    integer n_raw_t = 0;
+    always @(RAW_DATA) begin
+        #1;
+        if (dut.u_raw.on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd1) begin
+            n_raw_t = n_raw_t + 1;
+            if (n_raw_t <= 3) fail($sformatf("RAW_DATA changed in frame cycle %0d (only at e1, e5, ...)", dut.cycle));
+        end
+    end
+    always @(posedge RAW_CLK) begin
+        #1;
+        if (dut.u_raw.on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd3) begin
+            n_raw_t = n_raw_t + 1;
+            if (n_raw_t <= 3) fail($sformatf("RAW_CLK rose in frame cycle %0d (only at e3, e7, ...)", dut.cycle));
+        end
+    end
+
     // RAW (audit round 8): with the stream off (eeg_raw's `on` 0, RAW_EN taken at the frame boundary) and DBG_SEL 0,
     // both pads stay low (RST-02, the eeg_raw header; the pad coupling is rated for RAW on only). The pads are
     // registered, so the condition must have held for 2 MCLK.
@@ -734,6 +768,7 @@ module tb_top_r14;
         repeat (5) @(negedge MCLK);
         RESET_N = 1'b1;
         repeat (20) @(negedge MCLK);
+        if (n_release != 3) fail($sformatf("the first CMP_STROBE %0d MCLK after the RESET_N release, expected 3 (two synchronizer flops and the strobe's register)", n_release));
         prev_tick = 1'b0;
         ana_q = ana;
 
@@ -1103,6 +1138,8 @@ module tb_top_r14;
             repeat (50) @(posedge MCLK);
             #1;
             if (dut.seq_state !== 4'd0 || AFE_RST !== 1'b1) fail("SOFT_RESET: not IDLE");
+            if (rstn_low < 5.0 * TMCLK - 0.1 || rstn_low > 5.0 * TMCLK + 0.1)      // audit round 9
+                fail($sformatf("SOFT_RESET: the control reset lasted %0.2f ns, expected 5 MCLK (%0.2f ns)", rstn_low, 5.0 * TMCLK));
             if (dut.u_clkgen.cnt !== 9'((cnt0 + mclk_count - n0) % 512))
                 fail($sformatf("SOFT_RESET moved the frame counter: %0d, expected %0d", dut.u_clkgen.cnt,
                                (cnt0 + mclk_count - n0) % 512));
@@ -2030,6 +2067,33 @@ module tb_top_r14;
                     end
                 end
             end
+            // T12 (audit round 9): extreme codes for the inputs 1004..1023, the interval's last: OVL on that interval's
+            // sample and the next two, not the third (a detector taking its code one frame late marks the third)
+            while (DRDY_N === 1'b0) read_samples(1, -1, "T12 drain");
+            begin
+                logic [15:0] k12, sq;
+                logic [7:0] st12;
+                logic [23:0] d12;
+                bit ok12;
+                integer got;
+                k = 0;
+                while (!(dut.u_cic.dcnt == 10'd1004 && dut.cycle > 5'd3 && dut.cycle < 5'd16) && k < 80000) begin @(posedge MCLK); k++; end
+                k12 = dut.seq_cnt;
+                ovl_force = 1'b1;
+                while (!(dut.u_cic.dcnt == 10'd0 && dut.cycle > 5'd3 && dut.cycle < 5'd16)) @(posedge MCLK);
+                ovl_force = 1'b0;
+                got = 0;
+                while (got < 5) begin
+                    while (DRDY_N !== 1'b0) @(posedge MCLK);
+                    r14_sample(st12, sq, d12, ok12);
+                    if (!ok12 || st12[7] !== 1'b1) fail($sformatf("T12: sample SEQ %0d not valid", sq));
+                    if (sq >= k12) begin
+                        if (st12[5] !== ((sq - k12) < 16'd3)) fail($sformatf("T12: sample SEQ %0d (interval +%0d) OVL %b, expected %b",
+                                                                           sq, sq - k12, st12[5], (sq - k12) < 16'd3));
+                        got = got + 1;
+                    end
+                end
+            end
             r14_cmd(8'h22);
             wait_state(4'd0, 50.0, "T8 IDLE");
             // T9: an overload in ALIGN ending 12 frames before its clear (inputs 992..1011): no DFLAG.OVL (FILL and RUN
@@ -2154,7 +2218,110 @@ module tb_top_r14;
         end
         r14_write(7'h55, 8'h00);
         bfm_crc_en = 1'b0;
+        // U3 / U4 (audit round 9, auditor B): CRC off, a 2-byte read of AFE_IBIAS (0xA3) whose R/W bit flips is a legal
+        // write of 0x00 and commits silently (the host procedure therefore reads 3 bytes or more with CRC off); made 3
+        // bytes long, the same flip is an overlong write: FRAME_ERR and nothing written
+        r14_write(7'h06, 8'hFF);
+        spi_tx[0] = 8'h23; spi_tx[1] = 8'h00; spi_xfer(2, 0);
+        rt_read_expect(7'h23, 8'h00, "U3 a flipped 2-byte read of AFE_IBIAS wrote 0x00 (the CRC-off exposure)");
+        expect_err_exact(8'h00, "U3 the flipped 2-byte read flags nothing");
+        r14_write(7'h23, 8'h03);
+        spi_tx[0] = 8'h23; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_xfer(3, 0);
+        expect_err_exact(8'h02, "U4 a flipped 3-byte read is an overlong write: FRAME_ERR");
+        rt_read_expect(7'h23, 8'h03, "U4 AFE_IBIAS not written by the flipped 3-byte read");
         $display("U  command frames turned into reads: not executed, nothing flagged (errors %0d)", errors);
+
+        // ---------------- V: APPLY_NR in IDLE, and APPLY and APPLY_NR in RECOVER, WAIT_E, ALIGN and FILL (audit round 9,
+        // auditor C: none was in the end-to-end replay); range 1, T_ELEC 2 ms; each taken at its tick, with its effect at
+        // the pins (OFM) or in STATE, and no flag
+        phase = "V";
+        begin
+            integer tries;
+            logic [9:0] m;
+            r14_write(7'h51, 8'd2);
+            r14_write(7'h22, 8'h01);
+            r14_write(7'h21, 8'd10);
+            r14_cmd(8'h33);                             // range 1, M 10 (IDLE)
+            repeat (600) @(posedge MCLK);
+            m = 10'd10;
+            // V1: APPLY_NR in IDLE
+            m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+            expect_err_exact(8'h00, "V1 APPLY_NR in IDLE");
+            if (OFM !== m || dut.seq_state !== 4'd0) fail($sformatf("V1: OFM %0d state %0d after APPLY_NR in IDLE", OFM, dut.seq_state));
+            r14_cmd(8'h11);
+            // V2: APPLY_NR in RECOVER (applied, stays)
+            wait_state(4'd2, 7000.0, "V2 RECOVER");
+            m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+            expect_err_exact(8'h00, "V2 APPLY_NR in RECOVER");
+            if (OFM !== m) fail($sformatf("V2: OFM %0d after APPLY_NR in RECOVER, expected %0d", OFM, m));
+            // V3: APPLY_NR in WAIT_E (applied, the wait starts again)
+            wait_state(4'd3, 400.0, "V3 WAIT_E");
+            m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+            expect_err_exact(8'h00, "V3 APPLY_NR in WAIT_E");
+            if (OFM !== m || dut.seq_state !== 4'd3) fail($sformatf("V3: OFM %0d state %0d after APPLY_NR in WAIT_E", OFM, dut.seq_state));
+            // V4: APPLY_NR in ALIGN (applied; T_ELEC > 0: back to WAIT_E). ALIGN may end too soon: then into FILL,
+            // where an APPLY_NR also returns to WAIT_E, and again (up to 4 tries)
+            tries = 0;
+            begin
+                bit done4, done5;
+                done4 = 1'b0; done5 = 1'b0;
+                while (!(done4 && done5) && tries < 8) begin
+                    tries = tries + 1;
+                    while (!(dut.seq_state === 4'd4 || dut.seq_state === 4'd5)) @(posedge MCLK);
+                    if (dut.seq_state === 4'd4 && !done4 && dut.u_cic.dcnt < 10'd960) begin
+                        m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+                        expect_err_exact(8'h00, "V4 APPLY_NR in ALIGN");
+                        if (OFM !== m || dut.seq_state !== 4'd3) fail($sformatf("V4: OFM %0d state %0d after APPLY_NR in ALIGN (WAIT_E expected)", OFM, dut.seq_state));
+                        done4 = 1'b1;
+                    end else begin
+                        wait_state(4'd5, 1100.0, "V5 FILL");
+                        m = m + 10'd1; r14_write(7'h21, m[7:0]); r14_cmd(8'h44); repeat (600) @(posedge MCLK);
+                        expect_err_exact(8'h00, "V5 APPLY_NR in FILL");
+                        if (OFM !== m || dut.seq_state !== 4'd3) fail($sformatf("V5: OFM %0d state %0d after APPLY_NR in FILL (WAIT_E expected)", OFM, dut.seq_state));
+                        done5 = 1'b1;
+                    end
+                end
+                if (!(done4 && done5)) fail("V4 / V5 not exercised: ALIGN never long enough");
+            end
+            // V6..V9: APPLY in WAIT_E, RECOVER, ALIGN, FILL: each goes to PRE (with its pulse)
+            r14_cmd(8'h33); wait_state(4'd7, 50.0, "V6 PRE after APPLY in WAIT_E");   // in WAIT_E now
+            expect_err_exact(8'h00, "V6 APPLY in WAIT_E");
+            wait_state(4'd2, 400.0, "V7 RECOVER");
+            r14_cmd(8'h33); wait_state(4'd7, 50.0, "V7 PRE after APPLY in RECOVER");
+            expect_err_exact(8'h00, "V7 APPLY in RECOVER");
+            r14_write(7'h51, 8'd0);                     // T_ELEC 0 (immediate): RECOVER -> ALIGN from now
+            wait_state(4'd2, 400.0, "V8 RECOVER");      // V7's pulse over (an APPLY in PRE or PULSE is refused)
+            r14_cmd(8'h33); wait_state(4'd7, 50.0, "V8 PRE after APPLY in RECOVER (T_ELEC 0)");
+            expect_err_exact(8'h00, "V8 APPLY in RECOVER (T_ELEC 0)");
+            tries = 0;
+            begin
+                bit done8;
+                done8 = 1'b0;
+                while (!done8 && tries < 6) begin
+                    tries = tries + 1;
+                    wait_state(4'd4, 2000.0, "V8 ALIGN");
+                    if (dut.u_cic.dcnt < 10'd960) begin
+                        r14_cmd(8'h33); wait_state(4'd7, 50.0, "V8 PRE after APPLY in ALIGN");
+                        expect_err_exact(8'h00, "V8 APPLY in ALIGN");
+                        done8 = 1'b1;
+                    end else begin
+                        wait_state(4'd5, 1100.0, "V8 FILL");
+                        r14_cmd(8'h33); wait_state(4'd7, 50.0, "V9 PRE after APPLY in FILL");   // and APPLY in FILL
+                        expect_err_exact(8'h00, "V9 APPLY in FILL");
+                    end
+                end
+                if (!done8) fail("V8 not exercised: ALIGN never long enough");
+            end
+            wait_state(4'd5, 3000.0, "V9 FILL");
+            r14_cmd(8'h33); wait_state(4'd7, 50.0, "V9 PRE after APPLY in FILL");
+            expect_err_exact(8'h00, "V9 APPLY in FILL");
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "V IDLE");
+            r14_write(7'h21, 8'h00); r14_write(7'h22, 8'h00); r14_cmd(8'h33);
+            repeat (600) @(posedge MCLK);
+            r14_write(7'h06, 8'hFF);
+        end
+        $display("V  APPLY and APPLY_NR in IDLE, RECOVER, WAIT_E, ALIGN, FILL (errors %0d)", errors);
 
         // ---------------- K: SEQ wraps from 0xFFFF to 0 (forced; the last phase, outside the golden comparison)
         phase = "K";

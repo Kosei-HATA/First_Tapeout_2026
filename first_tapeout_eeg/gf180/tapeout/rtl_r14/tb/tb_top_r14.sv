@@ -557,6 +557,7 @@ module tb_top_r14;
         end
     end
     integer n_drdy_fall = 0;
+    integer n_y_slip_smp = 0;                            // Y1: a slipped FIFO_LEVEL read, then a sample read (round 23)
     always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
     // DRDY_N in pulse mode (audit round 22, auditor C: DAT-04 was checked on three RUN stores of G3 only, and RTL copies
     // with no pulse for FILL's store (the first sample after START and APPLY) or with the pulse ended when the FIFO
@@ -3302,6 +3303,45 @@ module tb_top_r14;
                     r14_write(7'h06, 8'h02);
                     if (dut.seq_state !== st0) fail("Y1: the state changed across a slipped read");
                 end
+                // audit round 23, auditor B: a slip in a frame that is not a sample read (a CRC read of FIFO_LEVEL with an
+                // extra SCLK pulse) followed at once by a sample read (CS_N high 4 MCLK): that read's header shows ALERT
+                // (the slipped frame's FRAME_ERR), and its word is the next sample, CRC-valid and popped. Step 6 uses it
+                // (the frame before the 0 -> 1 header was not a sample read); round 22's rule withheld it
+                begin
+                    logic [7:0] ys3, yer3;
+                    logic [15:0] yq3, ylast;
+                    logic [23:0] yd3;
+                    bit yok3;
+                    logic [2:0] b8;
+                    logic [3:0] lvl3;
+                    ylast = 16'hxxxx;
+                    do begin                                    // drained: a CRC-valid empty word
+                        r14_sample(ys3, yq3, yd3, yok3);
+                        if (yok3 && ys3[7] === 1'b1) ylast = yq3;
+                    end while (!(yok3 && ys3[7] === 1'b0));
+                    if ($isunknown(ylast)) fail("Y1 FIFO_LEVEL slip: no sample before the empty word");
+                    @(posedge dut.push_ok);                     // one new sample, SEQ ylast + 1
+                    @(posedge MCLK); #1;
+                    lvl3 = dut.fifo_level;
+                    spi_tx[0] = 8'h85; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
+                    spi_tidle = 4.0 * TMCLK + 0.3;
+                    xfer_slip(3, 1, 9, b8);
+                    spi_tidle = 600.0;
+                    if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b0) fail("Y1 FIFO_LEVEL slip: ALERT set before the slipped frame");
+                    if (b8 !== 3'd1) fail($sformatf("Y1 FIFO_LEVEL slip not exercised: %0d bits past whole bytes", b8));
+                    r14_sample(ys3, yq3, yd3, yok3);
+                    if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b1)
+                        fail("Y1: no ALERT in the header of the sample read right after a slipped FIFO_LEVEL read (CS_N high 4 MCLK)");
+                    if (!yok3 || ys3[7] !== 1'b1 || yq3 !== ylast + 16'd1)
+                        fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read gave CRC %0d VALID %b SEQ %0d, expected a CRC-valid SEQ %0d",
+                                       yok3, ys3[7], yq3, ylast + 16'd1));
+                    if (dut.fifo_level !== lvl3 - 4'd1)
+                        fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read did not pop (level %0d -> %0d)", lvl3, dut.fifo_level));
+                    r14_read(7'h06, yer3);
+                    if (yer3 !== 8'h02) fail($sformatf("Y1: ERR 0x%02h after a slipped FIFO_LEVEL read, expected FRAME_ERR", yer3));
+                    r14_write(7'h06, 8'h02);
+                    n_y_slip_smp = n_y_slip_smp + 1;
+                end
             end
             r14_write(7'h08, am_y); r14_write(7'h09, amd_y);    // Y's masks back
             ovl_force = 1'b1;                                   // DFLAG.OVL
@@ -3326,7 +3366,8 @@ module tb_top_r14;
             r14_write(7'h06, 8'h01);
             rt_write_check(7'h60, 8'h11, 8'h00, 8'h08, $sformatf("Y%0d: TEST_MUX locked after SOFT_RESET", pass));
         end
-        $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart (errors %0d)", errors);
+        $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart; a sample read after a slipped FIFO_LEVEL read used (errors %0d)", errors);
+        if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)
             fail($sformatf("the CHOP_BLANK monitor not exercised: %0d CHOP_OUT edges, %0d / %0d pulses measured with the DAC off / on",

@@ -274,6 +274,9 @@ module eeg_digital_top #(
         else           DAC_CLK <= (cycle == DAC_CLK_CYCLE);
     end
 
+    // eeg_chop1 and eeg_raw are r13's blocks (rtl/, kept unchanged as r13's source), so their comments name r13's
+    // registers: here chop1_rate is ADC_CFG.CHOP1_RATE's active copy (6 and 7 are refused with RANGE_ERR) and raw_en
+    // is DEBUG.RAW_EN (0x62); the ADC's eeg_adc_dig takes DWA_EN from ADC_CFG.DWA_EN's active copy (audit round 23, A)
     eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));
 
     eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n), .raw_en(raw_en), .cycle(cycle), .raw_clk(raw_clk), .code(CODE),

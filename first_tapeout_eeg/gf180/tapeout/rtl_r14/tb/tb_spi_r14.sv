@@ -69,6 +69,8 @@ module tb_spi_r14;
 
     // ------------------------------------------------------------------ frames
     integer fd, nfr, seed;
+    integer tcls = 0;                                // the SCLK timing class of the frames being sent (below)
+    integer n_tcls [0:3] = '{0, 0, 0, 0};            // frames per class (audit round 23, auditor C: draws were counted)
     string  logname;
     integer nb, xb, kind;
     logic [7:0] a, d;
@@ -81,7 +83,7 @@ module tb_spi_r14;
         string s;
         spi_xfer(nbytes, extra);
         repeat (6) @(posedge MCLK);                    // the CS_N-rising actions (2-3 MCLK) and the pop (1 more)
-        s = $sformatf("F %0d %s crc=%0d nbits=%0d tx=", nfr, tag, crc_at_cs, 8 * nbytes + extra);
+        s = $sformatf("F %0d %s crc=%0d cls=%0d nbits=%0d tx=", nfr, tag, crc_at_cs, tcls, 8 * nbytes + extra);
         for (int i = 0; i < nbytes; i++) s = {s, $sformatf("%02h", spi_tx[i])};      // complete bytes only
         s = {s, " rx="};
         for (int i = 0; i < nbytes; i++) s = {s, $sformatf("%02h", spi_rx[i])};
@@ -91,6 +93,7 @@ module tb_spi_r14;
                           n_ferr, n_cerr, n_aerr, n_snap, snap_word, n_preq, head_at_req, n_fl, n_pop, n_soft, loads)};
         $fdisplay(fd, "%s", s);
         nfr = nfr + 1;
+        n_tcls[tcls] = n_tcls[tcls] + 1;
     endtask
 
     // the frame length: mostly the right one, sometimes one byte short or long, sometimes a partial byte
@@ -124,8 +127,7 @@ module tb_spi_r14;
     // must do nothing here: no state, commit, copy, pop or flag, MISO not driven. MISO_OE is off as CS_N rises.
     logic   other_on = 1'b0;
     integer n_other = 0, n_other_bad = 0, oseed = 20261120;
-    integer tseed = 20261121, tcls;                  // each frame's SCLK timing (audit round 22, auditor C: VER-02)
-    integer n_tcls [0:3] = '{0, 0, 0, 0};
+    integer tseed = 20261121;                        // each frame's SCLK timing (audit round 22, auditor C: VER-02)
     task automatic other_chip(input integer nbits);
         other_on = 1'b1;
         #(160.0);                                      // the other chip's CS_N setup (5 MCLK or more)
@@ -204,7 +206,6 @@ module tb_spi_r14;
                 2: begin spi_high = 4.0 * TMCLK + 0.3; spi_low = 500.0 - spi_high; end   // 2 MHz, minimum high
                 default: begin spi_low = 5.0 * TMCLK + 0.3; spi_high = 500.0 - spi_low; end   // minimum low
             endcase
-            n_tcls[tcls] = n_tcls[tcls] + 1;
             kind = $urandom_range(0, 99);
             if (kind < 22) begin                                   // write a register (random address class)
                 case ($urandom_range(0, 9))
@@ -302,7 +303,7 @@ module tb_spi_r14;
             end
         end
         $fclose(fd);
-        $display("SCLK timing per frame: %0d at 2 MHz, %0d at 1 MHz, %0d with the minimum high, %0d with the minimum low",
+        $display("SCLK timing: %0d frames at 2 MHz, %0d at 1 MHz, %0d with the minimum high, %0d with the minimum low (every VER-02 kind at each: check_spi_trace)",
                  n_tcls[0], n_tcls[1], n_tcls[2], n_tcls[3]);
         if (n_tcls[0] < 100 || n_tcls[1] < 100 || n_tcls[2] < 100 || n_tcls[3] < 100)
             $display("ERROR: an SCLK timing class not exercised");

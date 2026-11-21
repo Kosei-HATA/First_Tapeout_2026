@@ -86,16 +86,16 @@ def chop():
     sig = [
         {"name": "フレーム", "wave": "=." * 16, "data": [str(f) for f in range(16)]},
         {},
-        {"name": "128 kHz：CHOP（1 ＝ 相 A）", "wave": levels(n, c128)},
+        {"name": "128 kHz：CHOP", "wave": levels(n, c128)},    # short lane names: a longer one was drawn past the
         {"name": "128 kHz：tick", "wave": levels(n, t128)},
         {},
-        {"name": "64 kHz：CHOP（1 ＝ 相 A）", "wave": levels(n, c64)},
+        {"name": "64 kHz：CHOP", "wave": levels(n, c64)},      # figure's left edge ("28 kHz", audit round 23, A)
         {"name": "64 kHz：tick", "wave": levels(n, t64)},
         {},
         {"name": "CIC の出力", "wave": levels(n, out)},
     ]
     return {"signal": sig,
-            "head": {"text": f"チョッパの周期と tick：相 A の中ほど（128 kHz で縁から {r128['tick_frame'] * 32 + tc} MCLK、"
+            "head": {"text": f"チョッパの周期と tick（CHOP の 1 は相 A）：相 A の中ほど（128 kHz で縁から {r128['tick_frame'] * 32 + tc} MCLK、"
                              f"64 kHz で {r64['tick_frame'] * 32 + tc} MCLK）に 1 周期 1 回"},
             "foot": {"text": "CIC の出力は 1,024 フレーム目（フレーム番号 ≡ 15 mod 16）の cycle 8。tick とは同じサイクルにならない"},
             "config": {"hscale": 1}}
@@ -242,7 +242,12 @@ def render(name, src, width):
         f.write("<!doctype html><html><head><meta charset='utf-8'>"
                 f"<script src='{WD}/skins/default.js'></script><script src='{WD}/wavedrom.min.js'></script>"
                 "<style>body{margin:8px;background:#fff;font-family:'Hiragino Sans',sans-serif}</style></head>"
-                "<body onload='WaveDrom.ProcessAll()'><script type='WaveDrom'>"
+                "<script>function clipCheck(){var bad=[];document.querySelectorAll('svg text').forEach(function(t){"
+                "var s=t;while(s.ownerSVGElement)s=s.ownerSVGElement;var r=s.getBoundingClientRect(),b=t.getBoundingClientRect();"
+                "if(b.width>0&&(b.left<r.left-0.5||b.right>r.right+0.5))bad.push(t.textContent);});"
+                "var p=document.createElement('pre');p.style.display='none';p.textContent='CLIPCHECK '+JSON.stringify(bad);"
+                "document.body.appendChild(p);}</script>"
+                "<body onload='WaveDrom.ProcessAll();clipCheck()'><script type='WaveDrom'>"
                 + json.dumps(src, ensure_ascii=False) + "</script></body></html>")
     out = os.path.join(HERE, f"wave_{name}.png")
     raw = os.path.join(os.path.dirname(page), f"wave_{name}.raw.png")
@@ -259,9 +264,23 @@ def render(name, src, width):
             pad = 16
             im = im.crop((max(box[0] - pad, 0), max(box[1] - pad, 0), min(box[2] + pad, im.width),
                           min(box[3] + pad, im.height)))
+            clipped = clip_check(page, budget)
+            if clipped:                             # (audit round 23, auditor A: '128 kHz' was drawn as '28 kHz')
+                raise RuntimeError(f"wave_{name}: labels drawn past the figure's edges, not written: {clipped}")
             FS.save_tagged_png(im, out, json_text(src))
             return out
     raise RuntimeError(f"wave_{name}: WaveDrom drew nothing (blank capture); not written")
+
+
+def clip_check(page, budget):
+    """The labels WaveDrom drew past its figure's left or right edge (the SVG clips them: a lane name wider than the
+    name column lost its first character). From the page's DOM after WaveDrom ran (clipCheck in the page)."""
+    r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", f"--virtual-time-budget={budget}", "--dump-dom",
+                        "file://" + os.path.abspath(page)], check=True, capture_output=True, text=True)
+    m = re.search(r"CLIPCHECK (\[.*?\])<", r.stdout)
+    if not m:
+        raise RuntimeError(f"{os.path.basename(page)}: the label check did not run (no CLIPCHECK in the DOM)")
+    return json.loads(m.group(1).replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">"))
 
 
 def json_text(src):

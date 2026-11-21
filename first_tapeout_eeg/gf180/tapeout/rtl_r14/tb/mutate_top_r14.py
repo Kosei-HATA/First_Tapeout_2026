@@ -528,6 +528,12 @@ MUTATIONS = [
      "else if (seq_state != ST_RUN) chg_cnt <= 9'd0;", "else if (seq_state == ST_PRE) chg_cnt <= 9'd0;"),
     ('上位：走っている印があれば新しい長い印で延ばさない', 'eeg_digital_top.sv',
      "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;", "chg_cnt <= (chg_cnt != 9'd0) ? chg_cnt : chg_new;"),
+    # audit round 23, auditor C: one register's write clobbering another's field (every write went in ascending order
+    # with the others at reset and only the written register read back; both passed all 16 groups)
+    ('レジスタ：OFF_M_H への書き込みが M[7:0] も消す（上位のバイトを先に書く前提）', 'eeg_regs.sv',
+     "A_OFF_M_H:      s_m[9:8] <= wdata[1:0];", "A_OFF_M_H:      s_m <= {wdata[1:0], 8'h00};"),
+    ('レジスタ：OFF_M_L への書き込みが SIGN も消す', 'eeg_regs.sv',
+     "A_OFF_M_L:      s_m[7:0] <= wdata;", "A_OFF_M_L:      begin s_m[7:0] <= wdata; s_sign <= 1'b0; end"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -566,10 +572,8 @@ SEQ_MUTATIONS = [
     ("シーケンサ：tick では不正な状態値を見ない（tick の分岐が先）", "eeg_seq.sv",
      "        if (state > S_PULSE) begin                          // illegal value: safe side",
      "        if (state > S_PULSE && !tick) begin                 // illegal value: safe side"),
-    # audit round 22, auditor A: the rarest branch of the random walk (ALIGN / APPLY_NR with T_ELEC > 0, taken once
-    # with the suite's seed): an APPLY_NR in ALIGN that skips the electrode wait
-    ("シーケンサ：ALIGN の APPLY_NR で T_ELEC が 0 でなくても電極の待ちに戻らない", "eeg_seq.sv",
-     "S_ALIGN:  if (t_elec != 8'd0) nxt = S_WAIT_E;", "S_ALIGN:  ;"),
+    # (audit round 23, auditor C: round 22's q14 was this list's q03 again, the same edit; removed. The runner now
+    # refuses two identical edits in one group)
 ]
 
 
@@ -1081,8 +1085,18 @@ def main():
                     stale.append(f"{TAG.get(g, 'm')}{i:02d} {m[0]} ({f})")
                     break
                 texts[src] = t.replace(old, new)
+    for g, lst in (("top", MUTATIONS), ("spi", SPI_MUTATIONS), ("seq", SEQ_MUTATIONS), ("fifo", FIFO_MUTATIONS),
+                   ("regs", REGS_MUTATIONS), ("chop1", CHOP1_MUTATIONS), ("rnd", RND_MUTATIONS),
+                   ("struct", STRUCT_MUTATIONS), ("ovl", OVL_MUTATIONS)):
+        seen = {}                                     # the same edits twice in one group (audit round 23, C)
+        for i, m in enumerate(lst):
+            key = tuple(edits_of(m))
+            if key and key in seen:
+                stale.append(f"{TAG.get(g, 'm')}{i:02d} {m[0]}: the same edits as {TAG.get(g, 'm')}{seen[key]:02d}")
+            seen.setdefault(key, i)
     if stale:
-        sys.exit("mutations whose text does not occur exactly once in the RTL (update them first):\n  " + "\n  ".join(stale))
+        sys.exit("mutations whose text does not occur exactly once in the RTL, or repeated in a group (update them "
+                 "first):\n  " + "\n  ".join(stale))
     which = next((w for w in GROUPS if f"--{w}" in sys.argv), "all")
     only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None   # e.g. s00,s11
     tasks = []

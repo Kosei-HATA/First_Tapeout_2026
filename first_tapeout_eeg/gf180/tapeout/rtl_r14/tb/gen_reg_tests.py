@@ -16,6 +16,10 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      holding another legal value than its reset value across the lock reads it while locked, and a locked write
      of its reset value is refused (REG-08 locks the writes only; audit round 19, auditor C: the locked reads met
      only the reset value 0x00, so test registers reading 0x00 while locked passed all 16 groups)
+  2b. independence (audit round 23, auditor C): every writable register but IF_CFG given a legal byte away from
+     its reset value in ascending, descending and a shuffled address order, each round followed by one burst
+     read of the whole map: each register as written, the active copies at reset (an OFF_M_H write clearing
+     M[7:0] and an OFF_M_L write clearing SIGN passed all 16 groups)
   4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing
   5. run_guard_tests (tb_top_r14's J2, at 64 kHz): every register of regmap.guarded_addrs(), written while a FLUSH waits
      for its tick, gives STATE_ERR and is not written (audit round 7: J2 wrote 2 of the 16; a guard that skipped
@@ -31,6 +35,7 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/gen_reg_tests.py
 """
 import os
+import random
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -249,6 +254,33 @@ def main():
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
     L += [f"    rt_write(7'h{a:02X}, 8'h{reset_byte(r[4]):02X});" for a, r in locked]
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    # 2b. independence (audit round 23, auditor C: every write went in ascending address order with the others at
+    #     their reset values and only the written register was read back, so an OFF_M_H write clearing M[7:0] and an
+    #     OFF_M_L write clearing SIGN passed all 16 groups): every writable register but IF_CFG (the frame format)
+    #     given a legal byte away from its reset value, in ascending, descending and a shuffled address order, each
+    #     round followed by one burst read of the whole map (every writable register as written, every active copy at
+    #     its reset value: no APPLY); the reset values back after each round; no flag
+    ind = [a for a, r in sorted(regs.items()) if r[2] == "RW" and r[1] != "IF_CFG"]
+    shuffled = sorted(ind)
+    random.Random(23).shuffle(shuffled)
+    L.append("    // 2b. one write leaves every other register as it was: three address orders, a burst read of the map each")
+    L.append(f"    rt_write(7'h{A_ERR:02X}, 8'hFF);")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    for nm, order, low in (("ascending", sorted(ind), False), ("descending", sorted(ind, reverse=True), True),
+                           ("shuffled", shuffled, False)):
+        val = {a: legal_other(regs[a][4], low=low) for a in ind}
+        assert all(val[a] != reset_byte(regs[a][4]) for a in ind), f"2b {nm}: a register written with its reset value"
+        L += [f"    rt_write(7'h{a:02X}, 8'h{val[a]:02X});" for a in order]
+        L += ["    spi_tx[0] = 8'h80;", "    for (int i = 1; i <= 128; i++) spi_tx[i] = 8'h00;", "    spi_xfer(129, 0);"]
+        for a in range(0x80):
+            if a in val:
+                L.append(f"    rt_burst_expect({a + 1}, 8'h{val[a]:02X}, \"2b {nm}: burst 0x{a:02X} {regs[a][1]}\");")
+            elif a in mirrors:
+                L.append(f"    rt_burst_expect({a + 1}, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, "
+                         f"\"2b {nm}: burst 0x{a:02X} {regs[mirrors[a]][1]} active\");")
+        L += [f"    rt_write(7'h{a:02X}, 8'h{reset_byte(regs[a][4]):02X});" for a in sorted(ind)]
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    L.append("    expect_err_exact(8'h00, \"2b: the writes in three orders and the bursts: no flag\");")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     for a, r in sorted(regs.items()):

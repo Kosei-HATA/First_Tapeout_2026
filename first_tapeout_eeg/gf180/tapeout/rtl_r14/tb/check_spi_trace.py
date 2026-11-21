@@ -73,7 +73,7 @@ def parse(line):
     except ValueError:
         d["unknown"].append("loads")
         d["loads"] = []
-    for k, base in [(k, 10) for k in ("crc", "nbits", "we", "wok", "soft", "sserr", "busy", "unl", "ferr", "cerr",
+    for k, base in [(k, 10) for k in ("crc", "cls", "nbits", "we", "wok", "soft", "sserr", "busy", "unl", "ferr", "cerr",
                                       "aerr", "snap", "preq", "head", "fl", "pop", "nsoft")] + \
                    [(k, 16) for k in ("st", "wa", "wd", "ev", "sw")]:
         try:
@@ -90,10 +90,40 @@ def parse(line):
     return d
 
 
+VER02_KINDS = ("write", "command", "read", "burst read", "sample read", "CRC on", "CRC off", "wrong length",
+               "CS_N mid-byte", "undefined address", "write to read-only", "wrong key")
+
+
+def ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, crc_en):
+    """The VER-02 kinds a frame is (requirements VER-02: every kind of frame, burst reads, CRC on and off, wrong
+    lengths, CS_N rising mid-byte, undefined addresses, writes to read-only registers, wrong keys), from what the
+    table walk made of it."""
+    k = {"CRC on" if crc_en else "CRC off"}
+    if nbits % 8:
+        k.add("CS_N mid-byte")
+    elif "FRAME_ERR" in acts:
+        k.add("wrong length")
+    if addr not in DEFINED:
+        k.add("undefined address")
+    if not rw and addr in RO:
+        k.add("write to read-only")
+    if not rw and state_at_csr == "WDONE":
+        k.add("command" if addr == A_CMD else "write")
+        if addr == A_KEY and data not in (RM.TEST_KEY, 0):
+            k.add("wrong key")
+    ndata = sum(1 for x in exp_bytes if x[0] == "data")
+    if rw and addr != A_SAMPLE and "FRAME_ERR" not in acts and ndata:
+        k.add("burst read" if ndata > 1 else "read")
+    if rw and addr == A_SAMPLE and state_at_csr == "SDONE":
+        k.add("sample read")
+    return k
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "build", "spi_trace.txt")
     model = {"crc": 0, "unl": 0}
     bad, nfr, covered = [], 0, set()
+    kc = {}                                          # (VER-02 kind, SCLK class) -> frames (audit round 23, C)
     allb = {(s, e, i) for (s, e), cell in T.items() if isinstance(cell, list) for i in range(len(cell))}
     for line in open(path):
         if not line.startswith("F "):
@@ -237,6 +267,8 @@ def main():
                 want = ld[2]
             if got != want:
                 errs.append(f"MISO byte {j} ({x[0]}): 0x{got:02x}, expected 0x{want:02x}")
+        for k in ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, env["crc_en"]):
+            kc[(k, fr["cls"])] = kc.get((k, fr["cls"]), 0) + 1
         if errs:
             bad.append((fr["idx"], fr["tag"], line.strip()[:160], errs))
     print(f"{nfr} frames replayed through fsm_spec SPI: {len(bad)} frames with mismatches; "
@@ -247,8 +279,18 @@ def main():
     missing = sorted(allb - covered)
     if missing:
         print("  not covered: " + ", ".join(f"{s}/{e}#{i}" for s, e, i in missing))
-    ok = nfr > 0 and not bad and not missing
-    print("PASS: SPI RTL == specification on every frame, every branch covered" if ok else "FAIL")
+    # VER-02 (audit round 23, auditor C): every kind of frame at each of the 4 SCLK timings (2 MHz, 1 MHz, the
+    # minimum high, the minimum low); the bench counted draws, and a stimulus change could drop a pair silently
+    holes = [(k, c) for k in VER02_KINDS for c in range(4) if kc.get((k, c), 0) == 0]
+    per_cls = [sum(n for (k, c), n in kc.items() if c == cc and k in ("CRC on", "CRC off")) for cc in range(4)]
+    fewest = min((kc.get((k, c), 0), k, c) for k in VER02_KINDS for c in range(4))
+    print(f"VER-02: {len(VER02_KINDS)} kinds x 4 SCLK timings, frames per timing {'/'.join(map(str, per_cls))}; "
+          f"fewest {fewest[0]} ({fewest[1]} at timing {fewest[2]})")
+    if holes:
+        print("  VER-02 pairs never sent: " + ", ".join(f"{k} at timing {c}" for k, c in holes))
+    ok = nfr > 0 and not bad and not missing and not holes
+    print("PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK "
+          "timing" if ok else "FAIL")
     return 0 if ok else 1
 
 

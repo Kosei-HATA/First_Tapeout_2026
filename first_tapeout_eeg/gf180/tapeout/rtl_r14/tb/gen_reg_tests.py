@@ -36,6 +36,7 @@ Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/gen_reg_tests.py
 """
 import os
 import random
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -382,6 +383,22 @@ def main():
                 per[cfg] += k
     print(f"wrote {os.path.relpath(OUT, HERE)}: {total} checks ({per['']} with an 8-deep FIFO, {per['FIFO4']} with "
           f"a 4-deep one; {len(RM.guarded_addrs())} guarded registers)")
+    # the counts the spec quotes for these checks (audit round 24, auditor C: "各構成で 601 個" stayed after round 23
+    # made it 692; the self-tests check their own counts since round 21, these were checked by nothing)
+    doc = os.path.join(HERE, "..", "..", "..", "..", "documentation", "gf180_digital_control_spec_20261119.md")
+    try:
+        txt = open(doc, encoding="utf-8").read()
+    except OSError as ex:
+        sys.exit(f"PROBLEM: the spec cannot be read ({ex})")
+    assert per[''] == per['FIFO4'], "the quotes assume one count for both FIFO depths"
+    stale = []
+    for pat, have in ((r"生成した確認 (\d+) 個", total), (r"生成した確認 \d+ 個（各構成 (\d+) 個", per['']),
+                      (r"各構成で (\d+) 個を実行", per[''])):
+        got = [int(x) for x in re.findall(pat, txt)]
+        if not got or any(g != have for g in got):
+            stale.append(f"the spec quotes {got} for {pat!r}, the generator made {have}")
+    if stale:
+        sys.exit("PROBLEM: " + "; ".join(stale))
 
 
 PIN_OUT = os.path.join(HERE, "..", "build", "pin_tests.svh")

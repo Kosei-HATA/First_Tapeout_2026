@@ -534,6 +534,9 @@ MUTATIONS = [
      "A_OFF_M_H:      s_m[9:8] <= wdata[1:0];", "A_OFF_M_H:      s_m <= {wdata[1:0], 8'h00};"),
     ('レジスタ：OFF_M_L への書き込みが SIGN も消す', 'eeg_regs.sv',
      "A_OFF_M_L:      s_m[7:0] <= wdata;", "A_OFF_M_L:      begin s_m[7:0] <= wdata; s_sign <= 1'b0; end"),
+    # audit round 24, auditor C (u1): the CIC reset by the control reset (a SOFT_RESET moves the CIC's grid)
+    ('上位：CIC のリセットを制御のリセットから（SOFT_RESET で CIC の格子が動く）', 'eeg_digital_top.sv',
+     "eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_cic3 u_cic (.clk(MCLK), .rst_n(rst_n),"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -679,6 +682,10 @@ SPI_MUTATIONS = [
      "                tx_sh   <= 8'h00;                        // (mutant: STATUS one MCLK later)\n"
      "            end else if (st == S_HDR && bit_cnt == 3'd0 && tx_sh == 8'h00 && !sclk_rise) begin\n"
      "                tx_sh   <= status_byte;\n            end else if (cs_end) begin"),
+    # audit round 24, auditor C: the frame start's one MCLK of MISO Low (spec 3.1, PIN-04) was checked by nothing
+    ("SPI：CS_N の立ち上がりで MISO の送りのレジスタを 0 にしない（フレームの始まりの 1 MCLK の Low がない）", "eeg_spi_slave.sv",
+     "                st    <= S_IDLE;\n                tx_sh <= 8'h00;\n            end else begin",
+     "                st    <= S_IDLE;\n            end else begin"),
 ]
 
 

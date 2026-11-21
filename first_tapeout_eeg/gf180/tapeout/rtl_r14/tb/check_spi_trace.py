@@ -92,26 +92,33 @@ def parse(line):
 
 VER02_KINDS = ("write", "command", "read", "burst read", "sample read", "CRC on", "CRC off", "wrong length",
                "CS_N mid-byte", "undefined address", "write to read-only", "wrong key")
+VER02_MIN = 3                                        # frames per (kind, timing) pair (audit round 24, auditor C)
 
 
-def ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, crc_en):
+def ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, crc_en, crc_ok):
     """The VER-02 kinds a frame is (requirements VER-02: every kind of frame, burst reads, CRC on and off, wrong
     lengths, CS_N rising mid-byte, undefined addresses, writes to read-only registers, wrong keys), from what the
-    table walk made of it."""
+    table walk made of it. The write-like kinds count only frames that reach WDONE with a valid CRC, the others only
+    frames with a complete header (audit round 24, auditor C: a frame without a header counted as a write to ID, a
+    read-only register, and a key write that failed its CRC as a wrong key)."""
     k = {"CRC on" if crc_en else "CRC off"}
     if nbits % 8:
         k.add("CS_N mid-byte")
     elif "FRAME_ERR" in acts:
         k.add("wrong length")
+    if nbits < 8:
+        return k
     if addr not in DEFINED:
         k.add("undefined address")
-    if not rw and addr in RO:
-        k.add("write to read-only")
-    if not rw and state_at_csr == "WDONE":
+    if not rw and state_at_csr == "WDONE" and (not crc_en or crc_ok):
         k.add("command" if addr == A_CMD else "write")
+        if addr in RO:
+            k.add("write to read-only")
         if addr == A_KEY and data not in (RM.TEST_KEY, 0):
             k.add("wrong key")
-    ndata = sum(1 for x in exp_bytes if x[0] == "data")
+    # the data bytes the host clocked out (with CRC off the chip loads the next address after every byte, a prefetch the
+    # host does not read: counted, a two-byte read was a burst; audit round 24)
+    ndata = sum(1 for x in exp_bytes[:nbits // 8] if x[0] == "data")
     if rw and addr != A_SAMPLE and "FRAME_ERR" not in acts and ndata:
         k.add("burst read" if ndata > 1 else "read")
     if rw and addr == A_SAMPLE and state_at_csr == "SDONE":
@@ -267,7 +274,7 @@ def main():
                 want = ld[2]
             if got != want:
                 errs.append(f"MISO byte {j} ({x[0]}): 0x{got:02x}, expected 0x{want:02x}")
-        for k in ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, env["crc_en"]):
+        for k in ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, env["crc_en"], env["crc_ok"]):
             kc[(k, fr["cls"])] = kc.get((k, fr["cls"]), 0) + 1
         if errs:
             bad.append((fr["idx"], fr["tag"], line.strip()[:160], errs))
@@ -281,13 +288,14 @@ def main():
         print("  not covered: " + ", ".join(f"{s}/{e}#{i}" for s, e, i in missing))
     # VER-02 (audit round 23, auditor C): every kind of frame at each of the 4 SCLK timings (2 MHz, 1 MHz, the
     # minimum high, the minimum low); the bench counted draws, and a stimulus change could drop a pair silently
-    holes = [(k, c) for k in VER02_KINDS for c in range(4) if kc.get((k, c), 0) == 0]
+    holes = [(k, c) for k in VER02_KINDS for c in range(4) if kc.get((k, c), 0) < VER02_MIN]
     per_cls = [sum(n for (k, c), n in kc.items() if c == cc and k in ("CRC on", "CRC off")) for cc in range(4)]
     fewest = min((kc.get((k, c), 0), k, c) for k in VER02_KINDS for c in range(4))
     print(f"VER-02: {len(VER02_KINDS)} kinds x 4 SCLK timings, frames per timing {'/'.join(map(str, per_cls))}; "
           f"fewest {fewest[0]} ({fewest[1]} at timing {fewest[2]})")
     if holes:
-        print("  VER-02 pairs never sent: " + ", ".join(f"{k} at timing {c}" for k, c in holes))
+        print(f"  VER-02 pairs sent fewer than {VER02_MIN} times: " + ", ".join(f"{k} at timing {c} "
+              f"({kc.get((k, c), 0)})" for k, c in holes))
     ok = nfr > 0 and not bad and not missing and not holes
     print("PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK "
           "timing" if ok else "FAIL")

@@ -151,6 +151,51 @@ module tb_spi_r14;
         if (MISO_OE !== 1'b0) $display("FAIL: tb_spi_r14 @%0t: MISO_OE still on after CS_N rose", $time);
     end
 
+    // VER-02's kinds at each SCLK timing (audit round 24, auditor C: round 23's coverage rested on the random stream,
+    // as few as one committed wrong key at the minimum low, and an RTL change that only moved the chip's timing shifted
+    // the draws and dropped a pair): set_tcls sets a timing class; ver02_frames sends one frame of each kind, fixed
+    // (no draws from the random stream: the random part below is drawn as before)
+    task automatic set_tcls(input integer c);
+        tcls = c;
+        case (c)
+            0: begin spi_high = 250.0; spi_low = 250.0; end                        // 2 MHz
+            1: begin spi_high = 500.0; spi_low = 500.0; end                        // 1 MHz
+            2: begin spi_high = 4.0 * TMCLK + 0.3; spi_low = 500.0 - spi_high; end   // 2 MHz, minimum high
+            default: begin spi_low = 5.0 * TMCLK + 0.3; spi_high = 500.0 - spi_low; end   // minimum low
+        endcase
+    endtask
+    task automatic wr_fixed(input logic [6:0] addr, input logic [7:0] val);
+        spi_tx[0] = {1'b0, addr}; spi_tx[1] = val; spi_tx[2] = crc2(spi_tx[0], val);
+        for (int i = 3; i < 16; i++) spi_tx[i] = 8'h00;
+        frame(crc_model ? 3 : 2, 0, "pre");
+    endtask
+    integer n_pre = 0;
+    task automatic ver02_frames();
+        integer n0;
+        n0 = nfr;
+        wr_fixed(7'h23, 8'h03);                             // a write (AFE_IBIAS, its reset value)
+        wr_fixed(7'h10, 8'h55);                             // a command (FLUSH)
+        repeat (600) @(posedge MCLK);                       // past its tick at 64 kHz too
+        for (int i = 0; i < 16; i++) spi_tx[i] = 8'h00;
+        spi_tx[0] = 8'h84;                                  // a read (STATE)
+        frame(crc_model ? 3 : 2, 0, "pre");
+        if (!crc_model) begin                               // a burst read (CRC off): 0x20..0x23
+            spi_tx[0] = 8'hA0;
+            frame(5, 0, "pre");
+        end
+        spi_tx[0] = SMP_HDR;                                // a sample read
+        frame(8, 0, "pre");
+        spi_tx[0] = 8'h23; spi_tx[1] = 8'h03; spi_tx[2] = crc2(8'h23, 8'h03);   // a write one byte short
+        frame(crc_model ? 2 : 1, 0, "pre");
+        for (int i = 0; i < 16; i++) spi_tx[i] = 8'h00;
+        spi_tx[0] = 8'h84;                                  // CS_N rising mid-byte
+        frame(1, 3, "pre");
+        wr_fixed(7'h7E, 8'h00);                             // an undefined address
+        wr_fixed(7'h04, 8'h00);                             // a write to a read-only register (STATE)
+        wr_fixed(7'h11, 8'h5A);                             // a wrong key
+        n_pre = n_pre + nfr - n0;
+    endtask
+
     integer i_run;
     // watchdog (audit round 5): a frame takes about 0.34 ms of simulated time; 1 ms per frame ends a run that waits for
     // an event the RTL never gives (cic_stb, tick) as a failure instead of a hang
@@ -173,6 +218,17 @@ module tb_spi_r14;
         // run: T_WARM 5 ms, T_REC 29 (minimum), START; random frames keep arriving meanwhile
         wr(7'h52, 8'd29, 1, "setup");
         wr(7'h10, 8'h11, 1, "setup");
+        // VER-02's preamble (audit round 24, auditor C): every kind at each SCLK timing, three times, CRC off and on
+        repeat (600) @(posedge MCLK);
+        for (int m = 0; m < 2; m++) begin
+            if (m == 1) begin wr_fixed(7'h55, 8'h01); crc_model = dut.crc_en; end        // CRC on
+            for (int c = 0; c < 4; c++) begin
+                set_tcls(c);
+                for (int r = 0; r < 3; r++) ver02_frames();
+            end
+            set_tcls(0);
+            if (m == 1) begin wr_fixed(7'h55, 8'h00); crc_model = dut.crc_en; end        // CRC off again
+        end
         for (int k = 0; k < i_run; k++) begin
             // halfway: 64 kHz (STOP, CHOP_FAST 0, APPLY, START)
             if (k == i_run / 2) begin
@@ -198,14 +254,7 @@ module tb_spi_r14;
             spi_tidle = ($urandom_range(0, 3) == 0) ? 125.0 : 600.0 + $urandom_range(0, 20000);
             if ($unsigned($random(oseed)) % 100 < 15)  // another chip's frame (its own random stream: the frames
                 other_chip(1 + $unsigned($random(oseed)) % 40);   // of this chip are the same as before)
-            tcls = $unsigned($random(tseed)) % 4;      // the SCLK timing of this frame, from its own random stream
-            case (tcls)                                 // (the kinds drawn are as before, the frames that depend on
-                0: begin spi_high = 250.0; spi_low = 250.0; end                        // time may differ; VER-02 asks
-                                                                                       // every kind at 2 and 1 MHz)
-                1: begin spi_high = 500.0; spi_low = 500.0; end                        // 1 MHz
-                2: begin spi_high = 4.0 * TMCLK + 0.3; spi_low = 500.0 - spi_high; end   // 2 MHz, minimum high
-                default: begin spi_low = 5.0 * TMCLK + 0.3; spi_high = 500.0 - spi_low; end   // minimum low
-            endcase
+            set_tcls($unsigned($random(tseed)) % 4);   // this frame's SCLK timing, from its own random stream
             kind = $urandom_range(0, 99);
             if (kind < 22) begin                                   // write a register (random address class)
                 case ($urandom_range(0, 9))
@@ -305,6 +354,9 @@ module tb_spi_r14;
         $fclose(fd);
         $display("SCLK timing: %0d frames at 2 MHz, %0d at 1 MHz, %0d with the minimum high, %0d with the minimum low (every VER-02 kind at each: check_spi_trace)",
                  n_tcls[0], n_tcls[1], n_tcls[2], n_tcls[3]);
+        $display("VER-02 preamble: %0d frames (every kind at each SCLK timing, three times, CRC off and on); MISO Low at %0d frame starts",
+                 n_pre, spi_miso_start_checks);
+        if (spi_miso_start_checks < 100) $display("ERROR: the frame-start MISO check not exercised");
         if (n_tcls[0] < 100 || n_tcls[1] < 100 || n_tcls[2] < 100 || n_tcls[3] < 100)
             $display("ERROR: an SCLK timing class not exercised");
         $display("tb_spi_r14: %0d frames, %0d SPI timing errors, %0d frames of another chip on SCLK -> %s", nfr, spi_errors,

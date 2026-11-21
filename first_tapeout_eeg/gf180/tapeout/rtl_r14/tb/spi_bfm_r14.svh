@@ -151,6 +151,17 @@ always @(negedge CS_N) begin
     if (spi_chk_hdr && CS_N === 1'b0 && miso_pad !== 1'b1)
         spi_err($sformatf("MISO %b at 3 MCLK and the pad delay after CS_N fell: STATUS's bit 7 not yet out", miso_pad));
 end
+// MISO Low in the first MCLK of every frame (spec 3.1, PIN-04: cleared at the previous CS_N rise, STATUS one MCLK after
+// MISO_OE turns on; audit round 24, auditor C: a copy without the clear passed all 16 groups)
+integer spi_miso_start_checks = 0;
+always @(posedge MISO_OE) begin
+    #0.001;
+    if (spi_chk_hdr) begin
+        spi_miso_start_checks = spi_miso_start_checks + 1;
+        if (MISO !== 1'b0)
+            spi_err($sformatf("MISO %b as MISO_OE turned on: the frame's first MCLK must be Low (spec 3.1, PIN-04)", MISO));
+    end
+end
 always @(posedge CS_N) begin
     #0.001;
     if (MISO_OE !== 1'b0) spi_err("MISO_OE still high after CS_N rose");

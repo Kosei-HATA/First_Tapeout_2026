@@ -128,8 +128,11 @@ module eeg_cic3 #(
             if (step[3]) begin
                 dout <= rounded;
                 if (arm) begin
-                    // r14: restart the filter at this output time (no input is accepted between the R-th input
-                    // of a period, cycle 3, and its output, step 3, so nothing is lost or counted twice)
+                    // r14: restart the filter at this output time. The integrators are pipelined (i3 lags i1 by two
+                    // inputs), so an output's window is 3R - 2 = 3,070 inputs ending two inputs before its interval's
+                    // end, and at a clear the interval's last two inputs, still in i1 and i2, reach no output: harmless,
+                    // as the window before the clear is dropped (ALIGN) and the first valid window after it is complete
+                    // (audit round 24, auditor A: this comment said nothing was lost)
                     i1   <= '0;
                     i2   <= '0;
                     i3   <= '0;

@@ -18,7 +18,7 @@
 //   Example (DAC_LOAD_CYCLE = 2): CMP_STROBE rises at edge e0, TH is captured
 //   at edge e2, the DAC selection registers change at edge e3.
 //
-// Chopper (chop_fast = CONTROL.CHOP_FAST):
+// Chopper (chop_fast = CHOP_CFG.CHOP_FAST, 0x26, through its active copy):
 //   chop_fast = 1: chop = ~cnt[7], toggles every 128 MCLK (128 kHz),
 //                  edges at e0 of every 4th frame
 //   chop_fast = 0: chop = ~cnt[8], toggles every 256 MCLK (64 kHz),

@@ -15,6 +15,7 @@ Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/wave.py [fresh | se
 """
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -356,11 +357,25 @@ def selftest():
     unused = sorted(set(MSG) - used)
     for k in unused:
         print(f"PROBLEM  no mutation expects the message {MSG[k]!r}")
+    # the counts the spec quotes (audit round 22, auditor C, as fsm_spec and regmap since round 21)
+    doc = os.path.join(HERE, "..", "..", "..", "..", "documentation", "gf180_digital_control_spec_20261119.md")
+    stale = []
+    try:
+        txt = open(doc, encoding="utf-8").read()
+        for pat, have in ((r"`wave\.py selftest`（(\d+) 種／\d+ 文", len(muts)), (r"`wave\.py selftest`（\d+ 種／(\d+) 文", len(MSG)),
+                          (r"`wave\.py selftest` の (\d+) 種も同じ形", len(muts))):
+            got = [int(x) for x in re.findall(pat, txt)]
+            if not got or any(g != have for g in got):
+                stale.append(f"the spec quotes {got} for the self-test ({pat}), which has {have}")
+    except OSError as ex:
+        stale.append(f"the spec cannot be read ({ex})")
+    for p_ in stale:
+        print("PROBLEM  " + p_)
     for e in base:
         print(f"PROBLEM  unmutated: {e}")
     print(f"{len(muts) - missed} of {len(muts)} mutations detected by their expected messages; {len(MSG)} check "
           f"messages; unmutated sources: {len(base)} violations")
-    return 0 if not missed and not unused and not base else 1
+    return 0 if not missed and not unused and not base and not stale else 1
 
 
 def fresh():

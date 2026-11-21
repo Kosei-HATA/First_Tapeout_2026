@@ -4,7 +4,8 @@
 The r14 CIC cleared (armed) at output number K (counted from 1) must give: outputs 1..K as the golden run of the
 whole stream, and outputs K+1.. as the golden run of the stream from input K * R on (zero state, the first two
 flagged invalid), i.e. the output grid unchanged.
-Usage: check_cic_arm.py gen [K] [n_outputs] | check [K]
+Usage: check_cic_arm.py gen [K] [n_outputs] [build] | check [K] [build] (build: the folder of the codes and the
+outputs, default ../build; the mutation runner's copies, audit round 22)
 """
 import os
 import random
@@ -47,7 +48,10 @@ def check(k):
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "gen":
-        gen(int(sys.argv[2]) if len(sys.argv) > 2 else 5, int(sys.argv[3]) if len(sys.argv) > 3 else 10)
+    args = sys.argv[1:]
+    if len(args) > 1 and os.path.isdir(args[-1]):
+        B = args.pop()
+    if args[0] == "gen":
+        gen(int(args[1]) if len(args) > 1 else 5, int(args[2]) if len(args) > 2 else 10)
     else:
-        sys.exit(check(int(sys.argv[2]) if len(sys.argv) > 2 else 5))
+        sys.exit(check(int(args[1]) if len(args) > 1 else 5))

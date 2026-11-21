@@ -1167,13 +1167,20 @@ def check_timing():
             if out_frame == r["tick_frame"]:
                 notes.append(f"{name}: OUT and the tick share a frame (different cycles {8} and {tc})")
     # CHOP1: every period divides the decimation ratio (sinc^3 zeros null its square wave); a rate change applies at
-    # e16 of frame 1024 k, one input into the CIC window that starts there: weight of that input h[0] / R^3
+    # e16 of frame 1024 k, mid-frame, and the comparator integrates over the whole frame before e0: between off and
+    # on, the interval [e16 of frame 1024 k - 1, e16 of frame 1024 k) feeds the code of frame 1024 k (a whole frame)
+    # and of frame 1024 k + 1 (half a frame), the window's first two inputs: weight (h[0] + h[1] / 2) / R^N with
+    # h[n] = C(n + N - 1, N - 1), plus a bounded loop-state term. Between two on-rates frames 1022 and 1023 of the
+    # old period are phase B at every rate: no difference (audit round 22, auditor A: h[0] / R^3, one input,
+    # understated the off / on case)
     for p_ in T["chop1_periods_frames"]:
         if T["decimation"] % p_:
             errs.append(f"CHOP1 period {p_} frames does not divide the decimation ratio")
     R = T["decimation"]
-    w0 = 1 / R ** T["cic_order"]
-    notes.append(f"CHOP1 rate change: one input of the new window still sees the old phase, sinc^3 weight {w0:.1e}")
+    n_ = T["cic_order"]
+    w0 = (1 + n_ / 2) / R ** n_
+    notes.append(f"CHOP1 rate change between off and on: a frame and a half of the new window's first inputs see the "
+                 f"old phase, sinc^{n_} weight {w0:.1e} (plus a bounded loop-state term)")
     if w0 > 1e-6:
         errs.append("CHOP1 rate change leaves a visible part of a CIC window on the old rate")
     return errs, notes

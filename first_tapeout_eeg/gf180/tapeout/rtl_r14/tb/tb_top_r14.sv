@@ -558,6 +558,47 @@ module tb_top_r14;
     end
     integer n_drdy_fall = 0;
     always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
+    // DRDY_N in pulse mode (audit round 22, auditor C: DAT-04 was checked on three RUN stores of G3 only, and RTL copies
+    // with no pulse for FILL's store (the first sample after START and APPLY) or with the pulse ended when the FIFO
+    // empties passed all 16 groups): while DRDY_MODE is 1, every store makes DRDY_N fall 1 to 2 MCLK later and stay low
+    // exactly 128 MCLK unless RESET_N, a SOFT_RESET or level mode cuts it, and DRDY_N never falls without a store; the
+    // stores in FILL are counted (exercised)
+    real    pm_t_push = -1.0e9, pm_t_fall = -1.0;
+    bit     pm_owed = 1'b0, pm_cut = 1'b0;
+    integer n_pm_pulses = 0, n_pm_fill = 0, n_pm_bad = 0;
+    always @(posedge MCLK) begin                         // at the edge, before its updates
+        if (dut.rst_n !== 1'b1 || dut.soft_req === 1'b1 || dut.drdy_mode !== 1'b1) begin
+            pm_owed = 1'b0;
+            pm_cut  = 1'b1;
+        end else if (dut.push_ok === 1'b1) begin
+            pm_t_push = $realtime;
+            pm_owed   = 1'b1;
+            if (dut.seq_state === 4'd5) n_pm_fill = n_pm_fill + 1;      // FILL's store: the first sample of a RUN
+        end else if (pm_owed && $realtime - pm_t_push > 2.5 * TMCLK) begin
+            n_pm_bad = n_pm_bad + 1;
+            if (n_pm_bad <= 3) fail("DRDY_N pulse mode: a store without a DRDY_N fall within 2 MCLK (DAT-04)");
+            pm_owed = 1'b0;
+        end
+    end
+    always @(negedge DRDY_N) if (dut.drdy_mode === 1'b1 && dut.rst_n === 1'b1) begin
+        if (!pm_owed) begin
+            n_pm_bad = n_pm_bad + 1;
+            if (n_pm_bad <= 3) fail("DRDY_N pulse mode: DRDY_N fell without a store");
+        end
+        pm_owed     = 1'b0;
+        pm_t_fall   = $realtime;
+        pm_cut      = 1'b0;
+        n_pm_pulses = n_pm_pulses + 1;
+    end
+    always @(posedge DRDY_N) begin
+        if (pm_t_fall >= 0.0 && !pm_cut && dut.drdy_mode === 1'b1 && dut.rst_n === 1'b1 &&
+                (($realtime - pm_t_fall) / TMCLK < 127.5 || ($realtime - pm_t_fall) / TMCLK > 128.5)) begin
+            n_pm_bad = n_pm_bad + 1;
+            if (n_pm_bad <= 3) fail($sformatf("DRDY_N pulse mode: a pulse of %0.2f MCLK, expected 128 whatever the FIFO holds (DAT-04)",
+                                              ($realtime - pm_t_fall) / TMCLK));
+        end
+        pm_t_fall = -1.0;
+    end
     integer n_rawclk = 0;
     always @(posedge RAW_CLK) n_rawclk = n_rawclk + 1;
 
@@ -1366,7 +1407,30 @@ module tb_top_r14;
         if (OFM !== 10'd11) fail("D3 second APPLY_NR");
         if (dut.chg_cnt !== 9'd11) fail($sformatf("D3 CHANGED count %0d after the second mark, expected 11", dut.chg_cnt));
         read_samples(12, 11, "D3 the longer mark kept (11 more samples, then none)");
-        $display("D  APPLY_NR, CHANGED cancelled on leaving RUN, the longer mark kept (errors %0d)", errors);
+        // D4 (audit round 22, auditor C: a longer new mark extending a running short one was caught only through the 3
+        // marks D2 left running): right after an output, a step with T_ELEC = 0 (a mark of 3), then, before the next
+        // output, a step with T_ELEC = 10 (13): the longer mark wins and 13 samples carry CHANGED
+        phase = "D4";
+        if (dut.chg_cnt !== 9'd0) fail($sformatf("D4 starts with %0d marks left", dut.chg_cnt));
+        while (DRDY_N === 1'b0) read_samples(1, -1, "D4 drain");
+        while (dut.push_ok !== 1'b1) @(posedge MCLK);   // an output: the next one is 1 ms away
+        repeat (64) @(posedge MCLK);
+        r14_write(7'h51, 8'd0);                         // T_ELEC = 0
+        r14_write(7'h21, 8'h0C);                        // M = 12: one step, a mark of 3
+        r14_cmd(8'h44);
+        repeat (300) @(posedge MCLK);
+        if (OFM !== 10'd12) fail("D4 first APPLY_NR");
+        if (dut.chg_cnt !== 9'd3) fail($sformatf("D4 CHANGED count %0d after the short mark, expected 3", dut.chg_cnt));
+        r14_write(7'h51, 8'd10);                        // T_ELEC = 10
+        r14_write(7'h21, 8'h0B);                        // M = 11: one step back, a mark of 13
+        r14_cmd(8'h44);
+        repeat (300) @(posedge MCLK);
+        if (OFM !== 10'd11) fail("D4 second APPLY_NR");
+        if (dut.chg_cnt !== 9'd13) fail($sformatf("D4 CHANGED count %0d after the longer second mark, expected 13", dut.chg_cnt));
+        while (DRDY_N === 1'b0) read_samples(1, -1, "D4 drain");
+        read_samples(14, 13, "D4 the longer mark (13 samples, then none)");
+        r14_write(7'h51, 8'd0);
+        $display("D  APPLY_NR, CHANGED cancelled on leaving RUN, the longer mark kept, either order (errors %0d)", errors);
 
         // ---------------- E: START in RUN, STOP, START with an inconsistent configuration
         phase = "E";
@@ -1493,6 +1557,25 @@ module tb_top_r14;
                 r14_read(7'h05, v);
                 if (v < 8'd1) fail("G3: no sample in the FIFO after the pulse");
                 if (k == 2 && DRDY_N !== 1'b1) fail("G3: DRDY_N low between pulses with a non-empty FIFO");
+            end
+            // G3b (audit round 22, auditor C): a FLUSH that runs at the tick 80 MCLK after a store, inside its pulse: the
+            // pulse still lasts 128 MCLK (the monitor above; a copy that ends the pulse when the FIFO empties passed all
+            // 16 groups). The FLUSH is written to commit about 100 MCLK before the next store, so that it is pending at
+            // the store and runs at the next tick (128 kHz: frame 1, 80 MCLK after the store of frame 15)
+            begin
+                real t0, d_wr;
+                r14_cmd(8'h55);                             // room in the FIFO first (4 deep, it may be full by now)
+                repeat (600) @(posedge MCLK);
+                t0 = $realtime;
+                r14_write(7'h08, 8'hFF);                    // one register write here (its length schedules the FLUSH)
+                d_wr = $realtime - t0;
+                while (dut.push_ok !== 1'b1) @(posedge MCLK);
+                #((32768.0 - 100.0) * TMCLK - d_wr);
+                r14_cmd(8'h55);                             // FLUSH, pending at the next store
+                repeat (600) @(posedge MCLK);
+                if (!(t_flush > t_store && t_flush - t_store < 128.0 * TMCLK))
+                    fail($sformatf("G3b not exercised: the FLUSH ran %0.1f MCLK after the store, not inside its pulse",
+                                   (t_flush - t_store) / TMCLK));
             end
             while (dut.fifo_level != 4'(FD)) @(posedge MCLK);   // full: the next outputs are dropped
             repeat (200) @(posedge MCLK);               // past the pulse of the sample that filled it
@@ -2425,6 +2508,9 @@ module tb_top_r14;
             end
             r14_cmd(8'h22);                                                       // leaving RUN ends the mark
             wait_state(4'd0, 50.0, "T4 IDLE");
+            repeat (2) @(posedge MCLK);                       // the count clears at the edge after IDLE begins
+            if (dut.chg_cnt !== 9'd0)                        // (audit round 22, auditor C: checked only through
+                fail($sformatf("T4: %0d CHANGED marks left after STOP (leaving RUN cancels them)", dut.chg_cnt));   // T6 / T11)
             // T5: an overload in WAIT_E does not set DFLAG.OVL (only FILL and RUN)
             r14_write(7'h51, 8'd2);
             r14_cmd(8'h11);
@@ -3250,6 +3336,8 @@ module tb_top_r14;
         $display("pads: %0d CHOP_OUT edges blanked (%0d / %0d pulses measured, DAC off / on), %0d CHOP1 edges at e16 (errors %0d)",
                  n_cb_edges, n_cb_w[0], n_cb_w[1], n_c1_edges, n_cb_bad + n_c1_bad);
         $display("SOFT_RESET: %0d commits, each with soft_req in its own cycle (errors %0d)", n_soft_commits, n_soft_bad);
+        $display("DRDY_N pulse mode: %0d pulses, %0d of them for FILL's store (errors %0d)", n_pm_pulses, n_pm_fill, n_pm_bad);
+        if (n_pm_pulses < 5 || n_pm_fill < 1) fail("DRDY_N pulse-mode monitor not exercised");
         $display("RAW: %0d frames of the stream with 8 RAW_CLK rises, %0d MCLK of a timing pair one MCLK later (errors %0d)",
                  n_raw_frames, n_raw_pairs, n_raw_cut + n_raw_pair);
         if (n_raw_frames < 20 || n_raw_pairs < 1000) fail("RAW monitors not exercised");

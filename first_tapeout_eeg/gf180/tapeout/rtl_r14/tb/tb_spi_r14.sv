@@ -124,6 +124,8 @@ module tb_spi_r14;
     // must do nothing here: no state, commit, copy, pop or flag, MISO not driven. MISO_OE is off as CS_N rises.
     logic   other_on = 1'b0;
     integer n_other = 0, n_other_bad = 0, oseed = 20261120;
+    integer tseed = 20261121, tcls;                  // each frame's SCLK timing (audit round 22, auditor C: VER-02)
+    integer n_tcls [0:3] = '{0, 0, 0, 0};
     task automatic other_chip(input integer nbits);
         other_on = 1'b1;
         #(160.0);                                      // the other chip's CS_N setup (5 MCLK or more)
@@ -194,6 +196,15 @@ module tb_spi_r14;
             spi_tidle = ($urandom_range(0, 3) == 0) ? 125.0 : 600.0 + $urandom_range(0, 20000);
             if ($unsigned($random(oseed)) % 100 < 15)  // another chip's frame (its own random stream: the frames
                 other_chip(1 + $unsigned($random(oseed)) % 40);   // of this chip are the same as before)
+            tcls = $unsigned($random(tseed)) % 4;      // the SCLK timing of this frame, from its own random stream
+            case (tcls)                                 // (the kinds drawn are as before, the frames that depend on
+                0: begin spi_high = 250.0; spi_low = 250.0; end                        // time may differ; VER-02 asks
+                                                                                       // every kind at 2 and 1 MHz)
+                1: begin spi_high = 500.0; spi_low = 500.0; end                        // 1 MHz
+                2: begin spi_high = 4.0 * TMCLK + 0.3; spi_low = 500.0 - spi_high; end   // 2 MHz, minimum high
+                default: begin spi_low = 5.0 * TMCLK + 0.3; spi_high = 500.0 - spi_low; end   // minimum low
+            endcase
+            n_tcls[tcls] = n_tcls[tcls] + 1;
             kind = $urandom_range(0, 99);
             if (kind < 22) begin                                   // write a register (random address class)
                 case ($urandom_range(0, 9))
@@ -291,6 +302,10 @@ module tb_spi_r14;
             end
         end
         $fclose(fd);
+        $display("SCLK timing per frame: %0d at 2 MHz, %0d at 1 MHz, %0d with the minimum high, %0d with the minimum low",
+                 n_tcls[0], n_tcls[1], n_tcls[2], n_tcls[3]);
+        if (n_tcls[0] < 100 || n_tcls[1] < 100 || n_tcls[2] < 100 || n_tcls[3] < 100)
+            $display("ERROR: an SCLK timing class not exercised");
         $display("tb_spi_r14: %0d frames, %0d SPI timing errors, %0d frames of another chip on SCLK -> %s", nfr, spi_errors,
                  n_other, logname);
         $finish;

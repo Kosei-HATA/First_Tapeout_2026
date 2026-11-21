@@ -80,7 +80,7 @@ REGS = [
     (0x07, "DFLAG", "W1C", False, [F("OVL", 1, 1, 0, [0, 1], "w1c", "FILL または RUN の間に、過負荷の検出の成り立つ両端の符号があった（検出の窓の尾だけでは立たない）"),
                                    F("OVERRUN", 0, 0, 0, [0, 1], "w1c", "FIFO が満杯でサンプルを捨てた")], "データのフラグ（W1C）"),
     (0x08, "ALERT_MASK", "RW", False, [F("ALERT_MASK", 7, 0, 0xFF, rng(0, 255), "imm", "ERR のビットごとに ALERT に含める（1）")], "ALERT のマスク"),
-    (0x09, "ALERT_MASK_D", "RW", False, [F("ALERT_MASK_D", 1, 0, 0x3, rng(0, 3), "imm", "DFLAG のビットごとに ALERT に含める（1）")], "ALERT のマスク（データ）"),
+    (0x09, "ALERT_MASK_D", "RW", False, [F("ALERT_MASK_D", 1, 0, 0x3, rng(0, 3), "imm", "DFLAG のビットごとに ALERT に含める（1）。ホスト手順は 0x00 とする（要件 5.4 の手順 3。第 22 回）")], "ALERT のマスク（データ）"),
     (0x0A, "ODR_H", "RO", False, [F("ODR_H", 7, 0, 0x03, [0x03], "ro", "出力データレート 1000 SPS の上位")], "出力データレート"),
     (0x0B, "ODR_L", "RO", False, [F("ODR_L", 7, 0, 0xE8, [0xE8], "ro", "同下位")], "出力データレート"),
     (0x0C, "FORMAT", "RO", False, [F("QBITS", 3, 0, 5, [5], "ro", "量子化器のビット数")], "形式"),

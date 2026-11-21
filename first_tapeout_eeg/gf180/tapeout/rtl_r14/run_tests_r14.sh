@@ -6,7 +6,9 @@
 #               give; the timing diagrams agree with the tables, audit round 15)
 #   codes       the CT loop model's code streams (tb/gen_codes.py)
 #   tb_seq      the sequencer on random events, replayed through fsm_spec.seq_tick (every cell of the table; the
-#               timer modelled independently: every load, decrement and restart)
+#               timer modelled independently: every load, decrement and restart), and tb_seq_exh: every state
+#               value x event x command x condition x timer deposited for one step, every branch 8 times or
+#               more, independent of the random seed (audit round 22)
 #   tb_tick     the tick in the middle of chopper phase A, once per period, both rates, rate changes
 #   tb_clkgen   the frame timing and the chopper clocks (rtl/tb/tb_clkgen.sv with the r14 clock generator)
 #   tb_chop1    CHOP1: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary on the output grid
@@ -66,7 +68,9 @@ spec() { (cd ../rtl/spec && $PY fsm_spec.py check && $PY fsm_spec.py selftest &&
         echo "PASS: spec checks, self-tests, generated files up to date"; }
 codes() { $PY tb/gen_codes.py && echo "PASS: code streams"; }
 seq_t() { comp build/tb_seq.vvp eeg_seq.sv tb/tb_seq.sv &&
-          vvp -n build/tb_seq.vvp +n=600000 +seed=11 +trace=build/seq_trace.txt && $PY tb/check_seq_trace.py build/seq_trace.txt; }
+          vvp -n build/tb_seq.vvp +n=600000 +seed=11 +trace=build/seq_trace.txt && $PY tb/check_seq_trace.py build/seq_trace.txt &&
+          comp build/tb_seq_exh.vvp eeg_seq.sv tb/tb_seq_exh.sv &&
+          vvp -n build/tb_seq_exh.vvp +trace=build/seq_exh.txt && $PY tb/check_seq_exh.py build/seq_exh.txt; }
 tick_t() { comp build/tb_tick.vvp eeg_clkgen.sv tb/tb_tick.sv && vvp -n build/tb_tick.vvp; }
 clkgen_t() { comp build/tb_clkgen.vvp eeg_clkgen.sv ../rtl/tb/tb_clkgen.sv && vvp -n build/tb_clkgen.vvp; }
 # CHOP1 with the r14 clock generator: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary (ANA-04)

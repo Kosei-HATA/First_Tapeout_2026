@@ -3,11 +3,17 @@
 purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be detected, and each bench's unmutated
 baseline must pass. The groups and their benches:
   top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
-                            (the 8-deep FIFO; run_tests_r14.sh also runs the 4-deep bench)
+                            (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
+                            tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22). Not run per mutant:
+                            tb_top_r14 with the 4-deep FIFO (the FIFO's depth is eeg_fifo's alone, whose mutants
+                            run tb_fifo and tb_fifo4; about 6 minutes a run)
   spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (as run_tests_r14.sh: +n=1500 +seed=5; the baseline must
                             also cover every branch)
-  seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently)
-  fifo   FIFO_MUTATIONS     tb_fifo + check_fifo_trace.py (fsm_spec.fifo_step and an identity model)
+  seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently), then tb_seq_exh +
+                            check_seq_exh.py (every state value, event, command and condition for one step;
+                            audit round 22: the random walk took its rarest branch once)
+  fifo   FIFO_MUTATIONS     tb_fifo and tb_fifo4 (-DDEPTH4) + check_fifo_trace.py (fsm_spec.fifo_step and an
+                            identity model; audit round 22)
   regs   REGS_MUTATIONS     tb_regs (W1C; cfg_ok / nr_ok against regmap over build/ok_vectors.txt)
   chop1  CHOP1_MUTATIONS    rtl/tb/tb_chop1.sv with the r14 clock generator
   rnd    RND_MUTATIONS      rtl/tb/tb_rnd_sat.sv (build/rnd_sat.vec from rtl/model/gen_vectors.py)
@@ -26,6 +32,7 @@ Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/mutate_top_r14.py
        [--top | --spi | --seq | --fifo | --regs | --chop1 | --rnd | --struct | --ovl] [--only m03,s11,q02]
 """
 import concurrent.futures as cf
+import hashlib
 import os
 import shutil
 import subprocess
@@ -41,6 +48,16 @@ BUILD = os.path.join(R14, "build")
 SRC = ["eeg_digital_top.sv", "eeg_seq.sv", "eeg_regs.sv", "eeg_spi_slave.sv", "eeg_fifo.sv", "eeg_ovl.sv",
        "eeg_cic3.sv", "eeg_clkgen.sv"]
 OLD = ["eeg_chop1.sv", "eeg_raw.sv", "eeg_rnd_sat.sv"]
+# the shared generated inputs: copied into each run and checked against their hash at the start of the run (audit
+# round 22, auditor C: symlinks to files that run_tests_r14.sh rewrites non-atomically could give a run a truncated
+# input, a false detection)
+SHARED = ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split", "reg_tests.svh", "pin_tests.svh")
+SHARED_SHA = {}
+
+
+def sha256_file(p):
+    with open(p, "rb") as fo:
+        return hashlib.sha256(fo.read()).hexdigest()
 
 # (name, file, text in the RTL (must occur exactly once), replacement); a mutation of several edits (audit round 15:
 # a RESET_N-only reset port in eeg_regs and its wiring in the top): (name, [(file, text, replacement), ...], None, None),
@@ -500,6 +517,17 @@ MUTATIONS = [
      '    eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n), .raw_en(raw_en && (dbg_sel == 2\'b00)), .cycle(cycle)'),
     ('RAW：流れと対を書き込みで切り替える（語と対を切る）', 'eeg_raw.sv',
      "            if (on || dbg_sel == 2'b00) begin", "            if (raw_en || dbg_sel == 2'b00) begin"),
+    # audit round 22, auditor C: pulse-mode DRDY_N (DAT-04) and the CHANGED marks, each of which passed all 16 groups
+    # or was caught only through the state an earlier phase left
+    ('上位：パルスのモードの DRDY_N を RUN の格納のみで（FILL の格納にパルスなし）', 'eeg_digital_top.sv',
+     "assign drdy_nxt = push_ok ? 3'd4 :", "assign drdy_nxt = (push_ok && seq_state == ST_RUN) ? 3'd4 :"),
+    ('上位：パルスのモードの DRDY_N を FIFO が空になると終える', 'eeg_digital_top.sv',
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~(drdy_pulse && fifo_nonempty) : ~fifo_nonempty);"),
+    ('上位：CHANGED の印を PRE でのみ消す（STOP で消さない）', 'eeg_digital_top.sv',
+     "else if (seq_state != ST_RUN) chg_cnt <= 9'd0;", "else if (seq_state == ST_PRE) chg_cnt <= 9'd0;"),
+    ('上位：走っている印があれば新しい長い印で延ばさない', 'eeg_digital_top.sv',
+     "chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;", "chg_cnt <= (chg_cnt != 9'd0) ? chg_cnt : chg_new;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -538,6 +566,10 @@ SEQ_MUTATIONS = [
     ("シーケンサ：tick では不正な状態値を見ない（tick の分岐が先）", "eeg_seq.sv",
      "        if (state > S_PULSE) begin                          // illegal value: safe side",
      "        if (state > S_PULSE && !tick) begin                 // illegal value: safe side"),
+    # audit round 22, auditor A: the rarest branch of the random walk (ALIGN / APPLY_NR with T_ELEC > 0, taken once
+    # with the suite's seed): an APPLY_NR in ALIGN that skips the electrode wait
+    ("シーケンサ：ALIGN の APPLY_NR で T_ELEC が 0 でなくても電極の待ちに戻らない", "eeg_seq.sv",
+     "S_ALIGN:  if (t_elec != 8'd0) nxt = S_WAIT_E;", "S_ALIGN:  ;"),
 ]
 
 
@@ -706,6 +738,59 @@ def sim_tail(v, tb):
     return f"{tb} ended without its closing line: " + ((v.stderr.strip().splitlines() or v.stdout.strip().splitlines()
                                                          or ["no output"])[-1])[:110]
 
+def unit_benches(d, files):
+    """The unit benches of the blocks a mutation edits, in its copy, as run_tests_r14.sh runs them (audit round 22,
+    auditor C: tb_tick, tb_clkgen and tb_cic_arm were never run on a mutant): tb_tick and tb_clkgen for eeg_clkgen.sv,
+    tb_cic_arm (cleared at outputs 3, 5, 7, 9) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
+    check judged FAIL: a detection); 'error' (a compile error, a crash, no closing line: no verdict)."""
+    inc = ["-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", os.path.join(d, "build")]
+    runs = []
+    if "eeg_clkgen.sv" in files:
+        runs += [("tb_tick", ["eeg_clkgen.sv", os.path.join(R14, "tb", "tb_tick.sv")], ("PASS: tick", "FAIL: tb_tick")),
+                 ("tb_clkgen", ["eeg_clkgen.sv", os.path.join(RTL_OLD, "tb", "tb_clkgen.sv")],
+                  ("PASS: tb_clkgen", "FAIL: tb_clkgen"))]
+    for nm, srcs, closing in runs:
+        c = subprocess.run(["iverilog", "-g2012"] + inc + ["-o", f"build/{nm}.vvp"] + srcs, cwd=d, capture_output=True,
+                           text=True)
+        if c.returncode:
+            return "error", f"{nm}: compile: " + (c.stderr.strip().splitlines() or ["?"])[-1][:120]
+        try:
+            v = subprocess.run(["vvp", "-n", f"build/{nm}.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
+        except subprocess.TimeoutExpired:
+            return "error", f"{nm}: no end within 1200 s"
+        if not bench_ended(v, closing):
+            return "error", sim_tail(v, nm)
+        if closing[0] not in v.stdout or "FAIL" in v.stdout:
+            return "fail", f"{nm}: " + next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))),
+                                            "FAIL")[:130]
+    if "eeg_cic3.sv" in files:
+        b = os.path.join(d, "build")
+        g = subprocess.run([sys.executable, os.path.join(HERE, "check_cic_arm.py"), "gen", "7", "13", b],
+                           capture_output=True, text=True)
+        if g.returncode:
+            return "error", "check_cic_arm gen: " + ((g.stderr.strip().splitlines() or ["?"])[-1])[:120]
+        c = subprocess.run(["iverilog", "-g2012"] + inc + ["-o", "build/tb_cic_arm.vvp", "eeg_cic3.sv", "eeg_rnd_sat.sv",
+                            os.path.join(R14, "tb", "tb_cic_arm.sv")], cwd=d, capture_output=True, text=True)
+        if c.returncode:
+            return "error", "tb_cic_arm: compile: " + (c.stderr.strip().splitlines() or ["?"])[-1][:120]
+        for k_ in (3, 5, 7, 9):
+            try:
+                v = subprocess.run(["vvp", "-n", "build/tb_cic_arm.vvp", f"+k={k_}"], cwd=d, capture_output=True,
+                                   text=True, timeout=1200)
+            except subprocess.TimeoutExpired:
+                return "error", "tb_cic_arm: no end within 1200 s"
+            if v.returncode:
+                return "error", sim_tail(v, "tb_cic_arm")
+            k = subprocess.run([sys.executable, os.path.join(HERE, "check_cic_arm.py"), "check", str(k_), b],
+                               capture_output=True, text=True)
+            if not any(ln.startswith(("PASS:", "FAIL")) for ln in k.stdout.splitlines()):
+                return "error", "check_cic_arm crashed: " + ((k.stderr.strip().splitlines() or ["?"])[-1])[:120]
+            if k.returncode:
+                return "fail", f"tb_cic_arm +k={k_}: " + next((ln.strip() for ln in k.stdout.splitlines()
+                                                              if "mismatches" in ln), "FAIL")[:120]
+    return "pass", ""
+
+
 
 # the overload detector alone (tb_ovl + check_ovl.py against regmap.OVL_RULE: detector, hits, interval flags)
 OVL_MUTATIONS = [
@@ -748,8 +833,10 @@ def run(i, m, bench="top"):
         if text.count(old_) != 1:
             return i, name, "NOT APPLIED", f"the text occurs {text.count(old_)} times in {f_}"
         open(p, "w", encoding="utf-8").write(text.replace(old_, new_))
-    for x in ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split"):   # shared generated files
-        os.symlink(os.path.join(BUILD, x), os.path.join(d, "build", x))
+    for x in SHARED:                                 # the shared generated inputs, copied and checked (audit round 22)
+        shutil.copy(os.path.join(BUILD, x), os.path.join(d, "build", x))
+        if sha256_file(os.path.join(d, "build", x)) != SHARED_SHA.get(x):
+            return i, name, "TOOL ERROR", f"the shared input build/{x} changed during the run (another run_tests_r14.sh?)"
     tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv",
           "ovl": "tb_ovl.sv"}.get(bench, "tb_top_r14.sv")
     if bench == "struct":                            # the structure: yosys on this copy
@@ -768,7 +855,8 @@ def run(i, m, bench="top"):
     srcs = ({"seq": ["eeg_seq.sv"], "fifo": ["eeg_fifo.sv"], "regs": ["eeg_regs.sv"],
              "chop1": ["eeg_clkgen.sv", "eeg_chop1.sv"], "rnd": ["eeg_rnd_sat.sv"], "ovl": ["eeg_ovl.sv"]}.get(bench)
             or SRC + OLD)                            # pin_tests.svh: through -I build
-    cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", BUILD, "-o", "build/t.vvp"] + srcs
+    cmd = (["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", os.path.join(d, "build"), "-o",
+            "build/t.vvp"] + srcs
            + [tbp])
     c = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
     if c.returncode:
@@ -790,15 +878,43 @@ def run(i, m, bench="top"):
                             os.path.join(d, "build", "seq_trace.txt")], capture_output=True, text=True)
         head = next((ln for ln in k.stdout.splitlines() if "mismatches" in ln), "")
         if not head:
+            if "PASS: tb_seq" not in v.stdout:           # the bench judged it already (audit round 22, auditor C)
+                return i, name, ("BASELINE FAILS" if f is None else "detected"), next(
+                    (ln.strip() for ln in v.stdout.splitlines() if ln.startswith("ERROR")), "tb_seq FAIL")
             return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1]
         nbad = int(head.split(":")[1].split()[0])
         direct = "PASS: tb_seq" in v.stdout
         first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), head)
         if nbad == 0 and not direct:                 # caught by the bench's direct checks: say which (audit round 11:
             first = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith("ERROR")), first)   # it showed the
-        if f is None:                                # replay's clean line as the reason)
-            return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout else "BASELINE FAILS"), head
-        return i, name, ("detected" if nbad != 0 or not direct else "MISSED"), first
+                                                     # replay's clean line as the reason)
+        # the exhaustive one-step bench (audit round 22, auditor A), as run_tests_r14.sh's tb_seq group runs it
+        ce = subprocess.run(["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", os.path.join(d, "build"), "-o",
+                             "build/te.vvp", "eeg_seq.sv", os.path.join(R14, "tb", "tb_seq_exh.sv")], cwd=d,
+                            capture_output=True, text=True)
+        if ce.returncode:
+            return i, name, "COMPILE ERROR", "tb_seq_exh: " + ce.stderr.strip().splitlines()[-1][:140]
+        try:
+            ve = subprocess.run(["vvp", "-n", "build/te.vvp", "+trace=build/seq_exh.txt"], cwd=d, capture_output=True,
+                                text=True, timeout=1200)
+        except subprocess.TimeoutExpired:
+            return i, name, "TIMEOUT", "tb_seq_exh: no end within 1200 s (undecided: rerun)"
+        if not bench_ended(ve, ("tb_seq_exh: ",)):
+            return i, name, "SIM ERROR", sim_tail(ve, "tb_seq_exh")
+        ke = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_exh.py"),
+                             os.path.join(d, "build", "seq_exh.txt")], capture_output=True, text=True)
+        if not any(ln.startswith(("PASS:", "FAIL")) for ln in ke.stdout.splitlines()):
+            if nbad != 0 or not direct:                # tb_seq judged it already
+                return i, name, ("BASELINE FAILS" if f is None else "detected"), first
+            return i, name, "CHECKER ERROR", "check_seq_exh: " + ((ke.stderr.strip().splitlines() or ["no output"])[-1])[:140]
+        exh_ok = ke.returncode == 0
+        if nbad == 0 and direct and not exh_ok:      # caught only by the exhaustive pass: say so
+            first = "check_seq_exh: " + next((ln.strip() for ln in ke.stdout.splitlines() if ln.startswith("  ")),
+                                               ke.stdout.strip().splitlines()[0])[:140]
+        if f is None:
+            return i, name, ("baseline ok" if nbad == 0 and direct and "PASS" in k.stdout and exh_ok
+                             else "BASELINE FAILS"), head
+        return i, name, ("detected" if nbad != 0 or not direct or not exh_ok else "MISSED"), first
     if bench == "ovl":
         try:
             v = subprocess.run(["vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
@@ -841,25 +957,51 @@ def run(i, m, bench="top"):
             return i, name, ("baseline ok" if "PASS: tb_regs" in v.stdout else "BASELINE FAILS"), head
         return i, name, ("detected" if "PASS: tb_regs" not in v.stdout else "MISSED"), first
     if bench == "fifo":
-        k = subprocess.run([sys.executable, os.path.join(HERE, "check_fifo_trace.py"),
-                            os.path.join(d, "build", "fifo_trace.txt")], capture_output=True, text=True)
-        head = next((ln for ln in k.stdout.splitlines() if "mismatches" in ln), "")
-        if not head:
-            return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1]
-        nbad = int(head.split(":")[1].split()[0])
-        first = next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), head)
-        bench_ok = "PASS: tb_fifo" in v.stdout          # audit round 14, auditor C: the bench's own coverage line
-        if f is None:                                   # ("a pop with a push into a full FIFO never occurred") was ignored
-            return i, name, ("baseline ok" if nbad == 0 and "PASS" in k.stdout and bench_ok else "BASELINE FAILS"), head
-        if nbad == 0 and not bench_ok:
-            first = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), first)
-        return i, name, ("detected" if nbad != 0 or "PASS" not in k.stdout or not bench_ok else "MISSED"), first
+        # the 8-deep bench (run above) and the 4-deep one (-DDEPTH4), as run_tests_r14.sh's tb_fifo and tb_fifo4 (audit
+        # round 22, auditor C: tb_fifo4 was never run on a mutant)
+        c4 = subprocess.run(["iverilog", "-g2012", "-DDEPTH4", "-I", SPEC, "-I", os.path.join(R14, "tb"), "-I",
+                             os.path.join(d, "build"), "-o", "build/t4.vvp"] + srcs + [tbp], cwd=d, capture_output=True,
+                            text=True)
+        if c4.returncode:
+            return i, name, "COMPILE ERROR", "tb_fifo4: " + (c4.stderr.strip().splitlines() or ["?"])[-1][:140]
+        try:
+            v4 = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t4.vvp", "+n=400000",
+                                 "+trace=build/fifo4_trace.txt"], cwd=d, capture_output=True, text=True, timeout=3600)
+        except subprocess.TimeoutExpired:
+            return i, name, "TIMEOUT", "tb_fifo4: no end within 3600 s (undecided: rerun)"
+        if not bench_ended(v4, ("PASS: tb_fifo", "FAIL: ")):
+            return i, name, "SIM ERROR", sim_tail(v4, "tb_fifo4")
+        all_ok, first, head = True, "", ""
+        for vv, tr in ((v, "fifo_trace.txt"), (v4, "fifo4_trace.txt")):
+            bench_ok = "PASS: tb_fifo" in vv.stdout      # audit round 14, auditor C: the bench's own coverage line
+            k = subprocess.run([sys.executable, os.path.join(HERE, "check_fifo_trace.py"), os.path.join(d, "build", tr)],
+                               capture_output=True, text=True)
+            hd = next((ln for ln in k.stdout.splitlines() if "mismatches" in ln), "")
+            if not hd:
+                if bench_ok:                             # neither the bench nor the checker judged it
+                    return i, name, "CHECKER ERROR", (k.stderr.strip().splitlines() or ["no output"])[-1]
+                all_ok = False                           # the bench judged FAIL (audit round 22, auditor C)
+                first = first or next((ln.strip() for ln in vv.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), tr)
+                continue
+            head = head or hd
+            nbad = int(hd.split(":")[1].split()[0])
+            ok_ = nbad == 0 and "PASS" in k.stdout and bench_ok
+            if not ok_ and not first:
+                first = (next((ln.strip() for ln in k.stdout.splitlines() if ln.startswith("  line")), hd) if nbad else
+                         next((ln.strip() for ln in vv.stdout.splitlines() if ln.startswith(("ERROR", "FAIL"))), hd))
+            all_ok = all_ok and ok_
+        if f is None:
+            return i, name, ("baseline ok" if all_ok else "BASELINE FAILS"), head
+        return i, name, ("detected" if not all_ok else "MISSED"), first
     if bench == "spi":
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_spi_trace.py"),
                             os.path.join(d, "build", "spi_trace.txt")], capture_output=True, text=True)
         head = k.stdout.splitlines()[0] if k.stdout else ("checker error: " + (k.stderr.strip().splitlines() or ["?"])[-1])
         nbad = int(head.split(":")[1].split()[0]) if "frames with mismatches" in head else -1
-        if nbad < 0:                                 # the checker failed: neither a detection nor a pass
+        if nbad < 0:                                 # the checker failed: a verdict only if the bench judged it
+            if "FAIL" in v.stdout or "SPI ERROR" in v.stdout:   # (audit round 22, auditor C)
+                return i, name, ("BASELINE FAILS" if f is None else "detected"), next(
+                    (ln.strip() for ln in v.stdout.splitlines() if ln.startswith(("SPI ERROR", "ERROR", "FAIL"))), head)
             return i, name, "CHECKER ERROR", head
         timing = next((ln for ln in v.stdout.splitlines() if "SPI timing errors" in ln), "")
         nt = int(timing.split(",")[1].split()[0]) if timing else -1
@@ -871,6 +1013,11 @@ def run(i, m, bench="top"):
             covered = "every branch covered" in k.stdout
             return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed and covered else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or nt != 0 or failed else "MISSED"), first
+    st_, txt_ = unit_benches(d, {e_[0] for e_ in edits_of(m)} if f is not None else {"eeg_clkgen.sv", "eeg_cic3.sv"})
+    if st_ == "error":
+        return i, name, "SIM ERROR", txt_
+    if st_ == "fail":
+        return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
     try:                                             # the bench's own watchdog (800 ms simulated) ends a hang
         v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True,
                            timeout=5400)
@@ -918,6 +1065,7 @@ def main():
                  "ovl.split"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing after generating it")
+    SHARED_SHA.update({x: sha256_file(os.path.join(BUILD, x)) for x in SHARED})
     # every listed mutation must apply to the RTL as it is now (audit round 5: two targets had changed with the RTL
     # and would have shown only as NOT APPLIED at the end of a long run)
     stale = []
@@ -998,7 +1146,7 @@ def main():
     ok = True
     out = [f"--- summary ({(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min)"]
     missing_base = []
-    title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled)",
+    title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled), tb_seq_exh + check_seq_exh",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
              "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
              "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)", "rnd": "tb_rnd_sat (Python golden vectors)",
@@ -1023,6 +1171,10 @@ def main():
         ok &= n_det == len(muts) and base_txt != "NOT clean" and not n_to
         if base_txt == "not run":
             missing_base.append(bench)
+    changed = [x for x in SHARED if sha256_file(os.path.join(BUILD, x)) != SHARED_SHA.get(x)]   # (audit round 22)
+    if changed:
+        out.append("the shared inputs changed during the run (another run_tests_r14.sh?): " + ", ".join(changed))
+        ok = False
     out.append("FAIL" if not ok else ("INCOMPLETE (baselines not run: " + ", ".join(missing_base) + ")")
                if missing_base else "PASS")
     ok &= not missing_base

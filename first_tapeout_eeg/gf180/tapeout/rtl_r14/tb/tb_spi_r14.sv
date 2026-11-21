@@ -258,7 +258,7 @@ module tb_spi_r14;
                 while (t_out - $realtime > 25000.0) @(posedge dut.tick);   // a tick at most 25 us before it
                 spi_tidle = 125.0;
                 if ($urandom_range(0, 1)) wr(7'h10, 8'h55, 1, "cmd");      // half of them after a FLUSH
-                spi_tx[0] = 8'hC0;
+                spi_tx[0] = SMP_HDR;
                 for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;
                 frame(8, 0, "smpt");
             end else if (kind < 56) begin                          // read registers
@@ -276,7 +276,7 @@ module tb_spi_r14;
                     t0 = $realtime;
                     while (DRDY_N !== 1'b0 && ($realtime - t0) < 1.2e6) @(posedge MCLK);
                 end
-                spi_tx[0] = 8'hC0;
+                spi_tx[0] = SMP_HDR;
                 for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;
                 shape(8, n, x);
                 frame(n, x, "smp");
@@ -284,7 +284,7 @@ module tb_spi_r14;
                 integer n, x;
                 spi_tidle = 125.0;
                 wr(7'h10, 8'h55, 1, "cmd");
-                spi_tx[0] = 8'hC0;
+                spi_tx[0] = SMP_HDR;
                 for (int i = 1; i < 16; i++) spi_tx[i] = 8'h00;
                 shape(8, n, x);
                 frame(n, x, "smp");

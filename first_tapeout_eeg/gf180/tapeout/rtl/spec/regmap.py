@@ -290,6 +290,20 @@ def nr_ok(sh, ac):
     return sh["RANGE"] == ac["RANGE"] and abs(sv(sh) - sv(ac)) <= 1 and all(sh[k] == ac[k] for k in others)
 
 
+def crc8(bs, c=0):
+    """CRC-8 with the polynomial 0x07 (x^8 + x^2 + x + 1), MSB first, from 0: the SPI's CRC (SPI-05)."""
+    for b in bs:
+        c ^= b
+        for _ in range(8):
+            c = ((c << 1) ^ 0x07) & 0xFF if c & 0x80 else (c << 1) & 0xFF
+    return c
+
+
+def smp_hdr():
+    """A sample read's header: R/W 1 and the window's address (0xC0 for the window 0x40)."""
+    return 0x80 | next(a for a, n, *_ in REGS if n == "SAMPLE")
+
+
 CHECKS = [
     "アドレスの重なりがない。アクティブの写しのアドレス（＋0x10）が他のレジスタと重ならない",
     "各レジスタのフィールドは 8 ビットに収まり、重ならない（未使用のビットが 0 を返すことは、レジスタ表から生成した試験 tb_top_r14 で確かめる）",
@@ -301,7 +315,7 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレスは、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
@@ -399,9 +413,9 @@ def check(verbose=True):
     fd = {f["name"]: f for *_, f in all_fields()}
     if 0 in (fd["BLANK_LEN"]["legal"] or []):
         errs.append("BLANK_LEN 0 is legal (REG-06: it must give RANGE_ERR; CDA and CDB would overlap at the edges)")
-    if sorted(fd["RANGE"]["legal"]) != sorted(RANGE_MAX_M):
+    if sorted(fd["RANGE"]["legal"] or []) != sorted(RANGE_MAX_M):   # (None: audit round 17, the check crashed)
         errs.append(f"OFF_CTRL.RANGE legal {fd['RANGE']['legal']}, but the ranges of RANGE_MAX_M are {sorted(RANGE_MAX_M)}")
-    if sorted(fd["SIGN"]["legal"]) != [0, 1]:
+    if sorted(fd["SIGN"]["legal"] or []) != [0, 1]:
         errs.append(f"OFF_CTRL.SIGN legal {fd['SIGN']['legal']}: the offset needs both signs")
     if not (fd["M_H"]["legal"] == list(range(1 << (fd["M_H"]["msb"] - fd["M_H"]["lsb"] + 1))) and
             fd["M_L"]["legal"] == list(range(256)) and
@@ -450,6 +464,8 @@ def check(verbose=True):
     for tn, u in unit.items():
         f = next(f for *_, f in all_fields() if f["name"] == tn)
         mn, df, mx = FS.TIMING["timers"][tn]
+        if f["legal"] is None:                         # REQUIRED_LEGAL reports it (audit round 17: it crashed here)
+            continue
         for label, code in (("minimum", min(f["legal"])), ("default", f["reset"])):
             for rate, r in FS.TIMING["rates"].items():
                 per = r["period_frames"]                                          # the expiry waits for a tick
@@ -512,7 +528,17 @@ def check(verbose=True):
     import random
     rnd_ = random.Random(20261120)
     legal = {f["name"]: f["legal"] for *_, f in all_fields()}
-    for k_ in range(6000):                             # each field drawn on its own (audit round 8)
+    # the pin rules are defined for the requirements' values only (audit round 17, auditor C: a legal list None, or
+    # CHOP1_RATE 6 or 7 as a legal or reset value, made this check crash instead of reporting)
+    pin_names = ("M_H", "M_L", "SIGN", "RANGE", "AFE_IBIAS", "CPF_TRIM", "BTRIM_P", "BTRIM_N", "CHOP_FAST",
+                 "CHOP1_RATE", "DWA_EN", "BLANK_LEN", "ATP_EN", "ATP_SEL", "CHOP_STOP", "ADC_ZERO", "DBG_SEL")
+    out_dom = [n_ for n_ in pin_names if n_ in fd and (fd[n_]["legal"] is None or
+               not set(fd[n_]["legal"]) <= set(REQUIRED_LEGAL.get(n_, ())) or
+               fd[n_]["reset"] not in REQUIRED_LEGAL.get(n_, ()))]
+    if out_dom:
+        errs.append(f"the pin rules not derived from the map: {out_dom} hold values the requirements do not give "
+                    f"(REQUIRED_LEGAL), for which pins_from_active is not defined")
+    for k_ in range(0 if out_dom else 6000):          # each field drawn on its own (audit round 8)
         ac = {n_: rnd_.choice(legal[n_]) for n_ in ("SIGN", "RANGE", "AFE_IBIAS", "CPF_TRIM", "BTRIM_P", "BTRIM_N",
                                                     "CHOP_FAST", "CHOP1_RATE", "DWA_EN", "BLANK_LEN", "ATP_EN",
                                                     "ATP_SEL", "CHOP_STOP", "ADC_ZERO", "DBG_SEL")}
@@ -592,7 +618,7 @@ def check(verbose=True):
     # driving TEST_CFG[7:6], passed); the read-only constants hold their reset value only
     base = {f["name"]: f["reset"] for *_r, fl_, _d in REGS for f in fl_}
     tcfg = {"TEST_CFG[3:0]": range(0, 4), "TEST_CFG[4]": range(4, 5), "TEST_CFG[5]": range(5, 6), "TEST_CFG[7:6]": range(6, 8)}
-    for a_, n_, acc_, _l, fl_, _ in REGS:
+    for a_, n_, acc_, _l, fl_, _ in ([] if out_dom else REGS):
         for f in fl_:
             if not f["pin"] or f["pin"] not in set(PIN_OF_CONTROL) | set(tcfg):
                 continue                               # RAW_DATA／RAW_CLK: not in pins_from_active
@@ -654,10 +680,17 @@ def check(verbose=True):
                 errs.append(f"SAMPLE.{f['name']}: reset {f['reset']}; the window reads 0x00 inside a burst and alone "
                             f"(spec 3.2), so the map holds 0 for it")
     win = next(a_ for a_, n_, *_ in REGS if n_ == "SAMPLE")
-    nb = sorted(a_ for a_, n_, acc_, *_ in REGS if acc_ != "WO" and n_ != "SAMPLE" and bin(a_ ^ win).count("1") == 1)
+    readable = ({a_ for a_, n_, acc_, *_ in REGS if acc_ != "WO" and n_ != "SAMPLE"} |   # the active copies are
+                {a_ + SHADOW_MIRROR for a_, _n, _acc, _l, fl_, _ in REGS        # readable too (audit round 17, B)
+                 if any(f["cls"] == "apply" for f in fl_)})
+    nb = sorted(a_ for a_ in readable if bin(a_ ^ win).count("1") == 1)
     if nb != WINDOW_NEIGHBOURS_REQUIRED:
         errs.append(f"readable addresses one bit from the sample window: {[hex(x) for x in nb]}; the host procedure "
                     f"confirms {[hex(x) for x in WINDOW_NEIGHBOURS_REQUIRED]} by a second read (5.4 (b), audit round 16)")
+    rsmp = next(x[5] for x in FS.SPI_STATES if x[0] == "RSMP")      # the SPI table's text names the header
+    if f"先頭バイト 0x{0x80 | win:02X}" not in rsmp:                    # (audit round 17, auditor B)
+        errs.append(f"the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header "
+                    f"0x{0x80 | win:02X}, which the RTL and the benches take from SMP_HDR")
     q_t = max(OVL_RULE["codes"]).bit_length()
     if fv.get("QBITS") != q_t:
         errs.append(f"QBITS {fv.get('QBITS')}; the quantizer's codes 0..{max(OVL_RULE['codes'])} take {q_t} bits")
@@ -734,6 +767,12 @@ def sv_package():
         out.append(f"    localparam int SMP_BYTE_{ident} = {pos};")   # sample by these, the diagram draws them)
         pos += nb
     out.append(f"    localparam int SMP_FRAME_LEN = {pos};")
+    # the sample read's header and the CRC it starts the sample's CRC with (audit round 17, auditor B: the RTL, the
+    # BFM, the benches and the trace checker had 0xC0 and 0x4E by hand, so a move of the window (item 258) would
+    # have left them behind)
+    out.append(f"    localparam logic [7:0] SMP_HDR = 8'h{smp_hdr():02X};   // R/W 1 and the window's address")
+    out.append(f"    localparam logic [7:0] CRC_SMP_HDR = 8'h{crc8([smp_hdr()]):02X};   // CRC-8 of SMP_HDR: a sample's "
+               f"CRC starts from it (SPI-07)")
     out.append("")
     for c, v in COMMANDS.items():
         out.append(f"    localparam logic [7:0] CMD_{c} = 8'h{v:02X};")
@@ -1108,6 +1147,16 @@ def selftest():
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "TEST_MUX")
         r = list(g["REGS"][i]); r[0] = 0x68; g["REGS"][i] = tuple(r)
 
+    def m_chop1_rate_6():                                # audit round 17, auditor C: a value the pin rules do not
+        fld("ADC_CFG", "CHOP1_RATE")["legal"] = fld("ADC_CFG", "CHOP1_RATE")["legal"] + [6]   # define (it crashed)
+
+    def m_timer_legal_none():                            # audit round 17, auditor C: a timer without legal values
+        fld("T_PRE", "T_PRE")["legal"] = None                                                  # (it crashed)
+
+    def m_window_moved():                                # audit round 17, auditor B: the window moved (item 258's
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "SAMPLE")  # option), the SPI table's text left behind
+        r = list(g["REGS"][i]); r[0] = 0x4F; g["REGS"][i] = tuple(r)
+
     def m_sample_reset():
         fld("SAMPLE", "SAMPLE")["reset"] = 0x5A
 
@@ -1163,7 +1212,10 @@ def selftest():
             ("VERSION の値に 17 も", m_ro_const),
             ("STATUS の READY と DATA の入れ違い", m_status_swap), ("COMMAND の CMD を 7 ビットに（0xA5 が入らない）", m_cmd_narrow),
             ("TEST_KEY の KEY を 7 ビットに", m_key_narrow), ("ID の読み値を定めない（legal None）", m_ro_none),
-            ("SAMPLE の既定値を 0x5A に", m_sample_reset), ("TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）", m_window_neighbour)]
+            ("SAMPLE の既定値を 0x5A に", m_sample_reset), ("TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）", m_window_neighbour),
+            ("サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）", m_window_moved),
+            ("CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）", m_chop1_rate_6),
+            ("T_PRE の合法な値を None に", m_timer_legal_none)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1274,8 +1326,12 @@ SELFTEST_EXPECT = {
     'STATUS.ALERT の既定値を 0': ('after a reset, where the requirements give',),
     'CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'T_REC の合法な値に穴（100）': ('differ from those the requirements give (REQUIRED_LEGAL)',),
+    'CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）': ('differ from those the requirements give (REQUIRED_LEGAL)',
+                                                     'hold values the requirements do not give (REQUIRED_LEGAL), for which pins_from_active is not defined'),
+    'T_PRE の合法な値を None に': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
-    'BLANK を 0x38 に（写し 0x48 が設定の区画の外）': ("outside its register's",),
+    'BLANK を 0x38 に（写し 0x48 が設定の区画の外）': ("outside its register's",       # and the copy 0x48 is one bit from
+                                                   'readable addresses one bit from the sample window:'),   # the window (round 17)
     'SOFT_RESET のコードを 0xA6 に（2 ビットの差は保つ）': (': the requirements fix it at 0x',),
     '試験の鍵を 0x3D に': (': the requirements fix it at 0x',),
     'ERR の FRAME_ERR と CRC_ERR のビットの入れ違い': (', the requirements read it at bit',),
@@ -1292,6 +1348,7 @@ SELFTEST_EXPECT = {
     'TEST_KEY の KEY を 7 ビットに': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
     'ID の読み値を定めない（legal None）': (': a read-only field without its read values (legal None)',),
     'TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）': ('readable addresses one bit from the sample window:',),
+    'サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）': ("the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header 0x",),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

@@ -439,6 +439,22 @@ MUTATIONS = [
     ('レジスタ：SOFT_RESET のコードを下位 7 ビットで比べる', 'eeg_regs.sv',
      '    assign is_soft     = (wdata == CMD_SOFT_RESET);',
      '    assign is_soft     = (wdata[6:0] == CMD_SOFT_RESET[6:0]);'),
+    # audit round 17, auditor C: a register on the CHOP_BLANK pad and on the CHOP1 pad (the obvious NFR-06 clean-ups),
+    # and DBG_SEL 3's CHOP1 retimed at the frame boundary
+    ('上位：CHOP_BLANK の端子をフリップフロップに（立ち上がりが CHOP_OUT の縁に遅れる）', 'eeg_digital_top.sv',
+     '    assign CHOP_BLANK = gen_blank | a_azero;',
+     "    logic chop_blank_q;\n    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) chop_blank_q <= 1'b0; "
+     "else chop_blank_q <= gen_blank | a_azero;\n    assign CHOP_BLANK = chop_blank_q;"),
+    ('上位：CHOP1 の端子をフリップフロップに（縁が e17）', 'eeg_digital_top.sv',
+     '    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));',
+     "    logic chop1_i;\n    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(chop1_i));\n"
+     "    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) CHOP1 <= 1'b1; else CHOP1 <= chop1_i;"),
+    ('上位：DBG_SEL 3 の CHOP1 をフレームの境で取り直す（16 MCLK 遅れ）', [
+      ('eeg_digital_top.sv', '    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));',
+       "    eeg_chop1 u_chop1 (.clk(MCLK), .rst_n(tm_rst_n), .cycle(cycle), .chop1_rate(a_c1), .chop1(CHOP1));\n"
+       "    logic chop1_dbg;\n    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) chop1_dbg <= 1'b1; "
+       "else if (frame_stb) chop1_dbg <= CHOP1;"),
+      ('eeg_digital_top.sv', '.dbg_data({CHOP1, CHOP_OUT, DAC_CLK}),', '.dbg_data({chop1_dbg, CHOP_OUT, DAC_CLK}),')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -810,7 +826,7 @@ def run(i, m, bench="top"):
             covered = "every branch covered" in k.stdout
             return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed and covered else "BASELINE FAILS"), head
         return i, name, ("detected" if nbad != 0 or nt != 0 or failed else "MISSED"), first
-    try:                                             # the bench's own watchdog (600 ms simulated) ends a hang
+    try:                                             # the bench's own watchdog (800 ms simulated) ends a hang
         v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True,
                            timeout=5400)
     except subprocess.TimeoutExpired:

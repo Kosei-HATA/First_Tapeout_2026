@@ -146,6 +146,8 @@ package eeg_regs_pkg;
     localparam int SMP_BYTE_DATA = 4;
     localparam int SMP_BYTE_CRC = 7;
     localparam int SMP_FRAME_LEN = 8;
+    localparam logic [7:0] SMP_HDR = 8'hC0;   // R/W 1 and the window's address
+    localparam logic [7:0] CRC_SMP_HDR = 8'h4E;   // CRC-8 of SMP_HDR: a sample's CRC starts from it (SPI-07)
 
     localparam logic [7:0] CMD_START = 8'h11;
     localparam logic [7:0] CMD_STOP = 8'h22;

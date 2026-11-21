@@ -119,6 +119,12 @@
 // Monitors: every analog control pin (AFE_RST, OFM, OFS, OFEN, CPF_TRIM, AFE_IBIAS, BTRIM, TEST_CFG[5:0],
 // CHOP_EN, DWA_EN) changes only at the MCLK edge right after a tick (or in reset); no register-driven pin (those and
 // DRDY_N, TEST_CFG[7:6]) changes twice at one simulation time (a runt: NFR-06); the SPI timing (spi_bfm_r14.svh).
+// Audit round 17 (auditor C: RTL copies that passed every test): at every CHOP_OUT edge CHOP_BLANK was high in the MCLK
+// before it and stays high for the blanking length after it (BLANK_LEN, 15 with the offset DAC on), rising only in
+// the MCLK before an edge unless ADC_ZERO holds it; CHOP1 changes only at e16; O compares each DBG_SEL pair until both
+// of its signals changed twice (CHOP1's half period is 1,024 MCLK or more); Y0 asserts that the chip missed the
+// runt (71 bits); V13 runs at 2 MHz (SPI-01), the STOP written right after the APPLY; after RESET_N (A, X) and
+// SOFT_RESET (Y) CHOP_BLANK's width, CHOP's half period and (after RESET_N) CHOP1's half period are REG-05's.
 // A watchdog ends the run as FAIL if it has not finished by 800 ms of simulated time (the run ends near 0.6 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -832,6 +838,71 @@ module tb_top_r14;
         end
     end
 
+    // CHOP_BLANK against CHOP_OUT at the pads (audit round 17, auditor C: a register on the CHOP_BLANK pad, the obvious
+    // NFR-06 clean-up, moved its rise from the MCLK before the CHOP_OUT edge to the edge itself and passed every group;
+    // the AFE makes CDA and CDB "... and not CHOP_BLANK" (afe/eeg_afe_clk.spice), so the break-before-make that REG-06
+    // and the requirements' 4.10 rely on rests on this order): at every CHOP_OUT edge CHOP_BLANK was high in the MCLK
+    // before it and stays high for the blanking length after it, then falls (the pulse lasts the length + 1 MCLK; the
+    // length is BLANK_LEN of the active copy, or BLANK_WITH_DAC while the OFEN pads show the offset DAC on: REG-07,
+    // pins_from_active); it rises only in the MCLK before an edge. ADC_ZERO (TEST_CFG[5]) holds it high. The edge at
+    // the first MCLK after the timing reset's release is not blanked (eeg_clkgen's header). Sampled mid-cycle.
+    logic   cb_q = 1'b0, co_q = 1'b0, cb_rise = 1'b0, cb_rise_az = 1'b0, cb_az = 1'b0, cb_first = 1'b1;
+    integer cb_len = 0, cb_want = 0, n_cb_edges = 0, n_cb_bad = 0;
+    integer n_cb_w [0:1] = '{0, 0};                    // pulses measured with the offset DAC off / on
+    task automatic cb_bad(input string m);
+        n_cb_bad = n_cb_bad + 1;
+        if (n_cb_bad <= 3) fail(m);
+    endtask
+    always @(negedge MCLK) begin
+        logic co, cb, az, ed;
+        co = CHOP_OUT; cb = CHOP_BLANK; az = TEST_CFG[5];
+        if (dut.tm_rst_n !== 1'b1) begin
+            cb_first = 1'b1; cb_len = 0; cb_rise = 1'b0; cb_az = 1'b0;
+        end else begin
+            ed = (co !== co_q);
+            if (cb_rise && !cb_rise_az && !ed)
+                cb_bad($sformatf("CHOP_BLANK rose in frame cycle %0d without a CHOP_OUT edge at the next MCLK", (dut.cycle + 31) % 32));
+            if (ed) begin
+                if (cb_first) cb_first = 1'b0;           // the edge right after the release: not blanked
+                else begin
+                    n_cb_edges = n_cb_edges + 1;
+                    if (cb_q !== 1'b1 || cb !== 1'b1)
+                        cb_bad($sformatf("CHOP_OUT edge with CHOP_BLANK %b in the MCLK before it and %b after it", cb_q, cb));
+                end
+            end
+            cb_rise = (cb === 1'b1 && cb_q === 1'b0);
+            if (cb_rise) begin                          // the pulse's length, as the clock generator latches it
+                cb_rise_az = az;
+                cb_want = 1 + ((OFEN !== 4'd0) ? int'(BLANK_WITH_DAC) : int'(dut.u_regs.a_blank));
+            end
+            if (cb === 1'b1) begin
+                cb_len = cb_len + 1;
+                if (az) cb_az = 1'b1;
+            end else begin
+                if (cb_q === 1'b1 && !cb_az && !az) begin
+                    n_cb_w[cb_want == 1 + int'(BLANK_WITH_DAC)] = n_cb_w[cb_want == 1 + int'(BLANK_WITH_DAC)] + 1;
+                    if (cb_len != cb_want)
+                        cb_bad($sformatf("CHOP_BLANK high %0d MCLK, expected %0d (the blanking length + 1)", cb_len, cb_want));
+                end
+                cb_len = 0; cb_az = 1'b0;
+            end
+        end
+        co_q = co; cb_q = cb;
+    end
+    // CHOP1 changes only at e16 (spec 4.1; audit round 17, auditor C: a register on the CHOP1 pad moved its edges to
+    // e17 and passed every group)
+    integer n_c1_edges = 0, n_c1_bad = 0;
+    always @(CHOP1) begin
+        #1;
+        if (dut.tm_rst_n === 1'b1 && RESET_N === 1'b1) begin
+            n_c1_edges = n_c1_edges + 1;
+            if (dut.cycle !== 5'd16) begin
+                n_c1_bad = n_c1_bad + 1;
+                if (n_c1_bad <= 3) fail($sformatf("CHOP1 changed in frame cycle %0d (only at e16)", dut.cycle));
+            end
+        end
+    end
+
     // RAW (audit round 8): with the stream off (eeg_raw's `on` 0, RAW_EN taken at the frame boundary) and DBG_SEL 0,
     // both pads stay low (RST-02, the eeg_raw header; the pad coupling is rated for RAW on only). The pads are
     // registered, so the condition must have held for 2 MCLK.
@@ -865,6 +936,15 @@ module tb_top_r14;
                            tag, AFE_IBIAS, CPF_TRIM, BTRIM_P, BTRIM_N, DWA_EN));
         if (AFE_RST !== 1'b1) fail($sformatf("%s: AFE_RST %b, held after a reset", tag, AFE_RST));
     endtask
+    // the reset values of REG-05 that show only as waveforms (audit round 17, auditor C: check_reset_pins left them out,
+    // where the documents said "REG-05's values"): BLANK 7 (CHOP_BLANK high 8 MCLK), CHOP_FAST 1 (CHOP's half period
+    // 128 MCLK) and CHOP1 4 kHz (half period 4,096 MCLK). Written from the requirements, not generated from regmap, as
+    // check_reset_pins. The clock generator takes CHOP_FAST at its next wrap (512 MCLK) and CHOP1 its rate at the next
+    // 1,024-frame boundary, so CHOP1 only after RESET_N
+    task automatic check_reset_waves(input string tag, input logic with_c1);
+        repeat (600) @(posedge MCLK);
+        measure_chop(8, 1'b0, 128, 4096, with_c1, {tag, ": the reset waveforms (REG-05)"});
+    endtask
 
     // ------------------------------------------------------------------ the test
     logic [7:0] v;
@@ -878,6 +958,7 @@ module tb_top_r14;
         prev_tick = 1'b0;
         ana_q = ana;
         check_reset_pins("after RESET_N");
+        check_reset_waves("after RESET_N", 1'b1);
 
         // ---------------- A: registers
         phase = "A";
@@ -912,7 +993,7 @@ module tb_top_r14;
         expect_err_now(8'h02, "FRAME_ERR (read stopped inside a byte)");
         spi_tx[0] = 8'hA4; spi_xfer(0, 5);                           // five bits of a header
         expect_err_now(8'h02, "FRAME_ERR (partial header)");
-        spi_tx[0] = 8'hC0; spi_xfer(3, 2);                           // a sample read stopped inside a byte
+        spi_tx[0] = SMP_HDR; spi_xfer(3, 2);                         // a sample read stopped inside a byte
         expect_err_now(8'h02, "FRAME_ERR (sample read stopped inside a byte)");
         spi_tx[0] = 8'h24; spi_tx[1] = 8'h03; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // too long
         if (spi_rx[1] !== 8'h00 || spi_rx[2] !== 8'h00)
@@ -1030,7 +1111,7 @@ module tb_top_r14;
         begin
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
             while (DRDY_N !== 1'b0) @(posedge MCLK);
-            spi_tx[0] = 8'hC0; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_tx[3] = 8'h00;
+            spi_tx[0] = SMP_HDR; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00; spi_tx[3] = 8'h00;
             spi_xfer(4, 0);                             // header, STATUS, SEQ: stopped on a byte boundary
             expect_noerr("a sample read stopped after 4 bytes");
             r14_sample(st, sq, d, ok);
@@ -1396,7 +1477,7 @@ module tb_top_r14;
         expect_noerr("J3 header-only read with CRC on");
         spi_tx[0] = 8'h84; spi_tx[1] = 8'h00; spi_xfer(2, 0);
         expect_err_now(8'h02, "J3 FRAME_ERR for a read without its CRC byte");
-        spi_tx[0] = 8'hC0;
+        spi_tx[0] = SMP_HDR;
         for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
         spi_xfer(4, 0);
         expect_err_now(8'h02, "J3 FRAME_ERR for a sample read of 4 bytes with CRC on");
@@ -1695,21 +1776,32 @@ module tb_top_r14;
                 nw = nw + 1;
             end
             for (int s = 1; s < 4; s++) begin           // RAW_EN 0, DBG_SEL s: the pads follow a pair one MCLK later
+                integer nc, nd, no;
+                logic   qc, qd;
                 r14_write(7'h11, 8'h3C);
                 r14_write(7'h62, 8'(s << 1));
                 r14_write(7'h11, 8'h00);
                 repeat (3 * 32) @(posedge MCLK);
                 fo = 0;
                 pc = 1'bx; pd = 1'bx;
-                repeat (600) begin
+                nc = 0; nd = 0; no = 0;
+                // until both signals of the pair changed twice (audit round 17, auditor C: 600 MCLK never saw a CHOP1
+                // edge, whose half period is 1,024 MCLK or more, so a CHOP1 retimed late on RAW_DATA passed)
+                while (no < 600 || ((nc < 2 || nd < 2) && no < 20000)) begin
                     @(posedge MCLK); #0.2;
                     if (pc !== 1'bx && (RAW_CLK !== pc || RAW_DATA !== pd)) fo = fo + 1;
+                    qc = pc; qd = pd;
                     case (s)
                         1: begin pc = CMP_STROBE; pd = DAC_CLK; end
                         2: begin pc = CHOP;       pd = CHOP_OUT; end
                         default: begin pc = CHOP_BLANK; pd = CHOP1; end
                     endcase
+                    if (qc !== 1'bx && pc !== qc) nc = nc + 1;
+                    if (qd !== 1'bx && pd !== qd) nd = nd + 1;
+                    no = no + 1;
                 end
+                if (nc < 2 || nd < 2)
+                    fail($sformatf("O DBG_SEL %0d not exercised: its pair changed %0d and %0d times in %0d MCLK", s, nc, nd, no));
                 if (fo != 0) fail($sformatf("O DBG_SEL %0d: RAW_CLK / RAW_DATA differ from their pair in %0d cycles", s, fo));
             end
             r14_write(7'h11, 8'h3C);
@@ -1810,11 +1902,11 @@ module tb_top_r14;
                 if (crc) begin r14_write(7'h55, 8'h01); bfm_crc_en = 1'b1; end
                 r14_write(7'h06, 8'hFF);
                 bfm_crc_en = 1'b0;
-                spi_tx[0] = 8'h40;
+                spi_tx[0] = {1'b0, A_SAMPLE};               // SMP_HDR with its R/W bit lost
                 for (int i = 1; i < 8; i++) spi_tx[i] = 8'h00;
                 spi_xfer(8, 0);
                 bfm_crc_en = crc[0];
-                c = tb_crc8_update(8'h00, 8'hC0);
+                c = tb_crc8_update(8'h00, SMP_HDR);
                 for (int i = 1; i <= 6; i++) c = tb_crc8_update(c, spi_rx[i]);
                 if (c === spi_rx[7])
                     fail($sformatf("S3: a sample read with its header turned into a write passes the sample CRC (CRC %0d)", crc));
@@ -2625,9 +2717,11 @@ module tb_top_r14;
             r14_write(7'h06, 8'hFF);
             // V13 (audit round 15, auditor A: round 14's AFE_RST edge monitor, its rate taken from the clock generator,
             // was exercised by no phase): in RUN at 128 kHz an APPLY that changes the chopper to 64 kHz, then a STOP
-            // taken in PRE at the next tick (the host's SPI at its fastest: SCLK high 4, low 5 MCLK; the APPLY written
-            // just after a tick of the other half of the 512-MCLK superperiod is taken at the next tick, the STOP written
-            // as PRE begins commits about 150 MCLK later). The APPLY taken in frame 1 (k 0): the STOP's tick is the next
+            // taken in PRE at the next tick (the host's SPI at 2 MHz, SPI-01: the APPLY written 100 MCLK after a tick of
+            // the target's half of the 512-MCLK superperiod commits about 140 MCLK before the tick after next, which takes
+            // it, and the STOP written right after it commits about 150 MCLK after that tick; audit round 17, auditor C:
+            // round 15 drove a 3.6 MHz SCLK, outside SPI-01; a STOP written after PRE begins commits at least 262 MCLK
+            // later at 2 MHz and misses the first tick in PRE). The APPLY taken in frame 1 (k 0): the STOP's tick is the next
             // 128 kHz one, before the rate's wrap, with the active copy already at 64 kHz; in frame 9 (k 1): the first
             // 64 kHz tick after the wrap. AFE_RST rises 256 or 320 MCLK after the APPLY's tick (7.8 and 9.8 us after the
             // DAC change, requirements 4.10), its edge where the monitor expects it, nothing flagged, and it stays high
@@ -2638,13 +2732,10 @@ module tb_top_r14;
                 wait_state(4'd6, 12000.0, "V13 RUN");
                 if (dut.u_clkgen.fast !== 1'b1) fail("V13: not at 128 kHz in RUN");
                 r14_write(7'h26, 8'h00);                            // the shadow: 64 kHz
-                spi_high = 4.0 * TMCLK + 0.3; spi_low = 5.0 * TMCLK + 0.3;
-                spi_tcss = 5.0 * TMCLK + 0.3; spi_tcsh = 3.0 * TMCLK + 0.3; spi_tidle = 4.0 * TMCLK + 0.3;
-                do @(posedge dut.tick); while (dut.u_clkgen.cnt[8] !== (k == 0 ? 1'b1 : 1'b0));   // the other half
-                r14_cmd(8'h33);                                     // APPLY: taken at the next tick, frame 1 or 9
-                wait_state(4'd7, 50.0, "V13 PRE");
-                r14_cmd(8'h22);                                     // STOP: before the next tick
-                spi_high = 250.0; spi_low = 250.0; spi_tcss = 300.0; spi_tcsh = 200.0; spi_tidle = 600.0;
+                do @(posedge dut.tick); while (dut.u_clkgen.cnt[8] !== (k == 0 ? 1'b0 : 1'b1));   // the target's half
+                repeat (100) @(posedge MCLK);
+                r14_cmd(8'h33);                                     // APPLY: taken at the tick after next, frame 1 or 9
+                r14_cmd(8'h22);                                     // STOP: taken at the first tick in PRE
                 wait_state(4'd0, 100.0, "V13 IDLE after a STOP in PRE");
                 t_dac = t_state[4'd7];                              // PRE entered at the APPLY's tick (the DAC change)
                 if (AFE_RST !== 1'b1) fail("V13: AFE_RST low after the STOP in PRE");
@@ -2802,6 +2893,7 @@ module tb_top_r14;
         RESET_N = 1'b1;
         repeat (20) @(negedge MCLK);
         check_reset_pins("X: after the release");
+        check_reset_waves("X: after the release", 1'b1);
         if (DRDY_N !== 1'b1 || TEST_CFG[7:6] !== 2'd0) fail($sformatf("X: after the release: DRDY_N %b, TEST_CFG[7:6] %b", DRDY_N, TEST_CFG[7:6]));
         r14_read(7'h06, v);
         if (v !== 8'h01) fail($sformatf("X: ERR 0x%02h after the release, expected RESET_FLAG only", v));
@@ -2837,7 +2929,7 @@ module tb_top_r14;
                 @(posedge dut.push_ok);
                 @(posedge MCLK); #1;
                 lvl0 = dut.fifo_level;
-                spi_tx[0] = 8'hC0;
+                spi_tx[0] = SMP_HDR;
                 for (int i = 1; i < 9; i++) spi_tx[i] = 8'h00;
                 CS_N = 1'b0;
                 MOSI = spi_bit(0, 9);
@@ -2850,6 +2942,10 @@ module tb_top_r14;
                     if (n + 1 < 72) #(spi_low);
                 end
                 #(spi_tcsh);
+                // 71 bits: the runt missed (audit round 17, auditor C: a sampled runt gives 72 bits, the same verdicts)
+                if (dut.u_spi.bit_cnt !== 3'd7)
+                    fail($sformatf("Y0 not exercised: %0d bits past whole bytes, expected 7 (71 bits: the 8 ns pulse missed)",
+                                   dut.u_spi.bit_cnt));
                 CS_N = 1'b1;
                 #(spi_tidle);
                 if (dut.fifo_level !== lvl0)
@@ -2875,12 +2971,19 @@ module tb_top_r14;
             #(1000.0);
             run_reset_burst($sformatf("Y%0d after SOFT_RESET", pass));
             check_reset_pins($sformatf("Y%0d: after SOFT_RESET", pass));
+            check_reset_waves($sformatf("Y%0d: after SOFT_RESET", pass), 1'b0);
             if (DRDY_N !== 1'b1) fail($sformatf("Y%0d: DRDY_N %b after SOFT_RESET (level mode, FIFO empty)", pass, DRDY_N));
             r14_write(7'h06, 8'h01);
             rt_write_check(7'h60, 8'h11, 8'h00, 8'h08, $sformatf("Y%0d: TEST_MUX locked after SOFT_RESET", pass));
         end
         $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart (errors %0d)", errors);
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
+        if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)
+            fail($sformatf("the CHOP_BLANK monitor not exercised: %0d CHOP_OUT edges, %0d / %0d pulses measured with the DAC off / on",
+                           n_cb_edges, n_cb_w[0], n_cb_w[1]));
+        if (n_c1_edges < 20) fail($sformatf("the CHOP1 monitor not exercised: %0d edges", n_c1_edges));
+        $display("pads: %0d CHOP_OUT edges blanked (%0d / %0d pulses measured, DAC off / on), %0d CHOP1 edges at e16 (errors %0d)",
+                 n_cb_edges, n_cb_w[0], n_cb_w[1], n_c1_edges, n_cb_bad + n_c1_bad);
 
         $fclose(flog);
         $fclose(fsmp);

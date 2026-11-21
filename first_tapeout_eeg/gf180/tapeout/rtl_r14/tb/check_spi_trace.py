@@ -32,7 +32,8 @@ MIRRORS = {a + RM.SHADOW_MIRROR for a in SHADOWED}
 DEFINED = set(REGS) | MIRRORS
 RO = {a for a, r in REGS.items() if r[2] == "RO"} | MIRRORS
 TESTREG = {a for a, r in REGS.items() if r[3]}
-A_CMD, A_KEY, A_IFCFG, A_SAMPLE = 0x10, 0x11, 0x55, 0x40
+ADDR = {r[1]: r[0] for r in RM.REGS}             # from the map (audit round 17, auditor B: they were by hand)
+A_CMD, A_KEY, A_IFCFG, A_SAMPLE = (ADDR[n] for n in ("COMMAND", "TEST_KEY", "IF_CFG", "SAMPLE"))
 CODES = set(RM.COMMANDS.values())
 GUARDED = set(RM.guarded_addrs())             # shadows and timers: refused while a command is pending
 SOFT = RM.COMMANDS["SOFT_RESET"]
@@ -227,7 +228,7 @@ def main():
             elif x[0] == "crc_rd":
                 want = crc8([tx[0], rx[j - 1]])
             elif x[0] == "smp":
-                want = sbytes[x[1]] if x[1] < 6 else crc8([0xC0] + list(sbytes))   # the header 0xC0 and the 6 bytes
+                want = sbytes[x[1]] if x[1] < 6 else crc8([0x80 | A_SAMPLE] + list(sbytes))   # the header 0xC0, 6 bytes
             elif x[0] == "data":
                 ld = loads[j - 1] if j - 1 < len(loads) else None
                 if ld is None or ST[ld[0]] != "RREG" or ld[1] != x[1]:

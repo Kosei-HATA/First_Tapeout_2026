@@ -107,7 +107,7 @@ SEQ_PRIORITY = ["STOP", "START", "APPLY", "APPLY_NR", "FLUSH", "TMR"]           
 SEQ_COMMANDS = ["START", "STOP", "APPLY", "APPLY_NR", "FLUSH"]                        # at most one per tick
 SEQ_CONDS = {
     "cfg_ok": "シャドウの設定が整合（オフセット DAC の M が、選んだ範囲の上限以下）",
-    "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段以内（変化なしと、M ＝ 0 の符号のみの変化を含む。範囲は同じ）",
+    "nr_ok": "シャドウとアクティブの違いが、オフセット DAC の符号付きの値 (1 − 2 S) × M の ±1 段以内（変化なしと、M ＝ 0 の符号のみの変化を含む。範囲と、ほかの一括反映の設定は全て同じ。第 17 回、A：「範囲は同じ」のみでは、反映していないシャドウの書き込みのあとの APPLY_NR が受け付けられるように読めた）",
     "t_elec0": "T_ELEC = 0",
     "valid": "CIC の出力が有効（クリアのあと 3 個目以降）",
 }
@@ -391,6 +391,10 @@ def check_tables(F):
                     n = sum(guard_true(b["guard"], env) for b in cell)
                     if n != 1:
                         errs.append(f"{where}: {n} branches hold for {env} (guards must be exclusive and exhaustive)")
+                sig = [(tuple(b["actions"]), b["next"]) for b in cell]   # audit round 17, auditor C: a cell split into
+                if len(set(sig)) != len(sig):                             # branches that do the same
+                    errs.append(f"{where}: two branches with the same actions and next state (a condition that "
+                                f"changes nothing: write them as one branch)")
                 for b in cell:                    # audit round 12, auditor C: a dead branch counted as a path (to RUN)
                     if not any(guard_true(b["guard"], env) for env in all_envs(vs, F["constraint"])):
                         errs.append(f"{where} [{b['guard']}]: the guard never holds (a dead branch)")
@@ -666,15 +670,38 @@ def seq_properties(s, present, env, nxt, acts, winner=None):
     return P
 
 
+def seq_tick_cases(s, timed):
+    """The events check_seq_ticks resolves at one tick in state s: at most one command, with or without the timer's
+    expiry in a timed state; the expiry alone; an output time alone (never together with a tick)."""
+    cases = [[c] + (["TMR"] if t else []) for c in SEQ_COMMANDS for t in (0, 1) if t == 0 or s in timed]
+    cases += [["TMR"]] if s in timed else []
+    cases += [["OUT"]]                          # handled at its own MCLK cycle, never together with a tick
+    return cases
+
+
+def seq_ticks_wanted():
+    """The combinations check_seq_ticks must resolve, written apart from seq_tick_cases (audit round 17, auditor C:
+    the lone expiry left out passed the check and every self-test mutation, as the SPI frames did in round 12): every
+    state but RESET; each command alone and, in a timed state, with the expiry; the expiry alone; an output time;
+    every value of every condition."""
+    timed = {x[0] for x in SEQ_STATES if x[4]}
+    out = set()
+    for s in (x[0] for x in SEQ_STATES if x[0] != "RESET"):
+        evs = [(c,) for c in SEQ_COMMANDS] + [("OUT",)]
+        if s in timed:
+            evs += [(c, "TMR") for c in SEQ_COMMANDS] + [("TMR",)]
+        out |= {(s, ev, vals) for ev in evs for vals in itertools.product((0, 1), repeat=len(SEQ_CONDS))}
+    return out
+
+
 def check_seq_ticks():
     errs, n = [], 0
     timed = {x[0] for x in SEQ_STATES if x[4]}
+    seen = set()
     for s in [x[0] for x in SEQ_STATES if x[0] != "RESET"]:
-        cases = [[c] + (["TMR"] if t else []) for c in SEQ_COMMANDS for t in (0, 1) if t == 0 or s in timed]
-        cases += [["TMR"]] if s in timed else []
-        cases += [["OUT"]]                      # handled at its own MCLK cycle, never together with a tick
-        for present in cases:
+        for present in seq_tick_cases(s, timed):
             for env in all_envs(list(SEQ_CONDS), lambda e: True):
+                seen.add((s, tuple(present), tuple(env[k] for k in SEQ_CONDS)))
                 nxt, acts, winner = seq_resolve(s, present, env)
                 n += 1
                 for p in seq_properties(s, present, env, nxt, acts, winner):
@@ -687,6 +714,11 @@ def check_seq_ticks():
                 if nxt != "RESET" or sorted(acts) != sorted(want):
                     errs.append(f"SEQ {s} {['RST'] + present} {env}: a reset that does not win over the events of "
                                 f"its cycle -> {nxt} {acts} (allowed: RESET {want})")
+    want = seq_ticks_wanted()
+    if seen != want:
+        errs.append(f"SEQ ticks: {len(want - seen)} of the {len(want)} states, event sets and condition values never "
+                    f"resolved (seq_tick_cases narrower than each command alone and with the expiry, the expiry alone "
+                    f"and an output time)")
     # RESET (RESET_N low or a SOFT_RESET): only the release leaves it, commands are ignored, an output time is only
     # counted (the CIC and SEQ run on RESET_N), the timer cannot expire
     for e, _ in SEQ_EVENTS:
@@ -1125,12 +1157,12 @@ def check_timing():
 CHECKS = [
     "完全性：全ての（状態、イベント）の欄が定義されている",
     "起こり得ない事象（IMP）の正しさ：IMP はその状態で起こり得ない事象にのみ使われている",
-    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）",
+    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）。一つの欄を、同じ動作と行き先の分岐に分けない（何も変えない条件。第 17 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
     "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並び、単独のタイマの満了はその欄の行き先へ（第 16 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
-    "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす",
+    "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす（列挙した組は、列挙とは別に書いた組の集合と一致すること。第 17 回）",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
     "  AFE_RST の解除は必ず RECOVER（ADC の復帰待ち）に入る",
     "  AFE_RST の解除と同じ tick で設定を反映しない。AFE_RST を保っている間（WARMUP）の反映は、解除までの待ちを最初から数え直す（変更から解除まで T_WARM 以上）",
@@ -1651,6 +1683,10 @@ def selftest_runs():
         return m
     seq_mut = [
         ("RUN/STOP の欄の欠落", lambda t: t.pop(("RUN", "STOP"))),
+        # audit round 17, auditor C: a cell split on a condition into two branches that do the same
+        ("PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける", lambda t: t.__setitem__(("PRE", "FLUSH"), [
+            B("cfg_ok", t[("PRE", "FLUSH")][0]["actions"], t[("PRE", "FLUSH")][0]["next"]),
+            B("not cfg_ok", t[("PRE", "FLUSH")][0]["actions"], t[("PRE", "FLUSH")][0]["next"])])),
         ("起こり得る FLUSH を IMP にする", lambda t: t.__setitem__(("RUN", "FLUSH"), IMP)),
         ("FILL/OUT の条件が網羅的でない", lambda t: t.__setitem__(("FILL", "OUT"), [B("valid", ["store", "seq_inc"], "RUN")])),
         ("RECOVER/TMR の条件の重なり", lambda t: t.__setitem__(("RECOVER", "TMR"), [B("t_elec0", [], "ALIGN"), B(ALWAYS, [], "WAIT_E")])),
@@ -1891,6 +1927,16 @@ def selftest_runs():
         SAMPLE_BYTES[1], SAMPLE_BYTES[2] = SAMPLE_BYTES[2], SAMPLE_BYTES[1]
         return lambda: SAMPLE_BYTES.__setitem__(slice(None), saved)
 
+    def narrow_ticks():                                # audit round 17, auditor C: the lone expiry left out of the
+        global seq_tick_cases                          # tick enumeration
+        orig = seq_tick_cases
+        seq_tick_cases = lambda s, timed: [c for c in orig(s, timed) if c != ["TMR"]]
+
+        def undo():
+            global seq_tick_cases
+            seq_tick_cases = orig
+        return undo
+
     def drop_tmr():                                    # audit round 16, auditor C: the timer left out of the order
         saved = list(SEQ_PRIORITY)
         SEQ_PRIORITY.remove("TMR")
@@ -1932,6 +1978,8 @@ def selftest_runs():
         ("SPI", "フレームの始まりを WDONE に", lambda: setitem(SPI_COMPOSITES, "FRAME", SPI_COMPOSITES["FRAME"][:1] + ("WDONE",) + SPI_COMPOSITES["FRAME"][2:])),
         ("SPI", "IDLE をフレームの中に", spi_idle_in_frame),
         ("SEQ", "TMR を優先順位から除く", drop_tmr),
+        # audit round 17, auditor C: the tick enumeration narrowed
+        ("SEQ", "tick の列挙で単独のタイマの満了を除く", narrow_ticks),
     ]
     results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
@@ -2166,6 +2214,9 @@ SELFTEST_EXPECT = {
     'フレームの始まりを WDONE に': ('(SEQ-01, SPI-03: the initial substate)',),
     'IDLE をフレームの中に': (', but a frame (CS_N low) holds every state but IDLE (',),
     'TMR を優先順位から除く': ('is not an order of the five commands and TMR', ': a lone timer expiry goes to'),
+    # audit round 17, auditor C
+    'PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける': (': two branches with the same actions and next state (a condition that changes nothing: write them as one branch)',),
+    'tick の列挙で単独のタイマの満了を除く': ('states, event sets and condition values never resolved (seq_tick_cases narrower than each command alone and with the expiry, the expiry alone and an output time)',),
     'サンプルのフレームで SEQ と DATA の順の入れ違い': ('(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),

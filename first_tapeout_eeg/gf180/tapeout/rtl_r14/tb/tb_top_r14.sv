@@ -192,6 +192,15 @@ module tb_top_r14;
         if ((v & mask) !== mask) fail($sformatf("%s: ERR 0x%02h without 0x%02h", name, v, mask));
         r14_write(7'h06, 8'hFF);
     endtask
+    // a read-only register whose value moves (STATUS): the write's error only, no read-back (audit round 26, auditor C:
+    // no fixed test wrote STATUS, and an eeg_regs taking STATUS writes silently passed tb_top_r14)
+    task automatic rt_write_err(input logic [6:0] a, input logic [7:0] wv, input logic [7:0] emask, input string name);
+        logic [7:0] e;
+        r14_write(a, wv);
+        r14_read(7'h06, e);
+        if ((e & emask) !== emask) fail($sformatf("%s: ERR 0x%02h without 0x%02h", name, e, emask));
+        r14_write(7'h06, 8'hFF);
+    endtask
     task automatic rt_write_check(input logic [6:0] a, input logic [7:0] wv, input logic [7:0] rv,
                                   input logic [7:0] emask, input string name);
         logic [7:0] v, e;
@@ -561,7 +570,8 @@ module tb_top_r14;
     always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
     // DRDY_N in pulse mode (audit round 22, auditor C: DAT-04 was checked on three RUN stores of G3 only, and RTL copies
     // with no pulse for FILL's store (the first sample after START and APPLY) or with the pulse ended when the FIFO
-    // empties passed all 16 groups): while DRDY_MODE is 1, every store makes DRDY_N fall 1 to 2 MCLK later and stay low
+    // empties passed all 16 groups): while DRDY_MODE is 1, every store makes DRDY_N fall at the next MCLK edge (2 MCLK
+    // after the store cycle; audit round 26, auditor C: "1 to 2 MCLK later" let a pulse one MCLK late pass) and stay low
     // exactly 128 MCLK unless RESET_N, a SOFT_RESET or level mode cuts it, and DRDY_N never falls without a store; the
     // stores in FILL are counted (exercised)
     real    pm_t_push = -1.0e9, pm_t_fall = -1.0;
@@ -575,9 +585,9 @@ module tb_top_r14;
             pm_t_push = $realtime;
             pm_owed   = 1'b1;
             if (dut.seq_state === 4'd5) n_pm_fill = n_pm_fill + 1;      // FILL's store: the first sample of a RUN
-        end else if (pm_owed && $realtime - pm_t_push > 2.5 * TMCLK) begin
+        end else if (pm_owed && $realtime - pm_t_push > 1.5 * TMCLK) begin
             n_pm_bad = n_pm_bad + 1;
-            if (n_pm_bad <= 3) fail("DRDY_N pulse mode: a store without a DRDY_N fall within 2 MCLK (DAT-04)");
+            if (n_pm_bad <= 3) fail("DRDY_N pulse mode: a store without a DRDY_N fall at the next MCLK edge (DAT-04)");
             pm_owed = 1'b0;
         end
     end
@@ -585,6 +595,9 @@ module tb_top_r14;
         if (!pm_owed) begin
             n_pm_bad = n_pm_bad + 1;
             if (n_pm_bad <= 3) fail("DRDY_N pulse mode: DRDY_N fell without a store");
+        end else if ($realtime - pm_t_push < 0.5 * TMCLK) begin          // at the store's own edge (audit round 26)
+            n_pm_bad = n_pm_bad + 1;
+            if (n_pm_bad <= 3) fail("DRDY_N pulse mode: DRDY_N fell at the store's own MCLK edge, expected the next one");
         end
         pm_owed     = 1'b0;
         pm_t_fall   = $realtime;

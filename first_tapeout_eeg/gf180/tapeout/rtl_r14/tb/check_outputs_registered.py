@@ -9,7 +9,10 @@ every output port must come from a flip-flop cell (a type with "dff": $dff, $adf
   CHOP_BLANK  a $or of two flip-flops: the frame's blanking (it changes at frame cycle 31 and when the window ends,
               cycle 15 at the longest) and the active copy of ADC_ZERO (it changes at a tick, e25), which never change
               at one edge in operation; a SOFT_RESET in the ADC_ZERO test mode clears the latter after the reset
-              tree's delay, later than the blanking flip-flop's clock-to-Q at the same edge, so the OR changes once
+              tree's delay, later than the blanking flip-flop's clock-to-Q at the same edge, so at that edge the OR
+              changes once. The exception (requirements NFR-06; audit round 26, auditor A): that SOFT_RESET committed
+              at cycle 29 before a window clears the copy at e30 + d and the window starts at e31, a low of about
+              1 MCLK - d; harmless, as AFE_RST rises in the same reset (the test mode only; the RTL is unchanged)
   MISO_OE     combinational, as in r13 (NFR-06)
 For CHOP_EN and CHOP_BLANK every input of that one gate must itself come from a flip-flop.
 
@@ -132,7 +135,10 @@ def check_resets(m):
                 names.setdefault(b, f"{n}[{i}]" if len(v["bits"]) > 1 else n)
     rn = m["ports"]["RESET_N"]["bits"][0]
     ffs = {cn: c for cn, c in m["cells"].items() if "dff" in c["type"] or "latch" in c["type"]}
-    other = [cn for cn, c in m["cells"].items() if c["type"].startswith(("$mem", "$sr", "$aldff"))]
+    # the storage cells that are not flip-flops (audit round 26, auditor C: this list was named "other", a name the
+    # control-reset loop below reused, so the check at the end walked an empty list and never saw a memory)
+    mems = [cn for cn, c in m["cells"].items() if c["type"].startswith(("$mem", "$sr", "$aldff"))]
+    fifo_mems = [cn for cn in mems if cn.startswith("$flatten\\u_fifo.")]
     bad, nbits = [], 0
     arst_of = lambda c: c["connections"]["ARST"][0] if "ARST" in c["connections"] else None
     chain = [cn for cn, c in ffs.items() if arst_of(c) == rn]          # RESET_N's release chain (checked above)
@@ -172,11 +178,14 @@ def check_resets(m):
             bad.append(f"{who} ({w} bits): an active-high asynchronous reset")
         elif arst_of(c) not in allowed:
             bad.append(f"{who} ({w} bits): reset from {names.get(arst_of(c), arst_of(c))}, not from RESET_N's release")
-    for cn in other:
-        if not cn.startswith("$flatten\\u_fifo."):
+    for cn in mems:
+        if cn not in fifo_mems:
             bad.append(f"{cn}: storage without a reset outside the FIFO's memory")
+    if not fifo_mems:                                  # the check saw the memory it exempts (audit round 26)
+        bad.append("the FIFO's memory not found among the storage cells: the storage check saw no memory")
     return bad, (f"{nbits} flip-flop bits, all with an asynchronous reset from RESET_N's release ("
-                 f"{len(ctrl)} control-reset flop); the FIFO's memory without one" if not bad else f"{len(bad)} faults")
+                 f"{len(ctrl)} control-reset flop); the FIFO's memory ({len(fifo_mems)} memory cells) without one" if not bad else
+            f"{len(bad)} faults")
 
 
 def check_synchronizers(m):

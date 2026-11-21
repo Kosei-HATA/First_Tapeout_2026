@@ -20,7 +20,8 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      its reset value in ascending, descending and a shuffled address order, each round followed by one burst
      read of the whole map: each register as written, the active copies at reset (an OFF_M_H write clearing
      M[7:0] and an OFF_M_L write clearing SIGN passed all 16 groups)
-  4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing
+  4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing; STATUS by
+     its error only, its value moves (audit round 26, auditor C: no fixed test wrote STATUS)
   5. run_guard_tests (tb_top_r14's J2, at 64 kHz): every register of regmap.guarded_addrs(), written while a FLUSH waits
      for its tick, gives STATE_ERR and is not written (audit round 7: J2 wrote 2 of the 16; a guard that skipped
      OFF_M_H passed every test)
@@ -284,6 +285,8 @@ def main():
     L.append("    expect_err_exact(8'h00, \"2b: the writes in three orders and the bursts: no flag\");")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
+    assert regs[0x03][1] == "STATUS" and regs[0x03][2] == "RO"
+    L.append(f"    rt_write_err(7'h03, 8'h5A, 8'h{E_ADDR:02X}, \"STATUS read only (its value moves: not read back)\");")
     for a, r in sorted(regs.items()):
         if r[2] == "RO" and a not in (0x03, 0x40):
             if r[1] == "CAPS":
@@ -362,7 +365,7 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
-    chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "expect_err_exact(", "rt_write_check(", "guard_one(", "guard_range(",
+    chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "expect_err_exact(", "rt_write_check(", "rt_write_err(", "guard_one(", "guard_range(",
            "guard_locked(", "free_one(", "free_w1c(", "free_err(", "free_key(", "free_ifcfg(")
     total, per, skip = 0, {"": 0, "FIFO4": 0}, None
     for ln in L:                                       # checks in the file, and those each FIFO configuration runs

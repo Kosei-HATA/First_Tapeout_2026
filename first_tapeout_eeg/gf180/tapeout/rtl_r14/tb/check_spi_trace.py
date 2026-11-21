@@ -98,9 +98,10 @@ VER02_MIN = 3                                        # frames per (kind, timing)
 def ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, crc_en, crc_ok):
     """The VER-02 kinds a frame is (requirements VER-02: every kind of frame, burst reads, CRC on and off, wrong
     lengths, CS_N rising mid-byte, undefined addresses, writes to read-only registers, wrong keys), from what the
-    table walk made of it. The write-like kinds count only frames that reach WDONE with a valid CRC, the others only
-    frames with a complete header (audit round 24, auditor C: a frame without a header counted as a write to ID, a
-    read-only register, and a key write that failed its CRC as a wrong key)."""
+    table walk made of it. The write-like kinds count only frames that reach WDONE with a valid CRC; CRC on and off,
+    CS_N mid-byte (a rise inside the header too) and wrong length count every frame; the others only frames with a
+    complete header (audit round 24, auditor C: a frame without a header counted as a write to ID, a read-only
+    register, and a key write that failed its CRC as a wrong key; round 26, auditor C: this text said all others)."""
     k = {"CRC on" if crc_en else "CRC off"}
     if nbits % 8:
         k.add("CS_N mid-byte")

@@ -1,0 +1,3 @@
+[["rtl_r14/eeg_digital_top.sv",
+  "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);   // high into a SOFT_RESET",
+  "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty | (drdy_n_q & (cycle != 5'd0))));   // (mutant MA) level mode: falls at the next frame start"]]

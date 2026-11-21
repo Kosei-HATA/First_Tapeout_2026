@@ -1,0 +1,3 @@
+[["rtl_r14/tb/tb_top_r14.sv",
+  "        wait_state(4'd7, 50.0, \"PRE after APPLY\");\n        t0 = $realtime;",
+  "        wait_state(4'd7, 50.0, \"PRE after APPLY\");\n        t0 = t_state[7];                                // (audit 25 C probe) PRE's entry, not when the bench saw it"]]

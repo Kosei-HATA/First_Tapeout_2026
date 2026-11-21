@@ -4,9 +4,11 @@ purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be d
 baseline must pass. The groups and their benches:
   top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
-                            tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22). Not run per mutant:
-                            tb_top_r14 with the 4-deep FIFO (the FIFO's depth is eeg_fifo's alone, whose mutants
-                            run tb_fifo and tb_fifo4; about 6 minutes a run)
+                            tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22). tb_top_r14 with the
+                            4-deep FIFO (-DFIFO4, about 6 minutes a run) for b00 and for the mutants whose edits
+                            name DEPTH: the depth reaches eeg_fifo and, through FIFO_DEPTH, eeg_regs's CAPS (audit
+                            round 26, auditor C: "the depth is eeg_fifo's alone" was false, and CAPS fixed at 8
+                            was MISSED); eeg_fifo's own mutants run tb_fifo and tb_fifo4 in the fifo group
   spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (as run_tests_r14.sh: +n=1500 +seed=5; the baseline must
                             also cover every branch)
   seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently), then tb_seq_exh +
@@ -589,6 +591,19 @@ MUTATIONS = [
     ('上位：レベルのモードの DRDY_N の立ち下がりがフレームのサイクル 0 まで遅れる', 'eeg_digital_top.sv',
      "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
      "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty | (drdy_n_q & (cycle != 5'd0))));"),
+    # audit round 26, auditor C: CAPS reporting the 8-deep FIFO on a 4-deep chip (only the 4-deep bench sees it; it
+    # names DEPTH, so the runner runs that bench), a write to STATUS taken silently (no fixed test wrote STATUS), and
+    # the pulse-mode DRDY_N one MCLK late (the monitor allowed 1 to 2 MCLK)
+    ('上位：CAPS の FIFO の深さを 8 に固定（eeg_regs に深さを渡さない）', 'eeg_digital_top.sv',
+     "    eeg_regs #(.FIFO_DEPTH(FIFO_DEPTH)) u_regs (", "    eeg_regs #(.FIFO_DEPTH(8)) u_regs ("),
+    ('レジスタ：STATUS への書き込みを黙って受ける（読み出し専用の一覧から外す）', [
+        ('eeg_regs.sv', "            A_ID, A_VERSION, A_CAPS, A_STATUS, A_STATE, A_FIFO_LEVEL, A_ODR_H, A_ODR_L, A_FORMAT, A_SAMPLE,",
+         "            A_ID, A_VERSION, A_CAPS, A_STATE, A_FIFO_LEVEL, A_ODR_H, A_ODR_L, A_FORMAT, A_SAMPLE,"),
+        ('eeg_regs.sv', "            A_ERR, A_DFLAG, A_ALERT_MASK, A_ALERT_MASK_D, A_COMMAND, A_TEST_KEY, A_OFF_M_H, A_OFF_M_L, A_AFE_IBIAS,",
+         "            A_STATUS, A_ERR, A_DFLAG, A_ALERT_MASK, A_ALERT_MASK_D, A_COMMAND, A_TEST_KEY, A_OFF_M_H, A_OFF_M_L, A_AFE_IBIAS,")],
+     None, None),
+    ('上位：パルスのモードの DRDY_N が 1 MCLK 遅れる（登録した数から）', 'eeg_digital_top.sv',
+     "drdy_pulse <= (drdy_nxt != 3'd0);", "drdy_pulse <= (drdy_cnt != 3'd0);"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -789,6 +804,14 @@ STRUCT_MUTATIONS = [
     # audit round 14, auditor A: the state register left to FSM recoding (NFR-05 through synthesis)
     ("シーケンサ：状態のレジスタの fsm_encoding を外す（合成で符号化し直されうる）", "eeg_seq.sv",
      "    (* fsm_encoding = \"none\" *)                // NFR-05", "    // (no attribute)                         // NFR-05"),
+    # audit round 26, auditor C: storage without a reset outside the FIFO (the check had never run): a 2-word buffer
+    # of CIC outputs, read into the FIFO's data input outside the store cycles (harmless in function)
+    ("最上位：リセットのない 2 語のバッファ（FIFO の外の記憶）", [
+        ("eeg_digital_top.sv", ".seq_in(seq_cnt), .data_in(cic_data),",
+         ".seq_in(seq_cnt), .data_in(cic_stb ? cic_data : dbuf[seq_cnt[0]]),"),
+        ("eeg_digital_top.sv", "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (",
+         "    logic [23:0] dbuf [0:1];\n    always_ff @(posedge MCLK) if (cic_stb) dbuf[seq_cnt[0]] <= cic_data;\n"
+         "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (")], None, None),
 ]
 
 def bench_ended(v, closing):
@@ -1085,35 +1108,58 @@ def run(i, m, bench="top"):
         return i, name, "SIM ERROR", txt_
     if st_ == "fail":
         return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
-    try:                                             # the bench's own watchdog (800 ms simulated) ends a hang
-        v = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t.vvp"], cwd=d, capture_output=True, text=True,
-                           timeout=5400)
-    except subprocess.TimeoutExpired:
-        return i, name, "TIMEOUT", "no end within 5400 s (undecided: rerun)"
-    out = v.stdout
-    if not bench_ended(v, ("PASS: tb_top_r14", "FAIL")):
-        return i, name, "SIM ERROR", sim_tail(v, "tb_top_r14")
-    k = subprocess.run([sys.executable, os.path.join(HERE, "check_top_r14.py"), os.path.join(d, "build")],
-                       capture_output=True, text=True)
-    k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
-                         os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
-    tb_pass = "PASS: tb_top_r14" in out
-    gold_pass, seq_pass = k.returncode == 0, k2.returncode == 0
-    verdict = lambda kk: any(ln.startswith(("PASS:", "FAIL")) for ln in kk.stdout.splitlines())   # it ran to its end
-    judged = (not tb_pass) or (verdict(k) and not gold_pass) or (verdict(k2) and not seq_pass)
-    if not judged and not (verdict(k) and verdict(k2)):     # a checker crashed and nothing else judged (audit round 9)
-        kk, nm = (k, "check_top_r14") if not verdict(k) else (k2, "check_seq_trace")
-        return i, name, "CHECKER ERROR", f"{nm}: " + ((kk.stderr.strip().splitlines() or ["no output"])[-1])[:140]
+    def top_once(vvp, tag):
+        """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
+        try:                                         # the bench's own watchdog (800 ms simulated) ends a hang
+            v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
+                               timeout=5400)
+        except subprocess.TimeoutExpired:
+            return "TIMEOUT", tag + "no end within 5400 s (undecided: rerun)"
+        out = v.stdout
+        if not bench_ended(v, ("PASS: tb_top_r14", "FAIL")):
+            return "SIM ERROR", tag + sim_tail(v, "tb_top_r14")
+        k = subprocess.run([sys.executable, os.path.join(HERE, "check_top_r14.py"), os.path.join(d, "build")],
+                           capture_output=True, text=True)
+        k2 = subprocess.run([sys.executable, os.path.join(HERE, "check_seq_trace.py"),
+                             os.path.join(d, "build", "top_seq_trace.txt"), "--no-cover"], capture_output=True, text=True)
+        tb_pass = "PASS: tb_top_r14" in out
+        gold_pass, seq_pass = k.returncode == 0, k2.returncode == 0
+        verdict = lambda kk: any(ln.startswith(("PASS:", "FAIL")) for ln in kk.stdout.splitlines())   # it ran to its end
+        judged = (not tb_pass) or (verdict(k) and not gold_pass) or (verdict(k2) and not seq_pass)
+        if not judged and not (verdict(k) and verdict(k2)):     # a checker crashed and nothing else judged (round 9)
+            kk, nm = (k, "check_top_r14") if not verdict(k) else (k2, "check_seq_trace")
+            return "CHECKER ERROR", tag + f"{nm}: " + ((kk.stderr.strip().splitlines() or ["no output"])[-1])[:140]
+        if tb_pass and gold_pass and seq_pass:
+            return "ok", tag + next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
+        first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
+        if tb_pass and not gold_pass:
+            first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln and ": 0 mismatches" not in ln),
+                                             next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL"))
+        elif tb_pass and not seq_pass:
+            first = "check_seq_trace: " + next((ln.strip() for ln in k2.stdout.splitlines() if ln.startswith("  line")), "FAIL")
+        return "fail", tag + first
+    st8, t8 = top_once("build/t.vvp", "")
+    if st8 not in ("ok", "fail"):
+        return i, name, st8, t8
+    if st8 == "fail":
+        return i, name, ("BASELINE FAILS" if f is None else "detected"), t8
+    # the 4-deep FIFO (-DFIFO4, run_tests_r14.sh's tb_top_r14_fifo4) for b00 and for the mutants whose edits name
+    # DEPTH: the depth reaches eeg_fifo and, through FIFO_DEPTH, eeg_regs's CAPS (audit round 26, auditor C: "the
+    # depth is eeg_fifo's alone" was false, and CAPS fixed at 8 was MISSED)
+    if f is not None and not any("DEPTH" in o_ + n_ for _, o_, n_ in edits_of(m)):
+        return i, name, "MISSED", t8
+    cmd4 = list(cmd)
+    cmd4.insert(1, "-DFIFO4")
+    cmd4[cmd4.index("build/t.vvp")] = "build/t4.vvp"
+    c4 = subprocess.run(cmd4, cwd=d, capture_output=True, text=True)
+    if c4.returncode:
+        return i, name, "COMPILE ERROR", "4-deep: " + (c4.stderr.strip().splitlines() or ["?"])[-1][:140]
+    st4, t4 = top_once("build/t4.vvp", "4-deep: ")
+    if st4 not in ("ok", "fail"):
+        return i, name, st4, t4
     if f is None:
-        return i, name, ("baseline ok" if tb_pass and gold_pass and seq_pass else "BASELINE FAILS"), \
-            next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
-    first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
-    if tb_pass and not gold_pass:
-        first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln and ": 0 mismatches" not in ln),
-                                         next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL"))
-    elif tb_pass and not seq_pass:
-        first = "check_seq_trace: " + next((ln.strip() for ln in k2.stdout.splitlines() if ln.startswith("  line")), "FAIL")
-    return i, name, ("detected" if not (tb_pass and gold_pass and seq_pass) else "MISSED"), first
+        return i, name, ("baseline ok" if st4 == "ok" else "BASELINE FAILS"), (t8 if st4 == "ok" else t4)
+    return i, name, ("detected" if st4 == "fail" else "MISSED"), t4
 
 
 def main():
@@ -1222,7 +1268,7 @@ def main():
     ok = True
     out = [f"--- summary ({(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min)"]
     missing_base = []
-    title = {"top": "tb_top_r14", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled), tb_seq_exh + check_seq_exh",
+    title = {"top": "tb_top_r14 (the 4-deep FIFO too for b00 and the edits naming DEPTH)", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled), tb_seq_exh + check_seq_exh",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
              "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
              "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)", "rnd": "tb_rnd_sat (Python golden vectors)",

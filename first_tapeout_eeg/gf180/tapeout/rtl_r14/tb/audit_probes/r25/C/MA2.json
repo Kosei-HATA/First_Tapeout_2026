@@ -1,0 +1,6 @@
+[["rtl_r14/eeg_digital_top.sv",
+  "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);   // high into a SOFT_RESET",
+  "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty | (drdy_n_q & (cycle != 5'd0))));   // (mutant MA) level mode: falls at the next frame start"],
+ ["rtl_r14/tb/tb_top_r14.sv",
+  "        wait_state(4'd7, 50.0, \"PRE after APPLY\");\n        t0 = $realtime;",
+  "        wait_state(4'd7, 50.0, \"PRE after APPLY\");\n        t0 = t_state[7];                                // (audit 25 C probe) PRE's entry, not when the bench saw it"]]

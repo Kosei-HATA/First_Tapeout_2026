@@ -38,6 +38,8 @@ module tb_seq;
         endcase
     endfunction
 
+    logic [3:0]  rs;                                  // the state a reset hit (audit round 21)
+    logic [15:0] rst_seen = 16'h0000;                 // the states a reset has hit
     integer fd, n, seed, i, errors, ev, nticks, nouts, nresets, quiet, frames;
     logic [17:0] tmr_before;
     logic        a_rs, fs0;
@@ -172,7 +174,11 @@ module tb_seq;
                 t_warm = tcode(); t_elec = tcode(); t_rec = tcode();
                 t_pre  = tcode(); t_rst  = tcode();
             end
-            if (($urandom % 20000) == 0) begin               // asynchronous reset in the middle of anything
+            // asynchronous reset in the middle of anything, and at least once in every state (audit round 21,
+            // auditor C: the RST column and the release were outside VER-01's coverage; RECOVER was never reset)
+            if (($urandom % 20000) == 0 || (!rst_seen[state] && ($urandom % 64) == 0)) begin
+                rs = state;
+                rst_seen[state] = 1'b1;
                 rst_n = 1'b0;
                 #3;
                 if (state !== 4'd0 || afe_rst !== 1'b1) begin
@@ -181,7 +187,7 @@ module tb_seq;
                 end
                 @(negedge clk);
                 rst_n = 1'b1;
-                $fdisplay(fd, "R");
+                $fdisplay(fd, "R %0d", rs);         // the state the reset hit
                 frames = 0;
                 nresets = nresets + 1;
                 cmd_valid = 1'b0;

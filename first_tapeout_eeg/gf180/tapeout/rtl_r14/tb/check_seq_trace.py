@@ -11,7 +11,10 @@ The timer is modelled here, not taken from the RTL: loaded with the state's sett
 T_REC, T_PRE, T_RST x 8 frames) on entering a timed state and on a restart, decremented once per frame, clamped at 0;
 TMR is present at a tick when the model is 0. The RTL's timer before and after every event must equal the model.
 Coverage: every (state, event, branch) of the transition table that a tick or an output time can reach must have been
-hit (not asked with --no-cover: the end-to-end replay of tb_top_r14's trace, build/top_seq_trace.txt). The state is
+hit, and the reset in every state (RST) and its release (REL; audit round 21, auditor C: VER-01 asks for every
+transition, and RECOVER was never reset). The output time inside a reset (RESET / OUT) is the data path's: eeg_seq
+is held in reset there, and tb_top_r14's R and the SEQ comparison check it (not asked with --no-cover: the
+end-to-end replay of tb_top_r14's trace, build/top_seq_trace.txt). The state is
 chained: each event starts in the state the previous one left (or IDLE after a reset), so no change between events
 goes unseen.
 
@@ -49,6 +52,15 @@ def main(path):
         if not f:
             continue
         if f[0] == "R":
+            if len(f) > 1:                                  # the state the reset hit (tb_seq; audit round 21)
+                rs = int(f[1])
+                if rs != prev:
+                    errs.append(f"line {ln}: a reset in {NAME.get(rs, rs)}, but the previous event left "
+                                f"{NAME.get(prev, prev)}")
+                for key in ((NAME.get(rs), "RST"), ("RESET", "REL")):
+                    cell = FS.SEQ["table"].get(key)
+                    if isinstance(cell, list):
+                        cover |= {(key[0], key[1], b["guard"]) for b in cell}
             model, prev = 0, 0                              # reset: IDLE, timer 0
             continue
         kind, st, cv, cc, tm, cfg, nr, te0, valid, nxt, acts = f[0], *map(int, f[1:10]), f[10]
@@ -88,10 +100,10 @@ def main(path):
             b = FS.pick(cell, env)
             if isinstance(b, dict):
                 cover.add((s, e, b["guard"]))
-    # the cells a tick or an output time can reach
+    # the cells a tick, an output time or a reset can reach (all but RESET / OUT, the data path's)
     want = set()
     for (s, e), cell in FS.SEQ["table"].items():
-        if s == "RESET" or e in ("RST", "REL") or not isinstance(cell, list):
+        if (s, e) == ("RESET", "OUT") or not isinstance(cell, list):
             continue
         for b in cell:
             want.add((s, e, b["guard"]))

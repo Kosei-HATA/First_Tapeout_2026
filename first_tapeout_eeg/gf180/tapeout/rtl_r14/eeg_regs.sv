@@ -160,7 +160,7 @@ module eeg_regs #(
             if (!wr_def || wr_ro || wr_locked) begin
                 ev_err[ERR_ADDR_ERR_LSB] = 1'b1;
             end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin
-                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // the pending command reads these at its tick
+                ev_err[ERR_STATE_ERR_LSB] = 1'b1;                // no write between a command and its tick
             end else if (wr_range_bad) begin
                 ev_err[ERR_RANGE_ERR_LSB] = 1'b1;
             end else if (addr == A_COMMAND) begin

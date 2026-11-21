@@ -3116,35 +3116,47 @@ module tb_top_r14;
                 // audit round 16, auditor B: the host's re-read after a failed sample CRC (requirements 5.4 step 6) when
                 // the chip missed one SCLK pulse (an 8 ns runt as pulse 20): one extra byte of SCLK makes the frame
                 // overlong for the chip (71 bits): FRAME_ERR, no pop (one extra edge would make it 64 bits: popped)
-                logic [3:0] lvl0;
-                logic [7:0] yer;
-                @(posedge dut.push_ok);
-                @(posedge MCLK); #1;
-                lvl0 = dut.fifo_level;
-                spi_tx[0] = SMP_HDR;
-                for (int i = 1; i < 9; i++) spi_tx[i] = 8'h00;
-                CS_N = 1'b0;
-                MOSI = spi_bit(0, 9);
-                #(spi_tcss);
-                for (int n = 0; n < 72; n++) begin
-                    SCLK = 1'b1;
-                    #(n == 20 ? 8.0 : spi_high);           // the runt: shorter than the 2-flop synchronizer sees
-                    SCLK = 1'b0;
-                    MOSI = spi_bit(n + 1, 9);
-                    if (n + 1 < 72) #(spi_low);
-                end
-                #(spi_tcsh);
-                // 71 bits: the runt missed (audit round 17, auditor C: a sampled runt gives 72 bits, the same verdicts)
-                if (dut.u_spi.bit_cnt !== 3'd7)
-                    fail($sformatf("Y0 not exercised: %0d bits past whole bytes, expected 7 (71 bits: the 8 ns pulse missed)",
-                                   dut.u_spi.bit_cnt));
-                CS_N = 1'b1;
-                #(spi_tidle);
-                if (dut.fifo_level !== lvl0)
-                    fail($sformatf("Y: a sample read with a missed SCLK and one extra byte popped (level %0d -> %0d)", lvl0, dut.fifo_level));
-                r14_read(7'h06, yer);
-                if (yer !== 8'h02) fail($sformatf("Y: ERR 0x%02h after a sample read with a missed SCLK and one extra byte, expected FRAME_ERR", yer));
-                r14_write(7'h06, 8'h02);
+                // audit round 21, auditor C: 1 to 7 missed pulses (runts at pulses 20, 22, ...), each its own frame: the
+                // chip counts 72 - m bits, never a whole frame (step 6: the extra byte covers up to 7 missed pulses)
+                for (int m = 1; m <= 7; m++) begin
+                    logic [3:0] lvl0;
+                    logic [7:0] yer, ys0;
+                    logic [15:0] yq0;
+                    logic [23:0] yd0;
+                    bit yok0;
+                    @(posedge dut.push_ok);
+                    @(posedge MCLK); #1;
+                    lvl0 = dut.fifo_level;
+                    spi_tx[0] = SMP_HDR;
+                    for (int i = 1; i < 9; i++) spi_tx[i] = 8'h00;
+                    CS_N = 1'b0;
+                    MOSI = spi_bit(0, 9);
+                    #(spi_tcss);
+                    for (int n = 0; n < 72; n++) begin
+                        bit runt;
+                        runt = (n >= 20 && n < 20 + 2 * m && ((n - 20) % 2) == 0);
+                        if (runt) begin @(posedge MCLK); #2; end   // each runt between two MCLK edges: the 2-flop
+                        SCLK = 1'b1;                              // synchronizer never sees it (an 8 ns pulse at a
+                        #(runt ? 8.0 : spi_high);                 // random phase is sampled 1 time in 4)
+                        SCLK = 1'b0;
+                        MOSI = spi_bit(n + 1, 9);
+                        if (n + 1 < 72) #(spi_low);
+                    end
+                    #(spi_tcsh);
+                    // 72 - m bits: the runts missed (audit round 17, auditor C: a sampled runt gives 72 bits, the same
+                    // verdicts)
+                    if (dut.u_spi.bit_cnt !== 3'(8 - m))
+                        fail($sformatf("Y0 not exercised: %0d bits past whole bytes with %0d runts, expected %0d (%0d bits: the 8 ns pulses missed)",
+                                       dut.u_spi.bit_cnt, m, 8 - m, 72 - m));
+                    CS_N = 1'b1;
+                    #(spi_tidle);
+                    if (dut.fifo_level !== lvl0)
+                        fail($sformatf("Y: a sample read with %0d missed SCLK and one extra byte popped (level %0d -> %0d)", m, lvl0, dut.fifo_level));
+                    r14_read(7'h06, yer);
+                    if (yer !== 8'h02) fail($sformatf("Y: ERR 0x%02h after a sample read with %0d missed SCLK and one extra byte, expected FRAME_ERR", yer, m));
+                    r14_write(7'h06, 8'h02);
+                    r14_sample(ys0, yq0, yd0, yok0);          // the sample the slipped read left, popped now: the
+                end                                           // FIFO does not fill over the seven frames
             end
             // audit round 18, auditor B: one SCLK slip (the chip misses a pulse, or counts an extra one) always gives
             // FRAME_ERR and changes nothing, which the host procedure's slip rules rely on: a sample read is not popped

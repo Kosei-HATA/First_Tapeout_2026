@@ -228,6 +228,9 @@ WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # the slip counts the documents quote for registers the host does not decide from alone (5.4 (b): STATUS is not used
 # alone, T_WARM is read twice; audit round 20, auditor C: the counts were not pinned and T_WARM's was wrong)
 SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17}
+# where the requirements' rule 5.4 (b) states them (audit round 21, auditor C: the record was checked against the
+# model only, so the requirements' text could say anything)
+SLIP_COUNT_PATTERNS = {"STATUS": r"STATUS の 64 通りの値で (\d+) 組", "T_WARM": r"T_WARM は (\d+) 組"}
 SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)],
                         "OFF_M_H.ACT": [], "OFF_M_L.ACT": [(0xAA, 0xAB)], "OFF_CTRL.ACT": [], "AFE_IBIAS.ACT": [],
                         "CPF_TRIM.ACT": [], "BOOST_TRIM.ACT": [], "CHOP_CFG.ACT": [], "ADC_CFG.ACT": [],
@@ -297,7 +300,8 @@ def blank_w(length):
 def guarded_addrs():
     """Writes refused (STATE_ERR) while a command is pending: the registers with fields applied at the tick (the
     shadows) and the timers, so that no write lands between a command and its tick. Read at the command's tick are
-    T_WARM (START), T_PRE (APPLY) and T_ELEC (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); a
+    T_WARM (START; an APPLY or APPLY_NR in WARMUP restarts its count, audit round 21), T_PRE (APPLY) and T_ELEC
+    (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); a
     START's or an APPLY's T_RST, T_REC and T_ELEC are read when each wait starts, after the guard, so the host writes
     them only in IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
     return sorted({a for a, n, acc, lock, fields, _ in REGS
@@ -326,9 +330,13 @@ def crc8(bs, c=0):
 
 
 def reg_values(name):
-    """Every value a register can read: the product of its fields' legal values (a field without them: every value)."""
+    """Every value a register can read: the product of its fields' legal values (a field without them: every value).
+    A field outside the byte is left out: the geometry check reports it (audit round 21, auditor C: it crashed the
+    slip model, lsb -1 of T_WARM, VERSION, STATUS.AFE_RST and others)."""
     vals = {0}
     for f in next(r[4] for r in REGS if r[1] == name):
+        if not 0 <= f["lsb"] <= f["msb"] <= 7:
+            continue
         lg = f["legal"] if f["legal"] is not None else range(1 << (f["msb"] - f["lsb"] + 1))
         vals = {v | (x << f["lsb"]) for v in vals for x in lg}
     return vals
@@ -453,7 +461,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS 62 組、T_WARM 17 組）を確かめる（第 20 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
 ]
@@ -756,7 +764,7 @@ def check(verbose=True):
         for f in fl_:
             if not f["pin"] or f["pin"] not in set(PIN_OF_CONTROL) | set(tcfg):
                 continue                               # RAW_DATA／RAW_CLK: not in pins_from_active
-            moved = set()
+            moved, moved_bits = set(), {}
             for rng_ in (0, 4):                        # the DAC off and on (BLANK_LEN acts with it off, M and S with it on)
                 b0 = dict(base, RANGE=rng_)
                 other = next((v for v in (f["legal"] or [b0.get(f["name"], 0) ^ 1]) if v != b0.get(f["name"])), None)
@@ -767,6 +775,8 @@ def check(verbose=True):
                 except KeyError:
                     continue
                 for k in p0:
+                    if isinstance(p0[k], int) and isinstance(p1[k], int) and p0[k] != p1[k]:
+                        moved_bits.setdefault(k, set()).update(i for i in range(16) if (p0[k] >> i & 1) != (p1[k] >> i & 1))
                     if p0[k] != p1[k]:
                         if k == "TEST_CFG":
                             moved |= {lb for lb, bits in tcfg.items() if any((p0[k] >> i & 1) != (p1[k] >> i & 1) for i in bits)}
@@ -776,6 +786,14 @@ def check(verbose=True):
             if not want <= moved:
                 errs.append(f"{n_}.{f['name']}: listed as driving {f['pin']}, but changing it moves {sorted(moved) or 'no pin'} "
                             f"(pins_from_active)")
+            mb_ = re.fullmatch(r"([A-Z_0-9]+)\[(\d+)(?::(\d+))?\]", f["pin"])   # audit round 21, auditor C: the bit
+            if mb_ and mb_.group(1) != "TEST_CFG":                           # split too (M_H and M_L's OFM ranges
+                pin_ = mb_.group(1)                                             # swapped passed: OFM moved either way)
+                hi_, lo_ = int(mb_.group(2)), int(mb_.group(3) or mb_.group(2))
+                bits_ = moved_bits.get(pin_, set())
+                if not bits_ or not bits_ <= set(range(lo_, hi_ + 1)):
+                    errs.append(f"{n_}.{f['name']}: the pin column gives {f['pin']}, yet a change of the field toggles "
+                                f"bits {sorted(bits_)} of {pin_} (pins_from_active, the bit split; audit round 21)")
     for a_, n_, acc_, _l, fl_, _ in REGS:
         for f in fl_:
             if (f["cls"] == "ro" and f["legal"] is not None and f["name"] not in REQUIRED_RO_LEGAL and f["name"] != "SAMPLE"
@@ -842,6 +860,17 @@ def check(verbose=True):
     if wsn != WINDOW_SLIP_NEIGHBOURS_REQUIRED:
         errs.append(f"readable addresses a single SCLK slip in the header turns into a sample read: {[hex(x) for x in wsn]}; "
                     f"the host procedure accounts for {[hex(x) for x in WINDOW_SLIP_NEIGHBOURS_REQUIRED]} (5.4 (b), audit round 19)")
+    try:                                                # audit round 21, auditor C: the counts the requirements
+        req_txt_ = open(REQ_DOC, encoding="utf-8").read()   # state (5.4 (b)) against the record
+    except OSError:
+        req_txt_ = None                                 # (reported by the overload rule's comparison)
+    for n_, pat_ in SLIP_COUNT_PATTERNS.items():
+        if req_txt_ is None:
+            break
+        got_ = [int(x) for x in re.findall(pat_, req_txt_)]
+        if not got_ or any(g_ != SLIP_COUNTS_RECORDED.get(n_) for g_ in got_):
+            errs.append(f"{os.path.basename(REQ_DOC)} states {got_} slip pairs for {n_}, SLIP_COUNTS_RECORDED holds "
+                        f"{SLIP_COUNTS_RECORDED.get(n_)} (5.4 (b), the record the model is held to; audit round 21)")
     for n_, want_ in SLIP_COUNTS_RECORDED.items():
         got_ = len(slip_hazards(n_))
         if got_ != want_:
@@ -1067,10 +1096,13 @@ def selftest():
     g = globals()
     keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED",
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256",
-                                             "FIXED_ADDR", "SLIP_COUNTS_RECORDED")}
+                                             "FIXED_ADDR", "SLIP_COUNTS_RECORDED", "SLIP_COUNT_PATTERNS")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
                "ofen_of_range": ofen_of_range}
     tmp = tempfile.mkdtemp()
+    req_slip9 = os.path.join(tmp, "req_slip9.md")      # audit round 21, auditor C: the requirements' T_WARM count
+    with open(req_slip9, "w", encoding="utf-8") as fo:   # as round 19 recorded it
+        fo.write(open(REQ_DOC, encoding="utf-8").read().replace("T_WARM は 17 組", "T_WARM は 9 組"))
     no_rule = os.path.join(tmp, "no_rule.md")
     with open(no_rule, "w", encoding="utf-8") as fo:
         fo.write("過負荷の規則の文のない文書\n")
@@ -1334,6 +1366,16 @@ def selftest():
     def m_lsb_negative():                                # audit round 18, auditor C: a field at bit -1 (it crashed)
         fld("BLANK", "BLANK_LEN")["lsb"] = -1
 
+    def m_twarm_lsb_negative():                          # audit round 21, auditor C: the same on a register the slip
+        fld("T_WARM", "T_WARM")["lsb"] = -1               # model decodes (it crashed there)
+
+    def m_ofm_pins_swapped():                            # audit round 21, auditor C: M_H and M_L's OFM ranges swapped
+        a_, b_ = fld("OFF_M_H", "M_H"), fld("OFF_M_L", "M_L")
+        a_["pin"], b_["pin"] = b_["pin"], a_["pin"]
+
+    def m_req_slip_count():                              # audit round 21, auditor C: the requirements' T_WARM count
+        g["REQ_DOC"] = req_slip9                          # back at round 19's 9
+
     def m_state_legal_none():                            # audit round 18, auditor C: STATE without its values (it
         fld("STATE", "STATE")["legal"] = None                                         # crashed)
 
@@ -1447,7 +1489,10 @@ def selftest():
             ("FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）", m_fixed_addr_drop),
             ("DEBUG を写しの半分の 0x72 に", m_debug_in_copies),
             ("STATUS の滑りの組の数を 61 と記す", m_slip_count_status),
-            ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative), ("STATE の合法な値を None に", m_state_legal_none),
+            ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative),
+            ("T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）", m_twarm_lsb_negative),
+            ("OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える", m_ofm_pins_swapped),
+            ("要件の T_WARM の滑りの数を 9 組に（第 19 回の数）", m_req_slip_count), ("STATE の合法な値を None に", m_state_legal_none),
             ("サンプルの状態の予約のビット 2 を 7 に", m_sample_reserved_moved)]
     results, problems = [], []
     for name, m in muts:
@@ -1486,6 +1531,22 @@ def selftest():
     for ln, t, _ in msgs:
         if t not in expected:
             problems.append(f"line {ln}: no mutation expects the message {t!r}")
+    # the counts the spec quotes (audit round 21, auditor A, as in fsm_spec): every count of this self-test equals what
+    # it ran
+    spec_doc = os.path.join(REPO, "documentation", "gf180_digital_control_spec_20261119.md")
+    for pat_, what_, have_ in ((r"`regmap\.py` は (\d+) 種類", "mutations", len(results)),
+                               (r"`regmap\.py selftest`（(\d+) 種", "mutations", len(results)),
+                               (r"check の全ての違反の文 (\d+) 種が目的の文", "messages", len(msgs)),
+                               (r"（`fsm_spec\.py` \d+ 種、`regmap\.py` (\d+) 種", "messages", len(msgs))):
+        try:
+            got_ = [int(x) for x in re.findall(pat_, open(spec_doc, encoding="utf-8").read())]
+        except OSError as ex:
+            problems.append(f"{os.path.basename(spec_doc)} cannot be read ({ex})")
+            continue
+        if not got_:
+            problems.append(f"{os.path.basename(spec_doc)} no longer quotes the self-test's {what_} ({pat_})")
+        elif any(g_ != have_ for g_ in got_):
+            problems.append(f"{os.path.basename(spec_doc)} quotes {got_} {what_} of the self-test, which has {have_}")
     e = check(verbose=False)
     shutil.rmtree(tmp, ignore_errors=True)               # the self-test's own folder (audit round 10)
     for p_ in problems:
@@ -1564,6 +1625,10 @@ SELFTEST_EXPECT = {
     'T_PRE の合法な値を None に': ('differ from those the requirements give (REQUIRED_LEGAL)',),
     'STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     'BLANK_LEN の lsb を −1 に（バイトの外）': ('outside the byte',),
+    # audit round 21, auditor C
+    'T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）': ('outside the byte',),
+    'OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える': ('(pins_from_active, the bit split; audit round 21)',),
+    '要件の T_WARM の滑りの数を 9 組に（第 19 回の数）': ('(5.4 (b), the record the model is held to; audit round 21)',),
     'STATE の合法な値を None に': ("STATE field does not match the sequencer's state codes",),
     'サンプルの状態の予約のビット 2 を 7 に': (': each of the bits 0..7 must be listed exactly once (the generated table showed one bit twice and none for another)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),

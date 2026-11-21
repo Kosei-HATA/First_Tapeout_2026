@@ -250,7 +250,7 @@ SPI_CONDS = {
     "mid": "バイトの途中（CS_N の立ち上がりの時点で受信したビット数が 8 の倍数でない）",
     "crc_ok": "受信した CRC のバイトが、受け取った先頭バイトとデータの CRC-8 と一致",
     "wr_ok": "書き込み可能なアドレス（定義済みで読み出し専用でなく、試験のレジスタなら解錠済み）",
-    "busy": "前の命令がまだ tick で処理されていない間の、命令レジスタへの定義済みの命令（SOFT_RESET を除く）、またはシャドウ（一括反映の対象）とタイマのレジスタへの書き込み（命令が読む値を tick まで変えない）",
+    "busy": "前の命令がまだ tick で処理されていない間の、命令レジスタへの定義済みの命令（SOFT_RESET を除く）、またはシャドウ（一括反映の対象）とタイマのレジスタへの書き込み（命令とその tick の間に書き込みが入らない。第 21 回で理由を訂正）",
     "head": "写した語が FIFO に格納されたサンプルで、写してから取り出しもフラッシュもなく、まだ先頭",
 }
 SPI_ACTIONS = {
@@ -2087,6 +2087,25 @@ def selftest():
     unexpected = [(fn, ln, t) for fn, ln, t, _ in msgs if t not in expected]
     for fn, ln, t in unexpected:
         problems.append(f"{fn} line {ln}: no mutation expects the message {t!r}")
+    # the counts the documents quote (audit round 21, auditor A: the requirements kept 125 check messages after round 20
+    # added one): every count of this self-test that the requirements or the spec quote equals what it ran
+    spec_doc = os.path.join(REPO, "documentation", "gf180_digital_control_spec_20261119.md")
+    for path_, pat_, what_, have_ in ((DOC, r"もっともらしい仕様の誤り (\d+) 種類", "mutations", len(results)),
+                                      (DOC, r"検査の全ての違反の文 (\d+) 種が、いずれかの変異の目的の文", "check messages", len(msgs)),
+                                      (spec_doc, r"`fsm_spec\.py` は (\d+) 種類", "mutations", len(results)),
+                                      (spec_doc, r"`fsm_spec\.py selftest`（(\d+) 種", "mutations", len(results)),
+                                      (spec_doc, r"検査の全ての違反の文 (\d+) 種が、いずれかの変異の目的の文", "check messages", len(msgs)),
+                                      (spec_doc, r"（`fsm_spec\.py` (\d+) 種、`regmap\.py`", "check messages", len(msgs)),
+                                      (spec_doc, r"11/21 の監査の第 \d+ 回のあとは (\d+) 種類", "mutations", len(results))):
+        try:
+            got_ = [int(x) for x in re.findall(pat_, open(path_, encoding="utf-8").read())]
+        except OSError as ex:
+            problems.append(f"{os.path.basename(path_)} cannot be read ({ex})")
+            continue
+        if not got_:
+            problems.append(f"{os.path.basename(path_)} no longer quotes the self-test's {what_} ({pat_})")
+        elif any(g_ != have_ for g_ in got_):
+            problems.append(f"{os.path.basename(path_)} quotes {got_} {what_} of the self-test, which has {have_}")
     rep, _ = run_checks(verbose=False)
     for p_ in problems:
         print("PROBLEM  " + p_)

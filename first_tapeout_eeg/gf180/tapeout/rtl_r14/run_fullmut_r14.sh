@@ -20,6 +20,9 @@ for R in typical_ov2.5V_150u_then_dc-39mV_300u typical_ov2.5V_50u_rec60u_f20k_a0
     ln -s $C/gf180/tapeout/pex/runs/adc_overload_r12/$R/out.csv gf180/tapeout/pex/runs/adc_overload_r12/$R/out.csv
 done
 cd gf180/tapeout/rtl_r14 || exit 1
+# the version, for the record (audit round 25, auditor C: this copy lies inside the checkout, so git run here answers
+# for the checkout; the runner compares every file of the copy with this version at the start and the end)
+print -r -- "$(git -C $C rev-parse "$H") $C" > FULLRUN_VERSION || exit 1
 date "+the complete mutation run of $H: start %Y-%m-%d %H:%M:%S"
 $PY tb/mutate_top_r14.py -j 3
 echo "mutate_top_r14.py rc $?"

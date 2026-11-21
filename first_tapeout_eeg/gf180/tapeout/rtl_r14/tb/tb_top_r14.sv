@@ -600,6 +600,38 @@ module tb_top_r14;
         end
         pm_t_fall = -1.0;
     end
+    // DRDY_N in level mode (audit round 25, auditor C: only pulse mode was monitored, and an RTL copy whose DRDY_N fell
+    // only at frame cycle 0, up to 23 MCLK late with a sample stored, passed all 16 groups): while DRDY_MODE is 0, after
+    // every MCLK edge DRDY_N is the negation of the FIFO's "not empty" before that edge (a register, spec 3.3), high
+    // after the commit edge of a SOFT_RESET; a store while DRDY_N is high makes it fall at the next edge (requirements
+    // 5.4 step 5 (ii): 2 MCLK after the store cycle, as in pulse mode); every edge is checked and the falls counted
+    bit     lm_armed = 1'b0, lm_exp = 1'b1, lm_due = 1'b0, lm_due_now = 1'b0;
+    integer n_lm_checks = 0, n_lm_first = 0, n_lm_falls = 0, n_lm_bad = 0;
+    always @(posedge MCLK) begin                         // at the edge, before its updates: what DRDY_N must become
+        lm_armed   = dut.rst_n === 1'b1 && dut.drdy_mode === 1'b0;
+        lm_exp     = dut.soft_req === 1'b1 || dut.fifo_nonempty !== 1'b1;
+        lm_due_now = lm_due && lm_armed && dut.soft_req !== 1'b1;     // a store at the previous edge, not cut
+        lm_due     = 1'b0;
+        if (lm_armed && dut.soft_req !== 1'b1 && dut.push_ok === 1'b1 && DRDY_N === 1'b1) begin
+            lm_due     = 1'b1;
+            n_lm_first = n_lm_first + 1;
+        end
+    end
+    always @(negedge MCLK) if (lm_armed && dut.rst_n === 1'b1) begin
+        n_lm_checks = n_lm_checks + 1;
+        if (DRDY_N !== lm_exp) begin
+            n_lm_bad = n_lm_bad + 1;
+            if (n_lm_bad <= 3) fail($sformatf("DRDY_N level mode: %b after the MCLK edge, expected %b (FIFO not empty %b before it; DAT-04)",
+                                              DRDY_N, lm_exp, !lm_exp));
+        end
+        if (lm_due_now) begin
+            if (DRDY_N !== 1'b0) begin
+                n_lm_bad = n_lm_bad + 1;
+                if (n_lm_bad <= 3) fail("DRDY_N level mode: a store with DRDY_N high, and no fall at the next MCLK edge");
+            end else
+                n_lm_falls = n_lm_falls + 1;
+        end
+    end
     integer n_rawclk = 0;
     always @(posedge RAW_CLK) n_rawclk = n_rawclk + 1;
 
@@ -1289,7 +1321,8 @@ module tb_top_r14;
         phase = "B";
         r14_cmd(8'h11);
         wait_state(4'd1, 50.0, "WARMUP after START");
-        t_start_tick = $realtime - TMCLK;               // the state changed at e25 of the tick
+        t_start_tick = t_state[1];                      // the state changed at e25 of the tick (its recorded time,
+                                                        // audit round 25, auditor C: not when the bench saw it)
         rt_read_expect(7'h04, 8'd1, "STATE in WARMUP");
         wait_state(4'd2, 5100.0, "RECOVER after T_WARM");
         t0 = (t_afe_fall - t_start_tick) / 1000.0;
@@ -1323,7 +1356,9 @@ module tb_top_r14;
         seq_before = last_seq;
         r14_cmd(8'h33);
         wait_state(4'd7, 50.0, "PRE after APPLY");
-        t0 = $realtime;
+        t0 = t_state[7];                                // PRE's entry at the APPLY's tick (audit round 25, auditor C:
+        // $realtime is when the bench saw PRE, never before r14_cmd returns, CS_N's rise + 600 ns; an APPLY whose tick
+        // fell in those 600 ns made a correct chip measure T_PRE 22.99 us, and the runner called a mutant detected)
         if (CPF_TRIM !== 4'hB) fail("CPF_TRIM pin not applied at the tick");
         wait_state(4'd8, 100.0, "PULSE after T_PRE");
         wait_state(4'd2, 200.0, "RECOVER after T_RST");
@@ -3379,6 +3414,9 @@ module tb_top_r14;
         $display("SOFT_RESET: %0d commits, each with soft_req in its own cycle (errors %0d)", n_soft_commits, n_soft_bad);
         $display("DRDY_N pulse mode: %0d pulses, %0d of them for FILL's store (errors %0d)", n_pm_pulses, n_pm_fill, n_pm_bad);
         if (n_pm_pulses < 5 || n_pm_fill < 1) fail("DRDY_N pulse-mode monitor not exercised");
+        $display("DRDY_N level mode: %0d MCLK edges checked, %0d stores with DRDY_N high, %0d falls at the next edge (errors %0d)",
+                 n_lm_checks, n_lm_first, n_lm_falls, n_lm_bad);
+        if (n_lm_checks < 100000 || n_lm_falls < 20) fail("DRDY_N level-mode monitor not exercised");
         $display("RAW: %0d frames of the stream with 8 RAW_CLK rises, %0d MCLK of a timing pair one MCLK later (errors %0d)",
                  n_raw_frames, n_raw_pairs, n_raw_cut + n_raw_pair);
         if (n_raw_frames < 20 || n_raw_pairs < 1000) fail("RAW monitors not exercised");

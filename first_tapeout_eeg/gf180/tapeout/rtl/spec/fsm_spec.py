@@ -1128,6 +1128,13 @@ TIMING = dict(
 # 64 kHz), at which VER-07 and the APPLY_NR carry runs were made (audit round 14, auditor A: since round 13 the RTL, the
 # benches and the analog decks follow TIMING, and a TIMING moved inside the window passed every check)
 TICK_REQUIRED = {"tick_cycle": 24, "128k": (8, 1), "64k": (16, 3)}       # cycle; rate: (period frames, tick frame)
+# the CIC's order as eeg_cic3, the golden CIC and the requirements fix it (sinc^3: SEQ-06's three marked outputs,
+# ANA-04's weight). Audit round 25, auditor C: TIMING's cic_order 4 passed every check and changed only a note
+CIC_ORDER_REQUIRED = 3
+# where the requirements quote the CHOP1 rate-change weight that check_timing computes (ANA-04, the CHOP1 row of 4.10,
+# the timing note of 5.0, R-21; audit round 25, auditor C: the hand-written 2.3 x 10^-9 was compared with nothing)
+WEIGHT_QUOTES = (r"旧い速さに残る CIC の重みは、切と入の切り替えで (\S+ × 10\S+?)（", r"（重み (\S+ × 10\S+?)、ANA-04",
+                 r"旧い相に残る CIC の重みは (\S+ × 10\S+?)（", r"旧い相に残る重みは、切と入の切り替えで (\S+ × 10\S+?)（")
 
 
 def check_timing():
@@ -1136,6 +1143,9 @@ def check_timing():
     got = {"tick_cycle": tc, **{k: (r["period_frames"], r["tick_frame"]) for k, r in T["rates"].items()}}
     if got != TICK_REQUIRED:
         errs.append(f"tick placed at {got}; SEQ-13 and the analog runs (VER-07) fix it at {TICK_REQUIRED}")
+    if T["cic_order"] != CIC_ORDER_REQUIRED:
+        errs.append(f"CIC of order {T['cic_order']}; eeg_cic3, the golden CIC and the requirements' sinc^3 (SEQ-06's "
+                    f"three marked outputs, ANA-04's weight) fix it at {CIC_ORDER_REQUIRED}")
     for c in (tc, (tc + 1) % 32):                  # the tick's strobe cycle and the edge its outputs change at
         if c in T["busy_cycles"]:
             errs.append(f"the tick meets a busy frame cycle (tick at cycle {tc}, outputs at e{tc + 1}): "
@@ -1183,6 +1193,16 @@ def check_timing():
                  f"old phase, sinc^{n_} weight {w0:.1e} (plus a bounded loop-state term)")
     if w0 > 1e-6:
         errs.append("CHOP1 rate change leaves a visible part of a CIC window on the old rate")
+    m_, e_ = f"{w0:.1e}".split("e")
+    want = f"{m_} × 10{str(int(e_)).translate(str.maketrans('-0123456789', '⁻⁰¹²³⁴⁵⁶⁷⁸⁹'))}"
+    try:
+        doc_ = open(DOC, encoding="utf-8").read()
+        quoted = [q for pat in WEIGHT_QUOTES for q in re.findall(pat, doc_)]
+    except OSError as ex:
+        quoted = [f"unreadable ({ex})"]
+    if len(quoted) != len(WEIGHT_QUOTES) or any(q != want for q in quoted):
+        errs.append(f"the requirements quote the CHOP1 rate-change weight as {quoted} (one quote each in ANA-04, "
+                    f"the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes {want}")
     return errs, notes
 
 
@@ -2010,6 +2030,8 @@ def selftest_runs():
         ("TIME", "チョッパの周期が 1 ms を割り切らない（12 フレーム）", lambda: setitem(TIMING, "rates", {**TIMING["rates"], "128k": dict(period_frames=12, tick_frame=1)})),
         ("TIME", "CHOP1 の周期が 1 ms を割り切らない（384 フレーム）", lambda: setitem(TIMING, "chop1_periods_frames", TIMING["chop1_periods_frames"] + [384])),
         ("TIME", "CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）", lambda: setitem(TIMING, "cic_order", 1)),
+        # audit round 25, auditor C: the CIC's order against the RTL and ANA-04's weight
+        ("TIME", "CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）", lambda: setitem(TIMING, "cic_order", 4)),
         # audit round 12, auditor C: the state table's columns and the frame enumeration
         ("SEQ", "PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）", swap_timers),
         ("SEQ", "PRE で AFE_RST を 1 に（状態の表）", lambda: setitem(SEQ_STATES, i_pre, SEQ_STATES[i_pre][:3] + (1,) + SEQ_STATES[i_pre][4:])),
@@ -2103,7 +2125,7 @@ def selftest():
                                       (spec_doc, r"`fsm_spec\.py selftest`（(\d+) 種", "mutations", len(results)),
                                       (spec_doc, r"検査の全ての違反の文 (\d+) 種が、いずれかの変異の目的の文", "check messages", len(msgs)),
                                       (spec_doc, r"（`fsm_spec\.py` (\d+) 種、`regmap\.py`", "check messages", len(msgs)),
-                                      (spec_doc, r"11/21 の監査の第 \d+ 回のあとは (\d+) 種類", "mutations", len(results))):
+                                      (spec_doc, r"11/2\d の監査の第 \d+ 回のあとは (\d+) 種類", "mutations", len(results))):
         try:
             got_ = [int(x) for x in re.findall(pat_, open(path_, encoding="utf-8").read())]
         except OSError as ex:
@@ -2311,6 +2333,9 @@ SELFTEST_EXPECT = {
     'チョッパの周期が 1 ms を割り切らない（12 フレーム）': (': 1 ms is not a whole number of chopper periods',),
     'CHOP1 の周期が 1 ms を割り切らない（384 フレーム）': ('frames does not divide the decimation ratio',),
     'CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）': ('CHOP1 rate change leaves a visible part of a CIC window on the old rate',),
+    'CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）': (
+        "; eeg_cic3, the golden CIC and the requirements' sinc^3 (SEQ-06's three marked outputs, ANA-04's weight) fix it at",
+        '(one quote each in ANA-04, the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes'),
 }
 
 

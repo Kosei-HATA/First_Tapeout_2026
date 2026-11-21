@@ -55,6 +55,53 @@ SHARED = ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.sp
 SHARED_SHA = {}
 
 
+def run_version():
+    """(the record's version text, a function giving the files that differ from that version, or None). Audit round
+    25, auditor C: run_fullmut_r14.sh's copy lies in the checkout's git-ignored build/, so git answered for the
+    checkout (its HEAD, its changes): another version's run would record the wrong commit, and edits inside the copy
+    never showed. In the tracked checkout: git's HEAD and whether rtl_r14 or rtl differ from it. In a copy: the
+    version run_fullmut_r14.sh wrote to FULLRUN_VERSION (the commit, then the repository), every file of the
+    version's rtl and rtl_r14 compared with the copy's (git ls-tree against git hash-object), at the start and the
+    end. Any other copy: "version unknown"."""
+    def git(*a, cwd=R14, inp=None):
+        try:
+            return subprocess.run(['git', *a], cwd=cwd, input=inp, capture_output=True, text=True)
+        except OSError:
+            return None
+    t = git('ls-files', '--error-unmatch', 'tb/mutate_top_r14.py')
+    if t is not None and t.returncode == 0:          # the checkout itself
+        h = git('rev-parse', '--short', 'HEAD')
+        s = git('status', '--porcelain', '--', '.', '../rtl')
+        head = h.stdout.strip() if h is not None and h.returncode == 0 else 'unknown'
+        dirty = s is not None and s.returncode == 0 and s.stdout.strip() != ''
+        return f"commit {head}{' (with uncommitted changes)' if dirty else ''} (the checkout)", None
+    vf = os.path.join(R14, 'FULLRUN_VERSION')
+    try:
+        commit, repo = open(vf, encoding='utf-8').read().split()[:2]
+    except (OSError, ValueError):
+        return "version unknown (a copy without FULLRUN_VERSION: run run_fullmut_r14.sh, or run in the checkout)", None
+    root = os.path.normpath(os.path.join(R14, '..', '..', '..'))
+    def differ():
+        ls = git('-C', repo, 'ls-tree', '-r', commit, '--', 'gf180/tapeout/rtl', 'gf180/tapeout/rtl_r14')
+        if ls is None or ls.returncode != 0 or not ls.stdout.strip():
+            return [f"git ls-tree of {commit} in {repo} failed"]
+        ents = [(ln.split('\t', 1)[0].split(), ln.split('\t', 1)[1]) for ln in ls.stdout.splitlines()]
+        bad = [p for (mode, typ, _), p in ents if typ != 'blob' or mode not in ('100644', '100755')]
+        blobs = [(sha, p) for (mode, typ, sha), p in ents if typ == 'blob' and mode in ('100644', '100755')]
+        bad += [p + ' (missing)' for _, p in blobs if not os.path.isfile(os.path.join(root, p))]
+        have = [(sha, p) for sha, p in blobs if os.path.isfile(os.path.join(root, p))]
+        hs = git('hash-object', '--no-filters', '--stdin-paths', cwd=root, inp=''.join(p + '\n' for _, p in have))
+        got = hs.stdout.split() if hs is not None and hs.returncode == 0 else []
+        if len(got) != len(have):
+            return bad + ['git hash-object failed']
+        return bad + [p for (sha, p), g in zip(have, got) if g != sha]
+    d0 = differ()
+    if d0:
+        return (f"commit {commit[:8]} (run_fullmut_r14.sh's copy), BUT ITS FILES DIFFER FROM THAT VERSION: "
+                + ", ".join(d0[:8])), differ
+    return f"commit {commit[:8]} (run_fullmut_r14.sh's copy; its rtl and rtl_r14 files equal that version's)", differ
+
+
 def sha256_file(p):
     with open(p, "rb") as fo:
         return hashlib.sha256(fo.read()).hexdigest()
@@ -537,6 +584,11 @@ MUTATIONS = [
     # audit round 24, auditor C (u1): the CIC reset by the control reset (a SOFT_RESET moves the CIC's grid)
     ('上位：CIC のリセットを制御のリセットから（SOFT_RESET で CIC の格子が動く）', 'eeg_digital_top.sv',
      "eeg_cic3 u_cic (.clk(MCLK), .rst_n(tm_rst_n),", "eeg_cic3 u_cic (.clk(MCLK), .rst_n(rst_n),"),
+    # audit round 25, auditor C (MA): level-mode DRDY_N falling only at frame cycle 0 (only pulse mode was monitored;
+    # it passed all 16 groups)
+    ('上位：レベルのモードの DRDY_N の立ち下がりがフレームのサイクル 0 まで遅れる', 'eeg_digital_top.sv',
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : ~fifo_nonempty);",
+     "drdy_n_q   <= soft_req ? 1'b1 : (drdy_mode ? ~drdy_pulse : (~fifo_nonempty | (drdy_n_q & (cycle != 5'd0))));"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1022,7 +1074,11 @@ def run(i, m, bench="top"):
         failed = "FAIL" in v.stdout                  # e.g. the bench's watchdog (the trace then ends early)
         if f is None:                                # the baseline also covers every branch, as in the runner
             covered = "every branch covered" in k.stdout
-            return i, name, ("baseline ok" if nbad == 0 and nt == 0 and not failed and covered else "BASELINE FAILS"), head
+            # and, as run_tests_r14.sh needs, no ERROR line of the bench (a coverage shortfall) and the checker's exit 0
+            # (every VER-02 pair; audit round 25, auditor C)
+            errl = next((ln.strip() for ln in v.stdout.splitlines() if ln.startswith("ERROR")), "")
+            clean = nbad == 0 and nt == 0 and not failed and covered and not errl and k.returncode == 0
+            return i, name, ("baseline ok" if clean else "BASELINE FAILS"), (errl or head)
         return i, name, ("detected" if nbad != 0 or nt != 0 or failed else "MISSED"), first
     st_, txt_ = unit_benches(d, {e_[0] for e_ in edits_of(m)} if f is not None else {"eeg_clkgen.sv", "eeg_cic3.sv"})
     if st_ == "error":
@@ -1149,9 +1205,8 @@ def main():
             return f"not found ({ex})"
     yv = tool([YOSYS, '-V'])                            # e.g. "Yosys 0.69 (git sha1 9f75ca1f..., Release, Clang ...)"
     yv = yv.split(", Release")[0] + ")" if ", Release" in yv else yv
-    env = (f"commit {tool(['git', 'rev-parse', '--short', 'HEAD'])}"
-           f"{' (with uncommitted changes)' if tool(['git', 'status', '--porcelain', '--', '.', '../rtl']) not in ('?', '', 'unknown') else ''}; "
-           f"python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; {yv}")
+    ver, ver_check = run_version()
+    env = f"{ver}; python {sys.version.split()[0]}; {tool(['iverilog', '-V'])}; {yv}"
     with open(log, "x", encoding="utf-8") as fo:           # written as the results arrive: an interrupted run
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
                  f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n{env}\n")
@@ -1196,6 +1251,11 @@ def main():
     if changed:
         out.append("the shared inputs changed during the run (another run_tests_r14.sh?): " + ", ".join(changed))
         ok = False
+    if ver_check is not None:                        # a copy of one version: still that version's files at the end
+        end_diff = ver_check()                         # (audit round 25, auditor C)
+        if end_diff:
+            out.append("the copy's sources differ from its version at the end of the run: " + ", ".join(end_diff[:8]))
+            ok = False
     out.append("FAIL" if not ok else ("INCOMPLETE (baselines not run: " + ", ".join(missing_base) + ")")
                if missing_base else "PASS")
     ok &= not missing_base

@@ -455,6 +455,17 @@ MUTATIONS = [
        "    logic chop1_dbg;\n    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) chop1_dbg <= 1'b1; "
        "else if (frame_stb) chop1_dbg <= CHOP1;"),
       ('eeg_digital_top.sv', '.dbg_data({CHOP1, CHOP_OUT, DAC_CLK}),', '.dbg_data({chop1_dbg, CHOP_OUT, DAC_CLK}),')], None, None),
+    # audit round 18, auditor C: SOFT_RESET's commit registered once before soft_req (R forces soft_req)
+    ('上位：SOFT_RESET の確定を soft_req の前で 1 段のレジスタに', [
+      ('eeg_digital_top.sv', "    wire        soft_req;                             // SOFT_RESET's commit cycle (eeg_regs; a net, so tests can force it)\n",
+       "    wire        soft_req;                             // SOFT_RESET's commit cycle (eeg_regs; a net, so tests can force it)\n"
+       "    logic       soft_raw, soft_q;\n"),
+      ('eeg_digital_top.sv', '        .cmd_ack(cmd_ack), .soft_reset(soft_req), .apply(apply),',
+       '        .cmd_ack(cmd_ack), .soft_reset(soft_raw), .apply(apply),'),
+      ('eeg_digital_top.sv', '    logic tm_rst_n;                                   // timing and data path: RESET_N only\n',
+       "    always_ff @(posedge MCLK or negedge pin_rst_n) if (!pin_rst_n) soft_q <= 1'b0; else soft_q <= soft_raw;\n"
+       '    assign soft_req = soft_q;\n'
+       '    logic tm_rst_n;                                   // timing and data path: RESET_N only\n')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

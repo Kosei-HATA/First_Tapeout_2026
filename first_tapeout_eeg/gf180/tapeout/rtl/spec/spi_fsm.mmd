@@ -22,7 +22,7 @@ stateDiagram-v2
         SDONE --> OVF : BIT
         WDONE --> OVF : BIT
         HDR --> RSMP : BYTE [rw & smp] / snapshot
-        HDR --> RREG : BYTE [rw & !smp & addr_ok] / load_data<br/>BYTE [rw & !smp & !addr_ok] / ADDR_ERR, load_zero
+        HDR --> RREG : BYTE [rw & !smp & addr_ok] / load_data<br/>BYTE [rw & !addr_ok] / ADDR_ERR, load_zero
         HDR --> WDAT : BYTE [!rw] / latch_addr
         RREG --> RCRC : BYTE [crc_en] / load_crc
         RCRC --> RDONE : BYTE

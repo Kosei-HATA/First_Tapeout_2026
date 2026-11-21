@@ -212,6 +212,11 @@ WHOLE_BYTE = {"CMD", "KEY"}
 # becomes 0xC0, a short sample read whose third byte (SEQ_H) passes the host's CRC for one SEQ_H in 256; the host
 # procedure confirms exactly these by a second read (requirements 5.4 (b); audit round 16, auditor B)
 WINDOW_NEIGHBOURS_REQUIRED = [0x00, 0x50, 0x60]
+# The registers the host procedure decides from by a CRC read, with the slip pairs it tolerates (audit round 18,
+# auditor B: one SCLK slip turned STATUS into another value with a valid CRC, 62 pairs, since the header 0x83 and
+# STATUS's bit 7 make the CRC's own polynomial; the host reads READY from STATE, DATA from FIFO_LEVEL and CMD_PENDING
+# twice). ERR's one pair needs four flags at once (0x66: RESET_FLAG read, a needless restart by rule (c)).
+SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)]}
 # the codes the requirements give (REG-01, REG-02, SPI-09, REG-08; audit round 13: a two-bit change of a code, which
 # keeps the distance check, passed every check)
 FIXED_CODES = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5,
@@ -299,6 +304,32 @@ def crc8(bs, c=0):
     return c
 
 
+def reg_values(name):
+    """Every value a register can read: the product of its fields' legal values (a field without them: every value)."""
+    vals = {0}
+    for f in next(r[4] for r in REGS if r[1] == name):
+        lg = f["legal"] if f["legal"] is not None else range(1 << (f["msb"] - f["lsb"] + 1))
+        vals = {v | (x << f["lsb"]) for v in vals for x in lg}
+    return vals
+
+
+def slip_hazards(name):
+    """The (value, value read) pairs where one SCLK slip in a CRC read of the register gives another of its values
+    with a valid CRC: the chip misses host pulse k (bit k read twice) or counts an extra pulse before it (bit k
+    skipped), k over the data and CRC bytes; after the CRC the chip sends zeros (audit round 18, auditor B)."""
+    h = 0x80 | next(r[0] for r in REGS if r[1] == name)
+    vals = reg_values(name)
+    out = set()
+    for v in sorted(vals):
+        s = [(b >> (7 - i)) & 1 for b in (v, crc8([h, v])) for i in range(8)] + [0] * 8
+        for k in range(16):
+            for r_ in (s[:k + 1] + s[k:], s[:k] + s[k + 1:]):
+                d = sum(r_[i] << (7 - i) for i in range(8))
+                if d != v and d in vals and sum(r_[8 + i] << (7 - i) for i in range(8)) == crc8([h, d]):
+                    out.add((v, d))
+    return sorted(out)
+
+
 def smp_hdr():
     """A sample read's header: R/W 1 and the window's address (0xC0 for the window 0x40)."""
     return 0x80 | next(a for a, n, *_ in REGS if n == "SAMPLE")
@@ -315,7 +346,7 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 の 1 組のみ。STATUS は 62 組で通るので、手順は STATUS だけから判断しない。第 18 回）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
@@ -349,6 +380,7 @@ def check(verbose=True):
         for f in fields:
             if not 0 <= f["lsb"] <= f["msb"] <= 7:
                 errs.append(f"{n}.{f['name']}: bits {f['msb']}:{f['lsb']} outside the byte")
+                continue                                 # (audit round 18, auditor C: lsb -1 crashed the mask)
             mask = ((1 << (f["msb"] - f["lsb"] + 1)) - 1) << f["lsb"]
             if used & mask:
                 errs.append(f"{n}.{f['name']}: overlaps another field")
@@ -484,7 +516,7 @@ def check(verbose=True):
     # STATE codes
     st = next(f for *_, f in all_fields() if f["name"] == "STATE")
     codes = sorted(x[1] for x in FS.SEQ_STATES if x[1] is not None)
-    if sorted(st["legal"]) != codes or max(codes) >= 1 << (st["msb"] - st["lsb"] + 1):
+    if sorted(st["legal"] or []) != codes or max(codes) >= 1 << (st["msb"] - st["lsb"] + 1):   # (None crashed: round 18)
         errs.append("STATE field does not match the sequencer's state codes")
     # STATUS marker
     stat = next(r for r in REGS if r[1] == "STATUS")[4]
@@ -657,6 +689,9 @@ def check(verbose=True):
         if n_ in FIXED_SAMPLE_STATUS and b_ != FIXED_SAMPLE_STATUS[n_]:
             errs.append(f"sample status {n_} at bit {b_}; DAT-02 orders the byte VALID, OVERRUN, OVL, CHANGED, ERR "
                         f"(bit {FIXED_SAMPLE_STATUS[n_]})")
+    if sorted(b_ for _n, b_, _d in SAMPLE_STATUS) != list(range(8)):   # audit round 18, auditor C: the reserved rows
+        errs.append(f"sample status bits {sorted(b_ for _n, b_, _d in SAMPLE_STATUS)}: each of the bits 0..7 must be listed "
+                    f"exactly once (the generated table showed one bit twice and none for another)")
     if sorted(n_ for n_, *_ in SAMPLE_STATUS if n_ in FIXED_SAMPLE_STATUS) != sorted(FIXED_SAMPLE_STATUS):
         errs.append("sample status: a bit DAT-02 names is missing")
     for a_, n_, acc_, _l, fl_, _ in REGS:
@@ -687,6 +722,14 @@ def check(verbose=True):
     if nb != WINDOW_NEIGHBOURS_REQUIRED:
         errs.append(f"readable addresses one bit from the sample window: {[hex(x) for x in nb]}; the host procedure "
                     f"confirms {[hex(x) for x in WINDOW_NEIGHBOURS_REQUIRED]} by a second read (5.4 (b), audit round 16)")
+    for n_, want_ in SLIP_DECIDE_REQUIRED.items():      # audit round 18, auditor B: SCLK slips
+        got_ = slip_hazards(n_)
+        if got_ != want_:
+            errs.append(f"{n_}: one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs "
+                        f"{[(hex(a_), hex(b_)) for a_, b_ in got_[:4]]}, where the host procedure decides from it "
+                        f"(tolerated: {want_}; 5.4 (b))")
+    notes.append(f"STATUS: {len(slip_hazards('STATUS'))} slip pairs read as another legal value with a valid CRC "
+                 f"(the host decides READY, DATA and CMD_PENDING otherwise)")
     rsmp = next(x[5] for x in FS.SPI_STATES if x[0] == "RSMP")      # the SPI table's text names the header
     if f"先頭バイト 0x{0x80 | win:02X}" not in rsmp:                    # (audit round 17, auditor B)
         errs.append(f"the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header "
@@ -888,7 +931,7 @@ def selftest():
     import shutil
     import tempfile
     g = globals()
-    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL",
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED",
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
                "ofen_of_range": ofen_of_range}
@@ -1153,6 +1196,19 @@ def selftest():
     def m_timer_legal_none():                            # audit round 17, auditor C: a timer without legal values
         fld("T_PRE", "T_PRE")["legal"] = None                                                  # (it crashed)
 
+    def m_lsb_negative():                                # audit round 18, auditor C: a field at bit -1 (it crashed)
+        fld("BLANK", "BLANK_LEN")["lsb"] = -1
+
+    def m_state_legal_none():                            # audit round 18, auditor C: STATE without its values (it
+        fld("STATE", "STATE")["legal"] = None                                         # crashed)
+
+    def m_sample_reserved_moved():                       # audit round 18, auditor C: a reserved sample status bit
+        i = next(k for k, x in enumerate(g["SAMPLE_STATUS"]) if x[0] == "0" and x[1] == 2)   # listed at bit 7
+        g["SAMPLE_STATUS"][i] = ("0", 7, g["SAMPLE_STATUS"][i][2])
+
+    def m_slip_status():                                 # audit round 18, auditor B: STATUS decided from alone
+        g["SLIP_DECIDE_REQUIRED"]["STATUS"] = []
+
     def m_window_moved():                                # audit round 17, auditor B: the window moved (item 258's
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "SAMPLE")  # option), the SPI table's text left behind
         r = list(g["REGS"][i]); r[0] = 0x4F; g["REGS"][i] = tuple(r)
@@ -1215,7 +1271,10 @@ def selftest():
             ("SAMPLE の既定値を 0x5A に", m_sample_reset), ("TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）", m_window_neighbour),
             ("サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）", m_window_moved),
             ("CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）", m_chop1_rate_6),
-            ("T_PRE の合法な値を None に", m_timer_legal_none)]
+            ("T_PRE の合法な値を None に", m_timer_legal_none),
+            ("STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）", m_slip_status),
+            ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative), ("STATE の合法な値を None に", m_state_legal_none),
+            ("サンプルの状態の予約のビット 2 を 7 に", m_sample_reserved_moved)]
     results, problems = [], []
     for name, m in muts:
         for k, v in keep.items():
@@ -1329,6 +1388,10 @@ SELFTEST_EXPECT = {
     'CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）': ('differ from those the requirements give (REQUIRED_LEGAL)',
                                                      'hold values the requirements do not give (REQUIRED_LEGAL), for which pins_from_active is not defined'),
     'T_PRE の合法な値を None に': ('differ from those the requirements give (REQUIRED_LEGAL)',),
+    'STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
+    'BLANK_LEN の lsb を −1 に（バイトの外）': ('outside the byte',),
+    'STATE の合法な値を None に': ("STATE field does not match the sequencer's state codes",),
+    'サンプルの状態の予約のビット 2 を 7 に': (': each of the bits 0..7 must be listed exactly once (the generated table showed one bit twice and none for another)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
     'BLANK を 0x38 に（写し 0x48 が設定の区画の外）': ("outside its register's",       # and the copy 0x48 is one bit from
                                                    'readable addresses one bit from the sample window:'),   # the window (round 17)

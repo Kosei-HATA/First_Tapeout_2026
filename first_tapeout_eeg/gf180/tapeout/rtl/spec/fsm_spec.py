@@ -112,7 +112,7 @@ SEQ_CONDS = {
     "valid": "CIC の出力が有効（クリアのあと 3 個目以降）",
 }
 SEQ_ACTIONS = {
-    "apply": "シャドウからアクティブへ一括反映（オフセット DAC、トリム、チョッパ、BLANK、試験の設定）",
+    "apply": "シャドウからアクティブへ一括反映（オフセット DAC、トリム、チョッパ、BLANK、ADC の設定（DWA_EN）、試験の設定）",
     "flush": "FIFO を空にする",
     "cic_clear": "CIC をクリアする（出力の時刻に合わせて行うので、格子は変わらない）",
     "store": "出力を FIFO へ格納する（DRDY）。満杯なら FIFO が新しいサンプルを捨てて OVERRUN を立てる（第 5.3 節、fifo_step）",
@@ -286,7 +286,8 @@ def _spi_table():
     t[("IDLE", "CSR")] = IMP
     t[("HDR", "BYTE")] = [B("rw and smp", ["snapshot"], "RSMP"),
                           B("rw and not smp and addr_ok", ["load_data"], "RREG"),
-                          B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"),
+                          B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"),   # (the window is defined: smp implies
+                                                                                 # addr_ok; round 18 dropped "not smp")
                           B("not rw", ["latch_addr"], "WDAT")]
     t[("RREG", "BYTE")] = [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])]
     t[("RCRC", "BYTE")] = [B(ALWAYS, [], "RDONE")]
@@ -391,6 +392,21 @@ def check_tables(F):
                     n = sum(guard_true(b["guard"], env) for b in cell)
                     if n != 1:
                         errs.append(f"{where}: {n} branches hold for {env} (guards must be exclusive and exhaustive)")
+                envs_ = list(all_envs(vs, F["constraint"]))   # audit round 18, auditor C: a guard that names a condition
+                keys_ = {tuple(sorted(e.items())) for e in envs_}   # it does not depend on (e.g. "(1) or valid")
+                for b in cell:
+                    for v in guard_vars(b["guard"]):
+                        flips = [(e, dict(e, **{v: 1 - e[v]})) for e in envs_]
+                        if not any(guard_true(b["guard"], e) != guard_true(b["guard"], e2) for e, e2 in flips
+                                   if tuple(sorted(e2.items())) in keys_):
+                            errs.append(f"{where} [{b['guard']}]: the guard names {v} but does not depend on it (write "
+                                        f"the guard without it)")
+                for b in cell:                    # audit round 18, auditor C: a condition named twice ("(rw and smp) and smp")
+                    names_ = [x for x in re.findall(r"[a-z_][a-z0-9_]*", b["guard"]) if x not in KEYWORDS]
+                    twice = sorted({x for x in names_ if names_.count(x) > 1})
+                    if twice:
+                        errs.append(f"{where} [{b['guard']}]: the guard names {twice} more than once (write each "
+                                    f"condition once)")
                 sig = [(tuple(b["actions"]), b["next"]) for b in cell]   # audit round 17, auditor C: a cell split into
                 if len(set(sig)) != len(sig):                             # branches that do the same
                     errs.append(f"{where}: two branches with the same actions and next state (a condition that "
@@ -1157,7 +1173,7 @@ def check_timing():
 CHECKS = [
     "完全性：全ての（状態、イベント）の欄が定義されている",
     "起こり得ない事象（IMP）の正しさ：IMP はその状態で起こり得ない事象にのみ使われている",
-    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）。一つの欄を、同じ動作と行き先の分岐に分けない（何も変えない条件。第 17 回）",
+    "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）。一つの欄を、同じ動作と行き先の分岐に分けない（何も変えない条件。第 17 回）。条件は、名指す全ての変数に依り（ほかの変数のある値で、その変数が条件の値を変える）、同じ変数を 2 回名指さない（第 18 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
     "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並び、単独のタイマの満了はその欄の行き先へ（第 16 回）",
@@ -1683,6 +1699,8 @@ def selftest_runs():
         return m
     seq_mut = [
         ("RUN/STOP の欄の欠落", lambda t: t.pop(("RUN", "STOP"))),
+        # audit round 18, auditor C: a guard naming a condition it does not depend on
+        ("PULSE の満了の条件に何も変えない valid を足す", lambda t: t[("PULSE", "TMR")][0].__setitem__("guard", "(1) or valid")),
         # audit round 17, auditor C: a cell split on a condition into two branches that do the same
         ("PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける", lambda t: t.__setitem__(("PRE", "FLUSH"), [
             B("cfg_ok", t[("PRE", "FLUSH")][0]["actions"], t[("PRE", "FLUSH")][0]["next"]),
@@ -1785,8 +1803,10 @@ def selftest_runs():
         ("PULSE の APPLY を設定によって STATE_ERR で拒む", lambda t: t.__setitem__(("PULSE", "APPLY"), [B("cfg_ok", ["STATE_ERR"]), B("not cfg_ok", ["CFG_ERR"])])),
     ] + refusal_mutations()
     spi_mut = [
+        # audit round 18, auditor C: a condition named twice
+        ("HDR の rw and smp を (rw and smp) and smp に", lambda t: next(b for b in t[("HDR", "BYTE")] if b["guard"] == "rw and smp").__setitem__("guard", "(rw and smp) and smp")),
         ("CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）", lambda t: t.__setitem__(("IDLE", "BIT"), [B(ALWAYS, [], "HDR")])),
-        ("読み出しの先頭バイトで書き込みのアドレスを取り込む", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data", "latch_addr"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("読み出しの先頭バイトで書き込みのアドレスを取り込む", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data", "latch_addr"], "RREG"), B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
         ("WDAT の BIT を自分自身への遷移と書く（IGN と同じ意味の別の書き方）", lambda t: t.__setitem__(("WDAT", "BIT"), [B(ALWAYS, [], "WDAT")])),
         ("CRC を検査せずに確定", lambda t: t.__setitem__(("WDONE", "CSR"), [B("wr_ok", ["commit"], "IDLE"), B("not wr_ok", ["ADDR_ERR"], "IDLE")])),
         ("不完全な書き込みを通知しない", lambda t: t.__setitem__(("WDAT", "CSR"), [B(ALWAYS, [], "IDLE")])),
@@ -1803,8 +1823,8 @@ def selftest_runs():
         ("CRC 無効でも CRC のバイトを待つ（3 バイトの書き込み）", lambda t: t.__setitem__(("WDAT", "BYTE"), [B(ALWAYS, ["latch_data"], "WCRC")])),
         ("未処理の間の書き込みを STATE_ERR なしで捨てる", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and wr_ok and busy", [], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", ["ADDR_ERR"], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
         ("書き込めないアドレスへの書き込みを ADDR_ERR なしで捨てる", lambda t: t.__setitem__(("WDONE", "CSR"), [B("(crc_ok or not crc_en) and wr_ok and not busy", ["commit"], "IDLE"), B("(crc_ok or not crc_en) and wr_ok and busy", ["STATE_ERR"], "IDLE"), B("(crc_ok or not crc_en) and not wr_ok", [], "IDLE"), B("crc_en and not crc_ok", ["CRC_ERR"], "IDLE")])),
-        ("未定義のアドレスの読み出しで ADDR_ERR を立てない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
-        ("サンプルの読み出しで FIFO の先頭を写さない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", [], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("未定義のアドレスの読み出しで ADDR_ERR を立てない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not addr_ok", ["load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("サンプルの読み出しで FIFO の先頭を写さない", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", [], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
         ("CRC 有効時の短いサンプルを通す", lambda t: t.__setitem__(("RSMP", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
         ("CRC のバイトのない読み出しを通す", lambda t: t.__setitem__(("RCRC", "CSR"), [B("mid", ["FRAME_ERR"], "IDLE"), B("not mid", [], "IDLE")])),
         ("CRC 有効時も連続読み出しを続ける", lambda t: t.__setitem__(("RREG", "BYTE"), [B(ALWAYS, ["addr_inc", "load_data"])])),
@@ -1813,8 +1833,8 @@ def selftest_runs():
         ("連続読み出しで先頭バイトに戻る（アドレスを進めない）", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"], "HDR")])),
         ("書き込みのデータを保持しない", lambda t: t.__setitem__(("WDAT", "BYTE"), [B("crc_en", [], "WCRC"), B("not crc_en", [], "WDONE")])),
         ("CS_N の立ち上がりで先頭を写す", lambda t: t.__setitem__(("SDONE", "CSR"), [B("head", ["pop", "snapshot"], "IDLE"), B("not head", [], "IDLE")])),
-        ("先頭バイトでアドレスを進める", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["addr_inc", "load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
-        ("サンプルの先頭バイトでレジスタのデータを載せる", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot", "load_data"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("先頭バイトでアドレスを進める", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["addr_inc", "load_data"], "RREG"), B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
+        ("サンプルの先頭バイトでレジスタのデータを載せる", lambda t: t.__setitem__(("HDR", "BYTE"), [B("rw and smp", ["snapshot", "load_data"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw", ["latch_addr"], "WDAT")])),
         ("CRC 有効の読み出しでもアドレスを進める", lambda t: t.__setitem__(("RREG", "BYTE"), [B("crc_en", ["load_crc", "addr_inc"], "RCRC"), B("not crc_en", ["addr_inc", "load_data"])])),
         # audit round 9, auditor C
         ("RREG の CS_N の立ち上がりを起こり得ない（IMP）とする", lambda t: t.__setitem__(("RREG", "CSR"), IMP)),
@@ -1828,7 +1848,7 @@ def selftest_runs():
         # audit round 13, auditor C: a write that does not commit skips a latch
         ("書き込めないアドレスへの書き込みで CRC のバイトを保持しない", lambda t: t.__setitem__(("WCRC", "BYTE"), [B("wr_ok", ["latch_crc"], "WDONE"), B("not wr_ok", [], "WDONE")])),
         # audit round 12, auditor C: a write header to the sample window taken as a sample read
-        ("標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）", lambda t: t.__setitem__(("HDR", "BYTE"), [B("smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not smp and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw and not smp", ["latch_addr"], "WDAT")])),
+        ("標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）", lambda t: t.__setitem__(("HDR", "BYTE"), [B("smp", ["snapshot"], "RSMP"), B("rw and not smp and addr_ok", ["load_data"], "RREG"), B("rw and not addr_ok", ["ADDR_ERR", "load_zero"], "RREG"), B("not rw and not smp", ["latch_addr"], "WDAT")])),
     ]
     global fifo_step
     fifo_orig = fifo_step
@@ -2217,6 +2237,9 @@ SELFTEST_EXPECT = {
     # audit round 17, auditor C
     'PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける': (': two branches with the same actions and next state (a condition that changes nothing: write them as one branch)',),
     'tick の列挙で単独のタイマの満了を除く': ('states, event sets and condition values never resolved (seq_tick_cases narrower than each command alone and with the expiry, the expiry alone and an output time)',),
+    # audit round 18, auditor C
+    'PULSE の満了の条件に何も変えない valid を足す': ('but does not depend on it (write the guard without it)',),
+    'HDR の rw and smp を (rw and smp) and smp に': ('more than once (write each condition once)',),
     'サンプルのフレームで SEQ と DATA の順の入れ違い': ('(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),

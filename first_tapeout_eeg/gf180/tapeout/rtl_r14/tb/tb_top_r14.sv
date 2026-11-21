@@ -125,6 +125,9 @@
 // of its signals changed twice (CHOP1's half period is 1,024 MCLK or more); Y0 asserts that the chip missed the
 // runt (71 bits); V13 runs at 2 MHz (SPI-01), the STOP written right after the APPLY; after RESET_N (A, X) and
 // SOFT_RESET (Y) CHOP_BLANK's width, CHOP's half period and (after RESET_N) CHOP1's half period are REG-05's.
+// Audit round 18 (auditor B): in Y one SCLK slip (an extra or a missed pulse) in a sample read gives FRAME_ERR and no
+// pop, and in a CRC read of STATUS or STATE FRAME_ERR (the host procedure's slip rules rest on it). Audit round 18
+// (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // A watchdog ends the run as FAIL if it has not finished by 800 ms of simulated time (the run ends near 0.6 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -550,10 +553,13 @@ module tb_top_r14;
     // called 1 ns after a rising MCLK edge (before the falling edge where the sequencer trace samples its inputs):
     // soft_req (the register block's commit of 0xA5) is forced high until just after the next rising edge, where
     // rst_n falls
+    logic soft_forced = 1'b0;                       // R forces soft_req (the monitor below skips those cycles)
     task automatic soft_now();
+        soft_forced = 1'b1;
         force dut.soft_req = 1'b1;
         @(posedge MCLK); #1;
         release dut.soft_req;
+        soft_forced = 1'b0;
         repeat (8) @(posedge MCLK);                     // the soft reset (rst_n low for 5 MCLK) is over
     endtask
 
@@ -838,6 +844,26 @@ module tb_top_r14;
         end
     end
 
+    // a SOFT_RESET reaches soft_req in its commit cycle (audit round 18, auditor C: R forces dut.soft_req at the cycles
+    // it tests, so a register between the commit and soft_req, a natural timing fix, passed every group while moving
+    // the coincidences R checks (NFR-06, spec 3.3) by one MCLK): in every MCLK cycle in which the SPI commits a write of
+    // CMD_SOFT_RESET to COMMAND (eeg_regs' write strobe, address and data from the SPI), soft_req is high, and soft_req
+    // is high in no other cycle (the forced ones aside)
+    integer n_soft_commits = 0, n_soft_bad = 0;
+    always @(posedge MCLK) begin
+        logic c5;
+        c5 = (dut.u_regs.we === 1'b1) && (dut.u_regs.addr === A_COMMAND) && (dut.u_regs.wdata === CMD_SOFT_RESET);
+        if (dut.rst_n === 1'b1 && !soft_forced) begin
+            if (c5) n_soft_commits = n_soft_commits + 1;
+            if (c5 !== (dut.soft_req === 1'b1)) begin
+                n_soft_bad = n_soft_bad + 1;
+                if (n_soft_bad <= 3)
+                    fail($sformatf("soft_req %b in a cycle where a SOFT_RESET commit is %b (it must be the commit cycle)",
+                                   dut.soft_req, c5));
+            end
+        end
+    end
+
     // CHOP_BLANK against CHOP_OUT at the pads (audit round 17, auditor C: a register on the CHOP_BLANK pad, the obvious
     // NFR-06 clean-up, moved its rise from the MCLK before the CHOP_OUT edge to the edge itself and passed every group;
     // the AFE makes CDA and CDB "... and not CHOP_BLANK" (afe/eeg_afe_clk.spice), so the break-before-make that REG-06
@@ -941,6 +967,37 @@ module tb_top_r14;
     // 128 MCLK) and CHOP1 4 kHz (half period 4,096 MCLK). Written from the requirements, not generated from regmap, as
     // check_reset_pins. The clock generator takes CHOP_FAST at its next wrap (512 MCLK) and CHOP1 its rate at the next
     // 1,024-frame boundary, so CHOP1 only after RESET_N
+    // one SCLK slip in a transfer (audit round 18, auditor B): kind 1 an extra pulse the chip counts after host pulse
+    // `at` (100 ns inside the low phase), kind 2 host pulse `at` 8 ns long just after an MCLK edge (the chip misses it).
+    // bits8: the chip's bit count past whole bytes just before CS_N rises (1 for an extra pulse, 7 for a missed one)
+    task automatic xfer_slip(input integer nbytes, input integer kind, input integer at, output logic [2:0] bits8);
+        integer total;
+        total = 8 * nbytes;
+        CS_N = 1'b0;
+        MOSI = spi_bit(0, nbytes);
+        #(spi_tcss);
+        for (int n = 0; n < total; n++) begin
+            if (kind == 2 && n == at) begin
+                @(posedge MCLK); #2.0;
+                SCLK = 1'b1; spi_rx[n / 8][7 - (n % 8)] = miso_pad; #8.0; SCLK = 1'b0;
+                MOSI = (n + 1 < total) ? spi_bit(n + 1, nbytes) : 1'b0;
+                if (n + 1 < total) #(spi_low);
+            end else begin
+                SCLK = 1'b1;
+                spi_rx[n / 8][7 - (n % 8)] = miso_pad;
+                #(spi_high);
+                SCLK = 1'b0;
+                MOSI = (n + 1 < total) ? spi_bit(n + 1, nbytes) : 1'b0;
+                // the extra pulse 150 ns into the low phase, after the chip's MISO update for the last fall
+                if (kind == 1 && n == at) begin #(150.0); SCLK = 1'b1; #(100.0); SCLK = 1'b0; #(spi_low); end
+                else if (n + 1 < total) #(spi_low);
+            end
+        end
+        #(spi_tcsh);
+        bits8 = dut.u_spi.bit_cnt;
+        CS_N = 1'b1;
+        #(spi_tidle);
+    endtask
     task automatic check_reset_waves(input string tag, input logic with_c1);
         repeat (600) @(posedge MCLK);
         measure_chop(8, 1'b0, 128, 4096, with_c1, {tag, ": the reset waveforms (REG-05)"});
@@ -1999,6 +2056,7 @@ module tb_top_r14;
             while (!(dut.cic_stb === 1'b1 && dut.seq_state === 4'd6) && k < 40000) begin @(posedge MCLK); #1; k++; end
             if (k >= 40000) fail("R3 not exercised: no output time in RUN found");
             seq_r = dut.seq_cnt;
+            soft_forced = 1'b1;
             force dut.soft_req = 1'b1;
             #1;
             if (dut.seq_store !== 1'b0 || dut.push_ok !== 1'b0) fail("R3: the sequencer stores in the commit cycle of SOFT_RESET");
@@ -2954,6 +3012,50 @@ module tb_top_r14;
                 if (yer !== 8'h02) fail($sformatf("Y: ERR 0x%02h after a sample read with a missed SCLK and one extra byte, expected FRAME_ERR", yer));
                 r14_write(7'h06, 8'h02);
             end
+            // audit round 18, auditor B: one SCLK slip (the chip misses a pulse, or counts an extra one) always gives
+            // FRAME_ERR and changes nothing, which the host procedure's slip rules rely on: a sample read is not popped
+            // (step 6: the host's shifted copy can pass the sample CRC, and the next read returns the same SEQ, which
+            // the host compares byte by byte), and in CRC mode a STATUS or STATE read flags its frame (rule (b): the
+            // CRC read of STATUS can pass with another value, so READY comes from STATE)
+            for (int k = 0; k < 2; k++) begin
+                logic [3:0] lvl1;
+                logic [7:0] yer1;
+                logic [2:0] b8;
+                @(posedge dut.push_ok);
+                @(posedge MCLK); #1;
+                lvl1 = dut.fifo_level;
+                spi_tx[0] = SMP_HDR;
+                for (int i = 1; i < SMP_FRAME_LEN; i++) spi_tx[i] = 8'h00;
+                xfer_slip(SMP_FRAME_LEN, k + 1, 52, b8);
+                if (b8 !== (k == 0 ? 3'd1 : 3'd7))
+                    fail($sformatf("Y%0d slip %0d not exercised: %0d bits past whole bytes", pass, k, b8));
+                if (dut.fifo_level !== lvl1)
+                    fail($sformatf("Y%0d: a sample read with %s SCLK pulse popped (level %0d -> %0d)", pass,
+                                   k == 0 ? "an extra" : "a missed", lvl1, dut.fifo_level));
+                r14_read(7'h06, yer1);
+                if (yer1 !== 8'h02)
+                    fail($sformatf("Y%0d: ERR 0x%02h after a sample read with %s SCLK pulse, expected FRAME_ERR", pass, yer1,
+                                   k == 0 ? "an extra" : "a missed"));
+                r14_write(7'h06, 8'h02);
+            end
+            if (pass == 1) begin                                // CRC on: STATUS (0x83) and STATE (0x84) reads
+                for (int k = 0; k < 4; k++) begin
+                    logic [7:0] yer2;
+                    logic [3:0] st0;
+                    logic [2:0] b8;
+                    st0 = dut.seq_state;
+                    spi_tx[0] = (k < 2) ? 8'h83 : 8'h84; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
+                    xfer_slip(3, (k % 2) + 1, 9, b8);
+                    if (b8 !== ((k % 2) == 0 ? 3'd1 : 3'd7))
+                        fail($sformatf("Y1 read slip %0d not exercised: %0d bits past whole bytes", k, b8));
+                    r14_read(7'h06, yer2);
+                    if (yer2 !== 8'h02)
+                        fail($sformatf("Y1: ERR 0x%02h after a CRC read of %s with %s SCLK pulse, expected FRAME_ERR", yer2,
+                                       k < 2 ? "STATUS" : "STATE", (k % 2) == 0 ? "an extra" : "a missed"));
+                    r14_write(7'h06, 8'h02);
+                    if (dut.seq_state !== st0) fail("Y1: the state changed across a slipped read");
+                end
+            end
             ovl_force = 1'b1;                                   // DFLAG.OVL
             repeat (40 * 32) @(posedge MCLK);
             ovl_force = 1'b0;
@@ -2982,8 +3084,10 @@ module tb_top_r14;
             fail($sformatf("the CHOP_BLANK monitor not exercised: %0d CHOP_OUT edges, %0d / %0d pulses measured with the DAC off / on",
                            n_cb_edges, n_cb_w[0], n_cb_w[1]));
         if (n_c1_edges < 20) fail($sformatf("the CHOP1 monitor not exercised: %0d edges", n_c1_edges));
+        if (n_soft_commits < 5) fail($sformatf("the SOFT_RESET commit monitor not exercised: %0d commits", n_soft_commits));
         $display("pads: %0d CHOP_OUT edges blanked (%0d / %0d pulses measured, DAC off / on), %0d CHOP1 edges at e16 (errors %0d)",
                  n_cb_edges, n_cb_w[0], n_cb_w[1], n_c1_edges, n_cb_bad + n_c1_bad);
+        $display("SOFT_RESET: %0d commits, each with soft_req in its own cycle (errors %0d)", n_soft_commits, n_soft_bad);
 
         $fclose(flog);
         $fclose(fsmp);

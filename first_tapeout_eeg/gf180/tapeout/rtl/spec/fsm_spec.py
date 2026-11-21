@@ -713,7 +713,7 @@ def seq_ticks_wanted():
 def check_seq_ticks():
     errs, n = [], 0
     timed = {x[0] for x in SEQ_STATES if x[4]}
-    seen = set()
+    seen, seen_rst = set(), set()
     for s in [x[0] for x in SEQ_STATES if x[0] != "RESET"]:
         for present in seq_tick_cases(s, timed):
             for env in all_envs(list(SEQ_CONDS), lambda e: True):
@@ -725,14 +725,15 @@ def check_seq_ticks():
                 # the same events with a reset in their cycle (SOFT_RESET's commit cycle): RESET, no control action;
                 # an output time only counted and discarded (and ALIGN's clear, taken at the start of the cycle)
                 nxt, acts, _ = seq_resolve(s, ["RST"] + present, env)
-                n += 1
+                seen_rst.add((s, tuple(present), tuple(env[k] for k in SEQ_CONDS)))   # audit round 19, auditor C:
+                n += 1                                     # the reset-cycle combinations pinned too
                 want = ((["cic_clear"] if s == "ALIGN" else []) + ["discard", "seq_inc"]) if "OUT" in present else []
                 if nxt != "RESET" or sorted(acts) != sorted(want):
                     errs.append(f"SEQ {s} {['RST'] + present} {env}: a reset that does not win over the events of "
                                 f"its cycle -> {nxt} {acts} (allowed: RESET {want})")
     want = seq_ticks_wanted()
-    if seen != want:
-        errs.append(f"SEQ ticks: {len(want - seen)} of the {len(want)} states, event sets and condition values never "
+    if seen != want or seen_rst != want:            # each also with a reset in its cycle (audit round 19)
+        errs.append(f"SEQ ticks: {len(want - (seen & seen_rst))} of the {len(want)} states, event sets and condition values never "
                     f"resolved (seq_tick_cases narrower than each command alone and with the expiry, the expiry alone "
                     f"and an output time)")
     # RESET (RESET_N low or a SOFT_RESET): only the release leaves it, commands are ignored, an output time is only
@@ -1701,6 +1702,9 @@ def selftest_runs():
         ("RUN/STOP の欄の欠落", lambda t: t.pop(("RUN", "STOP"))),
         # audit round 18, auditor C: a guard naming a condition it does not depend on
         ("PULSE の満了の条件に何も変えない valid を足す", lambda t: t[("PULSE", "TMR")][0].__setitem__("guard", "(1) or valid")),
+        # audit round 19, auditor C: the same with two conditions (a rule narrowed to one of the named conditions)
+        ("FILL の OUT の条件に何も変えない cfg_ok を足す（2 個の条件）",
+         lambda t: t[("FILL", "OUT")][0].__setitem__("guard", "valid and (cfg_ok or 1)")),
         # audit round 17, auditor C: a cell split on a condition into two branches that do the same
         ("PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける", lambda t: t.__setitem__(("PRE", "FLUSH"), [
             B("cfg_ok", t[("PRE", "FLUSH")][0]["actions"], t[("PRE", "FLUSH")][0]["next"]),
@@ -1905,6 +1909,10 @@ def selftest_runs():
         nxt, acts, w = resolve_orig(s, present, env)
         return nxt, ([a for a in acts if a not in ("CFG_ERR", "STATE_ERR")] if w == "TMR" else acts), w
 
+    def resolve_reset_drops_seq(s, present, env):    # audit round 19, auditor C: the output time of a reset's cycle
+        nxt, acts, w = resolve_orig(s, present, env)  # not counted (DAT-03 counts every output time)
+        return nxt, ([a for a in acts if a != "seq_inc"] if w == "RST" and "OUT" in present else acts), w
+
     # the state codes and the timing record (audit round 9); each returns its undo
     def setitem(obj, key, val):
         old = obj[key]
@@ -2022,6 +2030,8 @@ def selftest_runs():
     fifo_step = fifo_orig
     seq_resolve = resolve_timer_drops_flags
     results.append(("SEQ", "同じ tick でタイマの満了が拒否の旗を消す", run_checks(verbose=False)[0]))
+    seq_resolve = resolve_reset_drops_seq
+    results.append(("SEQ", "SOFT_RESET の確定のサイクルの出力の時刻で SEQ を数えない", run_checks(verbose=False)[0]))
     seq_resolve = resolve_orig
     for m, name, apply in data_mut:
         undo = apply()
@@ -2240,6 +2250,9 @@ SELFTEST_EXPECT = {
     # audit round 18, auditor C
     'PULSE の満了の条件に何も変えない valid を足す': ('but does not depend on it (write the guard without it)',),
     'HDR の rw and smp を (rw and smp) and smp に': ('more than once (write each condition once)',),
+    # audit round 19, auditor C
+    'FILL の OUT の条件に何も変えない cfg_ok を足す（2 個の条件）': ('but does not depend on it (write the guard without it)',),
+    'SOFT_RESET の確定のサイクルの出力の時刻で SEQ を数えない': (': a reset that does not win over the events of its cycle ->',),
     'サンプルのフレームで SEQ と DATA の順の入れ違い': ('(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)',),
     'フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）': ('header kinds, condition values and lengths never walked (spi_frame_cases narrower than every header bit and condition)',),
     'FLUSH と同じサイクルの格納を捨てる': (': a pushed sample was lost', ", but the model's occupancy is",),

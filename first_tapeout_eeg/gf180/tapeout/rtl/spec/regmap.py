@@ -212,6 +212,10 @@ WHOLE_BYTE = {"CMD", "KEY"}
 # becomes 0xC0, a short sample read whose third byte (SEQ_H) passes the host's CRC for one SEQ_H in 256; the host
 # procedure confirms exactly these by a second read (requirements 5.4 (b); audit round 16, auditor B)
 WINDOW_NEIGHBOURS_REQUIRED = [0x00, 0x50, 0x60]
+# The readable addresses a single SCLK slip in the header turns into a read of the sample window (audit round 19,
+# auditor B): the host reads 0x00, 0x50 and 0x60 twice (5.4 (b)), never reads 0x01 (VERSION), and reads 0x20
+# (OFF_M_H) only back after writing it (step 3), where a wrong value that passes also needs a failed write
+WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # The registers the host procedure decides from by a CRC read, with the slip pairs it tolerates (audit round 18,
 # auditor B: one SCLK slip turned STATUS into another value with a valid CRC, 62 pairs, since the header 0x83 and
 # STATUS's bit 7 make the CRC's own polynomial; the host reads READY from STATE, DATA from FIFO_LEVEL and CMD_PENDING
@@ -313,20 +317,80 @@ def reg_values(name):
     return vals
 
 
+def _skip(x, k):
+    """A 32-bit stream, MSB first, with its bit k left out (a 0 shifted in at the end)."""
+    return ((x >> (32 - k)) << (32 - k) if k else 0) | ((x & ((1 << (31 - k)) - 1)) << 1)
+
+
+def _dup(x, k):
+    """A 32-bit stream, MSB first, with its bit k repeated (the last bit dropped)."""
+    return ((x >> (31 - k)) << (31 - k)) | ((x >> 1) & ((1 << (31 - k)) - 1))
+
+
+def slip_responses(h_):
+    """The byte pairs the chip can send after the header of a 3-byte CRC read when it decoded the header as h_: a read
+    of a defined readable register (or an active copy) its value and the CRC of the header and the value; of the
+    sample window a valid word's status byte and SEQ's high byte, or an empty word's status byte and 0x00; of a
+    write-only or undefined address 0x00 and its CRC; after a write header zeros."""
+    if not h_ & 0x80:
+        return [(0, 0)]
+    a = h_ & 0x7F
+    by = {r[0]: r for r in REGS}
+    copies = {r[0] + SHADOW_MIRROR: r for r in REGS if any(f["cls"] == "apply" for f in r[4])}
+    if a in by and by[a][1] == "SAMPLE":
+        bits = {n_: b_ for n_, b_, _d in SAMPLE_STATUS if n_ != "0"}
+        flags = [b_ for n_, b_ in bits.items() if n_ != "VALID"]
+        empty_flags = [bits[n_] for n_ in ("OVERRUN", "OVL", "ERR") if n_ in bits]
+        valid, empty = {1 << bits["VALID"]}, {0}
+        for b_ in flags:
+            valid |= {v | (1 << b_) for v in valid}
+        for b_ in empty_flags:
+            empty |= {v | (1 << b_) for v in empty}
+        return [(s, q) for s in sorted(valid) for q in range(256)] + [(s, 0) for s in sorted(empty)]
+    if a in by and by[a][2] != "WO":
+        return [(w, crc8([h_, w])) for w in sorted(reg_values(by[a][1]))]
+    if a in copies:
+        return [(w, crc8([h_, w])) for w in sorted(reg_values(copies[a][1]))]
+    return [(0, crc8([h_, 0]))]
+
+
 def slip_hazards(name):
-    """The (value, value read) pairs where one SCLK slip in a CRC read of the register gives another of its values
-    with a valid CRC: the chip misses host pulse k (bit k read twice) or counts an extra pulse before it (bit k
-    skipped), k over the data and CRC bytes; after the CRC the chip sends zeros (audit round 18, auditor B)."""
+    """Where one SCLK slip in a 3-byte CRC read of the register gives the host another of its legal values with a
+    valid CRC and a first byte that passes rule (a) (bits 7..6 = 10): (value sent, value read) for a slip after the
+    header, (-1, value read) for a slip in the header, where the chip decodes another address (or a write, or the
+    window) and answers for it. The chip misses host pulse k (the host reads bit k twice; the chip skips MOSI bit k)
+    or counts an extra pulse before it (the host skips bit k; the chip reads MOSI bit k twice), k over all 24
+    pulses. STATUS's bits 7..5 matter for rule (a) under the first two slips (ALERT both ways). Audit round 18,
+    auditor B (the data and CRC bytes); round 19, auditor B (the header, rule (a))."""
     h = 0x80 | next(r[0] for r in REGS if r[1] == name)
     vals = reg_values(name)
+    mosi = h << 24
+    out, cache = set(), {}
+    for miss in (True, False):
+        for k in range(24):
+            h_ = (_skip(mosi, k) if miss else _dup(mosi, k)) >> 24      # the header the chip decoded
+            if h_ not in cache:
+                cache[h_] = slip_responses(h_)
+            for st in ((0x80, 0xA0) if k <= 1 else (0x80,)):
+                for b1, b2 in cache[h_]:
+                    hs = (_dup if miss else _skip)((st << 24) | (b1 << 16) | (b2 << 8), k)
+                    d = (hs >> 16) & 0xFF
+                    if hs >> 30 == 0b10 and d in vals and (hs >> 8) & 0xFF == crc8([h, d]) and (h_ != h or d != b1):
+                        out.add((b1 if h_ == h else -1, d))
+    return sorted(out)
+
+
+def window_slip_neighbours():
+    """The readable addresses (active copies included) whose CRC read the chip decodes as a read of the sample window
+    after one SCLK slip in the header (audit round 19, auditor B: the one-bit neighbours alone missed 0x01 and 0x20)."""
+    hdr = smp_hdr()
+    readable = ({a for a, n, acc, *_ in REGS if acc != "WO" and n != "SAMPLE"} |
+                {a + SHADOW_MIRROR for a, _n, _acc, _l, fl, _ in REGS if any(f["cls"] == "apply" for f in fl)})
     out = set()
-    for v in sorted(vals):
-        s = [(b >> (7 - i)) & 1 for b in (v, crc8([h, v])) for i in range(8)] + [0] * 8
-        for k in range(16):
-            for r_ in (s[:k + 1] + s[k:], s[:k] + s[k + 1:]):
-                d = sum(r_[i] << (7 - i) for i in range(8))
-                if d != v and d in vals and sum(r_[8 + i] << (7 - i) for i in range(8)) == crc8([h, d]):
-                    out.add((v, d))
+    for a in readable:
+        m = (0x80 | a) << 24
+        if any((_skip(m, k) >> 24) == hdr or (_dup(m, k) >> 24) == hdr for k in range(8)):
+            out.add(a)
     return sorted(out)
 
 
@@ -346,7 +410,7 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 の 1 組のみ。STATUS は 62 組で通るので、手順は STATUS だけから判断しない。第 18 回）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 の 1 組のみ。STATUS は 62 組で通るので、手順は STATUS だけから判断しない。第 18 回）。滑りは 3 バイトの全ての 24 パルスで考え、先頭バイトの中の滑りではチップの復号した番地（書き込み、窓、未定義を含む）の応答と、ホストの規則 (a) を入れる。先頭バイトの滑りでサンプルの窓の読み出しとなる読めるアドレスは 0x00、0x01、0x20、0x50、0x60 のみ（ホストは 0x00、0x50、0x60 を 2 回読み、0x01 は読まない。第 19 回）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
@@ -728,6 +792,10 @@ def check(verbose=True):
             errs.append(f"{n_}: one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs "
                         f"{[(hex(a_), hex(b_)) for a_, b_ in got_[:4]]}, where the host procedure decides from it "
                         f"(tolerated: {want_}; 5.4 (b))")
+    wsn = window_slip_neighbours()
+    if wsn != WINDOW_SLIP_NEIGHBOURS_REQUIRED:
+        errs.append(f"readable addresses a single SCLK slip in the header turns into a sample read: {[hex(x) for x in wsn]}; "
+                    f"the host procedure accounts for {[hex(x) for x in WINDOW_SLIP_NEIGHBOURS_REQUIRED]} (5.4 (b), audit round 19)")
     notes.append(f"STATUS: {len(slip_hazards('STATUS'))} slip pairs read as another legal value with a valid CRC "
                  f"(the host decides READY, DATA and CMD_PENDING otherwise)")
     rsmp = next(x[5] for x in FS.SPI_STATES if x[0] == "RSMP")      # the SPI table's text names the header
@@ -1206,6 +1274,9 @@ def selftest():
         i = next(k for k, x in enumerate(g["SAMPLE_STATUS"]) if x[0] == "0" and x[1] == 2)   # listed at bit 7
         g["SAMPLE_STATUS"][i] = ("0", 7, g["SAMPLE_STATUS"][i][2])
 
+    def m_slip_twarm():                                  # audit round 19, auditor B: a header slip makes T_WARM's read
+        g["SLIP_DECIDE_REQUIRED"]["T_WARM"] = []          # a sample read
+
     def m_slip_status():                                 # audit round 18, auditor B: STATUS decided from alone
         g["SLIP_DECIDE_REQUIRED"]["STATUS"] = []
 
@@ -1273,6 +1344,7 @@ def selftest():
             ("CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）", m_chop1_rate_6),
             ("T_PRE の合法な値を None に", m_timer_legal_none),
             ("STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）", m_slip_status),
+            ("T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）", m_slip_twarm),
             ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative), ("STATE の合法な値を None に", m_state_legal_none),
             ("サンプルの状態の予約のビット 2 を 7 に", m_sample_reserved_moved)]
     results, problems = [], []
@@ -1411,7 +1483,9 @@ SELFTEST_EXPECT = {
     'TEST_KEY の KEY を 7 ビットに': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
     'ID の読み値を定めない（legal None）': (': a read-only field without its read values (legal None)',),
     'TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）': ('readable addresses one bit from the sample window:',),
-    'サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）': ("the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header 0x",),
+    'サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）': ("the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header 0x",
+                                                    'readable addresses a single SCLK slip in the header turns into a sample read:'),
+    'T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

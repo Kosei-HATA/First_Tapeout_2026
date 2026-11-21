@@ -3,7 +3,9 @@
 // CODE is driven once per frame (it changes at e2, after the TH capture, as eeg_adc_dig's code; audit round 9) from
 // build/top_r14.codes (the CT loop model's stream); every CIC input
 // and every output time are logged (build/top_r14_cic.log) and every sample read over SPI (build/top_r14_samples.log)
-// so that tb/check_top_r14.py compares the samples bit-exactly with the golden CIC (rtl/model/cic_golden.py).
+// so that tb/check_top_r14.py compares the samples bit-exactly with the golden CIC (rtl/model/cic_golden.py); every
+// store is logged with ERR, ALERT_MASK, DFLAG and ALERT_MASK_D of its cycle, and the checker models each sample's
+// VALID, OVERRUN and ERR (ALERT at the store) and its reserved bits (audit round 19, auditor C).
 // Phases (each reports its checks; errors counted):
 //   A  registers: the generated tests (build/reg_tests.svh, from regmap.py), CRC, frame errors, unknown command,
 //      a wrong key, a burst read (address incrementing, CRC off); audit round 15 (auditor C): every illegal value of
@@ -122,12 +124,15 @@
 // Audit round 17 (auditor C: RTL copies that passed every test): at every CHOP_OUT edge CHOP_BLANK was high in the MCLK
 // before it and stays high for the blanking length after it (BLANK_LEN, 15 with the offset DAC on), rising only in
 // the MCLK before an edge unless ADC_ZERO holds it; CHOP1 changes only at e16; O compares each DBG_SEL pair until both
-// of its signals changed twice (CHOP1's half period is 1,024 MCLK or more); Y0 asserts that the chip missed the
+// of its signals changed twice (CHOP1's half period is 1,024 MCLK or more) and TEST_CFG[7:6] after each DBG_SEL write
+// (audit round 19); Y0 asserts that the chip missed the
 // runt (71 bits); V13 runs at 2 MHz (SPI-01), the STOP written right after the APPLY; after RESET_N (A, X) and
 // SOFT_RESET (Y) CHOP_BLANK's width, CHOP's half period and (after RESET_N) CHOP1's half period are REG-05's.
 // Audit round 18 (auditor B): in Y one SCLK slip (an extra or a missed pulse) in a sample read gives FRAME_ERR and no
 // pop, and in a CRC read of STATUS or STATE FRAME_ERR (the host procedure's slip rules rest on it). Audit round 18
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
+// Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
+// (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
 // A watchdog ends the run as FAIL if it has not finished by 800 ms of simulated time (the run ends near 0.6 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -346,6 +351,11 @@ module tb_top_r14;
         end
         if (log_on && dut.cic_en) $fdisplay(flog, "I %0d", CODE);
         if (log_on && dut.cic_stb) $fdisplay(flog, "O %0d %0d", dut.seq_cnt, cic_clear_taken);
+        // every store with the flags of its cycle as the host reads them (SEQ, ERR, ALERT_MASK, DFLAG, ALERT_MASK_D):
+        // check_top_r14 models the stored status byte (audit round 19, auditor C: ERR = ALERT at the store was
+        // checked only with ADDR_ERR, and an ALERT without DFLAG in the samples passed all 16 groups)
+        if (log_on && dut.push_ok) $fdisplay(flog, "S %0d %0d %0d %0d %0d", dut.seq_cnt, dut.u_regs.err,
+                                             dut.u_regs.r_mask, dut.u_regs.dflag_byte, dut.u_regs.mask_d_byte);
     end
 
     // ------------------------------------------------------------------ analog control pins change only after a tick
@@ -1337,14 +1347,15 @@ module tb_top_r14;
         begin                                           // the empty word carries DFLAG.OVERRUN too
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;
             r14_sample(st, sq, d, ok);
-            if (st[7] !== 1'b0 || st[6] !== 1'b1 || !ok)
-                fail($sformatf("the empty word after an overrun: status 0x%02h, expected VALID 0 and OVERRUN 1", st));
+            if (st[7] !== 1'b0 || st[6] !== 1'b1 || st[3] !== 1'b1 || !ok)    // ERR = ALERT: DFLAG.OVERRUN (audit
+                fail($sformatf("the empty word after an overrun: status 0x%02h, expected VALID 0, OVERRUN 1 and ERR 1 (ALERT from DFLAG.OVERRUN)", st));   // round 19)
         end
         for (int i = 0; i < 2; i++) begin             // two samples (audit round 14, auditor C: OVERRUN kept only
             logic [7:0] st; logic [15:0] sq; logic [23:0] d; bit ok;   // until the next store passed every test)
             while (DRDY_N !== 1'b0) @(posedge MCLK);
             r14_sample(st, sq, d, ok);
-            if (st[6] !== 1'b1) fail($sformatf("sample %0d status without OVERRUN while DFLAG.OVERRUN is set", i));
+            if (st[6] !== 1'b1 || st[3] !== 1'b1)     // and ERR: ALERT from DFLAG.OVERRUN (audit round 19, auditor C)
+                fail($sformatf("sample %0d status 0x%02h while DFLAG.OVERRUN is set: OVERRUN 1 and ERR 1 (ALERT) expected", i, st));
         end
         r14_write(7'h07, 8'hFF);
         r14_read(7'h07, v);
@@ -1837,6 +1848,9 @@ module tb_top_r14;
                 logic   qc, qd;
                 r14_write(7'h11, 8'h3C);
                 r14_write(7'h62, 8'(s << 1));
+                repeat (8) @(posedge MCLK);             // TEST_CFG[7:6] is DBG_SEL from the write (ANA-01; audit round
+                if (TEST_CFG[7:6] !== 2'(s))            // 19, auditor C: a copy taken at APPLY passed every test)
+                    fail($sformatf("O TEST_CFG[7:6] %0d 8 MCLK after writing DBG_SEL %0d (ANA-01: at the write)", TEST_CFG[7:6], s));
                 r14_write(7'h11, 8'h00);
                 repeat (3 * 32) @(posedge MCLK);
                 fo = 0;
@@ -1863,9 +1877,11 @@ module tb_top_r14;
             end
             r14_write(7'h11, 8'h3C);
             r14_write(7'h62, 8'h00);
+            repeat (8) @(posedge MCLK);
+            if (TEST_CFG[7:6] !== 2'd0) fail($sformatf("O TEST_CFG[7:6] %0d 8 MCLK after writing DBG_SEL 0", TEST_CFG[7:6]));
             r14_write(7'h11, 8'h00);
         end
-        $display("O  RAW stream and timing pairs (errors %0d)", errors);
+        $display("O  RAW stream and timing pairs, TEST_CFG[7:6] at each DBG_SEL write (errors %0d)", errors);
 
         // ---------------- P: a refused command leaves the pending one (64 kHz, where two frames fit between ticks)
         phase = "P";
@@ -2236,8 +2252,8 @@ module tb_top_r14;
                 logic [23:0] ed;
                 bit eok;
                 r14_sample(es, eq, ed, eok);
-                if (!eok || es[7] !== 1'b0 || es[5] !== 1'b0)
-                    fail($sformatf("T2: empty word status 0x%02h 60 frames after the overload (OVL is OVL_NOW, 0)", es));
+                if (!eok || es[7] !== 1'b0 || es[5] !== 1'b0 || es[3] !== 1'b1)    // ERR = ALERT: DFLAG.OVL (round 19)
+                    fail($sformatf("T2: empty word status 0x%02h 60 frames after the overload (OVL is OVL_NOW, 0; ERR is ALERT, 1 from DFLAG.OVL)", es));
             end
             if (dut.seq_cnt !== seq2) fail("T2 not exercised: an output time came during the checks");
             r14_read(7'h07, f);
@@ -2969,7 +2985,7 @@ module tb_top_r14;
         // apart, and the two wired crosswise passed): RUN with the FIFO empty, IDLE with samples left
         phase = "Y";
         for (int pass = 0; pass < 2; pass++) begin
-            logic [7:0] ys, smask; logic [15:0] yq; logic [23:0] yd; bit yok;
+            logic [7:0] ys, smask, am_y, amd_y; logic [15:0] yq; logic [23:0] yd; bit yok;
             smask = 8'hFF & ~((8'h01 << STATUS_ALERT_LSB) | (8'h01 << STATUS_OVL_NOW_LSB));
             soft_set_all(pass[0]);
             r14_cmd(8'h11);                                     // START: the settings applied
@@ -3017,6 +3033,11 @@ module tb_top_r14;
             // (step 6: the host's shifted copy can pass the sample CRC, and the next read returns the same SEQ, which
             // the host compares byte by byte), and in CRC mode a STATUS or STATE read flags its frame (rule (b): the
             // CRC read of STATUS can pass with another value, so READY comes from STATE)
+            // audit round 19, auditor B: the host finds the slipped frame by ALERT (step 6): FRAME_ERR is set before
+            // the next frame's header copies STATUS, also with CS_N high for the minimum 4 MCLK. ALERT is made
+            // FRAME_ERR's alone for these frames (the masks Y set are put back after)
+            r14_read(7'h08, am_y); r14_read(7'h09, amd_y);
+            r14_write(7'h08, 8'h02); r14_write(7'h09, 8'h00); r14_write(7'h06, 8'hFF);
             for (int k = 0; k < 2; k++) begin
                 logic [3:0] lvl1;
                 logic [7:0] yer1;
@@ -3026,13 +3047,18 @@ module tb_top_r14;
                 lvl1 = dut.fifo_level;
                 spi_tx[0] = SMP_HDR;
                 for (int i = 1; i < SMP_FRAME_LEN; i++) spi_tx[i] = 8'h00;
+                spi_tidle = 4.0 * TMCLK + 0.3;                     // the next frame 4 MCLK after the CS_N rise
                 xfer_slip(SMP_FRAME_LEN, k + 1, 52, b8);
+                spi_tidle = 600.0;
+                if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b0) fail($sformatf("Y%0d slip %0d: ALERT set before the slipped frame", pass, k));
                 if (b8 !== (k == 0 ? 3'd1 : 3'd7))
                     fail($sformatf("Y%0d slip %0d not exercised: %0d bits past whole bytes", pass, k, b8));
                 if (dut.fifo_level !== lvl1)
                     fail($sformatf("Y%0d: a sample read with %s SCLK pulse popped (level %0d -> %0d)", pass,
                                    k == 0 ? "an extra" : "a missed", lvl1, dut.fifo_level));
                 r14_read(7'h06, yer1);
+                if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b1)
+                    fail($sformatf("Y%0d slip %0d: no ALERT in the header right after the slipped sample read (CS_N high 4 MCLK)", pass, k));
                 if (yer1 !== 8'h02)
                     fail($sformatf("Y%0d: ERR 0x%02h after a sample read with %s SCLK pulse, expected FRAME_ERR", pass, yer1,
                                    k == 0 ? "an extra" : "a missed"));
@@ -3045,10 +3071,15 @@ module tb_top_r14;
                     logic [2:0] b8;
                     st0 = dut.seq_state;
                     spi_tx[0] = (k < 2) ? 8'h83 : 8'h84; spi_tx[1] = 8'h00; spi_tx[2] = 8'h00;
+                    spi_tidle = 4.0 * TMCLK + 0.3;
                     xfer_slip(3, (k % 2) + 1, 9, b8);
+                    spi_tidle = 600.0;
+                    if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b0) fail($sformatf("Y1 read slip %0d: ALERT set before the slipped frame", k));
                     if (b8 !== ((k % 2) == 0 ? 3'd1 : 3'd7))
                         fail($sformatf("Y1 read slip %0d not exercised: %0d bits past whole bytes", k, b8));
                     r14_read(7'h06, yer2);
+                    if (spi_rx[0][STATUS_ALERT_LSB] !== 1'b1)
+                        fail($sformatf("Y1 read slip %0d: no ALERT in the header right after the slipped read (CS_N high 4 MCLK)", k));
                     if (yer2 !== 8'h02)
                         fail($sformatf("Y1: ERR 0x%02h after a CRC read of %s with %s SCLK pulse, expected FRAME_ERR", yer2,
                                        k < 2 ? "STATUS" : "STATE", (k % 2) == 0 ? "an extra" : "a missed"));
@@ -3056,6 +3087,7 @@ module tb_top_r14;
                     if (dut.seq_state !== st0) fail("Y1: the state changed across a slipped read");
                 end
             end
+            r14_write(7'h08, am_y); r14_write(7'h09, amd_y);    // Y's masks back
             ovl_force = 1'b1;                                   // DFLAG.OVL
             repeat (40 * 32) @(posedge MCLK);
             ovl_force = 1'b0;

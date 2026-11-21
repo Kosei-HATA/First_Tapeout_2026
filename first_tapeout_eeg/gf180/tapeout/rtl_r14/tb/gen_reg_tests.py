@@ -12,7 +12,10 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      restored. The write-only COMMAND and TEST_KEY read 0x00 (alone and in a burst) while unlocked and after a
      committed command, not only at reset (audit round 15, auditor C)
   3. the test registers (every one): without the key ADDR_ERR and nothing written; with the key as 2.; locked again,
-     each refused again (audit round 7: only DEBUG before the key and TEST_MUX after were written locked)
+     each refused again (audit round 7: only DEBUG before the key and TEST_MUX after were written locked); each
+     holding another legal value than its reset value across the lock reads it while locked, and a locked write
+     of its reset value is refused (REG-08 locks the writes only; audit round 19, auditor C: the locked reads met
+     only the reset value 0x00, so test registers reading 0x00 while locked passed all 16 groups)
   4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing
   5. run_guard_tests (tb_top_r14's J2, at 64 kHz): every register of regmap.guarded_addrs(), written while a FLUSH waits
      for its tick, gives STATE_ERR and is not written (audit round 7: J2 wrote 2 of the 16; a guard that skipped
@@ -232,6 +235,20 @@ def main():
     for a, r in locked:                                        # and refused again once locked
         wv = legal_other(r[4])
         L.append(f"    rt_write_check(7'h{a:02X}, 8'h{wv:02X}, 8'h{reset_byte(r[4]):02X}, 8'h{E_ADDR:02X}, \"{r[1]} locked again\");")
+    # read while locked (audit round 19, auditor C): another legal value held across the lock, then the reset values
+    # back under the key
+    held = {a: legal_other(r[4], low=True) for a, r in locked}
+    assert all(held[a] != reset_byte(r[4]) for a, r in locked), "a test register without a second legal value"
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    L += [f"    rt_write(7'h{a:02X}, 8'h{held[a]:02X});" for a, r in locked]
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    for a, r in locked:
+        L.append(f"    rt_read_expect(7'h{a:02X}, 8'h{held[a]:02X}, \"{r[1]} read while locked\");")
+        L.append(f"    rt_write_check(7'h{a:02X}, 8'h{reset_byte(r[4]):02X}, 8'h{held[a]:02X}, 8'h{E_ADDR:02X}, "
+                 f"\"{r[1]} locked: a write refused, the held value kept\");")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    L += [f"    rt_write(7'h{a:02X}, 8'h{reset_byte(r[4]):02X});" for a, r in locked]
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     for a, r in sorted(regs.items()):

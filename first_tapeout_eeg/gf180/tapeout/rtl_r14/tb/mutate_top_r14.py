@@ -466,6 +466,34 @@ MUTATIONS = [
        "    always_ff @(posedge MCLK or negedge pin_rst_n) if (!pin_rst_n) soft_q <= 1'b0; else soft_q <= soft_raw;\n"
        '    assign soft_req = soft_q;\n'
        '    logic tm_rst_n;                                   // timing and data path: RESET_N only\n')], None, None),
+    # audit round 19, auditor B: FRAME_ERR set at the next frame's start, after that header's STATUS copy (the host's
+    # step 6 locates a slipped frame by the ALERT in the next header)
+    ('SPI：FRAME_ERR を次のフレームの始まりで立てる（次の先頭バイトの STATUS に現れない）', [
+      ('eeg_spi_slave.sv', '    (* fsm_encoding = "none" *) logic [3:0]  st;',
+       '    logic        fe_pend;\n    (* fsm_encoding = "none" *) logic [3:0]  st;'),
+      ('eeg_spi_slave.sv', "            frame_err <= 1'b0;\n            crc_err   <= 1'b0;\n            addr_err  <= 1'b0;\n",
+       "            frame_err <= 1'b0;\n            crc_err   <= 1'b0;\n            addr_err  <= 1'b0;\n            fe_pend   <= 1'b0;\n"),
+      ('eeg_spi_slave.sv', '                tx_sh   <= status_byte;                  // STATUS during the header byte\n',
+       "                tx_sh   <= status_byte;                  // STATUS during the header byte\n                frame_err <= fe_pend;\n                fe_pend   <= 1'b0;\n"),
+      ('eeg_spi_slave.sv', "                        frame_err <= 1'b1;               // inside a byte, overlong",
+       "                        fe_pend   <= 1'b1;               // inside a byte, overlong")], None, None),
+    # audit round 19, auditor C: copies that passed all 16 groups
+    ('上位：TEST_CFG[7:6]（DBG_SEL）を APPLY で反映する（ANA-01 は書き込みで直ちに）', 'eeg_digital_top.sv',
+     '    assign TEST_CFG   = {dbg_sel, a_azero, a_atpen, a_atpsel};',
+     "    logic [1:0] a_dbg_q;\n    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n)     a_dbg_q <= 2'b00;\n"
+     "        else if (apply) a_dbg_q <= dbg_sel;\n    end\n    assign TEST_CFG   = {a_dbg_q, a_azero, a_atpen, a_atpsel};"),
+    ('レジスタ：ロック中の試験のレジスタ（0x60〜0x62）の読み出しが 0x00（REG-08 は書き込みのみを閉じる）', [
+      ('eeg_regs.sv', "            A_TEST_MUX:       rdata = {3'd0, s_atpen, s_atpsel};",
+       "            A_TEST_MUX:       rdata = unlocked ? {3'd0, s_atpen, s_atpsel} : 8'h00;"),
+      ('eeg_regs.sv', "            A_TEST_CTRL:      rdata = {6'd0, s_cstop, s_azero};",
+       "            A_TEST_CTRL:      rdata = unlocked ? {6'd0, s_cstop, s_azero} : 8'h00;"),
+      ('eeg_regs.sv', "            A_DEBUG:          rdata = {5'd0, r_dbg, r_raw};",
+       "            A_DEBUG:          rdata = unlocked ? {5'd0, r_dbg, r_raw} : 8'h00;")], None, None),
+    ('レジスタ：サンプルと空の語の ERR を ERR のマスクした旗のみから（DFLAG を含めない。STATUS の ALERT は正しい）', [
+      ('eeg_regs.sv', '    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);',
+       '    assign alert       = |(err & r_mask);'),
+      ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;',
+       '        status_byte[STATUS_ALERT_LSB]       = alert || |(dflag_byte & mask_d_byte);')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -861,7 +889,8 @@ def run(i, m, bench="top"):
             next((ln for ln in out.splitlines() if ln.startswith("tb_top_r14:")), "")[:150]
     first = next((ln for ln in out.splitlines() if ln.startswith(("ERROR", "SPI ERROR", "FAIL"))), "")
     if tb_pass and not gold_pass:
-        first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL")
+        first = "check_top_r14: " + next((ln for ln in k.stdout.splitlines() if "mismatch" in ln and ": 0 mismatches" not in ln),
+                                         next((ln for ln in k.stdout.splitlines() if "mismatch" in ln), "FAIL"))
     elif tb_pass and not seq_pass:
         first = "check_seq_trace: " + next((ln.strip() for ln in k2.stdout.splitlines() if ln.startswith("  line")), "FAIL")
     return i, name, ("detected" if not (tb_pass and gold_pass and seq_pass) else "MISSED"), first

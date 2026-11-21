@@ -194,9 +194,11 @@ MASKS = {"ALERT_MASK": "ERR", "ALERT_MASK_D": "DFLAG"}
 # the read-only fields the requirements and the spec name (with REQUIRED_RESET's fields: every field of the map)
 REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", "SAMPLE"}
 # addresses and bits the requirements name (the host procedure 5.4 and its examples, SPI-03): the host relies on them
-FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "ERR": 0x06, "DFLAG": 0x07, "ALERT_MASK": 0x08,
-              "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51,
-              "IF_CFG": 0x55}
+# (audit round 20, auditor C: FIFO_LEVEL, which steps 5 and 6 and rule (b) read at 0x05 since round 18, and TEST_MUX
+# were missing; check() now requires every NAME（0xNN） of the requirements and the spec to be held here)
+FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
+              "ALERT_MASK": 0x08, "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50,
+              "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60}
 FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
               # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
@@ -219,8 +221,17 @@ WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # The registers the host procedure decides from by a CRC read, with the slip pairs it tolerates (audit round 18,
 # auditor B: one SCLK slip turned STATUS into another value with a valid CRC, 62 pairs, since the header 0x83 and
 # STATUS's bit 7 make the CRC's own polynomial; the host reads READY from STATE, DATA from FIFO_LEVEL and CMD_PENDING
-# twice). ERR's one pair needs four flags at once (0x66: RESET_FLAG read, a needless restart by rule (c)).
-SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)]}
+# twice). ERR's one pair needs four flags at once (0x66: RESET_FLAG read, a needless restart by rule (c)). The
+# active copies too (NAME.ACT; audit round 20, auditor B): step 4 confirms an APPLY_NR (always) and an APPLY in
+# IDLE..FILL by them and rule (c) compares them. OFF_M_L's copy reads 0xAA as 0xAB under one slip: an executed step
+# read as not executed, so the host sends the APPLY_NR again, which changes nothing and marks 3 + T_ELEC samples
+# the slip counts the documents quote for registers the host does not decide from alone (5.4 (b): STATUS is not used
+# alone, T_WARM is read twice; audit round 20, auditor C: the counts were not pinned and T_WARM's was wrong)
+SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17}
+SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)],
+                        "OFF_M_H.ACT": [], "OFF_M_L.ACT": [(0xAA, 0xAB)], "OFF_CTRL.ACT": [], "AFE_IBIAS.ACT": [],
+                        "CPF_TRIM.ACT": [], "BOOST_TRIM.ACT": [], "CHOP_CFG.ACT": [], "ADC_CFG.ACT": [],
+                        "BLANK.ACT": [], "TEST_MUX.ACT": [], "TEST_CTRL.ACT": []}
 # the codes the requirements give (REG-01, REG-02, SPI-09, REG-08; audit round 13: a two-bit change of a code, which
 # keeps the distance check, passed every check)
 FIXED_CODES = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5,
@@ -235,8 +246,11 @@ REQUIRED_RO_LEGAL = {"STATE": list(range(9)), "LEVEL": list(range(9)), "FIFO_DEP
 # REG-01's regions (stated with these ranges in the requirements): the kind of a register from its fields
 # the regions hold their registers' active copies (addr + SHADOW_MIRROR): settings 0x20-0x2F and copies 0x30-0x3F,
 # test registers 0x60-0x6F and copies 0x70-0x7F (audit round 12, auditor B: the copies 0x70, 0x71 were in no region)
-REGIONS = {"status": range(0x00, 0x10), "command": range(0x10, 0x20), "settings": range(0x20, 0x40),
-           "data": range(0x40, 0x41), "timers": range(0x50, 0x60), "test": range(0x60, 0x80)}
+# (audit round 20, auditor C: one test region 0x60-0x7F let DEBUG sit at 0x72, among the copies): the registers'
+# halves here, their copies' halves in COPY_REGIONS
+REGIONS = {"status": range(0x00, 0x10), "command": range(0x10, 0x20), "settings": range(0x20, 0x30),
+           "data": range(0x40, 0x41), "timers": range(0x50, 0x60), "test": range(0x60, 0x70)}
+COPY_REGIONS = {"settings": range(0x30, 0x40), "test": range(0x70, 0x80)}
 
 
 def region_of(n, acc, lock, fields):
@@ -282,7 +296,10 @@ def blank_w(length):
 
 def guarded_addrs():
     """Writes refused (STATE_ERR) while a command is pending: the registers with fields applied at the tick (the
-    shadows) and the timers (loaded at the tick), so that the command uses the values present when it was written."""
+    shadows) and the timers, so that no write lands between a command and its tick. Read at the command's tick are
+    T_WARM (START), T_PRE (APPLY) and T_ELEC (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); a
+    START's or an APPLY's T_RST, T_REC and T_ELEC are read when each wait starts, after the guard, so the host writes
+    them only in IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
     return sorted({a for a, n, acc, lock, fields, _ in REGS
                    if any(f["cls"] == "apply" for f in fields) or n in ("T_WARM", "T_ELEC", "T_REC", "T_PRE", "T_RST")})
 
@@ -354,29 +371,50 @@ def slip_responses(h_):
     return [(0, crc8([h_, 0]))]
 
 
-def slip_hazards(name):
-    """Where one SCLK slip in a 3-byte CRC read of the register gives the host another of its legal values with a
-    valid CRC and a first byte that passes rule (a) (bits 7..6 = 10): (value sent, value read) for a slip after the
-    header, (-1, value read) for a slip in the header, where the chip decodes another address (or a write, or the
-    window) and answers for it. The chip misses host pulse k (the host reads bit k twice; the chip skips MOSI bit k)
-    or counts an extra pulse before it (the host skips bit k; the chip reads MOSI bit k twice), k over all 24
-    pulses. STATUS's bits 7..5 matter for rule (a) under the first two slips (ALERT both ways). Audit round 18,
-    auditor B (the data and CRC bytes); round 19, auditor B (the header, rule (a))."""
-    h = 0x80 | next(r[0] for r in REGS if r[1] == name)
-    vals = reg_values(name)
+def slip_target(key):
+    """A slip target: a register by name (its address and legal values), or NAME.ACT for its active copy (address +
+    SHADOW_MIRROR, the same values; audit round 20, auditor B)."""
+    name, _, act = key.partition(".")
+    r = next(r for r in REGS if r[1] == name)
+    if act:
+        if act != "ACT" or not any(f["cls"] == "apply" for f in r[4]):
+            raise ValueError(f"{key}: not an active copy")
+        return r[0] + SHADOW_MIRROR, reg_values(name)
+    return r[0], reg_values(name)
+
+
+def slip_hazards(key):
+    """Where one SCLK slip in a 3-byte CRC read gives the host another legal value with a valid CRC and a first byte
+    that passes rule (a) (bits 7..6 = 10): (value sent, value read) for a slip after the header, (-1, value read) for
+    a slip in the header, where the chip decodes another address (or a write, or the window) and answers for it. key:
+    a register's name, or NAME.ACT for its active copy. The chip misses host pulse k (the host reads bit k twice; the
+    chip skips MOSI bit k) or counts an extra pulse before it (the host skips bit k; the chip reads MOSI bit k twice),
+    k over all 24 pulses. A slip in the first byte moves STATUS's bits into what the host takes as the data and decides
+    rule (a): every STATUS value 0x80..0xBF is tried there (a missed pulse puts AFE_RST, bit 0, at the top of the data
+    byte). Audit round 18, auditor B (the data and CRC bytes); round 19, auditor B (the header, rule (a)); round 20,
+    auditor B (every STATUS value, the active copies)."""
+    import numpy as np
+    addr, vals = slip_target(key)
+    h = 0x80 | addr
+    t8 = np.array([crc8([x]) for x in range(256)], dtype=np.int64)
+    legal = np.zeros(256, dtype=bool)
+    legal[[v for v in sorted(vals) if 0 <= v < 256]] = True     # (a field outside the byte is reported elsewhere)
+    want_crc = t8[t8[h] ^ np.arange(256)]                # the CRC the host checks for each value it may read
     mosi = h << 24
     out, cache = set(), {}
     for miss in (True, False):
         for k in range(24):
             h_ = (_skip(mosi, k) if miss else _dup(mosi, k)) >> 24      # the header the chip decoded
             if h_ not in cache:
-                cache[h_] = slip_responses(h_)
-            for st in ((0x80, 0xA0) if k <= 1 else (0x80,)):
-                for b1, b2 in cache[h_]:
-                    hs = (_dup if miss else _skip)((st << 24) | (b1 << 16) | (b2 << 8), k)
-                    d = (hs >> 16) & 0xFF
-                    if hs >> 30 == 0b10 and d in vals and (hs >> 8) & 0xFF == crc8([h, d]) and (h_ != h or d != b1):
-                        out.add((b1 if h_ == h else -1, d))
+                cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
+            b1, b2 = cache[h_][:, 0], cache[h_][:, 1]
+            for st in (range(0x80, 0xC0) if k <= 7 else (0x80,)):
+                hs = (_dup if miss else _skip)((st << 24) | (b1 << 16) | (b2 << 8), k)     # what the host sampled
+                d, c = (hs >> 16) & 0xFF, (hs >> 8) & 0xFF
+                hit = ((hs >> 30) == 2) & legal[d] & (c == want_crc[d])
+                if h_ == h:
+                    hit &= d != b1
+                out |= {(int(v) if h_ == h else -1, int(x)) for v, x in zip(b1[hit], d[hit])}
     return sorted(out)
 
 
@@ -410,12 +448,12 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 の 1 組のみ。STATUS は 62 組で通るので、手順は STATUS だけから判断しない。第 18 回）。滑りは 3 バイトの全ての 24 パルスで考え、先頭バイトの中の滑りではチップの復号した番地（書き込み、窓、未定義を含む）の応答と、ホストの規則 (a) を入れる。先頭バイトの滑りでサンプルの窓の読み出しとなる読めるアドレスは 0x00、0x01、0x20、0x50、0x60 のみ（ホストは 0x00、0x50、0x60 を 2 回読み、0x01 は読まない。第 19 回）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR と、手順 4 と共通の規則 (c) の読むアクティブの写しの全て。第 20 回）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 と、OFF_M_L の写しの 0xAA → 0xAB（実行済みの APPLY_NR を未実行と読み、変化のない出し直しとなる）の 2 組のみ。STATUS は 62 組で通るので、手順は STATUS だけから判断しない。第 18 回）。アクティブの写しの全てがこの一覧にあること（第 20 回）。滑りは 3 バイトの全ての 24 パルスで考え、先頭バイトの中の滑りではチップの復号した番地（書き込み、窓、未定義を含む）の応答と、ホストの規則 (a) を入れる。最初のバイトの中の滑りでは STATUS の全ての値（0x80〜0xBF）を入れる（取りこぼしでは STATUS の bit 0（AFE_RST）がホストの受けるデータのバイトの最上位となる。第 20 回）。先頭バイトの滑りでサンプルの窓の読み出しとなる読めるアドレスは 0x00、0x01、0x20、0x50、0x60 のみ（ホストは 0x00、0x50、0x60 を 2 回読み、0x01 は読まない。第 19 回）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレスと、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS 62 組、T_WARM 17 組）を確かめる（第 20 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
 ]
@@ -470,7 +508,7 @@ def check(verbose=True):
             errs.append(f"{n} at 0x{a:02X}: outside the {rg} region of REG-01 (0x{REGIONS[rg][0]:02X}-0x{REGIONS[rg][-1]:02X})")
         if bool(lock) != (a in REGIONS["test"]):
             errs.append(f"{n}: lock {lock} at 0x{a:02X} (REG-08: exactly the registers of the test region are locked)")
-        if any(f["cls"] == "apply" for f in fields) and a + SHADOW_MIRROR not in REGIONS[rg]:
+        if any(f["cls"] == "apply" for f in fields) and a + SHADOW_MIRROR not in COPY_REGIONS.get(rg, ()):
             errs.append(f"{n}: active copy 0x{a + SHADOW_MIRROR:02X} outside its register's {rg} region (REG-01)")
         if (acc == "WO") != (n in ("COMMAND", "TEST_KEY")):
             errs.append(f"{n}: access {acc}; only the command register and the test key are write-only")
@@ -786,8 +824,16 @@ def check(verbose=True):
     if nb != WINDOW_NEIGHBOURS_REQUIRED:
         errs.append(f"readable addresses one bit from the sample window: {[hex(x) for x in nb]}; the host procedure "
                     f"confirms {[hex(x) for x in WINDOW_NEIGHBOURS_REQUIRED]} by a second read (5.4 (b), audit round 16)")
+    copies_ = {f"{rg_[1]}.ACT" for rg_ in REGS if any(f_["cls"] == "apply" for f_ in rg_[4])}
+    if not copies_ <= set(SLIP_DECIDE_REQUIRED):        # audit round 20, auditor B: the active copies too
+        errs.append(f"active copies without a slip check: {sorted(copies_ - set(SLIP_DECIDE_REQUIRED))} (step 4 "
+                    f"confirms APPLY and APPLY_NR by the active copies and rule (c) compares them; audit round 20)")
     for n_, want_ in SLIP_DECIDE_REQUIRED.items():      # audit round 18, auditor B: SCLK slips
-        got_ = slip_hazards(n_)
+        try:
+            got_ = slip_hazards(n_)
+        except (StopIteration, ValueError):
+            errs.append(f"{n_}: in the slip list, but neither a register nor an active copy (audit round 20)")
+            continue
         if got_ != want_:
             errs.append(f"{n_}: one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs "
                         f"{[(hex(a_), hex(b_)) for a_, b_ in got_[:4]]}, where the host procedure decides from it "
@@ -796,8 +842,28 @@ def check(verbose=True):
     if wsn != WINDOW_SLIP_NEIGHBOURS_REQUIRED:
         errs.append(f"readable addresses a single SCLK slip in the header turns into a sample read: {[hex(x) for x in wsn]}; "
                     f"the host procedure accounts for {[hex(x) for x in WINDOW_SLIP_NEIGHBOURS_REQUIRED]} (5.4 (b), audit round 19)")
+    for n_, want_ in SLIP_COUNTS_RECORDED.items():
+        got_ = len(slip_hazards(n_))
+        if got_ != want_:
+            errs.append(f"{n_}: {got_} slip pairs read as another legal value with a valid CRC, while the documents "
+                        f"record {want_} (5.4 (b); audit round 20)")
     notes.append(f"STATUS: {len(slip_hazards('STATUS'))} slip pairs read as another legal value with a valid CRC "
-                 f"(the host decides READY, DATA and CMD_PENDING otherwise)")
+                 f"(the host decides READY, DATA and CMD_PENDING otherwise); T_WARM: {len(slip_hazards('T_WARM'))} "
+                 f"(read twice)")
+    names_ = {n_ for _a, n_, *_ in REGS}                 # audit round 20, auditor C: every address the documents
+    named_ = set()                                      # name for a register is held by FIXED_ADDR
+    for path_ in (REQ_DOC, DOC):
+        try:
+            txt_ = open(path_, encoding="utf-8").read()
+        except OSError:
+            continue                                    # (reported by the overload rule's comparison)
+        for m_ in re.finditer(r"([A-Z][A-Z0-9_]*)（0x([0-9A-Fa-f]{2})）", txt_):
+            if m_.group(1) in names_:
+                named_.add((os.path.basename(path_), m_.group(1), int(m_.group(2), 16)))
+    for doc_, nm_, ad_ in sorted(named_):
+        if FIXED_ADDR.get(nm_) != ad_:
+            errs.append(f"{doc_} names {nm_} at 0x{ad_:02X}, which FIXED_ADDR does not hold (the host relies on the "
+                        f"addresses the documents name; audit round 20)")
     rsmp = next(x[5] for x in FS.SPI_STATES if x[0] == "RSMP")      # the SPI table's text names the header
     if f"先頭バイト 0x{0x80 | win:02X}" not in rsmp:                    # (audit round 17, auditor B)
         errs.append(f"the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header "
@@ -1000,7 +1066,8 @@ def selftest():
     import tempfile
     g = globals()
     keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED",
-                                             "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256")}
+                                             "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256",
+                                             "FIXED_ADDR", "SLIP_COUNTS_RECORDED")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
                "ofen_of_range": ofen_of_range}
     tmp = tempfile.mkdtemp()
@@ -1280,6 +1347,33 @@ def selftest():
     def m_slip_status():                                 # audit round 18, auditor B: STATUS decided from alone
         g["SLIP_DECIDE_REQUIRED"]["STATUS"] = []
 
+    def m_slip_twarm_afe():                              # audit round 20, auditor B: T_WARM's pairs as round 19's
+        g["SLIP_DECIDE_REQUIRED"]["T_WARM"] = [(-1, 0x40), (-1, 0x44), (-1, 0x48), (-1, 0x4C), (-1, 0x50),   # model
+                                               (-1, 0x54), (-1, 0x58), (-1, 0x5C), (0x8A, 0x8B)]   # (AFE_RST 0)
+
+    def m_slip_copy_pair():                              # audit round 20, auditor B: OFF_M_L's copy, its pair not
+        g["SLIP_DECIDE_REQUIRED"]["OFF_M_L.ACT"] = []    # tolerated
+
+    def m_slip_copy_missing():                           # audit round 20, auditor B: an active copy left out
+        del g["SLIP_DECIDE_REQUIRED"]["BLANK.ACT"]
+
+    def m_slip_copy_unknown():                           # audit round 20: an entry that is no active copy
+        g["SLIP_DECIDE_REQUIRED"]["STATUS.ACT"] = []
+
+    def m_fifo_level_moved():                            # audit round 20, auditor C: FIFO_LEVEL, which the host reads
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "FIFO_LEVEL")   # at 0x05, moved within its block
+        r = list(g["REGS"][i]); r[0] = 0x0D; g["REGS"][i] = tuple(r)
+
+    def m_fixed_addr_drop():                             # audit round 20, auditor C: an address the requirements name
+        del g["FIXED_ADDR"]["TEST_MUX"]                 # left out of FIXED_ADDR
+
+    def m_debug_in_copies():                             # audit round 20, auditor C: a test register among the copies
+        i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "DEBUG")
+        r = list(g["REGS"][i]); r[0] = 0x72; g["REGS"][i] = tuple(r)
+
+    def m_slip_count_status():                           # audit round 20, auditor C: a recorded slip count off by one
+        g["SLIP_COUNTS_RECORDED"]["STATUS"] = 61
+
     def m_window_moved():                                # audit round 17, auditor B: the window moved (item 258's
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "SAMPLE")  # option), the SPI table's text left behind
         r = list(g["REGS"][i]); r[0] = 0x4F; g["REGS"][i] = tuple(r)
@@ -1345,6 +1439,14 @@ def selftest():
             ("T_PRE の合法な値を None に", m_timer_legal_none),
             ("STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）", m_slip_status),
             ("T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）", m_slip_twarm),
+            ("T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）", m_slip_twarm_afe),
+            ("OFF_M_L の写しの滑りの 1 組を許さない", m_slip_copy_pair),
+            ("BLANK の写しを滑りの一覧から除く", m_slip_copy_missing),
+            ("STATUS の写し（ない）を滑りの一覧に加える", m_slip_copy_unknown),
+            ("FIFO_LEVEL を 0x0D に移す（手順が 0x05 として読む）", m_fifo_level_moved),
+            ("FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）", m_fixed_addr_drop),
+            ("DEBUG を写しの半分の 0x72 に", m_debug_in_copies),
+            ("STATUS の滑りの組の数を 61 と記す", m_slip_count_status),
             ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative), ("STATE の合法な値を None に", m_state_legal_none),
             ("サンプルの状態の予約のビット 2 を 7 に", m_sample_reserved_moved)]
     results, problems = [], []
@@ -1486,6 +1588,15 @@ SELFTEST_EXPECT = {
     'サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）': ("the SPI table's RSMP text (fsm_spec.SPI_STATES) does not name the sample read's header 0x",
                                                     'readable addresses a single SCLK slip in the header turns into a sample read:'),
     'T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
+    # audit round 20, auditor B
+    'T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
+    'OFF_M_L の写しの滑りの 1 組を許さない': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
+    'BLANK の写しを滑りの一覧から除く': ('(step 4 confirms APPLY and APPLY_NR by the active copies and rule (c) compares them; audit round 20)',),
+    'STATUS の写し（ない）を滑りの一覧に加える': (': in the slip list, but neither a register nor an active copy (audit round 20)',),
+    'FIFO_LEVEL を 0x0D に移す（手順が 0x05 として読む）': (': the host procedure names it at 0x',),
+    'FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）': (', which FIXED_ADDR does not hold (the host relies on the addresses the documents name; audit round 20)',),
+    'DEBUG を写しの半分の 0x72 に': ('region of REG-01 (0x',),
+    'STATUS の滑りの組の数を 61 と記す': ('slip pairs read as another legal value with a valid CRC, while the documents record',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

@@ -494,6 +494,12 @@ MUTATIONS = [
        '    assign alert       = |(err & r_mask);'),
       ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;',
        '        status_byte[STATUS_ALERT_LSB]       = alert || |(dflag_byte & mask_d_byte);')], None, None),
+    # audit round 20, auditor C: the RAW stream's priority over DBG_SEL and its switch at the frame boundary
+    ('RAW：DBG_SEL が 0 でなければ RAW_EN を止める（流れが優先しない）', 'eeg_digital_top.sv',
+     '    eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n), .raw_en(raw_en), .cycle(cycle)',
+     '    eeg_raw u_raw (.clk(MCLK), .rst_n(tm_rst_n), .raw_en(raw_en && (dbg_sel == 2\'b00)), .cycle(cycle)'),
+    ('RAW：流れと対を書き込みで切り替える（語と対を切る）', 'eeg_raw.sv',
+     "            if (on || dbg_sel == 2'b00) begin", "            if (raw_en || dbg_sel == 2'b00) begin"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

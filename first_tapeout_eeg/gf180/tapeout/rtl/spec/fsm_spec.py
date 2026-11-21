@@ -856,10 +856,11 @@ def sample_len():
     return 1 + sum(n for *_x, n in SAMPLE_BYTES)
 
 
-def spi_walk(nbytes, extra, env, trace=None):
+def spi_walk(nbytes, extra, env, trace=None, taken=None):
     """One frame through the SPI table: CSF, one BIT or BYTE per SCLK rising edge (BYTE on every 8th), CSR.
     Returns (actions in order, the state at CS_N rising) or None if an impossible or undecided cell is met. trace: a
-    list that gets (event, actions) of every event taken (the SPI timing diagram, wave.py)."""
+    list that gets (event, actions) of every event taken (the SPI timing diagram, wave.py). taken: a set that gets
+    (state, event, branch index) of every branch taken (audit round 20)."""
     t = SPI["table"]
     state, acts, k = "IDLE", [], 0
     e_env = dict(env, mid=int(extra > 0), last=0)
@@ -881,6 +882,8 @@ def spi_walk(nbytes, extra, env, trace=None):
         acts += b["actions"]
         if trace is not None:
             trace.append((e, list(b["actions"])))
+        if taken is not None:
+            taken.add((state, e, next(i for i, x in enumerate(cell) if x is b)))
         k += "next_byte" in b["actions"]
         if b["next"] is not None:
             state = b["next"]
@@ -973,11 +976,11 @@ def check_spi_frames():
         errs.append(f"sample frame {got_b} after the header, but SPI-07 orders it {SAMPLE_BYTES_REQUIRED} "
                     f"(the sample status byte, SEQ in 2 bytes, DATA in 3, then the CRC of the header and those 6)")
     effects = {"commit", "STATE_ERR", "ADDR_ERR", "CRC_ERR", "FRAME_ERR", "snapshot", "pop"}
-    seen = set()
+    seen, taken = set(), set()
     for kind, crc_en, env, nbytes, extra in spi_frame_cases():
         n += 1
         seen.add(tuple(env[k] for k in SPI_FRAME_KEYS) + (nbytes, extra))
-        w = spi_walk(nbytes, extra, env)
+        w = spi_walk(nbytes, extra, env, taken=taken)
         tag = f"SPI frame {kind} crc_en={crc_en} {nbytes} bytes + {extra} bits {env}"
         if w is None:
             errs.append(f"{tag}: the walk meets an impossible or undecided cell")
@@ -1022,6 +1025,11 @@ def check_spi_frames():
     if seen != want:
         errs.append(f"SPI frames: {len(want - seen)} of the {len(want)} header kinds, condition values and lengths "
                     f"never walked (spi_frame_cases narrower than every header bit and condition)")
+    t_ = SPI["table"]                                # audit round 20, auditor C: every branch taken by some frame
+    for s_, e_, i_ in sorted((s_, e_, i_) for (s_, e_), c_ in t_.items() if isinstance(c_, list)
+                             for i_ in range(len(c_)) if (s_, e_, i_) not in taken):
+        errs.append(f"SPI {s_}/{e_} [{t_[(s_, e_)][i_]['guard']}]: a branch that no enumerated frame takes (a "
+                    f"condition constant in that state, or an unreachable branch; audit round 20)")
     return errs, n
 
 
@@ -1204,7 +1212,7 @@ CHECKS = [
     "SPI（条件の全ての値で列挙）：書き込みの確定は、完全で CRC 検査済みの、書き込み可能なアドレスへのフレームの CS_N の立ち上がりのみ（前の命令が未処理なら確定しない）。CRC の不一致は CRC_ERR。取り出しは、8 バイトちょうど（先頭バイトと 7 バイト）読み出したサンプルが写した時点から FIFO の先頭のままのときのみで、そのときは必ず取り出す（空の語とフラッシュのあとの語は取り出さない）。CS_N の立ち上がりは必ず IDLE へ戻り、バイトの途中と不完全・過長な書き込みは FRAME_ERR",
     "第 7 回で追加（その時の掃引の 1 か所の書き換え、シーケンサ 1,931 通りと SPI 1,159 通りが全て検査で捕まる。第 9 回の C の掃引 6,267 通りでは、整合する設定の命令を拒否とする 12 通りが通っていた：下の命令の結果の照合で塞いだ）：全ての状態の出力の時刻の欄は分岐の並びで、必ず数える（無視（IGN）を許さない）。リセット中の出力の時刻はちょうど数えて捨てる（リセットの規則の動作はこの欄から取る）。T_ELEC ＝ 0 では、どの状態からも WAIT_E に入らない。IDLE の STOP は受け付けて何もしない（IGN）。SPI の IDLE では SCLK の縁を無視し（CS_N が High の間の他のチップのフレーム）、バイトと CS_N の立ち上がりは起こらない。同じ意味の書き方は一つ（留まるのは行き先なし、何もしない欄は IGN、自分自身への遷移は書かない）。書き込みのアドレスの取り込みは書き込みの分岐のみ",
     "SPI の動作の位置（第 6 回で追加）：各動作（STATUS と先頭の写し、MISO への読み込み、アドレスの加算、書き込みの保持、確定、取り出し、エラーの旗）は、フレームの定義から表とは独立に書いた位置（状態と事象）でのみ。FRAME_ERR は CS_N の立ち上がりのみ",
-    f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること。サンプルのフレームのバイト（SAMPLE_BYTES：状態 1、SEQ 2、DATA 3、CRC 1）は SPI-07 の値（第 15 回。SPI のタイミング図と試験台のサンプルの取り出しもこの定義から）",
+    f"SPI のフレーム（先頭バイトの R/W と標本の窓の全ての組（窓への書き込みを含む。第 12 回）× CRC の有無 × 条件の全ての値 × 0〜10 バイトと 0〜7 ビットの途中のバイト、{sum(1 for _ in spi_frame_cases()):,} 通り。第 6 回で途中のビットを 0 と 3 から全てに）：表を歩いた結果を、表とは独立に書いた意味の定義（spi_expect）と照合。確定、STATE_ERR、ADDR_ERR（書き込みと未定義の読み出し）、CRC_ERR、FRAME_ERR（バイトの途中、長さの誤り、CRC 有効時の CRC のない読み出しと 8 バイトでないサンプル）、写し、取り出し、MISO へ載せるデータと CRC のバイト数と、読み出しの MISO のバイトの並び（アドレスの順）、確定する書き込みがアドレスとデータ（CRC 有効時は CRC）を保持していること。サンプルのフレームのバイト（SAMPLE_BYTES：状態 1、SEQ 2、DATA 3、CRC 1）は SPI-07 の値（第 15 回。SPI のタイミング図と試験台のサンプルの取り出しもこの定義から）。表の全ての分岐が、列挙したいずれかのフレームで取られること（その状態で一定の条件で 1 分岐の欄を分け、取られない分岐を足す編集を拒む。第 20 回）",
     f"FIFO（深さ {DEPTH}）：同じサイクルの格納・取り出しの要求・クリア・SPI の写しの全ての組み合わせで、占有数が範囲内、OVERRUN は満杯への格納（取り出しとクリアなし）のときのみ、格納したサンプルは失われない。取り出すのは SPI が写して送った語のみ（写しが先頭のままの印は、空の語の写し、フラッシュ、取り出しで消える）",
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
@@ -1807,6 +1815,9 @@ def selftest_runs():
         ("PULSE の APPLY を設定によって STATE_ERR で拒む", lambda t: t.__setitem__(("PULSE", "APPLY"), [B("cfg_ok", ["STATE_ERR"]), B("not cfg_ok", ["CFG_ERR"])])),
     ] + refusal_mutations()
     spi_mut = [
+        # audit round 20, auditor C: a one-branch cell split by a condition constant in its state (rw is 1 in RCRC)
+        ("RCRC の BYTE を rw で分け、取られない分岐を足す", lambda t: t.__setitem__(("RCRC", "BYTE"), [
+            B("rw", t[("RCRC", "BYTE")][0]["actions"], t[("RCRC", "BYTE")][0]["next"]), B("not rw", [], None)])),
         # audit round 18, auditor C: a condition named twice
         ("HDR の rw and smp を (rw and smp) and smp に", lambda t: next(b for b in t[("HDR", "BYTE")] if b["guard"] == "rw and smp").__setitem__("guard", "(rw and smp) and smp")),
         ("CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）", lambda t: t.__setitem__(("IDLE", "BIT"), [B(ALWAYS, [], "HDR")])),
@@ -2250,6 +2261,8 @@ SELFTEST_EXPECT = {
     # audit round 18, auditor C
     'PULSE の満了の条件に何も変えない valid を足す': ('but does not depend on it (write the guard without it)',),
     'HDR の rw and smp を (rw and smp) and smp に': ('more than once (write each condition once)',),
+    # audit round 20, auditor C
+    'RCRC の BYTE を rw で分け、取られない分岐を足す': (']: a branch that no enumerated frame takes (a condition constant in that state, or an unreachable branch; audit round 20)',),
     # audit round 19, auditor C
     'FILL の OUT の条件に何も変えない cfg_ok を足す（2 個の条件）': ('but does not depend on it (write the guard without it)',),
     'SOFT_RESET の確定のサイクルの出力の時刻で SEQ を数えない': (': a reset that does not win over the events of its cycle ->',),

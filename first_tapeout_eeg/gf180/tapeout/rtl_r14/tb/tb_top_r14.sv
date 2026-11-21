@@ -125,7 +125,9 @@
 // before it and stays high for the blanking length after it (BLANK_LEN, 15 with the offset DAC on), rising only in
 // the MCLK before an edge unless ADC_ZERO holds it; CHOP1 changes only at e16; O compares each DBG_SEL pair until both
 // of its signals changed twice (CHOP1's half period is 1,024 MCLK or more) and TEST_CFG[7:6] after each DBG_SEL write
-// (audit round 19); Y0 asserts that the chip missed the
+// (audit round 19); the RAW pads against a model of the frame boundary (8 RAW_CLK rises in every frame of the stream,
+// the DBG_SEL pair in every MCLK without it; O2 with RAW_EN 1 and DBG_SEL 1..3, and RAW_EN switched at 8 frame
+// cycles; audit round 20); Y0 asserts that the chip missed the
 // runt (71 bits); V13 runs at 2 MHz (SPI-01), the STOP written right after the APPLY; after RESET_N (A, X) and
 // SOFT_RESET (Y) CHOP_BLANK's width, CHOP's half period and (after RESET_N) CHOP1's half period are REG-05's.
 // Audit round 18 (auditor B): in Y one SCLK slip (an extra or a missed pulse) in a sample read gives FRAME_ERR and no
@@ -818,6 +820,33 @@ module tb_top_r14;
     endtask
     // every sample read with a good CRC and VALID goes to the golden comparison while the log runs (audit round 8:
     // only read_samples' samples were logged, and the log stopped at K)
+    // RAW words (O, O2): one per frame, bits at RAW_CLK's rises, MSB first, {101, the code of the frame that ends}
+    task automatic o_words(input integer n, input string tag);
+        logic [7:0] word;
+        logic [4:0] want;
+        integer nw, nbad, fo;
+        fo = n_rawclk;
+        repeat (64) @(posedge MCLK);
+        if (n_rawclk - fo != 16) begin                  // no decoding: it would wait for RAW_CLK
+            fail($sformatf("%s: %0d RAW_CLK rises in 2 frames, expected 16 (the stream has priority)", tag, n_rawclk - fo));
+            nw = n;
+        end else nw = 0;
+        nbad = 0;
+        while (nw < n) begin
+            @(posedge CMP_STROBE);
+            want = CODE;                                // the code of the frame that ends here
+            word = 8'h00;
+            for (int b = 0; b < 8; b++) begin
+                @(posedge RAW_CLK);
+                word = {word[6:0], RAW_DATA};
+            end
+            if (word !== {3'b101, want}) begin
+                nbad = nbad + 1;
+                if (nbad < 4) fail($sformatf("%s: RAW word 0x%02h, expected 0x%02h (code %0d)", tag, word, {3'b101, want}, want));
+            end
+            nw = nw + 1;
+        end
+    endtask
     task automatic r14_sample_hook(input logic [7:0] st, input logic [15:0] sq, input logic [23:0] d, input bit ok);
         if (log_on && ok && st[7] === 1'b1) begin
             $fdisplay(fsmp, "%0d %0d %0d", sq, $signed(d), st);
@@ -836,19 +865,75 @@ module tb_top_r14;
     real t_rstn_fall = 0.0, rstn_low = 0.0;
     always @(negedge dut.rst_n) t_rstn_fall = $realtime;
     always @(posedge dut.rst_n) rstn_low = $realtime - t_rstn_fall;
+    // RAW's frames (audit round 20, auditor C): RAW_EN is taken from its register at the frame boundary (o_on_m, at the
+    // edge that ends cycle 31) and the pads change mode one MCLK later (o_on, from e1): modelled here from the register,
+    // not taken from eeg_raw's own `on` (a copy that kept the stream off with DBG_SEL != 0 kept `on` at 0, so the
+    // monitors gated by it saw nothing, and it passed all 16 groups). In every frame of the stream RAW_CLK rises exactly
+    // 8 times (a word is never cut); in every MCLK without the stream and with DBG_SEL s != 0, the pads are s's pair one
+    // MCLK later (a pair is never cut, nor replaced before the boundary)
+    logic o_on_m = 1'b0, o_on = 1'b0;
+    always @(posedge MCLK or negedge dut.tm_rst_n)
+        if (!dut.tm_rst_n) begin o_on_m <= 1'b0; o_on <= 1'b0; end
+        else begin
+            if (dut.cycle == 5'd31) o_on_m <= dut.raw_en;
+            o_on <= o_on_m;
+        end
+    integer o_rises = 0, n_raw_cut = 0, n_raw_pair = 0, n_raw_frames = 0, n_raw_pairs = 0;
+    bit     o_fr_on = 1'b0, o_fr_ok = 1'b0;           // the mode of the pads' frame now running; a whole one
+    always @(posedge RAW_CLK) o_rises = o_rises + 1;
+    always @(posedge MCLK) begin                        // at the edge, before its updates (RAW_CLK's rise at this edge
+        if (dut.tm_rst_n !== 1'b1) begin                // counts for the frame it starts)
+            o_fr_ok = 1'b0;
+            o_rises = 0;
+        end else if (dut.cycle == 5'd0) begin           // this edge is e1: the pads' frame e1 .. e1 ends here
+            if (o_fr_ok && o_fr_on) begin
+                n_raw_frames = n_raw_frames + 1;
+                if (o_rises != 8) begin
+                    n_raw_cut = n_raw_cut + 1;
+                    if (n_raw_cut <= 3) fail($sformatf("RAW: %0d RAW_CLK rises in a frame of the stream, expected 8 (a word is never cut)", o_rises));
+                end
+            end
+            o_rises = 0;
+            o_fr_on = o_on_m;                           // the mode from this edge on
+            o_fr_ok = 1'b1;
+        end
+    end
+    logic [1:0] o_ps = 2'b00;                           // DBG_SEL before this edge (taken just after the previous one)
+    logic       o_pc = 1'b0, o_pd = 1'b0, o_pv = 1'b0;
+    always @(posedge MCLK) begin
+        #0.2;                                           // the pads set at this edge from `on` (o_on now) and DBG_SEL
+        if (o_pv && dut.tm_rst_n === 1'b1 && o_on === 1'b0 && o_ps != 2'b00) begin   // and the pair before it
+            n_raw_pairs = n_raw_pairs + 1;
+            if (RAW_CLK !== o_pc || RAW_DATA !== o_pd) begin
+                n_raw_pair = n_raw_pair + 1;
+                if (n_raw_pair <= 3) fail($sformatf("RAW: DBG_SEL %0d without the stream: RAW_CLK / RAW_DATA %b / %b, its pair one MCLK before %b / %b", o_ps, RAW_CLK, RAW_DATA, o_pc, o_pd));
+            end
+        end
+        o_ps = dut.dbg_sel;
+        case (dut.dbg_sel)
+            2'd1:    begin o_pc = CMP_STROBE; o_pd = DAC_CLK;  end
+            2'd2:    begin o_pc = CHOP;       o_pd = CHOP_OUT; end
+            2'd3:    begin o_pc = CHOP_BLANK; o_pd = CHOP1;    end
+            default: begin o_pc = 1'b0;       o_pd = 1'b0;     end
+        endcase
+        o_pv = (dut.tm_rst_n === 1'b1);
+    end
+    integer o_commit_cycle = -1;                        // the frame cycle of the last change of RAW_EN (O2)
+    always @(dut.raw_en) o_commit_cycle = dut.cycle;
     // RAW's bit timing while the stream runs (audit round 9: a word loaded at cycle 0 instead of 31 passed): RAW_DATA
-    // changes only at e1, e5, ..., e29 and RAW_CLK rises only at e3, e7, ..., e31
+    // changes only at e1, e5, ..., e29 and RAW_CLK rises only at e3, e7, ..., e31 (the stream's frames from the
+    // model above since round 20)
     integer n_raw_t = 0;
     always @(RAW_DATA) begin
         #1;
-        if (dut.u_raw.on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd1) begin
+        if (o_on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd1) begin
             n_raw_t = n_raw_t + 1;
             if (n_raw_t <= 3) fail($sformatf("RAW_DATA changed in frame cycle %0d (only at e1, e5, ...)", dut.cycle));
         end
     end
     always @(posedge RAW_CLK) begin
         #1;
-        if (dut.u_raw.on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd3) begin
+        if (o_on === 1'b1 && dut.rst_n === 1'b1 && dut.cycle[1:0] !== 2'd3) begin
             n_raw_t = n_raw_t + 1;
             if (n_raw_t <= 3) fail($sformatf("RAW_CLK rose in frame cycle %0d (only at e3, e7, ...)", dut.cycle));
         end
@@ -945,7 +1030,8 @@ module tb_top_r14;
     logic [1:0] raw_quiet_q = 2'b00;
     integer     n_raw_noisy = 0;
     always @(posedge MCLK) begin
-        raw_quiet_q <= {raw_quiet_q[0], dut.u_raw.on === 1'b0 && dut.u_raw.dbg_sel === 2'b00};
+        raw_quiet_q <= {raw_quiet_q[0], o_on_m === 1'b0 && dut.dbg_sel === 2'b00};   // the model's latch, read at the
+                                                // edge as eeg_raw reads its `on` (round 20)
         if (raw_quiet_q == 2'b11 && (RAW_DATA !== 1'b0 || RAW_CLK !== 1'b0)) begin
             n_raw_noisy = n_raw_noisy + 1;
             if (n_raw_noisy <= 3) fail($sformatf("RAW pads not quiet with the stream off and DBG_SEL 0 (RAW_DATA %b, RAW_CLK %b)", RAW_DATA, RAW_CLK));
@@ -1874,6 +1960,38 @@ module tb_top_r14;
                 if (nc < 2 || nd < 2)
                     fail($sformatf("O DBG_SEL %0d not exercised: its pair changed %0d and %0d times in %0d MCLK", s, nc, nd, no));
                 if (fo != 0) fail($sformatf("O DBG_SEL %0d: RAW_CLK / RAW_DATA differ from their pair in %0d cycles", s, fo));
+            end
+            // O2 (audit round 20, auditor C: a copy that kept the stream off with DBG_SEL != 0 passed all 16 groups, and one
+            // that switched at the write was caught only by chance): RAW_EN 1 with DBG_SEL 1..3, the stream has
+            // priority (its words decoded); then RAW_EN written 0 / 1 alternately with DBG_SEL 1 (its pair changes in
+            // every frame) from 8 points of the frame, so that the writes commit at 8 frame cycles: the monitors (8
+            // RAW_CLK rises in every frame of the stream, the pair in every MCLK without it) see the word in progress
+            // end and the pair kept until the boundary
+            begin
+                integer cyc[8], nd;
+                r14_write(7'h11, 8'h3C);
+                for (int s = 1; s < 4; s++) begin
+                    r14_write(7'h62, 8'((s << 1) | 1));
+                    repeat (3 * 32) @(posedge MCLK);
+                    o_words(4, $sformatf("O2 RAW_EN 1 with DBG_SEL %0d", s));
+                end
+                for (int k = 0; k < 8; k++) begin
+                    while (dut.cycle !== 5'(4 * k + 1)) @(posedge MCLK);
+                    r14_write(7'h62, 8'(2 | (k & 1)));      // DBG_SEL 1; RAW_EN 0 (k even) or 1 (k odd)
+                    repeat (8) @(posedge MCLK);
+                    cyc[k] = o_commit_cycle;
+                    repeat (3 * 32) @(posedge MCLK);
+                end
+                nd = 0;
+                for (int k = 0; k < 8; k++) begin
+                    bit seen;
+                    seen = 1'b0;
+                    for (int j = 0; j < k; j++) if (cyc[j] == cyc[k]) seen = 1'b1;
+                    if (!seen) nd = nd + 1;
+                end
+                if (nd < 6) fail($sformatf("O2 not exercised: the RAW_EN writes committed at %0d distinct frame cycles", nd));
+                $display("O2 RAW_EN 1 with DBG_SEL 1..3 (words decoded); RAW_EN 0 / 1 with DBG_SEL 1 committed at cycles %0d %0d %0d %0d %0d %0d %0d %0d",
+                         cyc[0], cyc[1], cyc[2], cyc[3], cyc[4], cyc[5], cyc[6], cyc[7]);
             end
             r14_write(7'h11, 8'h3C);
             r14_write(7'h62, 8'h00);
@@ -3120,6 +3238,9 @@ module tb_top_r14;
         $display("pads: %0d CHOP_OUT edges blanked (%0d / %0d pulses measured, DAC off / on), %0d CHOP1 edges at e16 (errors %0d)",
                  n_cb_edges, n_cb_w[0], n_cb_w[1], n_c1_edges, n_cb_bad + n_c1_bad);
         $display("SOFT_RESET: %0d commits, each with soft_req in its own cycle (errors %0d)", n_soft_commits, n_soft_bad);
+        $display("RAW: %0d frames of the stream with 8 RAW_CLK rises, %0d MCLK of a timing pair one MCLK later (errors %0d)",
+                 n_raw_frames, n_raw_pairs, n_raw_cut + n_raw_pair);
+        if (n_raw_frames < 20 || n_raw_pairs < 1000) fail("RAW monitors not exercised");
 
         $fclose(flog);
         $fclose(fsmp);

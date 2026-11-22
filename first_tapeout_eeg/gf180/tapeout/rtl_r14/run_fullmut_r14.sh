@@ -29,6 +29,11 @@ cd gf180/tapeout/rtl_r14 || exit 1
 # the version, for the record (audit round 25, auditor C: this copy lies inside the checkout, so git run here answers
 # for the checkout; the runner compares every file of the copy with this version at the start and the end)
 print -r -- "$(git -C $C rev-parse "$H") $C" > FULLRUN_VERSION || exit 1
+# the version check before the long run (audit round 28: the check failed in every copy for a git path error, which a
+# run showed only in its header and at its end, hours later): the runner's own run_version must find every file of
+# the copy equal to the version
+$PY -c 'import sys; sys.path.insert(0, "tb"); import mutate_top_r14 as m; v, f = m.run_version(); print(v); sys.exit(0 if f is not None and not f() and "equal" in v else 1)' || {
+    print -r -- "the copy does not check as $H: not started"; exit 1; }
 date "+the complete mutation run of $H: start %Y-%m-%d %H:%M:%S"
 $PY tb/mutate_top_r14.py -j 3
 echo "mutate_top_r14.py rc $?"

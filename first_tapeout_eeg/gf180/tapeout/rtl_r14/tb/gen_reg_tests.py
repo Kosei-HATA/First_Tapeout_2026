@@ -20,6 +20,13 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      its reset value in ascending, descending and a shuffled address order, each round followed by one burst
      read of the whole map: each register as written, the active copies at reset (an OFF_M_H write clearing
      M[7:0] and an OFF_M_L write clearing SIGN passed all 16 groups)
+  2c. aliasing (audit round 28, auditor C): rounds of random legal bytes for every writable register (IF_CFG
+     included, CRC_EN kept 0; reserved bits random), ascending and descending, a burst read of the map each, drawn
+     until every single-bit alias between two writable registers is visible (a write to A loading one of its bits
+     into, clearing or setting a bit of B written before it), every bit both 0 and 1
+  2d. the command codes and the key as data (audit round 28, auditor C): each of them written to every address but
+     COMMAND: written or refused as the map says, ERR exactly (never RESET_FLAG), no SOFT_RESET and no command
+  5. also guard_code: SOFT_RESET's code written to every guarded register while FLUSH waits: exactly STATE_ERR
   4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing; STATUS by
      its error only, its value moves (audit round 26, auditor C: no fixed test wrote STATUS)
   5. run_guard_tests (tb_top_r14's J2, at 64 kHz): every register of regmap.guarded_addrs(), written while a FLUSH waits
@@ -296,6 +303,147 @@ def main():
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
     L.append(f"    expect_err_exact(8'h{flags:02X}, \"2b: the writes in three orders and the bursts: ADDR_ERR and CMD_ERR "
              f"kept, no other flag\");")
+    # 2c. aliasing (audit round 28, auditor C: 2b wrote each register one value per round, with the same low bits in
+    #     ALERT_MASK and ALERT_MASK_D where it mattered, and left IF_CFG out, so an ALERT_MASK write that also loaded
+    #     ALERT_MASK_D and an IF_CFG write whose reserved bit 2 loaded RAW_EN passed all 16 groups): rounds of random
+    #     legal bytes for every writable register (the reserved bits random too; IF_CFG's CRC_EN kept 0, the frame
+    #     format), written in ascending or descending address order (alternately) and followed by one burst read of
+    #     the map. Rounds are drawn (seeded; of 40 candidates the one making the most conditions visible) until every
+    #     single-bit alias is visible: for every ordered pair of writable registers A, B and every bit j of A's byte
+    #     and k of B's fields, a round where B is written before A and A's bit j differs from B's bit k (a write to A
+    #     loading its bit j into B's bit k), rounds where B is written before A with B's bit k 0 and 1 (a write to A
+    #     clearing or setting it), a round where bit j of A's byte differs from bit k of A's fields (a write loading
+    #     its own bit j into its bit k), and every bit of every byte both 0 and 1 (the active copies, ERR and DFLAG,
+    #     which no write here changes, as victims)
+    alias_regs = [a for a, r in sorted(regs.items()) if r[2] == "RW"]
+    ifcfg_a = next(a for a in alias_regs if regs[a][1] == "IF_CFG")
+    crc_bit = next(f["lsb"] for f in regs[ifcfg_a][4] if f["name"] == "CRC_EN")
+    fbits = {a: [k for k in range(8) if any(f["lsb"] <= k <= f["msb"] for f in regs[a][4])] for a in alias_regs}
+    fixed0 = {(ifcfg_a, crc_bit)}                      # bits held at 0 in every round
+
+    def rand_byte(rng, a):
+        v = rng.randrange(256)                         # reserved bits random
+        for f in regs[a][4]:
+            x = 0 if (a, f["lsb"]) in fixed0 and f["msb"] == f["lsb"] else rng.choice(f["legal"])
+            v = (v & ~field_mask(f)) | (x << f["lsb"])
+        return v
+
+    def bit(v, k):
+        return (v >> k) & 1
+    c_data = {(A, j, B, k) for A in alias_regs for B in alias_regs if A != B for j in range(8) for k in fbits[B]
+              if (B, k) not in fixed0 or (A, j) not in fixed0}
+    c_const = {(A, B, k, x) for A in alias_regs for B in alias_regs if A != B for k in fbits[B] for x in (0, 1)
+               if not ((B, k) in fixed0 and x == 1)}
+    c_both = {(A, j, x) for A in alias_regs for j in range(8) for x in (0, 1) if not ((A, j) in fixed0 and x == 1)}
+    c_self = {(A, j, k) for A in alias_regs for j in range(8) for k in fbits[A] if j != k
+              if not ((A, j) in fixed0 and (A, k) in fixed0)}
+    n_conds = len(c_data) + len(c_const) + len(c_both) + len(c_self)
+
+    def visible(val, asc):
+        before = (lambda b_, a_: b_ < a_) if asc else (lambda b_, a_: b_ > a_)
+        d_ = {(A, j, B, k) for (A, j, B, k) in c_data if before(B, A) and bit(val[A], j) != bit(val[B], k)}
+        c_ = {(A, B, k, x) for (A, B, k, x) in c_const if before(B, A) and bit(val[B], k) == x}
+        b_ = {(A, j, x) for (A, j, x) in c_both if bit(val[A], j) == x}
+        s_ = {(A, j, k) for (A, j, k) in c_self if bit(val[A], j) != bit(val[A], k)}
+        return d_, c_, b_, s_
+    rng = random.Random(28)
+    rounds = []
+    while (c_data or c_const or c_both or c_self) and len(rounds) < 60:
+        asc = len(rounds) % 2 == 0
+        best = None
+        for _ in range(40):
+            val = {a: rand_byte(rng, a) for a in alias_regs}
+            vis = visible(val, asc)
+            n = sum(len(x) for x in vis)
+            if best is None or n > best[0]:
+                best = (n, val, vis)
+        _, val, (d_, c_, b_, s_) = best
+        c_data -= d_
+        c_const -= c_
+        c_both -= b_
+        c_self -= s_
+        rounds.append((asc, val))
+    assert not (c_data or c_const or c_both or c_self), \
+        f"2c: {len(c_data) + len(c_const) + len(c_both) + len(c_self)} alias conditions open"
+    L.append(f"    // 2c. aliasing: {len(rounds)} rounds of random legal bytes, ascending and descending, a burst read of the "
+             f"map each; {n_conds} alias conditions, every one visible")
+    L.append(f"    rt_write(7'h{A_ERR:02X}, 8'hFF);")
+    L.append(f"    rt_write(7'h{undefined[0]:02X}, 8'h5A);")                  # ADDR_ERR
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h5A);")                          # a wrong key: CMD_ERR
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    dflag_a = next(a for a, r in regs.items() if r[1] == "DFLAG")
+    for n_r, (asc, val) in enumerate(rounds):
+        order = sorted(alias_regs, reverse=not asc)
+        L += [f"    rt_write(7'h{a:02X}, 8'h{val[a]:02X});" for a in order]
+        L += ["    spi_tx[0] = 8'h80;", "    for (int i = 1; i <= 128; i++) spi_tx[i] = 8'h00;", "    spi_xfer(129, 0);"]
+        tag = f"2c round {n_r + 1} ({'ascending' if asc else 'descending'})"
+        L.append(f"    rt_burst_expect({A_ERR + 1}, 8'h{flags:02X}, \"{tag}: burst 0x{A_ERR:02X} ERR\");")
+        L.append(f"    rt_burst_expect({dflag_a + 1}, 8'h00, \"{tag}: burst 0x{dflag_a:02X} DFLAG\");")
+        for a in range(0x80):
+            if a in val:
+                used = sum(field_mask(f) for f in regs[a][4])
+                L.append(f"    rt_burst_expect({a + 1}, 8'h{val[a] & used:02X}, \"{tag}: burst 0x{a:02X} {regs[a][1]}\");")
+            elif a in mirrors:
+                L.append(f"    rt_burst_expect({a + 1}, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, "
+                         f"\"{tag}: burst 0x{a:02X} {regs[mirrors[a]][1]} active\");")
+    L += [f"    rt_write(7'h{a:02X}, 8'h{reset_byte(regs[a][4]):02X});" for a in sorted(alias_regs)]
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    L.append(f"    expect_err_exact(8'h{flags:02X}, \"2c: the rounds and the bursts: ADDR_ERR and CMD_ERR kept, no other flag\");")
+    # 2d. the command codes and the key as data (audit round 28, auditor C: no fixed test wrote 0xA5 anywhere but
+    #     COMMAND, so a SOFT_RESET decoded from the data byte alone passed all 16 groups with tb_spi_r14's seed 11):
+    #     each command code and the test key written to every address but COMMAND: a writable register (the test
+    #     registers with the key) takes a legal byte (read back, reserved bits 0, then its reset value again) and
+    #     refuses an illegal one with exactly RANGE_ERR; IF_CFG through code_ifcfg (the BFM follows CRC_EN; DEBUG read
+    #     after it); ERR and DFLAG (both 0) stay 0; TEST_KEY: the key opens without a flag, any other byte locks with
+    #     exactly CMD_ERR; the read-only registers, the active copies and the undefined addresses: exactly ADDR_ERR
+    #     after the seven writes, and the fixed values read back. ERR is checked exactly (never RESET_FLAG); at the end
+    #     no SOFT_RESET commit and no pending command counted, CMD_PENDING 0 and STATE IDLE
+    codes = sorted(set(RM.COMMANDS.values()) | {RM.TEST_KEY})
+    cmd_a2 = next(a for a, r in regs.items() if r[1] == "COMMAND")
+    L.append(f"    // 2d. the command codes and the key as data: {', '.join(f'0x{c:02X}' for c in codes)} to every address "
+             f"but COMMAND")
+    L.append("    code_begin();")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    for a, r in sorted(regs.items()):
+        if r[2] != "RW":
+            continue
+        used = sum(field_mask(f) for f in r[4])
+        base = reset_byte(r[4])
+        for c in codes:
+            ok = all(((c & field_mask(f)) >> f["lsb"]) in f["legal"] for f in r[4])
+            nm = f"2d {r[1]} <- 0x{c:02X}"
+            if r[1] == "IF_CFG":
+                assert ok and base == 0
+                L.append(f"    code_ifcfg(8'h{c:02X}, 8'h{c & used:02X}, 8'h{reset_byte(regs[0x62][4]):02X}, \"{nm}\");")
+            elif ok:
+                L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{c:02X}, 8'h{c & used:02X}, 8'h00, \"{nm}\");")
+                L.append(f"    rt_write(7'h{a:02X}, 8'h{base:02X});")
+            else:
+                L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{c:02X}, 8'h{base:02X}, 8'h{E_RANGE:02X}, \"{nm} (illegal)\");")
+    for a, r in sorted(regs.items()):
+        if r[2] == "W1C":
+            for c in codes:
+                L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{c:02X}, 8'h00, 8'h00, \"2d {r[1]} <- 0x{c:02X} (W1C, 0 before)\");")
+    for c in codes:
+        e = 0 if c == RM.TEST_KEY else E_CMD
+        L.append(f"    rt_write_exact(7'h{A_KEY:02X}, 8'h{c:02X}, 8'h00, 8'h{e:02X}, \"2d TEST_KEY <- 0x{c:02X}\");")
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    for a in range(0x80):
+        if a == cmd_a2 or (a in regs and regs[a][2] in ("RW", "W1C")) or a == A_KEY:
+            continue
+        L += [f"    rt_write(7'h{a:02X}, 8'h{c:02X});" for c in codes]
+        if a in mirrors:
+            L.append(f"    rt_read_expect(7'h{a:02X}, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, "
+                     f"\"2d {regs[mirrors[a]][1]} active after the codes\");")
+        elif a in regs and regs[a][1] == "CAPS":
+            L += ["`ifdef FIFO4", f"    rt_read_expect(7'h{a:02X}, 8'h{caps4(regs[a]):02X}, \"2d CAPS after the codes\");",
+                  "`else", f"    rt_read_expect(7'h{a:02X}, 8'h{reset_byte(regs[a][4]):02X}, \"2d CAPS after the codes\");",
+                  "`endif"]
+        elif a in regs and regs[a][1] in ("ID", "VERSION", "ODR_H", "ODR_L", "FORMAT", "FIFO_LEVEL"):
+            L.append(f"    rt_read_expect(7'h{a:02X}, 8'h{reset_byte(regs[a][4]):02X}, \"2d {regs[a][1]} after the codes\");")
+        what = regs[a][1] if a in regs else (regs[mirrors[a]][1] + " active" if a in mirrors else "undefined")
+        L.append(f"    expect_err_exact(8'h{E_ADDR:02X}, \"2d 0x{a:02X} {what}: the codes refused (exactly ADDR_ERR)\");")
+    L.append("    code_end(\"2d\");")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     assert regs[0x03][1] == "STATUS" and regs[0x03][2] == "RO"
@@ -334,6 +482,8 @@ def main():
                 break
         if bad is not None:                            # audit round 8: the guard is decided before the range
             L.append(f"    guard_range(7'h{a:02X}, 8'h{bad:02X}, \"{r[1]}\");")
+        # SOFT_RESET's code as the data (audit round 28, auditor C): exactly STATE_ERR, no reset, not written
+        L.append(f"    guard_code(7'h{a:02X}, 8'h{RM.COMMANDS['SOFT_RESET']:02X}, \"{r[1]}\");")
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
     for a in RM.guarded_addrs():                       # audit round 8: the lock is decided before the guard
         if regs[a][3]:
@@ -367,7 +517,7 @@ def main():
         if r[1] == "ERR":
             L.append("    free_err();")
         elif r[2] == "W1C":
-            L.append(f"    free_w1c(7'h{r[0]:02X}, 8'h{sum(field_mask(f) for f in r[4]):02X}, \"{r[1]}\");")
+            L.append(f"    free_w1c(7'h{r[0]:02X}, 8'hFF, \"{r[1]}\");")   # every bit (audit round 28, auditor C)
         elif r[1] == "IF_CFG":
             L.append("    free_ifcfg();")
         else:
@@ -379,7 +529,8 @@ def main():
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(L) + "\n")
     chk = ("rt_read_expect(", "rt_burst_expect(", "rt_expect_err(", "expect_err_exact(", "rt_write_check(", "rt_write_err(", "guard_one(", "guard_range(",
-           "guard_locked(", "free_one(", "free_w1c(", "free_err(", "free_key(", "free_ifcfg(")
+           "guard_locked(", "free_one(", "free_w1c(", "free_err(", "free_key(", "free_ifcfg(", "rt_write_exact(",
+           "code_ifcfg(", "code_end(", "guard_code(")
     total, per, skip = 0, {"": 0, "FIFO4": 0}, None
     for ln in L:                                       # checks in the file, and those each FIFO configuration runs
         t = ln.strip()
@@ -408,9 +559,9 @@ def main():
         sys.exit(f"PROBLEM: the spec cannot be read ({ex})")
     assert per[''] == per['FIFO4'], "the quotes assume one count for both FIFO depths"
     stale = []
-    for pat, have in ((r"生成した確認 (\d+) 個", total), (r"生成した確認 \d+ 個（各構成 (\d+) 個", per['']),
-                      (r"各構成で (\d+) 個を実行", per[''])):
-        got = [int(x) for x in re.findall(pat, txt)]
+    for pat, have in ((r"生成した確認 ([\d,]+) 個", total), (r"生成した確認 [\d,]+ 個（各構成 ([\d,]+) 個", per['']),
+                      (r"各構成で ([\d,]+) 個を実行", per[''])):   # thousands written 1,658 (round 28)
+        got = [int(x.replace(",", "")) for x in re.findall(pat, txt)]
         if not got or any(g != have for g in got):
             stale.append(f"the spec quotes {got} for {pat!r}, the generator made {have}")
     if stale:

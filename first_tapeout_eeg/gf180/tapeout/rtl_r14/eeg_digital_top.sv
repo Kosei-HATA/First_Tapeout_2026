@@ -5,7 +5,8 @@
 // documentation/gf180_digital_control_requirements_20261119.md (r3) and gf180_digital_control_spec_20261119.md, with
 // the machine-readable sources in gf180/tapeout/rtl/spec/.
 //   * eeg_seq (new): the sequencer; ticks from eeg_clkgen (the middle of chopper phase A, frame cycle 24), output
-//     times from the CIC (cycle 8). AFE_RST is its register; every analog setting changes at a tick (e25).
+//     times from the CIC (cycle 8). AFE_RST is its register; every analog setting changes at a tick (e25),
+//     but for a reset and an illegal sequencer state's return to IDLE (AFE_RST in any cycle: NFR-05; audit round 28).
 //   * eeg_regs (new map): shadow / active analog settings, W1C flags, the pending command, SOFT_RESET.
 //   * eeg_spi_slave (new protocol): R/W + address header, STATUS first, fixed-length writes with optional CRC.
 //   * eeg_cic3: no FILTER_CLEAR; cleared at an output time in ALIGN, the output grid fixed from reset release.

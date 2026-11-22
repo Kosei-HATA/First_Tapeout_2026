@@ -62,6 +62,15 @@ module tb_clkgen;
 
     always #(TMCLK / 2.0) clk = ~clk;
 
+    // every wait ends (audit round 28, auditor C: with the CHOP_BLANK pulse gone, the wait for its rise below never
+    // ended, and run_tests_r14.sh hung in this group): the bench ends in about 2.6 ms of simulated time, so 30 ms
+    // without its end is a FAIL
+    initial begin
+        #(30.0e6);
+        $display("FAIL: tb_clkgen (watchdog: not finished after 30 ms of simulated time)");
+        $finish;
+    end
+
     integer errors = 0;
     integer ncyc = 0;                          // rising edges since reset release
     logic   chop_hist [0:NHIST-1];             // chop value in cycle n (1-based)

@@ -19,7 +19,8 @@
 #   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
 #               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; no flag cleared by a write to
-#               any other address (audit round 27); cfg_ok and nr_ok against regmap over the full 10-bit M
+#               any other address, the other flag register included (audit rounds 27, 28); cfg_ok and nr_ok
+#               against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
 #   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X and Y, listed in the bench's header, and the
@@ -37,6 +38,8 @@
 #   A bench run alone needs this script's generated inputs first (codes: build/top_r14.codes and ovl.codes;
 #   tb/gen_reg_tests.py: build/reg_tests.svh and pin_tests.svh): without the code stream tb_top_r14's CODE is X and
 #   every phase fails (audit round 15)
+# Every group has a time limit (about ten times its usual length; audit round 28, auditor C: a bench waiting for an
+# edge that never came hung the whole script): a group still running at its limit is stopped and FAILs.
 # usage: ./run_tests_r14.sh
 set -u
 cd "$(dirname "$0")"
@@ -56,10 +59,22 @@ comp() {   # out.vvp, iverilog arguments...
     grep -v "sorry: constant" "$out.log"
     [ $rc -eq 0 ] && [ -f "$out" ]
 }
-run() {   # name, command
-    local name=$1; shift
-    local t0=$SECONDS
-    if "$@" > "build/$name.log" 2>&1 && grep -q "PASS" "build/$name.log" && ! grep -qE "FAIL|ERROR" "build/$name.log"; then
+killtree() { local c; for c in $(pgrep -P "$1"); do killtree "$c"; done; kill -TERM "$1" 2>/dev/null; }
+run() {   # name, time limit [s], command
+    local name=$1 lim=$2; shift 2
+    local t0=$SECONDS rc
+    "$@" > "build/$name.log" 2>&1 &
+    local pid=$!
+    while kill -0 "$pid" 2>/dev/null && (( SECONDS - t0 < lim )); do sleep 1; done
+    if kill -0 "$pid" 2>/dev/null; then
+        killtree "$pid"
+        wait "$pid" 2>/dev/null
+        echo "FAIL: $name stopped at its time limit of $lim s" >> "build/$name.log"
+        RES+=("FAIL  $name  (time limit $lim s; build/$name.log)")
+        return
+    fi
+    wait "$pid"; rc=$?
+    if [ $rc -eq 0 ] && grep -q "PASS" "build/$name.log" && ! grep -qE "FAIL|ERROR" "build/$name.log"; then
         RES+=("PASS  $name  $((SECONDS - t0)) s")
     else
         RES+=("FAIL  $name  (build/$name.log)")
@@ -99,21 +114,21 @@ spi_t() { comp build/tb_spi_r14.vvp $RTL tb/tb_spi_r14.sv &&
 top4_t() { comp build/tb_top_r14_f4.vvp -DFIFO4 $RTL tb/tb_top_r14.sv &&
            vvp -n build/tb_top_r14_f4.vvp && $PY tb/check_top_r14.py &&
            $PY tb/check_seq_trace.py build/top_seq_trace.txt --no-cover; }
-run spec spec
-run codes codes
-run tb_seq seq_t
-run tb_tick tick_t
-run tb_clkgen clkgen_t
-run tb_chop1 chop1_t
-run tb_cic_arm cic_t
-run tb_ovl ovl_t
-run tb_rnd_sat rnd_t
-run tb_regs regs_t
-run tb_fifo fifo_t
-run tb_fifo4 fifo4_t
-run tb_top_r14 top_t
-run tb_spi_r14 spi_t
-run tb_top_r14_fifo4 top4_t
-run outputs outputs_t
+run spec 1800 spec
+run codes 600 codes
+run tb_seq 1200 seq_t
+run tb_tick 600 tick_t
+run tb_clkgen 600 clkgen_t
+run tb_chop1 600 chop1_t
+run tb_cic_arm 600 cic_t
+run tb_ovl 600 ovl_t
+run tb_rnd_sat 600 rnd_t
+run tb_regs 600 regs_t
+run tb_fifo 900 fifo_t
+run tb_fifo4 900 fifo4_t
+run tb_top_r14 5400 top_t
+run tb_spi_r14 3600 spi_t
+run tb_top_r14_fifo4 5400 top4_t
+run outputs 1200 outputs_t
 printf '%s\n' "${RES[@]}"
 ! printf '%s\n' "${RES[@]}" | grep -q FAIL

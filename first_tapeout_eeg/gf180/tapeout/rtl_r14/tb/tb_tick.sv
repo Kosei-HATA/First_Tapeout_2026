@@ -1,7 +1,9 @@
 // tb_tick - the r14 clock generator's tick: at both chopper rates and across random rate changes, every tick is
 // TICK_FRAME * 32 + TICK_CYCLE MCLK cycles after a rising CHOP edge (56 at 128 kHz, 120 at 64 kHz: the middle of
 // phase A, CHOP high; the constants generated from fsm_spec.TIMING, audit round 13), and every chopper period has
-// exactly one tick. CHOP_OUT equals CHOP (CHOP_DLY tied to 0).
+// exactly one tick. CHOP_OUT equals CHOP (CHOP_DLY tied to 0). At least 700 periods (400,000 MCLK at 512 MCLK a
+// period at the slower rate gives 781), 100 at each rate and a tick in each (audit round 28, auditor C: a counter that
+// never moved printed "0 ticks in 0 periods; 0 errors" and passed).
 `timescale 1ns / 1ps
 `default_nettype none
 module tb_tick;
@@ -54,6 +56,11 @@ module tb_tick;
                 seed = seed + 1;
                 chop_fast = ~chop_fast;
             end
+        end
+        if (nper < 700 || fast_per < 100 || slow_per < 100 || nticks < nper) begin
+            $display("ERROR: %0d ticks in %0d periods (%0d at 128 kHz, %0d at 64 kHz): at least 700 periods, 100 at each rate, a tick in each",
+                     nticks, nper, fast_per, slow_per);
+            errors = errors + 1;
         end
         $display("tb_tick: %0d ticks in %0d periods (%0d at 128 kHz, %0d at 64 kHz); %0d errors", nticks, nper,
                  fast_per, slow_per, errors);

@@ -102,10 +102,15 @@ def run_version():
         blobs = [(sha, p) for (mode, typ, sha), p in ents if typ == 'blob' and mode in ('100644', '100755')]
         bad += [p + ' (missing)' for _, p in blobs if not os.path.isfile(os.path.join(root, p))]
         have = [(sha, p) for sha, p in blobs if os.path.isfile(os.path.join(root, p))]
-        hs = git('hash-object', '--no-filters', '--stdin-paths', cwd=root, inp=''.join(p + '\n' for _, p in have))
+        # absolute paths (audit round 28: the copy lies in the checkout's git-ignored build/, so git finds the checkout's
+        # repository and reads --stdin-paths from its top level; every relative path failed, "git hash-object failed",
+        # and the check had never worked in a copy)
+        hs = git('hash-object', '--no-filters', '--stdin-paths', cwd=root,
+                 inp=''.join(os.path.join(root, p) + '\n' for _, p in have))
         got = hs.stdout.split() if hs is not None and hs.returncode == 0 else []
         if len(got) != len(have):
-            return bad + ['git hash-object failed']
+            return bad + ['git hash-object failed: ' + ((hs.stderr.strip().splitlines() or ['?'])[-1] if hs is not None
+                                                        else 'git not run')[:120]]
         return bad + [p for (sha, p), g in zip(have, got) if g != sha]
     d0 = differ()
     if d0:
@@ -114,12 +119,30 @@ def run_version():
     return f"commit {commit[:8]} (run_fullmut_r14.sh's copy; its rtl and rtl_r14 files equal that version's)", differ
 
 
+def source_stamps():
+    """(mtime in ns, size) of every file under rtl_r14 and rtl, as checkout_sources lists them (audit round 28,
+    auditor C: the run compared the sources only at its start and its end, so an edit made and reverted during the
+    run, which a mutant's compile of tb/ or rtl/spec/ could take, still mixed versions under one record): checked
+    at every mutant's start and end against the run's start; any file touched, even back to its old content, makes
+    that mutant's verdict a TOOL ERROR"""
+    out = {}
+    for top in (R14, RTL_OLD):
+        for dp, dn, fn in os.walk(top):
+            dn[:] = [x for x in dn if x not in ("build", "__pycache__") and not x.startswith(".")]
+            for x in fn:
+                p = os.path.join(dp, x)
+                if os.path.isfile(p) and not os.path.islink(p):
+                    st = os.stat(p)
+                    out[os.path.relpath(p, os.path.dirname(R14))] = (st.st_mtime_ns, st.st_size)
+    return out
+
+
 def checkout_sources():
     """SHA-256 of every file under rtl_r14 and rtl, their build/ folders left out (audit round 27, auditor C)"""
     out = {}
     for top in (R14, RTL_OLD):
         for dp, dn, fn in os.walk(top):
-            dn[:] = [x for x in dn if x != "build" and not x.startswith(".")]
+            dn[:] = [x for x in dn if x not in ("build", "__pycache__") and not x.startswith(".")]
             for x in fn:
                 p = os.path.join(dp, x)
                 if os.path.isfile(p) and not os.path.islink(p):
@@ -633,6 +656,25 @@ MUTATIONS = [
      "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata", "err   <= (err & ~((we || w_ok && addr == A_ERR) ? wdata"),
     ('SPI：S_OVF を 11 に（10 を使わない符号）', 'eeg_spi_slave.sv',
      "                           S_OVF = 4'd10;", "                           S_OVF = 4'd11;"),
+    # audit round 28, auditor C: the command codes and the key as data (no fixed test wrote 0xA5 elsewhere)
+    ("レジスタ：SOFT_RESET をアドレスを見ずにデータの 0xA5 のみで解く", "eeg_regs.sv",
+     "assign soft_reset = we && wr_def && !wr_ro && (addr == A_COMMAND) && is_soft;",
+     "assign soft_reset = we && wr_def && !wr_ro && is_soft;"),
+    # audit round 28, auditor C: one-way aliases 2b could not see
+    ("レジスタ：ALERT_MASK の書き込みが ALERT_MASK_D も書く", "eeg_regs.sv",
+     "                    A_ALERT_MASK:   r_mask <= wdata;",
+     "                    A_ALERT_MASK:   begin r_mask <= wdata; r_mask_d <= wdata[1:0]; end"),
+    ("レジスタ：IF_CFG の予約のビット 2 が RAW_EN を書く", "eeg_regs.sv",
+     "                    A_IF_CFG:       begin r_crc <= wdata[0]; r_drdy <= wdata[1]; end",
+     "                    A_IF_CFG:       begin r_crc <= wdata[0]; r_drdy <= wdata[1]; r_raw <= wdata[2]; end"),
+    # audit round 28, auditor C: one W1C enable shared by ERR and DFLAG, through the pins (J2's DFLAG write)
+    ("レジスタ：DFLAG への W1C の書き込みが ERR も消す（共有の門、端子から）", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata",
+     "err   <= (err & ~((we && w_ok && (addr == A_ERR || addr == A_DFLAG)) ? wdata"),
+    # audit round 28, auditor C: a CHOP_BLANK pulse that never starts hung tb_clkgen (no verdict before)
+    ("クロック：CHOP_BLANK のパルスが始まらない", "eeg_clkgen.sv",
+     "            if (out_edge_ahead && (blank_len != 4'd0)) begin\n                chop_blank <= 1'b1;\n",
+     "            if (out_edge_ahead && (blank_len != 4'd0)) begin\n"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -710,6 +752,13 @@ REGS_MUTATIONS = [
      "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ?", "dflag <= (dflag & ~((we || w_ok && addr == A_DFLAG) ?"),
     ("レジスタ：ERR の W1C がアドレスを見ない", "eeg_regs.sv",
      "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata", "err   <= (err & ~((we && w_ok) ? wdata"),
+    # audit round 28, auditor C: one W1C enable shared by the two flag registers (the loop skipped both)
+    ("レジスタ：DFLAG への W1C の書き込みが ERR も消す（共有の門）", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata",
+     "err   <= (err & ~((we && w_ok && (addr == A_ERR || addr == A_DFLAG)) ? wdata"),
+    ("レジスタ：ERR への W1C の書き込みが DFLAG も消す（共有の門）", "eeg_regs.sv",
+     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ?",
+     "dflag <= (dflag & ~((we && w_ok && (addr == A_DFLAG || addr == A_ERR)) ?"),
 ]
 
 
@@ -862,6 +911,9 @@ STRUCT_MUTATIONS = [
      "        else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;",
      "    always_ff @(negedge cic_stb or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;\n"
      "        else              seq_cnt <= seq_cnt + 16'd1;"),
+    # audit round 28, auditor C: a latch from an always_comb, refused by yosys (no verdict before)
+    ("構造：eeg_chop1 の always_comb の default を消す（ラッチ）", "eeg_chop1.sv",
+     "            default: wave = 1'b1;\n", ""),
 ]
 
 def bench_ended(v, closing):
@@ -879,7 +931,10 @@ def unit_benches(d, files):
     auditor C: tb_tick, tb_clkgen and tb_cic_arm were never run on a mutant): tb_tick and tb_clkgen for eeg_clkgen.sv,
     tb_chop1 for eeg_chop1.sv and eeg_clkgen.sv (audit round 27, auditor C: run_tests_r14.sh builds it with the r14
     clock generator, the top group never ran it), tb_cic_arm (cleared at outputs 3, 5, 7, 9) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
-    check judged FAIL: a detection); 'error' (a compile error, a crash, no closing line: no verdict)."""
+    check judged FAIL: a detection); 'error' (a compile error, a crash, no closing line: no verdict); 'timeout' (a
+    bench without an end within 1200 s, the others run: audit round 28, auditor C: a timeout ended the mutant's run
+    without tb_top_r14, which fails such a clock generator at once)."""
+    timed_out = []
     inc = ["-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", os.path.join(d, "build")]
     runs = []
     if "eeg_clkgen.sv" in files:
@@ -897,7 +952,8 @@ def unit_benches(d, files):
         try:
             v = subprocess.run(["vvp", "-n", f"build/{nm}.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
-            return "error", f"{nm}: no end within 1200 s"
+            timed_out.append(f"{nm}: no end within 1200 s")
+            continue
         if not bench_ended(v, closing):
             return "error", sim_tail(v, nm)
         if closing[0] not in v.stdout or "FAIL" in v.stdout:
@@ -918,7 +974,8 @@ def unit_benches(d, files):
                 v = subprocess.run(["vvp", "-n", "build/tb_cic_arm.vvp", f"+k={k_}"], cwd=d, capture_output=True,
                                    text=True, timeout=1200)
             except subprocess.TimeoutExpired:
-                return "error", "tb_cic_arm: no end within 1200 s"
+                timed_out.append(f"tb_cic_arm +k={k_}: no end within 1200 s")
+                continue
             if v.returncode:
                 return "error", sim_tail(v, "tb_cic_arm")
             k = subprocess.run([sys.executable, os.path.join(HERE, "check_cic_arm.py"), "check", str(k_), b],
@@ -928,6 +985,8 @@ def unit_benches(d, files):
             if k.returncode:
                 return "fail", f"tb_cic_arm +k={k_}: " + next((ln.strip() for ln in k.stdout.splitlines()
                                                               if "mismatches" in ln), "FAIL")[:120]
+    if timed_out:
+        return "timeout", "; ".join(timed_out)
     return "pass", ""
 
 
@@ -980,6 +1039,12 @@ def run(i, m, bench="top"):
     tb = {"spi": "tb_spi_r14.sv", "seq": "tb_seq.sv", "fifo": "tb_fifo.sv", "regs": "tb_regs.sv",
           "ovl": "tb_ovl.sv"}.get(bench, "tb_top_r14.sv")
     if bench == "struct":                            # the structure: yosys on this copy
+        # a copy that does not compile is no verdict (audit round 28, auditor C: check_outputs_registered now calls
+        # a design yosys refuses a FAIL, so a broken edit must not count as detected)
+        c = subprocess.run(["iverilog", "-g2012", "-I", SPEC, "-I", os.path.join(d, "build"), "-o", "build/s.vvp"]
+                           + SRC + OLD, cwd=d, capture_output=True, text=True)
+        if c.returncode:
+            return i, name, "COMPILE ERROR", (c.stderr.strip().splitlines() or ["?"])[-1][:150]
         k = subprocess.run([sys.executable, os.path.join(HERE, "check_outputs_registered.py"), d], capture_output=True,
                            text=True)
         if k.returncode == 2 or k.returncode not in (0, 1) or not any(  # the tool did not run, or crashed: no verdict
@@ -1193,6 +1258,10 @@ def run(i, m, bench="top"):
             first = "check_seq_trace: " + next((ln.strip() for ln in k2.stdout.splitlines() if ln.startswith("  line")), "FAIL")
         return "fail", tag + first
     st8, t8 = top_once("build/t.vvp", "")
+    if st_ == "timeout":                           # a unit bench without an end: tb_top_r14 decides (round 28, C)
+        if st8 == "fail":
+            return i, name, ("BASELINE FAILS" if f is None else "detected"), t8 + "; and " + txt_
+        return i, name, "TIMEOUT", txt_ + " (undecided: tb_top_r14 " + ("passed" if st8 == "ok" else st8) + ")"
     if st8 not in ("ok", "fail"):
         return i, name, st8, t8
     if st8 == "fail":
@@ -1312,8 +1381,15 @@ def main():
         fo.write(f"mutate_top_r14.py {' '.join(sys.argv[1:])}: started {t0:%Y-%m-%d %H:%M:%S}, "   # keeps what it did
                  f"{len(tasks)} runs (results in the order they end; the summary follows at the end)\n{env}\n")
 
+    stamps0 = source_stamps()
+
     def run_logged(a):
+        s1 = source_stamps()
         r = (a[2],) + run(*a)
+        s2 = source_stamps()
+        moved = sorted(p for p in set(stamps0) | set(s1) | set(s2) if not stamps0.get(p) == s1.get(p) == s2.get(p))
+        if moved:                                    # (audit round 28, auditor C)
+            r = r[:3] + ("TOOL ERROR", "the sources were touched during this mutant's run: " + ", ".join(moved[:4]))
         tag = "b00" if r[1] < 0 else f"{TAG.get(r[0], 'm')}{r[1]:02d}"
         with lock, open(log, "a", encoding="utf-8") as fo:
             fo.write(f"{datetime.datetime.now():%H:%M:%S} {r[3]:8s} {tag} {r[2]}" + (f"  ({r[4][:120]})" if r[4] else "") + "\n")
@@ -1323,7 +1399,7 @@ def main():
     ok = True
     out = [f"--- summary ({(datetime.datetime.now() - t0).total_seconds() / 60:.1f} min)"]
     missing_base = []
-    title = {"top": "tb_top_r14 (the 4-deep FIFO too for b00 and the edits naming DEPTH)", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled), tb_seq_exh + check_seq_exh",
+    title = {"top": "tb_top_r14 (the 4-deep FIFO too for b00, the edits naming DEPTH and the edits of eeg_fifo.sv)", "spi": "tb_spi_r14 + check_spi_trace", "seq": "tb_seq + check_seq_trace (timer modelled), tb_seq_exh + check_seq_exh",
              "fifo": "tb_fifo + check_fifo_trace (fsm_spec.fifo_step and identities)",
              "regs": "tb_regs (W1C: the set wins; cfg_ok / nr_ok == regmap)",
              "chop1": "tb_chop1 (r14 eeg_clkgen; MCLK-count reference)", "rnd": "tb_rnd_sat (Python golden vectors)",

@@ -33,7 +33,9 @@ And one clock (RST-05; audit round 27, auditor C: a CHOP1 divider clocked by a f
 on the falling edge of the CIC's strobe passed all 16 groups with the counts unchanged, and Verilator said nothing):
 every flip-flop and every memory write port takes MCLK's rising edge (CLK the MCLK port bit, CLK_POLARITY 1).
 
-Exit: 0 every output a flip-flop's (PASS), 1 an output that is not (FAIL), 2 the tool did not run (TOOL ERROR).
+Exit: 0 every output a flip-flop's (PASS), 1 an output that is not, or yosys rejects the design (FAIL; audit round
+28, auditor C: a latch from an always_comb, which yosys stops at, was reported as TOOL ERROR, so the mutation runner
+could never call it detected), 2 yosys is missing or did not end normally (TOOL ERROR).
 Usage: check_outputs_registered.py [rtl_r14 directory]   (default: this one; the mutation runner passes its copy,
        which also holds the blocks kept from rtl/)
 """
@@ -68,6 +70,10 @@ def main():
                f"hierarchy -top eeg_digital_top; proc; flatten; opt_clean; opt -purge; write_json {js}")
         r = subprocess.run([YOSYS, "-q", "-p", cmd], capture_output=True, text=True)
         if r.returncode != 0 or not os.path.exists(js):
+            err = next((ln.strip() for ln in (r.stdout + r.stderr).splitlines() if ln.startswith("ERROR")), "")
+            if r.returncode > 0 and err and "Can't open" not in err:   # yosys ran and refused the design
+                print("FAIL: yosys rejects the design: " + err[:200])
+                return 1
             print("TOOL ERROR: yosys: " + (r.stderr.strip().splitlines() or ["no output"])[-1])
             return 2
         m = json.load(open(js))["modules"]["eeg_digital_top"]

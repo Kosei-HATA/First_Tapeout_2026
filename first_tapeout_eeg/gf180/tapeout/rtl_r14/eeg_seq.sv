@@ -39,7 +39,8 @@ module eeg_seq (
     input  logic [7:0] t_rst,
     (* fsm_encoding = "none" *)                // NFR-05: no recoding, so that codes 9..15 stay decoded (audit round 14)
     output logic [3:0] state,
-    output logic       afe_rst,           // registered, changes only at a tick (or reset)
+    output logic       afe_rst,           // registered, changes only at a tick (or reset, or an illegal state's
+                                          // return to IDLE in any cycle: NFR-05; audit round 28)
     // the following are combinational during the event's cycle, so every register they drive (active settings,
     // FIFO, flags) changes at the same edge as state and afe_rst (e25 for a tick)
     output logic       apply,             // copy shadow -> active

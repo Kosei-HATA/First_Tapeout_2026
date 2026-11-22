@@ -10,7 +10,10 @@
 //   A  registers: the generated tests (build/reg_tests.svh, from regmap.py), CRC, frame errors, unknown command,
 //      a wrong key, a burst read (address incrementing, CRC off); audit round 15 (auditor C): every illegal value of
 //      every field (RANGE_ERR, nothing written), the write-only COMMAND and TEST_KEY read 0x00 while unlocked and
-//      after a committed FLUSH (alone and in a burst)
+//      after a committed FLUSH (alone and in a burst); audit round 28 (auditor C): 2c, rounds of random legal bytes in
+//      both address orders until every single-bit alias between writable registers is visible (IF_CFG included);
+//      2d, the command codes and the key written as data to every address but COMMAND (ERR exact, never
+//      RESET_FLAG; no SOFT_RESET commit and no pending command counted; IDLE at the end)
 //   B  START: WARMUP exactly T_WARM, RECOVER T_REC, ALIGN to the next output time, FILL three outputs, RUN;
 //      samples (VALID, SEQ, CRC); a sample read stopped after 4 bytes neither pops nor flags an error
 //   C  APPLY in RUN: the settings at the tick, AFE_RST high after T_PRE for exactly T_RST, the re-settling, samples
@@ -312,10 +315,11 @@ module tb_top_r14;
         r14_write(a, v0);
     endtask
     task automatic free_w1c(input logic [6:0] a, input logic [7:0] w, input string name);
-        free_wait_flush();
+        r14_write(7'h7F, 8'h00);                        // undefined: ADDR_ERR standing (audit round 28, auditor C: ERR
+        free_wait_flush();                              // was 0 here, so a W1C enable shared with ERR passed)
         r14_write(a, w);
         spi_tidle = 600.0;
-        expect_err_exact(8'h00, $sformatf("J2 %s (W1C) written while a command is pending (not guarded)", name));
+        expect_err_exact(8'h08, $sformatf("J2 %s (W1C) written while a command is pending (not guarded): ADDR_ERR kept, no other flag", name));
     endtask
     task automatic free_err();                          // ERR: an ADDR_ERR made first, then cleared by its W1C
         r14_write(7'h7F, 8'h00);                        // undefined: ADDR_ERR
@@ -339,6 +343,56 @@ module tb_top_r14;
         expect_err_exact(8'h00, "J2 IF_CFG written while a command is pending (not guarded)");
         rt_read_expect(7'h55, v0 ^ 8'h02, "J2 IF_CFG written while a command is pending");
         r14_write(7'h55, v0);
+    endtask
+    // 2d and J2 (audit round 28, auditor C): the command codes and the key written as data. rt_write_exact: the
+    // read-back and ERR exactly (ERR cleared when not 0); code_ifcfg: an IF_CFG write whose CRC_EN the BFM follows,
+    // read back with DEBUG (a reserved bit loading RAW_EN), ERR exact, then IF_CFG 0x00 and CRC off again;
+    // guard_code: a guarded register written while FLUSH waits: exactly STATE_ERR (no RESET_FLAG), not written
+    task automatic rt_write_exact(input logic [6:0] a, input logic [7:0] wv, input logic [7:0] rv,
+                                  input logic [7:0] eexp, input string name);
+        logic [7:0] v;
+        r14_write(a, wv);
+        r14_read(a, v);
+        if (v !== rv) fail($sformatf("%s: 0x%02h after writing 0x%02h, expected 0x%02h", name, v, wv, rv));
+        expect_err_exact(eexp, name);
+    endtask
+    task automatic code_ifcfg(input logic [7:0] c, input logic [7:0] rv, input logic [7:0] dbg, input string name);
+        logic [7:0] v;
+        r14_write(7'h55, c);
+        bfm_crc_en = c[0];
+        r14_read(7'h55, v);
+        if (v !== rv) fail($sformatf("%s: IF_CFG 0x%02h after writing 0x%02h, expected 0x%02h", name, v, c, rv));
+        r14_read(7'h62, v);
+        if (v !== dbg) fail($sformatf("%s: DEBUG 0x%02h after an IF_CFG write of 0x%02h, expected 0x%02h", name, v, c, dbg));
+        expect_err_exact(8'h00, name);
+        r14_write(7'h55, 8'h00);
+        bfm_crc_en = 1'b0;
+    endtask
+    task automatic guard_code(input logic [6:0] a, input logic [7:0] w, input string name);
+        logic [7:0] v0;
+        r14_read(a, v0);
+        @(posedge dut.tick); #(8000.0); spi_tidle = 125.0;
+        r14_cmd(8'h55);
+        r14_write(a, w);
+        spi_tidle = 600.0;
+        expect_err_exact(8'h40, $sformatf("J2 %s: 0x%02h written while a command is pending (exactly STATE_ERR)", name, w));
+        rt_read_expect(a, v0, $sformatf("J2 %s not written (0x%02h, a command pending)", name, w));
+    endtask
+    integer n_soft_req = 0, n_cmd_valid = 0, code_soft0 = 0, code_cmd0 = 0;
+    always @(posedge dut.soft_req) n_soft_req = n_soft_req + 1;      // SOFT_RESET commits (and R's forced ones)
+    always @(posedge dut.cmd_valid) n_cmd_valid = n_cmd_valid + 1;  // a command became pending
+    task automatic code_begin();
+        code_soft0 = n_soft_req;
+        code_cmd0 = n_cmd_valid;
+    endtask
+    task automatic code_end(input string name);
+        logic [7:0] st, s;
+        r14_read(7'h03, st);
+        r14_read(7'h04, s);
+        if (n_soft_req != code_soft0 || n_cmd_valid != code_cmd0 || st[4] !== 1'b0 || s !== 8'h00)
+            fail($sformatf("%s: %0d SOFT_RESET commits, %0d commands pending, CMD_PENDING %b, STATE %0d (expected none, none, 0, IDLE)",
+                           name, n_soft_req - code_soft0, n_cmd_valid - code_cmd0, st[4], s));
+        expect_err_exact(8'h00, name);
     endtask
     task automatic expect_err_now(input logic [7:0] mask, input string name);
         logic [7:0] e;
@@ -989,11 +1043,33 @@ module tb_top_r14;
     // monitors gated by it saw nothing, and it passed all 16 groups). In every frame of the stream RAW_CLK rises exactly
     // 8 times (a word is never cut); in every MCLK without the stream and with DBG_SEL s != 0, the pads are s's pair one
     // MCLK later (a pair is never cut, nor replaced before the boundary)
+    //
+    // DEBUG as written (audit round 28, auditor C: the monitors took RAW_EN and DBG_SEL from eeg_regs' outputs, so a
+    // copy whose IF_CFG write loaded RAW_EN from the reserved bit 2 drove the pads as its wrong register said and
+    // passed every group that compiles eeg_regs): the test key and DEBUG modelled from the committed writes at the
+    // register block's port (the SPI slave's reg_we, reg_addr, reg_wdata: every write to TEST_KEY sets the lock, a
+    // DEBUG write is taken while unlocked, as it has no guard and no illegal value), reset with the control domain
+    // (RESET_N, SOFT_RESET); the monitors below use the model, and eeg_regs' RAW_EN and DBG_SEL must equal it
+    logic       m_unl = 1'b0, m_raw = 1'b0;
+    logic [1:0] m_dbg = 2'b00;
+    always @(posedge MCLK or negedge dut.rst_n)
+        if (!dut.rst_n) begin m_unl <= 1'b0; m_raw <= 1'b0; m_dbg <= 2'b00; end
+        else if (dut.reg_we === 1'b1) begin
+            if (dut.reg_addr === 7'h11) m_unl <= (dut.reg_wdata === 8'h3C);
+            else if (dut.reg_addr === 7'h62 && m_unl) begin m_raw <= dut.reg_wdata[0]; m_dbg <= dut.reg_wdata[2:1]; end
+        end
+    integer n_dbg_model = 0;
+    always @(negedge MCLK)
+        if (dut.rst_n === 1'b1 && (dut.raw_en !== m_raw || dut.dbg_sel !== m_dbg)) begin
+            n_dbg_model = n_dbg_model + 1;
+            if (n_dbg_model <= 3) fail($sformatf("DEBUG: RAW_EN %b DBG_SEL %0d in eeg_regs, the committed writes give %b %0d",
+                                                 dut.raw_en, dut.dbg_sel, m_raw, m_dbg));
+        end
     logic o_on_m = 1'b0, o_on = 1'b0;
     always @(posedge MCLK or negedge dut.tm_rst_n)
         if (!dut.tm_rst_n) begin o_on_m <= 1'b0; o_on <= 1'b0; end
         else begin
-            if (dut.cycle == 5'd31) o_on_m <= dut.raw_en;
+            if (dut.cycle == 5'd31) o_on_m <= m_raw;
             o_on <= o_on_m;
         end
     integer o_rises = 0, n_raw_cut = 0, n_raw_pair = 0, n_raw_frames = 0, n_raw_pairs = 0;
@@ -1027,8 +1103,8 @@ module tb_top_r14;
                 if (n_raw_pair <= 3) fail($sformatf("RAW: DBG_SEL %0d without the stream: RAW_CLK / RAW_DATA %b / %b, its pair one MCLK before %b / %b", o_ps, RAW_CLK, RAW_DATA, o_pc, o_pd));
             end
         end
-        o_ps = dut.dbg_sel;
-        case (dut.dbg_sel)
+        o_ps = m_dbg;
+        case (m_dbg)
             2'd1:    begin o_pc = CMP_STROBE; o_pd = DAC_CLK;  end
             2'd2:    begin o_pc = CHOP;       o_pd = CHOP_OUT; end
             2'd3:    begin o_pc = CHOP_BLANK; o_pd = CHOP1;    end
@@ -1037,7 +1113,7 @@ module tb_top_r14;
         o_pv = (dut.tm_rst_n === 1'b1);
     end
     integer o_commit_cycle = -1;                        // the frame cycle of the last change of RAW_EN (O2)
-    always @(dut.raw_en) o_commit_cycle = dut.cycle;
+    always @(m_raw) o_commit_cycle = dut.cycle;
     // RAW's bit timing while the stream runs (audit round 9: a word loaded at cycle 0 instead of 31 passed): RAW_DATA
     // changes only at e1, e5, ..., e29 and RAW_CLK rises only at e3, e7, ..., e31 (the stream's frames from the
     // model above since round 20)
@@ -1148,7 +1224,7 @@ module tb_top_r14;
     logic [1:0] raw_quiet_q = 2'b00;
     integer     n_raw_noisy = 0;
     always @(posedge MCLK) begin
-        raw_quiet_q <= {raw_quiet_q[0], o_on_m === 1'b0 && dut.dbg_sel === 2'b00};   // the model's latch, read at the
+        raw_quiet_q <= {raw_quiet_q[0], o_on_m === 1'b0 && m_dbg === 2'b00};   // the model's latch, read at the
                                                 // edge as eeg_raw reads its `on` (round 20)
         if (raw_quiet_q == 2'b11 && (RAW_DATA !== 1'b0 || RAW_CLK !== 1'b0)) begin
             n_raw_noisy = n_raw_noisy + 1;

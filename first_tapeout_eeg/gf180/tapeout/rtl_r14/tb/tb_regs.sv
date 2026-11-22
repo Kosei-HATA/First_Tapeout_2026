@@ -17,7 +17,12 @@
 // trim write - and passed all 16 groups; DFLAG's gate the same): after a reset (RESET_FLAG) every source is set (ERR
 // 0x6F, DFLAG 0x03), then 0xFF is written to each of the other 126 addresses (RW, WO, RO, undefined; 0xFF is no command
 // and no key) and after each write every ERR bit set before it is still set (a write may add its own flag) and DFLAG
-// is still 0x03; a reset then restores the reset values for the part below.
+// is still 0x03; a reset then restores the reset values for the part below. And across the two flag registers
+// (audit round 28, auditor C: one W1C enable shared by ERR and DFLAG, (we && w_ok && (addr == A_ERR || addr ==
+// A_DFLAG)), passed all 16 groups, as the loop skipped both and the per-bit checks never read ERR after their DFLAG
+// write; the host's DFLAG write-back of OVERRUN then cleared RESET_FLAG): every source set again, 0xFF written to
+// DFLAG clears DFLAG and leaves ERR exactly as it was; every source set again, 0xFF written to ERR clears ERR and
+// leaves DFLAG 0x03.
 //
 // The command's acknowledge cycle (audit round 5, 11/20: a command or a guarded write committed in the very cycle the
 // tick takes the pending command was never tested; a copy that lost such a command passed every test): a command
@@ -117,7 +122,8 @@ module tb_regs;
         read_reg(A_DFLAG, v);
         if (v !== 8'h02) begin $display("ERROR: DFLAG 0x%02h after clearing OVERRUN alone, expected 0x02 (OVL kept)", v); errors++; end
         n = n + 2;
-        // a write to any other address clears no flag (audit round 27, auditor C)
+        // a write to any other address clears no flag (audit round 27, auditor C), the other flag register included
+        // (audit round 28, auditor C: after the loop)
         begin
             logic [7:0] e_prev, e_now, d_now;
             integer nfl;
@@ -154,6 +160,31 @@ module tb_regs;
             n = n + nfl + 1;
             $display("tb_regs: 0xFF written to the %0d other addresses with every flag set: ERR 0x%02h, DFLAG 0x%02h at the end",
                      nfl, e_prev, d_now);
+            // the other flag register (audit round 28, auditor C): a W1C write clears its own register only
+            nfl = errors;
+            for (int k = 0; k < 2; k++) begin
+                logic [7:0] e0, d0, e1, d1;
+                @(negedge clk); frame_err_set = 1'b1; crc_err_set = 1'b1; addr_err_set = 1'b1; seq_state_err = 1'b1;
+                                seq_cfg_err = 1'b1; ovr_set = 1'b1; ovl_set = 1'b1;
+                @(negedge clk); frame_err_set = 1'b0; crc_err_set = 1'b0; addr_err_set = 1'b0; seq_state_err = 1'b0;
+                                seq_cfg_err = 1'b0; ovr_set = 1'b0; ovl_set = 1'b0;
+                read_reg(A_ERR, e0);
+                read_reg(A_DFLAG, d0);
+                @(negedge clk); addr = (k == 0) ? A_DFLAG : A_ERR; we = 1'b1; wdata = 8'hFF;
+                @(negedge clk); we = 1'b0;
+                read_reg(A_ERR, e1);
+                read_reg(A_DFLAG, d1);
+                if (d0 !== 8'h03 || ((k == 0) ? (e1 !== e0 || d1 !== 8'h00) : (e1 !== 8'h00 || d1 !== 8'h03))) begin
+                    if (k == 0) $display("ERROR: 0xFF written to DFLAG: ERR 0x%02h -> 0x%02h, DFLAG 0x%02h -> 0x%02h (a W1C write clears its own register only)",
+                                         e0, e1, d0, d1);
+                    else        $display("ERROR: 0xFF written to ERR: ERR 0x%02h -> 0x%02h, DFLAG 0x%02h -> 0x%02h (a W1C write clears its own register only)",
+                                         e0, e1, d0, d1);
+                    errors++;
+                end
+                n++;
+            end
+            if (errors == nfl) $display("tb_regs: 0xFF written to DFLAG and to ERR with every flag set: each clears its own register only");
+            else $display("tb_regs: 0xFF written to DFLAG and to ERR with every flag set: %0d errors", errors - nfl);
             rst_n = 1'b0;                                       // the reset values back for the part below
             repeat (2) @(negedge clk);
             rst_n = 1'b1;

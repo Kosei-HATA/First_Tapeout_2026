@@ -37,7 +37,9 @@ FULLSCALE_SHA256 = {"s4": "fbc092845489d9b7df1bb48cd158a6b95006cb59a0e7e30c2c751
 # update classes of a field
 #   apply  analog-affecting: written to a shadow, copied to the active copy (and the pins) by START / APPLY / APPLY_NR
 #   seq    driven by the sequencer only
-#   imm    takes effect at once; no analog effect (or latched at a timer start)
+#   imm    takes effect at once; no analog effect (or latched at a timer start); DEBUG's DBG_SEL and RAW_EN: none
+#          with DBG_SEL 0 and RAW_EN 0, DBG_SEL 1..3 and the RAW stream are debug only, their pad coupling not
+#          characterized (requirements 4.10; audit round 30, auditor B, as item 410)
 #   ro     read only        w1c  write 1 to clear        cmd  write only, executed at the next tick
 
 

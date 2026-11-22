@@ -449,9 +449,13 @@ def main():
     # 2e. the writable registers outside the lock, written while the key is locked (audit round 29, auditor C: every
     #     OFF_M_H write came with the key open, so a copy that locked OFF_M_H passed all 16 groups; host steps 3 and 7
     #     write it locked): the key locked and the lock confirmed as the host does (step 3's bracket: TEST_CTRL written
-    #     with its reset value, exactly ADDR_ERR), then every writable register that REG-08 does not lock given a legal
+    #     with the value it holds, here its reset value, exactly ADDR_ERR; audit round 30, auditor A: the value step (3)
+    #     confirmed, not always the reset value), then every writable register that REG-08 does not lock given a legal
     #     byte away from its reset value (IF_CFG: DRDY_MODE only, CRC_EN kept), read back, ERR exactly 0, and its reset
-    #     value written back; no write of TEST_KEY in between (the generator checks it)
+    #     value written back; no write of TEST_KEY in between (the generator checks it). Since audit round 30 (auditor C:
+    #     an unlock decoded from the data alone passed all 16 groups, as no test wrote 0x3C elsewhere with the key
+    #     locked) each register also takes the key's value 0x3C (legal in every one of them, the generator checks it),
+    #     and the lock is confirmed again after it
     plain = [a for a, r in sorted(regs.items()) if r[2] == "RW" and not r[3]]
     assert {regs[a][1] for a in plain} >= {"OFF_M_H", "OFF_M_L", "OFF_CTRL", "T_WARM", "IF_CFG", "ALERT_MASK"}, plain
     tc_a = next(a for a, r in regs.items() if r[1] == "TEST_CTRL")
@@ -469,6 +473,13 @@ def main():
             v = legal_other(r[4])
         assert v != reset_byte(r[4]), r[1]
         L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{v:02X}, 8'h{v:02X}, 8'h00, \"2e {r[1]} written with the key locked\");")
+        kv = RM.TEST_KEY
+        assert all(((kv & field_mask(f)) >> f["lsb"]) in f["legal"] for f in r[4]), f"2e: 0x{kv:02X} illegal in {r[1]}"
+        assert not (r[1] == "IF_CFG" and kv & 1), "2e: the key's value would turn CRC on"
+        used_ = sum(field_mask(f) for f in r[4])
+        L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{kv:02X}, 8'h{kv & used_:02X}, 8'h00, \"2e {r[1]} <- the key's value 0x{kv:02X} with the key locked\");")
+        L.append(f"    rt_write_exact(7'h{tc_a:02X}, 8'h{reset_byte(regs[tc_a][4]):02X}, 8'h{reset_byte(regs[tc_a][4]):02X}, "
+                 f"8'h{E_ADDR:02X}, \"2e: still locked after 0x{kv:02X} written to {r[1]}\");")
         L.append(f"    rt_write(7'h{a:02X}, 8'h{reset_byte(r[4]):02X});")
     assert not any(f"7'h{A_KEY:02X}," in ln for ln in L[e2_start + 1:]), "2e: a TEST_KEY write inside the locked writes"
     # 4. read-only and undefined writes

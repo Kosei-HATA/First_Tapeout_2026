@@ -32,7 +32,11 @@
 // The command's acknowledge cycle (audit round 5, 11/20: a command or a guarded write committed in the very cycle the
 // tick takes the pending command was never tested; a copy that lost such a command passed every test): a command
 // written in the ack cycle becomes the new pending command (no STATE_ERR); a shadow write in the ack cycle is written
-// (no STATE_ERR); outside the ack cycle both are refused with STATE_ERR while a command is pending.
+// (no STATE_ERR); outside the ack cycle both are refused with STATE_ERR while a command is pending. Since audit round
+// 30 (auditor C: the shadow write of the ack cycle came with cmd_ack alone, although the pending START applies at its
+// tick; a copy whose apply copied the shadows' next state, and one whose apply dropped the write, passed all 16
+// groups) the ack cycle also carries apply: the write is kept in the shadow and the tick applies the shadow before
+// it (the active copy reads the old value).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -310,8 +314,20 @@ module tb_regs;
             read_reg(7'h21, e);
             if (e === 8'h5A) begin $display("ERROR: a shadow written while a command is pending"); nack++; end
             @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;
-            @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h5A; cmd_ack = 1'b1;  // the same write in the ack cycle
-            @(negedge clk); we = 1'b0; cmd_ack = 1'b0;
+            @(negedge clk); we = 1'b0;
+            begin
+                logic [7:0] old_sh;
+                read_reg(7'h21, old_sh);
+                // the same write in the ack cycle of the pending START, which applies at its tick (audit round 30)
+                @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h5A; cmd_ack = 1'b1; apply = 1'b1;
+                @(negedge clk); we = 1'b0; cmd_ack = 1'b0; apply = 1'b0;
+                read_reg(7'h31, e);
+                if (e !== old_sh) begin
+                    $display("ERROR: the apply of the ack cycle took the racing write: active M_L 0x%02h, the shadow before it 0x%02h",
+                             e, old_sh);
+                    nack++;
+                end
+            end
             read_reg(7'h21, e);
             if (e !== 8'h5A) begin $display("ERROR: a shadow write in the ack cycle not written (0x%02h)", e); nack++; end
             read_reg(A_ERR, e);
@@ -320,7 +336,7 @@ module tb_regs;
             @(negedge clk); addr = 7'h21; we = 1'b1; wdata = 8'h00;
             @(negedge clk); addr = A_ERR; wdata = 8'hFF;
             @(negedge clk); we = 1'b0;
-            $display("tb_regs: the command's acknowledge cycle: 8 checks, %0d errors", nack);
+            $display("tb_regs: the command's acknowledge cycle: 9 checks, %0d errors", nack);
             errors = errors + nack;
         end
         if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap; the ack cycle)");

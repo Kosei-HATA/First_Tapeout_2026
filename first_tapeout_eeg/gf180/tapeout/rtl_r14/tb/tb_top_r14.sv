@@ -73,6 +73,15 @@
 //      before to 2 MCLK after the start of the store's cycle; every sample read carries the ALERT of its store's
 //      cycle as the registers give it, and each sweep changes ERR before that cycle, at its start and at or after the
 //      store's edge (a copy writing the FIFO the sample status registered one MCLK earlier passed all 16 groups)
+//   AE audit round 35 (auditor C): ERR and DFLAG through every accepted command (REG-02, FLG-02: only their W1C
+//      clears them): RESET_FLAG and ADDR_ERR standing, both DFLAG bits set in RUN, then START, APPLY in RUN,
+//      APPLY_NR, FLUSH, STOP and APPLY in IDLE, ERR and DFLAG read exactly after each (copies clearing RESET_FLAG
+//      or DFLAG when a configuration is applied passed all 16 groups)
+//   AF audit round 35 (auditor C): the copy instants of the header's STATUS (cs_start) and of the empty word
+//      (smp_snap): at 64 kHz in IDLE an APPLY refused with CFG_ERR at its tick, a register read's and an empty-FIFO
+//      sample read's copy swept in 1/4-MCLK steps across that edge; STATUS's ALERT and the empty word's ERR against
+//      the ALERT of the copy's cycle as the registers give it (copies taking either one MCLK early passed all 16
+//      groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -160,9 +169,9 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.79 s; audit
+// A watchdog ends the run as FAIL if it has not finished by 1,200 ms of simulated time (the run ends near 0.82 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
-// auditor C: the 800 ms had become 1.17 times it),
+// auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
@@ -432,8 +441,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(1000.0e6);
-        fail($sformatf("watchdog: not finished after 1,000 ms of simulated time (phase %s)", phase));
+        #(1200.0e6);
+        fail($sformatf("watchdog: not finished after 1,200 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -1165,6 +1174,36 @@ module tb_top_r14;
         if (dut.u_regs.err !== ad_err_q) ad_t_err = ad_t_pos;     // ERR changed at the last rising edge
         ad_err_q = dut.u_regs.err;
     end
+    // phase AF's copy edges (audit round 35, auditor C): ALERT as the registers give it in the cycle of each copy of the
+    // header's STATUS (the SPI's cs_start) and of the sample word (smp_snap; FIFO level 0: the empty word)
+    real         af_t_hdr = 0.0, af_t_snap = 0.0;
+    logic        af_hdr_exp = 1'b0, af_snap_exp = 1'b0;
+    logic [3:0]  af_snap_lvl = 4'd0;
+    real         af_lat [0:1];                       // AF: a frame's start to its copy edge (0: header, 1: sample word)
+    integer      af_nb [0:1], af_ns [0:1], af_na [0:1];   // AF: changes before / at the start of / after the copy's cycle
+    always @(posedge MCLK) begin
+        if (dut.u_spi.cs_start === 1'b1) begin
+            af_hdr_exp = (|(dut.u_regs.err & dut.u_regs.r_mask)) | (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
+            af_t_hdr   = $realtime;
+        end
+        if (dut.smp_snap === 1'b1) begin
+            af_snap_exp = (|(dut.u_regs.err & dut.u_regs.r_mask)) | (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
+            af_snap_lvl = dut.fifo_level;
+            af_t_snap   = $realtime;
+        end
+    end
+    // phase AE: ERR and DFLAG read exactly after each accepted command (audit round 35, auditor C)
+    integer      ae_n = 0;
+    task automatic ae_check(input string what, input logic [7:0] ew, input logic [7:0] fw);
+        logic [7:0] e, f;
+        repeat (700) @(posedge MCLK);                   // the command taken at its tick (two ticks at 128 kHz)
+        r14_read(7'h06, e);
+        r14_read(7'h07, f);
+        if (e !== ew || f !== fw)
+            fail($sformatf("AE: after %s, ERR 0x%02h and DFLAG 0x%02h, expected exactly 0x%02h and 0x%02h (REG-02, FLG-02: only their W1C clears them)",
+                           what, e, f, ew, fw));
+        ae_n = ae_n + 1;
+    endtask
     // every sample in the FIFO read; each one's ERR bit must be the ALERT of its store's cycle
     task automatic ad_read_all();
         logic [7:0] st_;
@@ -3938,6 +3977,137 @@ module tb_top_r14;
         r14_write(7'h09, 8'h03);
         r14_write(7'h06, 8'hFF);
         r14_write(7'h07, 8'hFF);
+        // ---------------- AE (audit round 35, auditor C): ERR and DFLAG through every accepted command. REG-02 and
+        // FLG-02: only their W1C clears them. No phase read them after an accepted command with a bit standing from
+        // before it (check_top_r14's status check and AD's model take them from the registers, which follow a wrong
+        // clear), and copies clearing RESET_FLAG or DFLAG when a configuration is applied (START, APPLY, APPLY_NR)
+        // passed all 16 groups. RESET_FLAG (a SOFT_RESET) and ADDR_ERR stand, both DFLAG bits are set in RUN (an
+        // overload, then a full FIFO); START, APPLY in RUN, APPLY_NR (M 0 -> 1, range 0), FLUSH, STOP and APPLY in
+        // IDLE, each accepted, and ERR and DFLAG read exactly after each, then their W1C. Outside the golden comparison
+        phase = "AE";
+        spi_tidle = 600.0;
+        r14_cmd(8'hA5);                                 // SOFT_RESET: RESET_FLAG
+        #(1000.0);
+        r14_write(7'h7F, 8'h00);                        // undefined: ADDR_ERR
+        ae_n = 0;
+        ae_check("the SOFT_RESET and an ADDR_ERR", 8'h09, 8'h00);
+        r14_cmd(8'h11);                                 // START (the defaults)
+        ae_check("START", 8'h09, 8'h00);
+        wait_state(4'd6, 12000.0, "AE RUN");
+        ovl_force = 1'b1;                               // an overload in RUN: DFLAG.OVL
+        repeat (64 * 32) @(posedge MCLK);
+        ovl_force = 1'b0;
+        repeat ((FD + 3) * 32768) @(posedge MCLK);      // no reads: the FIFO fills, DFLAG.OVERRUN
+        ae_check("an overload and a full FIFO in RUN", 8'h09, 8'h03);
+        r14_cmd(8'h33);                                 // APPLY in RUN
+        ae_check("APPLY in RUN", 8'h09, 8'h03);
+        wait_state(4'd6, 12000.0, "AE RUN after the APPLY");
+        r14_write(7'h21, 8'h01);                        // M 0 -> 1: one step in range 0
+        r14_cmd(8'h44);                                 // APPLY_NR in RUN
+        ae_check("APPLY_NR in RUN", 8'h09, 8'h03);
+        r14_cmd(8'h55);                                 // FLUSH
+        ae_check("FLUSH", 8'h09, 8'h03);
+        r14_cmd(8'h22);                                 // STOP
+        ae_check("STOP", 8'h09, 8'h03);
+        if (dut.seq_state !== 4'd0) fail($sformatf("AE: state %0d after the STOP, expected IDLE", dut.seq_state));
+        r14_write(7'h21, 8'h00);
+        r14_cmd(8'h33);                                 // APPLY in IDLE
+        ae_check("APPLY in IDLE", 8'h09, 8'h03);
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
+        ae_check("their W1C", 8'h00, 8'h00);
+        if (ae_n != 9) fail($sformatf("AE not exercised: %0d reads", ae_n));
+        $display("AE ERR (RESET_FLAG, ADDR_ERR) and DFLAG (OVL, OVERRUN) through START, APPLY in RUN, APPLY_NR, FLUSH, STOP and APPLY in IDLE: kept exactly until their W1C (%0d reads, errors %0d)",
+                 ae_n, errors);
+        // ---------------- AF (audit round 35, auditor C): the copy instants of the header's STATUS and of the empty
+        // word. Spec 3.2: STATUS is copied in the cycle the SPI takes CS_N's fall (cs_start), the sample word (the empty
+        // word when the FIFO is empty) in the cycle it takes the header's last SCLK rise (smp_snap), with the flags of
+        // that cycle. AD pins the store's; no phase put a flag change on these copies (round 19's STATUS check has the
+        // flag 3-4 MCLK before the copy), and copies taking the empty word's status or STATUS one MCLK early passed all
+        // 16 groups. At 64 kHz in IDLE an APPLY whose judged shadow is illegal (range 1, M 200) is refused with CFG_ERR
+        // at its tick; a register read (kind 0) or an empty-FIFO sample read (kind 1) starts so that its copy's cycle
+        // begins from 2 MCLK before that edge to 2 MCLK after it in 1/4-MCLK steps. STATUS's ALERT and the empty word's
+        // ERR must be the ALERT of the copy's cycle as the registers give it, and each sweep must change ERR before the
+        // copy's cycle, at its start and at or after the copy's edge. Outside the golden comparison (after K)
+        phase = "AF";
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
+        r14_write(7'h09, 8'h00);                        // ALERT_MASK_D 0: ALERT from ERR alone
+        r14_write(7'h26, 8'h00);                        // CHOP_FAST 0: 64 kHz, a tick every 512 MCLK
+        r14_write(7'h22, 8'h01);                        // range 1
+        r14_write(7'h21, 8'd5);
+        r14_cmd(8'h33);                                 // APPLY in IDLE: 64 kHz applied
+        #(40000.0);
+        if (dut.a_chop_fast !== 1'b0) fail("AF: 64 kHz not applied");
+        r14_write(7'h21, 8'd200);                       // the shadow the next APPLYs are judged by: above range 1's 127
+        begin
+            real af_t0, af_tgt, af_dt, af_tc, af_derr;
+            logic [7:0] af_v, af_st;
+            logic [15:0] af_sq;
+            logic [23:0] af_d;
+            bit af_ok;
+            logic af_exp, af_got, af_want;
+            string af_nm;
+            // a frame's start to its copy edge: a register read's header, an empty-FIFO sample read's header end
+            af_t0 = $realtime; r14_read(7'h03, af_v); af_lat[0] = af_t_hdr - af_t0;
+            af_t0 = $realtime; r14_sample(af_st, af_sq, af_d, af_ok); af_lat[1] = af_t_snap - af_t0;
+            // the edge at which CFG_ERR is set after the tick before the one that takes a pending APPLY
+            @(posedge dut.u_clkgen.tick); af_t0 = $realtime;
+            r14_cmd(8'h33);
+            repeat (600) @(posedge MCLK);
+            af_derr = ad_t_err - af_t0;
+            r14_read(7'h06, af_v);
+            if (af_v !== 8'h20) fail($sformatf("AF: ERR 0x%02h after the APPLY judged on M 200 in range 1, expected exactly CFG_ERR (0x20)", af_v));
+            r14_write(7'h06, 8'hFF);
+            for (int s = 0; s < 2; s++) begin af_nb[s] = 0; af_ns[s] = 0; af_na[s] = 0; end
+            for (int k = -8; k <= 8; k++) begin
+                for (int s = 0; s < 2; s++) begin
+                    @(posedge dut.u_clkgen.tick); af_t0 = $realtime;
+                    r14_cmd(8'h33);                     // pending to the next tick: CFG_ERR at af_t0 + af_derr
+                    af_tgt = af_t0 + af_derr + TMCLK + k * TMCLK / 4.0 - af_lat[s];   // the copy's cycle starting there
+                    if (af_tgt > $realtime) #(af_tgt - $realtime);
+                    else fail($sformatf("AF k %0d: the aimed read was due %0.1f ns ago", k, $realtime - af_tgt));
+                    if (s == 0) begin
+                        r14_read(7'h03, af_v);
+                        af_tc = af_t_hdr; af_exp = af_hdr_exp; af_got = spi_status[STATUS_ALERT_LSB];
+                        af_nm = "a register read's STATUS, ALERT";
+                    end else begin
+                        r14_sample(af_st, af_sq, af_d, af_ok);
+                        af_tc = af_t_snap; af_exp = af_snap_exp; af_got = af_st[SMP_ERR_LSB];
+                        af_nm = "an empty-FIFO sample read's word, ERR";
+                        if (!af_ok || af_st[SMP_VALID_LSB] !== 1'b0 || af_snap_lvl !== 4'd0)
+                            fail($sformatf("AF k %0d: the sample read copied no empty word (status 0x%02h, CRC %b, level %0d at the copy)",
+                                           k, af_st, af_ok, af_snap_lvl));
+                    end
+                    repeat (8) @(posedge MCLK);
+                    af_dt = ad_t_err - (af_tc - TMCLK);         // the change against the start of the copy's cycle
+                    if (af_dt < -TMCLK / 2.0)     af_nb[s] = af_nb[s] + 1;
+                    else if (af_dt < TMCLK / 2.0) af_ns[s] = af_ns[s] + 1;
+                    else                          af_na[s] = af_na[s] + 1;
+                    af_want = (af_dt < TMCLK / 2.0);            // ERR 0 -> CFG_ERR: ALERT 1 from that edge on
+                    if (af_exp !== af_want)
+                        fail($sformatf("AF k %0d: ALERT %b modelled at the copy, but ERR changed %0.2f MCLK from its cycle's start, which gives %b",
+                                       k, af_exp, af_dt / TMCLK, af_want));
+                    if (af_got !== af_exp)
+                        fail($sformatf("AF k %0d: %s %b; ALERT in the copy's cycle %b (spec 3.2)", k, af_nm, af_got, af_exp));
+                    r14_write(7'h06, 8'hFF);            // CFG_ERR cleared
+                end
+            end
+            for (int s = 0; s < 2; s++) begin
+                if (s == 0) af_nm = "STATUS";
+                else        af_nm = "the empty word";
+                if (af_nb[s] < 1 || af_ns[s] < 1 || af_na[s] < 1)
+                    fail($sformatf("AF not exercised (%s): ERR changed %0d times before the copy's cycle, %0d at its start, %0d at or after the copy's edge",
+                                   af_nm, af_nb[s], af_ns[s], af_na[s]));
+            end
+            $display("AF ERR changed across the copy's cycle: a register read's STATUS %0d / %0d / %0d, an empty-FIFO sample read's word %0d / %0d / %0d (before the cycle / at its start / at or after the copy's edge), each with the ALERT of its copy's cycle (errors %0d)",
+                     af_nb[0], af_ns[0], af_na[0], af_nb[1], af_ns[1], af_na[1], errors);
+        end
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults back
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

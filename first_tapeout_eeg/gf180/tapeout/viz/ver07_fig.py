@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Figure 50 (r13 analog, r14 digital; 11/21): VER-07, the analog decks at the r14 sequencer's tick phase with r14's
+"""Figure 50 (r13 analog, r14 digital; 11/21, final 11/23 when the 51k||47n run finished): VER-07, the analog decks at the r14 sequencer's tick phase with r14's
 reset trims (audit of 11/21, round 16, A1).
 
 Runs (gf180/tapeout/pex/runs/ver07_r14/run_ver07_r14.sh and run_ver07_r14_b.sh, 11/21; run_ver07_r14_c.sh, 11/22):
@@ -16,9 +16,12 @@ Drawn thin: the 11/20 runs of runs/ver07_seq (M from the nominal step, 964 and 9
 M 100), which the audit found beyond the ADC's range.
   (a) the ADC input OUTP - OUTN in chopper-period means after the last release (from the exact integral qo, on a grid
       a quarter period after the chopper's edges);
-  (b) the instantaneous ADC input after the last release (min and max per half period), the ADC's range marked;
-  (c) the residual in chopper-period means referred to the electrode (/ 297.75, the 100-ohm gain), log scale;
-  (d) the numbers.
+  (b) the 51k||47n run over its whole length: the means and the instantaneous min and max per chopper period, the
+      ADC's range, where it is back in range for good, and where the first stored window starts with T_ELEC 0 and
+      3 ms (after RECOVER's T_REC 0.25 ms and T_ELEC; ALIGN adds 0 to 1 ms; 11/23: the run finished);
+  (c) the instantaneous ADC input after the last release (min and max per half period), the ADC's range marked;
+  (d) the residual in chopper-period means referred to the electrode (/ 297.75, the 100-ohm gain), log scale;
+  (e) the numbers.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/ver07_fig.py
 """
@@ -147,7 +150,7 @@ def main():
                      f"{r['over'][1]:.1f} after the CHOP_OUT edges (to {r['over'][2] * 1e3:.0f} mV)"))
 
     done = [k for k, *_ in CASES if new[k] is not None]
-    fig = V.figure(7.6, 7.0, "VER-07: the analog decks at the r14 tick phase, with r14's reset trims",
+    fig = V.figure(10.6, 10.4, "VER-07: the analog decks at the r14 tick phase, with r14's reset trims",
                    "afe_startup.py / afe_saturation.py --seq: power-on start deck, extracted afe_top r13 with eeg_bias and "
                    "eeg_ref on the chip wiring; AFE_IBIAS 3 from reset, BTRIM_P 1, BTRIM_N 0; the first release at its "
                    "tick (5.005 ms); with an electrode offset the host's APPLY at the tick of 5.997 ms and AFE_RST "
@@ -159,7 +162,7 @@ def main():
                         "chopper's edges. Electrode-referred values divide by 297.75 (the gain with 100 Ω legs)."
                         + ("" if len(done) == len(CASES) else
                            " Still running: " + ", ".join(lab for k, lab, *_ in CASES if new[k] is None) + "."))
-    gs = fig.add_gridspec(2, 2)
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.78])
 
     ax = fig.add_subplot(gs[0, 0])
     ax.axhspan(-ADC_FS, ADC_FS, color=HAIR, alpha=0.35, lw=0, zorder=0)
@@ -173,10 +176,30 @@ def main():
     ax.set_xlim(-0.02, 2.0)
     ax.set_xlabel("time after the last release (ms)")
     ax.set_ylabel("ADC input, chopper-period mean (V)")
-    ax.set_title("(a) The ADC input after the last release\n(shaded: the ADC's range ±0.484 V; thin: 11/20)", loc="left")
+    ax.set_title("(a) The ADC input after the last release, chopper-period means\n(shaded: the ADC's range ±0.484 V; thin: 11/20)", loc="left")
     ax.legend(loc="upper right", fontsize=7.5)
 
-    ax = fig.add_subplot(gs[0, 1])
+    ax = fig.add_subplot(gs[0, 1])                       # (b) the 51k||47n run over its whole length
+    r = new["51k"]
+    if r is not None:
+        ax.axhspan(-ADC_FS, ADC_FS, color=HAIR, alpha=0.35, lw=0, zorder=0)
+        x, lo, hi = envelope(r["v"], r["t_rel"], r["v"]["t"][-1], w=TCH)
+        ax.fill_between((x - r["t_rel"]) * 1e3, lo, hi, color=AMBER, alpha=0.22, lw=0, label="instantaneous min..max per period")
+        ax.plot(r["tc"] * 1e3, r["mm"], color=AMBER, lw=1.3, label="chopper-period mean")
+        if r["back"] is not None:
+            ax.axvline(r["back"] * 1e3, color=INK2, lw=0.9, ls=(0, (3, 2)))
+            ax.text(r["back"] * 1e3 + 0.2, 1.25, f"in range for good\nfrom {r['back'] * 1e3:.2f} ms", fontsize=7.5, color=INK2, va="top")
+        for te, lab_ in ((0.25e-3, "T_ELEC 0"), (3.25e-3, "T_ELEC 3 ms")):
+            ax.axvline(te * 1e3, color=MUTED, lw=0.8, ls=":")
+            ax.text(te * 1e3 + 0.15, -1.25, lab_, fontsize=7.2, color=MUTED, va="bottom", rotation=90)
+        ax.set_xlim(-0.2, r["t_end"] * 1e3)
+        ax.set_ylim(-1.45, 1.45)
+        ax.legend(loc="lower right", fontsize=7.2)
+    ax.set_xlabel("time after the last release (ms)")
+    ax.set_ylabel("ADC input (V)")
+    ax.set_title("(b) 300 mV through 51k||47n on ELP, M 100, to the run's end\n(dotted: the first stored window starts after RECOVER and T_ELEC)", loc="left")
+
+    ax = fig.add_subplot(gs[1, 0])
     for lim in (-ADC_FS, ADC_FS):
         ax.axhline(lim, color=MUTED, lw=0.8, ls=(0, (3, 2)))
     for k, lab, col, *_ in CASES:
@@ -190,9 +213,9 @@ def main():
     ax.set_xlim(0, 300)
     ax.set_xlabel("time after the last release (µs)")
     ax.set_ylabel("ADC input, instantaneous (V)")
-    ax.set_title("(b) The instantaneous ADC input (min and max per half\nperiod); dashed: the ADC's range", loc="left")
+    ax.set_title("(c) The instantaneous ADC input, min and max per half period\n(dashed: the ADC's range)", loc="left")
 
-    ax = fig.add_subplot(gs[1, 0])
+    ax = fig.add_subplot(gs[1, 1])
     for k, lab, col, *_ in CASES:
         r = new[k]
         if r is None:
@@ -201,9 +224,9 @@ def main():
         ax.semilogy(r["tc"][w] * 1e3, np.abs(r["mm"][w]) / G_AFE * 1e6, color=col, lw=1.1, label=lab)
     ax.set_xlabel("time after the last release (ms)")
     ax.set_ylabel("|ADC input| / 297.75 (µV, electrode-referred)")
-    ax.set_title("(c) The residual referred to the electrode", loc="left")
+    ax.set_title("(d) The residual referred to the electrode", loc="left")
 
-    ax = fig.add_subplot(gs[1, 1])
+    ax = fig.add_subplot(gs[2, :])                       # (e) the numbers
     ax.axis("off")
     lines = ["After the last release (11/21, r14's trims):"]
     for k, lab, col, *_ in CASES:

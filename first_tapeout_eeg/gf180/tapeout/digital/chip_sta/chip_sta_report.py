@@ -8,10 +8,15 @@ Times are from the MCLK edge at the pad (MCLK_PAD), in ns. Checks derived here:
     CODE (eeg_digital_top), MCLK skew between the two macros' pins
   * DAC1: SEL1 (changes at e3) must be at the DAC1 latches before DAC_CLK (rises at e4)
     opens them: T + DAC_CLK(min) - SEL1(max)
-  * blanking: CHOP_BLANK rises 1 MCLK before each CHOP_OUT edge and falls BLANK_LEN = 7
-    MCLK after it: T + CHOP_OUT(min) - CHOP_BLANK(max) and 7 T + CHOP_BLANK(min) - CHOP_OUT(max)
+  * blanking: CHOP_BLANK rises 1 MCLK before each CHOP_OUT edge and falls BLANK_LEN MCLK
+    after it: T + CHOP_OUT(min) - CHOP_BLANK(max) and BLANK_LEN T + CHOP_BLANK(min) - CHOP_OUT(max),
+    the fall at BLANK_LEN 1 (r14's legal minimum) and 15 (the offset DAC on) (digital-control audit
+    round 35, auditor A: it was fixed at 7, while r14 accepts 1..15)
   * slews at the analog receivers (30-70 % values of the libraries, as reported)
+The runs so far are r13's macros (f2) with r13's chip wiring; r14's macro and its chip routes are
+checked again in VER-08 (requirements; its outputs are clkbuf_2 and its pins moved).
 """
+BLANK_LENS = (1, 15)
 import os
 import re
 import sys
@@ -74,7 +79,7 @@ def main():
              "dac1": T + pn["DAC_CLK"][0] - max(sel1), "sel1_max": max(sel1), "dacclk": (pn["DAC_CLK"][0], pm["DAC_CLK"][0]),
              "sel2": (min(sel2n), max(sel2)),
              "blank_rise": T + pn["CHOP_OUT"][0] - pm["CHOP_BLANK"][0],
-             "blank_fall": 7 * T + pn["CHOP_BLANK"][0] - pm["CHOP_OUT"][0],
+             "blank_fall": {n: n * T + pn["CHOP_BLANK"][0] - pm["CHOP_OUT"][0] for n in BLANK_LENS},
              "slew": {p: pm[p][1] for p in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP1", "CHOP_EN", "AFE_RST",
                                               "DAC_CLK", "ADC_ZERO")},
              "arr": {p: (pn[p][0], pm[p][0]) for p in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP1", "DAC_CLK")},
@@ -87,13 +92,14 @@ def main():
          "(coupling counted 0 / 1 / 2 times).", "",
          "| corner | MCLK at top / adc (max) | TH setup (worst of 31) | blocks setup / hold "
          "| CMP_STROBE at the quantizer: arrival max, slew | DAC1: SEL1 before DAC_CLK | SEL2 arrival min..max "
-         "| blanking margin rise / fall |",
+         "| blanking margin rise / fall at BLANK_LEN " + " and ".join(str(n) for n in BLANK_LENS) + " |",
          "|---|---|---|---|---|---|---|---|"]
     for r in rows:
         L.append(f"| {r['corner']} | {r['mclk_top']['max']:.2f} / "
                  f"{r['mclk_adc']['max']:.2f} | {r['th_setup']:+.2f} (TH by {r['th_amax']:.1f}) | "
                  f"{r['blk_setup']:+.2f} / {r['blk_hold']:+.2f} | {r['strobe']['max']:.2f}, {r['strobe']['slew']:.2f} | "
-                 f"{r['dac1']:+.2f} | {r['sel2'][0]:.2f}..{r['sel2'][1]:.2f} | {r['blank_rise']:+.2f} / {r['blank_fall']:+.1f} |")
+                 f"{r['dac1']:+.2f} | {r['sel2'][0]:.2f}..{r['sel2'][1]:.2f} | {r['blank_rise']:+.2f} / "
+                 + ", ".join(f"{r['blank_fall'][n]:+.1f}" for n in BLANK_LENS) + " |")
     L += ["", "Slews (max, 30-70 %) and arrival (min..max) at the analog receivers:", "",
           "| corner | " + " | ".join(rows[0]["slew"]) + " | SEL (max) |", "|---" * (len(rows[0]["slew"]) + 2) + "|"]
     for r in rows:

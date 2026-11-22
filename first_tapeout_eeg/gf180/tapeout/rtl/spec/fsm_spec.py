@@ -1116,8 +1116,8 @@ TIMING = dict(
     dac_load_cycle=2,
     blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame and cycles 0 .. BLANK_LEN - 1
                                                # (BLANK_LEN + 1 cycles, BLANK_LEN <= 15); checked as 31 and 0 .. 15.
-                                               # CHOP1's edge (cycle 16) is the first cycle after the longest
-                                               # blanking, on the ss post-blanking spike of the ADC input (audit
+                                               # CHOP1's edge (e16) comes 1 MCLK after the longest blanking
+                                               # ends (e15), on the ss post-blanking spike of the ADC input (audit
                                                # round 34, auditor A; figure 52: at most 195 nV DC input-referred
                                                # at 16 kHz, 49 nV at the default 4 kHz; not material, kept)
     tick_cycle=24,

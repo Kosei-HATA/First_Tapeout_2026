@@ -40,6 +40,11 @@ def levels(n, high, start=0):
 
 def frame():
     T = FS.TIMING
+    # the strobes from fsm_spec.TIMING (audit round 35, auditor C: they were hand-written cycles no check read): the
+    # busy cycles by their labels, the DAC's from dac_load_cycle (a strobe is high in the cycle before its edge)
+    busy = FS.busy_all(T)
+    cyc = lambda prefix: next(c for c, s in busy.items() if s.startswith(prefix))
+    c_cmp, c_th, c_out, c_c1, d = cyc("CMP_STROBE"), cyc("TH の取り込み"), cyc("CIC の出力"), cyc("CHOP1"), T["dac_load_cycle"]
     pos = [31] + list(range(32))                      # cycle 31 of the previous frame, then cycles 0..31
     n = len(pos)
     hi = lambda cyc: {i for i, c in enumerate(pos) if c in cyc and not (i == 0 and c != 31)}
@@ -51,16 +56,16 @@ def frame():
         {"name": "MCLK", "wave": "p" + "." * (n - 1)},
         {"name": "フレームサイクル", "wave": "=" * n, "data": [str(c) for c in pos]},
         {},
-        {"name": "ADC：CMP_STROBE", "wave": levels(n, hi({0}))},
-        {"name": "ADC：TH_CAPTURE（e2 で取り込み）", "wave": levels(n, hi({1}))},
-        {"name": "ADC：DAC_LOAD（e3 で SEL 更新）", "wave": levels(n, hi({2}))},
-        {"name": "ADC：CIC の入力", "wave": levels(n, hi({3}))},
-        {"name": "ADC：DAC_CLK", "wave": levels(n, hi({4}))},
+        {"name": "ADC：CMP_STROBE", "wave": levels(n, hi({c_cmp}))},
+        {"name": f"ADC：TH_CAPTURE（e{c_th} で取り込み）", "wave": levels(n, hi({c_th - 1}))},
+        {"name": f"ADC：DAC_LOAD（e{d + 1} で SEL 更新）", "wave": levels(n, hi({d}))},
+        {"name": "ADC：CIC の入力", "wave": levels(n, hi({3}))},                 # eeg_clkgen's cic_en (tb_clkgen)
+        {"name": "ADC：DAC_CLK", "wave": levels(n, hi({d + 2}))},
         {},
         {"name": "縁のフレーム：CHOP／CHOP_OUT", "wave": levels(n, set(range(1, n)))},
         {"name": f"縁のフレーム：CHOP_BLANK（{T['blank_max']}）", "wave": levels(n, blank)},   # captions from TIMING (audit round 14)
-        {"name": "出力のフレーム：CIC の出力", "wave": levels(n, hi({8}))},
-        {"name": "CHOP1 の縁のフレーム：CHOP1", "wave": levels(n, {i for i, c in enumerate(pos) if i > 0 and c >= 16})},
+        {"name": "出力のフレーム：CIC の出力", "wave": levels(n, hi({c_out}))},
+        {"name": "CHOP1 の縁のフレーム：CHOP1", "wave": levels(n, {i for i, c in enumerate(pos) if i > 0 and c >= c_c1})},
         {},
         {"name": "新設：tick（相 A の中ほど）", "wave": levels(n, hi({tc}))},
         {"name": "新設：AFE_RST・設定の出力", "wave": "=" + "." * (up - 1) + "=" + "." * (n - up - 1),
@@ -155,7 +160,8 @@ SPI_FRAMES = [("書き込み", "write", 0, None), ("書き込み（CRC）", "wri
 MSG = {"path": "is not a transition of the table", "lane": ", but the table gives",
        "spi_accept": "that the table completes without an error flag",
        "spi_status": "MISO does not load STATUS at the frame's start (CS_N falling)",
-       "spi_sample": "sample bytes loaded by the table, but fsm_spec.SAMPLE_BYTES names"}
+       "spi_sample": "sample bytes loaded by the table, but fsm_spec.SAMPLE_BYTES names",
+       "frame": ", but fsm_spec.TIMING's busy cycles give"}   # audit round 35, auditor C
 
 
 def sample_labels():
@@ -323,6 +329,25 @@ def check():
             for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
                 if x is not None and v is not None and v != want(x):
                     errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}{MSG['lane']} {want(x)}")
+    # the frame diagram's strobes against fsm_spec.TIMING's busy cycles (audit round 35, auditor C)
+    busy = FS.busy_all()
+    one = lambda prefix: [c for c, s in busy.items() if s.startswith(prefix)]
+    pos = [31] + list(range(32))
+    d = FS.TIMING["dac_load_cycle"]
+    want = {"ADC：CMP_STROBE": {c - 0 for c in one("CMP_STROBE")}, "ADC：TH_CAPTURE": {c - 1 for c in one("TH の取り込み")},
+            "ADC：DAC_LOAD": {c - 1 for c in one("SEL1／SEL2")}, "ADC：DAC_CLK": set(one("DAC_CLK（DAC1")),
+            "出力のフレーム：CIC の出力": set(one("CIC の出力")), "CHOP1 の縁のフレーム：CHOP1": set(one("CHOP1"))}
+    for ln in frame()["signal"]:
+        if not isinstance(ln, dict) or "name" not in ln:
+            continue
+        key = next((k for k in want if ln["name"].startswith(k)), None)
+        if key is None:
+            continue
+        vals = lane_values(ln["wave"])
+        hi_ = {pos[i] for i, v in enumerate(vals) if v == "1" and i > 0}
+        got = {min(hi_)} if key.startswith("CHOP1") and hi_ else hi_    # CHOP1: its edge, the first high cycle
+        if got != want[key]:
+            errs.append(f"wave_frame: {key}: high in cycles {sorted(got)}{MSG['frame']} {sorted(want[key])} (dac_load_cycle {d})")
     for _t, kind, crc_en, length in SPI_FRAMES:           # the SPI diagram (audit round 15)
         errs += spi_lanes(kind, crc_en, length)[2]
     return errs
@@ -348,6 +373,18 @@ def selftest():
             return lambda: F.__setitem__("table", orig)
         return apply
 
+    def dac_clk_moved():                           # audit round 35, auditor C: a strobe drawn off TIMING's cycle
+        orig = frame
+
+        def drawn():
+            f = orig()
+            for ln in f["signal"]:
+                if isinstance(ln, dict) and ln.get("name") == "ADC：DAC_CLK":
+                    ln["wave"] = levels(33, {6})          # cycle 5 (DAC_CLK in cycle 4 from dac_load_cycle 2)
+            return f
+        globals()["frame"] = drawn
+        return lambda: globals().__setitem__("frame", orig)
+
     def afe_rst_pre():
         saved = FS.SEQ_STATES[i_pre]
         FS.SEQ_STATES[i_pre] = saved[:3] + (1,) + saved[4:]
@@ -368,6 +405,7 @@ def selftest():
     muts = [
         ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
         ("起動の図：READY を FILL で立ち上げる", ready_in_fill, "lane"),
+        ("フレームの図：DAC_CLK をサイクル 5 に（TIMING の dac_load_cycle と合わない）", dac_clk_moved, "frame"),
         ("APPLY の図：PRE で AFE_RST を 1 に（状態の表）", afe_rst_pre, "lane"),
         ("SPI の図：CRC 付きの読み出しの CRC のあとを長すぎるフレームに",
          table(FS.SPI, ("RCRC", "BYTE"), [B(A, [], "OVF")]), "spi_accept"),

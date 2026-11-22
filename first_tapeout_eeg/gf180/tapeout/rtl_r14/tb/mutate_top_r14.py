@@ -720,6 +720,16 @@ MUTATIONS = [
       ("eeg_digital_top.sv", "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (",
        "    logic [7:0] smp_status_q;\n    always_ff @(posedge MCLK or negedge rst_n) if (!rst_n) smp_status_q <= 8'h00; "
        "else smp_status_q <= smp_status;\n    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (")], None, None),
+    # audit round 35, auditor C: flags cleared by an accepted command (AE: ERR and DFLAG read exactly after each)
+    ('レジスタ：反映（START、APPLY、APPLY_NR）で RESET_FLAG を消す', 'eeg_regs.sv',
+     "            err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata : 8'h00)) | ev_err;",
+     "            err   <= (err & ~(((we && w_ok && addr == A_ERR) ? wdata : 8'h00) | {7'd0, apply})) | ev_err;"),
+    ('レジスタ：反映（START、APPLY、APPLY_NR）で DFLAG を消す', 'eeg_regs.sv',
+     "            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : 2'b00)) | {ovl_set, ovr_set};",
+     '            dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ? {wdata[DFLAG_OVL_LSB], wdata[DFLAG_OVERRUN_LSB]}\n                                                                : {2{apply}})) | {ovl_set, ovr_set};'),
+    # audit round 35, auditor C: the copy instants of the empty word and of the header's STATUS (AF)
+    ('最上位：空の語の状態を 1 MCLK 前のものとして写す', [('eeg_digital_top.sv', '        .empty_status(empty_status), .rd_word(smp_word),', '        .empty_status(empty_status_q), .rd_word(smp_word),'), ('eeg_digital_top.sv', '    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (', "    logic [7:0] empty_status_q;\n    always_ff @(posedge MCLK or negedge rst_n) if (!rst_n) empty_status_q <= 8'h00; else empty_status_q <= empty_status;\n    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (")], None, None),
+    ('最上位：先頭の STATUS を 1 MCLK 前のものとして写す', [('eeg_digital_top.sv', '        .status_byte(status_byte), .reg_addr(reg_addr), .reg_rdata(reg_rdata), .reg_addr_ok(reg_addr_ok),', '        .status_byte(status_hdr_q), .reg_addr(reg_addr), .reg_rdata(reg_rdata), .reg_addr_ok(reg_addr_ok),'), ('eeg_digital_top.sv', '    eeg_spi_slave u_spi (', "    logic [7:0] status_hdr_q;\n    always_ff @(posedge MCLK or negedge rst_n) if (!rst_n) status_hdr_q <= 8'h81; else status_hdr_q <= status_byte;\n    eeg_spi_slave u_spi (")], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1311,7 +1321,7 @@ def run(i, m, bench="top"):
         return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
     def top_once(vvp, tag):
         """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
-        try:                                         # the bench's own watchdog (1,000 ms simulated) ends a hang
+        try:                                         # the bench's own watchdog (1,200 ms simulated) ends a hang
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
                                timeout=5400)
         except subprocess.TimeoutExpired:

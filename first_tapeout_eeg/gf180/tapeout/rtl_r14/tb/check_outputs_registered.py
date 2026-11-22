@@ -38,7 +38,11 @@ tick placement, fsm_spec.TIMING's busy cycles and the ADC loop's excess loop del
 the DAC_LOAD_CYCLE defaults of eeg_digital_top (the synthesized value) and eeg_clkgen, eeg_digital_top's pass-through
 to eeg_clkgen, and the instantiation value of every bench the r14 groups compile (rtl_r14/tb and the rtl/tb benches
 run_tests_r14.sh names; audit round 34, auditor C: only rtl_r14/tb was scanned) equal fsm_spec.TIMING's
-dac_load_cycle, but for PARAM_EXEMPT: tb_clkgen's dut_b at 7, the clock generator's own parameter test.
+dac_load_cycle, but for PARAM_EXEMPT: tb_clkgen's dut_b at 7, the clock generator's own parameter test. Every
+instantiation of eeg_digital_top and eeg_clkgen in those benches is read (comments and strings left out; a named
+value with any spacing, the module's default, a positional override or a defparam is a fault) and their number
+equals PARAM_INSTANCES_RECORDED (audit round 35, auditor C: the scan matched only ".DAC_LOAD_CYCLE(" without a space
+and compared its count with nothing); the scan's own self-test edits the benches' texts six ways, each a fault.
 
 Exit: 0 every output a flip-flop's (PASS), 1 an output that is not, or yosys rejects the design (FAIL; audit round
 28, auditor C: a latch from an always_comb, which yosys stops at, was reported as TOOL ERROR, so the mutation runner
@@ -135,6 +139,9 @@ def main():
                                  if not fbad else f"{len(fbad)} of {len(FSM_NOT_RECODED)} open to recoding"))
     pbad, pnote = check_parameters(d)
     print("parameters: " + pnote)
+    sbad_, snote_ = param_selftest()
+    print("parameter scan self-test: " + snote_)
+    pbad += sbad_
     for x in bad + sbad + rbad + cbad + fbad + pbad:
         print("  " + x)
     if bad or sbad or rbad or cbad or fbad or pbad:
@@ -172,27 +179,141 @@ def check_parameters(d):
     top = open(os.path.join(d, "eeg_digital_top.sv"), encoding="utf-8").read()
     if not re.search(r"eeg_clkgen\s*#\(\s*\.DAC_LOAD_CYCLE\(\s*DAC_LOAD_CYCLE\s*\)\s*\)", top):
         bad.append("eeg_digital_top.sv: eeg_clkgen is not given eeg_digital_top's DAC_LOAD_CYCLE")
+    bbad, bnote = check_bench_parameters(bench_texts(), want)
+    bad += bbad
+    return bad, (f"DAC_LOAD_CYCLE {want} (fsm_spec.TIMING) in " + ", ".join(seen) + " and " + bnote
+                 + ("" if not bad else f"; {len(bad)} faults"))
+
+
+# the instantiations of eeg_digital_top and eeg_clkgen in the benches the r14 groups compile, by directory (audit round
+# 35, auditor C): a scan finding another number is a fault
+PARAM_INSTANCES_RECORDED = {"rtl/tb": 3, "rtl_r14/tb": 3}
+PARAM_MODULES = ("eeg_digital_top", "eeg_clkgen")
+
+
+def bench_texts():
+    """{path from gf180/tapeout: text} of the benches the r14 groups compile: rtl_r14/tb and the rtl/tb ones
+    run_tests_r14.sh names."""
     tapeout = os.path.normpath(os.path.join(HERE, "..", ".."))
     script = open(os.path.join(HERE, "..", "run_tests_r14.sh"), encoding="utf-8").read()
-    benches = [os.path.join(HERE, f) for f in sorted(os.listdir(HERE)) if f.endswith(".sv")]
-    benches += [os.path.join(tapeout, "rtl", "tb", f) for f in sorted(set(re.findall(r"\.\./rtl/tb/(\w+\.sv)", script)))]
-    nb, found = {}, set()
-    for p in benches:
-        rel = os.path.relpath(p, tapeout)
-        txt = open(p, encoding="utf-8").read()
-        for v, inst in re.findall(r"\.DAC_LOAD_CYCLE\(\s*(\w+)\s*\)[^;]*?\)\s*(\w+)\s*\(", txt):
+    paths = [os.path.join(HERE, f) for f in sorted(os.listdir(HERE)) if f.endswith(".sv")]
+    paths += [os.path.join(tapeout, "rtl", "tb", f) for f in sorted(set(re.findall(r"\.\./rtl/tb/(\w+\.sv)", script)))]
+    return {os.path.relpath(p, tapeout): open(p, encoding="utf-8").read() for p in paths}
+
+
+def _strip_sv(txt):
+    """The text without comments and string literals (their words are no instantiations)."""
+    txt = re.sub(r"/\*.*?\*/", " ", txt, flags=re.S)
+    txt = re.sub(r"//[^\n]*", " ", txt)
+    return re.sub(r'"(?:\\.|[^"\\\n])*"', '""', txt)
+
+
+def _paren(txt, i):
+    """(the text inside the parentheses opening at txt[i], the index after the closing one)"""
+    depth = 0
+    for j in range(i, len(txt)):
+        depth += (txt[j] == "(") - (txt[j] == ")")
+        if depth == 0:
+            return txt[i + 1:j], j + 1
+    raise ValueError("unbalanced parentheses")
+
+
+def bench_instances(txt):
+    """[(module, instance, {parameter: value} or None)] of eeg_digital_top and eeg_clkgen in a bench's text (None: a
+    positional override or one the scan cannot read), and whether the text has a defparam of DAC_LOAD_CYCLE."""
+    t = _strip_sv(txt)
+    out = []
+    for m in re.finditer(r"\b(" + "|".join(PARAM_MODULES) + r")\b", t):
+        j, params = m.end(), {}
+        k = re.match(r"\s*#\s*", t[j:])
+        if k:
+            j += k.end()
+            if j >= len(t) or t[j] != "(":
+                out.append((m.group(1), "?", None))
+                continue
+            inner, j = _paren(t, j)
+            for item in [x.strip() for x in re.split(r",(?![^()]*\))", inner) if x.strip()]:
+                mm = re.fullmatch(r"\.\s*(\w+)\s*\(\s*(.*?)\s*\)", item, flags=re.S)
+                if not mm:
+                    params = None
+                    break
+                params[mm.group(1)] = mm.group(2)
+        mi = re.match(r"\s*(\w+)\s*\(", t[j:])
+        if mi:
+            out.append((m.group(1), mi.group(1), params))
+    return out, bool(re.search(r"\bdefparam\b[^;]*\bDAC_LOAD_CYCLE\b", t))
+
+
+def check_bench_parameters(texts, want):
+    """(faults, note) for DAC_LOAD_CYCLE in the benches' texts: every instantiation at want by name or at the module's
+    default (checked against TIMING above), but for PARAM_EXEMPT; no positional override, no defparam; their number
+    by directory equal to PARAM_INSTANCES_RECORDED (audit rounds 34, 35, auditor C)."""
+    bad, n_dir, n_named, n_default, found = [], {}, 0, 0, set()
+    for rel, txt in sorted(texts.items()):
+        insts, has_defparam = bench_instances(txt)
+        if has_defparam:
+            bad.append(f"{rel}: a defparam of DAC_LOAD_CYCLE (name the value in the instantiation)")
+        for mod, inst, params in insts:
+            key = os.path.dirname(rel)
+            n_dir[key] = n_dir.get(key, 0) + 1
             if (rel, inst) in PARAM_EXEMPT:
                 found.add((rel, inst))
                 continue
-            nb[rel.split(os.sep)[0]] = nb.get(rel.split(os.sep)[0], 0) + 1
-            if v != str(want):
-                bad.append(f"{rel}: {inst} instantiated with DAC_LOAD_CYCLE {v}, fsm_spec.TIMING's dac_load_cycle {want}")
+            if params is None:
+                bad.append(f"{rel}: {inst} ({mod}) overrides its parameters by position or in a form the scan cannot "
+                           f"read (name DAC_LOAD_CYCLE)")
+                continue
+            v = params.get("DAC_LOAD_CYCLE")
+            if v is None:
+                n_default += 1
+            elif v != str(want):
+                bad.append(f"{rel}: {inst} ({mod}) instantiated with DAC_LOAD_CYCLE {v}, fsm_spec.TIMING's "
+                           f"dac_load_cycle {want}")
+            else:
+                n_named += 1
     for rel, inst in sorted(PARAM_EXEMPT - found):
         bad.append(f"{rel}: the exempted instance {inst} (PARAM_EXEMPT) is not there")
-    return bad, (f"DAC_LOAD_CYCLE {want} (fsm_spec.TIMING) in " + ", ".join(seen) + f" and {sum(nb.values())} bench "
-                 f"instantiations of the r14 groups (" + ", ".join(f"{k}/tb {v}" for k, v in sorted(nb.items()))
-                 + f"; {len(found)} exempted: " + ", ".join(f"{r} {i}" for r, i in sorted(found)) + ")"
-                 + ("" if not bad else f"; {len(bad)} faults"))
+    if n_dir != PARAM_INSTANCES_RECORDED:
+        bad.append(f"the r14 groups' benches instantiate {' and '.join(PARAM_MODULES)} {n_dir} times by directory, "
+                   f"PARAM_INSTANCES_RECORDED holds {PARAM_INSTANCES_RECORDED}")
+    note = (f"{sum(n_dir.values())} bench instantiations of the r14 groups (" + ", ".join(f"{k} {v}" for k, v in sorted(n_dir.items()))
+            + (", as recorded" if n_dir == PARAM_INSTANCES_RECORDED else ", NOT as recorded")
+            + f"; {n_named} at {want} by name, {n_default} at the default; {len(found)} exempted: "
+            + ", ".join(f"{r} {i}" for r, i in sorted(found)) + ")")
+    return bad, note
+
+
+def param_selftest():
+    """The bench scan's own mutation test (audit round 35, auditor C): the clean texts give no fault and each edit of
+    them gives one: (faults, note)."""
+    sys.path.insert(0, SPEC)
+    import fsm_spec as FSP
+    want = FSP.TIMING["dac_load_cycle"]
+    base = bench_texts()
+    c1, c2 = "rtl/tb/tb_chop1.sv", "rtl/tb/tb_clkgen.sv"
+    line = f"eeg_clkgen #(.DAC_LOAD_CYCLE({want})) u_clkgen ("
+    edits = [("a space before the value's parenthesis", c1, line, "eeg_clkgen #(.DAC_LOAD_CYCLE (7)) u_clkgen ("),
+             ("a positional override", c1, line, "eeg_clkgen #(7) u_clkgen ("),
+             ("a defparam", c1, "endmodule", "defparam u_clkgen.DAC_LOAD_CYCLE = 7;\nendmodule"),
+             ("an instantiation more (at the default)", c1, line, "eeg_clkgen u_more ();\n    " + line),
+             ("the exempted instance renamed", c2, "eeg_clkgen #(.DAC_LOAD_CYCLE(7)) dut_b (",
+              "eeg_clkgen #(.DAC_LOAD_CYCLE(7)) dut_c ("),
+             ("a value of 7 by name", c1, line, "eeg_clkgen #( .DAC_LOAD_CYCLE( 7 ) ) u_clkgen (")]
+    bad = []
+    b0, _ = check_bench_parameters(base, want)
+    if b0:
+        bad.append(f"the parameter scan's self-test: the clean benches give {b0}")
+    missed = []
+    for name, rel, old, new in edits:
+        if rel not in base or base[rel].count(old) < 1:
+            bad.append(f"the parameter scan's self-test: the edit '{name}' does not apply to {rel}")
+            continue
+        t = dict(base)
+        t[rel] = t[rel].replace(old, new, 1)
+        if not check_bench_parameters(t, want)[0]:
+            missed.append(name)
+    bad += [f"the parameter scan's self-test: the edit '{n}' gives no fault" for n in missed]
+    return bad, f"{len(edits) - len(missed)} of {len(edits)} edits of the benches' texts give a fault" + ("" if not b0 else ", the clean ones too")
 
 
 def check_clocks(m):

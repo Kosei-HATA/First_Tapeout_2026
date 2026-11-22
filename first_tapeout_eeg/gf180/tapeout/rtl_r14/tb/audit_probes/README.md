@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜34 回）
+# 監査の模擬の元（第 24〜35 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -81,3 +81,9 @@
 | 34 | C | `r34/C/tb_c34_status.sv` | 455（第 35.3 節） | 格納自らのサイクルの始まりの縁で FRAME_ERR を立てたときの、格納したサンプルの状態のバイト |
 | 34 | C | `r34/C/orpin.py`、`selfvar.py`、`focus.py` | 456（第 35.3 節） | 検査の Or の項の留め（自己試験の各発火で真の項）と、項を除いた変種の自己試験 |
 | 34 | C | `r34/C/muts.py`、`mk.py`、`fastrun.sh`、`runmut.sh` | 第 35.3 節 | RTL の写し（status_q、aerr_burst、guard_apply、m190）の作り方と速い走らせ方 |
+| 35 | A | `r35/A/tb_a35_prestop.sv` | 第 36.1 節 | チョッパの速さを切り替える APPLY の PRE の中で取った STOP：OFM の変化から AFE_RST の立ち上がりまで（T_PRE 3、両方の向き） |
+| 35 | B | `r35/B/tb_b35_csshort.sv`、`tb_b35_csshort2.sv` | 462（第 36.2 節） | CRC 有効の読み出しの Low の相の 1 回の CS_N の High（幅 0.25〜2.0 MCLK、8 通りの位相）でフレームが分かれるか |
+| 35 | B | `r35/B/tb_b35_csglitch.sv` | 462（第 36.2 節） | CRC 付きの読み出しの 1〜23 ビットのあとの 3 MCLK の High：一つ目の部分の FRAME_ERR |
+| 35 | C | `r35/C/tb_c35_flags.sv` | 464、465（第 36.3 節） | 受け付けた START と APPLY のあとの ERR、DFLAG、STATUS（端子のみから）、空の語の写しのサイクルの始まりの縁の FRAME_ERR |
+| 35 | C | `r35/C/tb_c35_hdr.sv`、`tb_c35_slack.sv` | 465（第 36.3 節） | 先頭の STATUS の写しのサイクルの始まりの縁の FRAME_ERR、誤りの確定から次の先頭の写しまでの縁の数 |
+| 35 | C | `r35/C/muts.py`、`probe_off_exp.py`、`fsm_sweep3.py` | 第 36.3 節 | RTL の写し（rflag_apply、dflag_apply、empty_q、status_hdr_q）と試験台の走査の写し、PROBE_OFF_REACHABLE の空と欠けの実験、状態遷移表の新しい類の 1 編集の掃き |

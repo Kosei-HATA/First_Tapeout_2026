@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜33 回）
+# 監査の模擬の元（第 24〜34 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -74,3 +74,10 @@
 | 33 | C | `r33/C/tb_c33_fillclr.sv` | 446（第 34.3 節） | FILL の中の APPLY_NR（T_ELEC 0）と APPLY の掃き：ALIGN のクリアと最初の格納 |
 | 33 | C | `r33/C/tb_c33_twarm.sv` | 447（第 34.3 節） | T_WARM 128、200、255 の読み戻しとシーケンサの読み込み |
 | 33 | C | `r33/C/fsm_sweep2.py`、`regmap_const_sweep.py`、`fastrun.sh` | 第 34.3 節 | 状態遷移表と TIMING の広げた 1 編集の掃き、regmap の定数と番地の移動の掃き、写しの速い走らせ方 |
+| 34 | A | `r34/A/tb_a34_c1blank.sv` | 450（第 35.1 節） | r14 の eeg_clkgen と eeg_chop1：128 kHz と 64 kHz、CHOP1 の速さ 1〜5 で、CHOP1 の縁と CHOP_OUT の立ち上がり、CHOP_BLANK の立ち下がりの距離 |
+| 34 | A | `r34/A/seq_ref.py` | 第 35.1 節 | SEQ-01〜16 と 5.0 から独立に書いたシーケンサの模型と `fsm_spec.seq_tick` の全ての組の照合 |
+| 34 | B | `r34/B/tb_b34_csbreak.sv`、`a34B_csbreak2.py`、`a34B_csbreak_probe.py` | 451（第 35.2 節） | CRC 付きの読み出しをパルス 2〜23 の前で CS_N の跳ねで切る RTL の試験台と、ホストの見方の模型 |
+| 34 | B | `r34/B/tb_b34_offprobe.sv`、`a34B_probeoff2.py` | 452（第 35.2 節） | CRC 無効の到達しうる値（T_ELEC 1、3、IF_CFG 0x02）のもとでのモードの判定の 1 回の故障 |
+| 34 | C | `r34/C/tb_c34_status.sv` | 455（第 35.3 節） | 格納自らのサイクルの始まりの縁で FRAME_ERR を立てたときの、格納したサンプルの状態のバイト |
+| 34 | C | `r34/C/orpin.py`、`selfvar.py`、`focus.py` | 456（第 35.3 節） | 検査の Or の項の留め（自己試験の各発火で真の項）と、項を除いた変種の自己試験 |
+| 34 | C | `r34/C/muts.py`、`mk.py`、`fastrun.sh`、`runmut.sh` | 第 35.3 節 | RTL の写し（status_q、aerr_burst、guard_apply、m190）の作り方と速い走らせ方 |

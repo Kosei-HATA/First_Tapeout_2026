@@ -36,7 +36,9 @@ every flip-flop and every memory write port takes MCLK's rising edge (CLK the MC
 And r14's fixed parameters (audit round 33, auditor A: DAC_LOAD_CYCLE was documented "legal range 2..31", while the
 tick placement, fsm_spec.TIMING's busy cycles and the ADC loop's excess loop delay assume 2, and nothing compared them):
 the DAC_LOAD_CYCLE defaults of eeg_digital_top (the synthesized value) and eeg_clkgen, eeg_digital_top's pass-through
-to eeg_clkgen, and every bench's instantiation value equal fsm_spec.TIMING's dac_load_cycle.
+to eeg_clkgen, and the instantiation value of every bench the r14 groups compile (rtl_r14/tb and the rtl/tb benches
+run_tests_r14.sh names; audit round 34, auditor C: only rtl_r14/tb was scanned) equal fsm_spec.TIMING's
+dac_load_cycle, but for PARAM_EXEMPT: tb_clkgen's dut_b at 7, the clock generator's own parameter test.
 
 Exit: 0 every output a flip-flop's (PASS), 1 an output that is not, or yosys rejects the design (FAIL; audit round
 28, auditor C: a latch from an always_comb, which yosys stops at, was reported as TOOL ERROR, so the mutation runner
@@ -146,10 +148,18 @@ def main():
     return 1 if bad or sbad or rbad or cbad or fbad or pbad else 0
 
 
+# the one bench instance at another DAC_LOAD_CYCLE on purpose (path from gf180/tapeout, instance): tb_clkgen's second
+# clock generator, at 7, shows the DAC strobe following the parameter (audit round 34, auditor C)
+PARAM_EXEMPT = {("rtl/tb/tb_clkgen.sv", "dut_b")}
+
+
 def check_parameters(d):
     """r14's fixed parameters (audit round 33, auditor A): DAC_LOAD_CYCLE's defaults in eeg_digital_top (the value
-    synthesized) and eeg_clkgen, eeg_digital_top's pass-through to eeg_clkgen, and every bench's instantiation value
-    against fsm_spec.TIMING's dac_load_cycle. d: the RTL directory checked (the benches are this checkout's)."""
+    synthesized) and eeg_clkgen, eeg_digital_top's pass-through to eeg_clkgen, and the instantiation value of every
+    bench the r14 groups compile against fsm_spec.TIMING's dac_load_cycle: rtl_r14/tb and the rtl/tb benches
+    run_tests_r14.sh names (audit round 34, auditor C: only rtl_r14/tb was scanned, while tb_clkgen and tb_chop1 come
+    from rtl/tb), but for PARAM_EXEMPT (an exemption whose instance is gone is a fault). d: the RTL directory checked
+    (the benches are this checkout's)."""
     sys.path.insert(0, SPEC)
     import fsm_spec as FSP
     want, bad, seen = FSP.TIMING["dac_load_cycle"], [], []
@@ -162,15 +172,26 @@ def check_parameters(d):
     top = open(os.path.join(d, "eeg_digital_top.sv"), encoding="utf-8").read()
     if not re.search(r"eeg_clkgen\s*#\(\s*\.DAC_LOAD_CYCLE\(\s*DAC_LOAD_CYCLE\s*\)\s*\)", top):
         bad.append("eeg_digital_top.sv: eeg_clkgen is not given eeg_digital_top's DAC_LOAD_CYCLE")
-    tbdir, nb = os.path.join(HERE), 0
-    for f in sorted(os.listdir(tbdir)):
-        if not f.endswith(".sv"):
-            continue
-        for v in re.findall(r"\.DAC_LOAD_CYCLE\(\s*(\w+)\s*\)", open(os.path.join(tbdir, f), encoding="utf-8").read()):
-            nb += 1
+    tapeout = os.path.normpath(os.path.join(HERE, "..", ".."))
+    script = open(os.path.join(HERE, "..", "run_tests_r14.sh"), encoding="utf-8").read()
+    benches = [os.path.join(HERE, f) for f in sorted(os.listdir(HERE)) if f.endswith(".sv")]
+    benches += [os.path.join(tapeout, "rtl", "tb", f) for f in sorted(set(re.findall(r"\.\./rtl/tb/(\w+\.sv)", script)))]
+    nb, found = {}, set()
+    for p in benches:
+        rel = os.path.relpath(p, tapeout)
+        txt = open(p, encoding="utf-8").read()
+        for v, inst in re.findall(r"\.DAC_LOAD_CYCLE\(\s*(\w+)\s*\)[^;]*?\)\s*(\w+)\s*\(", txt):
+            if (rel, inst) in PARAM_EXEMPT:
+                found.add((rel, inst))
+                continue
+            nb[rel.split(os.sep)[0]] = nb.get(rel.split(os.sep)[0], 0) + 1
             if v != str(want):
-                bad.append(f"tb/{f}: instantiates with DAC_LOAD_CYCLE {v}, fsm_spec.TIMING's dac_load_cycle {want}")
-    return bad, (f"DAC_LOAD_CYCLE {want} (fsm_spec.TIMING) in " + ", ".join(seen) + f" and {nb} bench instantiations"
+                bad.append(f"{rel}: {inst} instantiated with DAC_LOAD_CYCLE {v}, fsm_spec.TIMING's dac_load_cycle {want}")
+    for rel, inst in sorted(PARAM_EXEMPT - found):
+        bad.append(f"{rel}: the exempted instance {inst} (PARAM_EXEMPT) is not there")
+    return bad, (f"DAC_LOAD_CYCLE {want} (fsm_spec.TIMING) in " + ", ".join(seen) + f" and {sum(nb.values())} bench "
+                 f"instantiations of the r14 groups (" + ", ".join(f"{k}/tb {v}" for k, v in sorted(nb.items()))
+                 + f"; {len(found)} exempted: " + ", ".join(f"{r} {i}" for r, i in sorted(found)) + ")"
                  + ("" if not bad else f"; {len(bad)} faults"))
 
 

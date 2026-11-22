@@ -1115,7 +1115,11 @@ TIMING = dict(
     # "legal range 2..31" was compared with nothing; 22, 23 or 24 put a DAC edge on the tick's e25)
     dac_load_cycle=2,
     blank_max=15,                              # CHOP_BLANK: cycle 31 of the previous frame and cycles 0 .. BLANK_LEN - 1
-                                               # (BLANK_LEN + 1 cycles, BLANK_LEN <= 15); checked as 31 and 0 .. 15
+                                               # (BLANK_LEN + 1 cycles, BLANK_LEN <= 15); checked as 31 and 0 .. 15.
+                                               # CHOP1's edge (cycle 16) is the first cycle after the longest
+                                               # blanking, on the ss post-blanking spike of the ADC input (audit
+                                               # round 34, auditor A; figure 52: at most 195 nV DC input-referred
+                                               # at 16 kHz, 49 nV at the default 4 kHz; not material, kept)
     tick_cycle=24,
     rates={"128k": dict(period_frames=8, tick_frame=1), "64k": dict(period_frames=16, tick_frame=3)},
     timers=dict(T_WARM=(5e-3, 5e-3, 255e-3), T_REC=(0.22e-3, 0.25e-3, 255 * 256 / MCLK),
@@ -1884,6 +1888,9 @@ def selftest_runs():
         ("RECOVER の APPLY_NR で数え直す", lambda t: t.__setitem__(("RECOVER", "APPLY_NR"), [B("cfg_ok and nr_ok", ["apply", "restart"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
         # audit round 7, auditor C: edits that still passed (IGN cells, the RESET row, T_ELEC = 0, IDLE/STOP)
         ("IDLE の出力の時刻を無視（IGN）", lambda t: t.__setitem__(("IDLE", "OUT"), IGN)),
+        # audit round 34, auditor C: an output time neither stored nor discarded (the second operand of DAT-03's check;
+        # no mutation fired the message through it alone)
+        ("IDLE の出力の時刻を捨てない（数えるのみ）", lambda t: t.__setitem__(("IDLE", "OUT"), [B(ALWAYS, ["seq_inc"])])),
         ("PULSE の出力の時刻を無視（IGN）", lambda t: t.__setitem__(("PULSE", "OUT"), IGN)),
         ("リセット中の出力の時刻を捨てない", lambda t: t.__setitem__(("RESET", "OUT"), [B(ALWAYS, ["seq_inc"])])),
         ("ALIGN の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ", lambda t: t.__setitem__(("ALIGN", "APPLY_NR"), [B("cfg_ok and nr_ok and t_elec0", ["apply"], "WAIT_E"), B("cfg_ok and nr_ok and not t_elec0", ["apply"], "WAIT_E"), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])])),
@@ -2133,6 +2140,11 @@ def selftest_runs():
         ("TIME", "DAC の選択の更新をサイクル 22 の終わりに（DAC_CLK の立ち下がりが tick の出力の縁 e25）",
          lambda: setitem(TIMING, "dac_load_cycle", 22)),
         ("TIME", "DAC の選択の更新をサイクル 1 の終わりに（TH の取り込みの前）", lambda: setitem(TIMING, "dac_load_cycle", 1)),
+        # audit round 34, auditor C: a quote of the CHOP1 rate-change weight the pattern no longer reads (the count of
+        # WEIGHT_QUOTES; every other mutation of the weight changed its value)
+        ("DOC", "R-21 の重みの引用を読めない形に（2.3e-9）",
+         doc_edit(lambda t: t.replace("旧い相に残る重みは、切と入の切り替えで 2.3 × 10⁻⁹（",
+                                      "旧い相に残る重みは、切と入の切り替えで 2.3e-9（", 1))),
         # audit round 32, auditor C: the requirements' generated blocks
         ("DOC", "要件の生成のブロックの BEGIN の印を除く（seq_priority）",
          doc_edit(lambda t: t.replace("<!-- BEGIN GENERATED seq_priority -->", "", 1))),
@@ -2306,6 +2318,8 @@ SELFTEST_EXPECT = {
     'RUN の START を無視（IGN）': ('(no effect and no flag)',),
     'WAIT_E の APPLY_NR を無視（IGN）': ('(no effect and no flag)',),
     'RUN の出力の時刻を数えない': (': an output time not counted, or not exactly one of stored / discarded (DAT-03)',),
+    'IDLE の出力の時刻を捨てない（数えるのみ）': (': an output time not counted, or not exactly one of stored / discarded (DAT-03)',),
+    'R-21 の重みの引用を読めない形に（2.3e-9）': ('(one quote each in ANA-04, the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes',),
     'RESET の出力の時刻を数えない': ('SEQ RESET/OUT: an output time during a reset not counted (DAT-03)',),
     'RUN の APPLY で格納する': (': an output-time action (',),
     '拒否に旗を 2 つ立てる': (': a refusal with two flags', ": CFG_ERR on a branch that does not depend on the settings' consistency",),

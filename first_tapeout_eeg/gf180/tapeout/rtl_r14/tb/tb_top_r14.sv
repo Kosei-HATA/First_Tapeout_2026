@@ -68,6 +68,11 @@
 //      ALIGN's clear only at a valid output, which passed all 16 groups, fails
 //   AC audit round 33 (auditor C): T_WARM 128 and 255, T_ELEC 255 from eeg_regs into eeg_seq (WARMUP and WAIT_E held;
 //      the trace's timer model on every load, the values taken at eeg_regs' registers): a 7-bit t_warm port fails
+//   AD audit round 34 (auditor C): the sample's ERR bit (ALERT at the store, spec 3.4) when ERR changes at the store's
+//      own edge: in RUN an ADDR_ERR and its W1C clear, each committed near a store in 1/4-MCLK steps from 2 MCLK
+//      before to 2 MCLK after the start of the store's cycle; every sample read carries the ALERT of its store's
+//      cycle as the registers give it, and each sweep changes ERR before that cycle, at its start and at or after the
+//      store's edge (a copy writing the FIFO the sample status registered one MCLK earlier passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -155,7 +160,7 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.75 s; audit
+// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.79 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -1136,6 +1141,50 @@ module tb_top_r14;
     real z_t_ack = 0.0, z_t_c = 0.0;
     always @(posedge MCLK) if (dut.cmd_ack) z_t_ack = $realtime;
     always @(posedge MCLK) if (dut.reg_we && dut.reg_addr == 7'h21) z_t_c = $realtime;
+    // phase AD's store and flag edges (audit round 34, auditor C): at every store, ALERT as the specification gives it
+    // from the registers of the store's own cycle (|(ERR & ALERT_MASK) | |(DFLAG & ALERT_MASK_D); spec 3.4: a sample's
+    // ERR bit is ALERT at the store), by SEQ; the edges of the last store and of the last change of ERR
+    logic        ad_exp [0:255];
+    real         ad_t_store = 0.0, ad_t_pos = 0.0, ad_t_err = 0.0;
+    integer      ad_n_store = 0, ad_nchk = 0;
+    logic [15:0] ad_seq_store = 16'd0;
+    logic [7:0]  ad_err_q = 8'h00;
+    real         ad_lat [0:1];                       // AD: a write's start to the edge that changes ERR
+    integer      ad_nb [0:1], ad_ns [0:1], ad_na [0:1];   // AD: changes before / at the start of / after a store's cycle
+    always @(posedge MCLK) begin
+        ad_t_pos = $realtime;
+        if (dut.push_ok === 1'b1) begin
+            ad_exp[dut.seq_cnt[7:0]] = (|(dut.u_regs.err & dut.u_regs.r_mask)) |
+                                       (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
+            ad_seq_store = dut.seq_cnt;
+            ad_t_store   = $realtime;
+            ad_n_store   = ad_n_store + 1;
+        end
+    end
+    always @(negedge MCLK) begin
+        if (dut.u_regs.err !== ad_err_q) ad_t_err = ad_t_pos;     // ERR changed at the last rising edge
+        ad_err_q = dut.u_regs.err;
+    end
+    // every sample in the FIFO read; each one's ERR bit must be the ALERT of its store's cycle
+    task automatic ad_read_all();
+        logic [7:0] st_;
+        logic [15:0] sq_;
+        logic [23:0] d_;
+        bit ok_;
+        st_ = 8'h80;
+        while (st_[SMP_VALID_LSB] === 1'b1) begin
+            r14_sample(st_, sq_, d_, ok_);
+            if (!ok_) begin
+                fail("AD: a sample read without a valid CRC");
+                st_ = 8'h00;
+            end else if (st_[SMP_VALID_LSB] === 1'b1) begin
+                ad_nchk = ad_nchk + 1;
+                if (st_[SMP_ERR_LSB] !== ad_exp[sq_[7:0]])
+                    fail($sformatf("AD: sample SEQ %0d, status 0x%02h with ERR %b; ALERT in its store's cycle %b (spec 3.4)",
+                                   sq_, st_, st_[SMP_ERR_LSB], ad_exp[sq_[7:0]]));
+            end
+        end
+    endtask
     logic o_on_m = 1'b0, o_on = 1'b0;
     always @(posedge MCLK or negedge dut.tm_rst_n)
         if (!dut.tm_rst_n) begin o_on_m <= 1'b0; o_on <= 1'b0; end
@@ -3813,6 +3862,82 @@ module tb_top_r14;
         r14_write(7'h51, 8'd0);
         r14_write(7'h06, 8'hFF);
         $display("AC T_WARM 128 and 255, T_ELEC 255 from the registers into the sequencer: WARMUP and WAIT_E held, every load in the trace (errors %0d)", errors);
+        // ---------------- AD (audit round 34, auditor C): the sample's ERR bit when ERR changes at the store's own edge.
+        // Spec 3.4: a sample's ERR is ALERT at the store. No phase put a flag change on a store edge (the stores come at
+        // frame cycle 8 once a ms, the commits at random cycles; only STATUS's header copy had a same-edge test, round
+        // 19), and a copy writing the FIFO the sample status registered one MCLK earlier passed all 16 groups. In RUN
+        // (128 kHz, the defaults, ALERT_MASK 0xFF, ALERT_MASK_D 0), an ADDR_ERR (a write to the undefined 0x7F) and its
+        // W1C clear are aimed at a store's own cycle in 1/4-MCLK steps, from 2 MCLK before its start to 2 MCLK after it;
+        // every sample read in AD must carry the ALERT of its store's cycle as the registers give it (the monitor
+        // above), and each sweep must change ERR before the store's cycle, at its start (in the store's own cycle) and
+        // at or after the store's edge. Outside the golden comparison (after K)
+        phase = "AD";
+        spi_tidle = 600.0;
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
+        r14_write(7'h09, 8'h00);                        // ALERT_MASK_D 0: ALERT from ERR alone
+        r14_cmd(8'h11);                                 // START
+        wait_state(4'd6, 12000.0, "AD RUN");
+        begin
+            real    ad_t0, ad_tgt, ad_dt;
+            integer ad_n0, ad_c0;
+            logic [7:0] ad_e;
+            logic   ad_want;
+            string  ad_nm;
+            ad_c0 = ad_nchk;
+            ad_read_all();
+            r14_read(7'h06, ad_e);
+            if (ad_e !== 8'h00) fail($sformatf("AD: ERR 0x%02h before the sweeps, expected 0x00", ad_e));
+            // the time from a write's start to the edge that changes ERR: an ADDR_ERR, then its W1C
+            ad_t0 = $realtime; r14_write(7'h7F, 8'h00); repeat (8) @(posedge MCLK); ad_lat[0] = ad_t_err - ad_t0;
+            r14_read(7'h06, ad_e);
+            if (ad_e !== 8'h08) fail($sformatf("AD: ERR 0x%02h after a write to 0x7F, expected ADDR_ERR (0x08)", ad_e));
+            ad_t0 = $realtime; r14_write(7'h06, 8'h08); repeat (8) @(posedge MCLK); ad_lat[1] = ad_t_err - ad_t0;
+            r14_read(7'h06, ad_e);
+            if (ad_e !== 8'h00) fail($sformatf("AD: ERR 0x%02h after its W1C, expected 0x00", ad_e));
+            for (int s = 0; s < 2; s++) begin ad_nb[s] = 0; ad_ns[s] = 0; ad_na[s] = 0; end
+            ad_n0 = ad_n_store;
+            while (ad_n_store == ad_n0) @(negedge MCLK);    // a store, then its sample read
+            ad_read_all();
+            for (int k = -8; k <= 8; k++) begin
+                for (int s = 0; s < 2; s++) begin           // 0: the ADDR_ERR, 1: its W1C clear
+                    // aimed at the next store: ERR changing at the start of its cycle (one MCLK before its edge)
+                    ad_tgt = ad_t_store + 32768.0 * TMCLK - TMCLK + k * TMCLK / 4.0 - ad_lat[s];
+                    if (ad_tgt > $realtime) #(ad_tgt - $realtime);
+                    else fail($sformatf("AD k %0d: the aimed write was due %0.1f ns ago", k, $realtime - ad_tgt));
+                    ad_n0 = ad_n_store;
+                    if (s == 0) r14_write(7'h7F, 8'h00);
+                    else        r14_write(7'h06, 8'h08);
+                    while (ad_n_store == ad_n0) @(negedge MCLK);
+                    repeat (8) @(posedge MCLK);
+                    ad_dt = ad_t_err - (ad_t_store - TMCLK);     // the change against the start of the store's cycle
+                    if (ad_dt < -TMCLK / 2.0)     ad_nb[s] = ad_nb[s] + 1;
+                    else if (ad_dt < TMCLK / 2.0) ad_ns[s] = ad_ns[s] + 1;
+                    else                          ad_na[s] = ad_na[s] + 1;
+                    ad_want = (ad_dt < TMCLK / 2.0) ? (s == 0) : (s == 1);     // ALERT in the store's cycle
+                    if (ad_exp[ad_seq_store[7:0]] !== ad_want)
+                        fail($sformatf("AD k %0d: ALERT %b modelled at the store (SEQ %0d), but ERR changed %0.2f MCLK from its cycle's start, which gives %b",
+                                       k, ad_exp[ad_seq_store[7:0]], ad_seq_store, ad_dt / TMCLK, ad_want));
+                    ad_read_all();
+                end
+            end
+            for (int s = 0; s < 2; s++) begin
+                if (s == 0) ad_nm = "the ADDR_ERR";
+                else        ad_nm = "its W1C";
+                if (ad_nb[s] < 1 || ad_ns[s] < 1 || ad_na[s] < 1)
+                    fail($sformatf("AD not exercised (%s): ERR changed %0d times before the store's cycle, %0d at its start, %0d at or after the store's edge",
+                                   ad_nm, ad_nb[s], ad_ns[s], ad_na[s]));
+            end
+            $display("AD ERR changed across a store's own cycle: the ADDR_ERR %0d / %0d / %0d, its W1C %0d / %0d / %0d (before the cycle / at its start / at or after the store's edge); %0d samples, each with the ALERT of its store's cycle (errors %0d)",
+                     ad_nb[0], ad_ns[0], ad_na[0], ad_nb[1], ad_ns[1], ad_na[1], ad_nchk - ad_c0, errors);
+        end
+        r14_cmd(8'h22);                                 // STOP
+        wait_state(4'd0, 50.0, "AD IDLE");
+        r14_write(7'h09, 8'h03);
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

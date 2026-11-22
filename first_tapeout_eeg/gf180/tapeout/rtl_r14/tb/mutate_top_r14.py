@@ -28,6 +28,8 @@ Each mutation runs in build/mut/<tag>/ (its own copy of the RTL and its own logs
 reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared and made afresh at the start
 (as run_tests_r14.sh makes them; audit round 16). Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
 arguments, so a recorded result always has its log (audit round 4).
+Compiles fail on iverilog's warning for a port connected at another width, as run_tests_r14.sh's comp() (audit round
+34, auditor C): such a mutant is detected, such a baseline fails.
 Verdicts: detected / MISSED for a mutation, baseline ok / BASELINE FAILS for a baseline. A run without a verdict fails
 the whole run (audit rounds 5, 6, 9): NOT APPLIED (the text is not in the RTL), COMPILE ERROR, TIMEOUT (undecided),
 SIM ERROR (the bench ended without its closing line: a crash is no detection), CHECKER ERROR (a checker ended without
@@ -712,6 +714,12 @@ MUTATIONS = [
      "    output logic [7:0] t_warm,\n", "    output logic [6:0] t_warm,\n"),
     ("レジスタ：t_warm の最上位のビットを 0 に（幅は同じ）", "eeg_regs.sv",
      "    assign t_warm     = r_tw;\n", "    assign t_warm     = {1'b0, r_tw[6:0]};\n"),
+    # audit round 34, auditor C: the sample status one MCLK before the store (AD: ERR changed at the store's own edge)
+    ("最上位：サンプルの状態を 1 MCLK 前のものとして格納する（状態をレジスタに通す）",
+     [("eeg_digital_top.sv", "        .status_in(smp_status),", "        .status_in(smp_status_q),"),
+      ("eeg_digital_top.sv", "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (",
+       "    logic [7:0] smp_status_q;\n    always_ff @(posedge MCLK or negedge rst_n) if (!rst_n) smp_status_q <= 8'h00; "
+       "else smp_status_q <= smp_status;\n    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (")], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -970,6 +978,15 @@ STRUCT_MUTATIONS = [
      "parameter int DAC_LOAD_CYCLE = 2,", "parameter int DAC_LOAD_CYCLE = 22,"),
 ]
 
+def port_width(c):
+    """iverilog's warning for a port connected at another width, on which run_tests_r14.sh's comp() fails the compile
+    (audit round 33); the runner applies the same rule (audit round 34, auditor C: it compiled with plain iverilog, so a
+    mutant only that rule catches was reported MISSED). Returns the warning line, or ""."""
+    import re
+    mt = re.search(r"warning: Port .* expects.*", (c.stdout or "") + (c.stderr or ""))
+    return mt.group(0)[:140] if mt else ""
+
+
 def bench_ended(v, closing):
     """The bench printed its closing line (its verdict or summary). Without it the simulation crashed or stopped, which
     is no verdict about the mutant (audit round 9, auditor C: a crash counted as a detection)."""
@@ -1003,6 +1020,8 @@ def unit_benches(d, files):
                            text=True)
         if c.returncode:
             return "error", f"{nm}: compile: " + (c.stderr.strip().splitlines() or ["?"])[-1][:120]
+        if port_width(c):                            # as run_tests_r14.sh's comp() (audit round 34)
+            return "fail", f"{nm}: a port connected at another width: " + port_width(c)
         try:
             v = subprocess.run(["vvp", "-n", f"build/{nm}.vvp"], cwd=d, capture_output=True, text=True, timeout=1200)
         except subprocess.TimeoutExpired:
@@ -1023,6 +1042,8 @@ def unit_benches(d, files):
                             os.path.join(R14, "tb", "tb_cic_arm.sv")], cwd=d, capture_output=True, text=True)
         if c.returncode:
             return "error", "tb_cic_arm: compile: " + (c.stderr.strip().splitlines() or ["?"])[-1][:120]
+        if port_width(c):
+            return "fail", "tb_cic_arm: a port connected at another width: " + port_width(c)
         for k_, k2_ in ((3, 0), (5, 0), (7, 0), (9, 0), (5, 6), (5, 7)):     # a second clear (audit round 33)
             tag_ = f"+k={k_}" + (f" +k2={k2_}" if k2_ else "")
             try:
@@ -1121,6 +1142,8 @@ def run(i, m, bench="top"):
     c = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
     if c.returncode:
         return i, name, "COMPILE ERROR", c.stderr.strip().splitlines()[-1][:150]
+    if port_width(c):                                # the group's compile fails, as in run_tests_r14.sh (audit round 34)
+        return i, name, ("BASELINE FAILS" if f is None else "detected"), "a port connected at another width: " + port_width(c)
     if bench in ("seq", "spi", "fifo"):
         args = {"seq": ["+n=600000", "+seed=11", "+trace=build/seq_trace.txt"], "spi": ["+n=1500", "+seed=5"],
                 "fifo": ["+n=400000", "+trace=build/fifo_trace.txt"]}[bench]   # as run_tests_r14.sh (audit round 6)
@@ -1154,6 +1177,8 @@ def run(i, m, bench="top"):
                             capture_output=True, text=True)
         if ce.returncode:
             return i, name, "COMPILE ERROR", "tb_seq_exh: " + ce.stderr.strip().splitlines()[-1][:140]
+        if port_width(ce):
+            return i, name, ("BASELINE FAILS" if f is None else "detected"), "tb_seq_exh: a port connected at another width: " + port_width(ce)
         try:
             ve = subprocess.run(["vvp", "-n", "build/te.vvp", "+trace=build/seq_exh.txt"], cwd=d, capture_output=True,
                                 text=True, timeout=1200)
@@ -1224,6 +1249,8 @@ def run(i, m, bench="top"):
                             text=True)
         if c4.returncode:
             return i, name, "COMPILE ERROR", "tb_fifo4: " + (c4.stderr.strip().splitlines() or ["?"])[-1][:140]
+        if port_width(c4):
+            return i, name, ("BASELINE FAILS" if f is None else "detected"), "tb_fifo4: a port connected at another width: " + port_width(c4)
         try:
             v4 = subprocess.run(["nice", "-n", "10", "vvp", "-n", "build/t4.vvp", "+n=400000",
                                  "+trace=build/fifo4_trace.txt"], cwd=d, capture_output=True, text=True, timeout=3600)
@@ -1333,6 +1360,8 @@ def run(i, m, bench="top"):
     c4 = subprocess.run(cmd4, cwd=d, capture_output=True, text=True)
     if c4.returncode:
         return i, name, "COMPILE ERROR", "4-deep: " + (c4.stderr.strip().splitlines() or ["?"])[-1][:140]
+    if port_width(c4):
+        return i, name, ("BASELINE FAILS" if f is None else "detected"), "4-deep: a port connected at another width: " + port_width(c4)
     st4, t4 = top_once("build/t4.vvp", "4-deep: ")
     if st4 not in ("ok", "fail"):
         return i, name, st4, t4

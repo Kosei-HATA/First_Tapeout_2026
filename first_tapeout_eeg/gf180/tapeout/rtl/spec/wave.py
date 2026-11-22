@@ -353,8 +353,21 @@ def selftest():
         FS.SEQ_STATES[i_pre] = saved[:3] + (1,) + saved[4:]
         return lambda: FS.SEQ_STATES.__setitem__(i_pre, saved)
 
+    def ready_in_fill():                           # audit round 34, auditor C: the READY lane (no mutation pinned it)
+        orig = startup
+
+        def drawn():
+            d = orig()
+            for ln in d["signal"]:
+                if isinstance(ln, dict) and ln.get("name") == "READY":
+                    ln["wave"] = "0........1....."       # rising at FILL's column
+            return d
+        globals()["startup"] = drawn
+        return lambda: globals().__setitem__("startup", orig)
+
     muts = [
         ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
+        ("起動の図：READY を FILL で立ち上げる", ready_in_fill, "lane"),
         ("APPLY の図：PRE で AFE_RST を 1 に（状態の表）", afe_rst_pre, "lane"),
         ("SPI の図：CRC 付きの読み出しの CRC のあとを長すぎるフレームに",
          table(FS.SPI, ("RCRC", "BYTE"), [B(A, [], "OVF")]), "spi_accept"),

@@ -523,6 +523,14 @@ def probe_slip_hazards():
     return sorted(out)
 
 
+# The values a CRC-off chip can hold besides the reset values: those one fault of the procedure's own CRC-off frames
+# leaves (audit round 34, auditor B: round 33's "always the reset values" was false): step 3's first IF_CFG write
+# [0x55, 0x01 or 0x03] landing on T_ELEC (0x51), the 0x03 losing data bit 0 (IF_CFG 0x02), step 2's CRC-off SOFT_RESET
+# [0x10, 0xA5] landing on T_WARM (0x50: 165), step 9's CRC-off ERR clear landing on CHOP_CFG (0x26: any legal value).
+# None: every legal value of the register
+PROBE_OFF_REACHABLE = {"T_ELEC": [1, 3], "IF_CFG": [0x02], "T_WARM": [165], "CHOP_CFG": None}
+
+
 def probe_off_hazards():
     """(register, value) pairs with which a CRC-off chip at its reset values answers the mode probe as CRC on (STATUS's
     fixed bits, byte 2 with CRC_EN's bit set, byte 3 the CRC of the probe's header and byte 2) under one fault: the four
@@ -530,7 +538,8 @@ def probe_off_hazards():
     next address's value. The read-only registers that change (STATUS, STATE, FIFO_LEVEL, ERR, DFLAG) take every value;
     the rest their reset values, as a CRC-off chip has them in the procedure: the host writes the timers and the shadows
     only after step 3 turns CRC on, and every way back to CRC off is a reset (audit round 33, auditor B: with T_RST 0x25
-    a bit-0 flip read 0xD4's 0x25 and IF_CFG's 0x00 as a CRC-on answer). Must be empty."""
+    a bit-0 flip read 0xD4's 0x25 and IF_CFG's 0x00 as a CRC-on answer), or the values of PROBE_OFF_REACHABLE, which one
+    fault of the procedure's own CRC-off frames leaves (audit round 34, auditor B). Must be empty."""
     import numpy as np
     h = 0x80 | FIXED_ADDR["IF_CFG"]
     crc_bit = FIXED_BITS["CRC_EN"]
@@ -545,6 +554,9 @@ def probe_off_hazards():
         else:
             v = [sum(f["reset"] << f["lsb"] for f in fl if isinstance(f["reset"], int) and 0 <= f["lsb"] <= f["msb"] <= 7)
                  if acc != "WO" and n != "SAMPLE" else 0]
+            if n in PROBE_OFF_REACHABLE:                 # one fault of the CRC-off frames (audit round 34, auditor B)
+                more = PROBE_OFF_REACHABLE[n]
+                v = sorted(set(v) | set(reg_values(n) if more is None else more))
         vals[a] = v
         if any(f["cls"] == "apply" for f in fl):
             vals[a + SHADOW_MIRROR] = v
@@ -625,7 +637,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全てを加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値の CRC 無効のチップが 1 回の故障で CRC 有効の答えに読まれないことも確かめる（手順は CRC 無効のチップの設定をリセット値のままとする。第 33 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全てを加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
     "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
@@ -1337,7 +1349,7 @@ def selftest():
     import shutil
     import tempfile
     g = globals()
-    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED", "PROBE_SLIP_RECORDED",
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED", "PROBE_SLIP_RECORDED", "PROBE_OFF_REACHABLE",
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256",
                                              "FIXED_ADDR", "SLIP_COUNTS_RECORDED", "SLIP_COUNT_PATTERNS")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
@@ -1362,6 +1374,13 @@ def selftest():
     spec_double = os.path.join(tmp, "spec_double.md")    # and a block doubled
     with open(spec_double, "w", encoding="utf-8") as fo:
         fo.write(open(DOC, encoding="utf-8").read() + "\n<!-- BEGIN GENERATED commands -->\n<!-- END GENERATED commands -->\n")
+
+    req_codes30 = os.path.join(tmp, "req_codes30.md")  # audit round 34, auditor C: FLG-04's codes alone
+    with open(req_codes30, "w", encoding="utf-8") as fo:
+        fo.write(open(REQ_DOC, encoding="utf-8").read().replace("両端（0 または 31）", "両端（0 または 30）", 1))
+    req_slip_unread = os.path.join(tmp, "req_slip_unread.md")   # and a T_WARM count the pattern no longer reads
+    with open(req_slip_unread, "w", encoding="utf-8") as fo:
+        fo.write(open(REQ_DOC, encoding="utf-8").read().replace("T_WARM は 17 組", "T_WARM は 17 個の組", 1))
 
     def fld(reg, name):
         return next(f for f in next(r for r in g["REGS"] if r[1] == reg)[4] if f["name"] == name)
@@ -1632,6 +1651,16 @@ def selftest():
     def m_req_slip_count():                              # audit round 21, auditor C: the requirements' T_WARM count
         g["REQ_DOC"] = req_slip9                          # back at round 19's 9
 
+    def m_req_slip_unread():                             # audit round 34, auditor C: the count not readable (the
+        g["REQ_DOC"] = req_slip_unread                    # check's "not got_" operand)
+
+    def m_req_ovl_codes():                               # audit round 34, auditor C: FLG-04 stating other codes
+        g["REQ_DOC"] = req_codes30                        # (window and threshold as OVL_RULE)
+
+    def m_cfg_top_refused():                             # audit round 34, auditor C: cfg_ok refusing a range's top
+        f0 = keep_fn["cfg_ok"]                            # (M 255 in range 2; every other mutation accepted M + 1)
+        g["cfg_ok"] = lambda sh: f0(sh) and not (sh["RANGE"] == 2 and sh["M"] == g["RANGE_MAX_M"][2])
+
     def m_state_legal_none():                            # audit round 18, auditor C: STATE without its values (it
         fld("STATE", "STATE")["legal"] = None                                         # crashed)
 
@@ -1687,6 +1716,9 @@ def selftest():
 
     def m_probe_at_reset():                              # audit round 32, auditor B: T_RST's reset value one at which
         fld("T_RST", "T_RST")["reset"] = 0x22          # one SCLK fault makes the mode probe read CRC off
+
+    def m_probe_off_reach():                             # audit round 34, auditor B: a reachable T_RST of 0x25
+        g["PROBE_OFF_REACHABLE"]["T_RST"] = [0x25]
 
     def m_probe_off():                                   # audit round 33, auditor B: a T_RST reset value at which a
         fld("T_RST", "T_RST")["reset"] = 0x25          # CRC-off chip answers the probe as CRC on (bit-0 flip)
@@ -1799,6 +1831,10 @@ def selftest():
             ("T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）", m_probe_at_reset),
             ("FIXED_ADDR に REG-01 の一覧にない ALERT_MASK_D を加える", m_reg01_list),
             ("T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）", m_probe_off),
+            ("CRC 無効のチップの到達しうる値に T_RST 0x25 を加える", m_probe_off_reach),
+            ("要件の T_WARM の滑りの数を読めない形に（17 個の組）", m_req_slip_unread),
+            ("要件の FLG-04 の両端の符号を 0 と 30 に", m_req_ovl_codes),
+            ("cfg_ok が範囲 2 の上限（M 255）を拒む", m_cfg_top_refused),
             ("BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）", m_guard_text),
             ("詳細仕様の生成のブロックの END の印を除く（reg_fields）", m_doc_marker),
             ("詳細仕様の生成のブロックを二重に（commands）", m_doc_double),
@@ -1945,6 +1981,9 @@ SELFTEST_EXPECT = {
     'T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）': ('outside the byte',),
     'OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える': ('(pins_from_active, the bit split; audit round 21)',),
     '要件の T_WARM の滑りの数を 9 組に（第 19 回の数）': ('(5.4 (b), the record the model is held to; audit round 21)',),
+    '要件の T_WARM の滑りの数を読めない形に（17 個の組）': ('(5.4 (b), the record the model is held to; audit round 21)',),
+    '要件の FLG-04 の両端の符号を 0 と 30 に': ('differs from the rule stated in',),
+    'cfg_ok が範囲 2 の上限（M 255）を拒む': ('cfg_ok wrong at the top of range',),
     'STATE の合法な値を None に': ("STATE field does not match the sequencer's state codes",),
     'サンプルの状態の予約のビット 2 を 7 に': (': each of the bits 0..7 must be listed exactly once (the generated table showed one bit twice and none for another)',),
     'DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）': ('(a flag that no mask bit masks)',),
@@ -1984,6 +2023,7 @@ SELFTEST_EXPECT = {
     'モードの判定の滑りの組を記録から除く（T_RST 0x22）': ('the mode probe reads as CRC off under one fault (SCLK or a header bit) for',),
     'T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）': ('the mode probe reads as CRC off under one fault (SCLK or a header bit) at the reset value 0x',),
     'T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）': ('(rule (c): the procedure writes the timers and the shadows only with CRC on; audit round 33, auditor B)',),
+    'CRC 無効のチップの到達しうる値に T_RST 0x25 を加える': ('(rule (c): the procedure writes the timers and the shadows only with CRC on; audit round 33, auditor B)',),
     'FIXED_ADDR に REG-01 の一覧にない ALERT_MASK_D を加える': ('(audit round 32, auditor B: rounds 29 and 31 added to one only)',),
     'BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）': ("(the spec's 2.3 and the requirements' CRC-off note state the guarded set by ranges; audit round 32, auditor B)",),
     '詳細仕様の生成のブロックの END の印を除く（reg_fields）': ('(every block of the spec with its BEGIN and END markers once each and in order, no other block, the spec readable: generate() and fresh() skipped a block without its markers and a missing spec; audit round 32, auditor C)',),

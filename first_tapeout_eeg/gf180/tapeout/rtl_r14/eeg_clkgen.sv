@@ -21,7 +21,8 @@
 //   tick at cycle 24 changes AFE_RST and the offset DAC at e25, fsm_spec.TIMING derives the DAC's busy cycles
 //   (3: selections, 4-5: DAC_CLK) from its dac_load_cycle, and the ADC loop's excess loop delay is 3/32 of a frame
 //   (quantizer_spec.py, adc_beh_mc.py); 22, 23 or 24 would put a DAC edge on that e25 edge.
-//   check_outputs_registered.py compares this default, eeg_digital_top's and the benches' value with TIMING.
+//   check_outputs_registered.py compares this default, eeg_digital_top's and the value of every bench the r14
+//   groups compile with TIMING (tb_clkgen's second instance at 7 is the parameter's own test; audit round 34).
 //
 // Chopper (chop_fast = CHOP_CFG.CHOP_FAST, 0x26, through its active copy):
 //   chop_fast = 1: chop = ~cnt[7], toggles every 128 MCLK (128 kHz),

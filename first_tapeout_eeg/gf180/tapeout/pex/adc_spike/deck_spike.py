@@ -17,7 +17,12 @@ Inputs: runs/ver07_r14/adc_spike/data/ (extract.py), the fig-40 run folder above
 Outputs: runs/ver07_r14/adc_spike/xrun_<tag>_<variant>_<corner>_<tstop>u/ (circuit.spice and its netlists, events.txt,
 meta.json); ngspice then writes raw.csv, out.csv (20 ns grid) and run.log there; xan.py analyses them.
 Usage: nice -n 10 gf180/tools/venv310/bin/python -B gf180/tapeout/pex/adc_spike/deck_spike.py [--tag A] [--variant actual]
-           [--corner ss] [--tstop 30e-6]
+           [--corner ss] [--tstop 30e-6] [--chop1-td T --suffix _x]
+--chop1-td moves VCH1's (CHOP1's) first edge to T (its PULSE delay; the deck's own edge is at 2.4749410156e-06, e16 of
+frame 0, inside the reset transient) before the PWL corners are kept away from the breakpoints; --suffix names the
+folder (digital-control audit round 34, auditor A: CHOP1's edge, e16, is 1 MCLK after the forced 15-MCLK blanking
+ends, on the ss spike's peak; chop1_spike.py compares an edge there with one in a frame without a CHOP_OUT edge;
+figure 52).
        then (cd <run folder> && taskpolicy -b nice -n 10 ngspice -b circuit.spice > run.log 2>&1)
 """
 import argparse
@@ -78,8 +83,10 @@ def main():
     ap.add_argument("--tstop", type=float, default=30e-6)
     ap.add_argument("--tol", type=float, default=1e-3, help="PWL simplification (V)")
     ap.add_argument("--edge", type=int, default=1864, help="the run's strobe (a CHOP_OUT edge) put on the deck's first strobe")
+    ap.add_argument("--chop1-td", type=float, default=None, help="VCH1's PULSE delay (CHOP1's first edge)")
+    ap.add_argument("--suffix", default="", help="appended to the run folder's name")
     a = ap.parse_args()
-    name = f"xrun_{a.tag}_{a.variant}_{a.corner}_{a.tstop * 1e6:g}u"
+    name = f"xrun_{a.tag}_{a.variant}_{a.corner}_{a.tstop * 1e6:g}u{a.suffix}"
     d = os.path.join(OUT, name)
     os.makedirs(d, exist_ok=True)
     for f in FILES:
@@ -95,6 +102,10 @@ def main():
             assert txt.count(old) == 1, old
             txt = txt.replace(old, new)
         txt = txt.replace("* eeg_adc loop: typical 27 C", "* eeg_adc loop: ss 27 C")
+    if a.chop1_td is not None:                            # CHOP1's first edge moved (before the breakpoints)
+        old = "VCH1 CHOP1 0 PULSE(3.3 0 2.4749410156e-06 "
+        assert txt.count(old) == 1, old
+        txt = txt.replace(old, f"VCH1 CHOP1 0 PULSE(3.3 0 {a.chop1_td:.10e} ")
     # the input
     i0 = txt.index("VSTEP STEP 0 PWL(")
     i1 = txt.index("BSIG SIG 0 V=v(STEP)+v(SINE)*v(GATE)\n") + len("BSIG SIG 0 V=v(STEP)+v(SINE)*v(GATE)\n")
@@ -140,6 +151,7 @@ def main():
     txt = txt.replace(old, f"tran 2e-08 {a.tstop:g} 0 1e-05\nwrdata raw.csv {VEC}\nlinearize\n")
     open(os.path.join(d, "circuit.spice"), "w").write(txt)
     meta = dict(tag=a.tag, variant=a.variant, corner=a.corner, tstop=a.tstop, tol=a.tol, edge=a.edge, delta=delta,
+                chop1_td=a.chop1_td,
                 pwl_points=len(tD), corners_moved=moved, min_distance_to_breakpoint_ns=dmin * 1e9,
                 window=[w.t0, w.t1], source=os.path.relpath(SRC, REPO), e0=E0)
     json.dump(meta, open(os.path.join(d, "meta.json"), "w"), indent=1)

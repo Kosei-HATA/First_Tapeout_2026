@@ -26,7 +26,7 @@
 #               write of that cycle (6 checks, audit round 31); cfg_ok and nr_ok against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA, AB and AC, listed in the bench's header,
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA, AB, AC and AD, listed in the bench's header,
 #               and the pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25, and the
 #               FILL monitor, ALIGN's clear and FILL's store, audit round 33); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
@@ -37,8 +37,10 @@
 #   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06); every asynchronous input passes 2 flops; every
 #               flip-flop resets asynchronously from RESET_N's release (RST-01); every flip-flop and memory write port
 #               on MCLK's rising edge (RST-05, audit round 27); the state registers of eeg_seq and
-#               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis); DAC_LOAD_CYCLE's defaults and every bench's
-#               value equal fsm_spec.TIMING (audit round 33) (yosys, tb/check_outputs_registered.py)
+#               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis); DAC_LOAD_CYCLE's defaults and the value of
+#               every bench these groups compile (rtl_r14/tb and the rtl/tb ones named below; tb_clkgen's second
+#               instance at 7 is the parameter's own test, exempted by name) equal fsm_spec.TIMING (audit rounds 33,
+#               34) (yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 #   A bench run alone needs this script's generated inputs first (codes: build/top_r14.codes and ovl.codes;
 #   tb/gen_reg_tests.py: build/reg_tests.svh and pin_tests.svh): without the code stream tb_top_r14's CODE is X and

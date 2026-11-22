@@ -10,7 +10,8 @@
 //   * read: header + data bytes, the address incrementing (crc_en: header + one data byte + CRC over the header as
 //     received and the data byte as sent). An undefined header address flags ADDR_ERR (its own data byte 0x00; a
 //     CRC-off burst goes on with the following addresses' data: audit round 31).
-//   * sample: header address 0x40, then STATUS, SEQ (2), DATA (3), CRC (over the header as received, 0xC0, and those
+//   * sample: header address 0x40, then the sample status, SEQ (2), DATA (3), CRC (over the header as received, 0xC0,
+//     and those
 //     6 bytes; audit round 5: an all-zero answer no longer passes the CRC): the FIFO head is copied when
 //     the header completes (smp_snap) and the pop is requested at CS_N rising only after exactly 8 bytes; the FIFO
 //     removes the head only if the copy is still the head (eeg_fifo `held`).

@@ -4,6 +4,8 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
 
   1. every address 0x00..0x7F read once after reset: defined ones give the reset value of the map (the active
      copies the same as their shadows), undefined ones 0x00 and ADDR_ERR
+  1b. bursts that start at an undefined address and run into the next defined registers, every byte checked (audit
+     round 31, auditor C)
   2. every writable field: its minimum, maximum and a middle value, written with the other fields at reset
      and the reserved bits set (they must read 0); the active copy unchanged (no APPLY); every value of the field's
      width outside its legal values (audit round 15, auditor C: only the minimum - 1 and the maximum + 1, and a range
@@ -180,6 +182,45 @@ def main():
             undefined.append(a)
             L.append(f"    rt_read_expect(7'h{a:02X}, 8'h00, \"undefined\");")
     L.append(f"    rt_expect_err(8'h{E_ADDR:02X}, \"reads of undefined addresses\");")
+    # 1b. bursts that start at an undefined address (audit round 31, auditor C: table 5.2-2 goes on with the following
+    #     addresses' data after an undefined read header, and a copy answering 0x00 for the whole frame passed all 16
+    #     groups: no test burst from an undefined address, tb_spi_r14 compares with the RTL's own bytes): from the last
+    #     undefined address before a defined block into its registers, up to one with a nonzero reset value; every byte
+    #     checked, ADDR_ERR for the undefined header
+    def burst_exp(a):
+        if a in regs:
+            r = regs[a]
+            if r[2] == "WO" or a == 0x40:
+                return 0
+            return reset_byte(r[4])
+        if a in mirrors:
+            return reset_byte(regs[mirrors[a]][4])
+        return 0
+    starts = []
+    for a0 in range(0x80):
+        if a0 in regs or a0 in mirrors:
+            continue
+        nxt = (a0 + 1) % 0x80
+        if nxt not in regs and nxt not in mirrors:
+            continue
+        run_ = [a0]
+        b_ = nxt
+        while len(run_) < 8:
+            run_.append(b_)
+            if burst_exp(b_) != 0 and not (b_ in regs and regs[b_][1] == "CAPS"):
+                starts.append(run_)
+                break
+            b_ = (b_ + 1) % 0x80
+    assert len(starts) >= 3, f"1b: {len(starts)} bursts"
+    L.append(f"    // 1b. {len(starts)} bursts from an undefined address into the next defined registers")
+    for run_ in starts:
+        L.append(f"    spi_tx[0] = 8'h{0x80 | run_[0]:02X};")
+        L.append(f"    for (int i = 1; i <= {len(run_)}; i++) spi_tx[i] = 8'h00;")
+        L.append(f"    spi_xfer({len(run_) + 1}, 0);")
+        for k_, a_ in enumerate(run_):
+            what = (regs[a_][1] if a_ in regs else (regs[mirrors[a_]][1] + " active" if a_ in mirrors else "undefined"))
+            L.append(f"    rt_burst_expect({k_ + 1}, 8'h{burst_exp(a_):02X}, \"1b: burst from 0x{run_[0]:02X}, byte 0x{a_:02X} {what}\");")
+        L.append(f"    rt_expect_err(8'h{E_ADDR:02X}, \"1b: the burst from the undefined 0x{run_[0]:02X} (ADDR_ERR)\");")
     # 2./3. writable fields
     L.append("    // 2. writable fields (3. the test registers with the key)")
     locked = [(a, r) for a, r in sorted(regs.items()) if r[3]]

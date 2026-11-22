@@ -178,7 +178,8 @@ def _seq_table():
     # RUN
     t[("RUN", "APPLY_NR")] = [B("cfg_ok and nr_ok", ["apply", "mark"]), B("not (cfg_ok and nr_ok)", ["CFG_ERR"])]
     t[("RUN", "OUT")] = [B(ALWAYS, ["store", "seq_inc"])]
-    # PRE / PULSE: a further APPLY waits for READY (rejected), the pulse is not stretched
+    # PRE / PULSE: a further APPLY or APPLY_NR is refused (STATE_ERR) and the pulse is not stretched; both are accepted
+    # again from RECOVER on, while READY is still 0 (audit round 31, auditor A: this said they wait for READY)
     for s, nxt in (("PRE", "PULSE"), ("PULSE", "RECOVER")):
         t[(s, "APPLY")] = [B(ALWAYS, ["STATE_ERR"])]
         t[(s, "APPLY_NR")] = [B(ALWAYS, ["STATE_ERR"])]

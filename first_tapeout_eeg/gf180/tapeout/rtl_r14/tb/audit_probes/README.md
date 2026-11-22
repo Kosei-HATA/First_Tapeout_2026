@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜30 回）
+# 監査の模擬の元（第 24〜31 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -54,3 +54,10 @@
 | 30 | C | `r30/C/tb_c30_keydata.sv` | 423（第 31.3 節） | 施錠の間に施錠しないレジスタへ 0x3C を書いたあとの TEST_MUX の書き込み |
 | 30 | C | `r30/C/muts_b1.py`、`muts_b2.py`、`mkcopy.py` | 422、423（第 31.3 節） | 試みた RTL の写し（反映が次の状態を写す、反映が書き込みを捨てる、データのみの解錠）と写しの作り方 |
 | 30 | C | `r30/C/sweep_regdata.py` | 第 31.3 節 | REGS の外の仕様のデータの 1 編集の掃き |
+| 31 | A | `r31/A/tb_a31_crcoff.sv` | 424（第 32.1 節） | CRC 無効の運用の書き込みの別名（ALERT_MASK_D → ALERT_MASK、T_ELEC → IF_CFG、TEST_KEY）と、第 30 回の読み戻しの手当てが見ないこと |
+| 31 | A | `r31/A/tb_a31_inv.sv`、`mut_seq_rec.sv`、`mut_top_chg.sv` | 第 32.1 節 | 乱数のホストと第 4.10 節から書いた不変条件の監視（7 種 × 400 ms）と、その感度を確かめた写し |
+| 31 | B | `r31/B/tb_b31_crcoff.sv`、`alias_all.py` | 426（第 32.2 節） | CRC 無効の運用の黙った別名の全ての列挙と模擬（ALERT_MASK_D、IF_CFG、COMMAND） |
+| 31 | B | `r31/B/tb_b31_bounce.sv`、`tb_b31_merge.sv`、`bounce_cmp.py`、`merge_cmp.py`、`slip_e2.py`、`slip_e3.py` | 427（第 32.2 節） | SCLK の 1 回の故障の 4 種（跳ねと融合を加えた）の RTL と模型の比べ |
+| 31 | B | `r31/B/smp_flip.py` | 第 32.2 節 | サンプルの先頭 0xC0 の 1 ビットの化けとホストのサンプルの CRC |
+| 31 | C | `r31/C/tb_c31_judge.sv` | 428（第 32.3 節） | 反映の tick の判断と、確認のサイクルの書き込み（S1：判じるシャドウが範囲外、S2：競う値が範囲外） |
+| 31 | C | `r31/C/fsm_sweep.py`、`regs_sweep.py`、`apply_edit.py`、`mkmut.sh`、`fastrun.sh` | 428〜432（第 32.3 節） | 状態遷移表とレジスタの表の 1 編集の掃き、写しの作り方と速い走らせ方 |

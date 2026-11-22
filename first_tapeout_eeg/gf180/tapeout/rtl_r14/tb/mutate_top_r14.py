@@ -693,6 +693,12 @@ MUTATIONS = [
     ("レジスタ：鍵をデータの 0x3C のみで開く", "eeg_regs.sv",
      '            // command: taken by the sequencer at a tick; a new one only when none is pending (else STATE_ERR)',
      "            if (w_ok && wdata == TEST_KEY_VALUE) unlocked <= 1'b1;\n            // command: taken by the sequencer at a tick; a new one only when none is pending (else STATE_ERR)"),
+    # audit round 31, auditor C: the decision of an applying tick against a write of its own cycle (Z)
+    ("レジスタ：cfg_ok が同じサイクルの書き込みのあとのシャドウを見る（端子から）", "eeg_regs.sv",
+     'assign cfg_ok = (s_m <= range_max_m(s_range));',
+     'logic [9:0] m_la;\n    logic [2:0] r_la;\n    always_comb begin\n        m_la = s_m;\n        r_la = s_range;\n        if (we && addr == A_OFF_M_H)  m_la[9:8] = wdata[1:0];\n        if (we && addr == A_OFF_M_L)  m_la[7:0] = wdata;\n        if (we && addr == A_OFF_CTRL && !wr_range_bad) r_la = wdata[2:0];\n    end\n    assign cfg_ok = (m_la <= range_max_m(r_la));'),
+    # audit round 31, auditor C: the bytes after an undefined read header (1b)
+    ("SPI：未定義の先頭の読み出しのフレームの全てのデータを 0x00 に", [('eeg_spi_slave.sv', '    logic        chk_addr;\n', '    logic        chk_addr;\n    logic        hdr_undef;\n'), ('eeg_spi_slave.sv', '            S_RREG:  tx_next = reg_rdata;', "            S_RREG:  tx_next = hdr_undef ? 8'h00 : reg_rdata;"), ('eeg_spi_slave.sv', "            addr_err  <= 1'b0;\n        end else begin", "            addr_err  <= 1'b0;\n            hdr_undef <= 1'b0;\n        end else begin"), ('eeg_spi_slave.sv', "            addr_err  <= chk_addr && !reg_addr_ok;       // the read header's address, one cycle later\n", "            addr_err  <= chk_addr && !reg_addr_ok;       // the read header's address, one cycle later\n            if (cs_start) hdr_undef <= 1'b0; else if (chk_addr && !reg_addr_ok) hdr_undef <= 1'b1;\n")], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -787,6 +793,10 @@ REGS_MUTATIONS = [
     ("レジスタ：反映のサイクルの書き込みを捨てる", "eeg_regs.sv",
      '            if (w_ok) begin\n                case (addr)\n                    A_OFF_M_H:      s_m[9:8] <= wdata[1:0];',
      '            if (w_ok && !apply) begin\n                case (addr)\n                    A_OFF_M_H:      s_m[9:8] <= wdata[1:0];'),
+    # audit round 31, auditor C: cfg_ok from the shadow after the write of its own cycle
+    ("レジスタ：cfg_ok が同じサイクルの書き込みのあとのシャドウを見る", "eeg_regs.sv",
+     'assign cfg_ok = (s_m <= range_max_m(s_range));',
+     'logic [9:0] m_la;\n    logic [2:0] r_la;\n    always_comb begin\n        m_la = s_m;\n        r_la = s_range;\n        if (we && addr == A_OFF_M_H)  m_la[9:8] = wdata[1:0];\n        if (we && addr == A_OFF_M_L)  m_la[7:0] = wdata;\n        if (we && addr == A_OFF_CTRL && !wr_range_bad) r_la = wdata[2:0];\n    end\n    assign cfg_ok = (m_la <= range_max_m(r_la));'),
 ]
 
 

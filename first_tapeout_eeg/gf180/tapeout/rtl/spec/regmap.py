@@ -201,10 +201,11 @@ REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", 
 # addresses and bits the requirements name (the host procedure 5.4 and its examples, SPI-03): the host relies on them
 # (audit round 20, auditor C: FIFO_LEVEL, which steps 5 and 6 and rule (b) read at 0x05 since round 18, and TEST_MUX
 # were missing; check() now requires every NAME（0xNN） of the requirements and the spec to be held here; audit round
-# 29, auditor B: step 3's bracket confirms the lock by a write of TEST_CTRL（0x61）)
+# 29, auditor B: step 3's bracket confirms the lock by a write of TEST_CTRL（0x61）; audit round 31, auditor C: the
+# bracket names TEST_KEY and DEBUG (0x11, 0x60-0x62) without the NAME（0xNN） form, so a move of either passed check())
 FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
-              "ALERT_MASK": 0x08, "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50,
-              "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60, "TEST_CTRL": 0x61}
+              "ALERT_MASK": 0x08, "COMMAND": 0x10, "TEST_KEY": 0x11, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40,
+              "T_WARM": 0x50, "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60, "TEST_CTRL": 0x61, "DEBUG": 0x62}
 FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
               # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
@@ -423,9 +424,12 @@ def slip_hazards(key):
     """Where one SCLK slip in a 3-byte CRC read gives the host another legal value with a valid CRC and a first byte
     that passes rule (a) (bits 7..6 = 10): (value sent, value read) for a slip after the header, (-1, value read) for
     a slip in the header, where the chip decodes another address (or a write, or the window) and answers for it. key:
-    a register's name, or NAME.ACT for its active copy. The chip misses host pulse k (the host reads bit k twice; the
-    chip skips MOSI bit k) or counts an extra pulse before it (the host skips bit k; the chip reads MOSI bit k twice),
-    k over all 24 pulses. A slip in the first byte moves STATUS's bits into what the host takes as the data and decides
+    a register's name, or NAME.ACT for its active copy. The four single SCLK faults, k over all 24 pulses: the chip
+    misses host pulse k (the host reads bit k twice; the chip skips MOSI bit k); counts an extra pulse in a low phase
+    before it (the host skips bit k; the chip reads MOSI bit k twice); sees a bounce inside pulse k's high phase (the
+    chip reads MOSI bit k twice; the host skips bit k + 1); or loses the low phase between pulses k and k + 1, which
+    merge (the chip skips MOSI bit k + 1; the host reads bit k twice). The last two since audit round 31, auditor B
+    (they gave no new pair then; the RTL agreed with this model in 96 bounce and 92 merge frames). A slip in the first byte moves STATUS's bits into what the host takes as the data and decides
     rule (a): every STATUS value 0x80..0xBF is tried there (a missed pulse puts AFE_RST, bit 0, at the top of the data
     byte). Audit round 18, auditor B (the data and CRC bytes); round 19, auditor B (the header, rule (a)); round 20,
     auditor B (every STATUS value, the active copies)."""
@@ -438,14 +442,18 @@ def slip_hazards(key):
     want_crc = t8[t8[h] ^ np.arange(256)]                # the CRC the host checks for each value it may read
     mosi = h << 24
     out, cache = set(), {}
-    for miss in (True, False):
-        for k in range(24):
-            h_ = (_skip(mosi, k) if miss else _dup(mosi, k)) >> 24      # the header the chip decoded
+    kinds = ((lambda k: _skip(mosi, k), lambda x, k: _dup(x, k)),       # a missed pulse k
+             (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k)),       # an extra pulse in a low phase before pulse k
+             (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k + 1)),   # a bounce in pulse k's high phase (round 31)
+             (lambda k: _skip(mosi, k + 1), lambda x, k: _dup(x, k)))   # pulses k, k + 1 merged (round 31)
+    for ki, (chip, host) in enumerate(kinds):
+        for k in range(23 if ki == 3 else 24):
+            h_ = chip(k) >> 24                                   # the header the chip decoded
             if h_ not in cache:
                 cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
             b1, b2 = cache[h_][:, 0], cache[h_][:, 1]
-            for st in (range(0x80, 0xC0) if k <= 7 else (0x80,)):
-                hs = (_dup if miss else _skip)((st << 24) | (b1 << 16) | (b2 << 8), k)     # what the host sampled
+            for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
+                hs = host((st << 24) | (b1 << 16) | (b2 << 8), k)  # what the host sampled
                 d, c = (hs >> 16) & 0xFF, (hs >> 8) & 0xFF
                 hit = ((hs >> 30) == 2) & legal[d] & (c == want_crc[d])
                 if h_ == h:

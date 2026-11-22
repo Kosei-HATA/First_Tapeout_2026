@@ -55,7 +55,9 @@
 //      the frame strobes, DAC_CLK, CHOP, CHOP_OUT, CHOP1 and MISO too (check_reset_timing), also before the first
 //      release (a DAC_CLK reset to 1 passed all 16 groups)
 //   Z  audit round 30 (auditor C): an OFF_M_L write swept across the tick that takes a pending APPLY (IDLE) and
-//      APPLY_NR (RUN), 64 kHz: STATE_ERR before the acknowledge cycle, written in it and after, the judged value applied
+//      APPLY_NR (RUN), 64 kHz: STATE_ERR before the acknowledge cycle, written in it and after, the judged value applied;
+//      audit round 31 (auditor C): ERR exactly, alternating targets, racing values above the range, and Z3, an APPLY
+//      whose judged shadow is illegal (exactly CFG_ERR, nothing applied, whatever the racing write)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -143,8 +145,9 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 800 ms of simulated time (the run ends near 0.6 s; audit
-// round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it),
+// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.69 s; audit
+// round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
+// auditor C: the 800 ms had become 1.17 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
@@ -414,8 +417,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(800.0e6);
-        fail($sformatf("watchdog: not finished after 800 ms of simulated time (phase %s)", phase));
+        #(1000.0e6);
+        fail($sformatf("watchdog: not finished after 1,000 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -3549,10 +3552,13 @@ module tb_top_r14;
         // a copy whose apply copied the shadows' next state (the racing value applied, unjudged by cfg_ok / nr_ok) and one
         // whose apply dropped the write passed all 16 groups. At 64 kHz, range 1, an OFF_M_L write is swept in 1/4-MCLK
         // steps across the tick that takes the command: committed before that cycle, STATE_ERR and not written; in it or
-        // after, written (no STATE_ERR); the tick applies the shadow before the write (the active copy and OFM keep the
-        // judged value, never the racing one). Z1: APPLY in IDLE (M 5; the racing M_L 200 is above range 1's 127). Z2:
-        // APPLY_NR in RUN, one step each (M 5 <-> 6; the racing M_L 100, 94 or 95 steps). Each sweep must commit at
-        // least once in the very cycle, once before it and once after it.
+        // after, written (no STATE_ERR); the tick applies the shadow before the write, judged by cfg_ok / nr_ok on that
+        // shadow. Audit round 31 (auditor C: a copy computing cfg_ok from the shadow after the write of its own cycle passed
+        // all 16 groups, as Z1's target was the value applied before and Z2's racing value was legal): ERR is checked
+        // exactly, the targets alternate (M 5 <-> 6, one step), the racing value of Z1 and Z2 is M_L 200 (above range 1's
+        // 127), and Z3 pends an APPLY whose judged shadow is M 200 against a legal racing value: CFG_ERR, nothing applied.
+        // Z1: APPLY in IDLE. Z3: APPLY in IDLE, the judged shadow illegal. Z2: APPLY_NR in RUN. Each sweep must commit at
+        // least once before the acknowledge cycle, once in it and once after it.
         phase = "Z";
         spi_tidle = 600.0;
         r14_cmd(8'hA5);                                 // SOFT_RESET: a known start
@@ -3564,61 +3570,78 @@ module tb_top_r14;
         r14_cmd(8'h33);                                 // APPLY in IDLE
         #(40000.0);
         if (OFM !== 10'd5 || OFEN !== 4'b0001 || dut.a_chop_fast !== 1'b0) fail($sformatf("Z: setup not applied (OFM %0d OFEN %b fast %b)", OFM, OFEN, dut.a_chop_fast));
-        for (int zs = 0; zs < 2; zs++) begin
-            real zl, zt0;
-            integer nb, ns, na, cur, tgt, racer;
-            logic [7:0] ze, zsh, zac;
-            if (zs == 1) begin                          // Z2: RUN
-                r14_write(7'h21, 8'd5);                 // Z1's racing M_L 200 may be in the shadow: START would refuse it
-                r14_write(7'h06, 8'hFF);
-                r14_cmd(8'h11);
-                wait_state(4'd6, 20000.0, "Z2 RUN");
-            end
-            zt0 = $realtime; r14_write(7'h21, 8'd5); zl = z_t_c - zt0;   // a 2-byte write: start to its commit edge
-            nb = 0; ns = 0; na = 0; cur = 5;
-            racer = (zs == 0) ? 200 : 100;
-            for (int k = -12; k <= 12; k++) begin
-                tgt = (zs == 0) ? 5 : ((cur == 5) ? 6 : 5);
-                r14_write(7'h21, 8'(tgt));
-                r14_write(7'h06, 8'hFF);
-                @(posedge dut.u_clkgen.tick); zt0 = $realtime;
-                #(512.0 * TMCLK - zl + 6.0 * TMCLK);
-                if (dut.seq_state !== ((zs == 0) ? 4'd0 : 4'd6))
-                    fail($sformatf("Z%0d k %0d: state %0d at the command, expected %s", zs + 1, k, dut.seq_state, (zs == 0) ? "IDLE" : "RUN"));
-                r14_cmd((zs == 0) ? 8'h33 : 8'h44);     // pending from just after the next tick to the one after it
-                #(zt0 + 1024.0 * TMCLK + k * TMCLK / 4.0 - zl - $realtime);
-                r14_write(7'h21, 8'(racer));
-                repeat (700) @(posedge MCLK);
-                r14_read(7'h06, ze);
-                r14_read(7'h21, zsh);
-                r14_read(7'h31, zac);
-                if (z_t_c < z_t_ack) begin
-                    nb++;
-                    if (ze[6] !== 1'b1 || zsh !== 8'(tgt))
-                        fail($sformatf("Z%0d k %0d: committed %0.2f MCLK before the ack edge: ERR 0x%02h, shadow M_L %0d (expected STATE_ERR, %0d kept)",
-                                       zs + 1, k, (z_t_ack - z_t_c) / TMCLK, ze, zsh, tgt));
-                end else begin
-                    if (z_t_c == z_t_ack) ns++; else na++;
-                    if (ze[6] !== 1'b0 || zsh !== 8'(racer))
-                        fail($sformatf("Z%0d k %0d: committed %0.2f MCLK after the ack edge: ERR 0x%02h, shadow M_L %0d (expected written, %0d, no STATE_ERR)",
-                                       zs + 1, k, (z_t_c - z_t_ack) / TMCLK, ze, zsh, racer));
+        begin
+            integer cur;
+            cur = 5;
+            for (int zi = 0; zi < 3; zi++) begin
+                real zl, zt0;
+                integer zs, nb, ns, na, tgt, pend_v, racer, appl;
+                logic [7:0] ze, zsh, zac, e_before, e_after;
+                zs = (zi == 0) ? 1 : ((zi == 1) ? 3 : 2);    // the order Z1, Z3 (both IDLE), Z2 (RUN)
+                if (zs == 2) begin                      // Z2: RUN
+                    r14_write(7'h21, 8'(cur));          // a legal shadow: START judges it
+                    r14_write(7'h06, 8'hFF);
+                    r14_cmd(8'h11);
+                    wait_state(4'd6, 20000.0, "Z2 RUN");
                 end
-                if (zac !== 8'(tgt) || OFM !== 10'(tgt))
-                    fail($sformatf("Z%0d k %0d: active M_L %0d, OFM %0d after the tick (expected %0d, the judged shadow; the racing %0d must not be applied)",
-                                   zs + 1, k, zac, OFM, tgt, racer));
-                cur = tgt;
+                zt0 = $realtime; r14_write(7'h21, 8'(cur)); zl = z_t_c - zt0;   // a 2-byte write: start to its commit edge
+                nb = 0; ns = 0; na = 0;
+                e_before = (zs == 3) ? 8'h60 : 8'h40;   // STATE_ERR for the refused write (and CFG_ERR at the tick in Z3)
+                e_after  = (zs == 3) ? 8'h20 : 8'h00;
+                for (int k = -12; k <= 12; k++) begin
+                    tgt = (cur == 5) ? 6 : 5;
+                    pend_v = (zs == 3) ? 200 : tgt;     // the shadow the tick judges
+                    racer  = (zs == 3) ? tgt : 200;     // the racing write
+                    appl   = (zs == 3) ? cur : tgt;     // what the tick must apply (Z3: nothing, the APPLY refused)
+                    r14_write(7'h21, 8'(pend_v));
+                    r14_write(7'h06, 8'hFF);
+                    @(posedge dut.u_clkgen.tick); zt0 = $realtime;
+                    #(512.0 * TMCLK - zl + 6.0 * TMCLK);
+                    if (dut.seq_state !== ((zs == 2) ? 4'd6 : 4'd0))
+                        fail($sformatf("Z%0d k %0d: state %0d at the command, expected %s", zs, k, dut.seq_state, (zs == 2) ? "RUN" : "IDLE"));
+                    r14_cmd((zs == 2) ? 8'h44 : 8'h33);     // pending from just after the next tick to the one after it
+                    #(zt0 + 1024.0 * TMCLK + k * TMCLK / 4.0 - zl - $realtime);
+                    r14_write(7'h21, 8'(racer));
+                    repeat (700) @(posedge MCLK);
+                    r14_read(7'h06, ze);
+                    r14_read(7'h21, zsh);
+                    r14_read(7'h31, zac);
+                    if (z_t_c < z_t_ack) begin
+                        nb++;
+                        if (ze !== e_before || zsh !== 8'(pend_v))
+                            fail($sformatf("Z%0d k %0d: committed %0.2f MCLK before the ack edge: ERR 0x%02h, shadow M_L %0d (expected exactly 0x%02h, %0d kept)",
+                                           zs, k, (z_t_ack - z_t_c) / TMCLK, ze, zsh, e_before, pend_v));
+                    end else begin
+                        if (z_t_c == z_t_ack) ns++; else na++;
+                        if (ze !== e_after || zsh !== 8'(racer))
+                            fail($sformatf("Z%0d k %0d: committed %0.2f MCLK after the ack edge: ERR 0x%02h, shadow M_L %0d (expected exactly 0x%02h, %0d written)",
+                                           zs, k, (z_t_c - z_t_ack) / TMCLK, ze, zsh, e_after, racer));
+                    end
+                    if (zac !== 8'(appl) || OFM !== 10'(appl))
+                        fail($sformatf("Z%0d k %0d: active M_L %0d, OFM %0d after the tick (expected %0d: the shadow before the write, as judged; the racing %0d never applied)",
+                                       zs, k, zac, OFM, appl, racer));
+                    cur = appl;
+                end
+                if (nb < 1 || ns < 1 || na < 1)
+                    fail($sformatf("Z%0d not exercised: %0d commits before the ack cycle, %0d in it, %0d after it", zs, nb, ns, na));
+                begin
+                    string zname, zres;                 // string variables: a ternary of literals pads the shorter one
+                    if (zs == 1)      zname = "APPLY in IDLE";
+                    else if (zs == 3) zname = "APPLY in IDLE, the judged shadow M 200";
+                    else              zname = "APPLY_NR in RUN";
+                    if (zs == 3) zres = "refused with CFG_ERR every time, nothing applied";
+                    else         zres = "the judged value applied every time";
+                    $display("Z%0d %s: OFF_M_L committed across the acknowledging tick: %0d before it (STATE_ERR), %0d in its cycle, %0d after (written); %s",
+                             zs, zname, nb, ns, na, zres);
+                end
             end
-            if (nb < 1 || ns < 1 || na < 1)
-                fail($sformatf("Z%0d not exercised: %0d commits before the ack cycle, %0d in it, %0d after it", zs + 1, nb, ns, na));
-            $display("Z%0d %s: OFF_M_L committed across the acknowledging tick: %0d before it (STATE_ERR), %0d in its cycle, %0d after (written); the judged value applied every time",
-                     zs + 1, (zs == 0) ? "APPLY in IDLE" : "APPLY_NR in RUN", nb, ns, na);
         end
         r14_cmd(8'h22);                                 // STOP
         wait_state(4'd0, 20000.0, "Z IDLE");
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults back
         #(1000.0);
         r14_write(7'h06, 8'hFF);
-        $display("Z  a register write in the acknowledge cycle of APPLY and APPLY_NR: written, the judged value applied (errors %0d)", errors);
+        $display("Z  a register write in the acknowledge cycle of APPLY and APPLY_NR: written, the shadow before it judged and applied (errors %0d)", errors);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

@@ -119,7 +119,8 @@ module eeg_seq (
                             a_cerr = 1'b1;
                         end
                     end
-                    S_PRE, S_PULSE: a_serr = 1'b1;          // a further change waits for READY
+                    S_PRE, S_PULSE: a_serr = 1'b1;          // refused in PRE and PULSE only: accepted again from RECOVER
+                                                            // on, READY still 0 (audit round 31)
                     default: begin                          // RECOVER, WAIT_E, ALIGN, FILL, RUN: the AFE runs
                         if (is_apply) begin
                             if (cfg_ok) begin

@@ -339,6 +339,48 @@ module tb_regs;
             $display("tb_regs: the command's acknowledge cycle: 9 checks, %0d errors", nack);
             errors = errors + nack;
         end
+        // ---------------- the decisions of an applying tick do not see a write on the port in its own cycle (audit
+        // round 31, auditor C: a copy computing cfg_ok from the shadow after this cycle's write passed all 16 groups):
+        // range 1 and M 5 applied, the shadow M 6 (cfg_ok 1, nr_ok 1); in the acknowledge cycle of the applying tick
+        // (cmd_ack with apply) OFF_M_L 200, OFF_M_H 3 and OFF_CTRL range 0 on the port (each would make cfg_ok or nr_ok
+        // 0 after the edge): cfg_ok and nr_ok keep their values until the edge
+        begin
+            logic c0, n0;
+            integer njd;
+            njd = 0;
+            for (int i = 0; i < 3; i++) begin
+                @(negedge clk); addr = 7'h22; we = 1'b1; wdata = 8'h01;          // OFF_CTRL: range 1
+                @(negedge clk); addr = 7'h20; wdata = 8'h00;                     // M_H 0
+                @(negedge clk); addr = 7'h21; wdata = 8'd5;                      // M_L 5
+                @(negedge clk); we = 1'b0; apply = 1'b1;
+                @(negedge clk); apply = 1'b0; addr = 7'h21; we = 1'b1; wdata = 8'd6;   // the shadow M 6: one step
+                @(negedge clk); we = 1'b0;
+                #1;
+                c0 = cfg_ok;
+                n0 = nr_ok;
+                if (c0 !== 1'b1 || n0 !== 1'b1) begin
+                    $display("ERROR: range 1, M 5 applied, M 6 in the shadow: cfg_ok %b nr_ok %b, expected 1 1", c0, n0);
+                    njd++;
+                end
+                @(negedge clk); we = 1'b1; cmd_ack = 1'b1; apply = 1'b1;
+                case (i)
+                    0:       begin addr = 7'h21; wdata = 8'd200; end              // M_L 200: above range 1's 127
+                    1:       begin addr = 7'h20; wdata = 8'h03; end               // M_H 3: M 774
+                    default: begin addr = 7'h22; wdata = 8'h00; end               // range 0
+                endcase
+                #1;
+                if (cfg_ok !== c0 || nr_ok !== n0) begin
+                    $display("ERROR: 0x%02h on the port for 0x%02h in the ack cycle of an applying tick: cfg_ok %b nr_ok %b before the edge, %b %b before the write (the tick judges the shadow before the write)",
+                             wdata, addr, cfg_ok, nr_ok, c0, n0);
+                    njd++;
+                end
+                @(negedge clk); we = 1'b0; cmd_ack = 1'b0; apply = 1'b0;
+            end
+            @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;
+            @(negedge clk); we = 1'b0;
+            $display("tb_regs: the decisions of an applying tick against a write on the port: 6 checks, %0d errors", njd);
+            errors = errors + njd;
+        end
         if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap; the ack cycle)");
         else             $display("FAIL: tb_regs");
         $finish;

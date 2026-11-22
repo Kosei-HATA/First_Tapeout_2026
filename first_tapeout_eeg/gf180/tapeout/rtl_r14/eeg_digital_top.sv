@@ -25,7 +25,7 @@
 `default_nettype none
 
 module eeg_digital_top #(
-    parameter int DAC_LOAD_CYCLE = 2,
+    parameter int DAC_LOAD_CYCLE = 2,             // r14: 2 only (eeg_clkgen's header; fsm_spec.TIMING dac_load_cycle)
     parameter int FIFO_DEPTH     = 8
 ) (
     input  logic        MCLK,

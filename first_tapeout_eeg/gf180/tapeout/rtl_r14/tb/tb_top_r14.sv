@@ -62,6 +62,12 @@
 //      to 16 frames after it: RUN entered at that output, the first sample that output's, VALID with OVL, DFLAG.OVL set
 //      (SEQ-04, DAT-01; no phase had OVL_NOW = 1 at FILL's completing output, and a sequencer taking out_valid as
 //      cic_valid & ~ovl_now passed all 16 groups)
+//   AB audit round 33 (auditor C): an APPLY_NR (T_ELEC 0) or an APPLY in FILL, 40, 1,070 and 2,100 us after its entry,
+//      each followed into RUN: ALIGN's output is the 1st, 2nd or 3rd after the clear before; with the FILL monitor
+//      (every ALIGN output: the CIC's registers zero; every FILL store: the third output after the clear) a CIC taking
+//      ALIGN's clear only at a valid output, which passed all 16 groups, fails
+//   AC audit round 33 (auditor C): T_WARM 128 and 255, T_ELEC 255 from eeg_regs into eeg_seq (WARMUP and WAIT_E held;
+//      the trace's timer model on every load, the values taken at eeg_regs' registers): a 7-bit t_warm port fails
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -149,7 +155,7 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.69 s; audit
+// A watchdog ends the run as FAIL if it has not finished by 1,000 ms of simulated time (the run ends near 0.75 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -608,7 +614,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ VER-09 end to end: the sequencer's events
     // the same trace format as tb_seq (check_seq_trace.py): before each edge the state, the pending command, the
     // timer and the conditions with the actions; after it the next state and the timer. The pending command, cfg_ok,
-    // nr_ok, the timer values (eeg_regs) and the CIC's valid (eeg_cic3) are taken at their sources, not at eeg_seq's
+    // nr_ok, the timer values (eeg_regs' registers r_tw .. r_trst: audit round 33, auditor C, as an eeg_regs whose
+    // t_warm port was 7 bits passed all 16 groups) and the CIC's valid (eeg_cic3) are taken at their sources, not at eeg_seq's
     // ports: a wrong connection into the sequencer is then a mismatch (audit round 32, auditor C: a sequencer taking
     // out_valid as cic_valid & ~ovl_now was replayed as the specification's input)
     integer fseq, seq_frames = 0;
@@ -622,11 +629,11 @@ module tb_top_r14;
         q_tick = dut.u_seq.tick;       q_out = dut.u_seq.out_stb;     q_fs = dut.u_seq.frame_stb;
         q_st   = dut.u_seq.state;      q_cv  = dut.u_regs.cmd_valid;  q_cc = dut.u_regs.cmd_code;
         q_cfg  = dut.u_regs.cfg_ok;    q_nr  = dut.u_regs.nr_ok;      q_valid = dut.u_cic.dout_valid;
-        q_tb   = dut.u_seq.timer;      q_te0 = (dut.u_regs.t_elec == 8'd0);
+        q_tb   = dut.u_seq.timer;      q_te0 = (dut.u_regs.r_te == 8'd0);
         q_acts = {dut.u_seq.apply, dut.u_seq.flush, dut.u_seq.store, dut.u_seq.mark, dut.u_seq.state_err,
                   dut.u_seq.cfg_err, dut.u_seq.cic_arm && dut.u_seq.out_stb, dut.u_seq.a_restart};
-        q_tw = dut.u_regs.t_warm;  q_te = dut.u_regs.t_elec;  q_tr = dut.u_regs.t_rec;  q_tp = dut.u_regs.t_pre;
-        q_tq = dut.u_regs.t_rst;
+        q_tw = dut.u_regs.r_tw;  q_te = dut.u_regs.r_te;  q_tr = dut.u_regs.r_trec;  q_tp = dut.u_regs.r_tpre;
+        q_tq = dut.u_regs.r_trst;
     end
     always @(posedge MCLK) begin
         #0.2;
@@ -643,6 +650,42 @@ module tb_top_r14;
             seq_frames = 0;
         end else if (q_fs) begin
             seq_frames = seq_frames + 1;
+        end
+    end
+
+    // ------------------------------------------------------------------ FILL: ALIGN's clear and FILL's first store
+    // (audit round 33, auditor C: a CIC that took ALIGN's clear only at an output that was itself valid passed all 16
+    // groups, as no group cleared a settling filter, V's commands in FILL never ran on to RUN, and the golden log takes
+    // the CIC's arm input): at every ALIGN output time the CIC's registers are zero (the clear taken), and FILL's store
+    // (the sequencer's store, fsm_spec FILL/OUT [valid]) is the third output after it (SEQ-04, SEQ-15). n_align_early
+    // counts the clears at an output the CIC had not yet made valid (a settling filter cleared again; AB makes them)
+    integer n_since_clr = -1, n_align_clr = 0, n_align_early = 0, n_fill_store = 0, n_fill_bad = 0;
+    always @(negedge MCLK) begin
+        if (dut.rst_n !== 1'b1) begin
+            n_since_clr = -1;
+        end else if (dut.cic_stb === 1'b1) begin
+            if (dut.seq_state === 4'd4) begin                       // ALIGN's output time: the clear
+                n_align_clr++;
+                if (dut.u_cic.dout_valid !== 1'b1) n_align_early++;
+                if (dut.u_cic.nstb !== 0 || dut.u_cic.i1 !== 0 || dut.u_cic.i2 !== 0 || dut.u_cic.i3 !== 0 ||
+                    dut.u_cic.d1 !== 0 || dut.u_cic.d2 !== 0 || dut.u_cic.d3 !== 0) begin
+                    n_fill_bad++;
+                    if (n_fill_bad < 5) fail($sformatf("ALIGN's output time (SEQ %0d): the CIC not cleared (nstb %0d)",
+                                                       dut.seq_cnt, dut.u_cic.nstb));
+                end
+                n_since_clr = 0;
+            end else if (n_since_clr >= 0) begin
+                n_since_clr++;
+            end
+            if (dut.seq_store === 1'b1 && dut.seq_state === 4'd5) begin     // FILL's store: on to RUN
+                n_fill_store++;
+                if (n_since_clr != 3) begin
+                    n_fill_bad++;
+                    if (n_fill_bad < 5) fail($sformatf("FILL stored SEQ %0d, output %0d after ALIGN's clear (expected the third)",
+                                                       dut.seq_cnt, n_since_clr));
+                end
+                n_since_clr = -1;
+            end
         end
     end
 
@@ -3695,6 +3738,81 @@ module tb_top_r14;
         wait_state(4'd0, 50.0, "AA IDLE");
         r14_write(7'h06, 8'hFF);
         r14_write(7'h07, 8'hFF);
+        // ---------------- AB (audit round 33, auditor C): an APPLY_NR (T_ELEC 0) or an APPLY in FILL, 40, 1,070 and
+        // 2,100 us after its entry, each followed into RUN: ALIGN's output time is then the first, second or third output
+        // after the clear before (the CIC not yet valid at the first two). The FILL monitor checks the clear and FILL's
+        // store; AB makes the early clears, which no phase made (V's commands in FILL never run on to RUN). Range 0, M 0
+        // <-> 1, T_ELEC 0, 128 kHz; outside the golden comparison (after K)
+        phase = "AB";
+        r14_write(7'h06, 8'hFF);
+        r14_cmd(8'h11);                                 // START
+        wait_state(4'd6, 12000.0, "AB RUN");
+        begin
+            integer ab_e0, ab_s0, ab_t;
+            logic [7:0] ab_m;
+            ab_m = 8'd0; ab_e0 = n_align_early; ab_s0 = n_fill_store; ab_t = 0;
+            for (int cmd = 0; cmd < 2; cmd++) begin     // 0: APPLY_NR (T_ELEC 0) in FILL, 1: APPLY in FILL
+                for (int k = 0; k < 3; k++) begin
+                    real d;
+                    d = 40.0 + 1030.0 * k;              // us after FILL's entry
+                    r14_cmd(8'h33);                     // APPLY in RUN: to FILL through PRE .. ALIGN
+                    wait_state(4'd5, 3000.0, "AB FILL");
+                    #(d * 1000.0);
+                    if (dut.seq_state !== 4'd5) fail($sformatf("AB: FILL over %0.0f us after its entry", d));
+                    if (cmd == 0) begin
+                        ab_m = ab_m ^ 8'd1;
+                        r14_write(7'h21, ab_m);         // M 0 <-> 1: one step in range 0
+                        r14_cmd(8'h44);
+                    end else begin
+                        r14_cmd(8'h33);
+                    end
+                    wait_state(4'd4, 1000.0, "AB ALIGN after the command in FILL");
+                    wait_state(4'd6, 6000.0, "AB RUN after the command in FILL");
+                    ab_t++;
+                end
+            end
+            $display("AB %0d commands in FILL (APPLY_NR and APPLY, 40 / 1,070 / 2,100 us after its entry), each into RUN: %0d of the clears at an output not yet valid, %0d first stores (errors %0d)",
+                     ab_t, n_align_early - ab_e0, n_fill_store - ab_s0, errors);
+            if (n_align_early - ab_e0 < 4 || n_fill_store - ab_s0 < 6)
+                fail($sformatf("AB not exercised: %0d early clears, %0d stores", n_align_early - ab_e0, n_fill_store - ab_s0));
+        end
+        r14_cmd(8'h22);
+        wait_state(4'd0, 50.0, "AB IDLE");
+        r14_write(7'h21, 8'h00); r14_cmd(8'h33);        // M 0 applied in IDLE
+        repeat (600) @(posedge MCLK);
+        r14_write(7'h06, 8'hFF);
+        // ---------------- AC (audit round 33, auditor C): T_WARM and T_ELEC of 128 and more from eeg_regs into eeg_seq.
+        // No group carried T_WARM >= 128, or T_ELEC >= 128 into WAIT_E, from the registers to the sequencer (tb_seq
+        // drives eeg_seq alone; this bench's largest T_WARM at a START was 6 and T_ELEC into WAIT_E 2), and an eeg_regs
+        // whose t_warm port was 7 bits passed all 16 groups. START with T_WARM 128 (WARMUP still on 2 ms later) and 255,
+        // START with T_ELEC 255 into WAIT_E (still there 2 ms later), each stopped; the trace's timer model (VER-09)
+        // compares every load with the registers' values
+        phase = "AC";
+        r14_write(7'h50, 8'd128);                       // T_WARM 128 ms
+        r14_cmd(8'h11);
+        wait_state(4'd1, 50.0, "AC WARMUP (T_WARM 128)");
+        repeat (2 * 32768) @(posedge MCLK);
+        if (dut.seq_state !== 4'd1) fail($sformatf("AC: state %0d 2 ms after a START with T_WARM 128 (WARMUP lasts 128 ms)", dut.seq_state));
+        r14_cmd(8'h22);
+        wait_state(4'd0, 50.0, "AC IDLE");
+        r14_write(7'h50, 8'd255);                       // T_WARM 255 ms: its load in the trace
+        r14_cmd(8'h11);
+        wait_state(4'd1, 50.0, "AC WARMUP (T_WARM 255)");
+        repeat (4 * 512) @(posedge MCLK);
+        if (dut.seq_state !== 4'd1) fail($sformatf("AC: state %0d after a START with T_WARM 255", dut.seq_state));
+        r14_cmd(8'h22);
+        wait_state(4'd0, 50.0, "AC IDLE");
+        r14_write(7'h50, 8'd5);
+        r14_write(7'h51, 8'd255);                       // T_ELEC 255 ms
+        r14_cmd(8'h11);
+        wait_state(4'd3, 6000.0, "AC WAIT_E (T_ELEC 255)");
+        repeat (2 * 32768) @(posedge MCLK);
+        if (dut.seq_state !== 4'd3) fail($sformatf("AC: state %0d 2 ms into WAIT_E with T_ELEC 255", dut.seq_state));
+        r14_cmd(8'h22);
+        wait_state(4'd0, 50.0, "AC IDLE");
+        r14_write(7'h51, 8'd0);
+        r14_write(7'h06, 8'hFF);
+        $display("AC T_WARM 128 and 255, T_ELEC 255 from the registers into the sequencer: WARMUP and WAIT_E held, every load in the trace (errors %0d)", errors);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)
@@ -3705,6 +3823,10 @@ module tb_top_r14;
         $display("pads: %0d CHOP_OUT edges blanked (%0d / %0d pulses measured, DAC off / on), %0d CHOP1 edges at e16 (errors %0d)",
                  n_cb_edges, n_cb_w[0], n_cb_w[1], n_c1_edges, n_cb_bad + n_c1_bad);
         $display("SOFT_RESET: %0d commits, each with soft_req in its own cycle (errors %0d)", n_soft_commits, n_soft_bad);
+        $display("FILL: %0d clears at ALIGN's output time (%0d at an output not yet valid), %0d stores in FILL, each the third output after the clear (errors %0d)",
+                 n_align_clr, n_align_early, n_fill_store, n_fill_bad);
+        if (n_align_clr < 20 || n_align_early < 4 || n_fill_store < 20)
+            fail($sformatf("the FILL monitor not exercised: %0d clears (%0d early), %0d stores", n_align_clr, n_align_early, n_fill_store));
         $display("DRDY_N pulse mode: %0d pulses, %0d of them for FILL's store (errors %0d)", n_pm_pulses, n_pm_fill, n_pm_bad);
         if (n_pm_pulses < 5 || n_pm_fill < 1) fail("DRDY_N pulse-mode monitor not exercised");
         $display("DRDY_N level mode: %0d MCLK edges checked, %0d stores with DRDY_N high, %0d falls at the next edge (errors %0d)",

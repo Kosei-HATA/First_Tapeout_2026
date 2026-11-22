@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜32 回）
+# 監査の模擬の元（第 24〜33 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -67,3 +67,10 @@
 | 32 | B | `r32/B/smp_slip_rate.py`、`dgrep.py` | 第 33.2 節 | 滑ったサンプルの写しが CRC を通る割合、文書の番地と数の探し |
 | 32 | C | `r32/C/tb_c32_fillovl.sv`、`mkmut.py` | 438（第 33.3 節） | FILL を終える出力の過負荷（清い RTL と、out_valid を過負荷で落とす写し）と写しの作り方 |
 | 32 | C | `r32/C/fsm_sweep.py`、`regmap_sweep2.py` | 439、440（第 33.3 節） | 状態遷移表と優先順位の 1 編集の掃きと同値の確かめ、レジスタの表の 1 欄の編集の掃き |
+| 33 | A | `r33/A/tb_a33_illegal.sv` | 442（第 34.1 節） | START のあとの WARMUP（`+pulse` で RUN の APPLY のあとの PULSE）に不正な状態の値 9 を 1 MCLK 置き、CRC 有効の STATE、STATUS、ERR の読み出しを続ける |
+| 33 | A | `r33/A/tb_a33_dlc.sv` | 443（第 34.1 節） | DAC_LOAD_CYCLE 2、22、23、24 で AFE_RST の解除の縁と DAC の縁の時刻 |
+| 33 | B | `r33/B/tb_b33_probe_mosi.sv` | 444（第 34.2 節） | モードの判定のヘッダの 8 ビットの各々の化け（CRC 有効と無効、既定値、T_REC 0x30、T_RST 0x22 と 0x25） |
+| 33 | B | `r33/B/tb_b33_flushread.sv` | 445（第 34.2 節） | FLUSH と RUN の APPLY の直後に始めるサンプルの読み出し（tick から 250 ns ずつ）：取り出されない命令の前の語 |
+| 33 | C | `r33/C/tb_c33_fillclr.sv` | 446（第 34.3 節） | FILL の中の APPLY_NR（T_ELEC 0）と APPLY の掃き：ALIGN のクリアと最初の格納 |
+| 33 | C | `r33/C/tb_c33_twarm.sv` | 447（第 34.3 節） | T_WARM 128、200、255 の読み戻しとシーケンサの読み込み |
+| 33 | C | `r33/C/fsm_sweep2.py`、`regmap_const_sweep.py`、`fastrun.sh` | 第 34.3 節 | 状態遷移表と TIMING の広げた 1 編集の掃き、regmap の定数と番地の移動の掃き、写しの速い走らせ方 |

@@ -3,8 +3,10 @@
 
 The r14 CIC cleared (armed) at output number K (counted from 1) must give: outputs 1..K as the golden run of the
 whole stream, and outputs K+1.. as the golden run of the stream from input K * R on (zero state, the first two
-flagged invalid), i.e. the output grid unchanged.
-Usage: check_cic_arm.py gen [K] [n_outputs] [build] | check [K] [build] (build: the folder of the codes and the
+flagged invalid), i.e. the output grid unchanged. With a second clear at K2 > K (audit round 33, auditor C: in the
+filter's settling, K2 = K + 1 or K + 2), outputs K+1..K2 are the first K2 - K of that run and outputs K2+1.. the
+golden run of the stream from input K2 * R on.
+Usage: check_cic_arm.py gen [K] [n_outputs] [build] | check [K] [K2] [build] (build: the folder of the codes and the
 outputs, default ../build; the mutation runner's copies, audit round 22)
 """
 import os
@@ -31,18 +33,23 @@ def gen(k, nout, seed=5):
         f.write("\n".join(str(c) for c in codes) + "\n")
 
 
-def check(k):
+def check(k, k2=None):
     codes = [int(x) for x in open(os.path.join(B, "cic_arm.codes"))]
     got = [tuple(map(int, l.split())) for l in open(os.path.join(B, "cic_arm.out"))]
     full, _ = G.cic3_run(codes)
     after, _ = G.cic3_run(codes[k * R:])
-    exp = [(d, int(v)) for d, v in full[:k]] + [(d, int(v)) for d, v in after]
+    if k2 is None:
+        exp = [(d, int(v)) for d, v in full[:k]] + [(d, int(v)) for d, v in after]
+    else:
+        after2, _ = G.cic3_run(codes[k2 * R:])
+        exp = ([(d, int(v)) for d, v in full[:k]] + [(d, int(v)) for d, v in after[:k2 - k]] +
+               [(d, int(v)) for d, v in after2])
     n = min(len(got), len(exp))
     bad = [(i + 1, got[i], exp[i]) for i in range(n) if got[i] != exp[i]]
-    print(f"{n} outputs compared (armed at output {k}): {len(bad)} mismatches")
+    print(f"{n} outputs compared (armed at output {k}" + (f" and again at {k2}" if k2 else "") + f"): {len(bad)} mismatches")
     for b in bad[:10]:
         print(f"  output {b[0]}: RTL {b[1]}, golden {b[2]}")
-    ok = n >= k + 4 and not bad
+    ok = n >= max(k, k2 or 0) + 4 and not bad
     print("PASS: r14 CIC clear at an output time == golden (grid kept)" if ok else "FAIL")
     return 0 if ok else 1
 
@@ -54,4 +61,4 @@ if __name__ == "__main__":
     if args[0] == "gen":
         gen(int(args[1]) if len(args) > 1 else 5, int(args[2]) if len(args) > 2 else 10)
     else:
-        sys.exit(check(int(args[1]) if len(args) > 1 else 5))
+        sys.exit(check(int(args[1]) if len(args) > 1 else 5, int(args[2]) if len(args) > 2 else None))

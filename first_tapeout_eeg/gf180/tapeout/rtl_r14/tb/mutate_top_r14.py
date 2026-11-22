@@ -704,6 +704,14 @@ MUTATIONS = [
     # at its source)
     ("最上位：シーケンサの out_valid を過負荷の間落とす（FILL を終える出力の過負荷で RUN に入らない）", "eeg_digital_top.sv",
      ".out_valid(cic_valid),", ".out_valid(cic_valid & ~ovl_now),"),
+    # audit round 33, auditor C: ALIGN's clear in the CIC's settling (tb_cic_arm's second clear, AB and the FILL monitor)
+    ("CIC：ALIGN のクリアを有効な出力でのみ取る（充填中のクリアを捨てる）", "eeg_cic3.sv",
+     "                if (arm) begin\n", "                if (arm && nstb >= NSKIP_P) begin\n"),
+    # audit round 33, auditor C: T_WARM of 128 and more from eeg_regs into eeg_seq (AC, the trace's register values)
+    ("レジスタ：t_warm の口を 7 ビットに", "eeg_regs.sv",
+     "    output logic [7:0] t_warm,\n", "    output logic [6:0] t_warm,\n"),
+    ("レジスタ：t_warm の最上位のビットを 0 に（幅は同じ）", "eeg_regs.sv",
+     "    assign t_warm     = r_tw;\n", "    assign t_warm     = {1'b0, r_tw[6:0]};\n"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -957,6 +965,9 @@ STRUCT_MUTATIONS = [
     # audit round 28, auditor C: a latch from an always_comb, refused by yosys (no verdict before)
     ("構造：eeg_chop1 の always_comb の default を消す（ラッチ）", "eeg_chop1.sv",
      "            default: wave = 1'b1;\n", ""),
+    # audit round 33, auditor A: the synthesized DAC_LOAD_CYCLE against fsm_spec.TIMING
+    ("構造：DAC_LOAD_CYCLE の既定値を 22 に（DAC_CLK の立ち下がりが tick の出力の縁 e25）", "eeg_digital_top.sv",
+     "parameter int DAC_LOAD_CYCLE = 2,", "parameter int DAC_LOAD_CYCLE = 22,"),
 ]
 
 def bench_ended(v, closing):
@@ -973,7 +984,7 @@ def unit_benches(d, files):
     """The unit benches of the blocks a mutation edits, in its copy, as run_tests_r14.sh runs them (audit round 22,
     auditor C: tb_tick, tb_clkgen and tb_cic_arm were never run on a mutant): tb_tick and tb_clkgen for eeg_clkgen.sv,
     tb_chop1 for eeg_chop1.sv and eeg_clkgen.sv (audit round 27, auditor C: run_tests_r14.sh builds it with the r14
-    clock generator, the top group never ran it), tb_cic_arm (cleared at outputs 3, 5, 7, 9) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
+    clock generator, the top group never ran it), tb_cic_arm (cleared at outputs 3, 5, 7, 9, and at 5 then again at 6 or 7: audit round 33) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
     check judged FAIL: a detection); 'error' (a compile error, a crash, no closing line: no verdict); 'timeout' (a
     bench without an end within 1200 s, the others run: audit round 28, auditor C: a timeout ended the mutant's run
     without tb_top_r14, which fails such a clock generator at once)."""
@@ -1012,21 +1023,22 @@ def unit_benches(d, files):
                             os.path.join(R14, "tb", "tb_cic_arm.sv")], cwd=d, capture_output=True, text=True)
         if c.returncode:
             return "error", "tb_cic_arm: compile: " + (c.stderr.strip().splitlines() or ["?"])[-1][:120]
-        for k_ in (3, 5, 7, 9):
+        for k_, k2_ in ((3, 0), (5, 0), (7, 0), (9, 0), (5, 6), (5, 7)):     # a second clear (audit round 33)
+            tag_ = f"+k={k_}" + (f" +k2={k2_}" if k2_ else "")
             try:
-                v = subprocess.run(["vvp", "-n", "build/tb_cic_arm.vvp", f"+k={k_}"], cwd=d, capture_output=True,
+                v = subprocess.run(["vvp", "-n", "build/tb_cic_arm.vvp"] + tag_.split(), cwd=d, capture_output=True,
                                    text=True, timeout=1200)
             except subprocess.TimeoutExpired:
-                timed_out.append(f"tb_cic_arm +k={k_}: no end within 1200 s")
+                timed_out.append(f"tb_cic_arm {tag_}: no end within 1200 s")
                 continue
             if v.returncode:
                 return "error", sim_tail(v, "tb_cic_arm")
-            k = subprocess.run([sys.executable, os.path.join(HERE, "check_cic_arm.py"), "check", str(k_), b],
-                               capture_output=True, text=True)
+            k = subprocess.run([sys.executable, os.path.join(HERE, "check_cic_arm.py"), "check", str(k_)]
+                               + ([str(k2_)] if k2_ else []) + [b], capture_output=True, text=True)
             if not any(ln.startswith(("PASS:", "FAIL")) for ln in k.stdout.splitlines()):
                 return "error", "check_cic_arm crashed: " + ((k.stderr.strip().splitlines() or ["?"])[-1])[:120]
             if k.returncode:
-                return "fail", f"tb_cic_arm +k={k_}: " + next((ln.strip() for ln in k.stdout.splitlines()
+                return "fail", f"tb_cic_arm {tag_}: " + next((ln.strip() for ln in k.stdout.splitlines()
                                                               if "mismatches" in ln), "FAIL")[:120]
     if timed_out:
         return "timeout", "; ".join(timed_out)

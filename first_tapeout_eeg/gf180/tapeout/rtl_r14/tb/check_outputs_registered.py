@@ -33,6 +33,11 @@ And one clock (RST-05; audit round 27, auditor C: a CHOP1 divider clocked by a f
 on the falling edge of the CIC's strobe passed all 16 groups with the counts unchanged, and Verilator said nothing):
 every flip-flop and every memory write port takes MCLK's rising edge (CLK the MCLK port bit, CLK_POLARITY 1).
 
+And r14's fixed parameters (audit round 33, auditor A: DAC_LOAD_CYCLE was documented "legal range 2..31", while the
+tick placement, fsm_spec.TIMING's busy cycles and the ADC loop's excess loop delay assume 2, and nothing compared them):
+the DAC_LOAD_CYCLE defaults of eeg_digital_top (the synthesized value) and eeg_clkgen, eeg_digital_top's pass-through
+to eeg_clkgen, and every bench's instantiation value equal fsm_spec.TIMING's dac_load_cycle.
+
 Exit: 0 every output a flip-flop's (PASS), 1 an output that is not, or yosys rejects the design (FAIL; audit round
 28, auditor C: a latch from an always_comb, which yosys stops at, was reported as TOOL ERROR, so the mutation runner
 could never call it detected), 2 yosys is missing or did not end normally (TOOL ERROR).
@@ -41,6 +46,7 @@ Usage: check_outputs_registered.py [rtl_r14 directory]   (default: this one; the
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -125,16 +131,47 @@ def main():
                         f"and drop the illegal codes' recovery, NFR-05)")
     print("state registers: " + (f"{', '.join(FSM_NOT_RECODED)} keep fsm_encoding \"none\" (NFR-05 through synthesis)"
                                  if not fbad else f"{len(fbad)} of {len(FSM_NOT_RECODED)} open to recoding"))
-    for x in bad + sbad + rbad + cbad + fbad:
+    pbad, pnote = check_parameters(d)
+    print("parameters: " + pnote)
+    for x in bad + sbad + rbad + cbad + fbad + pbad:
         print("  " + x)
-    if bad or sbad or rbad or cbad or fbad:
+    if bad or sbad or rbad or cbad or fbad or pbad:
         print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults, {len(rbad)} reset faults, "
-              f"{len(cbad)} clock faults, {len(fbad)} state registers open to recoding")
+              f"{len(cbad)} clock faults, {len(fbad)} state registers open to recoding, {len(pbad)} parameter faults")
     else:
         print("PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops; every flip-flop "
               "resets asynchronously from the RESET_N release (RST-01); every flip-flop and memory write port on MCLK's "
-              "rising edge (RST-05); the state registers keep fsm_encoding \"none\" (NFR-05)")
-    return 1 if bad or sbad or rbad or cbad or fbad else 0
+              "rising edge (RST-05); the state registers keep fsm_encoding \"none\" (NFR-05); DAC_LOAD_CYCLE as "
+              "fsm_spec.TIMING")
+    return 1 if bad or sbad or rbad or cbad or fbad or pbad else 0
+
+
+def check_parameters(d):
+    """r14's fixed parameters (audit round 33, auditor A): DAC_LOAD_CYCLE's defaults in eeg_digital_top (the value
+    synthesized) and eeg_clkgen, eeg_digital_top's pass-through to eeg_clkgen, and every bench's instantiation value
+    against fsm_spec.TIMING's dac_load_cycle. d: the RTL directory checked (the benches are this checkout's)."""
+    sys.path.insert(0, SPEC)
+    import fsm_spec as FSP
+    want, bad, seen = FSP.TIMING["dac_load_cycle"], [], []
+    for f in ("eeg_digital_top.sv", "eeg_clkgen.sv"):
+        vals = [int(v) for v in re.findall(r"parameter\s+int\s+DAC_LOAD_CYCLE\s*=\s*(\d+)",
+                                           open(os.path.join(d, f), encoding="utf-8").read())]
+        seen.append(f"{f} {vals}")
+        if vals != [want]:
+            bad.append(f"{f}: DAC_LOAD_CYCLE default {vals}, fsm_spec.TIMING's dac_load_cycle {want}")
+    top = open(os.path.join(d, "eeg_digital_top.sv"), encoding="utf-8").read()
+    if not re.search(r"eeg_clkgen\s*#\(\s*\.DAC_LOAD_CYCLE\(\s*DAC_LOAD_CYCLE\s*\)\s*\)", top):
+        bad.append("eeg_digital_top.sv: eeg_clkgen is not given eeg_digital_top's DAC_LOAD_CYCLE")
+    tbdir, nb = os.path.join(HERE), 0
+    for f in sorted(os.listdir(tbdir)):
+        if not f.endswith(".sv"):
+            continue
+        for v in re.findall(r"\.DAC_LOAD_CYCLE\(\s*(\w+)\s*\)", open(os.path.join(tbdir, f), encoding="utf-8").read()):
+            nb += 1
+            if v != str(want):
+                bad.append(f"tb/{f}: instantiates with DAC_LOAD_CYCLE {v}, fsm_spec.TIMING's dac_load_cycle {want}")
+    return bad, (f"DAC_LOAD_CYCLE {want} (fsm_spec.TIMING) in " + ", ".join(seen) + f" and {nb} bench instantiations"
+                 + ("" if not bad else f"; {len(bad)} faults"))
 
 
 def check_clocks(m):

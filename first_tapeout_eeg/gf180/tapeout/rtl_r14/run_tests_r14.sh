@@ -13,7 +13,8 @@
 #   tb_clkgen   the frame timing and the chopper clocks (rtl/tb/tb_clkgen.sv with the r14 clock generator)
 #   tb_chop1    CHOP1: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary on the output grid
 #               (rtl/tb/tb_chop1.sv with the r14 clock generator; ANA-04)
-#   tb_cic_arm  the CIC cleared at an output time == golden CIC (four positions), output grid kept
+#   tb_cic_arm  the CIC cleared at an output time == golden CIC (four positions, and at 5 then again at 6 or 7, in
+#               the filter's settling: audit round 33), output grid kept
 #   tb_ovl      the overload detector, the hits and the interval flags == regmap.OVL_RULE (overload runs +
 #               full-scale stream; tb/check_ovl.py)
 #   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
@@ -25,8 +26,9 @@
 #               write of that cycle (6 checks, audit round 31); cfg_ok and nr_ok against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z and AA, listed in the bench's header, and the
-#               pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25); samples == golden
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA, AB and AC, listed in the bench's header,
+#               and the pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25, and the
+#               FILL monitor, ALIGN's clear and FILL's store, audit round 33); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  SPI frames into the whole block: a fixed preamble (every VER-02 kind at each of the 4 SCLK timings, three
 #               times, CRC off and on; audit round 24), then random frames; every frame replayed through fsm_spec's
@@ -35,7 +37,8 @@
 #   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06); every asynchronous input passes 2 flops; every
 #               flip-flop resets asynchronously from RESET_N's release (RST-01); every flip-flop and memory write port
 #               on MCLK's rising edge (RST-05, audit round 27); the state registers of eeg_seq and
-#               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis) (yosys, tb/check_outputs_registered.py)
+#               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis); DAC_LOAD_CYCLE's defaults and every bench's
+#               value equal fsm_spec.TIMING (audit round 33) (yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 #   A bench run alone needs this script's generated inputs first (codes: build/top_r14.codes and ovl.codes;
 #   tb/gen_reg_tests.py: build/reg_tests.svh and pin_tests.svh): without the code stream tb_top_r14's CODE is X and
@@ -59,6 +62,9 @@ comp() {   # out.vvp, iverilog arguments...
     $IV -o "$out" "$@" > "$out.log" 2>&1
     local rc=$?
     grep -v "sorry: constant" "$out.log"
+    # a port connected at another width is only a warning in iverilog (audit round 33, auditor C: an eeg_regs whose
+    # t_warm port was 7 bits passed all 16 groups): it fails the compile here
+    if grep -q "warning: Port .* expects" "$out.log"; then echo "FAIL: a port connected at another width ($out)"; return 1; fi
     [ $rc -eq 0 ] && [ -f "$out" ]
 }
 killtree() { local c; for c in $(pgrep -P "$1"); do killtree "$c"; done; kill -TERM "$1" 2>/dev/null; }
@@ -97,7 +103,8 @@ clkgen_t() { comp build/tb_clkgen.vvp eeg_clkgen.sv ../rtl/tb/tb_clkgen.sv && vv
 # CHOP1 with the r14 clock generator: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary (ANA-04)
 chop1_t() { comp build/tb_chop1.vvp eeg_clkgen.sv ../rtl/eeg_chop1.sv ../rtl/tb/tb_chop1.sv && vvp -n build/tb_chop1.vvp; }
 cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3.sv ../rtl/eeg_rnd_sat.sv tb/tb_cic_arm.sv &&
-          for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done; }
+          for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done &&
+          for k2 in 6 7; do vvp -n build/tb_cic_arm.vvp +k=5 +k2=$k2 > /dev/null && $PY tb/check_cic_arm.py check 5 $k2 || return 1; done; }
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
 ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp > /dev/null && $PY tb/check_ovl.py; }
 regs_t() { $PY tb/gen_ok_vectors.py && comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }

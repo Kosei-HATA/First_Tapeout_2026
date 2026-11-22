@@ -17,6 +17,11 @@
 //     new value at the rising MCLK edge that ENDS cycle k.
 //   Example (DAC_LOAD_CYCLE = 2): CMP_STROBE rises at edge e0, TH is captured
 //   at edge e2, the DAC selection registers change at edge e3.
+//   r14 requires DAC_LOAD_CYCLE = 2 (audit round 33, auditor A; the former "legal range 2..31" was wrong): the
+//   tick at cycle 24 changes AFE_RST and the offset DAC at e25, fsm_spec.TIMING derives the DAC's busy cycles
+//   (3: selections, 4-5: DAC_CLK) from its dac_load_cycle, and the ADC loop's excess loop delay is 3/32 of a frame
+//   (quantizer_spec.py, adc_beh_mc.py); 22, 23 or 24 would put a DAC edge on that e25 edge.
+//   check_outputs_registered.py compares this default, eeg_digital_top's and the benches' value with TIMING.
 //
 // Chopper (chop_fast = CHOP_CFG.CHOP_FAST, 0x26, through its active copy):
 //   chop_fast = 1: chop = ~cnt[7], toggles every 128 MCLK (128 kHz),
@@ -73,7 +78,7 @@
 `default_nettype none
 
 module eeg_clkgen #(
-    parameter int DAC_LOAD_CYCLE = 2      // legal range 2..31 (must be after th_capture)
+    parameter int DAC_LOAD_CYCLE = 2      // r14: 2 only (fsm_spec.TIMING dac_load_cycle; see the header)
 ) (
     input  logic       clk,               // MCLK
     input  logic       rst_n,             // synchronized reset, active low

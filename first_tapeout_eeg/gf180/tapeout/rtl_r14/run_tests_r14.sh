@@ -19,7 +19,8 @@
 #   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
 #               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; no flag cleared by a write to
-#               any other address, the other flag register included (audit rounds 27, 28); cfg_ok and nr_ok
+#               any other address, the other flag register included (audit rounds 27, 28); every writable
+#               register outside the lock written with the key locked (audit round 29); cfg_ok and nr_ok
 #               against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model

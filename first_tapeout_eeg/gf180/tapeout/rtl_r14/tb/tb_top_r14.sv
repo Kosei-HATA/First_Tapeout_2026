@@ -50,7 +50,10 @@
 //      stays off, nothing is committed, the registers keep their reset values (after K: the golden log is off)
 //   X  audit round 12 (auditor C): RESET_N resets asynchronously (RST-01): every control pin set away from its
 //      reset value in RUN (a sample stored, a frame open), MCLK stopped, RESET_N low: without any MCLK edge every
-//      pin is at its reset value (a register block with a synchronous reset passed every test)
+//      pin is at its reset value (a register block with a synchronous reset passed every test); audit round 29
+//      (auditor C): with
+//      the frame strobes, DAC_CLK, CHOP, CHOP_OUT, CHOP1 and MISO too (check_reset_timing), also before the first
+//      release (a DAC_CLK reset to 1 passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -1252,6 +1255,15 @@ module tb_top_r14;
                            tag, AFE_IBIAS, CPF_TRIM, BTRIM_P, BTRIM_N, DWA_EN));
         if (AFE_RST !== 1'b1) fail($sformatf("%s: AFE_RST %b, held after a reset", tag, AFE_RST));
     endtask
+    // the timing pins and MISO while RESET_N is low (audit round 29, auditor C: no test read DAC_CLK's reset value, and
+    // a copy resetting it to 1 passed all 16 groups; the structural check proves that a reset exists, not its value):
+    // CMP_STROBE, TH_CAPTURE, DAC_LOAD, DAC_CLK, CHOP, CHOP_OUT, CHOP_BLANK and MISO 0, CHOP1 1 (eeg_chop1's phase A)
+    task automatic check_reset_timing(input string tag);
+        if (CMP_STROBE !== 1'b0 || TH_CAPTURE !== 1'b0 || DAC_LOAD !== 1'b0 || DAC_CLK !== 1'b0 || CHOP !== 1'b0 ||
+            CHOP_OUT !== 1'b0 || CHOP_BLANK !== 1'b0 || MISO !== 1'b0 || CHOP1 !== 1'b1)
+            fail($sformatf("%s: CMP_STROBE %b TH_CAPTURE %b DAC_LOAD %b DAC_CLK %b CHOP %b CHOP_OUT %b CHOP_BLANK %b MISO %b CHOP1 %b; reset values 0 0 0 0 0 0 0 0 1",
+                           tag, CMP_STROBE, TH_CAPTURE, DAC_LOAD, DAC_CLK, CHOP, CHOP_OUT, CHOP_BLANK, MISO, CHOP1));
+    endtask
     // the reset values of REG-05 that show only as waveforms (audit round 17, auditor C: check_reset_pins left them out,
     // where the documents said "REG-05's values"): BLANK 7 (CHOP_BLANK high 8 MCLK), CHOP_FAST 1 (CHOP's half period
     // 128 MCLK) and CHOP1 4 kHz (half period 4,096 MCLK). Written from the requirements, not generated from regmap, as
@@ -1299,6 +1311,7 @@ module tb_top_r14;
     integer seq_before;
     initial begin
         repeat (5) @(negedge MCLK);
+        check_reset_timing("RESET_N low at the start");   // audit round 29
         RESET_N = 1'b1;
         repeat (20) @(negedge MCLK);
         if (n_release != 3) fail($sformatf("the first CMP_STROBE %0d MCLK after the RESET_N release, expected 3 (two synchronizer flops and the strobe's register)", n_release));
@@ -3310,6 +3323,7 @@ module tb_top_r14;
         #1000.0;                                        // 1 us without an MCLK edge
         if (mclk_count != seq_before) fail("X: MCLK was not stopped");
         check_reset_pins("X: RESET_N low, MCLK stopped");
+        check_reset_timing("X: RESET_N low, MCLK stopped");   // audit round 29
         if (TEST_CFG[7:6] !== 2'd0 || DRDY_N !== 1'b1 || MISO_OE !== 1'b0 || CHOP_BLANK !== 1'b0 || ADC_RST_N !== 1'b0 ||
             RAW_DATA !== 1'b0 || RAW_CLK !== 1'b0)
             fail($sformatf("X: RESET_N low, MCLK stopped: TEST_CFG[7:6] %b, DRDY_N %b, MISO_OE %b, CHOP_BLANK %b, ADC_RST_N %b, RAW %b/%b; reset values 0, 1, 0, 0, 0, 0/0",

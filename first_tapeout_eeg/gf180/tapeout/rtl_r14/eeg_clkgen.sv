@@ -59,7 +59,10 @@
 // CHOP_DLY change) restarts it with the current blank_len, or lets it finish
 // if blank_len = 0. Exception: the chop_out edge at the first MCLK edge after
 // reset release (chop_dly = 0) is not blanked, because the cycle before it is
-// still in reset; the AFE is held in reset (AFE_RST = 1) at that time.
+// still in reset; the AFE is held in reset (AFE_RST = 1) at that time. So is
+// the fall of chop_out at the reset's assertion (RESET_N resets this block:
+// chop, chop_out and chop_blank are 0 while it is low, and the defaults apply
+// from the release at once; SOFT_RESET does not reset it; audit round 29).
 //
 // Reset: the counter resets to 9'h1FF (cycle 31 of the last frame of a
 // superperiod), so the first MCLK edge after reset release starts frame 0 at

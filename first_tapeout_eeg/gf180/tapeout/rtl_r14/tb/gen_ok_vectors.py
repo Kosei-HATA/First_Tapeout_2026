@@ -10,6 +10,11 @@ build/ok_vectors.txt:
 The bench writes the active bytes, applies (shadow -> active), writes the shadow bytes and compares eeg_regs's cfg_ok
 and nr_ok with the expected values.
 
+build/plain_writes.txt (audit round 29, auditor C: no test wrote OFF_M_H while the test key was locked, and a copy
+that locked it passed all 16 groups): line 1 the number of writable registers REG-08 does not lock, then one per
+line, its address and a legal byte away from its reset value (each field at its largest legal value other than its
+reset value), both hex; tb_regs writes each with the key locked after a reset and expects it written with no flag.
+
 Vectors: every pair of M in a boundary set (0, 1, 2, 126..129, 254..258, 510..514, 766..769, 1021..1023) with both
 signs and every range, the shadow one or two steps away, across the byte boundaries, with only M_H or only M_L
 changed, with the sign flipped, with the range changed, and with one other applied field changed; and random pairs.
@@ -25,6 +30,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "..", "rtl", "spec"))
 import regmap as RM  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "build", "ok_vectors.txt")
+PLAIN_OUT = os.path.join(HERE, "..", "build", "plain_writes.txt")
 
 FIELDS = [(a, f) for a, _n, _acc, _lock, f in RM.all_fields() if f["cls"] == "apply"]
 ADDRS = sorted({a for a, _ in FIELDS})
@@ -114,6 +120,19 @@ def main():
     nn = sum(1 for v in vs if v[3])
     print(f"wrote {os.path.relpath(OUT, os.path.join(HERE, '..'))}: {len(vs)} vectors over {len(ADDRS)} registers "
           f"(cfg_ok {nc}, nr_ok {nn})")
+    plain = []
+    for a, _n, acc, lock, fields, *_ in RM.REGS:
+        if acc != "RW" or lock:
+            continue
+        v = 0
+        for f in fields:
+            alt = [x for x in f["legal"] if x != f["reset"]]
+            v |= (max(alt) if alt else f["reset"]) << f["lsb"]
+        plain.append((a, v))
+    with open(PLAIN_OUT, "w", encoding="utf-8") as fo:
+        fo.write(f"{len(plain)}\n" + "".join(f"{a:02x} {v:02x}\n" for a, v in plain))
+    print(f"wrote {os.path.relpath(PLAIN_OUT, os.path.join(HERE, '..'))}: {len(plain)} writable registers outside "
+          f"the lock")
 
 
 if __name__ == "__main__":

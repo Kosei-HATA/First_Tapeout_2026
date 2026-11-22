@@ -33,11 +33,13 @@ module tb_tick;
                         errors = errors + 1;
                     end
                     nper = nper + 1;
+                    // the finished period by its rate (audit round 29, auditor C: every rising edge was counted by rate, the
+                    // first one too, so the two counts summed to the periods + 1)
+                    if (rate_of_period) fast_per = fast_per + 1; else slow_per = slow_per + 1;
                 end
                 since_rise = 0;
                 ticks_in_period = 0;
                 rate_of_period = dut.fast;
-                if (dut.fast) fast_per = fast_per + 1; else slow_per = slow_per + 1;
             end else if (since_rise >= 0) begin
                 since_rise = since_rise + 1;
             end

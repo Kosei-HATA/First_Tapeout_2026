@@ -26,6 +26,8 @@ the RTL: writes build/reg_tests.svh with the task run_reg_tests(), which uses th
      into, clearing or setting a bit of B written before it), every bit both 0 and 1
   2d. the command codes and the key as data (audit round 28, auditor C): each of them written to every address but
      COMMAND: written or refused as the map says, ERR exactly (never RESET_FLAG), no SOFT_RESET and no command
+  2e. the writable registers outside the lock, written with the key locked (audit round 29, auditor C): the lock
+     confirmed as host step 3 does, each register written, read back, ERR exactly 0
   5. also guard_code: SOFT_RESET's code written to every guarded register while FLUSH waits: exactly STATE_ERR
   4. every read-only register and every undefined address: a write gives ADDR_ERR and changes nothing; STATUS by
      its error only, its value moves (audit round 26, auditor C: no fixed test wrote STATUS)
@@ -444,6 +446,31 @@ def main():
         what = regs[a][1] if a in regs else (regs[mirrors[a]][1] + " active" if a in mirrors else "undefined")
         L.append(f"    expect_err_exact(8'h{E_ADDR:02X}, \"2d 0x{a:02X} {what}: the codes refused (exactly ADDR_ERR)\");")
     L.append("    code_end(\"2d\");")
+    # 2e. the writable registers outside the lock, written while the key is locked (audit round 29, auditor C: every
+    #     OFF_M_H write came with the key open, so a copy that locked OFF_M_H passed all 16 groups; host steps 3 and 7
+    #     write it locked): the key locked and the lock confirmed as the host does (step 3's bracket: TEST_CTRL written
+    #     with its reset value, exactly ADDR_ERR), then every writable register that REG-08 does not lock given a legal
+    #     byte away from its reset value (IF_CFG: DRDY_MODE only, CRC_EN kept), read back, ERR exactly 0, and its reset
+    #     value written back; no write of TEST_KEY in between (the generator checks it)
+    plain = [a for a, r in sorted(regs.items()) if r[2] == "RW" and not r[3]]
+    assert {regs[a][1] for a in plain} >= {"OFF_M_H", "OFF_M_L", "OFF_CTRL", "T_WARM", "IF_CFG", "ALERT_MASK"}, plain
+    tc_a = next(a for a, r in regs.items() if r[1] == "TEST_CTRL")
+    L.append(f"    // 2e. the {len(plain)} writable registers outside the lock, written with the key locked")
+    e2_start = len(L)
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
+    L.append(f"    rt_write_exact(7'h{tc_a:02X}, 8'h{reset_byte(regs[tc_a][4]):02X}, 8'h{reset_byte(regs[tc_a][4]):02X}, "
+             f"8'h{E_ADDR:02X}, \"2e: the key locked (TEST_CTRL refused, exactly ADDR_ERR)\");")
+    for a in plain:
+        r = regs[a]
+        if r[1] == "IF_CFG":
+            dm = next(f for f in r[4] if f["name"] == "DRDY_MODE")
+            v = reset_byte(r[4]) ^ (1 << dm["lsb"])
+        else:
+            v = legal_other(r[4])
+        assert v != reset_byte(r[4]), r[1]
+        L.append(f"    rt_write_exact(7'h{a:02X}, 8'h{v:02X}, 8'h{v:02X}, 8'h00, \"2e {r[1]} written with the key locked\");")
+        L.append(f"    rt_write(7'h{a:02X}, 8'h{reset_byte(r[4]):02X});")
+    assert not any(f"7'h{A_KEY:02X}," in ln for ln in L[e2_start + 1:]), "2e: a TEST_KEY write inside the locked writes"
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     assert regs[0x03][1] == "STATUS" and regs[0x03][2] == "RO"

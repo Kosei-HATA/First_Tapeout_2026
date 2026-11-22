@@ -24,6 +24,11 @@
 // DFLAG clears DFLAG and leaves ERR exactly as it was; every source set again, 0xFF written to ERR clears ERR and
 // leaves DFLAG 0x03.
 //
+// Every writable register that REG-08 does not lock takes a write with the key locked (audit round 29, auditor C:
+// every OFF_M_H write of tb_top_r14 came with the key open, so a copy that locked OFF_M_H passed all 16 groups): after
+// a reset each register of build/plain_writes.txt (tb/gen_ok_vectors.py: a legal byte away from its reset value) is
+// written, read back as written, and no ERR bit is set (RESET_FLAG cleared first).
+//
 // The command's acknowledge cycle (audit round 5, 11/20: a command or a guarded write committed in the very cycle the
 // tick takes the pending command was never tested; a copy that lost such a command passed every test): a command
 // written in the ack cycle becomes the new pending command (no STATE_ERR); a shadow write in the ack cycle is written
@@ -190,6 +195,49 @@ module tb_regs;
             rst_n = 1'b1;
         end
         $display("tb_regs: %0d checks of the W1C flags, %0d errors", n, errors);
+        // ---------------- the writable registers outside the lock, written with the key locked (audit round 29)
+        begin
+            integer fp, rc2, np, a2, v2, npw, nperr;
+            logic [7:0] rv2, e2;
+            fp = $fopen("build/plain_writes.txt", "r");
+            if (fp == 0) begin
+                $display("FAIL: tb_regs (build/plain_writes.txt missing: run tb/gen_ok_vectors.py)");
+                $finish;
+            end
+            rc2 = $fscanf(fp, "%d", np);
+            rst_n = 1'b0;                                   // after a reset: the key locked
+            repeat (2) @(negedge clk);
+            rst_n = 1'b1;
+            @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;     // RESET_FLAG cleared
+            @(negedge clk); we = 1'b0;
+            npw = 0; nperr = 0;
+            for (int i = 0; i < np; i++) begin
+                rc2 = $fscanf(fp, "%h %h", a2, v2);
+                if (rc2 != 2) break;
+                @(negedge clk); addr = 7'(a2); we = 1'b1; wdata = 8'(v2);
+                @(negedge clk); we = 1'b0;
+                read_reg(7'(a2), rv2);
+                read_reg(A_ERR, e2);
+                if (rv2 !== 8'(v2) || e2 !== 8'h00) begin
+                    $display("ERROR: 0x%02h written to 0x%02h with the key locked: reads 0x%02h, ERR 0x%02h (REG-08 locks the test registers only)",
+                             8'(v2), 7'(a2), rv2, e2);
+                    errors++;
+                    nperr++;
+                    @(negedge clk); addr = A_ERR; we = 1'b1; wdata = 8'hFF;
+                    @(negedge clk); we = 1'b0;
+                end
+                npw++;
+            end
+            $fclose(fp);
+            if (npw != np || np < 17) begin
+                $display("ERROR: %0d of %0d writes read from build/plain_writes.txt (17 writable registers outside the lock expected)", npw, np);
+                errors++;
+            end
+            $display("tb_regs: %0d writable registers outside the lock written with the key locked, %0d errors", npw, nperr);
+            rst_n = 1'b0;                                   // the reset values back for the part below
+            repeat (2) @(negedge clk);
+            rst_n = 1'b1;
+        end
         // ---------------- cfg_ok and nr_ok against regmap.cfg_ok / regmap.nr_ok
         begin
             integer fd, rc, na, nv, nbad, cexp, nexp, ncfg, nnr;

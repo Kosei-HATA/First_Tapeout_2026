@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜28 回）
+# 監査の模擬の元（第 24〜29 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -35,3 +35,13 @@
 | 28 | C | `r28/C/sem_mutants.py`、`sem2_mutants.py`、`sem3_mutants.py`、`mkmut.py`、`spi_seeds.sh`、`fullrun.sh` | 400〜402、406（第 29.3 節） | 試みた RTL の写し（共有の W1C の門、データのみの SOFT_RESET、一方向の写し、IF_CFG のビット 2、armed の遅れ、サンプルの CRC、OVL）と tb_spi_r14 の種の比べ |
 | 28 | C | `r28/C/gen_del.py`、`del_mutants.py`、`screen.py`、`batch_screen.py`、`sweep_queue.sh`、`hangcheck.sh` | 403、404（第 29.3 節） | 文の削除の類の生成と選別、tb_clkgen の止まりの確かめ |
 | 28 | C | `r28/C/sweep_cellcopy.py` | 第 29.3 節 | 状態遷移表の欄の写しと同じ事象の分岐の置き換えの掃き |
+| 29 | A | `r29/A/tb_a29_reset.sv` | 408（第 30.1 節） | RUN（64 kHz、CHOP1 16 kHz、BLANK 3）の途中の RESET_N と SOFT_RESET のあとの CHOP の半周期、CHOP1、CHOP_BLANK の幅（レベルのモードの DRDY_N の立ち上がりの相は監査人の写しで別に測った） |
+| 29 | B | `r29/B/tb_b29_remedy.sv` | 411（第 30.2 節） | 反映していない試験のシャドウを残して施錠したあとの手順 4 の比べと直しの書き込み（ADDR_ERR が 3 回） |
+| 29 | B | `r29/B/tb_b29_lockrw.sv` | 411（第 30.2 節） | 戻して施錠したあとの BOOST_TRIM の CRC_ERR と、試験のシャドウを含む文字どおりの書き直し（ERR 0x08 が 3 回） |
+| 29 | B | `r29/B/tb_b29_lockmiss.sv` | 411（第 30.2 節） | RUN の施錠の書き込みの 1 回の SCLK の取りこぼし（16 通り）で鍵が開いたまま全ての確かめが通る |
+| 29 | B | `r29/B/tb_b29_guard.sv` | 第 30.2 節 | 未処理の APPLY を取る tick をまたぐ守られたシャドウへの書き込み（1/4 MCLK ずつ、64 kHz） |
+| 29 | C | `r29/C/tb_c29_offmh.sv`、`mon_lock.sv`、`lockcov.py` | 413（第 30.3 節） | OFF_M_H を施錠する写しの模擬と、全ての確定の施錠の状態の記録とその集計 |
+| 29 | C | `r29/C/tb_c29_dacclk.sv` | 414（第 30.3 節） | DAC_CLK のリセット値を 1 とする写しの模擬（リセットの間と MCLK を止めたとき） |
+| 29 | C | `r29/C/muts1.py`、`muts2.py`、`muts3.py`、`mkmut.py` | 413、414（第 30.3 節） | 試みた RTL の写し（OFF_M_H の施錠、DAC_CLK のリセット値、過負荷の 5 ビットの計数、BLANK のバイト全体の比べ）と写しの作り方 |
+| 29 | C | `r29/C/gen_classic.py`、`classic_top.py`、`classic_unit.py`、`cscreen.py` | 第 30.3 節 | 古典の 1 点の写しの生成（それまでの掃きが覆わないファイルと行）と選別 |
+| 29 | C | `r29/C/sweep_regmove.py`、`sweep_replace.py`、`sweep_cellguard.py`、`run_sweeps2.sh` | 415（第 30.3 節） | レジスタの表の欄の移動、状態遷移表の動作の置き換えと欄の条件の書き換えの掃き |

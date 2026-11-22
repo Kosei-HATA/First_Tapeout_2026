@@ -56,7 +56,8 @@ OLD = ["eeg_chop1.sv", "eeg_raw.sv", "eeg_rnd_sat.sv"]
 # the shared generated inputs: copied into each run and checked against their hash at the start of the run (audit
 # round 22, auditor C: symlinks to files that run_tests_r14.sh rewrites non-atomically could give a run a truncated
 # input, a false detection)
-SHARED = ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split", "reg_tests.svh", "pin_tests.svh")
+SHARED = ("top_r14.codes", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes", "ovl.split", "reg_tests.svh", "pin_tests.svh",
+          "plain_writes.txt")                       # tb_regs's locked writes (audit round 29)
 SHARED_SHA = {}
 
 
@@ -675,6 +676,13 @@ MUTATIONS = [
     ("クロック：CHOP_BLANK のパルスが始まらない", "eeg_clkgen.sv",
      "            if (out_edge_ahead && (blank_len != 4'd0)) begin\n                chop_blank <= 1'b1;\n",
      "            if (out_edge_ahead && (blank_len != 4'd0)) begin\n"),
+    # audit round 29, auditor C: OFF_M_H locked by the test key, through the pins (2e)
+    ("レジスタ：OFF_M_H を鍵で施錠する（端子から）", [("eeg_regs.sv", "A_TEST_KEY, A_OFF_M_H, A_OFF_M_L,", "A_TEST_KEY, A_OFF_M_L,"),
+      ("eeg_regs.sv", "A_TEST_MUX, A_TEST_CTRL, A_DEBUG: wr_locked = !unlocked;",
+       "A_TEST_MUX, A_TEST_CTRL, A_DEBUG, A_OFF_M_H: wr_locked = !unlocked;")], None, None),
+    # audit round 29, auditor C: DAC_CLK's reset value (read by no test)
+    ("最上位：DAC_CLK のリセット値を 1 に", "eeg_digital_top.sv",
+     "        if (!tm_rst_n) DAC_CLK <= 1'b0;", "        if (!tm_rst_n) DAC_CLK <= 1'b1;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -759,6 +767,10 @@ REGS_MUTATIONS = [
     ("レジスタ：ERR への W1C の書き込みが DFLAG も消す（共有の門）", "eeg_regs.sv",
      "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ?",
      "dflag <= (dflag & ~((we && w_ok && (addr == A_DFLAG || addr == A_ERR)) ?"),
+    # audit round 29, auditor C: OFF_M_H among the locked registers (no test wrote it with the key locked)
+    ("レジスタ：OFF_M_H を鍵で施錠する", [("eeg_regs.sv", "A_TEST_KEY, A_OFF_M_H, A_OFF_M_L,", "A_TEST_KEY, A_OFF_M_L,"),
+      ("eeg_regs.sv", "A_TEST_MUX, A_TEST_CTRL, A_DEBUG: wr_locked = !unlocked;",
+       "A_TEST_MUX, A_TEST_CTRL, A_DEBUG, A_OFF_M_H: wr_locked = !unlocked;")], None, None),
 ]
 
 
@@ -1299,7 +1311,7 @@ def main():
             sys.exit(f"generating the shared inputs failed ({' '.join(cmd[1:])[:60]}): "
                      + ((r.stdout + r.stderr).strip().splitlines() or ['no output'])[-1])
     for need in ("top_r14.codes", "reg_tests.svh", "pin_tests.svh", "ok_vectors.txt", "rnd_sat.vec", "ovl.codes",
-                 "ovl.split"):
+                 "ovl.split", "plain_writes.txt"):
         if not os.path.exists(os.path.join(BUILD, need)):
             sys.exit(f"build/{need} missing after generating it")
     SHARED_SHA.update({x: sha256_file(os.path.join(BUILD, x)) for x in SHARED})

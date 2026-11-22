@@ -131,7 +131,10 @@ ANALOG_CONTROLS = ["AFE_RST", "CHOP_EN", "OFM[9:8]", "OFM[7:0]", "OFS", "OFEN[3:
                    "BTRIM_P[1:0]", "BTRIM_N[1:0]", "CHOP／CHOP_OUT／CHOP_BLANK の速さ", "CHOP_BLANK の幅", "CHOP1",
                    "DWA_EN", "TEST_CFG[4]", "TEST_CFG[3:0]", "TEST_CFG[5]"]
 SEQ_DRIVEN = {"AFE_RST"}
-DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}       # pads and debug: no analog effect (11/16: +0.64 nV)
+# pads and debug: no analog effect with DBG_SEL 0 and RAW_EN 0 (11/16: +0.64 nV); DBG_SEL 1..3 and the RAW stream are
+# debug only, their pad coupling not characterized (requirements 4.10, items 308, 385; audit round 29, auditor A: this
+# said "no analog effect" for DBG_SEL)
+DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}
 
 SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
                  ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかに、過負荷の検出の成り立つ両端の符号があった"),
@@ -195,10 +198,11 @@ MASKS = {"ALERT_MASK": "ERR", "ALERT_MASK_D": "DFLAG"}
 REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", "SAMPLE"}
 # addresses and bits the requirements name (the host procedure 5.4 and its examples, SPI-03): the host relies on them
 # (audit round 20, auditor C: FIFO_LEVEL, which steps 5 and 6 and rule (b) read at 0x05 since round 18, and TEST_MUX
-# were missing; check() now requires every NAME（0xNN） of the requirements and the spec to be held here)
+# were missing; check() now requires every NAME（0xNN） of the requirements and the spec to be held here; audit round
+# 29, auditor B: step 3's bracket confirms the lock by a write of TEST_CTRL（0x61）)
 FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
               "ALERT_MASK": 0x08, "COMMAND": 0x10, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40, "T_WARM": 0x50,
-              "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60}
+              "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60, "TEST_CTRL": 0x61}
 FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
               # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
@@ -207,6 +211,14 @@ FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 15, auditor C: STATUS's other six bits (the host reads READY, DATA, CMD_PENDING and ALERT by
               # position; READY and DATA exchanged in the map passed every check, the RTL and the benches following it)
               "ALERT": 5, "CMD_PENDING": 4, "READY": 3, "DATA": 2, "OVL_NOW": 1, "AFE_RST": 0}
+# the registers the requirements name for the test fields (REG-08: TEST_MUX, TEST_CTRL, DEBUG, locked) and for the
+# interface fields (IF_CFG), checked both ways: each field in its register, and those registers holding no other
+# field (audit round 29, auditor C: a field moved to another register at its lowest free bits passed check() in 88
+# of 227 cases, among them CHOP_STOP in CHOP_CFG, RAW_EN in IF_CFG (round 28's m179 made legal at the source) and
+# SIGN in TEST_CTRL, which steps 3 and 7 would then write only with the key)
+FIELD_REGISTER_REQUIRED = {"ATP_EN": "TEST_MUX", "ATP_SEL": "TEST_MUX", "CHOP_STOP": "TEST_CTRL",
+                           "ADC_ZERO": "TEST_CTRL", "DBG_SEL": "DEBUG", "RAW_EN": "DEBUG", "DRDY_MODE": "IF_CFG",
+                           "CRC_EN": "IF_CFG"}
 # the fields the requirements compare as whole bytes (REG-02, SPI-09, REG-08: the command codes, 0xA5 among them, and
 # the test key; audit round 15, auditor C: either narrowed to 7 bits passed every check)
 WHOLE_BYTE = {"CMD", "KEY"}
@@ -217,7 +229,8 @@ WINDOW_NEIGHBOURS_REQUIRED = [0x00, 0x50, 0x60]
 # The readable addresses a single SCLK slip in the header turns into a read of the sample window (audit round 19,
 # auditor B): the host reads 0x00, 0x50 and 0x60 twice (5.4 (b)), never reads 0x01 (VERSION), and reads 0x20
 # (OFF_M_H) only back after writing it (step 3), twice since audit round 27 (auditor B: "a wrong value that passes
-# also needs a failed write" was the lost-write-plus-one-slip case round 26 had closed for the active copies)
+# also needs a failed write" was the lost-write-plus-one-slip case round 26 had closed for the active copies), and in
+# step 4's comparison of every shadow with its active copy, twice there too (audit round 29, auditor B)
 WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # The registers the host procedure decides from by a CRC read, with the slip pairs it tolerates (audit round 18,
 # auditor B: one SCLK slip turned STATUS into another value with a valid CRC, 62 pairs, since the header 0x83 and
@@ -462,10 +475,11 @@ CHECKS = [
     "アドレスの重なりがない。アクティブの写しのアドレス（＋0x10）が他のレジスタと重ならない",
     "各レジスタのフィールドは 8 ビットに収まり、重ならない（未使用のビットが 0 を返すことは、レジスタ表から生成した試験 tb_top_r14 で確かめる）",
     "既定値はフィールドの幅に収まり、合法な値。推奨の動作値（AFE_IBIAS 3、BOOST_TRIM 4/2、BLANK 7、CHOP_FAST 1、CHOP1 4 kHz、DWA_EN 1）",
-    "アナログ側が受ける制御の全て（17 項目）が、ちょうど 1 つのフィールド（apply）かシーケンサ（AFE_RST）から出る。アナログに効く設定に、即時に効くもの（imm）はない",
+    "アナログ側が受ける制御の全て（17 項目）が、ちょうど 1 つのフィールド（apply）かシーケンサ（AFE_RST）から出る。アナログに効く設定に、即時に効くもの（imm）はない（即時の DEBUG の DBG_SEL と RAW_EN は RAW のパッドの試験用の出力で、DBG_SEL 0 と RAW_EN 0 ではアナログに効かない。DBG_SEL 1〜3 と RAW の流れのパッドの結合は評価していない：要件の第 4.10 節。第 29 回、A）",
     "端子の規則（pins_from_active）：OFEN は範囲 r で DAC の群 G0〜G(r−1) を入れる温度計の符号（RANGE_MAX_M の群の構成と一致）、範囲 0 では OFM と OFS を 0、DAC を使うときの CHOP_BLANK は 15 MCLK（フレームの最長のブランキング）。アナログの全ての制御が、この規則のいずれかの端子に対応する。RTL はこの範囲の表と OFEN の表を生成した eeg_regs_defs.svh から使い、tb_top_r14 は同じ規則から生成した端子の試験（build/pin_tests.svh）で端子を確かめる",
     "タイマの最小値と既定値は、tick の格子に切り上げても（フレームの整数で計算）アナログの最小値（fsm_spec.TIMING）以上。タイマの最大値（255 × 単位）は TIMING の最大と一致",
     "未処理の命令がある間に書き込みを止めるレジスタ（GUARDED）は、一括反映のフィールドを持つレジスタとタイマのレジスタに一致",
+    "REG-08 の試験の欄（ATP_EN、ATP_SEL、CHOP_STOP、ADC_ZERO、DBG_SEL、RAW_EN）は施錠する TEST_MUX、TEST_CTRL、DEBUG に、IF_CFG の欄（DRDY_MODE、CRC_EN）は IF_CFG にあり、これらのレジスタはほかの欄を持たない（第 29 回、C）",
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
@@ -533,6 +547,17 @@ def check(verbose=True):
             errs.append(f"{n}: active copy 0x{a + SHADOW_MIRROR:02X} outside its register's {rg} region (REG-01)")
         if (acc == "WO") != (n in ("COMMAND", "TEST_KEY")):
             errs.append(f"{n}: access {acc}; only the command register and the test key are write-only")
+    where_ = {f["name"]: n for _, n, _, _, fields, _ in REGS for f in fields}   # REG-08 and IF_CFG (audit round 29)
+    for fn_, rn_ in sorted(FIELD_REGISTER_REQUIRED.items()):
+        if where_.get(fn_, rn_) != rn_:
+            errs.append(f"{fn_} is in {where_[fn_]}, while the requirements name its register {rn_} (REG-08, IF_CFG; "
+                        f"audit round 29)")
+    for _, n, _, lock, fields, _ in REGS:
+        if lock or n in set(FIELD_REGISTER_REQUIRED.values()):
+            for f in fields:
+                if FIELD_REGISTER_REQUIRED.get(f["name"]) != n:
+                    errs.append(f"{n} holds {f['name']}, a field the requirements do not put there (REG-08 locks only "
+                                f"the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit round 29)")
         for f in fields:
             if (f["cls"] == "cmd") != (n == "COMMAND"):
                 errs.append(f"{n}.{f['name']}: class {f['cls']}; the class cmd is the command register's alone")
@@ -1437,6 +1462,19 @@ def selftest():
     def m_slip_count_missing():                          # audit round 27, auditor B: a register step 3 reads back,
         del g["SLIP_COUNTS_RECORDED"]["T_REC"]        # left out of the slip record
 
+    def move_field(src, name, dst, bit):                 # audit round 29, auditor C: a field moved to another
+        f = fld(src, name)                                # register at a free bit
+        next(r for r in g["REGS"] if r[1] == src)[4].remove(f)
+        f = dict(f)
+        f.update(msb=bit, lsb=bit)
+        next(r for r in g["REGS"] if r[1] == dst)[4].append(f)
+
+    def m_test_field_out():                              # a test field out of its locked register
+        move_field("TEST_CTRL", "CHOP_STOP", "CHOP_CFG", 1)
+
+    def m_field_into_test():                             # an operating field into a locked register
+        move_field("OFF_CTRL", "SIGN", "TEST_CTRL", 2)
+
     def m_window_moved():                                # audit round 17, auditor B: the window moved (item 258's
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "SAMPLE")  # option), the SPI table's text left behind
         r = list(g["REGS"][i]); r[0] = 0x4F; g["REGS"][i] = tuple(r)
@@ -1511,6 +1549,8 @@ def selftest():
             ("DEBUG を写しの半分の 0x72 に", m_debug_in_copies),
             ("STATUS の滑りの組の数を 61 と記す", m_slip_count_status),
             ("T_REC を滑りの記録から除く（手順 3 の読み戻し）", m_slip_count_missing),
+            ("CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）", m_test_field_out),
+            ("SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）", m_field_into_test),
             ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative),
             ("T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）", m_twarm_lsb_negative),
             ("OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える", m_ofm_pins_swapped),
@@ -1685,6 +1725,8 @@ SELFTEST_EXPECT = {
     'DEBUG を写しの半分の 0x72 に': ('region of REG-01 (0x',),
     'STATUS の滑りの組の数を 61 と記す': ('slip pairs read as another legal value with a valid CRC, while the documents record',),
     'T_REC を滑りの記録から除く（手順 3 の読み戻し）': ('(step 3 reads every register it wrote back twice; audit round 27, auditor B)',),
+    'CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）': (', while the requirements name its register',),
+    'SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）': (', a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit round 29)',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

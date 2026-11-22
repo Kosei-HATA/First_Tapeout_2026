@@ -2,14 +2,16 @@
 """Figure 50 (r13 analog, r14 digital; 11/21): VER-07, the analog decks at the r14 sequencer's tick phase with r14's
 reset trims (audit of 11/21, round 16, A1).
 
-Runs (gf180/tapeout/pex/runs/ver07_r14/run_ver07_r14.sh and run_ver07_r14_b.sh, 11/21): afe_startup.py's start deck
+Runs (gf180/tapeout/pex/runs/ver07_r14/run_ver07_r14.sh and run_ver07_r14_b.sh, 11/21; run_ver07_r14_c.sh, 11/22):
+afe_startup.py's start deck
 (power-on; the extracted afe_top of r13 with eeg_bias and eeg_ref on the chip wiring with the pads, bond wires and the
 board; 27 C; legs of 100 ohm unless noted) with r14's reset trims (AFE_IBIAS 3 from reset, BTRIM_P 1, BTRIM_N 0; REG-05):
   - the start-up with no electrode offset: AFE_RST released at its tick (5.005 ms);
   - afe_saturation.py --seq: an electrode offset present from power-on, the AFE released at 5.005 ms with the offset
     DAC off (it saturates), the host's APPLY at the tick of 5.997 ms (range and M), AFE_RST 6.0205-6.1221 ms (T_PRE
     23.4 us, T_RST 101.6 us), each edge 1739.5 ns after a phase-A edge: 300 mV with M 997 (typical and ss), 30 mV with
-    M 100, and 300 mV through 51k||47n on ELP with M 100 (to 20 ms).
+    M 100, and 300 mV through 51k||47n on ELP with M 100 (to 20 ms); 300 mV ss with its own code M 991 (11/22: the host
+    searches M per die, requirements 5.4 step 7; typical's M 997 leaves the ss die beyond the ADC's range).
 Drawn thin: the 11/20 runs of runs/ver07_seq (M from the nominal step, 964 and 96; r13's reset trims; the 51k run with
 M 100), which the audit found beyond the ADC's range.
   (a) the ADC input OUTP - OUTN in chopper-period means after the last release (from the exact integral qo, on a grid
@@ -38,6 +40,7 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 SU = os.path.join(REPO, "gf180", "tapeout", "pex", "runs", "startup")
 OUT = os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP_DATE}", "viz")
 TCH = 1 / 128e3                                     # the chopper period at 128 kHz
+MCLK = 1 / 32.768e6                                 # the deck's MCLK (pex_afe.py); blanking 15 MCLK with the DAC on
 ADC_FS = 0.484                                      # DAC1's full scale at the ADC's input (V, differential)
 G_AFE = 297.75                                      # electrode -> ADC input, 100-ohm legs (gf180_input_output_20261112.md)
 TEAL, PLUM, AMBER, BLUE = "#0d9488", "#a21caf", "#b45309", "#1f5aa8"
@@ -56,12 +59,16 @@ CASES = [("start", "start-up, 0 mV", INK2,
          ("300ss", "300 mV, M 997, ss", ACCENT,
           f"start_c1e-08_v3.3_ss_+300mV_m997_afe5.00486ms{S14}_sat6ms_rst101.563us_seq_chip_r13",
           "start_c1e-08_v3.3_ss_+300mV_afe5.00486ms_ib3_sat6ms_rst101.563us_seq_chip_r13"),
+         ("300ss991", "300 mV, M 991, ss", TEAL,
+          f"start_c1e-08_v3.3_ss_+300mV_m991_afe5.00486ms{S14}_sat6ms_rst101.563us_seq_chip_r13", None),
          ("51k", "300 mV, 51k||47n, M 100", AMBER,
           f"start_c1e-08_v3.3_typical_+300mV_m100_afe5.00486ms{S14}_zp100+51k_47n_sat6ms_rst101.563us_seq_chip_r13",
           "start_c1e-08_v3.3_typical_+300mV_m100_afe5.00486ms_ib3_zp100+51k_47n_sat6ms_rst101.563us_seq_chip_r13")]
 
 
 def load(run):
+    if run is None:
+        return None
     d = os.path.join(SU, run)
     if not os.path.exists(os.path.join(d, "tr.csv")):
         return None
@@ -96,7 +103,13 @@ def analyse(r):
     for s in (0.5e-3, 1.0e-3, 1.5e-3):
         k = np.nonzero(tc <= s)[0][-8:]               # the 8 periods ending there (the runs end 1.5 ms after it)
         at[s] = mm[k].mean() if len(k) == 8 and tc[k[-1]] > s - TCH else None
-    r.update(tc=tc, mm=mm, back=back, at=at, end=mm[-16:].mean(), t_end=v["t"][-1] - t_rel)
+    # where in the half period the input is beyond the range in the last millisecond (MCLK after each CHOP_OUT edge;
+    # the deck's CHOP_OUT edges are at t_reset + k / 256 kHz, its blanking from 1 MCLK before to 15 MCLK after them)
+    late = a & (v["t"] > v["t"][-1] - 1e-3) & (np.abs(v["vo"]) > ADC_FS)
+    x = (v["t"][late] - m["t_reset"]) / (TCH / 2)
+    slot = (x - np.floor(x)) * TCH / 2 / MCLK
+    over = (slot.min(), slot.max(), np.abs(v["vo"][late]).max()) if late.any() else None
+    r.update(tc=tc, mm=mm, back=back, at=at, end=mm[-16:].mean(), t_end=v["t"][-1] - t_rel, over=over)
     return r
 
 
@@ -124,12 +137,14 @@ def main():
         for k, lab, *_ in CASES:
             r = d[k]
             if r is None:
-                print(f"{tag:30s} {lab:26s} running")
+                print(f"{tag:30s} {lab:26s} " + ("running" if d is new or CASES[[c[0] for c in CASES].index(k)][4] else "–"))
                 continue
             b = "never" if r["back"] is None else f"{r['back'] * 1e6:.1f} us"
             print(f"{tag:30s} {lab:26s} back in range {b:>9s}; at 0.5/1.0/1.5 ms {fmt(r['at'][0.5e-3])} / "
                   f"{fmt(r['at'][1.0e-3])} / {fmt(r['at'][1.5e-3])}; end ({r['t_end'] * 1e3:.2f} ms) {fmt(r['end'])}, "
-                  f"input-referred {fmt(r['end'] / G_AFE, 'µV', 1e6, 1)}")
+                  f"input-referred {fmt(r['end'] / G_AFE, 'µV', 1e6, 1)}"
+                  + ("" if r["over"] is None else f"; beyond the range in the last ms at MCLK {r['over'][0]:.1f}-"
+                     f"{r['over'][1]:.1f} after the CHOP_OUT edges (to {r['over'][2] * 1e3:.0f} mV)"))
 
     done = [k for k, *_ in CASES if new[k] is not None]
     fig = V.figure(7.6, 7.0, "VER-07: the analog decks at the r14 tick phase, with r14's reset trims",
@@ -138,7 +153,7 @@ def main():
                    "tick (5.005 ms); with an electrode offset the host's APPLY at the tick of 5.997 ms and AFE_RST "
                    "6.0205–6.1221 ms (T_PRE 23.4 µs, T_RST 101.6 µs)",
                    note="Runs: gf180/tapeout/pex/runs/startup/start_…_ib3_ibr3_bt10_…_seq_chip_r13 (ver07_r14/run_ver07_r14.sh "
-                        "and run_ver07_r14_b.sh, 11/21). Thin lines: the 11/20 runs (ver07_seq: M from the nominal step "
+                        "and run_ver07_r14_b.sh, 11/21; run_ver07_r14_c.sh, 11/22: ss with its own code M 991). Thin lines: the 11/20 runs (ver07_seq: M from the nominal step "
                         "0.3113 mV, 964 at 300 mV and 96 at 30 mV, and r13's reset trims), beyond the ADC's range. "
                         "Chopper-period means from the exact integral of OUTP − OUTN, on a grid a quarter period after the "
                         "chopper's edges. Electrode-referred values divide by 297.75 (the gain with 100 Ω legs)."
@@ -197,9 +212,12 @@ def main():
             lines.append(f"  {lab}: running")
             continue
         b = "not within the run" if r["back"] is None else f"{r['back'] * 1e6:.1f} µs"
-        lines.append(f"  {lab}: in range from {b};")
-        lines.append(f"    0.5 / 1.0 / 1.5 ms: {fmt(r['at'][0.5e-3])} / {fmt(r['at'][1.0e-3])} / {fmt(r['at'][1.5e-3])};")
-        lines.append(f"    at {r['t_end'] * 1e3:.2f} ms {fmt(r['end'])} ({fmt(r['end'] / G_AFE, 'µV', 1e6, 1)} at the electrode)")
+        lines.append(f"  {lab}: in range from {b}; at {r['t_end'] * 1e3:.2f} ms {fmt(r['end'])}")
+        lines.append(f"    ({fmt(r['end'] / G_AFE, 'µV', 1e6, 1)} at the electrode); 0.5 / 1.0 / 1.5 ms: "
+                     f"{fmt(r['at'][0.5e-3], nd=1)} / {fmt(r['at'][1.0e-3], nd=1)} / {fmt(r['at'][1.5e-3], nd=1)}")
+        if r["over"] is not None and abs(r["end"]) < ADC_FS:
+            lines.append(f"    the mean in range; beyond ±0.484 V only at MCLK {r['over'][0]:.0f}–{r['over'][1]:.0f}")
+            lines.append(f"    after each CHOP_OUT edge (to {r['over'][2] * 1e3:.0f} mV; the blanking ends at 15)")
     lines.append("")
     lines.append("11/20 (nominal M, r13's trims), 1.5 ms after the release:")
     lines.append("  " + ", ".join(f"{lab.split(',')[0]} {fmt(old[k]['at'][1.5e-3], 'V', 1, 2)}" for k, lab, *_ in CASES

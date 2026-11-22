@@ -142,7 +142,7 @@ module tb_spi_r14;
     endtask
     always @(posedge MCLK)
         if (other_on && (dut.reg_we || dut.smp_pop || dut.smp_snap || dut.frame_err || dut.crc_err || dut.addr_err ||
-                         MISO_OE !== 1'b0 || dut.u_spi.st !== 4'd0)) begin
+                         MISO_OE !== 1'b0 || dut.u_spi.st !== dut.u_spi.S_IDLE)) begin
             n_other_bad = n_other_bad + 1;
             if (n_other_bad <= 5) $display("FAIL: tb_spi_r14 @%0t: activity during another chip's frame (st %0d)", $time, dut.u_spi.st);
         end

@@ -4,11 +4,13 @@ purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be d
 baseline must pass. The groups and their benches:
   top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
-                            tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22). tb_top_r14 with the
+                            tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22), tb_chop1 for an edit
+                            of eeg_chop1.sv or eeg_clkgen.sv (and b00; audit round 27). tb_top_r14 with the
                             4-deep FIFO (-DFIFO4, about 6 minutes a run) for b00 and for the mutants whose edits
-                            name DEPTH: the depth reaches eeg_fifo and, through FIFO_DEPTH, eeg_regs's CAPS (audit
-                            round 26, auditor C: "the depth is eeg_fifo's alone" was false, and CAPS fixed at 8
-                            was MISSED); eeg_fifo's own mutants run tb_fifo and tb_fifo4 in the fifo group
+                            name DEPTH or edit eeg_fifo.sv: the depth reaches eeg_fifo and, through FIFO_DEPTH,
+                            eeg_regs's CAPS (audit round 26, auditor C: "the depth is eeg_fifo's alone" was false,
+                            and CAPS fixed at 8 was MISSED; round 27: an edit breaking only the 4-deep FIFO);
+                            eeg_fifo's own mutants run tb_fifo and tb_fifo4 in the fifo group
   spi    SPI_MUTATIONS      tb_spi_r14 + check_spi_trace.py (as run_tests_r14.sh: +n=1500 +seed=5; the baseline must
                             also cover every branch)
   seq    SEQ_MUTATIONS      tb_seq + check_seq_trace.py (the timer modelled independently), then tb_seq_exh +
@@ -19,7 +21,8 @@ baseline must pass. The groups and their benches:
   regs   REGS_MUTATIONS     tb_regs (W1C; cfg_ok / nr_ok against regmap over build/ok_vectors.txt)
   chop1  CHOP1_MUTATIONS    rtl/tb/tb_chop1.sv with the r14 clock generator
   rnd    RND_MUTATIONS      rtl/tb/tb_rnd_sat.sv (build/rnd_sat.vec from rtl/model/gen_vectors.py)
-  struct STRUCT_MUTATIONS   check_outputs_registered.py (every output a flip-flop's: NFR-06, yosys)
+  struct STRUCT_MUTATIONS   check_outputs_registered.py (yosys: every output a flip-flop's, NFR-06; the
+                            synchronizers; the resets, RST-01; one clock, RST-05 since audit round 27)
 Each mutation runs in build/mut/<tag>/ (its own copy of the RTL and its own logs); the generated files (build/
 reg_tests.svh, pin_tests.svh, top_r14.codes, ok_vectors.txt, rnd_sat.vec) are shared and made afresh at the start
 (as run_tests_r14.sh makes them; audit round 16). Every run's report (also with --only) is printed and written to build/mutate_<date-time>.log with its
@@ -76,7 +79,14 @@ def run_version():
         s = git('status', '--porcelain', '--', '.', '../rtl')
         head = h.stdout.strip() if h is not None and h.returncode == 0 else 'unknown'
         dirty = s is not None and s.returncode == 0 and s.stdout.strip() != ''
-        return f"commit {head}{' (with uncommitted changes)' if dirty else ''} (the checkout)", None
+        # the sources at the start, compared at the end (audit round 27, auditor C: every mutant copies the RTL when
+        # it starts and compiles tb/ and rtl/spec/ in place, so an edit during a checkout run mixed versions under one
+        # recorded commit)
+        snap = checkout_sources()
+        def changed():
+            now = checkout_sources()
+            return sorted(p for p in set(snap) | set(now) if snap.get(p) != now.get(p))
+        return f"commit {head}{' (with uncommitted changes)' if dirty else ''} (the checkout)", changed
     vf = os.path.join(R14, 'FULLRUN_VERSION')
     try:
         commit, repo = open(vf, encoding='utf-8').read().split()[:2]
@@ -102,6 +112,19 @@ def run_version():
         return (f"commit {commit[:8]} (run_fullmut_r14.sh's copy), BUT ITS FILES DIFFER FROM THAT VERSION: "
                 + ", ".join(d0[:8])), differ
     return f"commit {commit[:8]} (run_fullmut_r14.sh's copy; its rtl and rtl_r14 files equal that version's)", differ
+
+
+def checkout_sources():
+    """SHA-256 of every file under rtl_r14 and rtl, their build/ folders left out (audit round 27, auditor C)"""
+    out = {}
+    for top in (R14, RTL_OLD):
+        for dp, dn, fn in os.walk(top):
+            dn[:] = [x for x in dn if x != "build" and not x.startswith(".")]
+            for x in fn:
+                p = os.path.join(dp, x)
+                if os.path.isfile(p) and not os.path.islink(p):
+                    out[os.path.relpath(p, os.path.dirname(R14))] = sha256_file(p)
+    return out
 
 
 def sha256_file(p):
@@ -604,6 +627,12 @@ MUTATIONS = [
      None, None),
     ('上位：パルスのモードの DRDY_N が 1 MCLK 遅れる（登録した数から）', 'eeg_digital_top.sv',
      "drdy_pulse <= (drdy_nxt != 3'd0);", "drdy_pulse <= (drdy_cnt != 3'd0);"),
+    # audit round 27, auditor C: ERR's W1C gate on every write (the generated test's 2b now reads ERR in its bursts);
+    # the SPI's state codes with a gap (10 unused, unflagged by st > S_OVF; the bench now takes the codes from the RTL)
+    ('レジスタ：ERR の W1C の門が全ての書き込み（上位）', 'eeg_regs.sv',
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata", "err   <= (err & ~((we || w_ok && addr == A_ERR) ? wdata"),
+    ('SPI：S_OVF を 11 に（10 を使わない符号）', 'eeg_spi_slave.sv',
+     "                           S_OVF = 4'd10;", "                           S_OVF = 4'd11;"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -674,6 +703,13 @@ REGS_MUTATIONS = [
      "end else if (pend && !cmd_ack && GUARDED_ADDRS[addr]) begin", "end else if (pend && GUARDED_ADDRS[addr]) begin"),
     ("レジスタ：確認のサイクルの命令を拒否", "eeg_regs.sv",
      "end else if (pend && !cmd_ack) begin", "end else if (pend) begin"),
+    # audit round 27, auditor C: the W1C gate on every write (no test wrote elsewhere with a flag set)
+    ("レジスタ：ERR の W1C の門が全ての書き込み（we || w_ok && …）", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata", "err   <= (err & ~((we || w_ok && addr == A_ERR) ? wdata"),
+    ("レジスタ：DFLAG の W1C の門が全ての書き込み（we || w_ok && …）", "eeg_regs.sv",
+     "dflag <= (dflag & ~((we && w_ok && addr == A_DFLAG) ?", "dflag <= (dflag & ~((we || w_ok && addr == A_DFLAG) ?"),
+    ("レジスタ：ERR の W1C がアドレスを見ない", "eeg_regs.sv",
+     "err   <= (err & ~((we && w_ok && addr == A_ERR) ? wdata", "err   <= (err & ~((we && w_ok) ? wdata"),
 ]
 
 
@@ -812,6 +848,20 @@ STRUCT_MUTATIONS = [
         ("eeg_digital_top.sv", "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (",
          "    logic [23:0] dbuf [0:1];\n    always_ff @(posedge MCLK) if (cic_stb) dbuf[seq_cnt[0]] <= cic_data;\n"
          "    eeg_fifo #(.DEPTH(FIFO_DEPTH)) u_fifo (")], None, None),
+    # audit round 27, auditor C: derived clocks (RST-05; the same counts in every bench, Verilator silent):
+    # check_outputs_registered.check_clocks
+    ("CHOP1：出力のフリップフロップをフレームの計数のビット 4 で（派生した時計）", [
+        ("eeg_chop1.sv", "            rate_q <= 3'd3;\n            chop1  <= 1'b1;\n", "            rate_q <= 3'd3;\n"),
+        ("eeg_chop1.sv", "            if (cycle == 5'd15) begin     // this edge is e16\n                chop1 <= wave;\n"
+                         "            end\n", ""),
+        ("eeg_chop1.sv", "\nendmodule", "\n    always_ff @(posedge cycle[4] or negedge rst_n) begin   // e16: cycle 15 -> 16\n"
+                         "        if (!rst_n) chop1 <= 1'b1;\n        else        chop1 <= wave;\n    end\n\nendmodule")],
+     None, None),
+    ("最上位：SEQ の計数を CIC の strobe の立ち下がりで（派生した時計）", "eeg_digital_top.sv",
+     "    always_ff @(posedge MCLK or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;\n"
+     "        else if (cic_stb) seq_cnt <= seq_cnt + 16'd1;",
+     "    always_ff @(negedge cic_stb or negedge tm_rst_n) begin\n        if (!tm_rst_n)    seq_cnt <= 16'd0;\n"
+     "        else              seq_cnt <= seq_cnt + 16'd1;"),
 ]
 
 def bench_ended(v, closing):
@@ -827,7 +877,8 @@ def sim_tail(v, tb):
 def unit_benches(d, files):
     """The unit benches of the blocks a mutation edits, in its copy, as run_tests_r14.sh runs them (audit round 22,
     auditor C: tb_tick, tb_clkgen and tb_cic_arm were never run on a mutant): tb_tick and tb_clkgen for eeg_clkgen.sv,
-    tb_cic_arm (cleared at outputs 3, 5, 7, 9) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
+    tb_chop1 for eeg_chop1.sv and eeg_clkgen.sv (audit round 27, auditor C: run_tests_r14.sh builds it with the r14
+    clock generator, the top group never ran it), tb_cic_arm (cleared at outputs 3, 5, 7, 9) for eeg_cic3.sv. Returns (status, text): 'pass'; 'fail' (a bench or its
     check judged FAIL: a detection); 'error' (a compile error, a crash, no closing line: no verdict)."""
     inc = ["-I", SPEC, "-I", os.path.join(R14, "tb"), "-I", os.path.join(d, "build")]
     runs = []
@@ -835,6 +886,9 @@ def unit_benches(d, files):
         runs += [("tb_tick", ["eeg_clkgen.sv", os.path.join(R14, "tb", "tb_tick.sv")], ("PASS: tick", "FAIL: tb_tick")),
                  ("tb_clkgen", ["eeg_clkgen.sv", os.path.join(RTL_OLD, "tb", "tb_clkgen.sv")],
                   ("PASS: tb_clkgen", "FAIL: tb_clkgen"))]
+    if "eeg_chop1.sv" in files or "eeg_clkgen.sv" in files:
+        runs += [("tb_chop1", ["eeg_clkgen.sv", "eeg_chop1.sv", os.path.join(RTL_OLD, "tb", "tb_chop1.sv")],
+                  ("PASS: chop1", "FAIL: "))]
     for nm, srcs, closing in runs:
         c = subprocess.run(["iverilog", "-g2012"] + inc + ["-o", f"build/{nm}.vvp"] + srcs, cwd=d, capture_output=True,
                            text=True)
@@ -1145,8 +1199,9 @@ def run(i, m, bench="top"):
         return i, name, ("BASELINE FAILS" if f is None else "detected"), t8
     # the 4-deep FIFO (-DFIFO4, run_tests_r14.sh's tb_top_r14_fifo4) for b00 and for the mutants whose edits name
     # DEPTH: the depth reaches eeg_fifo and, through FIFO_DEPTH, eeg_regs's CAPS (audit round 26, auditor C: "the
-    # depth is eeg_fifo's alone" was false, and CAPS fixed at 8 was MISSED)
-    if f is not None and not any("DEPTH" in o_ + n_ for _, o_, n_ in edits_of(m)):
+    # depth is eeg_fifo's alone" was false, and CAPS fixed at 8 was MISSED); and for every edit of eeg_fifo.sv (audit
+    # round 27, auditor C: an edit that breaks only the 4-deep FIFO, e.g. lvl0 != 4'd8, would be reported MISSED)
+    if f is not None and not any("DEPTH" in o_ + n_ or f_ == "eeg_fifo.sv" for f_, o_, n_ in edits_of(m)):
         return i, name, "MISSED", t8
     cmd4 = list(cmd)
     cmd4.insert(1, "-DFIFO4")
@@ -1297,10 +1352,10 @@ def main():
     if changed:
         out.append("the shared inputs changed during the run (another run_tests_r14.sh?): " + ", ".join(changed))
         ok = False
-    if ver_check is not None:                        # a copy of one version: still that version's files at the end
-        end_diff = ver_check()                         # (audit round 25, auditor C)
+    if ver_check is not None:                        # still the version's files at the end (audit round 25, auditor C;
+        end_diff = ver_check()                         # the checkout too since round 27)
         if end_diff:
-            out.append("the copy's sources differ from its version at the end of the run: " + ", ".join(end_diff[:8]))
+            out.append("the sources differ from the run's version at the end of the run: " + ", ".join(end_diff[:8]))
             ok = False
     out.append("FAIL" if not ok else ("INCOMPLETE (baselines not run: " + ", ".join(missing_base) + ")")
                if missing_base else "PASS")

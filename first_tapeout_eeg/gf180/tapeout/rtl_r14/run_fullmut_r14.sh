@@ -10,7 +10,13 @@ C=/Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg
 PY=$C/gf180/tools/venv310/bin/python
 H=$(git -C $C rev-parse --short "$H") || exit 1
 D=$C/gf180/tapeout/rtl_r14/build/fullrun_$H
-rm -rf $D && mkdir -p $D && cd $D || exit 1
+# never over a copy that exists (audit round 27, auditor C: rm -rf here removed a running run's copy of the same
+# version); remove an old one by hand first
+if [[ -e $D ]]; then
+    print -r -- "$D exists (a run of $H, perhaps still running): remove it by hand first"
+    exit 1
+fi
+mkdir -p $D && cd $D || exit 1
 git -C $C archive $H gf180/tapeout/rtl gf180/tapeout/rtl_r14 documentation/gf180_digital_control_spec_20261119.md \
     documentation/gf180_digital_control_requirements_20261119.md | tar -x || exit 1
 mkdir -p gf180/tapeout/rtl/build/e2e

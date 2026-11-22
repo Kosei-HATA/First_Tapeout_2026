@@ -216,7 +216,8 @@ WHOLE_BYTE = {"CMD", "KEY"}
 WINDOW_NEIGHBOURS_REQUIRED = [0x00, 0x50, 0x60]
 # The readable addresses a single SCLK slip in the header turns into a read of the sample window (audit round 19,
 # auditor B): the host reads 0x00, 0x50 and 0x60 twice (5.4 (b)), never reads 0x01 (VERSION), and reads 0x20
-# (OFF_M_H) only back after writing it (step 3), where a wrong value that passes also needs a failed write
+# (OFF_M_H) only back after writing it (step 3), twice since audit round 27 (auditor B: "a wrong value that passes
+# also needs a failed write" was the lost-write-plus-one-slip case round 26 had closed for the active copies)
 WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # The registers the host procedure decides from by a CRC read, with the slip pairs it tolerates (audit round 18,
 # auditor B: one SCLK slip turned STATUS into another value with a valid CRC, 62 pairs, since the header 0x83 and
@@ -232,7 +233,14 @@ WINDOW_SLIP_NEIGHBOURS_REQUIRED = [0x00, 0x01, 0x20, 0x50, 0x60]
 # rule (c)'s one read restarted the channel, the offset search included)
 # the slip counts the documents quote for registers the host does not decide from alone (5.4 (b): STATUS is not used
 # alone, T_WARM is read twice; audit round 20, auditor C: the counts were not pinned and T_WARM's was wrong)
-SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17}
+SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17,
+                        # every register step 3 writes and reads back, twice (audit round 27, auditor B: one
+                        # read-back took a lost write for a done one under one slip: OFF_M_L 0xDA read as 0xDB,
+                        # T_REC 0x32 as 0x31); every writable register is recorded here or in SLIP_DECIDE_REQUIRED
+                        "ALERT_MASK": 3, "ALERT_MASK_D": 1, "OFF_M_H": 0, "OFF_M_L": 1, "OFF_CTRL": 0,
+                        "AFE_IBIAS": 0, "CPF_TRIM": 0, "BOOST_TRIM": 0, "CHOP_CFG": 0, "ADC_CFG": 0, "BLANK": 0,
+                        "T_ELEC": 3, "T_REC": 10, "T_PRE": 32, "T_RST": 2, "TEST_MUX": 1, "TEST_CTRL": 0,
+                        "DEBUG": 0}
 # where the requirements' rule 5.4 (b) states them (audit round 21, auditor C: the record was checked against the
 # model only, so the requirements' text could say anything)
 SLIP_COUNT_PATTERNS = {"STATUS": r"STATUS の 64 通りの値で (\d+) 組", "T_WARM": r"T_WARM は (\d+) 組"}
@@ -466,7 +474,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
 ]
@@ -881,6 +889,11 @@ def check(verbose=True):
         if got_ != want_:
             errs.append(f"{n_}: {got_} slip pairs read as another legal value with a valid CRC, while the documents "
                         f"record {want_} (5.4 (b); audit round 20)")
+    rw_ = {rg_[1] for rg_ in REGS if rg_[2] == "RW"}
+    unrec_ = sorted(rw_ - set(SLIP_COUNTS_RECORDED) - set(SLIP_DECIDE_REQUIRED))
+    if unrec_:
+        errs.append(f"writable registers without a recorded slip count: {unrec_} (step 3 reads every register it "
+                    f"wrote back twice; audit round 27, auditor B)")
     notes.append(f"STATUS: {len(slip_hazards('STATUS'))} slip pairs read as another legal value with a valid CRC "
                  f"(the host decides READY, DATA and CMD_PENDING otherwise); T_WARM: {len(slip_hazards('T_WARM'))} "
                  f"(read twice)")
@@ -1421,6 +1434,9 @@ def selftest():
     def m_slip_count_status():                           # audit round 20, auditor C: a recorded slip count off by one
         g["SLIP_COUNTS_RECORDED"]["STATUS"] = 61
 
+    def m_slip_count_missing():                          # audit round 27, auditor B: a register step 3 reads back,
+        del g["SLIP_COUNTS_RECORDED"]["T_REC"]        # left out of the slip record
+
     def m_window_moved():                                # audit round 17, auditor B: the window moved (item 258's
         i = next(k for k, r in enumerate(g["REGS"]) if r[1] == "SAMPLE")  # option), the SPI table's text left behind
         r = list(g["REGS"][i]); r[0] = 0x4F; g["REGS"][i] = tuple(r)
@@ -1494,6 +1510,7 @@ def selftest():
             ("FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）", m_fixed_addr_drop),
             ("DEBUG を写しの半分の 0x72 に", m_debug_in_copies),
             ("STATUS の滑りの組の数を 61 と記す", m_slip_count_status),
+            ("T_REC を滑りの記録から除く（手順 3 の読み戻し）", m_slip_count_missing),
             ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative),
             ("T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）", m_twarm_lsb_negative),
             ("OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える", m_ofm_pins_swapped),
@@ -1667,6 +1684,7 @@ SELFTEST_EXPECT = {
     'FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）': (', which FIXED_ADDR does not hold (the host relies on the addresses the documents name; audit round 20)',),
     'DEBUG を写しの半分の 0x72 に': ('region of REG-01 (0x',),
     'STATUS の滑りの組の数を 61 と記す': ('slip pairs read as another legal value with a valid CRC, while the documents record',),
+    'T_REC を滑りの記録から除く（手順 3 の読み戻し）': ('(step 3 reads every register it wrote back twice; audit round 27, auditor B)',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

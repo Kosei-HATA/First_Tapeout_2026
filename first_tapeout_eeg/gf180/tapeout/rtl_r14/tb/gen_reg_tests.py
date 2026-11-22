@@ -261,19 +261,30 @@ def main():
     #     OFF_M_L write clearing SIGN passed all 16 groups): every writable register but IF_CFG (the frame format)
     #     given a legal byte away from its reset value, in ascending, descending and a shuffled address order, each
     #     round followed by one burst read of the whole map (every writable register as written, every active copy at
-    #     its reset value: no APPLY); the reset values back after each round; no flag
+    #     its reset value: no APPLY); the reset values back after each round; no flag. Since audit round 27 (auditor C:
+    #     a W1C gate that cleared ERR's bits on every write passed, as ERR was 0 here): ADDR_ERR and CMD_ERR set
+    #     before the writes and ERR read in every burst, the two flags kept and no other
     ind = [a for a, r in sorted(regs.items()) if r[2] == "RW" and r[1] != "IF_CFG"]
     shuffled = sorted(ind)
     random.Random(23).shuffle(shuffled)
     L.append("    // 2b. one write leaves every other register as it was: three address orders, a burst read of the map each")
+    flags = E_ADDR | E_CMD
     L.append(f"    rt_write(7'h{A_ERR:02X}, 8'hFF);")
+    L.append(f"    rt_write(7'h{undefined[0]:02X}, 8'h5A);")                  # ADDR_ERR
+    L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h5A);")                          # a wrong key: CMD_ERR
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h{RM.TEST_KEY:02X});")
+    L.append(f"    rt_read_expect(7'h{A_ERR:02X}, 8'h{flags:02X}, \"2b: ADDR_ERR and CMD_ERR set before the writes\");")
+    wrote = 0
     for nm, order, low in (("ascending", sorted(ind), False), ("descending", sorted(ind, reverse=True), True),
                            ("shuffled", shuffled, False)):
         val = {a: legal_other(regs[a][4], low=low) for a in ind}
         assert all(val[a] != reset_byte(regs[a][4]) for a in ind), f"2b {nm}: a register written with its reset value"
         L += [f"    rt_write(7'h{a:02X}, 8'h{val[a]:02X});" for a in order]
+        for a in order:
+            wrote |= val[a] | reset_byte(regs[a][4])
         L += ["    spi_tx[0] = 8'h80;", "    for (int i = 1; i <= 128; i++) spi_tx[i] = 8'h00;", "    spi_xfer(129, 0);"]
+        L.append(f"    rt_burst_expect({A_ERR + 1}, 8'h{flags:02X}, \"2b {nm}: burst 0x{A_ERR:02X} ERR (the flags set before "
+                 f"the writes kept, no other)\");")
         for a in range(0x80):
             if a in val:
                 L.append(f"    rt_burst_expect({a + 1}, 8'h{val[a]:02X}, \"2b {nm}: burst 0x{a:02X} {regs[a][1]}\");")
@@ -281,8 +292,10 @@ def main():
                 L.append(f"    rt_burst_expect({a + 1}, 8'h{reset_byte(regs[mirrors[a]][4]):02X}, "
                          f"\"2b {nm}: burst 0x{a:02X} {regs[mirrors[a]][1]} active\");")
         L += [f"    rt_write(7'h{a:02X}, 8'h{reset_byte(regs[a][4]):02X});" for a in sorted(ind)]
+    assert wrote & flags == flags, f"2b: no written byte names bit(s) 0x{flags & ~wrote:02X} of ERR's flags"
     L.append(f"    rt_write(7'h{A_KEY:02X}, 8'h00);")
-    L.append("    expect_err_exact(8'h00, \"2b: the writes in three orders and the bursts: no flag\");")
+    L.append(f"    expect_err_exact(8'h{flags:02X}, \"2b: the writes in three orders and the bursts: ADDR_ERR and CMD_ERR "
+             f"kept, no other flag\");")
     # 4. read-only and undefined writes
     L.append("    // 4. read-only registers and undefined addresses")
     assert regs[0x03][1] == "STATUS" and regs[0x03][2] == "RO"

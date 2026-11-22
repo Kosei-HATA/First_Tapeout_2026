@@ -29,6 +29,10 @@ active-low reset ($adff, $adffe), from RESET_N (the release chain's 2 flops only
 (the timing and data path), or from a flop reset by that output (the control reset of SOFT_RESET, used only as a
 reset); the only storage without a reset is the FIFO's memory (its words are read only below the level).
 
+And one clock (RST-05; audit round 27, auditor C: a CHOP1 divider clocked by a frame-counter bit and a SEQ counter
+on the falling edge of the CIC's strobe passed all 16 groups with the counts unchanged, and Verilator said nothing):
+every flip-flop and every memory write port takes MCLK's rising edge (CLK the MCLK port bit, CLK_POLARITY 1).
+
 Exit: 0 every output a flip-flop's (PASS), 1 an output that is not (FAIL), 2 the tool did not run (TOOL ERROR).
 Usage: check_outputs_registered.py [rtl_r14 directory]   (default: this one; the mutation runner passes its copy,
        which also holds the blocks kept from rtl/)
@@ -103,6 +107,8 @@ def main():
     print("synchronizers: " + "; ".join(snotes))
     rbad, rnote = check_resets(m)
     print("resets: " + rnote)
+    cbad, cnote = check_clocks(m)
+    print("clocks: " + cnote)
     # NFR-05 through synthesis (audit round 14, auditor A: the illegal codes' recovery survived only because yosys judged
     # recoding of no benefit; a recoded FSM drops the unreachable codes 9..15 and the FRAME_ERR of the SPI's illegal codes)
     fbad = []                                           # (audit round 15, auditor C: named in the log and the summary)
@@ -113,16 +119,57 @@ def main():
                         f"and drop the illegal codes' recovery, NFR-05)")
     print("state registers: " + (f"{', '.join(FSM_NOT_RECODED)} keep fsm_encoding \"none\" (NFR-05 through synthesis)"
                                  if not fbad else f"{len(fbad)} of {len(FSM_NOT_RECODED)} open to recoding"))
-    for x in bad + sbad + rbad + fbad:
+    for x in bad + sbad + rbad + cbad + fbad:
         print("  " + x)
-    if bad or sbad or rbad or fbad:
+    if bad or sbad or rbad or cbad or fbad:
         print(f"FAIL: {len(bad)} output bits not from a register, {len(sbad)} synchronizer faults, {len(rbad)} reset faults, "
-              f"{len(fbad)} state registers open to recoding")
+              f"{len(cbad)} clock faults, {len(fbad)} state registers open to recoding")
     else:
         print("PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops; every flip-flop "
-              "resets asynchronously from the RESET_N release (RST-01); the state registers keep fsm_encoding \"none\" "
-              "(NFR-05)")
-    return 1 if bad or sbad or rbad or fbad else 0
+              "resets asynchronously from the RESET_N release (RST-01); every flip-flop and memory write port on MCLK's "
+              "rising edge (RST-05); the state registers keep fsm_encoding \"none\" (NFR-05)")
+    return 1 if bad or sbad or rbad or cbad or fbad else 0
+
+
+def check_clocks(m):
+    """RST-05, one clock: every flip-flop and every memory write port on MCLK's rising edge (audit round 27, auditor C).
+    Yosys gives CLK and CLK_POLARITY on the flip-flops and $memwr_v2, WR_CLK, WR_CLK_ENABLE and WR_CLK_POLARITY per
+    port on $mem_v2; a latch (no clock) is reported by check_resets."""
+    mclk = m["ports"]["MCLK"]["bits"][0]
+    names = {}
+    for n, v in m["netnames"].items():
+        for i, b in enumerate(v["bits"]):
+            if isinstance(b, int):
+                names.setdefault(b, f"{n}[{i}]" if len(v["bits"]) > 1 else n)
+    bits = lambda v: [int(c) for c in reversed(str(v))] if isinstance(v, str) else [(int(v) >> k) & 1 for k in range(64)]
+    bad, nff, nwr = [], 0, 0
+    for cn, c in m["cells"].items():
+        t, cc, p = c["type"], c["connections"], c["parameters"]
+        if "dff" in t:
+            nff += 1
+            q = cc.get("Q", [None])[0]
+            who = names.get(q, cn) if isinstance(q, int) else cn
+            pol = bits(p.get("CLK_POLARITY", "1"))[0]
+            if cc.get("CLK", [None])[0] != mclk or pol != 1:
+                clk = cc.get("CLK", [None])[0]
+                bad.append(f"{who} ({t}): clocked by {names.get(clk, clk)}{'' if pol == 1 else ' (falling edge)'}, "
+                           f"not MCLK's rising edge (RST-05)")
+        elif t.startswith("$memwr"):
+            nwr += 1
+            pol, en = bits(p.get("CLK_POLARITY", "1"))[0], bits(p.get("CLK_ENABLE", "1"))[0]
+            if cc.get("CLK", [None])[0] != mclk or pol != 1 or en != 1:
+                bad.append(f"{cn}: a memory write port not on MCLK's rising edge (RST-05)")
+        elif t in ("$mem", "$mem_v2"):
+            k = int(str(p.get("WR_PORTS", "0")), 2) if isinstance(p.get("WR_PORTS"), str) else int(p.get("WR_PORTS", 0))
+            clks, pols, ens = cc.get("WR_CLK", []), bits(p.get("WR_CLK_POLARITY", "0")), bits(p.get("WR_CLK_ENABLE", "0"))
+            for j in range(k):
+                nwr += 1
+                if j >= len(clks) or clks[j] != mclk or pols[j] != 1 or ens[j] != 1:
+                    bad.append(f"{cn}: write port {j} not on MCLK's rising edge (RST-05)")
+    if nwr == 0:
+        bad.append("no memory write port seen (the FIFO's memory writes on MCLK): the clock check saw no memory")
+    return bad, (f"{nff} flip-flop cells and {nwr} memory write port(s), all on MCLK's rising edge" if not bad else
+                 f"{len(bad)} faults")
 
 
 def check_resets(m):

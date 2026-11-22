@@ -12,6 +12,13 @@
 // one step across 255/256 and 511/512, M_H or M_L alone changed), both signs, every range, every other applied field
 // and random pairs. Every write must be accepted (no error flag).
 //
+// A write to any other address clears no flag (audit round 27, auditor C: a copy whose W1C gate read
+// (we || w_ok && addr == A_ERR) cleared the ERR bits named in every write's data byte - RESET_FLAG lost at the first
+// trim write - and passed all 16 groups; DFLAG's gate the same): after a reset (RESET_FLAG) every source is set (ERR
+// 0x6F, DFLAG 0x03), then 0xFF is written to each of the other 126 addresses (RW, WO, RO, undefined; 0xFF is no command
+// and no key) and after each write every ERR bit set before it is still set (a write may add its own flag) and DFLAG
+// is still 0x03; a reset then restores the reset values for the part below.
+//
 // The command's acknowledge cycle (audit round 5, 11/20: a command or a guarded write committed in the very cycle the
 // tick takes the pending command was never tested; a copy that lost such a command passed every test): a command
 // written in the ack cycle becomes the new pending command (no STATE_ERR); a shadow write in the ack cycle is written
@@ -110,6 +117,47 @@ module tb_regs;
         read_reg(A_DFLAG, v);
         if (v !== 8'h02) begin $display("ERROR: DFLAG 0x%02h after clearing OVERRUN alone, expected 0x02 (OVL kept)", v); errors++; end
         n = n + 2;
+        // a write to any other address clears no flag (audit round 27, auditor C)
+        begin
+            logic [7:0] e_prev, e_now, d_now;
+            integer nfl;
+            nfl = 0;
+            rst_n = 1'b0;
+            repeat (2) @(negedge clk);
+            rst_n = 1'b1;
+            @(negedge clk); frame_err_set = 1'b1; crc_err_set = 1'b1; addr_err_set = 1'b1; seq_state_err = 1'b1;
+                            seq_cfg_err = 1'b1; ovr_set = 1'b1; ovl_set = 1'b1;
+            @(negedge clk); frame_err_set = 1'b0; crc_err_set = 1'b0; addr_err_set = 1'b0; seq_state_err = 1'b0;
+                            seq_cfg_err = 1'b0; ovr_set = 1'b0; ovl_set = 1'b0;
+            read_reg(A_ERR, e_prev);
+            read_reg(A_DFLAG, d_now);
+            if (e_prev !== 8'h6F || d_now !== 8'h03) begin
+                $display("ERROR: ERR 0x%02h, DFLAG 0x%02h after a reset and every source set, expected 0x6F, 0x03",
+                         e_prev, d_now);
+                errors++;
+            end
+            for (int a = 0; a < 128; a++) begin
+                if (a != A_ERR && a != A_DFLAG) begin
+                    @(negedge clk); addr = 7'(a); we = 1'b1; wdata = 8'hFF;
+                    @(negedge clk); we = 1'b0;
+                    read_reg(A_ERR, e_now);
+                    read_reg(A_DFLAG, d_now);
+                    if ((e_now & e_prev) !== e_prev || d_now !== 8'h03) begin
+                        $display("ERROR: 0xFF written to 0x%02h: ERR 0x%02h -> 0x%02h, DFLAG 0x%02h (only a W1C write to a flag's own register may clear it)",
+                                 7'(a), e_prev, e_now, d_now);
+                        errors++;
+                    end
+                    e_prev = e_now;
+                    nfl++;
+                end
+            end
+            n = n + nfl + 1;
+            $display("tb_regs: 0xFF written to the %0d other addresses with every flag set: ERR 0x%02h, DFLAG 0x%02h at the end",
+                     nfl, e_prev, d_now);
+            rst_n = 1'b0;                                       // the reset values back for the part below
+            repeat (2) @(negedge clk);
+            rst_n = 1'b1;
+        end
         $display("tb_regs: %0d checks of the W1C flags, %0d errors", n, errors);
         // ---------------- cfg_ok and nr_ok against regmap.cfg_ok / regmap.nr_ok
         begin

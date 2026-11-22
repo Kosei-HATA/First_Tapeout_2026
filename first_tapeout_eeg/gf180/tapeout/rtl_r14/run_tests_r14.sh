@@ -18,8 +18,9 @@
 #               full-scale stream; tb/check_ovl.py)
 #   tb_rnd_sat  the CIC output's rounding (ties to even) and saturation against the Python golden model's vectors
 #               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
-#   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; cfg_ok and nr_ok against
-#               regmap over the full 10-bit M (build/ok_vectors.txt from tb/gen_ok_vectors.py)
+#   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; no flag cleared by a write to
+#               any other address (audit round 27); cfg_ok and nr_ok against regmap over the full 10-bit M
+#               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
 #   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X and Y, listed in the bench's header, and the
 #               pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25); samples == golden
@@ -29,7 +30,8 @@
 #               SPI table, every branch, every VER-02 kind at every timing (check_spi_trace.py)
 #   tb_top_r14_fifo4  tb_top_r14 with a 4-deep FIFO (FIFO4)
 #   outputs     every output of eeg_digital_top is a flip-flop's (NFR-06); every asynchronous input passes 2 flops; every
-#               flip-flop resets asynchronously from RESET_N's release (RST-01); the state registers of eeg_seq and
+#               flip-flop resets asynchronously from RESET_N's release (RST-01); every flip-flop and memory write port
+#               on MCLK's rising edge (RST-05, audit round 27); the state registers of eeg_seq and
 #               eeg_spi_slave keep fsm_encoding "none" (NFR-05 through synthesis) (yosys, tb/check_outputs_registered.py)
 #   The testbenches' own mutation self-test (each listed RTL error must be detected): tb/mutate_top_r14.py
 #   A bench run alone needs this script's generated inputs first (codes: build/top_r14.codes and ovl.codes;

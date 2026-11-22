@@ -169,6 +169,37 @@ module tb_top_r14;
     `include "pin_tests.svh"
 
     integer errors = 0;
+    // the SPI's state codes from the compiled RTL (audit round 27, auditor C: the illegal values 11..15 were written
+    // here by hand, so a copy whose S_OVF was 11 left 10 unused, unflagged by st > S_OVF, and passed all 16 groups)
+    logic [15:0] spi_defd;
+    integer      n_spi_illegal;
+    string       spi_illegal_txt;
+    task spi_codes;
+        spi_defd = 16'd0;
+        spi_defd[dut.u_spi.S_IDLE] = 1'b1;  spi_defd[dut.u_spi.S_HDR] = 1'b1;   spi_defd[dut.u_spi.S_RREG] = 1'b1;
+        spi_defd[dut.u_spi.S_RCRC] = 1'b1;  spi_defd[dut.u_spi.S_RDONE] = 1'b1; spi_defd[dut.u_spi.S_RSMP] = 1'b1;
+        spi_defd[dut.u_spi.S_SDONE] = 1'b1; spi_defd[dut.u_spi.S_WDAT] = 1'b1;  spi_defd[dut.u_spi.S_WCRC] = 1'b1;
+        spi_defd[dut.u_spi.S_WDONE] = 1'b1; spi_defd[dut.u_spi.S_OVF] = 1'b1;
+        n_spi_illegal = 0;
+        spi_illegal_txt = "";
+        for (int b = 0; b < 16; b++)
+            if (!spi_defd[b]) begin
+                n_spi_illegal++;
+                spi_illegal_txt = {spi_illegal_txt, $sformatf(" %0d", b)};
+            end
+    endtask
+    // a constant force of each value (Icarus evaluates a forced expression only once)
+    task force_spi_st(input integer v);
+        case (v)
+            0: force dut.u_spi.st = 4'd0;    1: force dut.u_spi.st = 4'd1;    2: force dut.u_spi.st = 4'd2;
+            3: force dut.u_spi.st = 4'd3;    4: force dut.u_spi.st = 4'd4;    5: force dut.u_spi.st = 4'd5;
+            6: force dut.u_spi.st = 4'd6;    7: force dut.u_spi.st = 4'd7;    8: force dut.u_spi.st = 4'd8;
+            9: force dut.u_spi.st = 4'd9;    10: force dut.u_spi.st = 4'd10;  11: force dut.u_spi.st = 4'd11;
+            12: force dut.u_spi.st = 4'd12;  13: force dut.u_spi.st = 4'd13;  14: force dut.u_spi.st = 4'd14;
+            default: force dut.u_spi.st = 4'd15;
+        endcase
+    endtask
+
     task automatic fail(input string msg);
         errors = errors + 1;
         if (errors <= 40) $display("ERROR @%0t: %s", $time, msg);
@@ -1242,21 +1273,20 @@ module tb_top_r14;
         rt_read_expect(7'h24, 8'h08, "CPF_TRIM unchanged after an overlong write");
         CS_N = 1'b0; #500; CS_N = 1'b1; #600;                        // empty frame
         expect_noerr("empty frame");
-        // every illegal state value of the SPI state machine (NFR-05): FRAME_ERR at CS_N rising, nothing written
-        for (int bad = 11; bad < 16; bad++) begin
+        // every illegal state value of the SPI state machine (NFR-05): FRAME_ERR at CS_N rising, nothing written; the
+        // values not among eeg_spi_slave's S_* codes, read from the compiled RTL (audit round 27, auditor C)
+        spi_codes();
+        $display("SPI illegal state values (not among eeg_spi_slave's 11 S_* codes):%s", spi_illegal_txt);
+        if (n_spi_illegal != 16 - 11)
+            fail($sformatf("the SPI's 11 state names have %0d distinct codes, expected 11", 16 - n_spi_illegal));
+        for (int bad = 0; bad < 16; bad++) if (!spi_defd[bad]) begin
             fork
                 begin
                     spi_tx[0] = 8'h24; spi_tx[1] = 8'h0E; spi_xfer(2, 0);
                 end
                 begin
-                    #(6000.0);                          // inside the data byte (constant forces: Icarus
-                    case (bad)                          // evaluates a forced expression only once)
-                        11:      force dut.u_spi.st = 4'd11;
-                        12:      force dut.u_spi.st = 4'd12;
-                        13:      force dut.u_spi.st = 4'd13;
-                        14:      force dut.u_spi.st = 4'd14;
-                        default: force dut.u_spi.st = 4'd15;
-                    endcase
+                    #(6000.0);                          // inside the data byte
+                    force_spi_st(bad);
                     @(posedge MCLK);
                     release dut.u_spi.st;
                 end
@@ -1266,15 +1296,9 @@ module tb_top_r14;
         end
         // ... and between frames (CS_N high; audit round 15, auditor B): the value stays until the next CS_N fall, which
         // starts that frame in the header state; the frame is processed normally and nothing is flagged (NFR-05)
-        for (int bad = 11; bad < 16; bad++) begin
+        for (int bad = 0; bad < 16; bad++) if (!spi_defd[bad]) begin
             @(posedge MCLK); #1;
-            case (bad)                                  // constant forces (Icarus)
-                11:      force dut.u_spi.st = 4'd11;
-                12:      force dut.u_spi.st = 4'd12;
-                13:      force dut.u_spi.st = 4'd13;
-                14:      force dut.u_spi.st = 4'd14;
-                default: force dut.u_spi.st = 4'd15;
-            endcase
+            force_spi_st(bad);                          // constant forces (Icarus)
             @(posedge MCLK);
             release dut.u_spi.st;
             #(4.0 * TMCLK);

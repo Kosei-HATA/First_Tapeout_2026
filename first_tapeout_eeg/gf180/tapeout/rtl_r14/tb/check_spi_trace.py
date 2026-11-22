@@ -37,8 +37,19 @@ A_CMD, A_KEY, A_IFCFG, A_SAMPLE = (ADDR[n] for n in ("COMMAND", "TEST_KEY", "IF_
 CODES = set(RM.COMMANDS.values())
 GUARDED = set(RM.guarded_addrs())             # shadows and timers: refused while a command is pending
 SOFT = RM.COMMANDS["SOFT_RESET"]
-ST = {0: "IDLE", 1: "HDR", 2: "RREG", 3: "RCRC", 4: "RDONE", 5: "RSMP", 6: "SDONE", 7: "WDAT", 8: "WCRC",
-      9: "WDONE", 10: "OVF"}
+ST_NAMES = {"IDLE", "HDR", "RREG", "RCRC", "RDONE", "RSMP", "SDONE", "WDAT", "WCRC", "WDONE", "OVF"}
+ST = {}                                   # code -> name, from the eeg_spi_slave.sv beside the trace (set in main)
+
+
+def spi_state_codes(rtl):
+    """eeg_spi_slave.sv's S_* codes (audit round 27, auditor C: they were written here by hand, apart from the RTL the
+    trace comes from): {code: name}, None unless the 11 names have 11 distinct codes"""
+    import re
+    got = re.findall(r"\bS_([A-Z]+)\s*=\s*4'd(\d+)", open(rtl, encoding="utf-8").read())
+    st = {int(v): n for n, v in got}
+    if {n for n, _ in got} != ST_NAMES or len(got) != len(ST_NAMES) or len(st) != len(ST_NAMES):
+        return None
+    return st
 
 
 def crc8(bs):
@@ -129,6 +140,14 @@ def ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, crc_en, cr
 
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "build", "spi_trace.txt")
+    rtl = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(path))), "eeg_spi_slave.sv")
+    if not os.path.exists(rtl):
+        rtl = os.path.join(HERE, "..", "eeg_spi_slave.sv")
+    st = spi_state_codes(rtl)
+    if st is None:
+        print(f"checker error: {rtl}: the SPI's 11 state names without 11 distinct 4'd codes")
+        return 2
+    ST.update(st)
     model = {"crc": 0, "unl": 0}
     bad, nfr, covered = [], 0, set()
     kc = {}                                          # (VER-02 kind, SCLK class) -> frames (audit round 23, C)

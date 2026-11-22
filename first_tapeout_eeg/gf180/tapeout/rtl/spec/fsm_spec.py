@@ -1246,6 +1246,7 @@ CHECKS = [
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
     "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある",
+    "生成のブロック（第 32 回）：要件の生成のブロック（GEN_KEYS の 14 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、要件が読める（gen と fresh は印のないブロックを黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
 ]
 
 
@@ -1388,6 +1389,7 @@ def run_checks(verbose=True):
     report += e
     e, tnotes = check_timing()
     report += e
+    report += check_doc_blocks()                       # the requirements' generated blocks (audit round 32, auditor C)
     total = n1 + n2 + n3
     if verbose:
         print(f"checked: SEQ {len(SEQ_STATES)} states x {len(SEQ_EVENTS)} events, {n1} tick combinations; "
@@ -1576,6 +1578,38 @@ def tables_md(F, moore_cols):
     return "\n".join(st), trans, "\n".join(ev_md), "\n".join(cond_md), "\n".join(act_md)
 
 
+# The requirements' generated blocks, by key (audit round 32, auditor C): generate() writes exactly these, and
+# check_doc_blocks requires each key's markers once and in order, and no other key's
+GEN_KEYS = ("seq_mermaid", "seq_states", "seq_table", "seq_events", "seq_conds", "seq_actions", "spi_mermaid",
+            "spi_states", "spi_table", "spi_events", "spi_conds", "spi_actions", "checks", "seq_priority")
+
+
+def check_doc_blocks():
+    """The requirements' generated blocks: each key of GEN_KEYS with its BEGIN and END markers once each and in order,
+    no other key's marker, the document readable (audit round 32, auditor C: generate() skipped a block whose markers
+    were gone, so fresh() compared a hand edit with itself; a doubled block was never compared)."""
+    errs, probs = [], []
+    try:
+        with open(DOC, encoding="utf-8") as f:
+            doc = f.read()
+    except OSError as ex:
+        doc = None
+        probs.append(f"unreadable ({ex})")
+    if doc is not None:
+        for k in sorted(set(re.findall(r"<!-- (?:BEGIN|END) GENERATED (\S+) -->", doc)) - set(GEN_KEYS)):
+            probs.append(f"a marker of {k!r}, which generate() does not write")
+        for k in GEN_KEYS:
+            a, b = f"<!-- BEGIN GENERATED {k} -->", f"<!-- END GENERATED {k} -->"
+            na, nb = doc.count(a), doc.count(b)
+            if na != 1 or nb != 1 or doc.index(a) > doc.index(b):
+                probs.append(f"{k}: {na} BEGIN and {nb} END markers" + (" (END first)" if na == nb == 1 else ""))
+    if probs:
+        errs.append(f"{os.path.basename(DOC)}'s generated blocks: {'; '.join(probs)} (each key's BEGIN and END markers "
+                    f"once each and in order, no other key, the document readable: generate() and fresh() skipped a block "
+                    f"without its markers and never compared a doubled one; audit round 32, auditor C)")
+    return errs
+
+
 def generate(write=True):
     """Writes the diagrams and the document's generated blocks; write=False returns them instead ({path: text})."""
     rep, _ = run_checks(verbose=write)
@@ -1608,13 +1642,15 @@ def generate(write=True):
         "checks": "\n".join(f"- {c}" if not c.startswith("  ") else f"  - {c.strip()}" for c in CHECKS),
         "seq_priority": "- 同じ tick の事象の優先順位は、" + " ＞ ".join(SEQ_PRIORITY) + "（`fsm_spec.SEQ_PRIORITY` から生成。第 16 回）。",
     }
-    with open(DOC, encoding="utf-8") as f:
+    if set(blocks) != set(GEN_KEYS):                    # audit round 32, auditor C: the keys check_doc_blocks holds
+        print(f"not generating: the blocks {sorted(blocks)} differ from GEN_KEYS {sorted(GEN_KEYS)}")
+        return 1
+    with open(DOC, encoding="utf-8") as f:              # (run_checks above: readable, each marker once, in order)
         doc = f.read()
     for k, v in blocks.items():
         a, b = f"<!-- BEGIN GENERATED {k} -->", f"<!-- END GENERATED {k} -->"
-        if a in doc:
-            i, j = doc.index(a) + len(a), doc.index(b)
-            doc = doc[:i] + "\n" + v + "\n" + doc[j:]
+        i, j = doc.index(a) + len(a), doc.index(b)
+        doc = doc[:i] + "\n" + v + "\n" + doc[j:]
     out[DOC] = doc
     if not write:
         return out
@@ -1643,7 +1679,8 @@ def fresh():
 # The functions whose messages are violations (each errs / P append, or a list of them, in these functions)
 CHECK_FUNCS = ("check_tables", "check_vocab", "check_seq_columns", "check_graph", "seq_properties", "check_seq_ticks",
                "check_seq_branches",
-               "check_seq_commands", "check_spi_props", "check_spi_frames", "check_fifo", "check_timing")
+               "check_seq_commands", "check_spi_props", "check_spi_frames", "check_fifo", "check_timing",
+               "check_doc_blocks")
 
 
 def check_messages():
@@ -2020,6 +2057,25 @@ def selftest_runs():
         SPI_CONDS.pop("busy")
         return lambda: (SPI_CONDS.clear(), SPI_CONDS.update(saved))
 
+    def doc_edit(fn):                                 # audit round 32, auditor C: the requirements' generated blocks
+        def apply_():
+            global DOC
+            import shutil
+            import tempfile
+            orig, tmpd = DOC, tempfile.mkdtemp()
+            txt = fn(open(orig, encoding="utf-8").read())
+            DOC = os.path.join(tmpd, os.path.basename(orig))
+            if txt is not None:                       # None: the document missing
+                with open(DOC, "w", encoding="utf-8") as f_:
+                    f_.write(txt)
+
+            def undo():
+                global DOC
+                DOC = orig
+                shutil.rmtree(tmpd, ignore_errors=True)
+            return undo
+        return apply_
+
     data_mut = [
         ("SEQ", "STATE の符号の重複（RECOVER を WARMUP と同じ 1 に）", lambda: setitem(SEQ_STATES, 3, ("RECOVER", 1) + SEQ_STATES[3][2:])),
         ("TIME", "tick を CHOP1 の縁のサイクル（16）に", lambda: setitem(TIMING, "tick_cycle", 16)),
@@ -2049,6 +2105,12 @@ def selftest_runs():
         ("SEQ", "TMR を優先順位から除く", drop_tmr),
         # audit round 17, auditor C: the tick enumeration narrowed
         ("SEQ", "tick の列挙で単独のタイマの満了を除く", narrow_ticks),
+        # audit round 32, auditor C: the requirements' generated blocks
+        ("DOC", "要件の生成のブロックの BEGIN の印を除く（seq_priority）",
+         doc_edit(lambda t: t.replace("<!-- BEGIN GENERATED seq_priority -->", "", 1))),
+        ("DOC", "要件の生成のブロックを二重に（seq_table）",
+         doc_edit(lambda t: t + "\n<!-- BEGIN GENERATED seq_table -->\n<!-- END GENERATED seq_table -->\n")),
+        ("DOC", "要件の文書がない", doc_edit(lambda t: None)),
     ]
     results = []
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
@@ -2337,6 +2399,9 @@ SELFTEST_EXPECT = {
     'CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）': (
         "; eeg_cic3, the golden CIC and the requirements' sinc^3 (SEQ-06's three marked outputs, ANA-04's weight) fix it at",
         '(one quote each in ANA-04, the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes'),
+    '要件の生成のブロックの BEGIN の印を除く（seq_priority）': ("(each key's BEGIN and END markers once each and in order, no other key, the document readable: generate() and fresh() skipped a block without its markers and never compared a doubled one; audit round 32, auditor C)",),
+    '要件の生成のブロックを二重に（seq_table）': ("(each key's BEGIN and END markers once each and in order, no other key, the document readable: generate() and fresh() skipped a block without its markers and never compared a doubled one; audit round 32, auditor C)",),
+    '要件の文書がない': ("(each key's BEGIN and END markers once each and in order, no other key, the document readable: generate() and fresh() skipped a block without its markers and never compared a doubled one; audit round 32, auditor C)",),
 }
 
 

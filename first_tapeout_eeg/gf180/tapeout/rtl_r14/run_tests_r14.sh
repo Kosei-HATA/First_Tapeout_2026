@@ -20,11 +20,12 @@
 #               (rtl/tb/tb_rnd_sat.sv, rtl/model/gen_vectors.py)
 #   tb_regs     the W1C flags: a set in the cycle of its clear wins; per-bit clear; no flag cleared by a write to
 #               any other address, the other flag register included (audit rounds 27, 28); every writable
-#               register outside the lock written with the key locked (audit round 29); cfg_ok and nr_ok
-#               against regmap over the full 10-bit M
+#               register outside the lock written with the key locked (audit round 29); in the acknowledge cycle
+#               of an applying tick the active copies (9 checks, audit round 30) and cfg_ok and nr_ok against a
+#               write of that cycle (6 checks, audit round 31); cfg_ok and nr_ok against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X and Y, listed in the bench's header, and the
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z and AA, listed in the bench's header, and the
 #               pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
 #   tb_spi_r14  SPI frames into the whole block: a fixed preamble (every VER-02 kind at each of the 4 SCLK timings, three

@@ -15,7 +15,10 @@
 // WARMUP: AFE_RST is never released sooner than T_WARM after a change; APPLY_NR in WAIT_E: the electrode settles
 // T_ELEC after the step) (T_WARM, T_ELEC in 1024-frame units of 1 ms,
 // T_REC, T_PRE, T_RST in 8-frame units of 7.8125 us), decremented once per frame (frame_stb); TMR = 0. The expiry is
-// taken at the first tick after it, so every duration is a whole number of chopper periods at 128 kHz.
+// taken at the first tick after it, so at a steady chopper rate every duration is a whole number of chopper periods
+// at 128 kHz. An APPLY that changes CHOP_FAST switches the rate inside PRE (199-455 MCLK after its tick), and PRE
+// then lasts 8 T_PRE + 2 or + 10 frames (128 -> 64 kHz) or 8 T_PRE + 6 frames (64 -> 128 kHz): 25.4 or 33.2 us and
+// 29.3 us at the default 3 (spec 4.2; audit round 32, auditor A).
 // An illegal state value returns to IDLE (AFE_RST = 1) with STATE_ERR.
 `timescale 1ns / 1ps
 `default_nettype none

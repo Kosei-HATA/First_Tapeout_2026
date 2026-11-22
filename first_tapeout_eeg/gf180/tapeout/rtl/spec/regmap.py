@@ -202,10 +202,15 @@ REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", 
 # (audit round 20, auditor C: FIFO_LEVEL, which steps 5 and 6 and rule (b) read at 0x05 since round 18, and TEST_MUX
 # were missing; check() now requires every NAME（0xNN） of the requirements and the spec to be held here; audit round
 # 29, auditor B: step 3's bracket confirms the lock by a write of TEST_CTRL（0x61）; audit round 31, auditor C: the
-# bracket names TEST_KEY and DEBUG (0x11, 0x60-0x62) without the NAME（0xNN） form, so a move of either passed check())
+# bracket names TEST_KEY and DEBUG (0x11, 0x60-0x62) without the NAME（0xNN） form, so a move of either passed check();
+# audit round 32, auditor B: the spec's 2.3 names the guarded set by ranges, 0x20-0x28, 0x60, 0x61 and 0x50-0x54, and
+# BLANK, CPF_TRIM or OFF_CTRL moved within their regions passed: every guarded register is held here, REG-01's list
+# must equal this table, and the stated ranges must equal guarded_addrs())
 FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
-              "ALERT_MASK": 0x08, "COMMAND": 0x10, "TEST_KEY": 0x11, "OFF_M_H": 0x20, "AFE_IBIAS": 0x23, "SAMPLE": 0x40,
-              "T_WARM": 0x50, "T_ELEC": 0x51, "IF_CFG": 0x55, "TEST_MUX": 0x60, "TEST_CTRL": 0x61, "DEBUG": 0x62}
+              "ALERT_MASK": 0x08, "COMMAND": 0x10, "TEST_KEY": 0x11, "OFF_M_H": 0x20, "OFF_M_L": 0x21,
+              "OFF_CTRL": 0x22, "AFE_IBIAS": 0x23, "CPF_TRIM": 0x24, "BOOST_TRIM": 0x25, "CHOP_CFG": 0x26,
+              "ADC_CFG": 0x27, "BLANK": 0x28, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51, "T_REC": 0x52,
+              "T_PRE": 0x53, "T_RST": 0x54, "IF_CFG": 0x55, "TEST_MUX": 0x60, "TEST_CTRL": 0x61, "DEBUG": 0x62}
 FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               # audit round 13, auditor C: the flags the host procedure writes and reads by value (REG-01, FLG-02), and
               # the state and the level from bit 0 (their moves passed every check, caught only by tb literals)
@@ -462,6 +467,60 @@ def slip_hazards(key):
     return sorted(out)
 
 
+# The mode probe of rule (c) and step 9 reads IF_CFG with [0xD5, 0x00, 0x00]: CRC on, the chip answers IF_CFG (bit 0
+# set) and its CRC; CRC off, IF_CFG (bit 0 clear) and 0x56's 0x00 (undefined). The CRC-off answer is protected by no
+# CRC (audit round 32, auditor B: one SCLK fault of the four kinds made a CRC-on chip decode 0xD2 or 0xD4 and answer as
+# CRC off with T_REC 0x30 or T_RST 0x22, both legal; 6 of 285 faulted probes in the RTL. Harmless, as rule (c) acts only
+# on two matching probes; never with the reset values, at which step 3 reads IF_CFG once). The pairs the documents
+# record, (register, value):
+PROBE_SLIP_RECORDED = {("T_REC", 0x30), ("T_RST", 0x22)}
+
+
+def probe_slip_hazards():
+    """(register, value) pairs with which a CRC-on chip answers the mode probe [0x80 | IF_CFG, 0x00, 0x00] as CRC off
+    under one SCLK fault of the four kinds of slip_hazards: STATUS's fixed bits (rule (a)), byte 2 with CRC_EN's bit
+    clear, byte 3 0x00 (audit round 32, auditor B). With the header undisturbed the chip answers IF_CFG's CRC-on values
+    and their CRC; with another decoded header, slip_responses' pairs; every STATUS value is tried where a fault in the
+    first byte moves STATUS's bits (as slip_hazards)."""
+    import numpy as np
+    h = 0x80 | FIXED_ADDR["IF_CFG"]
+    crc_bit = FIXED_BITS["CRC_EN"]
+    mosi = h << 24
+    names = {0x80 | a: n for a, n, *_ in REGS}
+    names.update({0x80 | (a + SHADOW_MIRROR): n + ".ACT" for a, n, _acc, _l, fl, _ in REGS
+                  if any(f["cls"] == "apply" for f in fl)})
+    own = np.array([(v, crc8([h, v])) for v in sorted(reg_values("IF_CFG")) if v >> crc_bit & 1],
+                   dtype=np.int64).reshape(-1, 2)
+    kinds = ((lambda k: _skip(mosi, k), lambda x, k: _dup(x, k)),       # a missed pulse k
+             (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k)),       # an extra pulse in a low phase before pulse k
+             (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k + 1)),   # a bounce in pulse k's high phase
+             (lambda k: _skip(mosi, k + 1), lambda x, k: _dup(x, k)))   # pulses k, k + 1 merged
+    out, cache = set(), {}
+    for ki, (chip, host) in enumerate(kinds):
+        for k in range(23 if ki == 3 else 24):
+            h_ = chip(k) >> 24                                   # the header the chip decoded
+            if h_ == h:
+                pairs = own
+            else:
+                if h_ not in cache:
+                    cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
+                pairs = cache[h_]
+            b1, b2 = pairs[:, 0], pairs[:, 1]
+            for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
+                hs = host((st << 24) | (b1 << 16) | (b2 << 8), k)  # what the host sampled
+                hit = ((hs >> 30) == 2) & (((hs >> (16 + crc_bit)) & 1) == 0) & (((hs >> 8) & 0xFF) == 0)
+                out |= {(names.get(h_, f"0x{h_:02X}"), int(v)) for v in b1[hit]}
+    return sorted(out)
+
+
+def _addr_ranges(s):
+    """The addresses a text states as "0xAA〜0xBB、0xCC" (audit round 32, auditor B)."""
+    out = set()
+    for lo, hi in re.findall(r"0x([0-9A-Fa-f]{2})(?:〜0x([0-9A-Fa-f]{2}))?", s):
+        out |= set(range(int(lo, 16), int(hi or lo, 16) + 1))
+    return out
+
+
 def window_slip_neighbours():
     """The readable addresses (active copies included) whose CRC read the chip decodes as a read of the sample window
     after one SCLK slip in the header (audit round 19, auditor B: the one-bit neighbours alone missed 0x01 and 0x20)."""
@@ -498,9 +557,10 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（要件と詳細仕様の文の「名（0xNN）」の全て。第 20 回で FIFO_LEVEL と TEST_MUX を加えた）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全てを加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障で CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
+    "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
 ]
 
 
@@ -924,6 +984,57 @@ def check(verbose=True):
         if got_ != want_:
             errs.append(f"{n_}: {got_} slip pairs read as another legal value with a valid CRC, while the documents "
                         f"record {want_} (5.4 (b); audit round 20)")
+    gp_ = []                                            # the spec's generated blocks (audit round 32, auditor C)
+    try:
+        with open(DOC, encoding="utf-8") as f_:
+            dtxt_ = f_.read()
+    except OSError as ex_:
+        dtxt_ = None
+        gp_.append(f"unreadable ({ex_})")
+    if dtxt_ is not None:
+        for k_ in sorted(set(re.findall(r"<!-- (?:BEGIN|END) GENERATED (\S+) -->", dtxt_)) - set(GEN_KEYS)):
+            gp_.append(f"a marker of {k_!r}, which generate() does not write")
+        for k_ in GEN_KEYS:
+            a_, b_ = f"<!-- BEGIN GENERATED {k_} -->", f"<!-- END GENERATED {k_} -->"
+            na_, nb_ = dtxt_.count(a_), dtxt_.count(b_)
+            if na_ != 1 or nb_ != 1 or dtxt_.index(a_) > dtxt_.index(b_):
+                gp_.append(f"{k_}: {na_} BEGIN and {nb_} END markers" + (" (END first)" if na_ == nb_ == 1 else ""))
+    if gp_:
+        errs.append(f"{os.path.basename(DOC)}'s generated blocks: {'; '.join(gp_)} (every block of the spec with its BEGIN "
+                    f"and END markers once each and in order, no other block, the spec readable: generate() and fresh() "
+                    f"skipped a block without its markers and a missing spec; audit round 32, auditor C)")
+    ph_ = set(probe_slip_hazards())                     # the mode probe (audit round 32, auditor B)
+    if ph_ != PROBE_SLIP_RECORDED:
+        errs.append(f"the mode probe reads as CRC off under one SCLK fault for {sorted(ph_)}, while the documents record "
+                    f"{sorted(PROBE_SLIP_RECORDED)} (rule (c), step 9; audit round 32, auditor B)")
+    rst_ = {n_: sum(f_["reset"] << f_["lsb"] for f_ in fl_ if isinstance(f_["reset"], int) and 0 <= f_["lsb"] <= f_["msb"] <= 7)
+            for _a, n_, _acc, _l, fl_, _ in REGS}
+    for n_, v_ in sorted(ph_):
+        if rst_.get(n_.partition(".")[0]) == v_:
+            errs.append(f"the mode probe reads as CRC off under one SCLK fault at the reset value 0x{v_:02X} of {n_} "
+                        f"(step 3 reads IF_CFG once, at the reset values; audit round 32)")
+    try:                                                # REG-01's list of the procedure's addresses (round 32, B)
+        m_ = re.search(r"ホスト手順が名指すアドレス（([^）]*?)。第 20 回", open(REQ_DOC, encoding="utf-8").read())
+        reg01_ = {n_: int(a_, 16) for n_, a_ in re.findall(r"([A-Z][A-Z0-9_]*) 0x([0-9A-F]{2})", m_.group(1))} if m_ else {}
+        if reg01_ != FIXED_ADDR:
+            errs.append(f"REG-01 lists the host procedure's addresses {sorted(reg01_.items())}, which differ from "
+                        f"FIXED_ADDR {sorted(FIXED_ADDR.items())} (audit round 32, auditor B: rounds 29 and 31 added to one only)")
+    except OSError:
+        pass                                            # (reported by the overload rule's comparison)
+    guard_ = set(guarded_addrs())                       # the guarded set as the documents state it (round 32, B)
+    timers_ = {a_ for a_, n_, *_ in REGS if a_ in guard_ and n_.startswith("T_")}
+    locked_ = {a_ for a_, _n, _acc, l_, *_ in REGS if l_}
+    for path_, pat_, want_ in ((DOC, r"シャドウ（一括反映の対象：([^）]*)）とタイマ（([^）]*)）", (guard_ - timers_, timers_)),
+                               (REQ_DOC, r"全てのシャドウ（([^）]*)）と全てのタイマ（([^）]*)）", (guard_ - timers_ - locked_, timers_))):
+        try:
+            hits_ = re.findall(pat_, open(path_, encoding="utf-8").read()) or [("", "")]
+        except OSError:
+            continue                                    # (reported by the overload rule's comparison)
+        for sh_, tm_ in hits_:
+            if (_addr_ranges(sh_), _addr_ranges(tm_)) != want_:
+                errs.append(f"{os.path.basename(path_)} states the guarded shadows {sh_!r} and timers {tm_!r}, while "
+                            f"guarded_addrs() gives {[hex(x) for x in sorted(want_[0])]} and {[hex(x) for x in sorted(want_[1])]} "
+                            f"(the spec's 2.3 and the requirements' CRC-off note state the guarded set by ranges; audit round 32, auditor B)")
     rw_ = {rg_[1] for rg_ in REGS if rg_[2] == "RW"}
     unrec_ = sorted(rw_ - set(SLIP_COUNTS_RECORDED) - set(SLIP_DECIDE_REQUIRED))
     if unrec_:
@@ -1082,6 +1193,11 @@ def sv_defs():
                       "/* verilator lint_off UNUSEDPARAM */"] + body + ["/* verilator lint_on UNUSEDPARAM */"]) + "\n"
 
 
+# The spec's generated blocks, by key (audit round 32, auditor C): generate() writes exactly these, and check()
+# requires each key's markers once and in order, and no other key's
+GEN_KEYS = ("reg_summary", "reg_fields", "commands", "sample_status", "reg_checks")
+
+
 def generate(write=True):
     """Writes the package, the defs and the document's generated blocks; write=False returns them ({path: text})."""
     if check(verbose=write):
@@ -1090,15 +1206,16 @@ def generate(write=True):
     out = {PKG: sv_package(), DEFS: sv_defs()}
     blocks = dict(zip(("reg_summary", "reg_fields", "commands", "sample_status"), md_tables()))
     blocks["reg_checks"] = "\n".join(f"- {c}" for c in CHECKS)
-    if os.path.exists(DOC):
-        with open(DOC, encoding="utf-8") as f:
-            doc = f.read()
-        for k, v in blocks.items():
-            a, b = f"<!-- BEGIN GENERATED {k} -->", f"<!-- END GENERATED {k} -->"
-            if a in doc:
-                i, j = doc.index(a) + len(a), doc.index(b)
-                doc = doc[:i] + "\n" + v + "\n" + doc[j:]
-        out[DOC] = doc
+    if set(blocks) != set(GEN_KEYS):                    # audit round 32, auditor C: the keys check() holds
+        print(f"not generating: the blocks {sorted(blocks)} differ from GEN_KEYS {sorted(GEN_KEYS)}")
+        return 1
+    with open(DOC, encoding="utf-8") as f:              # (check() above: readable, each marker once, in order)
+        doc = f.read()
+    for k, v in blocks.items():
+        a, b = f"<!-- BEGIN GENERATED {k} -->", f"<!-- END GENERATED {k} -->"
+        i, j = doc.index(a) + len(a), doc.index(b)
+        doc = doc[:i] + "\n" + v + "\n" + doc[j:]
+    out[DOC] = doc
     if not write:
         return out
     for p, text in out.items():
@@ -1147,7 +1264,7 @@ def selftest():
     import shutil
     import tempfile
     g = globals()
-    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED",
+    keep = {k: copy.deepcopy(g[k]) for k in ("REGS", "COMMANDS", "RANGE_MAX_M", "OVL_RULE", "TEST_KEY", "SAMPLE_STATUS", "PIN_OF_CONTROL", "SLIP_DECIDE_REQUIRED", "PROBE_SLIP_RECORDED",
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256",
                                              "FIXED_ADDR", "SLIP_COUNTS_RECORDED", "SLIP_COUNT_PATTERNS")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
@@ -1159,6 +1276,12 @@ def selftest():
     no_rule = os.path.join(tmp, "no_rule.md")
     with open(no_rule, "w", encoding="utf-8") as fo:
         fo.write("過負荷の規則の文のない文書\n")
+    spec_nomark = os.path.join(tmp, "spec_nomark.md")    # audit round 32, auditor C: a generated block's marker gone
+    with open(spec_nomark, "w", encoding="utf-8") as fo:
+        fo.write(open(DOC, encoding="utf-8").read().replace("<!-- END GENERATED reg_fields -->", "", 1))
+    spec_double = os.path.join(tmp, "spec_double.md")    # and a block doubled
+    with open(spec_double, "w", encoding="utf-8") as fo:
+        fo.write(open(DOC, encoding="utf-8").read() + "\n<!-- BEGIN GENERATED commands -->\n<!-- END GENERATED commands -->\n")
 
     def fld(reg, name):
         return next(f for f in next(r for r in g["REGS"] if r[1] == reg)[4] if f["name"] == name)
@@ -1479,6 +1602,28 @@ def selftest():
         f.update(msb=bit, lsb=bit)
         next(r for r in g["REGS"] if r[1] == dst)[4].append(f)
 
+    def m_probe_record():                                # audit round 32, auditor B: a probe pair left out of the record
+        g["PROBE_SLIP_RECORDED"] = {("T_REC", 0x30)}
+
+    def m_probe_at_reset():                              # audit round 32, auditor B: T_RST's reset value one at which
+        fld("T_RST", "T_RST")["reset"] = 0x22          # one SCLK fault makes the mode probe read CRC off
+
+    def m_reg01_list():                                  # audit round 32, auditor B: FIXED_ADDR beyond REG-01's list
+        g["FIXED_ADDR"]["ALERT_MASK_D"] = 0x09
+
+    def m_guard_text():                                  # audit round 32, auditor B: BLANK out of the stated range
+        i_ = next(i for i, r in enumerate(g["REGS"]) if r[1] == "BLANK")
+        r = list(g["REGS"][i_]); r[0] = 0x29; g["REGS"][i_] = tuple(r)
+
+    def m_doc_marker():                                  # audit round 32, auditor C: the spec's generated blocks
+        g["DOC"] = spec_nomark
+
+    def m_doc_double():
+        g["DOC"] = spec_double
+
+    def m_doc_missing():
+        g["DOC"] = os.path.join(tmp, "missing_spec.md")
+
     def m_test_field_out():                              # a test field out of its locked register
         move_field("TEST_CTRL", "CHOP_STOP", "CHOP_CFG", 1)
 
@@ -1561,6 +1706,13 @@ def selftest():
             ("T_REC を滑りの記録から除く（手順 3 の読み戻し）", m_slip_count_missing),
             ("CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）", m_test_field_out),
             ("SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）", m_field_into_test),
+            ("モードの判定の滑りの組を記録から除く（T_RST 0x22）", m_probe_record),
+            ("T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）", m_probe_at_reset),
+            ("FIXED_ADDR に REG-01 の一覧にない ALERT_MASK_D を加える", m_reg01_list),
+            ("BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）", m_guard_text),
+            ("詳細仕様の生成のブロックの END の印を除く（reg_fields）", m_doc_marker),
+            ("詳細仕様の生成のブロックを二重に（commands）", m_doc_double),
+            ("詳細仕様がない", m_doc_missing),
             ("BLANK_LEN の lsb を −1 に（バイトの外）", m_lsb_negative),
             ("T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）", m_twarm_lsb_negative),
             ("OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える", m_ofm_pins_swapped),
@@ -1737,6 +1889,13 @@ SELFTEST_EXPECT = {
     'T_REC を滑りの記録から除く（手順 3 の読み戻し）': ('(step 3 reads every register it wrote back twice; audit round 27, auditor B)',),
     'CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）': (', while the requirements name its register',),
     'SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）': (', a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit round 29)',),
+    'モードの判定の滑りの組を記録から除く（T_RST 0x22）': ('the mode probe reads as CRC off under one SCLK fault for',),
+    'T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）': ('the mode probe reads as CRC off under one SCLK fault at the reset value 0x',),
+    'FIXED_ADDR に REG-01 の一覧にない ALERT_MASK_D を加える': ('(audit round 32, auditor B: rounds 29 and 31 added to one only)',),
+    'BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）': ("(the spec's 2.3 and the requirements' CRC-off note state the guarded set by ranges; audit round 32, auditor B)",),
+    '詳細仕様の生成のブロックの END の印を除く（reg_fields）': ('(every block of the spec with its BEGIN and END markers once each and in order, no other block, the spec readable: generate() and fresh() skipped a block without its markers and a missing spec; audit round 32, auditor C)',),
+    '詳細仕様の生成のブロックを二重に（commands）': ('(every block of the spec with its BEGIN and END markers once each and in order, no other block, the spec readable: generate() and fresh() skipped a block without its markers and a missing spec; audit round 32, auditor C)',),
+    '詳細仕様がない': ('(every block of the spec with its BEGIN and END markers once each and in order, no other block, the spec readable: generate() and fresh() skipped a block without its markers and a missing spec; audit round 32, auditor C)',),
     'SAMPLE の既定値を 0x5A に': ('; the window reads 0x00 inside a burst and alone (spec 3.2), so the map holds 0 for it',),
 }
 

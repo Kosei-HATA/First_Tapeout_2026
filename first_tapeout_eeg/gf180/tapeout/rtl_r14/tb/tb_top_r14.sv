@@ -58,6 +58,10 @@
 //      APPLY_NR (RUN), 64 kHz: STATE_ERR before the acknowledge cycle, written in it and after, the judged value applied;
 //      audit round 31 (auditor C): ERR exactly, alternating targets, racing values above the range, and Z3, an APPLY
 //      whose judged shadow is illegal (exactly CFG_ERR, nothing applied, whatever the racing write)
+//   AA audit round 32 (auditor C): an overload (code 31) from 24 frames before FILL's third output, its first valid one,
+//      to 16 frames after it: RUN entered at that output, the first sample that output's, VALID with OVL, DFLAG.OVL set
+//      (SEQ-04, DAT-01; no phase had OVL_NOW = 1 at FILL's completing output, and a sequencer taking out_valid as
+//      cic_valid & ~ovl_now passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -603,7 +607,10 @@ module tb_top_r14;
 
     // ------------------------------------------------------------------ VER-09 end to end: the sequencer's events
     // the same trace format as tb_seq (check_seq_trace.py): before each edge the state, the pending command, the
-    // timer and the conditions with the actions; after it the next state and the timer
+    // timer and the conditions with the actions; after it the next state and the timer. The pending command, cfg_ok,
+    // nr_ok, the timer values (eeg_regs) and the CIC's valid (eeg_cic3) are taken at their sources, not at eeg_seq's
+    // ports: a wrong connection into the sequencer is then a mismatch (audit round 32, auditor C: a sequencer taking
+    // out_valid as cic_valid & ~ovl_now was replayed as the specification's input)
     integer fseq, seq_frames = 0;
     logic       q_tick, q_out, q_fs, q_cv, q_cfg, q_nr, q_valid, q_te0, q_rst = 1'b1, q_inrst = 1'b1;
     logic [3:0] q_st;
@@ -613,13 +620,13 @@ module tb_top_r14;
     always @(negedge MCLK) begin
         q_rst  = dut.u_seq.rst_n;
         q_tick = dut.u_seq.tick;       q_out = dut.u_seq.out_stb;     q_fs = dut.u_seq.frame_stb;
-        q_st   = dut.u_seq.state;      q_cv  = dut.u_seq.cmd_valid;   q_cc = dut.u_seq.cmd_code;
-        q_cfg  = dut.u_seq.cfg_ok;     q_nr  = dut.u_seq.nr_ok;       q_valid = dut.u_seq.out_valid;
-        q_tb   = dut.u_seq.timer;      q_te0 = (dut.u_seq.t_elec == 8'd0);
+        q_st   = dut.u_seq.state;      q_cv  = dut.u_regs.cmd_valid;  q_cc = dut.u_regs.cmd_code;
+        q_cfg  = dut.u_regs.cfg_ok;    q_nr  = dut.u_regs.nr_ok;      q_valid = dut.u_cic.dout_valid;
+        q_tb   = dut.u_seq.timer;      q_te0 = (dut.u_regs.t_elec == 8'd0);
         q_acts = {dut.u_seq.apply, dut.u_seq.flush, dut.u_seq.store, dut.u_seq.mark, dut.u_seq.state_err,
                   dut.u_seq.cfg_err, dut.u_seq.cic_arm && dut.u_seq.out_stb, dut.u_seq.a_restart};
-        q_tw = dut.u_seq.t_warm;  q_te = dut.u_seq.t_elec;  q_tr = dut.u_seq.t_rec;  q_tp = dut.u_seq.t_pre;
-        q_tq = dut.u_seq.t_rst;
+        q_tw = dut.u_regs.t_warm;  q_te = dut.u_regs.t_elec;  q_tr = dut.u_regs.t_rec;  q_tp = dut.u_regs.t_pre;
+        q_tq = dut.u_regs.t_rst;
     end
     always @(posedge MCLK) begin
         #0.2;
@@ -3642,6 +3649,52 @@ module tb_top_r14;
         #(1000.0);
         r14_write(7'h06, 8'hFF);
         $display("Z  a register write in the acknowledge cycle of APPLY and APPLY_NR: written, the shadow before it judged and applied (errors %0d)", errors);
+        // ---------------- AA (audit round 32, auditor C): an overload across the output time that completes FILL.
+        // SEQ-04 / DAT-01 (fsm_spec FILL/OUT [valid]): the first valid output in FILL is stored and RUN entered whatever
+        // the overload; the sample carries OVL and DFLAG.OVL is set. No phase had OVL_NOW = 1 at FILL's completing output
+        // (N's burst is the 20 frames right after FILL's entry, T10 the first interval's inputs 100-119, T8 and T12 are
+        // in RUN), and a sequencer taking out_valid as cic_valid & ~ovl_now (in FILL with READY 0 and no samples while
+        // the overload lasts) passed all 16 groups. Code 31 from 24 frames before FILL's third output (its first valid
+        // one) to 16 frames after it, at the defaults (128 kHz, T_ELEC 0).
+        phase = "AA";
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
+        r14_cmd(8'h11);                                 // START
+        wait_state(4'd5, 7000.0, "AA FILL");            // entered at ALIGN's output time (the CIC's clear)
+        begin
+            integer aa_n;
+            logic [15:0] aa_seq, aa_sq;
+            logic [7:0] aa_st, aa_f;
+            logic [23:0] aa_d;
+            bit aa_ok;
+            aa_n = 0;
+            while (aa_n < 2) begin @(posedge MCLK); if (dut.cic_stb === 1'b1) aa_n++; end   // FILL's two invalid outputs
+            repeat (1000 * 32) @(posedge MCLK);         // 24 frames before the third
+            ovl_force = 1'b1;
+            while (dut.cic_stb !== 1'b1) @(posedge MCLK);
+            aa_seq = dut.seq_cnt;                       // the SEQ the store of this output carries
+            if (dut.seq_state !== 4'd5 || dut.ovl_now !== 1'b1)
+                fail($sformatf("AA not exercised: state %0d, OVL_NOW %b at FILL's third output", dut.seq_state, dut.ovl_now));
+            @(posedge MCLK); #1;
+            if (dut.seq_state !== 4'd6)
+                fail($sformatf("AA: state %0d after FILL's first valid output under an overload, expected RUN (SEQ-04, DAT-01)",
+                               dut.seq_state));
+            repeat (16 * 32) @(posedge MCLK);
+            ovl_force = 1'b0;
+            repeat (64 * 32) @(posedge MCLK);
+            r14_sample(aa_st, aa_sq, aa_d, aa_ok);
+            if (!aa_ok || aa_st[SMP_VALID_LSB] !== 1'b1 || aa_st[SMP_OVL_LSB] !== 1'b1 || aa_sq !== aa_seq)
+                fail($sformatf("AA: the first sample's status 0x%02h, SEQ %0d, CRC %b; expected VALID and OVL, SEQ %0d (FILL's third output)",
+                               aa_st, aa_sq, aa_ok, aa_seq));
+            r14_read(7'h07, aa_f);
+            if (aa_f[DFLAG_OVL_LSB] !== 1'b1) fail($sformatf("AA: DFLAG 0x%02h without OVL", aa_f));
+            $display("AA an overload across FILL's completing output (SEQ %0d): RUN entered at it, the first sample VALID with OVL (status 0x%02h), DFLAG.OVL set (errors %0d)",
+                     aa_seq, aa_st, errors);
+        end
+        r14_cmd(8'h22);                                 // STOP
+        wait_state(4'd0, 50.0, "AA IDLE");
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

@@ -2,7 +2,8 @@
 """Mutation self-test of the r14 testbenches (11/19, extended by the audits of 11/20): each listed RTL error, put in on
 purpose into a copy of the r14 RTL (and of the blocks kept from rtl/), must be detected, and each bench's unmutated
 baseline must pass. The groups and their benches:
-  top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC); baseline b00 also replays the sequencer trace
+  top    MUTATIONS          tb_top_r14 + check_top_r14.py (golden CIC) + check_seq_trace.py (the sequencer trace, in
+                            every run, b00 and each mutant: top_once; audit round 32, auditor C: it said "b00 also")
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
                             tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22), tb_chop1 for an edit
                             of eeg_chop1.sv or eeg_clkgen.sv (and b00; audit round 27). tb_top_r14 with the
@@ -699,6 +700,10 @@ MUTATIONS = [
      'logic [9:0] m_la;\n    logic [2:0] r_la;\n    always_comb begin\n        m_la = s_m;\n        r_la = s_range;\n        if (we && addr == A_OFF_M_H)  m_la[9:8] = wdata[1:0];\n        if (we && addr == A_OFF_M_L)  m_la[7:0] = wdata;\n        if (we && addr == A_OFF_CTRL && !wr_range_bad) r_la = wdata[2:0];\n    end\n    assign cfg_ok = (m_la <= range_max_m(r_la));'),
     # audit round 31, auditor C: the bytes after an undefined read header (1b)
     ("SPI：未定義の先頭の読み出しのフレームの全てのデータを 0x00 に", [('eeg_spi_slave.sv', '    logic        chk_addr;\n', '    logic        chk_addr;\n    logic        hdr_undef;\n'), ('eeg_spi_slave.sv', '            S_RREG:  tx_next = reg_rdata;', "            S_RREG:  tx_next = hdr_undef ? 8'h00 : reg_rdata;"), ('eeg_spi_slave.sv', "            addr_err  <= 1'b0;\n        end else begin", "            addr_err  <= 1'b0;\n            hdr_undef <= 1'b0;\n        end else begin"), ('eeg_spi_slave.sv', "            addr_err  <= chk_addr && !reg_addr_ok;       // the read header's address, one cycle later\n", "            addr_err  <= chk_addr && !reg_addr_ok;       // the read header's address, one cycle later\n            if (cs_start) hdr_undef <= 1'b0; else if (chk_addr && !reg_addr_ok) hdr_undef <= 1'b1;\n")], None, None),
+    # audit round 32, auditor C: an overload across the output time that completes FILL (AA; the trace's valid taken
+    # at its source)
+    ("最上位：シーケンサの out_valid を過負荷の間落とす（FILL を終える出力の過負荷で RUN に入らない）", "eeg_digital_top.sv",
+     ".out_valid(cic_valid),", ".out_valid(cic_valid & ~ovl_now),"),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1267,7 +1272,7 @@ def run(i, m, bench="top"):
         return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
     def top_once(vvp, tag):
         """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
-        try:                                         # the bench's own watchdog (800 ms simulated) ends a hang
+        try:                                         # the bench's own watchdog (1,000 ms simulated) ends a hang
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
                                timeout=5400)
         except subprocess.TimeoutExpired:

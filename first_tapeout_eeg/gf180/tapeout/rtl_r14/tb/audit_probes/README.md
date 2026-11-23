@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜35 回）
+# 監査の模擬の元（第 24〜36 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -73,7 +73,7 @@
 | 33 | B | `r33/B/tb_b33_flushread.sv` | 445（第 34.2 節） | FLUSH と RUN の APPLY の直後に始めるサンプルの読み出し（tick から 250 ns ずつ）：取り出されない命令の前の語 |
 | 33 | C | `r33/C/tb_c33_fillclr.sv` | 446（第 34.3 節） | FILL の中の APPLY_NR（T_ELEC 0）と APPLY の掃き：ALIGN のクリアと最初の格納 |
 | 33 | C | `r33/C/tb_c33_twarm.sv` | 447（第 34.3 節） | T_WARM 128、200、255 の読み戻しとシーケンサの読み込み |
-| 33 | C | `r33/C/fsm_sweep2.py`、`regmap_const_sweep.py`、`fastrun.sh` | 第 34.3 節 | 状態遷移表と TIMING の広げた 1 編集の掃き、regmap の定数と番地の移動の掃き、写しの速い走らせ方 |
+| 33 | C | `r33/C/fsm_sweep2.py`、`fsm_sweep_sig.py`、`regmap_const_sweep.py`、`fastrun.sh` | 第 34.3 節 | 状態遷移表と TIMING の広げた 1 編集の掃き、regmap の定数と番地の移動の掃き、写しの速い走らせ方（`fsm_sweep2.py` は隣の `fsm_sweep_sig.py` を読む。第 36 回、C で残し、相対の場所に直した） |
 | 34 | A | `r34/A/tb_a34_c1blank.sv` | 450（第 35.1 節） | r14 の eeg_clkgen と eeg_chop1：128 kHz と 64 kHz、CHOP1 の速さ 1〜5 で、CHOP1 の縁と CHOP_OUT の立ち上がり、CHOP_BLANK の立ち下がりの距離 |
 | 34 | A | `r34/A/seq_ref.py` | 第 35.1 節 | SEQ-01〜16 と 5.0 から独立に書いたシーケンサの模型と `fsm_spec.seq_tick` の全ての組の照合 |
 | 34 | B | `r34/B/tb_b34_csbreak.sv`、`a34B_csbreak2.py`、`a34B_csbreak_probe.py` | 451（第 35.2 節） | CRC 付きの読み出しをパルス 2〜23 の前で CS_N の跳ねで切る RTL の試験台と、ホストの見方の模型 |
@@ -86,4 +86,10 @@
 | 35 | B | `r35/B/tb_b35_csglitch.sv` | 462（第 36.2 節） | CRC 付きの読み出しの 1〜23 ビットのあとの 3 MCLK の High：一つ目の部分の FRAME_ERR |
 | 35 | C | `r35/C/tb_c35_flags.sv` | 464、465（第 36.3 節） | 受け付けた START と APPLY のあとの ERR、DFLAG、STATUS（端子のみから）、空の語の写しのサイクルの始まりの縁の FRAME_ERR |
 | 35 | C | `r35/C/tb_c35_hdr.sv`、`tb_c35_slack.sv` | 465（第 36.3 節） | 先頭の STATUS の写しのサイクルの始まりの縁の FRAME_ERR、誤りの確定から次の先頭の写しまでの縁の数 |
-| 35 | C | `r35/C/muts.py`、`probe_off_exp.py`、`fsm_sweep3.py` | 第 36.3 節 | RTL の写し（rflag_apply、dflag_apply、empty_q、status_hdr_q）と試験台の走査の写し、PROBE_OFF_REACHABLE の空と欠けの実験、状態遷移表の新しい類の 1 編集の掃き |
+| 35 | C | `r35/C/muts.py`、`probe_off_exp.py`、`fsm_sweep3.py`、`fsm_sweep_sig.py` | 第 36.3 節 | RTL の写し（rflag_apply、dflag_apply、empty_q、status_hdr_q）と試験台の走査の写し、PROBE_OFF_REACHABLE の空と欠けの実験、状態遷移表の新しい類の 1 編集の掃き（第 36.3 節の 45,368 個は類を名指して `python fsm_sweep3.py <rtl/spec の場所> <出力> ins,copy,comp,dup,prio,sb`。類を省くと SEQ の表を飛ばし 20,782 個。`fsm_sweep_sig.py` は第 36 回、C で残した） |
+| 36 | A | `r36/A/tb_a36_release.sv`、`ver07_51k_windows.py`、`ver07_51k_zero.py` | 469（第 37.1 節） | RUN の APPLY の解除から ALIGN のクリアと最初の格納までの時刻（両方の速さ、出力の間隔の 16 の位置）、その sinc³ の窓を 51 kΩ ∥ 47 nF のデッキの OUTP − OUTN に当てた読み、平均の 0 の横切り |
+| 36 | A | `r36/A/tb_a36_softsweep.sv` | 第 37.1 節 | SOFT_RESET を超周期の 512 の位相の全てに 2 回（64 kHz・範囲 1・CHOP1 16 kHz と、範囲 0・BLANK 1）：CHOP_OUT の縁とブランキング、パルスと半周期の幅、端子のリセット値 |
+| 36 | B | `r36/B/tb_b36_id.sv` | 471（第 37.2 節） | 手順 2 の CRC 無効の ID の読み [80 00 00] と、その bit 6 の化け [C0 00 00]（空の語を旗なしで返す） |
+| 36 | B | `r36/B/tb_b36_crcoff.sv`、`crcoff.txt`（実行の記録。`*.log` は git の対象外なので改名） | 第 37.2 節 | 手順の CRC 無効のフレームの 1 回の故障（MOSI の化け、SCLK の欠けと重複）504 通り：CRC 無効のまま残るチップの値（PROBE_OFF_REACHABLE に等しい） |
+| 36 | C | `r36/C/tb_c36_trec.sv`、`tb_c36_dflag.sv`、`tb_c36_nr.sv`、`tb_c36_aerr.sv` | 473〜476（第 37.3 節） | WARMUP の T_REC と PRE の T_RST の書き込み、DFLAG の立った間の START、IDLE の APPLY_NR の設定、未定義の 0x7F からの連続読み出しの ADDR_ERR の時刻 |
+| 36 | C | `r36/C/muts.py`、`mkmut.py`、`fastrun.sh`、`regmap_sweep2.py` | 第 37.3 節 | RTL の写し（timers_at_apply、dflag_at_start、nr_dac_only、aerr_at_end）の作り方と速い走らせ方、regmap.REGS のフィールドの編集の掃き（478 の落ちを見つけた） |

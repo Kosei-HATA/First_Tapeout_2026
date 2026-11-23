@@ -8,7 +8,7 @@ import copy, itertools, os, sys, time
 SPEC, OUT = sys.argv[1], sys.argv[2]
 sys.path.insert(0, SPEC); os.chdir(SPEC)
 import fsm_spec as F
-exec(open("/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/tools/fsm_sweep_sig.py").read())
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "fsm_sweep_sig.py")).read())   # kept beside it (round 36)
 
 def checks_fast():
     """run_checks, in early-stop order: the first non-empty report ends it"""

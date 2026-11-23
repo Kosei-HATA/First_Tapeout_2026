@@ -206,7 +206,7 @@ REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", 
 # audit round 32, auditor B: the spec's 2.3 names the guarded set by ranges, 0x20-0x28, 0x60, 0x61 and 0x50-0x54, and
 # BLANK, CPF_TRIM or OFF_CTRL moved within their regions passed: every guarded register is held here, REG-01's list
 # must equal this table, and the stated ranges must equal guarded_addrs())
-FIXED_ADDR = {"ID": 0x00, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
+FIXED_ADDR = {"ID": 0x00, "VERSION": 0x01, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
               "ALERT_MASK": 0x08, "COMMAND": 0x10, "TEST_KEY": 0x11, "OFF_M_H": 0x20, "OFF_M_L": 0x21,
               "OFF_CTRL": 0x22, "AFE_IBIAS": 0x23, "CPF_TRIM": 0x24, "BOOST_TRIM": 0x25, "CHOP_CFG": 0x26,
               "ADC_CFG": 0x27, "BLANK": 0x28, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51, "T_REC": 0x52,
@@ -562,7 +562,7 @@ def probe_off_reachable():
                 fv = {f["name"]: (d >> f["lsb"]) & ((1 << (f["msb"] - f["lsb"] + 1)) - 1) for f in fl}
                 if any(f["legal"] is not None and fv[f["name"]] not in f["legal"] for f in fl):
                     continue
-                if n == "IF_CFG" and fv["CRC_EN"]:
+                if n == "IF_CFG" and fv.get("CRC_EN", 0):    # a CRC_EN outside the byte: the geometry check (round 36)
                     continue
                 v = sum(fv[f["name"]] << f["lsb"] for f in fl)
                 if v != reset_of(n):
@@ -686,7 +686,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全てを加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
     "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
@@ -1789,6 +1789,9 @@ def selftest():
     def m_probe_off_reach():                             # audit round 34, auditor B: a reachable T_RST of 0x25
         g["PROBE_OFF_REACHABLE"]["T_RST"] = [0x25]
 
+    def m_crc_lsb():                                     # audit round 36, auditor C: CRC_EN's lsb above its msb (it
+        fld("IF_CFG", "CRC_EN")["lsb"] = 1               # crashed probe_off_reachable)
+
     def m_probe_off_drop():                              # audit round 35, auditor C: the reachable set without T_WARM
         del g["PROBE_OFF_REACHABLE"]["T_WARM"]
 
@@ -1908,6 +1911,7 @@ def selftest():
             ("T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）", m_probe_off),
             ("CRC 無効のチップの到達しうる値に T_RST 0x25 を加える", m_probe_off_reach),
             ("CRC 無効のチップの到達しうる値から T_WARM を除く", m_probe_off_drop),
+            ("IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）", m_crc_lsb),
             ("要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す", m_probe_off_text),
             ("要件の T_WARM の滑りの数を読めない形に（17 個の組）", m_req_slip_unread),
             ("要件の FLG-04 の両端の符号を 0 と 30 に", m_req_ovl_codes),
@@ -2101,6 +2105,7 @@ SELFTEST_EXPECT = {
     'T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）': ('the mode probe reads as CRC off under one fault (SCLK or a header bit) at the reset value 0x',),
     'T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）': ('(rule (c): a CRC-off chip holds its reset values or those of PROBE_OFF_REACHABLE; audit rounds 33 and 34, auditor B)',),
     'CRC 無効のチップの到達しうる値に T_RST 0x25 を加える': ('(rule (c): a CRC-off chip holds its reset values or those of PROBE_OFF_REACHABLE; audit rounds 33 and 34, auditor B)',),
+    'IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）': ('outside the byte',),
     'CRC 無効のチップの到達しうる値から T_WARM を除く': ('(the frames through the address decode and the RANGE check; rule (c); audit round 35, auditor C)',),
     '要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す': ('rule (c) of the requirements does not name the reachable CRC-off values',),
     'FIXED_ADDR に REG-01 の一覧にない ALERT_MASK_D を加える': ('(audit round 32, auditor B: rounds 29 and 31 added to one only)',),

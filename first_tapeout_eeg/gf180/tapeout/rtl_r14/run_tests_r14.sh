@@ -26,7 +26,7 @@
 #               write of that cycle (6 checks, audit round 31); cfg_ok and nr_ok against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA, AB, AC, AD, AE and AF, listed in the bench's header,
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA, AB, AC, AD, AE, AF, AG, AH and AI, listed in the bench's header,
 #               and the pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25, and the
 #               FILL monitor, ALIGN's clear and FILL's store, audit round 33); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)

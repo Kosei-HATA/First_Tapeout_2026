@@ -1,0 +1,65 @@
+reference: ID e6 STATUS a1 ERR 01 T_WARM 05 IF_CFG 00
+CHANGE SOFT_RESET[10,A5] flip@1: 0x00000050 = 0xa5 (reset 0x05)         
+CHANGE IF_CFG[55,01] flip@5: 0x00000051 = 0x01 (reset 0x00)         
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@8: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@8: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@8
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@9: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@9: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@9
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@10: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@10: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@10
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@11: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@11: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@11
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@12: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@12: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@12
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@13: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@13: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@13
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,01] flip@14: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,01] flip@14: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,01] flip@14
+CHANGE IF_CFG[55,03] flip@5: 0x00000051 = 0x03 (reset 0x00)         
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@8: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@8: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@8
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@9: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@9: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@9
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@10: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@10: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@10
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@11: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@11: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@11
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@12: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@12: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@12
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@13: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@13: 0x00000055 = 0x03 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@13
+CRC read 0x00000040 bad
+CHANGE IF_CFG[55,03] flip@14: 0x00000040 = 0x08 (reset 0x00) [CRC on]
+CHANGE IF_CFG[55,03] flip@14: 0x00000055 = 0x01 (reset 0x00) [CRC on]
+CRCON IF_CFG[55,03] flip@14
+CHANGE IF_CFG[55,03] flip@15: 0x00000055 = 0x02 (reset 0x00)         
+CHANGE ERR[06,02] flip@2: 0x00000026 = 0x00 (reset 0x01)         
+CHANGE ERR[06,FE] flip@2: 0x00000026 = 0x00 (reset 0x01)         
+DONE 504 trials
+../../../probes/tb_b36_crcoff.sv:112: $finish called at 265489600000 (1ps)

@@ -82,6 +82,16 @@
 //      sample read's copy swept in 1/4-MCLK steps across that edge; STATUS's ALERT and the empty word's ERR against
 //      the ALERT of the copy's cycle as the registers give it (copies taking either one MCLK early passed all 16
 //      groups)
+//      audit round 36 (auditor C): AE also takes a START with DFLAG standing (a copy clearing DFLAG at START passed)
+//   AG audit round 36 (auditor C): T_REC and T_RST taken at the start of their waits (spec 4.2, SPI-12): T_REC
+//      written in WARMUP sets RECOVER's length, T_RST written in PRE the AFE_RST pulse at the pin (a copy taking both
+//      with the command passed all 16 groups)
+//   AH audit round 36 (auditor C): an APPLY_NR in IDLE and in WARMUP applies every setting (table 5.1-2, REG-08):
+//      AFE_IBIAS, CPF_TRIM and TEST_MUX at the pins and in the active copies (a copy applying only the offset DAC's
+//      fields passed all 16 groups)
+//   AI audit round 36 (auditor C): the read header's ADDR_ERR is raised within its frame: a CRC-off burst from the
+//      undefined 0x7F through ERR reads STATUS with ALERT and ERR = ADDR_ERR (a copy raising it at CS_N's rise passed
+//      all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -4013,11 +4023,15 @@ module tb_top_r14;
         r14_write(7'h21, 8'h00);
         r14_cmd(8'h33);                                 // APPLY in IDLE
         ae_check("APPLY in IDLE", 8'h09, 8'h03);
+        r14_cmd(8'h11);                                 // START with DFLAG standing (audit round 36, auditor C: AE's first
+        ae_check("START with DFLAG standing", 8'h09, 8'h03);   // START came before DFLAG was set)
+        r14_cmd(8'h22);                                 // STOP in WARMUP
+        ae_check("the STOP in WARMUP", 8'h09, 8'h03);
         r14_write(7'h06, 8'hFF);
         r14_write(7'h07, 8'hFF);
         ae_check("their W1C", 8'h00, 8'h00);
-        if (ae_n != 9) fail($sformatf("AE not exercised: %0d reads", ae_n));
-        $display("AE ERR (RESET_FLAG, ADDR_ERR) and DFLAG (OVL, OVERRUN) through START, APPLY in RUN, APPLY_NR, FLUSH, STOP and APPLY in IDLE: kept exactly until their W1C (%0d reads, errors %0d)",
+        if (ae_n != 11) fail($sformatf("AE not exercised: %0d reads", ae_n));
+        $display("AE ERR (RESET_FLAG, ADDR_ERR) and DFLAG (OVL, OVERRUN) through START, APPLY in RUN, APPLY_NR, FLUSH, STOP, APPLY in IDLE and a START with DFLAG standing: kept exactly until their W1C (%0d reads, errors %0d)",
                  ae_n, errors);
         // ---------------- AF (audit round 35, auditor C): the copy instants of the header's STATUS and of the empty
         // word. Spec 3.2: STATUS is copied in the cycle the SPI takes CS_N's fall (cs_start), the sample word (the empty
@@ -4108,6 +4122,113 @@ module tb_top_r14;
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults back
         #(1000.0);
         r14_write(7'h06, 8'hFF);
+        // ---------------- AG (audit round 36, auditor C): T_REC and T_RST taken at the start of their waits. Spec 4.2
+        // and SPI-12: a write after the guard ends acts on the running START or APPLY. Every accepted T_REC or T_RST write
+        // had been made in IDLE or RUN, before the command, and a copy taking both with the command (as the analog
+        // settings) passed all 16 groups. START with T_REC 32, then T_REC 200 written in WARMUP: RECOVER lasts 200 x 256
+        // MCLK; in RUN with T_PRE 20, APPLY with T_RST 13, then T_RST 64 written in PRE: the AFE_RST pulse at the pin
+        // lasts 64 x 256 MCLK. Outside the golden comparison (after K)
+        phase = "AG";
+        r14_write(7'h07, 8'hFF);
+        r14_cmd(8'h11);                                 // START (T_REC 32, T_WARM 5 ms)
+        wait_state(4'd1, 50.0, "AG WARMUP");
+        #(20000.0);
+        r14_write(7'h52, 8'd200);                       // T_REC 200 written in WARMUP (the START is taken: no guard)
+        begin
+            real ag_t0, ag_rec, ag_pulse;
+            logic [7:0] ag_e;
+            r14_read(7'h06, ag_e);
+            if (ag_e !== 8'h00) fail($sformatf("AG: ERR 0x%02h after the T_REC write in WARMUP, expected 0x00 (no guard)", ag_e));
+            wait_state(4'd2, 8000.0, "AG RECOVER");
+            ag_t0 = $realtime;
+            while (dut.seq_state === 4'd2) @(posedge MCLK);
+            ag_rec = $realtime - ag_t0;
+            if (ag_rec < (200.0 * 256.0 - 2.0) * TMCLK || ag_rec > (200.0 * 256.0 + 2.0) * TMCLK)
+                fail($sformatf("AG: RECOVER lasted %0.1f us after T_REC 200 was written in WARMUP, expected %0.1f us (spec 4.2: taken at the wait's start)",
+                               ag_rec / 1000.0, 200.0 * 256.0 * TMCLK / 1000.0));
+            wait_state(4'd6, 6000.0, "AG RUN");
+            r14_write(7'h53, 8'd20);                    // T_PRE 20 (156.25 us): room to write in PRE
+            r14_cmd(8'h33);                             // APPLY in RUN with T_RST 13
+            wait_state(4'd7, 50.0, "AG PRE");
+            #(5000.0);
+            r14_write(7'h54, 8'd64);                    // T_RST 64 written in PRE
+            r14_read(7'h06, ag_e);
+            if (ag_e !== 8'h00) fail($sformatf("AG: ERR 0x%02h after the T_RST write in PRE, expected 0x00 (no guard)", ag_e));
+            @(posedge AFE_RST); ag_t0 = $realtime;
+            @(negedge AFE_RST); ag_pulse = $realtime - ag_t0;
+            if (ag_pulse < (64.0 * 256.0 - 2.0) * TMCLK || ag_pulse > (64.0 * 256.0 + 2.0) * TMCLK)
+                fail($sformatf("AG: the AFE_RST pulse lasted %0.1f us after T_RST 64 was written in PRE, expected %0.1f us (spec 4.2)",
+                               ag_pulse / 1000.0, 64.0 * 256.0 * TMCLK / 1000.0));
+            wait_state(4'd6, 8000.0, "AG RUN after the APPLY");
+            $display("AG T_REC 200 written in WARMUP: RECOVER %0.1f us; T_RST 64 written in PRE: the AFE_RST pulse %0.1f us at the pin (both taken at the start of their waits, spec 4.2; errors %0d)",
+                     ag_rec / 1000.0, ag_pulse / 1000.0, errors);
+        end
+        r14_cmd(8'h22);                                 // STOP
+        wait_state(4'd0, 50.0, "AG IDLE");
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the timers back
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        // ---------------- AH (audit round 36, auditor C): an APPLY_NR in IDLE or WARMUP applies every setting, as
+        // START and APPLY do (table 5.1-2: IDLE / WARMUP APPLY_NR [cfg_ok] -> apply; REG-08: the test shadows too; 4.10's
+        // rows). Every APPLY_NR in the benches changed M only or ran with the AFE on (nr_ok makes the other settings
+        // equal), and a copy whose APPLY_NR applied only the offset DAC's fields passed all 16 groups. AFE_IBIAS, CPF_TRIM
+        // and TEST_MUX (through the key) changed in IDLE, then again in WARMUP, each followed by an APPLY_NR: the pins and
+        // the active copies take them. Outside the golden comparison (after K)
+        phase = "AH";
+        for (int ah = 0; ah < 2; ah++) begin            // 0: in IDLE, 1: in WARMUP (after a START)
+            logic [7:0] ah_ib, ah_cpf, ah_tm, ah_e, ah_r0, ah_r1, ah_r2;
+            logic [3:0] ah_st;
+            string ah_nm;
+            if (ah == 0) begin ah_ib = 8'h01; ah_cpf = 8'h05; ah_tm = 8'h15; ah_st = 4'd0; ah_nm = "IDLE"; end
+            else         begin ah_ib = 8'h02; ah_cpf = 8'h09; ah_tm = 8'h0A; ah_st = 4'd1; ah_nm = "WARMUP"; end
+            if (ah == 1) begin
+                r14_cmd(8'h11);                         // START: into WARMUP
+                wait_state(4'd1, 50.0, "AH WARMUP");
+            end
+            r14_write(7'h23, ah_ib);                    // AFE_IBIAS
+            r14_write(7'h24, ah_cpf);                   // CPF_TRIM
+            r14_write(7'h11, 8'h3C);                    // TEST_KEY: unlocked
+            r14_write(7'h60, ah_tm);                    // TEST_MUX, a test shadow (ATP_EN, ATP_SEL)
+            r14_write(7'h11, 8'h00);                    // locked
+            r14_cmd(8'h44);                             // APPLY_NR: here a full apply without a pulse
+            repeat (700) @(posedge MCLK);
+            r14_read(7'h06, ah_e);
+            r14_read(7'h33, ah_r0);                     // the active copies
+            r14_read(7'h34, ah_r1);
+            r14_read(7'h70, ah_r2);
+            if (ah_e !== 8'h00 || AFE_IBIAS !== ah_ib[1:0] || CPF_TRIM !== ah_cpf[3:0] || TEST_CFG[4:0] !== ah_tm[4:0] ||
+                ah_r0 !== ah_ib || ah_r1 !== ah_cpf || ah_r2 !== ah_tm || dut.seq_state !== ah_st)
+                fail($sformatf("AH: APPLY_NR in %s: ERR 0x%02h, pins AFE_IBIAS %0d CPF_TRIM %0d TEST_CFG[4:0] 0x%02h, active copies 0x%02h 0x%02h 0x%02h, state %0d; expected 0x00 and %0d %0d 0x%02h at the pins and in the copies (table 5.1-2, REG-08)",
+                               ah_nm, ah_e, AFE_IBIAS, CPF_TRIM, TEST_CFG[4:0], ah_r0, ah_r1, ah_r2, dut.seq_state, ah_ib, ah_cpf, ah_tm));
+        end
+        r14_cmd(8'h22);                                 // STOP
+        wait_state(4'd0, 50.0, "AH IDLE");
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults back
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        $display("AH APPLY_NR in IDLE and in WARMUP: AFE_IBIAS, CPF_TRIM and TEST_MUX at the pins and in the active copies (errors %0d)", errors);
+        // ---------------- AI (audit round 36, auditor C): the read header's ADDR_ERR is raised after the header byte
+        // (table 5.2-2: HDR / BYTE with an undefined read address), within its frame. tb_spi_r14's trace compares the
+        // number of flag pulses per frame, not where they fall, and 1b's bursts stop before STATUS and ERR, so a copy
+        // raising it at CS_N's rise with the frame's other errors passed all 16 groups. CRC off, ERR cleared: a burst from
+        // the undefined 0x7F through ERR (0x06); the header's STATUS (copied at CS_N's fall) without ALERT, the burst's
+        // STATUS (0x03) with ALERT and its ERR (0x06) exactly ADDR_ERR. Outside the golden comparison (after K)
+        phase = "AI";
+        begin
+            logic [7:0] ai_e, ai_h, ai_s, ai_r;          // the burst's bytes, kept before r14_read reuses spi_rx
+            spi_tx[0] = 8'hFF;                          // a read of 0x7F (undefined)
+            for (int i = 1; i < 9; i++) spi_tx[i] = 8'h00;
+            spi_xfer(9, 0);                             // 0x7F, 0x00 .. 0x06
+            ai_h = spi_rx[0]; ai_s = spi_rx[5]; ai_r = spi_rx[8];
+            if (ai_h[STATUS_ALERT_LSB] !== 1'b0 || ai_s[STATUS_ALERT_LSB] !== 1'b1 || ai_r !== 8'h08)
+                fail($sformatf("AI: a burst from 0x7F: header STATUS 0x%02h, STATUS in the burst 0x%02h, ERR in the burst 0x%02h; expected ALERT only in the burst's STATUS and ERR exactly ADDR_ERR (0x08) within the frame",
+                               ai_h, ai_s, ai_r));
+            r14_read(7'h06, ai_e);
+            if (ai_e !== 8'h08) fail($sformatf("AI: ERR 0x%02h after the burst, expected exactly ADDR_ERR", ai_e));
+            $display("AI a CRC-off burst from the undefined 0x7F through ERR: ADDR_ERR and ALERT within its frame (STATUS 0x%02h in the header, 0x%02h in the burst, ERR 0x%02h; errors %0d)",
+                     ai_h, ai_s, ai_r, errors);
+            r14_write(7'h06, 8'hFF);
+        end
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

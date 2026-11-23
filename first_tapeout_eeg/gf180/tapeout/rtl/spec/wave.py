@@ -161,7 +161,8 @@ MSG = {"path": "is not a transition of the table", "lane": ", but the table give
        "spi_accept": "that the table completes without an error flag",
        "spi_status": "MISO does not load STATUS at the frame's start (CS_N falling)",
        "spi_sample": "sample bytes loaded by the table, but fsm_spec.SAMPLE_BYTES names",
-       "frame": ", but fsm_spec.TIMING's busy cycles give"}   # audit round 35, auditor C
+       "frame": ", but fsm_spec.TIMING's busy cycles give",   # audit round 35, auditor C
+       "frame_lanes": " lanes named so in the frame diagram, where the check needs exactly"}   # audit round 36, C
 
 
 def sample_labels():
@@ -337,17 +338,22 @@ def check():
     want = {"ADC：CMP_STROBE": {c - 0 for c in one("CMP_STROBE")}, "ADC：TH_CAPTURE": {c - 1 for c in one("TH の取り込み")},
             "ADC：DAC_LOAD": {c - 1 for c in one("SEL1／SEL2")}, "ADC：DAC_CLK": set(one("DAC_CLK（DAC1")),
             "出力のフレーム：CIC の出力": set(one("CIC の出力")), "CHOP1 の縁のフレーム：CHOP1": set(one("CHOP1"))}
-    for ln in frame()["signal"]:
+    seen = {k: 0 for k in want}                       # each expected lane exactly once (audit round 36, auditor C: a
+    for ln in frame()["signal"]:                      # renamed or dropped lane was skipped)
         if not isinstance(ln, dict) or "name" not in ln:
             continue
         key = next((k for k in want if ln["name"].startswith(k)), None)
         if key is None:
             continue
+        seen[key] += 1
         vals = lane_values(ln["wave"])
         hi_ = {pos[i] for i, v in enumerate(vals) if v == "1" and i > 0}
         got = {min(hi_)} if key.startswith("CHOP1") and hi_ else hi_    # CHOP1: its edge, the first high cycle
         if got != want[key]:
             errs.append(f"wave_frame: {key}: high in cycles {sorted(got)}{MSG['frame']} {sorted(want[key])} (dac_load_cycle {d})")
+    for key, n_ in seen.items():
+        if n_ != 1:
+            errs.append(f"wave_frame: {key}: {n_}{MSG['frame_lanes']} 1")
     for _t, kind, crc_en, length in SPI_FRAMES:           # the SPI diagram (audit round 15)
         errs += spi_lanes(kind, crc_en, length)[2]
     return errs
@@ -385,6 +391,19 @@ def selftest():
         globals()["frame"] = drawn
         return lambda: globals().__setitem__("frame", orig)
 
+    def th_renamed():                              # audit round 36, auditor C: a lane renamed (and moved)
+        orig = frame
+
+        def drawn():
+            f = orig()
+            for ln in f["signal"]:
+                if isinstance(ln, dict) and ln.get("name", "").startswith("ADC：TH_CAPTURE"):
+                    ln["name"] = "ADC：TH の取り込み（e5）"
+                    ln["wave"] = levels(33, {5})          # cycle 4
+            return f
+        globals()["frame"] = drawn
+        return lambda: globals().__setitem__("frame", orig)
+
     def afe_rst_pre():
         saved = FS.SEQ_STATES[i_pre]
         FS.SEQ_STATES[i_pre] = saved[:3] + (1,) + saved[4:]
@@ -406,6 +425,7 @@ def selftest():
         ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
         ("起動の図：READY を FILL で立ち上げる", ready_in_fill, "lane"),
         ("フレームの図：DAC_CLK をサイクル 5 に（TIMING の dac_load_cycle と合わない）", dac_clk_moved, "frame"),
+        ("フレームの図：TH_CAPTURE の線を改名してサイクル 4 に", th_renamed, "frame_lanes"),
         ("APPLY の図：PRE で AFE_RST を 1 に（状態の表）", afe_rst_pre, "lane"),
         ("SPI の図：CRC 付きの読み出しの CRC のあとを長すぎるフレームに",
          table(FS.SPI, ("RCRC", "BYTE"), [B(A, [], "OVF")]), "spi_accept"),

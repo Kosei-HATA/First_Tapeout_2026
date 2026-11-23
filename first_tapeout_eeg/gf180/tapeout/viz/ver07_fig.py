@@ -20,7 +20,9 @@ M 100), which the audit found beyond the ADC's range.
       ADC's range, where it is back in range for good, and where the first stored window starts with T_ELEC 0 and
       3 ms (after RECOVER's T_REC 0.25 ms and T_ELEC; ALIGN adds 0 to 1 ms; 11/23: the run finished);
   (c) the instantaneous ADC input after the last release (min and max per half period), the ADC's range marked;
-  (d) the residual in chopper-period means referred to the electrode (/ 297.75, the 100-ohm gain), log scale;
+  (d) the residual in chopper-period means referred to the electrode (/ the AFE's gain with 100-ohm legs: 297.75 with
+      BLANK 7, no offset DAC; 287.02 with the offset DAC on, BLANK 15; audit round 36, auditor A: 297.75 for all), log
+      scale;
   (e) the numbers.
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/ver07_fig.py
@@ -45,7 +47,13 @@ OUT = os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP
 TCH = 1 / 128e3                                     # the chopper period at 128 kHz
 MCLK = 1 / 32.768e6                                 # the deck's MCLK (pex_afe.py); blanking 15 MCLK with the DAC on
 ADC_FS = 0.484                                      # DAC1's full scale at the ADC's input (V, differential)
-G_AFE = 297.75                                      # electrode -> ADC input, 100-ohm legs (gf180_input_output_20261112.md)
+# electrode -> ADC input, 100-ohm legs, by the deck's blanking (gf180_input_output_20261112.md: 297.75 with BLANK 7, no
+# offset DAC; 287.02 with the offset DAC on, BLANK 15, a fit of 8 DC runs; audit round 36, auditor A)
+G_AFE = {"7 MCLK": 297.75, "15 MCLK": 287.02}
+
+
+def gain(r):
+    return G_AFE[r["m"].get("blank_after", "7 MCLK")]
 TEAL, PLUM, AMBER, BLUE = "#0d9488", "#a21caf", "#b45309", "#1f5aa8"
 COLS = ["qo", "outp_adc", "outn_adc"]
 S14 = "_ib3_ibr3_bt10"
@@ -145,7 +153,7 @@ def main():
             b = "never" if r["back"] is None else f"{r['back'] * 1e6:.1f} us"
             print(f"{tag:30s} {lab:26s} back in range {b:>9s}; at 0.5/1.0/1.5 ms {fmt(r['at'][0.5e-3])} / "
                   f"{fmt(r['at'][1.0e-3])} / {fmt(r['at'][1.5e-3])}; end ({r['t_end'] * 1e3:.2f} ms) {fmt(r['end'])}, "
-                  f"input-referred {fmt(r['end'] / G_AFE, 'µV', 1e6, 1)}"
+                  f"input-referred {fmt(r['end'] / gain(r), 'µV', 1e6, 1)} (/{gain(r)})"
                   + ("" if r["over"] is None else f"; beyond the range in the last ms at MCLK {r['over'][0]:.1f}-"
                      f"{r['over'][1]:.1f} after the CHOP_OUT edges (to {r['over'][2] * 1e3:.0f} mV)"))
 
@@ -159,7 +167,8 @@ def main():
                         "and run_ver07_r14_b.sh, 11/21; run_ver07_r14_c.sh, 11/22: ss with its own code M 991). Thin lines: the 11/20 runs (ver07_seq: M from the nominal step "
                         "0.3113 mV, 964 at 300 mV and 96 at 30 mV, and r13's reset trims), beyond the ADC's range. "
                         "Chopper-period means from the exact integral of OUTP − OUTN, on a grid a quarter period after the "
-                        "chopper's edges. Electrode-referred values divide by 297.75 (the gain with 100 Ω legs)."
+                        "chopper's edges. Electrode-referred values divide by the AFE's gain with 100 Ω legs: 297.75 with BLANK 7 (no offset DAC), "
+                        "287.02 with the offset DAC on (BLANK 15)."
                         + ("" if len(done) == len(CASES) else
                            " Still running: " + ", ".join(lab for k, lab, *_ in CASES if new[k] is None) + "."))
     gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.78])
@@ -221,9 +230,9 @@ def main():
         if r is None:
             continue
         w = r["tc"] > 0
-        ax.semilogy(r["tc"][w] * 1e3, np.abs(r["mm"][w]) / G_AFE * 1e6, color=col, lw=1.1, label=lab)
+        ax.semilogy(r["tc"][w] * 1e3, np.abs(r["mm"][w]) / gain(r) * 1e6, color=col, lw=1.1, label=lab)
     ax.set_xlabel("time after the last release (ms)")
-    ax.set_ylabel("|ADC input| / 297.75 (µV, electrode-referred)")
+    ax.set_ylabel("|ADC input| / AFE gain (µV, electrode-referred)")
     ax.set_title("(d) The residual referred to the electrode", loc="left")
 
     ax = fig.add_subplot(gs[2, :])                       # (e) the numbers
@@ -236,7 +245,7 @@ def main():
             continue
         b = "not within the run" if r["back"] is None else f"{r['back'] * 1e6:.1f} µs"
         lines.append(f"  {lab}: in range from {b}; at {r['t_end'] * 1e3:.2f} ms {fmt(r['end'])}")
-        lines.append(f"    ({fmt(r['end'] / G_AFE, 'µV', 1e6, 1)} at the electrode); 0.5 / 1.0 / 1.5 ms: "
+        lines.append(f"    ({fmt(r['end'] / gain(r), 'µV', 1e6, 1)} at the electrode); 0.5 / 1.0 / 1.5 ms: "
                      f"{fmt(r['at'][0.5e-3], nd=1)} / {fmt(r['at'][1.0e-3], nd=1)} / {fmt(r['at'][1.5e-3], nd=1)}")
         if r["over"] is not None and abs(r["end"]) < ADC_FS:
             lines.append(f"    the mean in range; beyond ±0.484 V only at MCLK {r['over'][0]:.0f}–{r['over'][1]:.0f}")

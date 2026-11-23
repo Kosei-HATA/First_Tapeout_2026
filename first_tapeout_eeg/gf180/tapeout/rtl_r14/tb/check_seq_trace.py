@@ -109,14 +109,15 @@ def main(path):
             want.add((s, e, b["guard"]))
     missing = sorted(want - cover)
     print(f"{n} events replayed through fsm_spec.seq_tick: {len(errs)} mismatches; "
-          f"table cells covered {len(want & cover)} of {len(want)}; timer modelled ({nload} loads, {nrestart} restarts)")
+          f"table branches covered {len(want & cover)} of {len(want)} (state, event and guard; audit round 37, auditor C: "
+          f"this said cells); timer modelled ({nload} loads, {nrestart} restarts)")
     for e in errs[:20]:
         print("  " + e)
     for m in missing:
         print(f"  not covered: {m}")
     ok = not errs and (NO_COVER or not missing) and n > 0
     print(("PASS: sequencer RTL == specification on every traced event" +
-           ("" if NO_COVER else ", all cells covered")) if ok else "FAIL")
+           ("" if NO_COVER else ", all branches covered")) if ok else "FAIL")
     return 0 if ok else 1
 
 

@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜36 回）
+# 監査の模擬の元（第 24〜37 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -93,3 +93,8 @@
 | 36 | B | `r36/B/tb_b36_crcoff.sv`、`crcoff.txt`（実行の記録。`*.log` は git の対象外なので改名） | 第 37.2 節 | 手順の CRC 無効のフレームの 1 回の故障（MOSI の化け、SCLK の欠けと重複）504 通り：CRC 無効のまま残るチップの値（PROBE_OFF_REACHABLE に等しい） |
 | 36 | C | `r36/C/tb_c36_trec.sv`、`tb_c36_dflag.sv`、`tb_c36_nr.sv`、`tb_c36_aerr.sv` | 473〜476（第 37.3 節） | WARMUP の T_REC と PRE の T_RST の書き込み、DFLAG の立った間の START、IDLE の APPLY_NR の設定、未定義の 0x7F からの連続読み出しの ADDR_ERR の時刻 |
 | 36 | C | `r36/C/muts.py`、`mkmut.py`、`fastrun.sh`、`regmap_sweep2.py` | 第 37.3 節 | RTL の写し（timers_at_apply、dflag_at_start、nr_dac_only、aerr_at_end）の作り方と速い走らせ方、regmap.REGS のフィールドの編集の掃き（478 の落ちを見つけた） |
+| 37 | A | `r37/A/tb_a37_relbound.sv`、`tb_a37_relbound.txt` | 480（第 38.1 節） | 解除からクリアまでの時刻の上下限（RUN の APPLY を 1024 を法として 633／641（128 kHz）、611／627（64 kHz）のフレームで） |
+| 37 | A | `r37/A/tb_a37_recexp.sv`、`tb_a37_recexp.txt` | 第 38.1 節 | RECOVER の満了のちょうどの tick で取る未処理の 1 段の APPLY_NR（T_ELEC 0、各速さで 16 の位置） |
+| 37 | B | `r37/B/tb_b37_idver.sv`、`b37_models.py` | 482（第 38.2 節） | 手順 3 の ID と VERSION の CRC 付きの読みの 1 個の故障 624 回（ホストとチップの SCLK を別に）、CRC 無効のチップと滑りの数の模型 |
+| 37 | C | `r37/C/tb_c37_apply.sv`、`mon_cov.sv`、`cov_summary.py` | 484、485（第 38.3 節） | IDLE の APPLY_NR の反映の模擬、全ての反映でシャドウとアクティブの異なる欄を記録する網羅の監視とその集計 |
+| 37 | C | `r37/C/muts.py`、`mkmut.py`、`screen.sh`、`fsm_sweep_c37.py` | 第 38.3 節 | RTL の写し（m1、m2、m3、m5：変異 m202〜m205）の作り方と群の走らせ方、状態遷移表の指示の類の 1 編集の掃き |

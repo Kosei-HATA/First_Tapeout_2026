@@ -1,0 +1,4 @@
+128 kHz: APPLY_NR at RECOVER's expiring tick x16: step and ALIGN on the same e25; first window 1703 .. 32423 MCLK after the step
+64 kHz: APPLY_NR at RECOVER's expiring tick x16: step and ALIGN on the same e25; first window 871 .. 31591 MCLK after the step
+tb_a37_recexp: 32 cases, 0 errors
+tb/tb_a37_recexp.sv:97: $finish called at 185002114929 (1ps)

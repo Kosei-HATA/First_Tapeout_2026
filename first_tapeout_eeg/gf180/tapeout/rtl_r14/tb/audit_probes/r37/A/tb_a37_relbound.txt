@@ -1,0 +1,15 @@
+128 kHz: APPLY taken at frame 9849 (mod 1024 633, target 633): release -> clear 8367 MCLK = 255.3 us
+128 kHz: APPLY taken at frame 13953 (mod 1024 641, target 641): release -> clear 40879 MCLK = 1247.5 us
+128 kHz: APPLY taken at frame 19057 (mod 1024 625, target 625): release -> clear 8623 MCLK = 263.2 us
+128 kHz: APPLY taken at frame 23177 (mod 1024 649, target 649): release -> clear 40623 MCLK = 1239.7 us
+128 kHz: APPLY taken at frame 28673 (mod 1024 1, target 1): release -> clear 28591 MCLK = 872.5 us
+128 kHz: APPLY taken at frame 33281 (mod 1024 513, target 513): release -> clear 12207 MCLK = 372.5 us
+128 kHz: release -> clear 8367 .. 40879 MCLK = 255.3 .. 1247.5 us over these placements
+64 kHz: APPLY taken at frame 41571 (mod 1024 611, target 611): release -> clear 8559 MCLK = 261.2 us
+64 kHz: APPLY taken at frame 45683 (mod 1024 627, target 627): release -> clear 40815 MCLK = 1245.6 us
+64 kHz: APPLY taken at frame 50771 (mod 1024 595, target 595): release -> clear 9071 MCLK = 276.8 us
+64 kHz: APPLY taken at frame 54915 (mod 1024 643, target 643): release -> clear 40303 MCLK = 1229.9 us
+64 kHz: APPLY taken at frame 60419 (mod 1024 3, target 3): release -> clear 28015 MCLK = 854.9 us
+64 kHz: APPLY taken at frame 65027 (mod 1024 515, target 515): release -> clear 11631 MCLK = 354.9 us
+64 kHz: release -> clear 8559 .. 40815 MCLK = 261.2 .. 1245.6 us over these placements
+tb/tb_a37_relbound.sv:77: $finish called at 67000483697 (1ps)

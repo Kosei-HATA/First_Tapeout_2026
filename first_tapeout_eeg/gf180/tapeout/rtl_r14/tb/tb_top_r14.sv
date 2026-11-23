@@ -86,12 +86,21 @@
 //   AG audit round 36 (auditor C): T_REC and T_RST taken at the start of their waits (spec 4.2, SPI-12): T_REC
 //      written in WARMUP sets RECOVER's length, T_RST written in PRE the AFE_RST pulse at the pin (a copy taking both
 //      with the command passed all 16 groups)
-//   AH audit round 36 (auditor C): an APPLY_NR in IDLE and in WARMUP applies every setting (table 5.1-2, REG-08):
-//      AFE_IBIAS, CPF_TRIM and TEST_MUX at the pins and in the active copies (a copy applying only the offset DAC's
-//      fields passed all 16 groups)
+//   AH audit round 36 (auditor C): an APPLY_NR in IDLE and in WARMUP applies the trims and TEST_MUX (table 5.1-2,
+//      REG-08): AFE_IBIAS, CPF_TRIM and TEST_MUX at the pins and in the active copies (a copy applying only the
+//      offset DAC's fields passed all 16 groups; every apply field: AJ. Audit round 37, auditor C: this line said
+//      "every setting")
 //   AI audit round 36 (auditor C): the read header's ADDR_ERR is raised within its frame: a CRC-off burst from the
 //      undefined 0x7F through ERR reads STATUS with ALERT and ERR = ADDR_ERR (a copy raising it at CS_N's rise passed
 //      all 16 groups)
+//      audit round 37 (auditor C): AE stands all eight ERR bits (a short frame, a wrong CRC, an undefined address, an
+//      illegal value, an unknown code, a refused APPLY, a START refused in WARMUP, RESET_FLAG); a copy clearing
+//      CFG_ERR at an apply passed all 16 groups
+//   AJ audit round 37 (auditor C): the apply matrix (build/pin_tests.svh's run_apply_matrix, generated from
+//      regmap.pins_from_active): START, APPLY and APPLY_NR in IDLE and WARMUP and APPLY in RUN, each with two settings
+//      that change every apply field and then the reset values; the active copies before (the case's previous
+//      settings) and after, the pins, the CHOP, CHOP_BLANK and CHOP1 widths (copies leaving the chopper settings or
+//      TEST_CTRL out of an APPLY_NR, or applying the test settings only while AFE_RST is high, passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -1202,6 +1211,83 @@ module tb_top_r14;
             af_t_snap   = $realtime;
         end
     end
+    // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
+    integer      aj_all [0:5];
+    integer      aj_n = 0;
+    initial for (int i = 0; i < 6; i++) aj_all[i] = 0;
+    task automatic apply_case(input integer k,
+                              input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61,
+                              input logic [7:0] p20, p21, p22, p23, p24, p25, p26, p27, p28, p60, p61,
+                              input logic [9:0] e_ofm, input logic e_ofs, input logic [3:0] e_ofen,
+                              input logic [1:0] e_ib, input logic [3:0] e_cpf, input logic [1:0] e_bp,
+                              input logic [1:0] e_bn, input logic e_dwa, input logic e_chen, input logic [7:0] e_tcfg,
+                              input integer e_bw, input logic e_bheld, input integer e_chalf, input integer e_c1half,
+                              input logic all_changed, input string name);
+        // k: 0 START in IDLE (checked in WARMUP), 1 APPLY in IDLE, 2 APPLY_NR in IDLE, 3 APPLY in WARMUP, 4 APPLY_NR
+        // in WARMUP, 5 APPLY in RUN (checked when RUN is back). s: the shadows 0x20..0x28, 0x60, 0x61; p: the active
+        // copies before the command (the case's previous settings; the generator asserts that every apply field
+        // differs from them when all_changed)
+        logic [7:0] v, e, cmd;
+        logic [3:0] st;
+        logic [6:0] A [0:10];
+        logic [7:0] sh [0:10];
+        logic [7:0] pv [0:10];
+        real t0;
+        A  = '{7'h20, 7'h21, 7'h22, 7'h23, 7'h24, 7'h25, 7'h26, 7'h27, 7'h28, 7'h60, 7'h61};
+        sh = '{s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61};
+        pv = '{p20, p21, p22, p23, p24, p25, p26, p27, p28, p60, p61};
+        cmd = (k == 0) ? 8'h11 : ((k == 2 || k == 4) ? 8'h44 : 8'h33);
+        st  = (k == 1 || k == 2) ? 4'd0 : ((k == 5) ? 4'd6 : 4'd1);
+        if (k == 3 || k == 4) begin                     // into WARMUP: the START applies the shadows as they are
+            r14_cmd(8'h11);
+            wait_state(4'd1, 50.0, {name, ": WARMUP"});
+        end
+        if (k == 5 && dut.seq_state !== 4'd6) begin     // into RUN (before the first RUN case)
+            r14_cmd(8'h11);
+            wait_state(4'd6, 15000.0, {name, ": RUN"});
+        end
+        if (k <= 2 && dut.seq_state !== 4'd0)
+            fail($sformatf("%s: state %0d before the command, expected IDLE", name, dut.seq_state));
+        for (int i = 0; i < 11; i++) begin              // the active copies before it
+            r14_read(A[i] + 7'h10, v);
+            if (v !== pv[i])
+                fail($sformatf("%s: active 0x%02h = 0x%02h before the command, expected 0x%02h", name, A[i] + 7'h10, v, pv[i]));
+        end
+        r14_write(7'h11, 8'h3C);                        // TEST_KEY: the test shadows too
+        for (int i = 0; i < 11; i++) r14_write(A[i], sh[i]);
+        r14_write(7'h11, 8'h00);
+        expect_noerr({name, ": the writes"});
+        r14_cmd(cmd);
+        if (k == 5) begin                               // PRE, PULSE, RECOVER, ALIGN, FILL, then RUN again
+            t0 = $realtime;
+            while (dut.seq_state === 4'd6 && $realtime - t0 < 50000.0) @(posedge MCLK);
+            if (dut.seq_state === 4'd6) fail($sformatf("%s: the APPLY in RUN not taken", name));
+            wait_state(4'd6, 15000.0, {name, ": RUN again"});
+        end
+        repeat (700) @(posedge MCLK);                   // the tick (at most 15.6 us)
+        r14_read(7'h06, e);
+        if (e !== 8'h00) fail($sformatf("%s: ERR 0x%02h after the command, expected none (accepted)", name, e));
+        if (e !== 8'h00) r14_write(7'h06, 8'hFF);
+        if (dut.seq_state !== st) fail($sformatf("%s: state %0d after the command, expected %0d", name, dut.seq_state, st));
+        if (OFM !== e_ofm || OFS !== e_ofs || OFEN !== e_ofen || AFE_IBIAS !== e_ib || CPF_TRIM !== e_cpf ||
+            BTRIM_P !== e_bp || BTRIM_N !== e_bn || DWA_EN !== e_dwa || CHOP_EN !== e_chen || TEST_CFG !== e_tcfg)
+            fail($sformatf("%s: pins OFM %0d OFS %b OFEN %b IBIAS %0d CPF %0d BTRIM P %0d N %0d DWA %b CHOP_EN %b TEST_CFG %02h; expected %0d %b %b %0d %0d %0d %0d %b %b %02h",
+                           name, OFM, OFS, OFEN, AFE_IBIAS, CPF_TRIM, BTRIM_P, BTRIM_N, DWA_EN, CHOP_EN, TEST_CFG,
+                           e_ofm, e_ofs, e_ofen, e_ib, e_cpf, e_bp, e_bn, e_dwa, e_chen, e_tcfg));
+        for (int i = 0; i < 11; i++) begin              // every active copy took its shadow
+            r14_read(A[i] + 7'h10, v);
+            if (v !== sh[i]) fail($sformatf("%s: active 0x%02h = 0x%02h, shadow 0x%02h", name, A[i] + 7'h10, v, sh[i]));
+        end
+        repeat (1100) @(posedge MCLK);                  // a new chopper rate applies at the 512-MCLK wrap
+        measure_chop(e_bw, e_bheld, e_chalf, e_c1half, 1'b1, name);
+        if (dut.seq_state !== st) fail($sformatf("%s: state %0d after the measurement, expected %0d", name, dut.seq_state, st));
+        if (k == 0 || k == 3 || k == 4) begin           // back to IDLE
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, {name, ": IDLE"});
+        end
+        if (all_changed) aj_all[k] = aj_all[k] + 1;
+        aj_n = aj_n + 1;
+    endtask
     // phase AE: ERR and DFLAG read exactly after each accepted command (audit round 35, auditor C)
     integer      ae_n = 0;
     task automatic ae_check(input string what, input logic [7:0] ew, input logic [7:0] fw);
@@ -3999,39 +4085,57 @@ module tb_top_r14;
         r14_cmd(8'hA5);                                 // SOFT_RESET: RESET_FLAG
         #(1000.0);
         r14_write(7'h7F, 8'h00);                        // undefined: ADDR_ERR
+        // audit round 37, auditor C: every ERR bit stands (only RESET_FLAG and ADDR_ERR did, and a copy clearing
+        // CFG_ERR at an apply passed all 16 groups); STATE_ERR comes from a START refused in WARMUP below
+        spi_tx[0] = 8'h24; spi_xfer(1, 0);              // a header-only write: FRAME_ERR
+        r14_write(7'h55, 8'h01);                        // CRC on
+        bfm_crc_en = 1'b1;
+        spi_tx[0] = 8'h24; spi_tx[1] = 8'h09; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // a wrong CRC: CRC_ERR
+        r14_write(7'h55, 8'h00);                        // CRC off
+        bfm_crc_en = 1'b0;
+        r14_write(7'h50, 8'd4);                         // T_WARM 4 (legal 5..255): RANGE_ERR
+        r14_write(7'h10, 8'h99);                        // an undefined command code: CMD_ERR
+        r14_write(7'h22, 8'h01);                        // range 1 with M 200, above its top
+        r14_write(7'h21, 8'd200);
+        r14_cmd(8'h33);                                 // APPLY in IDLE, refused: CFG_ERR
+        repeat (700) @(posedge MCLK);
+        r14_write(7'h21, 8'h00);                        // the defaults again (range 0, M 0)
+        r14_write(7'h22, 8'h00);
         ae_n = 0;
-        ae_check("the SOFT_RESET and an ADDR_ERR", 8'h09, 8'h00);
+        ae_check("seven ERR bits standing (RESET_FLAG, FRAME_ERR, CRC_ERR, ADDR_ERR, RANGE_ERR, CFG_ERR, CMD_ERR)", 8'hBF, 8'h00);
         r14_cmd(8'h11);                                 // START (the defaults)
-        ae_check("START", 8'h09, 8'h00);
+        ae_check("START", 8'hBF, 8'h00);
+        r14_cmd(8'h11);                                 // a START in WARMUP, refused: STATE_ERR
+        ae_check("a START refused in WARMUP", 8'hFF, 8'h00);
         wait_state(4'd6, 12000.0, "AE RUN");
         ovl_force = 1'b1;                               // an overload in RUN: DFLAG.OVL
         repeat (64 * 32) @(posedge MCLK);
         ovl_force = 1'b0;
         repeat ((FD + 3) * 32768) @(posedge MCLK);      // no reads: the FIFO fills, DFLAG.OVERRUN
-        ae_check("an overload and a full FIFO in RUN", 8'h09, 8'h03);
+        ae_check("an overload and a full FIFO in RUN", 8'hFF, 8'h03);
         r14_cmd(8'h33);                                 // APPLY in RUN
-        ae_check("APPLY in RUN", 8'h09, 8'h03);
+        ae_check("APPLY in RUN", 8'hFF, 8'h03);
         wait_state(4'd6, 12000.0, "AE RUN after the APPLY");
         r14_write(7'h21, 8'h01);                        // M 0 -> 1: one step in range 0
         r14_cmd(8'h44);                                 // APPLY_NR in RUN
-        ae_check("APPLY_NR in RUN", 8'h09, 8'h03);
+        ae_check("APPLY_NR in RUN", 8'hFF, 8'h03);
         r14_cmd(8'h55);                                 // FLUSH
-        ae_check("FLUSH", 8'h09, 8'h03);
+        ae_check("FLUSH", 8'hFF, 8'h03);
         r14_cmd(8'h22);                                 // STOP
-        ae_check("STOP", 8'h09, 8'h03);
+        ae_check("STOP", 8'hFF, 8'h03);
         if (dut.seq_state !== 4'd0) fail($sformatf("AE: state %0d after the STOP, expected IDLE", dut.seq_state));
         r14_write(7'h21, 8'h00);
         r14_cmd(8'h33);                                 // APPLY in IDLE
-        ae_check("APPLY in IDLE", 8'h09, 8'h03);
+        ae_check("APPLY in IDLE", 8'hFF, 8'h03);
         r14_cmd(8'h11);                                 // START with DFLAG standing (audit round 36, auditor C: AE's first
-        ae_check("START with DFLAG standing", 8'h09, 8'h03);   // START came before DFLAG was set)
+        ae_check("START with DFLAG standing", 8'hFF, 8'h03);   // START came before DFLAG was set)
         r14_cmd(8'h22);                                 // STOP in WARMUP
-        ae_check("the STOP in WARMUP", 8'h09, 8'h03);
+        ae_check("the STOP in WARMUP", 8'hFF, 8'h03);
         r14_write(7'h06, 8'hFF);
         r14_write(7'h07, 8'hFF);
         ae_check("their W1C", 8'h00, 8'h00);
-        if (ae_n != 11) fail($sformatf("AE not exercised: %0d reads", ae_n));
-        $display("AE ERR (RESET_FLAG, ADDR_ERR) and DFLAG (OVL, OVERRUN) through START, APPLY in RUN, APPLY_NR, FLUSH, STOP, APPLY in IDLE and a START with DFLAG standing: kept exactly until their W1C (%0d reads, errors %0d)",
+        if (ae_n != 12) fail($sformatf("AE not exercised: %0d reads", ae_n));
+        $display("AE all eight ERR bits and DFLAG (OVL, OVERRUN) through START, APPLY in RUN, APPLY_NR, FLUSH, STOP, APPLY in IDLE and a START with DFLAG standing: kept exactly until their W1C (%0d reads, errors %0d)",
                  ae_n, errors);
         // ---------------- AF (audit round 35, auditor C): the copy instants of the header's STATUS and of the empty
         // word. Spec 3.2: STATUS is copied in the cycle the SPI takes CS_N's fall (cs_start), the sample word (the empty
@@ -4229,6 +4333,27 @@ module tb_top_r14;
                      ai_h, ai_s, ai_r, errors);
             r14_write(7'h06, 8'hFF);
         end
+        // ---------------- AJ (audit round 37, auditor C): every apply field through every command and state class
+        // (table 5.1-2: START, APPLY and APPLY_NR in IDLE and WARMUP, APPLY while the AFE runs; REG-08; 4.10's rows).
+        // AH changed three fields and the APPLYs in RUN four, and copies leaving the chopper settings or TEST_CTRL out
+        // of an APPLY_NR, or applying the test settings only while AFE_RST is high, passed all 16 groups. The generated
+        // run_apply_matrix: per class two settings that change every apply field, then the reset values; the active
+        // copies before the command, then the pins, the active copies and the CHOP, CHOP_BLANK and CHOP1 widths after
+        // it. Outside the golden comparison (after K)
+        phase = "AJ";
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults (shadows and active copies)
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        r14_write(7'h07, 8'hFF);
+        run_apply_matrix();
+        for (int i = 0; i < 6; i++)
+            if (aj_all[i] < 2) fail($sformatf("AJ not exercised: class %0d had %0d settings that change every apply field", i, aj_all[i]));
+        if (aj_n != 18) fail($sformatf("AJ not exercised: %0d cases", aj_n));
+        $display("AJ START, APPLY and APPLY_NR in IDLE and WARMUP, APPLY in RUN: every apply field at the pins, in the active copies and in the CHOP, CHOP_BLANK and CHOP1 widths (%0d cases; settings changing every field %0d / %0d / %0d / %0d / %0d / %0d; errors %0d)",
+                 aj_n, aj_all[0], aj_all[1], aj_all[2], aj_all[3], aj_all[4], aj_all[5], errors);
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)

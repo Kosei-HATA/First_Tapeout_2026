@@ -768,7 +768,13 @@ def gen_nr():
 
 APPLY_REGS = SHADOW_REGS[:11]                          # 0x20..0x28, 0x60, 0x61 (DBG_SEL, at once, stays 0)
 MATRIX_CLASSES = ["START in IDLE", "APPLY in IDLE", "APPLY_NR in IDLE", "APPLY in WARMUP", "APPLY_NR in WARMUP",
-                  "APPLY in RUN"]
+                  "APPLY in RUN", "APPLY in RECOVER", "APPLY in WAIT_E", "APPLY in FILL"]   # (the last three: audit round
+# 38, auditor C; ALIGN is left out, its length follows the output grid's phase and can end inside the writes). The
+# timers written in IDLE before a class: T_REC 100 (781 us) leaves room for the writes in RECOVER, T_ELEC 3 makes WAIT_E
+MATRIX_PRE = {6: ["    r14_write(7'h52, 8'd100);                       // T_REC 100 (781 us): the writes fit in RECOVER"],
+              7: ["    r14_write(7'h52, 8'd32);                        // T_REC back to 32",
+                  "    r14_write(7'h51, 8'd3);                         // T_ELEC 3 ms: WAIT_E"],
+              8: ["    r14_write(7'h51, 8'd0);                         // T_ELEC back to 0"]}
 
 
 def matrix_settings():
@@ -802,6 +808,7 @@ def gen_matrix():
          "// name); classes " + ", ".join(f"{k} {c}" for k, c in enumerate(MATRIX_CLASSES)),
          "task automatic run_apply_matrix();"]
     for k, cname in enumerate(MATRIX_CLASSES):
+        L += MATRIX_PRE.get(k, [])
         prev = dict(reset)
         for j, (ac, allc) in enumerate(matrix_settings()):
             b, pb, e = regs_of(ac), regs_of(prev), RM.pins_from_active(ac)

@@ -7,7 +7,7 @@ baseline must pass. The groups and their benches:
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
                             tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22), tb_chop1 for an edit
                             of eeg_chop1.sv or eeg_clkgen.sv (and b00; audit round 27). tb_top_r14 with the
-                            4-deep FIFO (-DFIFO4, about 6 minutes a run) for b00 and for the mutants whose edits
+                            4-deep FIFO (-DFIFO4, about 10 minutes a run, 12 under load; audit round 38, auditor C: this said 6) for b00 and for the mutants whose edits
                             name DEPTH or edit eeg_fifo.sv: the depth reaches eeg_fifo and, through FIFO_DEPTH,
                             eeg_regs's CAPS (audit round 26, auditor C: "the depth is eeg_fifo's alone" was false,
                             and CAPS fixed at 8 was MISSED; round 27: an edit breaking only the 4-deep FIFO);
@@ -754,6 +754,14 @@ MUTATIONS = [
     ('レジスタ：APPLY_NR は試験の制御（CHOP_STOP、ADC_ZERO）を写さない', 'eeg_regs.sv',
      '                a_m <= s_m;         a_sign <= s_sign;     a_range <= s_range;   a_ibias <= s_ibias;\n                a_cpf <= s_cpf;     a_bp <= s_bp;         a_bn <= s_bn;         a_fast <= s_fast;\n                a_dwa <= s_dwa;     a_c1 <= s_c1;         a_blank <= s_blank;   a_atpen <= s_atpen;\n                a_atpsel <= s_atpsel; a_cstop <= s_cstop; a_azero <= s_azero;\n',
      '                a_m <= s_m;         a_sign <= s_sign;     a_range <= s_range;   a_ibias <= s_ibias;\n                a_cpf <= s_cpf;     a_bp <= s_bp;         a_bn <= s_bn;         a_fast <= s_fast;\n                a_dwa <= s_dwa;     a_c1 <= s_c1;         a_blank <= s_blank;   a_atpen <= s_atpen;\n                a_atpsel <= s_atpsel;\n                if (pcode != CMD_APPLY_NR) begin      // the test modes (CHOP_STOP, ADC_ZERO): START / APPLY only\n                    a_cstop <= s_cstop; a_azero <= s_azero;\n                end\n'),
+    # audit round 38, auditor C: STATUS's CMD_PENDING dropped in the acknowledge cycle (AF's whole STATUS), the sample's
+    # OVERRUN from DFLAG's next value (AD's OVERRUN sweep)
+    ('レジスタ：STATUS の CMD_PENDING を確認のサイクルで 0 に（tick が取った命令は未処理でない）', 'eeg_regs.sv',
+     '        status_byte[STATUS_CMD_PENDING_LSB] = pend;',
+     '        status_byte[STATUS_CMD_PENDING_LSB] = pend && !cmd_ack;     // not pending once the tick takes it'),
+    ('レジスタ：サンプルの OVERRUN を DFLAG.OVERRUN の次の値から（同じサイクルの W1C を含める）', 'eeg_regs.sv',
+     '    assign dflag_overrun = dflag[0];',
+     '    assign dflag_overrun = (dflag[0] & ~(we && w_ok && addr == A_DFLAG && wdata[DFLAG_OVERRUN_LSB])) | ovr_set;'),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

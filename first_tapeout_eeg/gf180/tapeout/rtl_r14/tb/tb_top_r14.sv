@@ -101,6 +101,12 @@
 //      that change every apply field and then the reset values; the active copies before (the case's previous
 //      settings) and after, the pins, the CHOP, CHOP_BLANK and CHOP1 widths (copies leaving the chopper settings or
 //      TEST_CTRL out of an APPLY_NR, or applying the test settings only while AFE_RST is high, passed all 16 groups)
+//      audit round 38 (auditor C): AJ also takes APPLY in RECOVER, WAIT_E and FILL (checked when RUN is back; ALIGN
+//      is left out: its length follows the output grid's phase, 175..32,687 MCLK, and can end inside the writes);
+//      AF compares the whole header STATUS with the registers of the copy's cycle and needs a copy in an
+//      acknowledge cycle (a copy dropping CMD_PENDING there passed); AD also sweeps DFLAG.OVERRUN's W1C across a
+//      store, with ALERT_MASK_D 0x01, and every AD sample's OVERRUN must be DFLAG.OVERRUN of its store's cycle (a copy
+//      taking the flag's next value passed)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -188,9 +194,10 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,200 ms of simulated time (the run ends near 0.82 s; audit
+// A watchdog ends the run as FAIL if it has not finished by 1,500 ms of simulated time (the run ends near 1.04 s; audit
 // round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
-// auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it),
+// auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
+// 38: the 1,200 ms would have been 1.15 times it; auditor C: this line said 0.82 s after round 37 had made it 0.89 s),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
 `timescale 1ns / 1ps
 `default_nettype none
@@ -460,8 +467,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(1200.0e6);
-        fail($sformatf("watchdog: not finished after 1,200 ms of simulated time (phase %s)", phase));
+        #(1500.0e6);
+        fail($sformatf("watchdog: not finished after 1,500 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -1178,7 +1185,11 @@ module tb_top_r14;
     logic [15:0] ad_seq_store = 16'd0;
     logic [7:0]  ad_err_q = 8'h00;
     real         ad_lat [0:1];                       // AD: a write's start to the edge that changes ERR
-    integer      ad_nb [0:1], ad_ns [0:1], ad_na [0:1];   // AD: changes before / at the start of / after a store's cycle
+    integer      ad_nb [0:2], ad_ns [0:2], ad_na [0:2];   // AD: changes before / at the start of / after a store's cycle
+    logic        ad_ovr [0:255];                     // AD (audit round 38, auditor C): DFLAG.OVERRUN in each store's cycle,
+    real         ad_t_try = 0.0, ad_t_dfl = 0.0, ad_lat_d = 0.0;   // the last store attempt (seq_store, kept or
+    integer      ad_n_try = 0;                       // dropped), the last change of DFLAG
+    logic [1:0]  ad_dfl_q = 2'b00;
     always @(posedge MCLK) begin
         ad_t_pos = $realtime;
         if (dut.push_ok === 1'b1) begin
@@ -1187,16 +1198,26 @@ module tb_top_r14;
             ad_seq_store = dut.seq_cnt;
             ad_t_store   = $realtime;
             ad_n_store   = ad_n_store + 1;
+            ad_ovr[dut.seq_cnt[7:0]] = dut.u_regs.dflag[0];
+        end
+        if (dut.seq_store === 1'b1) begin
+            ad_t_try = $realtime;
+            ad_n_try = ad_n_try + 1;
         end
     end
     always @(negedge MCLK) begin
         if (dut.u_regs.err !== ad_err_q) ad_t_err = ad_t_pos;     // ERR changed at the last rising edge
         ad_err_q = dut.u_regs.err;
+        if (dut.u_regs.dflag !== ad_dfl_q) ad_t_dfl = ad_t_pos;   // DFLAG changed at the last rising edge
+        ad_dfl_q = dut.u_regs.dflag;
     end
     // phase AF's copy edges (audit round 35, auditor C): ALERT as the registers give it in the cycle of each copy of the
     // header's STATUS (the SPI's cs_start) and of the sample word (smp_snap; FIFO level 0: the empty word)
     real         af_t_hdr = 0.0, af_t_snap = 0.0;
     logic        af_hdr_exp = 1'b0, af_snap_exp = 1'b0;
+    logic [7:0]  af_hdr_full = 8'h00;                // AF (audit round 38, auditor C): the whole STATUS of the copy's
+    logic        af_hdr_ack = 1'b0;                  // cycle as the registers give it, and whether the sequencer took a
+    integer      af_nack = 0;                        // command in that cycle (its acknowledge cycle)
     logic [3:0]  af_snap_lvl = 4'd0;
     real         af_lat [0:1];                       // AF: a frame's start to its copy edge (0: header, 1: sample word)
     integer      af_nb [0:1], af_ns [0:1], af_na [0:1];   // AF: changes before / at the start of / after the copy's cycle
@@ -1204,6 +1225,16 @@ module tb_top_r14;
         if (dut.u_spi.cs_start === 1'b1) begin
             af_hdr_exp = (|(dut.u_regs.err & dut.u_regs.r_mask)) | (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
             af_t_hdr   = $realtime;
+            af_hdr_full = 8'h00;
+            af_hdr_full[STATUS_MARK1_LSB]       = STATUS_MARK1_RST;
+            af_hdr_full[STATUS_MARK0_LSB]       = STATUS_MARK0_RST;
+            af_hdr_full[STATUS_ALERT_LSB]       = af_hdr_exp;
+            af_hdr_full[STATUS_CMD_PENDING_LSB] = dut.u_regs.pend;          // pending until the cycle after the ack
+            af_hdr_full[STATUS_READY_LSB]       = (dut.seq_state === 4'd6);
+            af_hdr_full[STATUS_DATA_LSB]        = dut.fifo_nonempty;
+            af_hdr_full[STATUS_OVL_NOW_LSB]     = dut.ovl_now;
+            af_hdr_full[STATUS_AFE_RST_LSB]     = dut.seq_afe_rst;
+            af_hdr_ack  = dut.u_regs.cmd_ack;
         end
         if (dut.smp_snap === 1'b1) begin
             af_snap_exp = (|(dut.u_regs.err & dut.u_regs.r_mask)) | (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
@@ -1212,9 +1243,9 @@ module tb_top_r14;
         end
     end
     // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
-    integer      aj_all [0:5];
+    integer      aj_all [0:8];
     integer      aj_n = 0;
-    initial for (int i = 0; i < 6; i++) aj_all[i] = 0;
+    initial for (int i = 0; i < 9; i++) aj_all[i] = 0;
     task automatic apply_case(input integer k,
                               input logic [7:0] s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61,
                               input logic [7:0] p20, p21, p22, p23, p24, p25, p26, p27, p28, p60, p61,
@@ -1224,11 +1255,12 @@ module tb_top_r14;
                               input integer e_bw, input logic e_bheld, input integer e_chalf, input integer e_c1half,
                               input logic all_changed, input string name);
         // k: 0 START in IDLE (checked in WARMUP), 1 APPLY in IDLE, 2 APPLY_NR in IDLE, 3 APPLY in WARMUP, 4 APPLY_NR
-        // in WARMUP, 5 APPLY in RUN (checked when RUN is back). s: the shadows 0x20..0x28, 0x60, 0x61; p: the active
+        // in WARMUP, 5 APPLY in RUN (checked when RUN is back), 6 APPLY in RECOVER, 7 in WAIT_E, 8 in FILL (checked in
+        // RUN; audit round 38, auditor C). s: the shadows 0x20..0x28, 0x60, 0x61; p: the active
         // copies before the command (the case's previous settings; the generator asserts that every apply field
         // differs from them when all_changed)
         logic [7:0] v, e, cmd;
-        logic [3:0] st;
+        logic [3:0] st, kst;
         logic [6:0] A [0:10];
         logic [7:0] sh [0:10];
         logic [7:0] pv [0:10];
@@ -1237,7 +1269,8 @@ module tb_top_r14;
         sh = '{s20, s21, s22, s23, s24, s25, s26, s27, s28, s60, s61};
         pv = '{p20, p21, p22, p23, p24, p25, p26, p27, p28, p60, p61};
         cmd = (k == 0) ? 8'h11 : ((k == 2 || k == 4) ? 8'h44 : 8'h33);
-        st  = (k == 1 || k == 2) ? 4'd0 : ((k == 5) ? 4'd6 : 4'd1);
+        st  = (k == 1 || k == 2) ? 4'd0 : ((k >= 5) ? 4'd6 : 4'd1);
+        kst = (k == 6) ? 4'd2 : ((k == 7) ? 4'd3 : 4'd5);   // the APPLY's state: RECOVER, WAIT_E, FILL
         if (k == 3 || k == 4) begin                     // into WARMUP: the START applies the shadows as they are
             r14_cmd(8'h11);
             wait_state(4'd1, 50.0, {name, ": WARMUP"});
@@ -1245,6 +1278,10 @@ module tb_top_r14;
         if (k == 5 && dut.seq_state !== 4'd6) begin     // into RUN (before the first RUN case)
             r14_cmd(8'h11);
             wait_state(4'd6, 15000.0, {name, ": RUN"});
+        end
+        if (k >= 6) begin                               // into RECOVER, WAIT_E or FILL: the START applies the shadows
+            r14_cmd(8'h11);                             // as they are
+            wait_state(kst, 15000.0, {name, ": the APPLY's state"});
         end
         if (k <= 2 && dut.seq_state !== 4'd0)
             fail($sformatf("%s: state %0d before the command, expected IDLE", name, dut.seq_state));
@@ -1264,6 +1301,13 @@ module tb_top_r14;
             if (dut.seq_state === 4'd6) fail($sformatf("%s: the APPLY in RUN not taken", name));
             wait_state(4'd6, 15000.0, {name, ": RUN again"});
         end
+        if (k >= 6) begin                               // the APPLY taken in its state: PRE ... then RUN
+            t0 = $realtime;
+            while (dut.seq_state === kst && $realtime - t0 < 50000.0) @(posedge MCLK);
+            if (dut.seq_state !== 4'd7)
+                fail($sformatf("%s: state %0d after the APPLY, expected PRE (the APPLY taken in state %0d)", name, dut.seq_state, kst));
+            wait_state(4'd6, 15000.0, {name, ": RUN"});
+        end
         repeat (700) @(posedge MCLK);                   // the tick (at most 15.6 us)
         r14_read(7'h06, e);
         if (e !== 8'h00) fail($sformatf("%s: ERR 0x%02h after the command, expected none (accepted)", name, e));
@@ -1281,7 +1325,7 @@ module tb_top_r14;
         repeat (1100) @(posedge MCLK);                  // a new chopper rate applies at the 512-MCLK wrap
         measure_chop(e_bw, e_bheld, e_chalf, e_c1half, 1'b1, name);
         if (dut.seq_state !== st) fail($sformatf("%s: state %0d after the measurement, expected %0d", name, dut.seq_state, st));
-        if (k == 0 || k == 3 || k == 4) begin           // back to IDLE
+        if (k == 0 || k == 3 || k == 4 || k >= 6) begin  // back to IDLE
             r14_cmd(8'h22);
             wait_state(4'd0, 50.0, {name, ": IDLE"});
         end
@@ -1317,7 +1361,25 @@ module tb_top_r14;
                 if (st_[SMP_ERR_LSB] !== ad_exp[sq_[7:0]])
                     fail($sformatf("AD: sample SEQ %0d, status 0x%02h with ERR %b; ALERT in its store's cycle %b (spec 3.4)",
                                    sq_, st_, st_[SMP_ERR_LSB], ad_exp[sq_[7:0]]));
+                if (st_[SMP_OVERRUN_LSB] !== ad_ovr[sq_[7:0]])      // audit round 38, auditor C
+                    fail($sformatf("AD: sample SEQ %0d, status 0x%02h with OVERRUN %b; DFLAG.OVERRUN in its store's cycle %b (spec 3.4)",
+                                   sq_, st_, st_[SMP_OVERRUN_LSB], ad_ovr[sq_[7:0]]));
             end
+        end
+    endtask
+    task automatic ad_read_one();                      // one sample (the FIFO not empty), checked as above
+        logic [7:0] st_;
+        logic [15:0] sq_;
+        logic [23:0] d_;
+        bit ok_;
+        r14_sample(st_, sq_, d_, ok_);
+        if (!ok_ || st_[SMP_VALID_LSB] !== 1'b1)
+            fail($sformatf("AD: one sample read, status 0x%02h, CRC %b (a valid sample expected)", st_, ok_));
+        else begin
+            ad_nchk = ad_nchk + 1;
+            if (st_[SMP_ERR_LSB] !== ad_exp[sq_[7:0]] || st_[SMP_OVERRUN_LSB] !== ad_ovr[sq_[7:0]])
+                fail($sformatf("AD: sample SEQ %0d, status 0x%02h; ALERT %b and DFLAG.OVERRUN %b in its store's cycle (spec 3.4)",
+                               sq_, st_, ad_exp[sq_[7:0]], ad_ovr[sq_[7:0]]));
         end
     endtask
     logic o_on_m = 1'b0, o_on = 1'b0;
@@ -4067,6 +4129,52 @@ module tb_top_r14;
             end
             $display("AD ERR changed across a store's own cycle: the ADDR_ERR %0d / %0d / %0d, its W1C %0d / %0d / %0d (before the cycle / at its start / at or after the store's edge); %0d samples, each with the ALERT of its store's cycle (errors %0d)",
                      ad_nb[0], ad_ns[0], ad_na[0], ad_nb[1], ad_ns[1], ad_na[1], ad_nchk - ad_c0, errors);
+            // audit round 38, auditor C: DFLAG.OVERRUN's W1C at a store's own cycle. Spec 3.4: a sample's OVERRUN is
+            // DFLAG.OVERRUN of the store's cycle; no DFLAG write had come within 64 MCLK of a store, and a copy taking
+            // the flag's next value passed all 16 groups (the host's write-backs of steps 6 and 8 can commit in any
+            // store's cycle). ALERT_MASK_D 0x01: the ERR bit follows OVERRUN too (OVL left out: an overload of the code
+            // stream would hold ALERT). The FIFO is kept full: each dropped output sets OVERRUN, one sample is read, and
+            // OVERRUN's W1C is aimed at the next store's cycle in 1/4-MCLK steps, from 2 MCLK before its start to 2 MCLK
+            // after it; every sample's OVERRUN and ERR are checked against its store's cycle when it is read
+            ad_c0 = ad_nchk;
+            r14_write(7'h09, 8'h01);                    // ALERT_MASK_D: OVERRUN only
+            ad_n0 = ad_n_try;
+            while (ad_n_try < ad_n0 + FD + 1) @(negedge MCLK);   // no reads: full, the last output dropped
+            repeat (8) @(posedge MCLK);
+            if (dut.u_regs.dflag[0] !== 1'b1) fail("AD: no DFLAG.OVERRUN after the FIFO filled");
+            ad_t0 = $realtime; r14_write(7'h07, 8'h01); repeat (8) @(posedge MCLK); ad_lat_d = ad_t_dfl - ad_t0;
+            if (dut.u_regs.dflag[0] !== 1'b0) fail("AD: DFLAG.OVERRUN not cleared by its W1C");
+            ad_nb[2] = 0; ad_ns[2] = 0; ad_na[2] = 0;
+            for (int k = -8; k <= 8; k++) begin
+                ad_n0 = ad_n_try;
+                while (ad_n_try == ad_n0) @(negedge MCLK);       // the next output: dropped, OVERRUN set
+                repeat (8) @(posedge MCLK);
+                if (dut.u_regs.dflag[0] !== 1'b1) fail($sformatf("AD k %0d: no DFLAG.OVERRUN after a dropped output", k));
+                ad_read_one();                              // one slot free for the next store
+                ad_tgt = ad_t_try + 32768.0 * TMCLK - TMCLK + k * TMCLK / 4.0 - ad_lat_d;
+                if (ad_tgt > $realtime) #(ad_tgt - $realtime);
+                else fail($sformatf("AD k %0d: the aimed DFLAG write was due %0.1f ns ago", k, $realtime - ad_tgt));
+                ad_n0 = ad_n_store;
+                r14_write(7'h07, 8'h01);                    // OVERRUN's W1C
+                while (ad_n_store == ad_n0) @(negedge MCLK);
+                repeat (8) @(posedge MCLK);
+                ad_dt = ad_t_dfl - (ad_t_store - TMCLK);     // the change against the start of the store's cycle
+                if (ad_dt < -TMCLK / 2.0)     ad_nb[2] = ad_nb[2] + 1;
+                else if (ad_dt < TMCLK / 2.0) ad_ns[2] = ad_ns[2] + 1;
+                else                          ad_na[2] = ad_na[2] + 1;
+                ad_want = !(ad_dt < TMCLK / 2.0);            // OVERRUN in the store's cycle: 0 once cleared at its start
+                if (ad_ovr[ad_seq_store[7:0]] !== ad_want || ad_exp[ad_seq_store[7:0]] !== ad_want)
+                    fail($sformatf("AD k %0d: OVERRUN %b and ALERT %b modelled at the store (SEQ %0d), but DFLAG changed %0.2f MCLK from its cycle's start, which gives %b",
+                                   k, ad_ovr[ad_seq_store[7:0]], ad_exp[ad_seq_store[7:0]], ad_seq_store, ad_dt / TMCLK, ad_want));
+            end
+            ad_read_all();                                  // the rest, each checked
+            if (ad_nb[2] < 1 || ad_ns[2] < 1 || ad_na[2] < 1)
+                fail($sformatf("AD not exercised (OVERRUN's W1C): DFLAG changed %0d times before the store's cycle, %0d at its start, %0d at or after the store's edge",
+                               ad_nb[2], ad_ns[2], ad_na[2]));
+            r14_write(7'h09, 8'h00);
+            r14_write(7'h07, 8'hFF);
+            $display("AD DFLAG.OVERRUN's W1C across a store's own cycle: %0d / %0d / %0d (before the cycle / at its start / at or after the store's edge); %0d samples, each with OVERRUN and ERR of its store's cycle (errors %0d)",
+                     ad_nb[2], ad_ns[2], ad_na[2], ad_nchk - ad_c0, errors);
         end
         r14_cmd(8'h22);                                 // STOP
         wait_state(4'd0, 50.0, "AD IDLE");
@@ -4167,6 +4275,8 @@ module tb_top_r14;
             logic [23:0] af_d;
             bit af_ok;
             logic af_exp, af_got, af_want;
+            logic [7:0] af_hdr_cmp;
+            logic af_hdr_ackc;
             string af_nm;
             // a frame's start to its copy edge: a register read's header, an empty-FIFO sample read's header end
             af_t0 = $realtime; r14_read(7'h03, af_v); af_lat[0] = af_t_hdr - af_t0;
@@ -4180,6 +4290,7 @@ module tb_top_r14;
             if (af_v !== 8'h20) fail($sformatf("AF: ERR 0x%02h after the APPLY judged on M 200 in range 1, expected exactly CFG_ERR (0x20)", af_v));
             r14_write(7'h06, 8'hFF);
             for (int s = 0; s < 2; s++) begin af_nb[s] = 0; af_ns[s] = 0; af_na[s] = 0; end
+            af_nack = 0;
             for (int k = -8; k <= 8; k++) begin
                 for (int s = 0; s < 2; s++) begin
                     @(posedge dut.u_clkgen.tick); af_t0 = $realtime;
@@ -4190,6 +4301,7 @@ module tb_top_r14;
                     if (s == 0) begin
                         r14_read(7'h03, af_v);
                         af_tc = af_t_hdr; af_exp = af_hdr_exp; af_got = spi_status[STATUS_ALERT_LSB];
+                        af_hdr_cmp = af_hdr_full; af_hdr_ackc = af_hdr_ack;
                         af_nm = "a register read's STATUS, ALERT";
                     end else begin
                         r14_sample(af_st, af_sq, af_d, af_ok);
@@ -4210,9 +4322,16 @@ module tb_top_r14;
                                        k, af_exp, af_dt / TMCLK, af_want));
                     if (af_got !== af_exp)
                         fail($sformatf("AF k %0d: %s %b; ALERT in the copy's cycle %b (spec 3.2)", k, af_nm, af_got, af_exp));
+                    if (s == 0) begin                       // the whole STATUS (audit round 38, auditor C)
+                        if (spi_status !== af_hdr_cmp)
+                            fail($sformatf("AF k %0d: the header STATUS 0x%02h; the registers of the copy's cycle give 0x%02h (CMD_PENDING, READY, DATA, OVL_NOW, AFE_RST, ALERT; spec 3.2)",
+                                           k, spi_status, af_hdr_cmp));
+                        if (af_hdr_ackc) af_nack = af_nack + 1;
+                    end
                     r14_write(7'h06, 8'hFF);            // CFG_ERR cleared
                 end
             end
+            if (af_nack < 1) fail("AF not exercised: no header STATUS copied in a command's acknowledge cycle");
             for (int s = 0; s < 2; s++) begin
                 if (s == 0) af_nm = "STATUS";
                 else        af_nm = "the empty word";
@@ -4220,8 +4339,8 @@ module tb_top_r14;
                     fail($sformatf("AF not exercised (%s): ERR changed %0d times before the copy's cycle, %0d at its start, %0d at or after the copy's edge",
                                    af_nm, af_nb[s], af_ns[s], af_na[s]));
             end
-            $display("AF ERR changed across the copy's cycle: a register read's STATUS %0d / %0d / %0d, an empty-FIFO sample read's word %0d / %0d / %0d (before the cycle / at its start / at or after the copy's edge), each with the ALERT of its copy's cycle (errors %0d)",
-                     af_nb[0], af_ns[0], af_na[0], af_nb[1], af_ns[1], af_na[1], errors);
+            $display("AF ERR changed across the copy's cycle: a register read's STATUS %0d / %0d / %0d, an empty-FIFO sample read's word %0d / %0d / %0d (before the cycle / at its start / at or after the copy's edge), each with the ALERT of its copy's cycle; the whole STATUS as the registers give it, %0d copies in an acknowledge cycle (errors %0d)",
+                     af_nb[0], af_ns[0], af_na[0], af_nb[1], af_ns[1], af_na[1], af_nack, errors);
         end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults back
         #(1000.0);
@@ -4346,11 +4465,11 @@ module tb_top_r14;
         r14_write(7'h06, 8'hFF);
         r14_write(7'h07, 8'hFF);
         run_apply_matrix();
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 9; i++)
             if (aj_all[i] < 2) fail($sformatf("AJ not exercised: class %0d had %0d settings that change every apply field", i, aj_all[i]));
-        if (aj_n != 18) fail($sformatf("AJ not exercised: %0d cases", aj_n));
-        $display("AJ START, APPLY and APPLY_NR in IDLE and WARMUP, APPLY in RUN: every apply field at the pins, in the active copies and in the CHOP, CHOP_BLANK and CHOP1 widths (%0d cases; settings changing every field %0d / %0d / %0d / %0d / %0d / %0d; errors %0d)",
-                 aj_n, aj_all[0], aj_all[1], aj_all[2], aj_all[3], aj_all[4], aj_all[5], errors);
+        if (aj_n != 27) fail($sformatf("AJ not exercised: %0d cases", aj_n));
+        $display("AJ START, APPLY and APPLY_NR in IDLE and WARMUP, APPLY in RUN, RECOVER, WAIT_E and FILL: every apply field at the pins, in the active copies and in the CHOP, CHOP_BLANK and CHOP1 widths (%0d cases; settings changing every field %0d / %0d / %0d / %0d / %0d / %0d / %0d / %0d / %0d; errors %0d)",
+                 aj_n, aj_all[0], aj_all[1], aj_all[2], aj_all[3], aj_all[4], aj_all[5], aj_all[6], aj_all[7], aj_all[8], errors);
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);
         r14_write(7'h06, 8'hFF);

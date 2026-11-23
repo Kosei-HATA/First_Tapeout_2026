@@ -1,0 +1,66 @@
+== applies: (command, state): count; fields that differed (shadow != active) at least once [and never]
+('APPLY', 'ALIGN'): 2; differed:   | never: m,sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY', 'FILL'): 5; differed: cpf:1  | never: m,sign,range,ibias,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY', 'IDLE'): 72; differed: m:57, sign:22, range:25, ibias:20, cpf:30, bp:24, bn:24, fast:22, dwa:14, c1:28, blank:27, atpen:14, atpsel:28, cstop:14, azero:8  | never: 
+('APPLY', 'RECOVER'): 2; differed:   | never: m,sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY', 'RUN'): 25; differed: m:8, sign:2, range:7, ibias:3, cpf:5, bp:3, bn:3, fast:4, dwa:2, c1:3, blank:3, atpen:2, atpsel:3, cstop:2, azero:2  | never: 
+('APPLY', 'WAIT_E'): 1; differed:   | never: m,sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY', 'WARMUP'): 4; differed: m:3, sign:2, range:2, ibias:3, cpf:4, bp:3, bn:3, fast:2, dwa:2, c1:3, blank:3, atpen:2, atpsel:3, cstop:2, azero:2  | never: 
+('APPLY_NR', 'ALIGN'): 2; differed: m:2  | never: sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY_NR', 'FILL'): 5; differed: m:5  | never: sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY_NR', 'IDLE'): 5; differed: m:4, sign:2, range:2, ibias:4, cpf:4, bp:3, bn:3, fast:2, dwa:2, c1:3, blank:3, atpen:3, atpsel:4, cstop:2, azero:2  | never: 
+('APPLY_NR', 'RECOVER'): 1; differed: m:1  | never: sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY_NR', 'RUN'): 54; differed: m:54, sign:2  | never: range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY_NR', 'WAIT_E'): 1; differed: m:1  | never: sign,range,ibias,cpf,bp,bn,fast,dwa,c1,blank,atpen,atpsel,cstop,azero
+('APPLY_NR', 'WARMUP'): 4; differed: m:3, sign:2, range:2, ibias:4, cpf:4, bp:3, bn:3, fast:2, dwa:2, c1:3, blank:3, atpen:3, atpsel:4, cstop:2, azero:2  | never: 
+('START', 'IDLE'): 55; differed: m:6, sign:5, range:5, ibias:6, cpf:8, bp:6, bn:6, fast:5, dwa:5, c1:6, blank:5, atpen:5, atpsel:6, cstop:5, azero:5  | never: 
+== accepted writes to timers by state
+0x50 {'IDLE': 53}
+0x51 {'IDLE': 57, 'RUN': 13, 'PULSE': 1}
+0x52 {'IDLE': 48, 'RUN': 3, 'WARMUP': 1}
+0x53 {'IDLE': 50, 'RUN': 3, 'ALIGN': 1, 'PULSE': 1}
+0x54 {'IDLE': 50, 'RUN': 2, 'PRE': 1}
+== accepted writes to shadows by state (0x20-0x28, 0x60, 0x61)
+0x20 {'IDLE': 90, 'RUN': 44, 'WARMUP': 6}
+0x21 {'IDLE': 184, 'RUN': 97, 'RECOVER': 1, 'WAIT_E': 1, 'ALIGN': 2, 'FILL': 5, 'WARMUP': 6}
+0x22 {'IDLE': 160, 'RUN': 48, 'WARMUP': 6}
+0x23 {'IDLE': 94, 'RUN': 44, 'WARMUP': 7}
+0x24 {'IDLE': 110, 'RUN': 99, 'WARMUP': 9, 'FILL': 1, 'PULSE': 1}
+0x25 {'IDLE': 95, 'RUN': 44, 'WARMUP': 6}
+0x26 {'IDLE': 166, 'RUN': 46, 'WARMUP': 6}
+0x27 {'IDLE': 156, 'RUN': 44, 'WARMUP': 6}
+0x28 {'IDLE': 152, 'RUN': 44, 'WARMUP': 6}
+0x60 {'IDLE': 94, 'RUN': 44, 'WARMUP': 7}
+0x61 {'IDLE': 92, 'RUN': 44, 'WARMUP': 6}
+0x62 {'IDLE': 89, 'RUN': 57}
+== acknowledged commands
+('APPLY', 'ALIGN', 'apply') 2
+('APPLY', 'FILL', 'apply') 5
+('APPLY', 'IDLE', 'apply') 72
+('APPLY', 'IDLE', 'cerr') 67
+('APPLY', 'PULSE', 'serr') 2
+('APPLY', 'RECOVER', 'apply') 2
+('APPLY', 'RUN', 'apply') 25
+('APPLY', 'WAIT_E', 'apply') 1
+('APPLY', 'WARMUP', 'apply') 4
+('APPLY_NR', 'ALIGN', 'apply') 2
+('APPLY_NR', 'FILL', 'apply') 5
+('APPLY_NR', 'IDLE', 'apply') 5
+('APPLY_NR', 'PRE', 'serr') 1
+('APPLY_NR', 'RECOVER', 'apply') 1
+('APPLY_NR', 'RUN', 'apply') 54
+('APPLY_NR', 'RUN', 'cerr') 22
+('APPLY_NR', 'WAIT_E', 'apply') 1
+('APPLY_NR', 'WARMUP', 'apply') 4
+('FLUSH', 'IDLE', 'flush') 107
+('FLUSH', 'RUN', 'flush') 12
+('START', 'IDLE', 'apply') 55
+('START', 'IDLE', 'cerr') 2
+('START', 'RUN', 'serr') 2
+('START', 'WARMUP', 'serr') 2
+('STOP', 'PRE', 'none') 2
+('STOP', 'PULSE', 'none') 2
+('STOP', 'RECOVER', 'none') 1
+('STOP', 'RUN', 'none') 20
+('STOP', 'WAIT_E', 'none') 2
+('STOP', 'WARMUP', 'none') 18

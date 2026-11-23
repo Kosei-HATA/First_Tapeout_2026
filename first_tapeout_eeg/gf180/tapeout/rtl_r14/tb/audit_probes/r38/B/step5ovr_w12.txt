@@ -1,0 +1,17 @@
+both chips in RUN at 9.002 ms
+round (i) at 21.004 ms: FIFO_LEVEL of B before = 8 (DFLAG.OVERRUN 1)
+  A1 chip 0 word 1: SEQ 20 status 0x80 (OVERRUN 0)
+  B chip 1 word 1: SEQ 8 status 0x80 (OVERRUN 0)
+  B chip 1 word 2: SEQ 9 status 0x80 (OVERRUN 0)
+  B chip 1 word 3: SEQ 10 status 0x80 (OVERRUN 0)
+  B chip 1 word 4: SEQ 11 status 0x80 (OVERRUN 0)
+  B chip 1 word 5: SEQ 12 status 0x80 (OVERRUN 0)
+  B chip 1 word 6: SEQ 13 status 0x80 (OVERRUN 0)
+  B chip 1 word 7: SEQ 14 status 0x80 (OVERRUN 0)
+  B chip 1 word 8: SEQ 15 status 0x80 (OVERRUN 0)
+round (i): A last SEQ 20 (1 words), B last SEQ 15 (8 words), A's second read-out 0 new words
+step 5 (i) compares 15 with 20: DIFFERENT -> common RESET_N
+DFLAG A 0x00 (crc ok 1)
+DFLAG B 0x01 (crc ok 1)
+next word of B: SEQ 21 status 0xc0 (OVERRUN 1) crc ok 1
+a38B_probes/tb_b38_step5ovr.sv:120: $finish called at 22069723215 (1ps)

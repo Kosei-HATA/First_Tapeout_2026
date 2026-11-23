@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜37 回）
+# 監査の模擬の元（第 24〜38 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -98,3 +98,9 @@
 | 37 | B | `r37/B/tb_b37_idver.sv`、`b37_models.py` | 482（第 38.2 節） | 手順 3 の ID と VERSION の CRC 付きの読みの 1 個の故障 624 回（ホストとチップの SCLK を別に）、CRC 無効のチップと滑りの数の模型 |
 | 37 | C | `r37/C/tb_c37_apply.sv`、`mon_cov.sv`、`cov_summary.py` | 484、485（第 38.3 節） | IDLE の APPLY_NR の反映の模擬、全ての反映でシャドウとアクティブの異なる欄を記録する網羅の監視とその集計 |
 | 37 | C | `r37/C/muts.py`、`mkmut.py`、`screen.sh`、`fsm_sweep_c37.py` | 第 38.3 節 | RTL の写し（m1、m2、m3、m5：変異 m202〜m205）の作り方と群の走らせ方、状態遷移表の指示の類の 1 編集の掃き |
+| 38 | A | `r38/A/a38_track.py` | 489（第 39.1 節） | 固定の閾値 ±54 mV での追従の行き来（R_e ごとの落ち着かないオフセットの割合） |
+| 38 | A | `r38/A/tb_a38_chopstop.sv` | 490（第 39.1 節） | CHOP_STOP の試験のモードを相 B の SOFT_RESET と RESET_N が終わらせるときの PH0 と COE の変化（対照 2 通り） |
+| 38 | B | `r38/B/tb_b38_step5ovr.sv`、`tb_b38_step5ovr_f4.sv`、`step5ovr*_w*.txt` | 491（第 39.2 節） | 2 個のチップの手順 5 (i)：比べるチップを 3〜12 区間読まずにおいたときの判定（8 段と 4 段） |
+| 38 | C | `r38/C/tb_c38_regs.sv` | 493、494（第 39.3 節） | eeg_regs の確認のサイクルの STATUS と、DFLAG の W1C の確定のサイクルの dflag_overrun |
+| 38 | C | `r38/C/mon_c38.sv`、`c38_ack_summary.py`、`run_cov.sh`、`c38_ack_copies.txt`、`cov_summary.txt` | 493、496（第 39.3 節） | 確認のサイクルの先頭の写しと、状態ごとの反映の欄の網羅の監視とその集計 |
+| 38 | C | `r38/C/muts.py`、`fsm_sweep_c38.py` | 第 39.3 節 | RTL の写し（m1、m15：変異 m206、m207）、状態遷移表の新しい類の 1 編集の掃き |

@@ -1,0 +1,5 @@
+HDR t=818720913000 phase=AF status=91 pend=1 cmd=33 st=0
+HDR t=818830289000 phase=AF status=91 pend=1 cmd=33 st=0
+HDR t=818939666000 phase=AF status=91 pend=1 cmd=33 st=0
+HDR t=819049042000 phase=AF status=91 pend=1 cmd=33 st=0
+TOTAL header copies in an ack cycle 4, 0x03 data loads in an ack cycle 0; DFLAG writes committed 41, in a store's cycle 0, in an empty-word copy's cycle 0, within 64 MCLK after a store 0

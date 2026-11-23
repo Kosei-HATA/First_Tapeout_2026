@@ -389,7 +389,7 @@ def _dup(x, k):
     return ((x >> (31 - k)) << (31 - k)) | ((x >> 1) & ((1 << (31 - k)) - 1))
 
 
-def slip_responses(h_):
+def slip_responses(h_, window_empty=False):
     """The byte pairs the chip can send after the header of a 3-byte CRC read when it decoded the header as h_: a read
     of a defined readable register (or an active copy) its value and the CRC of the header and the value; of the
     sample window a valid word's status byte and SEQ's high byte, or an empty word's status byte and 0x00; of a
@@ -408,6 +408,8 @@ def slip_responses(h_):
             valid |= {v | (1 << b_) for v in valid}
         for b_ in empty_flags:
             empty |= {v | (1 << b_) for v in empty}
+        if window_empty:                                  # the FIFO empty: the window answers empty words only (step 3,
+            return [(s, 0) for s in sorted(empty)]        # right after a reset; audit round 38, auditor C)
         return [(s, q) for s in sorted(valid) for q in range(256)] + [(s, 0) for s in sorted(empty)]
     if a in by and by[a][2] != "WO":
         return [(w, crc8([h_, w])) for w in sorted(reg_values(by[a][1]))]
@@ -428,7 +430,7 @@ def slip_target(key):
     return r[0], reg_values(name)
 
 
-def slip_hazards(key):
+def slip_hazards(key, any_value=False, window_empty=False):
     """Where one SCLK slip in a 3-byte CRC read gives the host another legal value with a valid CRC and a first byte
     that passes rule (a) (bits 7..6 = 10): (value sent, value read) for a slip after the header, (-1, value read) for
     a slip in the header, where the chip decodes another address (or a write, or the window) and answers for it. key:
@@ -447,6 +449,8 @@ def slip_hazards(key):
     t8 = np.array([crc8([x]) for x in range(256)], dtype=np.int64)
     legal = np.zeros(256, dtype=bool)
     legal[[v for v in sorted(vals) if 0 <= v < 256]] = True     # (a field outside the byte is reported elsewhere)
+    if any_value:                                        # the host takes any value as read (the read decides, audit
+        legal[:] = True                                  # round 38, auditor C: rule (b)'s step-3 reads)
     want_crc = t8[t8[h] ^ np.arange(256)]                # the CRC the host checks for each value it may read
     mosi = h << 24
     out, cache = set(), {}
@@ -458,7 +462,7 @@ def slip_hazards(key):
         for k in range(23 if ki == 3 else 24):
             h_ = chip(k) >> 24                                   # the header the chip decoded
             if h_ not in cache:
-                cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
+                cache[h_] = np.array(slip_responses(h_, window_empty), dtype=np.int64).reshape(-1, 2)
             b1, b2 = cache[h_][:, 0], cache[h_][:, 1]
             for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
                 hs = host((st << 24) | (b1 << 16) | (b2 << 8), k)  # what the host sampled
@@ -689,7 +693,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）、手順 3 の引く ID と VERSION の値は既定値のバイトに等しい（第 37 回、C）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）、手順 3 と規則 (b) の引く ID と VERSION の値は既定値のバイトに等しく（第 37 回、第 38 回、C）、空の FIFO の窓では 1 回の SCLK の滑りがその CRC 付きの読みに CRC の合う誤った値を作らない（規則 (b)。第 38 回、C）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
     "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
@@ -1182,6 +1186,20 @@ def check(verbose=True):
                         f"{(reset_of('ID'), reset_of('VERSION'))} (the host checks them; audit round 37, auditor C)")
     except OSError:
         pass                                            # (reported by the overload rule's comparison)
+    try:                                                # every quote of ID and VERSION's values in both documents
+        for path_ in (REQ_DOC, DOC):                     # (audit round 38, auditor C: rule (b)'s were tied to nothing)
+            for m_ in re.finditer(r"ID 0x([0-9A-F]{2}) と VERSION 0x([0-9A-F]{2})", open(path_, encoding="utf-8").read()):
+                got_ = (int(m_.group(1), 16), int(m_.group(2), 16))
+                if got_ != (reset_of("ID"), reset_of("VERSION")):
+                    errs.append(f"{os.path.basename(path_)} quotes ID and VERSION's values as {got_}, the map's reset bytes are {(reset_of('ID'), reset_of('VERSION'))} (audit round 38, auditor C)")
+    except OSError:
+        pass
+    for n_ in ("ID", "VERSION"):                         # rule (b): step 3's CRC reads, right after a reset with the
+        v_ = reset_of(n_)                                # FIFO empty, give no CRC-valid wrong value under one SCLK slip
+        bad_ = [p_ for p_ in slip_hazards(n_, any_value=True, window_empty=True)   # (round 37, B's model; round 38, C)
+                if p_[0] == v_ or (p_[0] == -1 and p_[1] != v_)]
+        if bad_:
+            errs.append(f"{n_} 0x{v_:02X}: with the FIFO empty (step 3), one SCLK slip in its CRC read gives the CRC-valid wrong reads {[(hex(a_), hex(b_)) for a_, b_ in bad_[:4]]} (rule (b); audit round 38, C)")
     guard_ = set(guarded_addrs())                       # the guarded set as the documents state it (round 32, B)
     timers_ = {a_ for a_, n_, *_ in REGS if a_ in guard_ and n_.startswith("T_")}
     locked_ = {a_ for a_, _n, _acc, l_, *_ in REGS if l_}
@@ -1434,6 +1452,9 @@ def selftest():
     req_slip9 = os.path.join(tmp, "req_slip9.md")      # audit round 21, auditor C: the requirements' T_WARM count
     with open(req_slip9, "w", encoding="utf-8") as fo:   # as round 19 recorded it
         fo.write(open(REQ_DOC, encoding="utf-8").read().replace("T_WARM は 17 組", "T_WARM は 9 組"))
+    req_rule_b = os.path.join(tmp, "req_rule_b.md")     # audit round 38, auditor C: rule (b)'s ID and VERSION values
+    with open(req_rule_b, "w", encoding="utf-8") as fo:
+        fo.write(open(REQ_DOC, encoding="utf-8").read().replace("ID 0xE6 と VERSION 0x10 の読みに", "ID 0xE7 と VERSION 0x11 の読みに"))
     no_rule = os.path.join(tmp, "no_rule.md")
     with open(no_rule, "w", encoding="utf-8") as fo:
         fo.write("過負荷の規則の文のない文書\n")
@@ -1801,6 +1822,13 @@ def selftest():
     def m_probe_off_reach():                             # audit round 34, auditor B: a reachable T_RST of 0x25
         g["PROBE_OFF_REACHABLE"]["T_RST"] = [0x25]
 
+    def m_rule_b_quote():                                # audit round 38, auditor C: rule (b) quoting other values
+        g["REQ_DOC"] = req_rule_b
+
+    def m_version_risky():                               # audit round 38, auditor C: a VERSION whose read one slip
+        f_ = fld("VERSION", "VERSION")                   # turns into another CRC-valid value (58 -> 59)
+        f_["reset"], f_["legal"] = 58, [58]
+
     def m_version_reset():                               # audit round 37, auditor C: VERSION bumped, step 3's quote not
         f_ = fld("VERSION", "VERSION")
         f_["reset"], f_["legal"] = 0x11, [0x11]
@@ -1933,6 +1961,8 @@ def selftest():
             ("IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）", m_crc_lsb),
             ("VERSION の合法な値を 256 通りに（手順 3 の判断の読みに滑りの組ができる）", m_slip_version),
             ("VERSION の既定値を 0x11 に（手順 3 の引く 0x10 と合わない）", m_version_reset),
+            ("規則 (b) が ID と VERSION を 0xE7 と 0x11 と引く", m_rule_b_quote),
+            ("VERSION の既定値を 58 に（空の窓で 1 回の滑りが 59 を CRC の合う値として読ませる）", m_version_risky),
             ("要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す", m_probe_off_text),
             ("要件の T_WARM の滑りの数を読めない形に（17 個の組）", m_req_slip_unread),
             ("要件の FLG-04 の両端の符号を 0 と 30 に", m_req_ovl_codes),
@@ -2128,6 +2158,8 @@ SELFTEST_EXPECT = {
     'CRC 無効のチップの到達しうる値に T_RST 0x25 を加える': ('(rule (c): a CRC-off chip holds its reset values or those of PROBE_OFF_REACHABLE; audit rounds 33 and 34, auditor B)',),
     'IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）': ('outside the byte',),
     'VERSION の既定値を 0x11 に（手順 3 の引く 0x10 と合わない）': ('step 3 of the requirements quotes ID and VERSION as',),
+    '規則 (b) が ID と VERSION を 0xE7 と 0x11 と引く': ("quotes ID and VERSION's values as",),
+    'VERSION の既定値を 58 に（空の窓で 1 回の滑りが 59 を CRC の合う値として読ませる）': (': with the FIFO empty (step 3), one SCLK slip in its CRC read gives the CRC-valid wrong reads',),
     'VERSION の合法な値を 256 通りに（手順 3 の判断の読みに滑りの組ができる）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     'CRC 無効のチップの到達しうる値から T_WARM を除く': ('(the frames through the address decode and the RANGE check; rule (c); audit round 35, auditor C)',),
     '要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す': ('rule (c) of the requirements does not name the reachable CRC-off values',),

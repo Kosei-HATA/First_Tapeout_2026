@@ -45,4 +45,19 @@ foreach port [all_outputs] {
 }
 puts $f [format "worst setup %.3f hold %.3f" [sta::worst_slack -max] [sta::worst_slack -min]]
 close $f
+# the blanking ports edge by edge (chip_sta_report.py: CHOP_BLANK's rise before either CHOP_OUT edge, its fall after
+# them; 11/24: r14's timing model with the preset / clear arcs makes CHOP_BLANK's fall the SOFT_RESET path, so the
+# worst of both edges is not the clocked edge there)
+set f [open $out/edges.txt w]
+foreach port {CHOP_OUT CHOP_BLANK} {
+    foreach d {max min} {
+        foreach e {rise fall} {
+            set pe [lindex [find_timing_paths -${e}_to [get_ports $port] -path_delay $d] 0]
+            if {$pe ne ""} {
+                puts $f [format "edge %s %s %s %.3f" $port $d $e [get_property [lindex [get_property $pe points] end] arrival]]
+            }
+        }
+    }
+}
+close $f
 exit

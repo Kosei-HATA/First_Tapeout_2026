@@ -16,7 +16,8 @@
 # usage: ./run_chip_sta.sh
 # Environment: PYTHON (default gf180/tools/venv310/bin/python), NIXDIR (the LibreLane
 # work copy with shell.nix), EEG_DIG_REV (the chip: r14 by default, the 14th chip with the r14
-# macro, results in build/r14/; r13, the 13th chip, results in build/: rev.py), TOP_RUN / ADC_RUN
+# macro, results in build/r14/; r13, the 13th chip, results in build/: rev.py), CHIP_STA_BUILD
+# (another results folder, e.g. build/r13 for the 13th chip's own wiring), TOP_RUN / ADC_RUN
 # (macro runs; r13: f2 / f3, r14: the r14 macro run R14_RUN below / f3_rerun_20261119, the re-run
 # identical to f3, gf180/tapeout/digital/README_rerun_20261119.md).
 set -eu
@@ -28,10 +29,12 @@ IO=$NIXDIR/gf180mcu/gf180mcuD/libs.ref/gf180mcu_fd_io/lib
 REV=${EEG_DIG_REV:-r14}
 R14_RUN=r14f5_20261124           # the r14 macro on the 14th chip (gf180/tapeout/layout/gds/r14/README.md)
 if [ "$REV" = r13 ]; then
-    TOP_RUN=${TOP_RUN:-f2}; ADC_RUN=${ADC_RUN:-f3}; TOP_DIR=eeg_digital_top; BUILD=$HERE/build
+    TOP_RUN=${TOP_RUN:-f2}; ADC_RUN=${ADC_RUN:-f3}; TOP_DIR=eeg_digital_top; BUILD=${CHIP_STA_BUILD:-$HERE/build}
 else
-    TOP_RUN=${TOP_RUN:-$R14_RUN}; ADC_RUN=${ADC_RUN:-f3_rerun_20261119}; TOP_DIR=eeg_digital_top_r14; BUILD=$HERE/build/$REV
+    TOP_RUN=${TOP_RUN:-$R14_RUN}; ADC_RUN=${ADC_RUN:-f3_rerun_20261119}; TOP_DIR=eeg_digital_top_r14
+    BUILD=${CHIP_STA_BUILD:-$HERE/build/$REV}
 fi
+export CHIP_STA_BUILD=$BUILD   # chip_nets.py (rev.py) writes there too
 TOP=$HERE/../$TOP_DIR/runs/$TOP_RUN/final/lib
 ADC=$HERE/../eeg_adc_dig/runs/$ADC_RUN/final/lib
 RES=$BUILD/${TOP_RUN}_$ADC_RUN

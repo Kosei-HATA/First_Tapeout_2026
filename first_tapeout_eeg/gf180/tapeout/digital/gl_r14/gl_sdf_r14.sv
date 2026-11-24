@@ -113,9 +113,14 @@ module gl_sdf_r14;
             default: force dut.u_seq.state = 4'd15;
         endcase
     endtask
-    // one cycle: forced 1 ps after a rising edge, released at the next one (the RTL takes its next state there)
+    // The forced value appears INJ after a rising edge, about when a flip-flop's Q changes in the netlist: after the clock
+    // tree (the flip-flops' clock 2-4 ns after the pin at ss) and the clock-to-output delay. Forced 1 ps after the edge,
+    // with the SDF the flip-flops would still take that edge, with a D computed from the forced value (11/24: AFE_RST took
+    // a 0 there in all three corners, 4 of the 8 injections). Without delays any time in the cycle is the same.
+    localparam real INJ = 5.0;
+    // one cycle: forced INJ after a rising edge, released at the next one (the RTL takes its next state there)
     task automatic inject_seq(input integer v);
-        @(posedge MCLK); #0.001;
+        @(posedge MCLK); #(INJ);
         force_seq(v);
         @(posedge MCLK);
         release dut.u_seq.state;
@@ -142,6 +147,7 @@ module gl_sdf_r14;
         rd_expect(A_ERR, 8'h00, "1 ERR after its W1C");
         rd_expect(A_STATE, {4'h0, ST_IDLE}, "1 STATE");
         $display("1  identity, RESET_FLAG (errors %0d)", errors);
+`ifndef GL_DBG_SKIP23                                       // a debugging run straight to 4 (not in the record)
         // ---------------- 2: SPI
         wr(A_CPF_TRIM, 8'h0E);
         rd_expect(A_CPF_TRIM, 8'h0E, "2 CPF_TRIM written");
@@ -217,6 +223,18 @@ module gl_sdf_r14;
         rd_expect(A_ERR, 8'h00, "3 ERR at the end");
         $display("3  START to RUN, %0d samples, APPLY_NR (%0d CHANGED), APPLY (AFE_RST %0.1f us), FLUSH, STOP (errors %0d)",
                  n_samples, n_changed, pulse_w / 1000.0, errors);
+`else
+        wr(A_IF_CFG, 8'h01);
+        bfm_crc_en = 1'b1;
+        wr(A_T_WARM, T_WARM_T_WARM_MIN);  wr(A_T_REC, T_REC_T_REC_MIN);
+        wr(A_OFF_CTRL, 8'h01);            wr(A_OFF_M_H, 8'h00);   wr(A_OFF_M_L, 8'd11);
+        wr(A_CPF_TRIM, 8'h05);
+`endif
+`ifdef GL_DBG_VCD
+        $dumpfile(`GL_DBG_VCD);
+        $dumpvars(0, gl_sdf_r14.dut.u_seq, gl_sdf_r14.AFE_RST, gl_sdf_r14.MCLK, gl_shadow_r14.afe_rst, gl_shadow_r14.seq_gl,
+                  gl_shadow_r14.seq_rtl, gl_shadow_r14.t_pos, gl_shadow_r14.seq_hold);
+`endif
         // ---------------- 4: illegal sequencer states
         for (int bad = 9; bad <= 15; bad++) begin
             inject_seq(bad);
@@ -255,7 +273,7 @@ module gl_sdf_r14;
                 end
                 begin
                     repeat (200) @(posedge MCLK);               // inside the data byte
-                    #0.001; force_spi_st(bad);
+                    #(INJ); force_spi_st(bad);
                     @(posedge MCLK);
                     release dut.u_spi.st;
                 end
@@ -268,7 +286,7 @@ module gl_sdf_r14;
             rd_expect(A_CPF_TRIM, 8'h05, $sformatf("5 CPF_TRIM not written with the illegal SPI state %0d", bad));
         end
         for (int bad = 0; bad < 16; bad++) if (!spi_defd[bad]) begin
-            @(posedge MCLK); #0.001;
+            @(posedge MCLK); #(INJ);
             force_spi_st(bad);
             @(posedge MCLK);
             release dut.u_spi.st;

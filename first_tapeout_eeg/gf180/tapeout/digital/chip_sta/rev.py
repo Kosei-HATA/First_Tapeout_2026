@@ -7,7 +7,10 @@ macro the chip takes: gf180/tapeout/layout/digrev.py, EEG_DIG_REV, r14 by defaul
        (layout/runs/chip_top/), results in build/r14/, the macro's output buffers clkbuf_2 (all 50 outputs; buf_16
        for comparison, as in r13's tables)
 
-CHIP_LVSDB overrides the LVS database."""
+CHIP_LVSDB overrides the LVS database, CHIP_STA_BUILD the results folder. build/ holds r13's macros with the chip
+wiring of 10/24 (the 4th assembly: the numbers of gf180_digital_verification_20261024.md, section 5); the 13th chip's own
+wiring (the 12th assembly moved clock and data lines, 11/13) was checked on 11/24 with
+CHIP_STA_BUILD=build/r13 TOP_RUN=f2_rerun_20261119 ADC_RUN=f3_rerun_20261119 (macros identical to f2 / f3)."""
 import os
 import sys
 
@@ -20,6 +23,7 @@ REV = digrev.REV
 CHIPRUNS = os.path.join(REPO, "gf180", "tapeout", "layout", "runs", "chip_top")
 LVSDB = os.environ.get("CHIP_LVSDB") or {"r13": os.path.join(CHIPRUNS, "r13_20261119", "eeg_core.lvsdb"),
                                          "r14": os.path.join(CHIPRUNS, "eeg_core.lvsdb")}[REV]
-BUILD = os.path.join(HERE, "build") if REV == "r13" else os.path.join(HERE, "build", REV)
+BUILD = os.environ.get("CHIP_STA_BUILD") or (os.path.join(HERE, "build") if REV == "r13"
+                                              else os.path.join(HERE, "build", REV))
 DIG_BOX = (3002.0, 542.0, 3442.0, 542.0 + digrev.HEIGHT)       # eeg_digital_top (mirrored about x)
 DRIVE = {"r13": ("buf_1", "buf_16"), "r14": ("clkbuf_2", "buf_16")}[REV]   # the macro's output buffer, the comparison

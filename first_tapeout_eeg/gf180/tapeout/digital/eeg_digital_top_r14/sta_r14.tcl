@@ -17,6 +17,12 @@ read_spef $::env(SPEF)
 read_sdc $::env(SDC)
 # after the SDC, which turns the arcs on itself (eeg_digital_top_r14.sdc)
 set sta_preset_clear_arcs_enabled $::env(PRESET)
+# the timing model of this corner (as LibreLane's write_timing_model), when ETM names its file (run_etm_r14.sh): with the
+# arcs on, the clear / preset arcs merge into the outputs' clocked arcs (CHOP_BLANK's fall, the rise of CHOP_EN,
+# AFE_RST, DWA_EN: the SOFT_RESET paths); with them off, the clocked arcs alone
+if {[info exists ::env(ETM)] && $::env(ETM) ne ""} {
+    write_timing_model $::env(ETM)
+}
 set out $::env(OUT)
 set c $::env(CORNER)
 report_checks -path_delay max -group_path_count 5 -format full_clock_expanded -fields {slew cap input_pins} -digits 3 > $out/setup.rpt

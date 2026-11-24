@@ -11,10 +11,15 @@ Times are from the MCLK edge at the pad (MCLK_PAD), in ns. Checks derived here:
   * blanking: CHOP_BLANK rises 1 MCLK before each CHOP_OUT edge and falls BLANK_LEN MCLK
     after it: T + CHOP_OUT(min) - CHOP_BLANK(max) and BLANK_LEN T + CHOP_BLANK(min) - CHOP_OUT(max),
     the fall at BLANK_LEN 1 (r14's legal minimum) and 15 (the offset DAC on) (digital-control audit
-    round 35, auditor A: it was fixed at 7, while r14 accepts 1..15)
+    round 35, auditor A: it was fixed at 7, while r14 accepts 1..15). With <corner>/edges.txt
+    (chip_sta.tcl since 11/24) edge by edge: CHOP_BLANK's rise against either CHOP_OUT edge, its fall
+    likewise; without it the worst of both edges (the runs before 11/24). r14's timing model with the
+    preset / clear arcs (final/lib) makes CHOP_BLANK's fall the SOFT_RESET path: its blanking needs the
+    model without them (eeg_digital_top_r14/run_etm_r14.sh, TOP_RUN=<run>_etmoff)
   * slews at the analog receivers (30-70 % values of the libraries, as reported)
-The runs so far are r13's macros (f2) with r13's chip wiring; r14's macro and its chip routes are
-checked again in VER-08 (requirements; its outputs are clkbuf_2 and its pins moved).
+Runs: build/f2_f3 (r13's macros with the chip wiring of 10/24, the 4th assembly), build/r13/ (the 13th
+chip's own wiring, 11/24), build/r14/ (the 14th chip with the r14 macro, VER-08: its outputs clkbuf_2, its
+pins moved).
 """
 BLANK_LENS = (1, 15)
 import os
@@ -60,6 +65,31 @@ def parse_ports(c, kind):
     return out
 
 
+def parse_edges(c):
+    """{(port, max|min, rise|fall): arrival} from <corner>/edges.txt, or None for the runs before it."""
+    p = os.path.join(B, c, "edges.txt")
+    if not os.path.exists(p):
+        return None
+    out = {}
+    for line in open(p):
+        w = line.split()
+        if w and w[0] == "edge":
+            out[(w[1], w[2], w[3])] = float(w[4])
+    return out
+
+
+def blanking(c, pm, pn):
+    """The blanking margins of corner c: (before the CHOP_OUT edges, {BLANK_LEN: after them})."""
+    e = parse_edges(c)
+    if e is None:
+        return (T + pn["CHOP_OUT"][0] - pm["CHOP_BLANK"][0],
+                {n: n * T + pn["CHOP_BLANK"][0] - pm["CHOP_OUT"][0] for n in BLANK_LENS})
+    out_min = min(e[("CHOP_OUT", "min", "rise")], e[("CHOP_OUT", "min", "fall")])
+    out_max = max(e[("CHOP_OUT", "max", "rise")], e[("CHOP_OUT", "max", "fall")])
+    return (T + out_min - e[("CHOP_BLANK", "max", "rise")],
+            {n: n * T + e[("CHOP_BLANK", "min", "fall")] - out_max for n in BLANK_LENS})
+
+
 def main():
     rows = []
     for c in CORNERS:
@@ -78,8 +108,8 @@ def main():
              "blk": blk, "strobe": s["analog"]["u_q/CK"],
              "dac1": T + pn["DAC_CLK"][0] - max(sel1), "sel1_max": max(sel1), "dacclk": (pn["DAC_CLK"][0], pm["DAC_CLK"][0]),
              "sel2": (min(sel2n), max(sel2)),
-             "blank_rise": T + pn["CHOP_OUT"][0] - pm["CHOP_BLANK"][0],
-             "blank_fall": {n: n * T + pn["CHOP_BLANK"][0] - pm["CHOP_OUT"][0] for n in BLANK_LENS},
+             "blank_rise": blanking(c, pm, pn)[0],
+             "blank_fall": blanking(c, pm, pn)[1],
              "slew": {p: pm[p][1] for p in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP1", "CHOP_EN", "AFE_RST",
                                               "DAC_CLK", "ADC_ZERO")},
              "arr": {p: (pn[p][0], pm[p][0]) for p in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP1", "DAC_CLK")},

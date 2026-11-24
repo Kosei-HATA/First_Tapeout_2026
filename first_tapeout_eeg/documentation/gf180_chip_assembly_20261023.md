@@ -851,3 +851,30 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
     - 加算点 INP／INN と、自分の SC 抵抗のスイッチのゲート CDA／CDB（0.05〜0.13 fF、INP と INN の差は 0.01 fF 以内）
     - 出力チョッパのゲートと OPI／ONI、DAC1 のスイッチと I1P／I1N
 - 判断のための見立て：どの結合も、シミュレーションのモデルに入ったうえで要求を満たしている。直すなら、チップの配線で VCM と VBCM を NCDB から離すことになる（間に AVSS の線を入れるか、束の順を入れ替える）。そのときは、チップの DRC、LVS、precheck、チップの配線の抽出と、回している r13 の評価をやり直す。勧めは、今回は直さないこと。ユーザーの判断をあおいでいる。
+
+## 組み直し（11/24、14 回目：r14 のデジタル制御のマクロ）
+
+**目的**
+
+- 見直したデジタル制御（記録表 C4、要件定義 `gf180_digital_control_requirements_20261119.md`）の RTL（`gf180/tapeout/rtl_r14/`、コミット e56bc9da。論理は 11/20 の監査の第 10 回から不変、11/24 の第 39 回も RTL の変更なし）のマクロを入れたチップの組み立てと、要件 VER-08 の検証。
+- 発注の候補は r13 のまま。r14 に替えるか否かは 12/10〜12 に判断する（要件定義の第 10 節）。
+
+**変更**
+
+- デジタルのマクロ eeg_digital_top：LibreLane のラン r14f5_20261124（440 × 900 µm、全 50 個の出力を clkbuf_2 で駆動。`gf180/tapeout/digital/eeg_digital_top_r14/README_r14f_20261124.md`、`gf180_digital_verification_20261024.md` の第 8 節）。GDS、LEF、ネットリスト、CDL は `gf180/tapeout/layout/gds/r14/`（sha256 は `SHA256SUMS`）。
+- `chip_lay.py` の `DIG_REV`（`gf180/tapeout/layout/digrev.py`。既定 r14、`EEG_DIG_REV=r13` で 13 回目）でマクロの置き場所と高さを選ぶ。
+  - マクロは x 3002〜3442、y 542〜1442 µm（鏡映で置き、南端は r13 と同じ）。端子の名前と順は r13 と同じ（CDL の 62 本）で、コアのネットリスト `gf180/tapeout/chip/eeg_core.spice` は不変。
+  - マクロの上の Metal5 の DVDD／DVSS の帯を 1 組（y 1320〜1344 µm）加えた（r13 は y 642〜1204 µm の 5 組）。
+  - DVDD のデカップリング（MOS の容量 48 個、約 250 pF）を 200 µm 上へ移した（y 1252〜1463 → 1452〜1663 µm）。
+- `gf180/tapeout/pex/supply_check.py`、`gf180/tapeout/chip/make_core_netlist.py`、`gf180/tapeout/digital/chip_sta/`（`rev.py`）を版に追従させた。
+- 層ごとの XOR の道具 `gf180/tapeout/layout/chip_xor.py`（領域の指定、領域の外の差の箇所、ラスタの JSON）。r12／r13 の XOR の記録を再現する。
+
+**確認（11/24）**
+
+- **組み立ての道具の再現**：`EEG_DIG_REV=r13` で組むと、13 回目の `chip_top.gds` と 45 層の XOR で同一（`runs/chip_top/xor_r13_r13rebuild_chip_top_20261124.log`）。
+- **組み立て**（`runs/chip_top/run_chip_r14.sh`）：パッドリング込みのつながりの確認と、GDS のみからの電源の確認（タップの規則を含む）は問題なし。チップの配線の抵抗は DVDD で DIG 0.192 → 0.184 Ω、デカップリング 0.673 → 0.657 Ω、DVSS で DIG 1.118 → 1.081 Ω、デカップリング 1.500 → 1.446 Ω（加えた帯の分）。アナログの電源の抵抗とパッドの電流は r13 と同じ。
+- **XOR（r13 と比べる、穴埋め前、図 54）**：45 層のうち 23 層は同一。違いはデジタルの列（ADC の東の端 x 2942.4 µm から東のパッドまで、コアの全高）の中のみ。例外は CODE4 の線 1 本で、配線器の列 x 2942.24 µm の Metal3、Via3、Metal4（x 2942.05〜2942.40、y 648.6〜679.6 µm、計 11.1 µm²）が ADC の外形の 0.35 µm 内側に掛かる（ADC への CODE の受け渡しの線。LVS のデータベースで網を確かめた）。AFE、ADC の中身、バイアス、基準電圧、試験用マルチプレクサ、パッドリング、アナログの配線は同一。ラベルの違いはなし（`runs/chip_top/xor_r13_r14_chip_top_20261124.log`）。
+- **チップの配線の抽出**（`chip_sta/chip_nets.py`）：デジタルのインタフェースの 112 本のうち、r13 と違うのは 13 本（MCLK、TH_CAPTURE、DAC_LOAD、DWA_EN、ADC_RST_N、CODE[4:0]、CMP_STROBE、DAC_CLK、ADC_ZERO の結合）。マクロの端子の位置の変わった分で、CHOP の群、AFE_RST、CHOP1、TH、SEL1、SEL2、トリムの線は同一。
+- **DRC**：違反なし（「chip_top DRC: clean」）。
+- **チップ全体の LVS（パッドリング込み、KLayout）、コアの LVS、穴埋めのあとの全 DRC、precheck、Netgen**：実行中。同じ GDS のコアの LVS は先に一致を確かめた（`runs/chip_top_r14_core`、20 時 44 分）。
+- チップの STA とトランジスタの水準の確かめ（VER-08）は `gf180_digital_verification_20261024.md` の第 8.4、8.5 節、図 55、56。

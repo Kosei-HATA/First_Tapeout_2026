@@ -7,7 +7,7 @@ baseline must pass. The groups and their benches:
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
                             tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22), tb_chop1 for an edit
                             of eeg_chop1.sv or eeg_clkgen.sv (and b00; audit round 27). tb_top_r14 with the
-                            4-deep FIFO (-DFIFO4, about 10 minutes a run, 12 under load; audit round 38, auditor C: this said 6) for b00 and for the mutants whose edits
+                            4-deep FIFO (-DFIFO4, about 11 minutes a run, 12 to 25 under load since round 39's phase AK; audit round 38, auditor C: this said 6) for b00 and for the mutants whose edits
                             name DEPTH or edit eeg_fifo.sv: the depth reaches eeg_fifo and, through FIFO_DEPTH,
                             eeg_regs's CAPS (audit round 26, auditor C: "the depth is eeg_fifo's alone" was false,
                             and CAPS fixed at 8 was MISSED; round 27: an edit breaking only the 4-deep FIFO);
@@ -762,6 +762,13 @@ MUTATIONS = [
     ('レジスタ：サンプルの OVERRUN を DFLAG.OVERRUN の次の値から（同じサイクルの W1C を含める）', 'eeg_regs.sv',
      '    assign dflag_overrun = dflag[0];',
      '    assign dflag_overrun = (dflag[0] & ~(we && w_ok && addr == A_DFLAG && wdata[DFLAG_OVERRUN_LSB])) | ovr_set;'),
+    # audit round 39, auditor C: STATUS's READY, DATA, AFE_RST and OVL_NOW and the empty word's OVL one MCLK late (a
+    # status input registered, as a designer registering block inputs might; AK)
+    ('レジスタ：STATUS の READY をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       ready_q;                     // READY, registered (a glitch-free decode)\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) ready_q <= 1'b0; else ready_q <= (state == ST_RUN);\n"), ('eeg_regs.sv', '        status_byte[STATUS_READY_LSB]       = (state == ST_RUN);', '        status_byte[STATUS_READY_LSB]       = ready_q;')], None, None),
+    ('レジスタ：STATUS の DATA をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       data_q;                      // DATA for STATUS, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) data_q <= 1'b0; else data_q <= fifo_nonempty;\n"), ('eeg_regs.sv', '        status_byte[STATUS_DATA_LSB]        = fifo_nonempty;', '        status_byte[STATUS_DATA_LSB]        = data_q;')], None, None),
+    ('レジスタ：STATUS の AFE_RST をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       afe_rst_q;                   // AFE_RST for STATUS, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) afe_rst_q <= 1'b1; else afe_rst_q <= afe_rst;\n"), ('eeg_regs.sv', '        status_byte[STATUS_AFE_RST_LSB]     = afe_rst;', '        status_byte[STATUS_AFE_RST_LSB]     = afe_rst_q;')], None, None),
+    ('レジスタ：STATUS の OVL_NOW をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       ovl_now_q;                   // OVL_NOW for STATUS, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) ovl_now_q <= 1'b0; else ovl_now_q <= ovl_now;\n"), ('eeg_regs.sv', '        status_byte[STATUS_OVL_NOW_LSB]     = ovl_now;', '        status_byte[STATUS_OVL_NOW_LSB]     = ovl_now_q;')], None, None),
+    ('最上位：空の語の OVL をレジスタの OVL_NOW から（1 MCLK 遅れる）', [('eeg_digital_top.sv', '    logic [7:0]  smp_status, empty_status;       // built below from the generated bit positions (audit round 8)\n', "    logic [7:0]  smp_status, empty_status;       // built below from the generated bit positions (audit round 8)\n    logic        ovl_now_q;                      // OVL_NOW for the empty word, registered\n    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) ovl_now_q <= 1'b0; else ovl_now_q <= ovl_now;\n"), ('eeg_digital_top.sv', '        empty_status[SMP_OVL_LSB]     = ovl_now;', '        empty_status[SMP_OVL_LSB]     = ovl_now_q;')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1353,7 +1360,7 @@ def run(i, m, bench="top"):
         return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
     def top_once(vvp, tag):
         """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
-        try:                                         # the bench's own watchdog (1,200 ms simulated) ends a hang
+        try:                                         # the bench's own watchdog (1,500 ms simulated) ends a hang
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
                                timeout=5400)
         except subprocess.TimeoutExpired:

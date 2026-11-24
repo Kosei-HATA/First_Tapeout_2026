@@ -1,0 +1,64 @@
+=== m1
+ERROR @90000000 ns: output 89: CHANGED 0, expected 1 (marks until 90)
+ERROR @90000000 ns: output 89: window from 89088, one-step change at frame 86033 (T_ELEC 3), no CHANGED
+ERROR @118001000 ns: output 117: CHANGED 0, expected 1 (marks until 118)
+tb_a39_rand seed 405763338: 280 episodes, 25751 ticks, 72 stores (31 with OVL, 31 CHANGED; 11 RUN steps), 39 one-step and 17 other setting changes, 16 AFE_RST releases, 0 SOFT_RESETs; 3 errors
+FAIL
+tb_a39_rand.sv:337: $finish called at 201177273310 (1ps)
+=== m2
+ERROR @55000000 ns: output 54: OVL 0, expected 1
+ERROR @81000000 ns: output 80: OVL 0, expected 1
+ERROR @86000000 ns: output 85: OVL 0, expected 1
+ERROR @95000000 ns: output 94: OVL 0, expected 1
+ERROR @104000000 ns: output 103: OVL 0, expected 1
+ERROR @107001000 ns: output 106: OVL 0, expected 1
+ERROR @116001000 ns: output 115: OVL 0, expected 1
+ERROR @171001000 ns: output 170: OVL 0, expected 1
+ERROR @178001000 ns: output 177: OVL 0, expected 1
+tb_a39_rand seed 405763338: 280 episodes, 25751 ticks, 72 stores (31 with OVL, 33 CHANGED; 11 RUN steps), 39 one-step and 17 other setting changes, 16 AFE_RST releases, 0 SOFT_RESETs; 9 errors
+FAIL
+tb_a39_rand.sv:337: $finish called at 201177273310 (1ps)
+=== m3
+ERROR @111000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 1
+ERROR @978000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 1
+ERROR @7556000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @12603000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @14275000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @16783000 ns: OFM 233 beyond range 1
+ERROR @16783000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 0
+ERROR @22111000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @28361000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @29205000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @35025000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @36127000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @41119000 ns: OFM 725 beyond range 2
+ERROR @41119000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @41854000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @45791000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @56549000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @56807000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 2
+ERROR @58409000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @62971000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @64487000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @67026000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @70815000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @72096000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @79159000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @82776000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @84018000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @93339000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @94933000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 6
+ERROR @96784000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @97058000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @121269000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @121542000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 2
+ERROR @123097000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @126675000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @127769000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+ERROR @128214000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @130308000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @132503000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 3
+ERROR @133152000 ns: a setting pin or AFE_RST changed at cycle 26 (not e25 of a tick), state 7
+tb_a39_rand seed 405763338: 280 episodes, 25751 ticks, 72 stores (31 with OVL, 33 CHANGED; 11 RUN steps), 39 one-step and 34 other setting changes, 16 AFE_RST releases, 0 SOFT_RESETs; 58 errors
+FAIL
+tb_a39_rand.sv:337: $finish called at 201177273310 (1ps)

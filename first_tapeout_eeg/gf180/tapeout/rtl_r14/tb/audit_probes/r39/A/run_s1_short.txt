@@ -1,0 +1,4 @@
+tb_a39_rand seed -1666259811: 63 episodes, 2061 ticks, 1 stores (0 with OVL, 0 CHANGED; 0 RUN steps), 2 one-step and 3 other setting changes, 3 AFE_RST releases, 0 SOFT_RESETs; 0 errors
+PASS
+tb_a39_rand.sv:334: $finish called at 16097173310 (1ps)
+vvp -n a39_rand.vvp +seed=1 +t_end_us=15000  9.59s user 0.02s system 99% cpu 9.664 total

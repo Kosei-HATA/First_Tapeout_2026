@@ -1,0 +1,50 @@
+--- rtl_r14/eeg_digital_top.sv
++++ A/m1/eeg_digital_top.sv
+@@ -204,7 +204,7 @@
+     // never in the cycle of an output). Leaving RUN cancels the rest (APPLY, STOP: the data starts again with a cleared
+     // CIC after the waits, so no window of the next RUN straddles the step; samples are stored only in RUN)
+     logic [8:0] chg_new;
+-    assign chg_new = 9'd3 + {1'b0, t_elec};
++    assign chg_new = 9'd2 + {1'b0, t_elec};
+     always_ff @(posedge MCLK or negedge rst_n) begin
+         if (!rst_n)                   chg_cnt <= 9'd0;
+         else if (seq_mark)            chg_cnt <= (chg_cnt > chg_new) ? chg_cnt : chg_new;
+--- rtl_r14/eeg_digital_top.sv
++++ A/m2/eeg_digital_top.sv
+@@ -224,7 +224,7 @@
+         smp_status                  = 8'h00;
+         smp_status[SMP_VALID_LSB]   = 1'b1;
+         smp_status[SMP_OVERRUN_LSB] = dflag_overrun;
+-        smp_status[SMP_OVL_LSB]     = ovl_iv | ovl_hist[0] | ovl_hist[1];
++        smp_status[SMP_OVL_LSB]     = ovl_iv | ovl_hist[0];
+         smp_status[SMP_CHANGED_LSB] = chg_now;
+         smp_status[SMP_ERR_LSB]     = alert;
+         empty_status                  = 8'h00;  // VALID 0, CHANGED 0, SEQ and DATA 0 (spec 3.4)
+--- rtl_r14/eeg_regs.sv
++++ A/m3/eeg_regs.sv
+@@ -115,6 +115,7 @@
+     logic       o_ofs;
+     logic [3:0] o_ofen;
+     logic       pend;
++    logic       apply_q;
+     logic [7:0] pcode;
+ 
+     // ---------------- decode of a committed write
+@@ -244,13 +245,16 @@
+                     A_TEST_KEY:     unlocked <= (wdata == TEST_KEY_VALUE);
+                     default:        ;
+                 endcase
++            end
++            apply_q <= apply;
++            if (apply_q) begin
++                o_ofm  <= (a_range == 3'd0) ? 10'd0 : a_m;
+             end
+             if (apply) begin
+                 a_m <= s_m;         a_sign <= s_sign;     a_range <= s_range;   a_ibias <= s_ibias;
+                 a_cpf <= s_cpf;     a_bp <= s_bp;         a_bn <= s_bn;         a_fast <= s_fast;
+                 a_dwa <= s_dwa;     a_c1 <= s_c1;         a_blank <= s_blank;   a_atpen <= s_atpen;
+                 a_atpsel <= s_atpsel; a_cstop <= s_cstop; a_azero <= s_azero;
+-                o_ofm  <= (s_range == 3'd0) ? 10'd0 : s_m;
+                 o_ofs  <= (s_range == 3'd0) ? 1'b0  : s_sign;
+                 o_ofen <= ofen_of_range(s_range);   // regmap.ofen_of_range (generated)
+             end

@@ -1,0 +1,27 @@
+k -12: copy cycle starts -4.00 MCLK from e25: header STATUS 0xbc, as the registers
+k -11: copy cycle starts -4.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -10: copy cycle starts -3.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -9: copy cycle starts -3.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -8: copy cycle starts -3.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -7: copy cycle starts -3.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -6: copy cycle starts -2.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -5: copy cycle starts -2.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -4: copy cycle starts -2.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -3: copy cycle starts -2.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -2: copy cycle starts -1.00 MCLK from e25: header STATUS 0x9c, as the registers
+k -1: copy cycle starts -1.00 MCLK from e25: header STATUS 0x9c, as the registers
+k 0: copy cycle starts -1.00 MCLK from e25: header STATUS 0x9c, as the registers
+k 1: copy cycle starts -1.00 MCLK from e25: header STATUS 0x9c, as the registers
+k 2: copy cycle starts 0.00 MCLK from e25: header STATUS 0x85, as the registers
+k 3: copy cycle starts 0.00 MCLK from e25: header STATUS 0x85, as the registers
+k 4: copy cycle starts 0.00 MCLK from e25: header STATUS 0x85, as the registers
+k 5: copy cycle starts 0.00 MCLK from e25: header STATUS 0x85, as the registers
+k 6: copy cycle starts 1.00 MCLK from e25: header STATUS 0x85, as the registers
+k 7: copy cycle starts 1.00 MCLK from e25: header STATUS 0x85, as the registers
+k 8: copy cycle starts 1.00 MCLK from e25: header STATUS 0x85, as the registers
+k 9: copy cycle starts 1.00 MCLK from e25: header STATUS 0x85, as the registers
+k 10: copy cycle starts 2.00 MCLK from e25: header STATUS 0x85, as the registers
+k 11: copy cycle starts 2.00 MCLK from e25: header STATUS 0x85, as the registers
+k 12: copy cycle starts 2.00 MCLK from e25: header STATUS 0x85, as the registers
+tb_c39_status: 0 reads differ from the registers of their copy's cycle; 4 copies in the cycle starting at e25
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/audit39_C/probes/tb_c39_status.sv:69: $finish called at 225104985594 (1ps)

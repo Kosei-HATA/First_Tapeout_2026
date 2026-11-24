@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜38 回）
+# 監査の模擬の元（第 24〜39 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -104,3 +104,8 @@
 | 38 | C | `r38/C/tb_c38_regs.sv` | 493、494（第 39.3 節） | eeg_regs の確認のサイクルの STATUS と、DFLAG の W1C の確定のサイクルの dflag_overrun |
 | 38 | C | `r38/C/mon_c38.sv`、`c38_ack_summary.py`、`run_cov.sh`、`c38_ack_copies.txt`、`cov_summary.txt` | 493、496（第 39.3 節） | 確認のサイクルの先頭の写しと、状態ごとの反映の欄の網羅の監視とその集計 |
 | 38 | C | `r38/C/muts.py`、`fsm_sweep_c38.py` | 第 39.3 節 | RTL の写し（m1、m15：変異 m206、m207）、状態遷移表の新しい類の 1 編集の掃き |
+| 39 | A | `r39/A/tb_a39_rand.sv`、`run_s1_short.txt`、`run_s2.txt`〜`run_s5.txt` | 第 40.1 節 | 要件から書いた不変条件（P1〜P4、S1）の乱数のホストの模擬と、4 種の乱数 × 600 ms の記録 |
+| 39 | A | `r39/A/a39_muts.diff`、`a39_mut_runs.txt` | 第 40.1 節 | 模擬の自己試験の RTL の写し 3 種（CHANGED の個数、サンプルの OVL の区間、OFM の端子の時刻）とその記録 |
+| 39 | C | `r39/C/tb_c39_status.sv`、`st_clean.txt`、`st_mr1.txt`、`st_mr5.txt` | 500（第 40.3 節） | RUN の STOP を取る tick の e25 をまたぐ STATUS の読み出しの掃き（READY と AFE_RST、清い RTL と写し MR1、MR5） |
+| 39 | C | `r39/C/tb_c39_emptyovl.sv`、`eo_clean.txt`、`eo_mr6.txt` | 500（第 40.3 節） | OVL_NOW の立ち上がりをまたぐ空の FIFO のサンプルの読み出しの掃き（清い RTL と写し MR6） |
+| 39 | C | `r39/C/muts.py`、`mkmut.sh`、`apply_mut.py`、`run_sweeps.sh`、`sweep_c37.txt`、`sweep_c38.txt`、`sweep_regmap.txt` | 第 40.3 節 | RTL の写し（MR1、MR3〜MR7：変異 m208〜m212。MR7 は等価）の作り方、状態遷移表と regmap.REGS の 1 編集の掃きとその結果 |

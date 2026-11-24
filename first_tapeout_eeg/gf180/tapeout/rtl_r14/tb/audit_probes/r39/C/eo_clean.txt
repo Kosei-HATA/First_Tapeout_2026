@@ -1,0 +1,27 @@
+k -12: copy cycle starts -2.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -11: copy cycle starts -2.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -10: copy cycle starts -2.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -9: copy cycle starts -2.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -8: copy cycle starts -1.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -7: copy cycle starts -1.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -6: copy cycle starts -1.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -5: copy cycle starts -1.00 MCLK from OVL_NOW's rise: empty word 0x08, OVL as OVL_NOW of the copy's cycle
+k -4: copy cycle starts 0.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k -3: copy cycle starts 0.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k -2: copy cycle starts 0.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k -1: copy cycle starts 0.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 0: copy cycle starts 1.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 1: copy cycle starts 1.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 2: copy cycle starts 1.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 3: copy cycle starts 1.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 4: copy cycle starts 2.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 5: copy cycle starts 2.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 6: copy cycle starts 2.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 7: copy cycle starts 2.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 8: copy cycle starts 3.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 9: copy cycle starts 3.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 10: copy cycle starts 3.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 11: copy cycle starts 3.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+k 12: copy cycle starts 4.00 MCLK from OVL_NOW's rise: empty word 0x28, OVL as OVL_NOW of the copy's cycle
+tb_c39_emptyovl: 0 empty words differ from OVL_NOW of their copy's cycle; 4 copies in the cycle starting at the rise
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/audit39_C/probes/tb_c39_emptyovl.sv:56: $finish called at 2012921503 (1ps)

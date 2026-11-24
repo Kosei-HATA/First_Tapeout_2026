@@ -48,7 +48,22 @@ module tb_spi_r14;
         // a flush from the copy's cycle up to the pop request's cycle (both included), counted before this cycle's
         // copy and request update their counters
         if (dut.seq_flush && (n_snap > 0 || dut.smp_snap) && n_preq == 0) n_fl = n_fl + 1;
-        if (dut.u_spi.cs_start) begin st_cs = dut.status_byte; crc_at_cs = dut.crc_en; end
+        // the header STATUS as the registers give it in the copy's cycle (audit round 39, auditor C: the expectation
+        // had been dut.status_byte itself, which a STATUS built from late copies of its inputs also gives; the model
+        // of tb_top_r14's AF)
+        if (dut.u_spi.cs_start) begin
+            st_cs = 8'h00;
+            st_cs[STATUS_MARK1_LSB]       = STATUS_MARK1_RST;
+            st_cs[STATUS_MARK0_LSB]       = STATUS_MARK0_RST;
+            st_cs[STATUS_ALERT_LSB]       = (|(dut.u_regs.err & dut.u_regs.r_mask)) |
+                                            (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
+            st_cs[STATUS_CMD_PENDING_LSB] = dut.u_regs.pend;
+            st_cs[STATUS_READY_LSB]       = (dut.seq_state === 4'd6);
+            st_cs[STATUS_DATA_LSB]        = dut.fifo_nonempty;
+            st_cs[STATUS_OVL_NOW_LSB]     = dut.ovl_now;
+            st_cs[STATUS_AFE_RST_LSB]     = dut.seq_afe_rst;
+            crc_at_cs = dut.crc_en;
+        end
         if (dut.reg_we) begin
             n_we = n_we + 1;
             we_addr = dut.reg_addr; we_data = dut.reg_wdata; we_wok = dut.u_regs.w_ok; we_soft = dut.u_regs.soft_reset;

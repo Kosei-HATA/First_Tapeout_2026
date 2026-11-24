@@ -206,7 +206,7 @@ REQUIRED_RO = {"ID", "VERSION", "FIFO_DEPTH", "CRC", "ODR_H", "ODR_L", "QBITS", 
 # audit round 32, auditor B: the spec's 2.3 names the guarded set by ranges, 0x20-0x28, 0x60, 0x61 and 0x50-0x54, and
 # BLANK, CPF_TRIM or OFF_CTRL moved within their regions passed: every guarded register is held here, REG-01's list
 # must equal this table, and the stated ranges must equal guarded_addrs())
-FIXED_ADDR = {"ID": 0x00, "VERSION": 0x01, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
+FIXED_ADDR = {"ID": 0x00, "VERSION": 0x01, "CAPS": 0x02, "STATUS": 0x03, "STATE": 0x04, "FIFO_LEVEL": 0x05, "ERR": 0x06, "DFLAG": 0x07,
               "ALERT_MASK": 0x08, "COMMAND": 0x10, "TEST_KEY": 0x11, "OFF_M_H": 0x20, "OFF_M_L": 0x21,
               "OFF_CTRL": 0x22, "AFE_IBIAS": 0x23, "CPF_TRIM": 0x24, "BOOST_TRIM": 0x25, "CHOP_CFG": 0x26,
               "ADC_CFG": 0x27, "BLANK": 0x28, "SAMPLE": 0x40, "T_WARM": 0x50, "T_ELEC": 0x51, "T_REC": 0x52,
@@ -218,7 +218,9 @@ FIXED_BITS = {"MARK1": 7, "MARK0": 6, "CRC_EN": 0, "DRDY_MODE": 1,
               "RESET_FLAG": 0, "OVL": 1, "OVERRUN": 0, "STATE": 0, "LEVEL": 0,
               # audit round 15, auditor C: STATUS's other six bits (the host reads READY, DATA, CMD_PENDING and ALERT by
               # position; READY and DATA exchanged in the map passed every check, the RTL and the benches following it)
-              "ALERT": 5, "CMD_PENDING": 4, "READY": 3, "DATA": 2, "OVL_NOW": 1, "AFE_RST": 0}
+              "ALERT": 5, "CMD_PENDING": 4, "READY": 3, "DATA": 2, "OVL_NOW": 1, "AFE_RST": 0,
+              # audit round 39, auditor B: step 5 uses CAPS.FIFO_DEPTH (read in step 3)
+              "FIFO_DEPTH": 0}
 # the registers the requirements name for the test fields (REG-08: TEST_MUX, TEST_CTRL, DEBUG, locked) and for the
 # interface fields (IF_CFG), checked both ways: each field in its register, and those registers holding no other
 # field (audit round 29, auditor C: a field moved to another register at its lowest free bits passed check() in 88
@@ -269,6 +271,7 @@ SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17,
 SLIP_COUNT_PATTERNS = {"STATUS": r"STATUS の 64 通りの値で (\d+) 組", "T_WARM": r"T_WARM は (\d+) 組"}
 SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)],
                         "ID": [], "VERSION": [],   # step 3 decides from them (audit round 37, auditor B)
+                        "CAPS": [],                  # step 5 from its FIFO_DEPTH (audit round 39, auditor B)
                         "OFF_M_H.ACT": [], "OFF_M_L.ACT": [(0xAA, 0xAB)], "OFF_CTRL.ACT": [], "AFE_IBIAS.ACT": [],
                         "CPF_TRIM.ACT": [], "BOOST_TRIM.ACT": [], "CHOP_CFG.ACT": [], "ADC_CFG.ACT": [],
                         "BLANK.ACT": [], "TEST_MUX.ACT": [], "TEST_CTRL.ACT": []}
@@ -693,7 +696,7 @@ CHECKS = [
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
-    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）、手順 3 と規則 (b) の引く ID と VERSION の値は既定値のバイトに等しく（第 37 回、第 38 回、C）、空の FIFO の窓では 1 回の SCLK の滑りがその CRC 付きの読みに CRC の合う誤った値を作らない（規則 (b)。第 38 回、C）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
+    "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION、第 39 回で CAPS を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）、手順 3 と規則 (b) の引く ID と VERSION の値は既定値のバイトに等しく（第 37 回、第 38 回、C）、空の FIFO の窓では 1 回の SCLK の滑りがその CRC 付きの読みに CRC の合う誤った値を作らない（規則 (b)。第 38 回、C）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
     "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
     "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",

@@ -103,10 +103,18 @@
 //      TEST_CTRL out of an APPLY_NR, or applying the test settings only while AFE_RST is high, passed all 16 groups)
 //      audit round 38 (auditor C): AJ also takes APPLY in RECOVER, WAIT_E and FILL (checked when RUN is back; ALIGN
 //      is left out: its length follows the output grid's phase, 175..32,687 MCLK, and can end inside the writes);
-//      AF compares the whole header STATUS with the registers of the copy's cycle and needs a copy in an
+//      AF compares the whole header STATUS with the registers of the copy's cycle (only ALERT and CMD_PENDING change
+//      there; READY, DATA, AFE_RST and OVL_NOW: AK, audit round 39) and needs a copy in an
 //      acknowledge cycle (a copy dropping CMD_PENDING there passed); AD also sweeps DFLAG.OVERRUN's W1C across a
 //      store, with ALERT_MASK_D 0x01, and every AD sample's OVERRUN must be DFLAG.OVERRUN of its store's cycle (a copy
 //      taking the flag's next value passed)
+//   AK audit round 39 (auditor C): the copy instants of STATUS's READY, DATA, AFE_RST and OVL_NOW and of the empty
+//      word's OVL (spec 3.2, 3.4): an APPLY in RUN with a sample stored, a register read aimed in 1/4-MCLK steps across
+//      its tick (READY and DATA 1 -> 0), its PULSE's start and end (AFE_RST) and FILL's store (READY and DATA 0 -> 1);
+//      in IDLE, OVL_NOW's rise on four extreme codes for a register read's header and an empty-FIFO sample read's
+//      word; the header against the whole STATUS of the copy's cycle (AF's model), the word's OVL and ERR against
+//      OVL_NOW and ALERT of its copy's cycle (copies taking any of the five one MCLK late passed all 16 groups;
+//      AF changes only ALERT and CMD_PENDING)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -194,8 +202,8 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,500 ms of simulated time (the run ends near 1.04 s; audit
-// round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
+// A watchdog ends the run as FAIL if it has not finished by 1,500 ms of simulated time (the run ends near 1.13 s since
+// audit round 39's phase AK, 1.33 times less; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
 // 38: the 1,200 ms would have been 1.15 times it; auditor C: this line said 0.82 s after round 37 had made it 0.89 s),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -1219,6 +1227,7 @@ module tb_top_r14;
     logic        af_hdr_ack = 1'b0;                  // cycle as the registers give it, and whether the sequencer took a
     integer      af_nack = 0;                        // command in that cycle (its acknowledge cycle)
     logic [3:0]  af_snap_lvl = 4'd0;
+    logic        af_snap_ovl = 1'b0;                // AK (audit round 39, auditor C): OVL_NOW of the word's copy
     real         af_lat [0:1];                       // AF: a frame's start to its copy edge (0: header, 1: sample word)
     integer      af_nb [0:1], af_ns [0:1], af_na [0:1];   // AF: changes before / at the start of / after the copy's cycle
     always @(posedge MCLK) begin
@@ -1239,8 +1248,27 @@ module tb_top_r14;
         if (dut.smp_snap === 1'b1) begin
             af_snap_exp = (|(dut.u_regs.err & dut.u_regs.r_mask)) | (|(dut.u_regs.dflag_byte & dut.u_regs.mask_d_byte));
             af_snap_lvl = dut.fifo_level;
+            af_snap_ovl = dut.ovl_now;
             af_t_snap   = $realtime;
         end
+    end
+    // phase AK's status edges (audit round 39, auditor C): the rising edge at which READY, DATA, AFE_RST and OVL_NOW
+    // last changed as the registers give them (0 READY, 1 DATA, 2 AFE_RST, 3 OVL_NOW; the same signals AF's model
+    // reads), seen at the falling edge after it
+    real         ak_t_chg [0:3];
+    real         ak_t_ovl_up = 0.0;                  // AK: OVL_NOW's last rise (it falls again about 29 frames on,
+    logic [3:0]  ak_q = 4'b0000, ak_now;              // inside an 8-byte sample read)
+    real         ak_lat [0:1], ak_d [0:5];           // AK: a call to its copy's edge; the changes' offsets in a pass
+    integer      ak_nb [0:7], ak_ns [0:7], ak_na [0:7];   // AK: per change, before / at the start of / after the copy's
+    integer      ak_bit [0:7], ak_rd [0:7], ak_pos [0:3]; // cycle; the change's bit, its read, the bits' STATUS positions
+    logic        ak_new [0:7];                       // AK: the value after the change
+    string       ak_nm [0:7];
+    always @(negedge MCLK) begin
+        ak_now = {dut.ovl_now, dut.seq_afe_rst, dut.fifo_nonempty, (dut.seq_state === 4'd6)};
+        for (int b = 0; b < 4; b++)
+            if (ak_now[b] !== ak_q[b]) ak_t_chg[b] = ad_t_pos;
+        if (ak_now[3] === 1'b1 && ak_q[3] !== 1'b1) ak_t_ovl_up = ad_t_pos;
+        ak_q = ak_now;
     end
     // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
     integer      aj_all [0:8];
@@ -4470,6 +4498,193 @@ module tb_top_r14;
         if (aj_n != 27) fail($sformatf("AJ not exercised: %0d cases", aj_n));
         $display("AJ START, APPLY and APPLY_NR in IDLE and WARMUP, APPLY in RUN, RECOVER, WAIT_E and FILL: every apply field at the pins, in the active copies and in the CHOP, CHOP_BLANK and CHOP1 widths (%0d cases; settings changing every field %0d / %0d / %0d / %0d / %0d / %0d / %0d / %0d / %0d; errors %0d)",
                  aj_n, aj_all[0], aj_all[1], aj_all[2], aj_all[3], aj_all[4], aj_all[5], aj_all[6], aj_all[7], aj_all[8], errors);
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        // ---------------- AK (audit round 39, auditor C): the copy instants of STATUS's READY, DATA, AFE_RST and
+        // OVL_NOW and of the empty word's OVL. Spec 3.2: the header STATUS is the value of the copy's cycle (the SPI's
+        // cs_start), a flag changed at that cycle's starting edge included; 3.4: the empty word's OVL is OVL_NOW of its
+        // copy's cycle. AF moves only ALERT and CMD_PENDING (a CFG_ERR in IDLE), and copies taking READY, DATA,
+        // AFE_RST, OVL_NOW or the empty word's OVL one MCLK late passed all 16 groups. (1) APPLY in RUN with a sample
+        // stored: its tick (READY 1 -> 0, DATA 1 -> 0 by the flush), its PULSE (AFE_RST 0 -> 1, 1 -> 0) and FILL's
+        // store (READY and DATA 0 -> 1); (2) in IDLE, OVL_NOW's rise on four extreme codes, for a register read's
+        // header and an empty-FIFO sample read's word. Every pass is timed from a store (1) or from a frame start (2),
+        // the changes' offsets measured in a first pass, and each read aimed so that its copy's cycle starts from 2 MCLK
+        // before the change to 2 MCLK after it in 1/4-MCLK steps; the header against the whole STATUS of its copy's
+        // cycle as the registers give it (AF's model), the word's OVL and ERR against OVL_NOW and ALERT of its copy's
+        // cycle; each change must fall before the copy's cycle, at its start and at or after the copy's edge. Outside
+        // the golden comparison (after K)
+        phase = "AK";
+        r14_write(7'h07, 8'hFF);
+        begin
+            real ak_t0, ak_tr, ak_tgt, ak_dt, ak_tc;
+            logic [7:0] ak_v, ak_cmp, ak_st;
+            logic [15:0] ak_sq;
+            logic [23:0] ak_dd;
+            bit ak_ok;
+            logic ak_want, ak_got;
+            integer ak_n0, ak_nr;
+            // the changes: the bit (0 READY, 1 DATA, 2 AFE_RST, 3 OVL_NOW), the value after it, the aimed read
+            ak_bit[0] = 0; ak_new[0] = 1'b0; ak_rd[0] = 0; ak_nm[0] = "READY at APPLY's tick";
+            ak_bit[1] = 1; ak_new[1] = 1'b0; ak_rd[1] = 0; ak_nm[1] = "DATA at APPLY's flush";
+            ak_bit[2] = 2; ak_new[2] = 1'b1; ak_rd[2] = 1; ak_nm[2] = "AFE_RST at the PULSE's start";
+            ak_bit[3] = 2; ak_new[3] = 1'b0; ak_rd[3] = 2; ak_nm[3] = "AFE_RST at the PULSE's end";
+            ak_bit[4] = 0; ak_new[4] = 1'b1; ak_rd[4] = 3; ak_nm[4] = "READY at FILL's store";
+            ak_bit[5] = 1; ak_new[5] = 1'b1; ak_rd[5] = 3; ak_nm[5] = "DATA at FILL's store";
+            ak_bit[6] = 3; ak_new[6] = 1'b1; ak_rd[6] = 4; ak_nm[6] = "OVL_NOW in a header";
+            ak_bit[7] = 3; ak_new[7] = 1'b1; ak_rd[7] = 5; ak_nm[7] = "OVL_NOW in an empty word";
+            ak_pos[0] = STATUS_READY_LSB; ak_pos[1] = STATUS_DATA_LSB; ak_pos[2] = STATUS_AFE_RST_LSB; ak_pos[3] = STATUS_OVL_NOW_LSB;
+            for (int c = 0; c < 8; c++) begin ak_nb[c] = 0; ak_ns[c] = 0; ak_na[c] = 0; end
+            ak_t0 = $realtime; r14_read(7'h03, ak_v); ak_lat[0] = af_t_hdr - ak_t0;   // a call to its copy's edge
+            ak_t0 = $realtime; r14_sample(ak_st, ak_sq, ak_dd, ak_ok); ak_lat[1] = af_t_snap - ak_t0;
+            // (1) START with the defaults (T_PRE 3, T_RST 13, T_REC 32, T_ELEC 0); a pass: the APPLY written 60 us after
+            // a store (no sample read: the store's sample is in the FIFO at the APPLY), RUN again 4 ms on (ALIGN to the
+            // next output time, FILL's store the third output after it), whose store starts the next pass
+            r14_cmd(8'h11);
+            wait_state(4'd6, 15000.0, "AK RUN");
+            ak_n0 = ad_n_store;
+            while (ad_n_store == ak_n0) @(negedge MCLK);
+            for (int k = -9; k <= 8; k++) begin           // k = -9: the pass that measures the offsets
+                ak_tr = ad_t_store;
+                if (dut.fifo_nonempty !== 1'b1 || dut.seq_state !== 4'd6)
+                    fail($sformatf("AK k %0d: a pass started with state %0d, DATA %b (RUN with a sample expected)", k, dut.seq_state, dut.fifo_nonempty));
+                ak_tgt = ak_tr + 60000.0;
+                if (ak_tgt > $realtime) #(ak_tgt - $realtime);
+                else fail($sformatf("AK k %0d: the APPLY was due %0.1f ns ago", k, $realtime - ak_tgt));
+                @(posedge dut.u_clkgen.tick);           // written right after a tick: it outlasts one 128 kHz period,
+                r14_cmd(8'h33);                         // and the APPLY is taken at the second tick (RUN -> PRE)
+                if (k == -9) begin
+                    // each read a quarter MCLK after the falling edge that ends its wait (the change monitor runs at
+                    // that edge too)
+                    while (dut.seq_state === 4'd6) @(negedge MCLK);
+                    #(TMCLK / 4.0); ak_d[0] = ak_t_chg[0] - ak_tr; ak_d[1] = ak_t_chg[1] - ak_tr;
+                    while (dut.seq_afe_rst !== 1'b1) @(negedge MCLK);
+                    #(TMCLK / 4.0); ak_d[2] = ak_t_chg[2] - ak_tr;
+                    while (dut.seq_afe_rst !== 1'b0) @(negedge MCLK);
+                    #(TMCLK / 4.0); ak_d[3] = ak_t_chg[2] - ak_tr;
+                    while (dut.seq_state !== 4'd6 || dut.fifo_nonempty !== 1'b1) @(negedge MCLK);
+                    #(TMCLK / 4.0); ak_d[4] = ak_t_chg[0] - ak_tr; ak_d[5] = ak_t_chg[1] - ak_tr;
+                    $display("AK the changes from the store that starts a pass: READY %0.3f us and DATA %0.3f us (APPLY's tick), AFE_RST %0.3f and %0.3f us, READY %0.3f us and DATA %0.3f us (FILL's store)",
+                             ak_d[0] / 1000.0, ak_d[1] / 1000.0, ak_d[2] / 1000.0, ak_d[3] / 1000.0, ak_d[4] / 1000.0, ak_d[5] / 1000.0);
+                    if (ak_d[1] != ak_d[0] || ak_d[5] != ak_d[4])
+                        fail("AK: DATA did not change in the cycle READY did (APPLY's flush, FILL's store)");
+                end else begin
+                    for (int r = 0; r < 4; r++) begin
+                        if (r == 0)      ak_tgt = ak_tr + ak_d[0];
+                        else if (r == 1) ak_tgt = ak_tr + ak_d[2];
+                        else if (r == 2) ak_tgt = ak_tr + ak_d[3];
+                        else             ak_tgt = ak_tr + ak_d[4];
+                        ak_tgt = ak_tgt + TMCLK + k * TMCLK / 4.0 - ak_lat[0];   // the copy's cycle starting there
+                        if (ak_tgt > $realtime) #(ak_tgt - $realtime);
+                        else fail($sformatf("AK k %0d: the read aimed at change %0d was due %0.1f ns ago", k, r, $realtime - ak_tgt));
+                        r14_read(7'h03, ak_v);
+                        ak_tc = af_t_hdr; ak_cmp = af_hdr_full;
+                        if (spi_status !== ak_cmp)
+                            fail($sformatf("AK k %0d: the header STATUS 0x%02h; the registers of the copy's cycle give 0x%02h (READY, DATA, AFE_RST; spec 3.2)",
+                                           k, spi_status, ak_cmp));
+                        for (int c = 0; c < 6; c++) if (ak_rd[c] == r) begin
+                            ak_dt = ak_t_chg[ak_bit[c]] - (ak_tc - TMCLK);     // the change against the copy's cycle
+                            if (ak_dt < -2.6 * TMCLK || ak_dt > 2.6 * TMCLK)
+                                fail($sformatf("AK k %0d: %s %0.2f MCLK from the copy's cycle, outside the sweep", k, ak_nm[c], ak_dt / TMCLK));
+                            if (ak_dt < -TMCLK / 2.0)     ak_nb[c] = ak_nb[c] + 1;
+                            else if (ak_dt < TMCLK / 2.0) ak_ns[c] = ak_ns[c] + 1;
+                            else                          ak_na[c] = ak_na[c] + 1;
+                            ak_want = (ak_dt < TMCLK / 2.0) ? ak_new[c] : !ak_new[c];
+                            if (ak_cmp[ak_pos[ak_bit[c]]] !== ak_want)
+                                fail($sformatf("AK k %0d: %s modelled %b at the copy, but it changed %0.2f MCLK from the copy's cycle, which gives %b",
+                                               k, ak_nm[c], ak_cmp[ak_pos[ak_bit[c]]], ak_dt / TMCLK, ak_want));
+                        end
+                    end
+                end
+                while (dut.seq_state !== 4'd6 || dut.fifo_nonempty !== 1'b1) @(negedge MCLK);
+                if (ad_t_store - ak_tr < 3.9e6 || ad_t_store - ak_tr > 4.1e6)
+                    fail($sformatf("AK k %0d: FILL's store %0.3f ms after the pass's store, expected 4 ms", k, (ad_t_store - ak_tr) / 1.0e6));
+            end
+            // (2) OVL_NOW's rise: STOP, the FIFO read empty; at a frame start, four extreme codes P = 12 frames on (31 in
+            // four frames: the detector holds at the fourth), the read aimed at the rise; the codes then leave the
+            // 32-frame window and DFLAG is cleared
+            r14_cmd(8'h22);
+            wait_state(4'd0, 100.0, "AK IDLE");
+            for (ak_nr = 0; ak_nr < 20; ak_nr++) begin
+                r14_sample(ak_st, ak_sq, ak_dd, ak_ok);
+                if (ak_st[SMP_VALID_LSB] !== 1'b1) break;
+            end
+            if (dut.fifo_nonempty !== 1'b0) fail("AK: the FIFO not empty in IDLE");
+            r14_write(7'h07, 8'hFF);
+            r14_write(7'h06, 8'hFF);
+            for (int k = -9; k <= 8; k++) begin
+                for (int s = 0; s < 2; s++) begin
+                    if (k == -9 && s == 1) continue;
+                    @(negedge MCLK);
+                    while (dut.cycle !== 5'd0) @(negedge MCLK);
+                    ak_t0 = $realtime;
+                    if (dut.ovl_now !== 1'b0) fail($sformatf("AK k %0d: OVL_NOW 1 before the extreme codes", k));
+                    fork
+                        begin
+                            repeat (12 * 32) @(negedge MCLK);
+                            ovl_force = 1'b1;
+                            repeat (4 * 32) @(negedge MCLK);
+                            ovl_force = 1'b0;
+                        end
+                        begin
+                            if (k == -9) begin
+                                while (dut.ovl_now !== 1'b1) @(negedge MCLK);
+                                #(TMCLK / 4.0); ak_d[0] = ak_t_ovl_up - ak_t0;
+                                $display("AK OVL_NOW rises %0.3f us after the frame start (the extreme codes from frame 12)", ak_d[0] / 1000.0);
+                            end else begin
+                                ak_tgt = ak_t0 + ak_d[0] + TMCLK + k * TMCLK / 4.0 - ak_lat[s];
+                                if (ak_tgt > $realtime) #(ak_tgt - $realtime);
+                                else fail($sformatf("AK k %0d: the read aimed at OVL_NOW's rise was due %0.1f ns ago", k, $realtime - ak_tgt));
+                                if (s == 0) begin
+                                    r14_read(7'h03, ak_v);
+                                    ak_tc = af_t_hdr; ak_cmp = af_hdr_full;
+                                end else begin
+                                    r14_sample(ak_st, ak_sq, ak_dd, ak_ok);
+                                    ak_tc = af_t_snap;
+                                end
+                            end
+                        end
+                    join
+                    if (k > -9) begin
+                        ak_dt = ak_t_ovl_up - (ak_tc - TMCLK);
+                        if (ak_dt < -2.6 * TMCLK || ak_dt > 2.6 * TMCLK)
+                            fail($sformatf("AK k %0d: OVL_NOW rose %0.2f MCLK from the copy's cycle, outside the sweep", k, ak_dt / TMCLK));
+                        if (ak_dt < -TMCLK / 2.0)     ak_nb[6 + s] = ak_nb[6 + s] + 1;
+                        else if (ak_dt < TMCLK / 2.0) ak_ns[6 + s] = ak_ns[6 + s] + 1;
+                        else                          ak_na[6 + s] = ak_na[6 + s] + 1;
+                        ak_want = (ak_dt < TMCLK / 2.0);
+                        if (s == 0) begin
+                            if (spi_status !== ak_cmp)
+                                fail($sformatf("AK k %0d: the header STATUS 0x%02h; the registers of the copy's cycle give 0x%02h (OVL_NOW; spec 3.2)",
+                                               k, spi_status, ak_cmp));
+                            ak_got = ak_cmp[STATUS_OVL_NOW_LSB];
+                        end else begin
+                            if (!ak_ok || ak_st[SMP_VALID_LSB] !== 1'b0 || af_snap_lvl !== 4'd0)
+                                fail($sformatf("AK k %0d: the sample read copied no empty word (status 0x%02h, CRC %b, level %0d at the copy)",
+                                               k, ak_st, ak_ok, af_snap_lvl));
+                            if (ak_st[SMP_OVL_LSB] !== af_snap_ovl || ak_st[SMP_ERR_LSB] !== af_snap_exp)
+                                fail($sformatf("AK k %0d: the empty word 0x%02h; OVL_NOW and ALERT of the copy's cycle %b, %b (spec 3.4)",
+                                               k, ak_st, af_snap_ovl, af_snap_exp));
+                            ak_got = af_snap_ovl;
+                        end
+                        if (ak_got !== ak_want)
+                            fail($sformatf("AK k %0d: OVL_NOW modelled %b at the copy, but it rose %0.2f MCLK from the copy's cycle, which gives %b",
+                                           k, ak_got, ak_dt / TMCLK, ak_want));
+                    end
+                    repeat (48 * 32) @(negedge MCLK);       // the extreme codes leave the 32-frame window
+                    if (dut.ovl_now !== 1'b0) fail($sformatf("AK k %0d: OVL_NOW still 1 48 frames after the extreme codes", k));
+                    r14_write(7'h07, 8'hFF);
+                end
+            end
+            for (int c = 0; c < 8; c++)
+                if (ak_nb[c] < 1 || ak_ns[c] < 1 || ak_na[c] < 1)
+                    fail($sformatf("AK not exercised (%s): it changed %0d times before the copy's cycle, %0d at its start, %0d at or after the copy's edge",
+                                   ak_nm[c], ak_nb[c], ak_ns[c], ak_na[c]));
+            $display("AK the copy instants (before the copy's cycle / at its start / at or after the copy's edge): READY %0d / %0d / %0d and DATA %0d / %0d / %0d at APPLY's tick, AFE_RST %0d / %0d / %0d and %0d / %0d / %0d at the PULSE, READY %0d / %0d / %0d and DATA %0d / %0d / %0d at FILL's store, OVL_NOW's rise %0d / %0d / %0d in a header and %0d / %0d / %0d in an empty word; every header the whole STATUS of its copy's cycle, every empty word's OVL and ERR those of its copy's cycle (errors %0d)",
+                     ak_nb[0], ak_ns[0], ak_na[0], ak_nb[1], ak_ns[1], ak_na[1], ak_nb[2], ak_ns[2], ak_na[2],
+                     ak_nb[3], ak_ns[3], ak_na[3], ak_nb[4], ak_ns[4], ak_na[4], ak_nb[5], ak_ns[5], ak_na[5],
+                     ak_nb[6], ak_ns[6], ak_na[6], ak_nb[7], ak_ns[7], ak_na[7], errors);
+        end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);
         r14_write(7'h06, 8'hFF);

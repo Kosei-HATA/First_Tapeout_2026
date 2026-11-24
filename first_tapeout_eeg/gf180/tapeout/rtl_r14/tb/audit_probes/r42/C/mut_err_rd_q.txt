@@ -1,0 +1,19 @@
+Wed Nov 25 03:55:26 JST 2026
+PASS  spec  509 s
+PASS  codes  1 s
+PASS  tb_seq  22 s
+PASS  tb_tick  4 s
+PASS  tb_clkgen  2 s
+PASS  tb_chop1  5 s
+PASS  tb_cic_arm  5 s
+PASS  tb_ovl  3 s
+PASS  tb_rnd_sat  1 s
+PASS  tb_regs  4 s
+PASS  tb_fifo  9 s
+PASS  tb_fifo4  10 s
+PASS  tb_top_r14  1794 s
+PASS  tb_spi_r14  266 s
+PASS  tb_top_r14_fifo4  1235 s
+PASS  outputs  1 s
+exit=0
+Wed Nov 25 04:59:58 JST 2026

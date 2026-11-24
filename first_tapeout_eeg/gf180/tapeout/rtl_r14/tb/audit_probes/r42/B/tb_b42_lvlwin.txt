@@ -1,0 +1,26 @@
+CS_N fall  9.000 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded  1129.2 ns before the store edge
+CS_N fall  8.938 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded  1068.1 ns before the store edge
+CS_N fall  8.875 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded  1007.1 ns before the store edge
+CS_N fall  8.812 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   946.1 ns before the store edge
+CS_N fall  8.750 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   885.0 ns before the store edge
+CS_N fall  8.688 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   824.0 ns before the store edge
+CS_N fall  8.625 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   762.9 ns before the store edge
+CS_N fall  8.562 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   701.9 ns before the store edge
+CS_N fall  8.500 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   640.9 ns before the store edge
+CS_N fall  8.438 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   579.8 ns before the store edge
+CS_N fall  8.375 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   518.8 ns before the store edge
+CS_N fall  8.312 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   457.8 ns before the store edge
+CS_N fall  8.250 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   396.7 ns before the store edge
+CS_N fall  8.188 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   335.7 ns before the store edge
+CS_N fall  8.125 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   274.7 ns before the store edge
+CS_N fall  8.062 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   213.6 ns before the store edge
+CS_N fall  8.000 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded   152.6 ns before the store edge
+CS_N fall  7.938 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 0 (CRC  ok); data byte loaded    61.0 ns before the store edge
+CS_N fall  7.875 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded     0.0 ns  after the store edge
+CS_N fall  7.812 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded    61.0 ns  after the store edge
+CS_N fall  7.750 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded   122.1 ns  after the store edge
+CS_N fall  7.688 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded   183.1 ns  after the store edge
+CS_N fall  7.625 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded   244.1 ns  after the store edge
+CS_N fall  7.562 us before the predicted DRDY_N fall: header DATA 0, FIFO_LEVEL 1 (CRC  ok); data byte loaded   305.2 ns  after the store edge
+tb_b42_lvlwin done: 0 SPI errors
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b42/tb_b42_lvlwin.sv:63: $finish called at 57146569133 (1ps)

@@ -1,0 +1,2 @@
+Wed Nov 25 03:55:26 JST 2026
+stopped (st_hdrcopy detected by tb_top_r14 phase AI)

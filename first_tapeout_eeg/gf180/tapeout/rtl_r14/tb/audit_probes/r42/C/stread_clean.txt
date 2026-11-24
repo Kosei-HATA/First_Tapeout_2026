@@ -1,0 +1,2 @@
+tb_c42_stread: (1) 8 STATUS reads, 8 with CMD_PENDING 1 in the header and 0 in the data byte; (2) 25 ERR reads, CFG_ERR's edge before / at the start of / after the load cycle 9 / 4 / 12; 0 mismatches with the register of the load cycle; SPI errors 0
+tb_c42_stread.sv:74: $finish called at 1562536859 (1ps)

@@ -85,7 +85,9 @@
 //      audit round 36 (auditor C): AE also takes a START with DFLAG standing (a copy clearing DFLAG at START passed)
 //   AG audit round 36 (auditor C): T_REC and T_RST taken at the start of their waits (spec 4.2, SPI-12): T_REC
 //      written in WARMUP sets RECOVER's length, T_RST written in PRE the AFE_RST pulse at the pin (a copy taking both
-//      with the command passed all 16 groups)
+//      with the command passed all 16 groups); audit round 42 (auditor C): T_ELEC written in WARMUP decides RECOVER's
+//      expiry (WAIT_E or ALIGN) and sets WAIT_E's length, T_ELEC written in ALIGN an APPLY_NR's WAIT_E, T_WARM written
+//      in WARMUP the restart of an APPLY (a copy giving the sequencer T_ELEC as applied passed all 16 groups)
 //   AH audit round 36 (auditor C): an APPLY_NR in IDLE and in WARMUP applies the trims and TEST_MUX (table 5.1-2,
 //      REG-08): AFE_IBIAS, CPF_TRIM and TEST_MUX at the pins and in the active copies (a copy applying only the
 //      offset DAC's fields passed all 16 groups; every apply field: AJ. Audit round 37, auditor C: this line said
@@ -122,7 +124,11 @@
 //      RESET_FLAG out of the samples' ERR or ignoring ALERT_MASK_D there passed all 16 groups)
 //   AM audit round 41 (auditor C): the copy instant of a register read's data byte (spec 3.2): STATE reads aimed in
 //      1/4-MCLK steps across the ticks that take START and STOP, FIFO_LEVEL reads across a store; each byte against the
-//      register of its load cycle (a copy taking the read mux one MCLK late passed all 16 groups)
+//      register of its load cycle (a copy taking the read mux one MCLK late passed all 16 groups); audit round 42
+//      (auditor C): also STATUS across the tick that takes a START (CMD_PENDING), ERR across the tick that refuses an
+//      APPLY (CFG_ERR), DFLAG across a store into the full FIFO (OVERRUN), OFF_M_L's active copy across an APPLY_NR's
+//      tick and a CRC-off read's second data byte (FIFO_LEVEL after STATE) across a store (a copy reading ERR one
+//      MCLK late passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -210,8 +216,9 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.21 s
-// since audit round 41's phase AM, 1.49 times less; audit round 40: the 1,500 ms would have been 1.27 times
+// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.28 s
+// since audit round 42's additions to AM and AG, 1.40 times less; audit round 41: near 1.21 s, 1.49 times;
+// audit round 40: the 1,500 ms would have been 1.27 times
 // it; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
 // 38: the 1,200 ms would have been 1.15 times it; auditor C: this line said 0.82 s after round 37 had made it 0.89 s),
@@ -1281,26 +1288,53 @@ module tb_top_r14;
     end
     // phase AM (audit round 41, auditor C): the copy of a register read's first data byte, made in the cycle of the
     // synchronized SCLK fall that loads it into MISO's shift register (eeg_spi_slave's S_RREG, code 2): that edge, and
-    // the state and the FIFO level of its cycle as the registers give them; and the edges at which they last changed
+    // the state and the FIFO level of its cycle as the registers give them; and the edges at which they last changed.
+    // Audit round 42 (auditor C): also STATUS, ERR, DFLAG and OFF_M_L's active copy of that cycle, and the second data
+    // byte's load (a CRC-off read's third byte: S_RREG counts the address on) with the FIFO level of its cycle
     real         am_t_load = 0.0, am_t_state = 0.0, am_t_level = 0.0, am_lat = 0.0;
-    logic [3:0]  am_state = 4'd0, am_state_q = 4'd0, am_level = 4'd0, am_level_q = 4'd0;
-    bit          am_got = 1'b0;
-    real         am_d [0:2];                         // AM: the changes' offsets from the pass's reference
-    integer      am_nb [0:2], am_ns [0:2], am_na [0:2];   // AM: before / at the start of / after the load cycle
-    always @(negedge CS_N) am_got = 1'b0;
+    real         am_t_load2 = 0.0, am_lat2 = 0.0, am_t_pend = 0.0, am_t_act = 0.0;
+    logic [3:0]  am_state = 4'd0, am_state_q = 4'd0, am_level = 4'd0, am_level_q = 4'd0, am_level2 = 4'd0;
+    logic [7:0]  am_status = 8'h00, am_err = 8'h00, am_dflag = 8'h00, am_act = 8'h00, am_act_q = 8'h00;
+    logic        am_pend_q = 1'b0;
+    integer      am_nld = 0;                         // AM: data byte loads in the frame
+    real         am_d [0:7];                         // AM: the changes' offsets from the pass's reference
+    integer      am_nb [0:7], am_ns [0:7], am_na [0:7];   // AM: before / at the start of / after the load cycle
+    always @(negedge CS_N) am_nld = 0;
     always @(posedge MCLK)
-        if (dut.u_spi.sclk_fall === 1'b1 && dut.u_spi.bit_cnt == 3'd0 && dut.u_spi.st == 4'd2 && !am_got) begin
-            am_got    = 1'b1;
-            am_t_load = $realtime;
-            am_state  = dut.seq_state;
-            am_level  = dut.fifo_level;
+        if (dut.u_spi.sclk_fall === 1'b1 && dut.u_spi.bit_cnt == 3'd0 && dut.u_spi.st == 4'd2) begin
+            am_nld = am_nld + 1;
+            if (am_nld == 1) begin
+                am_t_load = $realtime;
+                am_state  = dut.seq_state;
+                am_level  = dut.fifo_level;
+                am_status = dut.u_regs.status_byte;
+                am_err    = dut.u_regs.err;
+                am_dflag  = dut.u_regs.dflag_byte;
+                am_act    = dut.u_regs.a_m[7:0];
+            end else if (am_nld == 2) begin
+                am_t_load2 = $realtime;
+                am_level2  = dut.fifo_level;
+            end
         end
     always @(negedge MCLK) begin
         if (dut.seq_state !== am_state_q) am_t_state = ad_t_pos;
         am_state_q = dut.seq_state;
         if (dut.fifo_level !== am_level_q) am_t_level = ad_t_pos;
         am_level_q = dut.fifo_level;
+        if (dut.u_regs.pend !== am_pend_q) am_t_pend = ad_t_pos;       // CMD_PENDING (STATUS)
+        am_pend_q = dut.u_regs.pend;
+        if (dut.u_regs.a_m[7:0] !== am_act_q) am_t_act = ad_t_pos;     // OFF_M_L's active copy
+        am_act_q = dut.u_regs.a_m[7:0];
     end
+    // AM: a change's position from the load cycle (before / at its start / at or after the load edge), counted for
+    // change c; a change outside the sweep's 2.6 MCLK fails
+    task automatic am_count(input integer c, input real dt, input integer k, input string what);
+        if (dt < -2.6 * TMCLK || dt > 2.6 * TMCLK)
+            fail($sformatf("AM k %0d: %s changed %0.2f MCLK from the load cycle, outside the sweep", k, what, dt / TMCLK));
+        if (dt < -TMCLK / 2.0)     am_nb[c] = am_nb[c] + 1;
+        else if (dt < TMCLK / 2.0) am_ns[c] = am_ns[c] + 1;
+        else                       am_na[c] = am_na[c] + 1;
+    endtask
     // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
     integer      aj_all [0:8];
     integer      aj_n = 0;
@@ -4487,6 +4521,82 @@ module tb_top_r14;
         r14_cmd(8'hA5);                                 // SOFT_RESET: the timers back
         #(1000.0);
         r14_write(7'h06, 8'hFF);
+        // ---------------- AG (audit round 42, auditor C): T_ELEC taken where table 5.1-2 decides with it (RECOVER's expiry,
+        // an APPLY_NR in ALIGN or FILL) and at WAIT_E's start, T_WARM at the tick of a restarting APPLY (spec 4.2, SEQ-14,
+        // SPI-12). No phase wrote T_ELEC between an apply and the decision it controls, and a copy giving the sequencer
+        // T_ELEC as applied with the configuration passed all 16 groups. (1) START with T_ELEC 0, T_ELEC 2 written in
+        // WARMUP: RECOVER's expiry enters WAIT_E for 2 ms; (2) START with T_ELEC 2, T_ELEC 0 written in WARMUP: RECOVER's
+        // expiry goes to ALIGN; (3) in that ALIGN, T_ELEC 2 written, then an APPLY_NR: WAIT_E for 2 ms; (4) START, T_WARM
+        // 7 written 1 ms into WARMUP, then an APPLY: WARMUP restarts at its tick and lasts 7 ms. Outside the golden
+        // comparison (after K)
+        phase = "AG";
+        begin
+            real ag_t0, ag_we [0:1], ag_tw, ag_w5;
+            logic [7:0] ag_e;
+            r14_write(7'h51, 8'd0);                     // (1) T_ELEC 0 at the START
+            r14_cmd(8'h11);
+            while (dut.apply !== 1'b1) @(posedge MCLK);
+            ag_t0 = $realtime;                          // the START's tick: WARMUP with T_WARM 5 (the reference for (4))
+            wait_state(4'd1, 50.0, "AG WARMUP (1)");
+            r14_write(7'h51, 8'd2);                     // T_ELEC 2 written in WARMUP
+            r14_read(7'h06, ag_e);
+            if (ag_e !== 8'h00) fail($sformatf("AG (1): ERR 0x%02h after the T_ELEC write in WARMUP, expected 0x00 (no guard)", ag_e));
+            wait_state(4'd2, 8000.0, "AG RECOVER (1)");
+            ag_w5 = $realtime - ag_t0;                  // WARMUP from the START's tick, measured as in (4)
+            while (dut.seq_state === 4'd2) @(posedge MCLK);
+            if (dut.seq_state !== 4'd3)
+                fail($sformatf("AG (1): state %0d after RECOVER with T_ELEC 2 written in WARMUP, expected WAIT_E (spec 4.2: T_ELEC taken at RECOVER's expiry)", dut.seq_state));
+            ag_t0 = $realtime;
+            while (dut.seq_state === 4'd3) @(posedge MCLK);
+            ag_we[0] = $realtime - ag_t0;
+            if (ag_we[0] < (2.0 * 32768.0 - 2.0) * TMCLK || ag_we[0] > (2.0 * 32768.0 + 2.0) * TMCLK)
+                fail($sformatf("AG (1): WAIT_E lasted %0.1f us after T_ELEC 2 was written in WARMUP, expected 2,000 us (spec 4.2: taken at the wait's start)", ag_we[0] / 1000.0));
+            wait_state(4'd6, 4000.0, "AG RUN (1)");
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "AG IDLE (1)");
+            r14_write(7'h51, 8'd2);                     // (2) T_ELEC 2 at the START
+            r14_cmd(8'h11);
+            wait_state(4'd1, 50.0, "AG WARMUP (2)");
+            r14_write(7'h51, 8'd0);                     // T_ELEC 0 written in WARMUP
+            wait_state(4'd2, 8000.0, "AG RECOVER (2)");
+            while (dut.seq_state === 4'd2) @(posedge MCLK);
+            if (dut.seq_state !== 4'd4)
+                fail($sformatf("AG (2): state %0d after RECOVER with T_ELEC 0 written in WARMUP, expected ALIGN (spec 4.2)", dut.seq_state));
+            r14_write(7'h51, 8'd2);                     // (3) T_ELEC 2 written in ALIGN, then an APPLY_NR (no change)
+            r14_cmd(8'h44);
+            while (dut.seq_state === 4'd4 || dut.seq_state === 4'd5) @(posedge MCLK);
+            if (dut.seq_state !== 4'd3)
+                fail($sformatf("AG (3): state %0d after an APPLY_NR with T_ELEC 2 written in ALIGN, expected WAIT_E (table 5.1-2: T_ELEC at the APPLY_NR's tick)", dut.seq_state));
+            ag_t0 = $realtime;
+            while (dut.seq_state === 4'd3) @(posedge MCLK);
+            ag_we[1] = $realtime - ag_t0;
+            if (ag_we[1] < (2.0 * 32768.0 - 2.0) * TMCLK || ag_we[1] > (2.0 * 32768.0 + 2.0) * TMCLK)
+                fail($sformatf("AG (3): WAIT_E lasted %0.1f us after T_ELEC 2 was written in ALIGN, expected 2,000 us", ag_we[1] / 1000.0));
+            wait_state(4'd6, 4000.0, "AG RUN (3)");
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "AG IDLE (3)");
+            r14_write(7'h51, 8'd0);                     // (4) T_WARM 7 written in WARMUP, then an APPLY (no change)
+            r14_cmd(8'h11);
+            wait_state(4'd1, 50.0, "AG WARMUP (4)");
+            #(1.0e6);
+            r14_write(7'h50, 8'd7);
+            r14_cmd(8'h33);
+            while (dut.apply !== 1'b1) @(posedge MCLK);
+            ag_t0 = $realtime;
+            if (dut.seq_state !== 4'd1) fail($sformatf("AG (4): the APPLY applied in state %0d, expected WARMUP", dut.seq_state));
+            while (dut.seq_state === 4'd1) @(posedge MCLK);
+            ag_tw = $realtime - ag_t0;
+            if (dut.seq_state !== 4'd2 || ag_tw < ag_w5 + (2.0 * 32768.0 - 2.0) * TMCLK || ag_tw > ag_w5 + (2.0 * 32768.0 + 2.0) * TMCLK)
+                fail($sformatf("AG (4): WARMUP left for state %0d %0.4f us after the APPLY's tick with T_WARM 7 written in WARMUP; (1)'s WARMUP with T_WARM 5, measured the same way, %0.4f us: expected RECOVER 2,000 us later than that (spec 4.2: T_WARM at the restart's tick)",
+                               dut.seq_state, ag_tw / 1000.0, ag_w5 / 1000.0));
+            r14_cmd(8'h22);
+            wait_state(4'd0, 50.0, "AG IDLE (4)");
+            $display("AG T_ELEC 2 written in WARMUP: WAIT_E %0.1f us after RECOVER; T_ELEC 0 written in WARMUP: ALIGN after RECOVER; T_ELEC 2 written in ALIGN and an APPLY_NR: WAIT_E %0.1f us; T_WARM 7 written in WARMUP and an APPLY: WARMUP %0.1f us from the APPLY's tick, %0.1f us longer than (1)'s from the START's tick with T_WARM 5 (errors %0d)",
+                     ag_we[0] / 1000.0, ag_we[1] / 1000.0, ag_tw / 1000.0, (ag_tw - ag_w5) / 1000.0, errors);
+        end
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the timers back
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
         // ---------------- AH (audit round 36, auditor C): an APPLY_NR in IDLE or WARMUP applies every setting, as
         // START and APPLY do (table 5.1-2: IDLE / WARMUP APPLY_NR [cfg_ok] -> apply; REG-08: the test shadows too; 4.10's
         // rows). Every APPLY_NR in the benches changed M only or ran with the AFE on (nr_ok makes the other settings
@@ -4882,17 +4992,24 @@ module tb_top_r14;
         // written right after a tick (taken at the second tick), and a STATE read aimed so that its load cycle starts from
         // 2 MCLK before the state's change to 2 MCLK after it in 1/4-MCLK steps; (2) in RUN, a FIFO_LEVEL read aimed likewise
         // at each store (the sample read after each). Each byte against the register of its load cycle; each change before
-        // the load cycle, at its start and at or after the load edge. Outside the golden comparison (after K)
+        // the load cycle, at its start and at or after the load edge. Outside the golden comparison (after K).
+        // Audit round 42 (auditor C): AM read only STATE and FIFO_LEVEL, and a copy reading ERR one MCLK late passed all
+        // 16 groups. Also: (3) in IDLE, STATUS across the tick that takes a START (CMD_PENDING cleared; STOP after each);
+        // (7) in RUN, a CRC-off read of STATE whose second data byte (FIFO_LEVEL) is aimed across a store; (6) OFF_M_L's
+        // active copy across the tick of an APPLY_NR in RUN (M 0 <-> 1, range 0); (5) DFLAG across a store into the full
+        // FIFO (OVERRUN set; its W1C before each, no sample read); (4) in IDLE, ERR across the tick that refuses an APPLY
+        // (range 1, M 200: CFG_ERR; ERR's W1C before each). Each byte against the register of its load cycle
         phase = "AM";
         begin
             real am_t0, am_tgt, am_dt;
             logic [7:0] am_v;
             logic am_new;
             integer am_n0;
-            for (int c = 0; c < 3; c++) begin am_nb[c] = 0; am_ns[c] = 0; am_na[c] = 0; end
+            for (int c = 0; c < 8; c++) begin am_nb[c] = 0; am_ns[c] = 0; am_na[c] = 0; end
             r14_write(7'h06, 8'hFF);
             r14_write(7'h07, 8'hFF);
             am_t0 = $realtime; r14_read(7'h04, am_v); am_lat = am_t_load - am_t0;   // a call to its data byte's load
+            am_lat2 = am_t_load2 - am_t0;               // (and to the second data byte's: CRC off, a 3-byte read)
             if (dut.seq_state !== 4'd0) fail("AM: not in IDLE");
             for (int k = -9; k <= 8; k++) begin
                 for (int c = 0; c < 2; c++) begin           // 0: START (IDLE -> WARMUP), 1: STOP (WARMUP -> IDLE)
@@ -4923,6 +5040,30 @@ module tb_top_r14;
                             fail($sformatf("AM k %0d: STATE read 0x%02h; the state of its data byte's load cycle %0d (spec 3.2)", k, am_v, am_state));
                     end
                 end
+            end
+            for (int k = -9; k <= 8; k++) begin           // (3) STATUS: CMD_PENDING cleared at the tick that takes START
+                @(posedge dut.u_clkgen.tick); am_t0 = $realtime;
+                r14_cmd(8'h11);
+                if (k == -9) begin
+                    while (dut.seq_state !== 4'd1) @(negedge MCLK);
+                    #(TMCLK / 4.0); am_d[3] = am_t_pend - am_t0;
+                end else begin
+                    am_tgt = am_t0 + am_d[3] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                    if (am_tgt > $realtime) #(am_tgt - $realtime);
+                    else fail($sformatf("AM k %0d: the STATUS read was due %0.1f ns ago", k, $realtime - am_tgt));
+                    r14_read(7'h03, am_v);
+                    while (dut.seq_state !== 4'd1) @(negedge MCLK);
+                    #(TMCLK / 4.0);
+                    am_dt = am_t_pend - (am_t_load - TMCLK);
+                    am_count(3, am_dt, k, "CMD_PENDING");
+                    am_new = (am_dt < TMCLK / 2.0);
+                    if (am_status[STATUS_CMD_PENDING_LSB] !== !am_new)
+                        fail($sformatf("AM k %0d: CMD_PENDING %0d modelled in the load cycle, but it changed %0.2f MCLK from it", k, am_status[STATUS_CMD_PENDING_LSB], am_dt / TMCLK));
+                    if (am_v !== am_status)
+                        fail($sformatf("AM k %0d: STATUS read 0x%02h; the STATUS of its data byte's load cycle 0x%02h (spec 3.2)", k, am_v, am_status));
+                end
+                r14_cmd(8'h22);                         // STOP: IDLE again
+                while (dut.seq_state !== 4'd0) @(negedge MCLK);
             end
             am_n0 = ad_n_store;
             r14_cmd(8'h11);                             // START: RUN, then FIFO_LEVEL across each store
@@ -4957,14 +5098,117 @@ module tb_top_r14;
                         fail($sformatf("AM k %0d: FIFO_LEVEL read 0x%02h; the level of its data byte's load cycle %0d (spec 3.2)", k, am_v, am_level));
                 end
             end
+            for (int k = -8; k <= 8; k++) begin           // (7) a CRC-off read's second data byte (FIFO_LEVEL) at a store
+                ad_read_all();                          // the FIFO empty
+                am_t0 = ad_t_store;
+                am_tgt = am_t0 + am_d[2] + TMCLK + k * TMCLK / 4.0 - am_lat2;
+                if (am_tgt > $realtime) #(am_tgt - $realtime);
+                else fail($sformatf("AM k %0d: the two-register read was due %0.1f ns ago", k, $realtime - am_tgt));
+                am_n0 = ad_n_store;
+                r14_read(7'h04, am_v);                  // STATE, then FIFO_LEVEL (CRC off: the address counts on)
+                while (ad_n_store == am_n0) @(negedge MCLK);
+                #(TMCLK / 4.0);
+                am_dt = am_t_level - (am_t_load2 - TMCLK);
+                am_count(7, am_dt, k, "FIFO_LEVEL (the second data byte)");
+                am_new = (am_dt < TMCLK / 2.0);
+                if (am_level2 !== {3'd0, am_new})
+                    fail($sformatf("AM k %0d: level %0d modelled in the second byte's load cycle, but it changed %0.2f MCLK from it", k, am_level2, am_dt / TMCLK));
+                if (spi_rx[2] !== {4'h0, am_level2})
+                    fail($sformatf("AM k %0d: a CRC-off read's second data byte (FIFO_LEVEL) 0x%02h; the level of its load cycle %0d (spec 3.2)", k, spi_rx[2], am_level2));
+                if (am_v !== 8'h06) fail($sformatf("AM k %0d: STATE 0x%02h in RUN", k, am_v));
+            end
+            for (int k = -9; k <= 8; k++) begin           // (6) OFF_M_L's active copy at the tick of an APPLY_NR in RUN
+                r14_write(7'h21, ((k + 9) % 2 == 0) ? 8'd1 : 8'd0);    // M 0 <-> 1 (range 0: one step, nr_ok)
+                @(posedge dut.u_clkgen.tick); am_t0 = $realtime;
+                r14_cmd(8'h44);
+                if (k == -9) begin
+                    while (dut.u_regs.a_m[7:0] !== 8'd1) @(negedge MCLK);
+                    #(TMCLK / 4.0); am_d[6] = am_t_act - am_t0;
+                end else begin
+                    am_tgt = am_t0 + am_d[6] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                    if (am_tgt > $realtime) #(am_tgt - $realtime);
+                    else fail($sformatf("AM k %0d: the active copy's read was due %0.1f ns ago", k, $realtime - am_tgt));
+                    r14_read(7'h31, am_v);
+                    while (dut.u_regs.a_m[7:0] !== (((k + 9) % 2 == 0) ? 8'd1 : 8'd0)) @(negedge MCLK);
+                    #(TMCLK / 4.0);
+                    am_dt = am_t_act - (am_t_load - TMCLK);
+                    am_count(6, am_dt, k, "OFF_M_L's active copy");
+                    am_new = (am_dt < TMCLK / 2.0);
+                    if (am_act !== ((am_new == (((k + 9) % 2) == 0)) ? 8'd1 : 8'd0))
+                        fail($sformatf("AM k %0d: active M %0d modelled in the load cycle, but it changed %0.2f MCLK from it", k, am_act, am_dt / TMCLK));
+                    if (am_v !== am_act)
+                        fail($sformatf("AM k %0d: OFF_M_L's active copy read 0x%02h; the copy of its data byte's load cycle 0x%02h (spec 3.2)", k, am_v, am_act));
+                end
+            end
+            while (dut.fifo_level !== FDEPTH[3:0]) @(negedge MCLK);   // the FIFO full: no sample read from here
+            for (int k = -9; k <= 8; k++) begin           // (5) DFLAG: OVERRUN set by a store into the full FIFO
+                r14_write(7'h07, 8'hFF);                // DFLAG's W1C; the FIFO stays full
+                am_t0 = ad_t_try;
+                if (k == -9) begin
+                    am_n0 = ad_n_try;
+                    while (ad_n_try == am_n0) @(negedge MCLK);
+                    repeat (4) @(negedge MCLK);     // OVERRUN follows the attempt by two edges (ovr_set, then DFLAG)
+                    #(TMCLK / 4.0); am_d[5] = ad_t_dfl - am_t0;
+                    if (dut.u_regs.dflag[0] !== 1'b1) fail("AM: no DFLAG.OVERRUN after a store into the full FIFO");
+                end else begin
+                    am_tgt = am_t0 + am_d[5] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                    if (am_tgt > $realtime) #(am_tgt - $realtime);
+                    else fail($sformatf("AM k %0d: the DFLAG read was due %0.1f ns ago", k, $realtime - am_tgt));
+                    am_n0 = ad_n_try;
+                    r14_read(7'h07, am_v);
+                    while (ad_n_try == am_n0) @(negedge MCLK);
+                    repeat (4) @(negedge MCLK);
+                    #(TMCLK / 4.0);
+                    am_dt = ad_t_dfl - (am_t_load - TMCLK);
+                    am_count(5, am_dt, k, "DFLAG");
+                    am_new = (am_dt < TMCLK / 2.0);
+                    if (am_dflag[DFLAG_OVERRUN_LSB] !== am_new)
+                        fail($sformatf("AM k %0d: DFLAG 0x%02h modelled in the load cycle, but OVERRUN changed %0.2f MCLK from it", k, am_dflag, am_dt / TMCLK));
+                    if (am_v !== am_dflag)
+                        fail($sformatf("AM k %0d: DFLAG read 0x%02h; the DFLAG of its data byte's load cycle 0x%02h (spec 3.2)", k, am_v, am_dflag));
+                end
+            end
+            ad_read_all();                              // the FIFO read out
+            r14_write(7'h07, 8'hFF);
             r14_cmd(8'h22);
             wait_state(4'd0, 100.0, "AM IDLE");
-            for (int c = 0; c < 3; c++)
+            r14_write(7'h22, 8'h01);                    // range 1
+            r14_write(7'h21, 8'd200);                   // M 200 > 127: an APPLY is refused with CFG_ERR
+            for (int k = -9; k <= 8; k++) begin           // (4) ERR: CFG_ERR set at the tick that refuses an APPLY in IDLE
+                r14_write(7'h06, 8'hFF);                // ERR's W1C
+                @(posedge dut.u_clkgen.tick); am_t0 = $realtime;
+                r14_cmd(8'h33);
+                if (k == -9) begin
+                    while (dut.u_regs.err[ERR_CFG_ERR_LSB] !== 1'b1) @(negedge MCLK);
+                    #(TMCLK / 4.0); am_d[4] = ad_t_err - am_t0;
+                end else begin
+                    am_tgt = am_t0 + am_d[4] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                    if (am_tgt > $realtime) #(am_tgt - $realtime);
+                    else fail($sformatf("AM k %0d: the ERR read was due %0.1f ns ago", k, $realtime - am_tgt));
+                    r14_read(7'h06, am_v);
+                    while (dut.u_regs.err[ERR_CFG_ERR_LSB] !== 1'b1) @(negedge MCLK);
+                    #(TMCLK / 4.0);
+                    am_dt = ad_t_err - (am_t_load - TMCLK);
+                    am_count(4, am_dt, k, "ERR");
+                    am_new = (am_dt < TMCLK / 2.0);
+                    if (am_err[ERR_CFG_ERR_LSB] !== am_new)
+                        fail($sformatf("AM k %0d: ERR 0x%02h modelled in the load cycle, but CFG_ERR changed %0.2f MCLK from it", k, am_err, am_dt / TMCLK));
+                    if (am_v !== am_err)
+                        fail($sformatf("AM k %0d: ERR read 0x%02h; the ERR of its data byte's load cycle 0x%02h (spec 3.2)", k, am_v, am_err));
+                end
+            end
+            if (dut.seq_state !== 4'd0) fail("AM: a refused APPLY left IDLE");
+            r14_write(7'h21, 8'd0);
+            r14_write(7'h22, 8'h00);
+            r14_write(7'h06, 8'hFF);
+            for (int c = 0; c < 8; c++)
                 if (am_nb[c] < 1 || am_ns[c] < 1 || am_na[c] < 1)
                     fail($sformatf("AM not exercised (change %0d): %0d before the load cycle, %0d at its start, %0d at or after the load edge",
                                    c, am_nb[c], am_ns[c], am_na[c]));
-            $display("AM a register read's data byte against its load cycle (before / at its start / at or after the load edge): STATE at START's tick %0d / %0d / %0d, at STOP's tick %0d / %0d / %0d, FIFO_LEVEL at a store %0d / %0d / %0d (errors %0d)",
-                     am_nb[0], am_ns[0], am_na[0], am_nb[1], am_ns[1], am_na[1], am_nb[2], am_ns[2], am_na[2], errors);
+            $display("AM a register read's data byte against its load cycle (before / at its start / at or after the load edge): STATE at START's tick %0d / %0d / %0d, at STOP's tick %0d / %0d / %0d, FIFO_LEVEL at a store %0d / %0d / %0d, STATUS at START's tick %0d / %0d / %0d, ERR at a refused APPLY's tick %0d / %0d / %0d, DFLAG at a store into the full FIFO %0d / %0d / %0d, OFF_M_L's active copy at an APPLY_NR's tick %0d / %0d / %0d, a CRC-off read's second byte (FIFO_LEVEL) at a store %0d / %0d / %0d (errors %0d)",
+                     am_nb[0], am_ns[0], am_na[0], am_nb[1], am_ns[1], am_na[1], am_nb[2], am_ns[2], am_na[2],
+                     am_nb[3], am_ns[3], am_na[3], am_nb[4], am_ns[4], am_na[4], am_nb[5], am_ns[5], am_na[5],
+                     am_nb[6], am_ns[6], am_na[6], am_nb[7], am_ns[7], am_na[7], errors);
         end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);

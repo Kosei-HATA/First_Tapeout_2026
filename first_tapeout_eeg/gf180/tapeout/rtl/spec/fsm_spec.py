@@ -1152,8 +1152,10 @@ DAC_LOAD_CYCLE_REQUIRED = 2
 # check and redrew spec 4.1's frame figure; halving a timer's minimum, or changing the SPI's SCLK, passed too):
 # CMP_STROBE at cycle 0, TH settling in 1 and captured at e2 (eeg_adc_dig), the CIC output at 8 (eeg_digital_top's
 # STORE_CYCLE), CHOP1's edge at e16 (eeg_chop1); SEQ-02, SEQ-03 and SEQ-14's minimums and defaults, the registers'
-# 255 steps; SPI-01's 2 MHz and the 16-bit write frame of SPI-02
-BUSY_CYCLES_REQUIRED = {0: "CMP_STROBE", 1: "TH", 2: "TH", 8: "CIC", 16: "CHOP1"}
+# 255 steps; SPI-01's 2 MHz and the 16-bit write frame of SPI-02. The busy cycles' labels are matched by their
+# beginning (audit round 42, auditor C: both TH cycles were tagged "TH" and matched anywhere in the label, so
+# swapping the labels of cycles 1 and 2 passed every check and redrew spec 4.1's figure with TH_CAPTURE in cycle 0)
+BUSY_CYCLES_REQUIRED = {0: "CMP_STROBE", 1: "TH の確定", 2: "TH の取り込み", 8: "CIC", 16: "CHOP1"}
 TIMERS_REQUIRED = {"T_WARM": (5e-3, 5e-3, 255e-3), "T_REC": (0.22e-3, 0.25e-3, 255 * 256 / MCLK),
                    "T_PRE": (20e-6, 20e-6, 255 * 256 / MCLK), "T_RST": (100e-6, 100e-6, 255 * 256 / MCLK),
                    "T_ELEC": (0.0, 0.0, 255e-3)}
@@ -1188,8 +1190,8 @@ def check_timing():
             errs.append(f"the tick meets a busy frame cycle (tick at cycle {tc}, outputs at e{tc + 1}): "
                         f"{busy[c]} at cycle {c}")
     bc_ = T["busy_cycles"]                         # audit round 41, auditor C
-    if sorted(bc_) != sorted(BUSY_CYCLES_REQUIRED) or any(w_ not in bc_.get(c_, "") for c_, w_ in BUSY_CYCLES_REQUIRED.items()):
-        errs.append(f"busy frame cycles {bc_} in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH at 1 and 2, the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)")
+    if sorted(bc_) != sorted(BUSY_CYCLES_REQUIRED) or any(not bc_.get(c_, "").startswith(w_) for c_, w_ in BUSY_CYCLES_REQUIRED.items()):
+        errs.append(f"busy frame cycles {bc_} in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH's settling at 1 and its capture at 2 (e2), the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)")
     for tn_, want_ in TIMERS_REQUIRED.items():
         if T["timers"].get(tn_) != want_:
             errs.append(f"{tn_}: TIMING gives the analog minimum, nominal and maximum {T['timers'].get(tn_)} s; SEQ-02, SEQ-03, SEQ-14 and the register's 255 steps give {want_} s")
@@ -1296,7 +1298,7 @@ CHECKS = [
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
-    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある。DAC の選択の更新のサイクル（dac_load_cycle）は 2（ADC のループの遅れ 3/32 と tick の位置）で、DAC の忙しいサイクル（選択の更新と DAC_CLK の縁）はそこから導く。RTL の既定値と試験台の値は構造の検査が照合する（第 33 回）。使用中のフレームサイクル（比較器 0、TH 1 と 2、CIC の出力 8、CHOP1 の縁 16）、タイマのアナログの最小・公称・最大（SEQ-02、SEQ-03、SEQ-14 とレジスタの 255 段）、SPI の SCLK の上限 2 MHz と書き込みの 16 ビットは、RTL と要件から書いた表（BUSY_CYCLES_REQUIRED、TIMERS_REQUIRED、SPI_REQUIRED）に等しい（第 41 回、C）",
+    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある。DAC の選択の更新のサイクル（dac_load_cycle）は 2（ADC のループの遅れ 3/32 と tick の位置）で、DAC の忙しいサイクル（選択の更新と DAC_CLK の縁）はそこから導く。RTL の既定値と試験台の値は構造の検査が照合する（第 33 回）。使用中のフレームサイクル（比較器 0、TH の確定 1 と取り込み 2、CIC の出力 8、CHOP1 の縁 16。札は頭で照合し、二つの TH のサイクルの入れ違いも捕らえる：第 42 回、C）、タイマのアナログの最小・公称・最大（SEQ-02、SEQ-03、SEQ-14 とレジスタの 255 段）、SPI の SCLK の上限 2 MHz と書き込みの 16 ビットは、RTL と要件から書いた表（BUSY_CYCLES_REQUIRED、TIMERS_REQUIRED、SPI_REQUIRED）に等しい（第 41 回、C）",
     "生成のブロック（第 32 回）：要件の生成のブロック（GEN_KEYS の 14 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、要件が読める（gen と fresh は印のないブロックを黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
 ]
 
@@ -2146,6 +2148,7 @@ def selftest_runs():
         # audit round 41, auditor C: the busy cycles, the timers' analog values and the SPI numbers
         ("TIME", "CIC の出力をサイクル 9 に（RTL の STORE_CYCLE 8 と異なる）", lambda: setitem(TIMING, "busy_cycles", {(9 if c_ == 8 else c_): v_ for c_, v_ in TIMING["busy_cycles"].items()})),
         ("TIME", "CHOP1 の縁を e17 に（eeg_chop1 の e16 と異なる）", lambda: setitem(TIMING, "busy_cycles", {(17 if c_ == 16 else c_): v_ for c_, v_ in TIMING["busy_cycles"].items()})),
+        ("TIME", "TH の確定と取り込みのサイクルの札を入れ替える（取り込みを e1 に）", lambda: setitem(TIMING, "busy_cycles", {((3 - c_) if c_ in (1, 2) else c_): v_ for c_, v_ in TIMING["busy_cycles"].items()})),
         ("TIME", "T_REC のアナログの最小を 0.11 ms に（SEQ-03 の 0.22 ms と異なる）", lambda: setitem(TIMING, "timers", {**TIMING["timers"], "T_REC": (0.11e-3, 0.25e-3, 255 * 256 / MCLK)})),
         ("TIME", "SPI の SCLK の上限を 4 MHz に（SPI-01 の 2 MHz と異なる）", lambda: setitem(TIMING, "spi_sclk_max", 4e6)),
         # audit round 12, auditor C: the state table's columns and the frame enumeration
@@ -2475,8 +2478,9 @@ SELFTEST_EXPECT = {
     'チョッパの周期が 1 ms を割り切らない（12 フレーム）': (': 1 ms is not a whole number of chopper periods',),
     'CHOP1 の周期が 1 ms を割り切らない（384 フレーム）': ('frames does not divide the decimation ratio',),
     'CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）': ('CHOP1 rate change leaves a visible part of a CIC window on the old rate',),
-    'CIC の出力をサイクル 9 に（RTL の STORE_CYCLE 8 と異なる）': ("in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH at 1 and 2, the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)",),
-    'CHOP1 の縁を e17 に（eeg_chop1 の e16 と異なる）': ("in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH at 1 and 2, the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)",),
+    'CIC の出力をサイクル 9 に（RTL の STORE_CYCLE 8 と異なる）': ("in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH's settling at 1 and its capture at 2 (e2), the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)",),
+    'CHOP1 の縁を e17 に（eeg_chop1 の e16 と異なる）': ("in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH's settling at 1 and its capture at 2 (e2), the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)",),
+    'TH の確定と取り込みのサイクルの札を入れ替える（取り込みを e1 に）': ("in TIMING; the RTL and the requirements fix CMP_STROBE at 0, TH's settling at 1 and its capture at 2 (e2), the CIC output at 8 (STORE_CYCLE) and CHOP1's edge at 16 (eeg_chop1)",),
     'T_REC のアナログの最小を 0.11 ms に（SEQ-03 の 0.22 ms と異なる）': ("s; SEQ-02, SEQ-03, SEQ-14 and the register's 255 steps give",),
     'SPI の SCLK の上限を 4 MHz に（SPI-01 の 2 MHz と異なる）': ("bits) differ from SPI-01's 2 MHz and the 16-bit write frame",),
     'CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）': (

@@ -1,0 +1,7 @@
+SCLK timing: 942 frames at 2 MHz, 932 at 1 MHz, 994 with the minimum high, 901 with the minimum low (every VER-02 kind at each: check_spi_trace)
+VER-02 preamble: 228 frames (every kind at each SCLK timing, three times, CRC off and on); MISO Low at 3769 frame starts
+tb_spi_r14: 3769 frames, 0 SPI timing errors, 486 frames of another chip on SCLK -> /private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b42/spi_trace_s42.txt
+tb/tb_spi_r14.sv:379: $finish called at 1031135210637 (1ps)
+3769 frames replayed through fsm_spec SPI: 0 frames with mismatches; table branches covered 33 of 33
+VER-02: 12 kinds x 4 SCLK timings, frames per timing 942/932/994/901; fewest 8 (wrong key at timing 1)
+PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK timing

@@ -1,0 +1,5 @@
+# 200 edits, 4 s
+# 400 edits, 5 s
+# 600 edits, 11 s
+# 800 edits, 16 s
+# total 832 edits, 0 pass the checks, 0 not equivalent; 20 s

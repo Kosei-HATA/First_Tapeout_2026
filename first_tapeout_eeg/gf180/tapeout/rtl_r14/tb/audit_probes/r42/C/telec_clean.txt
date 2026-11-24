@@ -1,0 +1,4 @@
+(1) T_ELEC 2 written in WARMUP: RECOVER's expiry -> state 3 (WAIT_E 3 expected), ERR 0x00
+(2) T_ELEC 0 written in WARMUP: RECOVER's expiry -> state 4 (ALIGN 4 expected)
+tb_c42_telec: 0 mismatches with spec 4.2 (the timer taken at the start of its wait); SPI errors 0
+tb_c42_telec.sv:48: $finish called at 10557290107 (1ps)

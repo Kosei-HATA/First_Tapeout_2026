@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜41 回）
+# 監査の模擬の元（第 24〜42 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -126,3 +126,12 @@
 | 41 | C | `r41/C/tb_c41_rdinstant.sv`、`rdi_clean.txt`、`rdi_rd_data_late.txt` | 520（第 42.3 節） | START と STOP の tick をまたぐ STATE の読みのデータのバイトの写しの瞬間（清い RTL と写し） |
 | 41 | C | `r41/C/muts.py`、`mut_rd_data_late.txt`、`mut_te_latched.txt` | 520（第 42.3 節） | RTL の写し（rd_data_late：変異 m216、te_latched：D3／D4 が捕らえる）と 16 群の記録 |
 | 41 | C | `r41/C/busy_sweep.py`、`busy_all3.py`、`sweep_busy.txt`、`timing_pass.txt`、`sweep_c37.txt`、`sweep_c38.txt`、`sweep_regmap.txt` | 521（第 42.3 節） | TIMING の使用中のサイクルとタイマの編集の掃き、状態遷移表と regmap.REGS の掃きの結果 |
+| 42 | A | `r42/A/a42_win_check.py` | 第 43.1 節 | CIC の算術から書いた窓、CHANGED、OVL の独立の模型（全ての tick の位置、128／64 kHz、T_ELEC 0、1、2、5） |
+| 42 | A | `r42/A/a42_m1_ofs_range0.diff`、`a42_m2_ofm_range0.diff`、`a42_m1_top.txt`、`a42_m2_top.txt`、`a42_run_top_only.sh`、`run_tests_baseline.txt` | 第 43.1 節 | 範囲 0 の端子の規則の写し 2 種と tb_top_r14 の記録（段 N と端子の監視が捕らえる） |
+| 42 | B | `r42/B/tb_b42_lvlwin.sv`、`tb_b42_lvlwin.txt`、`tb_b42_lvlwin2.sv`、`tb_b42_lvlwin2.txt` | 522（第 43.2 節） | 格納のまわりの FIFO_LEVEL の読み込みの縁（窓の方法の境） |
+| 42 | B | `r42/B/tb_b42_status_afe.sv`、`tb_b42_status_afe.txt`、`b42_status_pairs.py`、`b42_status_which.py` | 523（第 43.2 節） | 過負荷の間の RUN の STATUS の滑りによる偽りの AFE_RST ＝ 1 |
+| 42 | B | `r42/B/b42_slip_any.py`、`b42_slip_masked.py`、`b42_crcoff_after_reset.py`、`crc_off_probe.py`、`crcclaims.py`、`smp_hdr_flip.py`、`tb_spi_s42.txt` | 第 43.2 節 | 滑りの模型、リセットされたチップの CRC の形の読み、CRC の定数、新しい系列の tb_spi_r14 |
+| 42 | C | `r42/C/tb_c42_stread.sv`、`stread_clean.txt`、`stread_err_rd_q.txt`、`stread_st_hdrcopy.txt` | 524（第 43.3 節） | STATUS と ERR の読みのデータのバイトの写しの瞬間（清い RTL と写し 2 種） |
+| 42 | C | `r42/C/tb_c42_telec.sv`、`telec_clean.txt`、`telec_te_seq_latched.txt` | 525（第 43.3 節） | WARMUP で書いた T_ELEC の RECOVER の満了での扱い（清い RTL と写し） |
+| 42 | C | `r42/C/muts.py`、`mut_err_rd_q.txt`、`mut_te_seq_latched.txt`、`mut_st_hdrcopy.txt`、`baseline_run.txt` | 524、525（第 43.3 節） | RTL の写しの定義と 16 群の記録 |
+| 42 | C | `r42/C/th_swap_selftest.py`、`busy_sweep.py`、`sweep_timing.txt`、`fsm_sweep_c42.py`、`sweep_c42.txt`、`sweep_c37.txt`、`sweep_c38.txt`、`regmap_sweep_c42.py`、`sweep_regmap_c42.txt`、`dut_refs.txt` | 526（第 43.3 節） | TH の札の入れ替えと TIMING の掃き、状態遷移表と regmap.REGS の掃きの結果、`dut.` の参照の一覧 |

@@ -1,0 +1,13 @@
+PASS [fname] ID.ID <-> VERSION.VERSION
+PASS [fname] ID.ID <-> SAMPLE.SAMPLE
+PASS [fname] VERSION.VERSION <-> SAMPLE.SAMPLE
+# 100 edits, 198 s
+PASS [fname] STATE.STATE <-> FIFO_LEVEL.LEVEL
+# 200 edits, 382 s
+PASS [fname] ERR.FRAME_ERR <-> DFLAG.OVL
+# 300 edits, 582 s
+# 400 edits, 790 s
+# 500 edits, 993 s
+# 600 edits, 1187 s
+# 700 edits, 1374 s
+# 708 edits, 5 pass, 1388 s

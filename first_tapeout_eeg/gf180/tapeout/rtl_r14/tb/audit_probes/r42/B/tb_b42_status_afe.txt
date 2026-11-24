@@ -1,0 +1,11 @@
+before: STATE 6, AFE_RST pin 0, OVL_NOW 1, FIFO level 0, ERR 0x00, STATUS register 0x8a
+CRC STATUS read, chip misses pulse 9: host gets 8a 85 1b, CRC valid, fixed bits  ok -> READY 0 DATA 1 AFE_RST 1 (chip: STATE 6, AFE_RST pin 0)
+ERR after: 0x02 (FRAME_ERR 1)
+before: STATE 6, AFE_RST pin 0, OVL_NOW 1, FIFO level 0, ERR 0x00, STATUS register 0x8a
+CRC STATUS read, chip misses pulse 10: host gets 8a 85 1b, CRC valid, fixed bits  ok -> READY 0 DATA 1 AFE_RST 1 (chip: STATE 6, AFE_RST pin 0)
+ERR after: 0x02 (FRAME_ERR 1)
+before: STATE 6, AFE_RST pin 0, OVL_NOW 1, FIFO level 0, ERR 0x00, STATUS register 0x8a
+CRC STATUS read, chip misses pulse 11: host gets 8a 85 1b, CRC valid, fixed bits  ok -> READY 0 DATA 1 AFE_RST 1 (chip: STATE 6, AFE_RST pin 0)
+ERR after: 0x02 (FRAME_ERR 1)
+tb_b42_status_afe done: 0 SPI errors
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b42/tb_b42_status_afe.sv:79: $finish called at 11263141845 (1ps)

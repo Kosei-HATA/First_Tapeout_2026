@@ -1,0 +1,11 @@
+--- a/gf180/tapeout/rtl_r14/eeg_regs.sv (810a0bc4)
++++ b/gf180/tapeout/rtl_r14/eeg_regs.sv (auditor A's copy)
+@@ -250,7 +250,7 @@
+                 a_cpf <= s_cpf;     a_bp <= s_bp;         a_bn <= s_bn;         a_fast <= s_fast;
+                 a_dwa <= s_dwa;     a_c1 <= s_c1;         a_blank <= s_blank;   a_atpen <= s_atpen;
+                 a_atpsel <= s_atpsel; a_cstop <= s_cstop; a_azero <= s_azero;
+-                o_ofm  <= (s_range == 3'd0) ? 10'd0 : s_m;
++                o_ofm  <= s_m;
+                 o_ofs  <= (s_range == 3'd0) ? 1'b0  : s_sign;
+                 o_ofen <= ofen_of_range(s_range);   // regmap.ofen_of_range (generated)
+             end

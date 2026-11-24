@@ -857,7 +857,7 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
 **目的**
 
 - 見直したデジタル制御（記録表 C4、要件定義 `gf180_digital_control_requirements_20261119.md`）の RTL（`gf180/tapeout/rtl_r14/`、コミット e56bc9da。論理は 11/20 の監査の第 10 回から不変、11/24 の第 39 回も RTL の変更なし）のマクロを入れたチップの組み立てと、要件 VER-08 の検証。
-- 発注の候補は r13 のまま。r14 に替えるか否かは 12/10〜12 に判断する（要件定義の第 10 節）。
+- 発注の候補は r12 のまま（記録表 E8。r13 に替えるかはユーザーの判断）。提出版を r14 とするか、現行のデジタルの r13 とするかは 12/10〜12 に判断する（要件定義の第 10 節）。
 
 **変更**
 
@@ -869,12 +869,20 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
 - `gf180/tapeout/pex/supply_check.py`、`gf180/tapeout/chip/make_core_netlist.py`、`gf180/tapeout/digital/chip_sta/`（`rev.py`）を版に追従させた。
 - 層ごとの XOR の道具 `gf180/tapeout/layout/chip_xor.py`（領域の指定、領域の外の差の箇所、ラスタの JSON）。r12／r13 の XOR の記録を再現する。
 
-**確認（11/24）**
+**確認（11/24〜25）**
 
 - **組み立ての道具の再現**：`EEG_DIG_REV=r13` で組むと、13 回目の `chip_top.gds` と 45 層の XOR で同一（`runs/chip_top/xor_r13_r13rebuild_chip_top_20261124.log`）。
 - **組み立て**（`runs/chip_top/run_chip_r14.sh`）：パッドリング込みのつながりの確認と、GDS のみからの電源の確認（タップの規則を含む）は問題なし。チップの配線の抵抗は DVDD で DIG 0.192 → 0.184 Ω、デカップリング 0.673 → 0.657 Ω、DVSS で DIG 1.118 → 1.081 Ω、デカップリング 1.500 → 1.446 Ω（加えた帯の分）。アナログの電源の抵抗とパッドの電流は r13 と同じ。
 - **XOR（r13 と比べる、穴埋め前、図 54）**：45 層のうち 23 層は同一。違いはデジタルの列（ADC の東の端 x 2942.4 µm から東のパッドまで、コアの全高）の中のみ。例外は CODE4 の線 1 本で、配線器の列 x 2942.24 µm の Metal3、Via3、Metal4（x 2942.05〜2942.40、y 648.6〜679.6 µm、計 11.1 µm²）が ADC の外形の 0.35 µm 内側に掛かる（eeg_adc_dig から eeg_digital_top への CODE の線で、r14 のマクロの端子の位置に合わせて引き直された。LVS のデータベースで網を確かめた）。AFE、ADC の中身、バイアス、基準電圧、試験用マルチプレクサ、パッドリング、アナログの配線は同一。ラベルの違いはなし（`runs/chip_top/xor_r13_r14_chip_top_20261124.log`）。
 - **チップの配線の抽出**（`chip_sta/chip_nets.py`）：デジタルのインタフェースの 112 本のうち、r13 と違うのは 13 本（MCLK、TH_CAPTURE、DAC_LOAD、DWA_EN、ADC_RST_N、CODE[4:0]、CMP_STROBE、DAC_CLK、ADC_ZERO の結合）。マクロの端子の位置の変わった分で、CHOP の群、AFE_RST、CHOP1、TH、SEL1、SEL2、トリムの線は同一。
 - **DRC**：違反なし（「chip_top DRC: clean」）。
-- **チップ全体の LVS（パッドリング込み、KLayout）、コアの LVS、穴埋めのあとの全 DRC、precheck、Netgen**：実行中。同じ GDS のコアの LVS は先に一致を確かめた（`runs/chip_top_r14_core`、20 時 44 分）。
+- **チップ全体の LVS（パッドリング込み、KLayout）とコアの LVS**：どちらも一致（「chip_top LVS (with the pad ring): match」「eeg_core LVS: match」、`runs/chip_top/build_r14_20261124.log`、2 時間 10 分）。DRC と LVS をつけた 2 回目の組み立ては、1 回目と同一の GDS を書いた。
+- **穴埋め**（`chip_lay.py --fill`）：穴埋めのあとの全規則の DRC は違反なし（「chip_top (filled) DRC: clean」、`runs/chip_top/fill_r14_20261124.log`）。`chip_top_fill.gds` は 225,381,060 バイト（sha256 `85152934c629c0c989bab23d2a2f441a57a9534aa6e9862f1f830cb7a8dd96a0`）で、`gf180/tapeout/chip/gds/chip_top_fill_r14_20261124.gds.gz` に置いた（42,199,021 バイト、sha256 c3a2c96c…。`gzip -9 -n`。展開すると 85152934… に戻る）。
+- **Magic と Netgen のチップ全体の LVS**（`runs/chip_top/run_netgen_r14.sh`、4 時間 29 分）：一致（「Circuits match uniquely」。IO セルの中の 863 個のセルを平らにし、「no such node」による併合の失われ 0 件。`runs/chip_top/netgen_r14_20261124.log`、`runs/chip_top/lvs_netgen/`）。
+- **wafer.space の precheck**
+  - **タグ pre_20261124_r14：通った**（passed、exit 0、11/25 3 時 36 分〜4 時 53 分、1 時間 17 分。アンテナ 17 分、Magic DRC 19 分、KLayout DRC 37 分）。最新のイメージ（10/20 版、digest 104d9ccb…。11/25 にもレジストリの `latest` が同じ digest と確かめた）を `--slot 1x0p5 --cob` で回した（`runs/chip_top/run_precheck_r14.sh`、記録は `runs/chip_top/precheck_r14_20261124.log`）。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。大きさ（3932 × 2531 µm）とパッドマスクも一致し、ID を入れた。Magic DRC は最後まで走った（「DRC Checking DONE」）。
+  - LibreLane の `warning.log` と `error.log` は空。Magic の出力の警告は、GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、r13 と同じ。
+  - 組み立てのあとに precheck を始める待ち受け（`pgrep -f` で組み立ての台本の終わりを待つもの）が、自分自身のコマンド行に一致して終わらず、precheck は始まっていなかった。3 時 36 分に手で起動した（約 5 時間の遅れ。以後の待ち受けは記録のファイルの中身で判じる）。
+- 14 回目は、KLayout のチップ全体の LVS、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）、Magic／Netgen のチップ全体の LVS が通った。
 - チップの STA とトランジスタの水準の確かめ（VER-08）は `gf180_digital_verification_20261024.md` の第 8.4、8.5 節、図 55、56。

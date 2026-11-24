@@ -1,0 +1,13 @@
+ELD 3/32, DC 0.40 V: OVL_NOW   0.0 %, hits   0.0 %, extreme codes   0.0 %
+ELD 3/32, DC 0.42 V: OVL_NOW   0.0 %, hits   0.0 %, extreme codes   0.0 %
+ELD 3/32, DC 0.43 V: OVL_NOW   0.0 %, hits   0.0 %, extreme codes   0.0 %
+ELD 3/32, DC 0.44 V: OVL_NOW   0.1 %, hits   0.0 %, extreme codes   2.3 %
+ELD 3/32, DC 0.45 V: OVL_NOW  93.1 %, hits  15.2 %, extreme codes  15.2 %
+ELD 3/32, DC 0.46 V: OVL_NOW 100.0 %, hits  31.8 %, extreme codes  31.8 %
+ELD 3/32, offset 0.28 + 0.20 V pk (peak 0.48 V): OVL_NOW  21.9 %, hits 12.27 %
+ELD 3/32, offset 0.28 + 0.15 V pk (peak 0.43 V): OVL_NOW   0.0 %, hits  0.00 %
+ELD 3/32, offset 0.20 + 0.20 V pk (peak 0.40 V): OVL_NOW   0.0 %, hits  0.00 %
+ELD 3/32, offset 0.00 + 0.44 V pk (peak 0.44 V): OVL_NOW   0.0 %, hits  0.01 %
+ELD 3/32, DC 0.44 V: runaway False, mean of the codes as an input 0.4400 V
+ELD 3/32, DC 0.46 V: runaway False, mean of the codes as an input 0.4600 V
+ELD 3/32, DC 0.48 V: runaway False, mean of the codes as an input 0.4800 V

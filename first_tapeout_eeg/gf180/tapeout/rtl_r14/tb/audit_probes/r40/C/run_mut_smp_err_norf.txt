@@ -1,0 +1,16 @@
+PASS  codes  1 s
+PASS  tb_seq  29 s
+PASS  tb_tick  5 s
+PASS  tb_clkgen  3 s
+PASS  tb_chop1  6 s
+PASS  tb_cic_arm  6 s
+PASS  tb_ovl  3 s
+PASS  tb_rnd_sat  1 s
+PASS  tb_regs  5 s
+PASS  tb_fifo  12 s
+PASS  tb_fifo4  11 s
+PASS  tb_top_r14  1553 s
+PASS  tb_spi_r14  241 s
+PASS  tb_top_r14_fifo4  1179 s
+PASS  outputs  1 s
+rc=0

@@ -769,6 +769,13 @@ MUTATIONS = [
     ('レジスタ：STATUS の AFE_RST をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       afe_rst_q;                   // AFE_RST for STATUS, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) afe_rst_q <= 1'b1; else afe_rst_q <= afe_rst;\n"), ('eeg_regs.sv', '        status_byte[STATUS_AFE_RST_LSB]     = afe_rst;', '        status_byte[STATUS_AFE_RST_LSB]     = afe_rst_q;')], None, None),
     ('レジスタ：STATUS の OVL_NOW をレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       ovl_now_q;                   // OVL_NOW for STATUS, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) ovl_now_q <= 1'b0; else ovl_now_q <= ovl_now;\n"), ('eeg_regs.sv', '        status_byte[STATUS_OVL_NOW_LSB]     = ovl_now;', '        status_byte[STATUS_OVL_NOW_LSB]     = ovl_now_q;')], None, None),
     ('最上位：空の語の OVL をレジスタの OVL_NOW から（1 MCLK 遅れる）', [('eeg_digital_top.sv', '    logic [7:0]  smp_status, empty_status;       // built below from the generated bit positions (audit round 8)\n', "    logic [7:0]  smp_status, empty_status;       // built below from the generated bit positions (audit round 8)\n    logic        ovl_now_q;                      // OVL_NOW for the empty word, registered\n    always_ff @(posedge MCLK or negedge tm_rst_n) if (!tm_rst_n) ovl_now_q <= 1'b0; else ovl_now_q <= ovl_now;\n"), ('eeg_digital_top.sv', '        empty_status[SMP_OVL_LSB]     = ovl_now;', '        empty_status[SMP_OVL_LSB]     = ovl_now_q;')], None, None),
+    # audit round 40, auditor C: FILL's store without the sticky OVERRUN, the samples' ERR without RESET_FLAG or without
+    # ALERT_MASK_D (STATUS's ALERT kept exact; AL)
+    ('最上位：FILL の格納のサンプルの OVERRUN を落とす（走り出しは取りこぼしなし）', 'eeg_digital_top.sv',
+     'smp_status[SMP_OVERRUN_LSB] = dflag_overrun;',
+     'smp_status[SMP_OVERRUN_LSB] = dflag_overrun & (seq_state != ST_FILL);'),
+    ('レジスタ：サンプルの ERR（ALERT）に RESET_FLAG を含めない（STATUS の ALERT は保つ）', [('eeg_regs.sv', '    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n', "    assign alert       = |(err & r_mask & ~(8'h01 << ERR_RESET_FLAG_LSB)) || |(dflag_byte & mask_d_byte);\n"), ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;\n', '        status_byte[STATUS_ALERT_LSB]       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n')], None, None),
+    ('レジスタ：サンプルの ERR（ALERT）で ALERT_MASK_D を見ない（STATUS の ALERT は保つ）', [('eeg_regs.sv', '    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n', '    assign alert       = |(err & r_mask) || |dflag_byte;\n'), ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;\n', '        status_byte[STATUS_ALERT_LSB]       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1360,7 +1367,7 @@ def run(i, m, bench="top"):
         return i, name, ("BASELINE FAILS" if f is None else "detected"), txt_
     def top_once(vvp, tag):
         """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
-        try:                                         # the bench's own watchdog (1,500 ms simulated) ends a hang
+        try:                                         # the bench's own watchdog (1,800 ms simulated) ends a hang
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
                                timeout=5400)
         except subprocess.TimeoutExpired:

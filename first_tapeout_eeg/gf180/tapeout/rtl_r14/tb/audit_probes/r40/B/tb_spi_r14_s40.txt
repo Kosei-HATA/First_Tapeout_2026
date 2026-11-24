@@ -1,0 +1,7 @@
+SCLK timing: 529 frames at 2 MHz, 509 at 1 MHz, 501 with the minimum high, 468 with the minimum low (every VER-02 kind at each: check_spi_trace)
+VER-02 preamble: 228 frames (every kind at each SCLK timing, three times, CRC off and on); MISO Low at 2007 frame starts
+tb_spi_r14: 2007 frames, 0 SPI timing errors, 223 frames of another chip on SCLK -> spi_trace_s40.txt
+tb/tb_spi_r14.sv:379: $finish called at 511040160835 (1ps)
+2007 frames replayed through fsm_spec SPI: 0 frames with mismatches; table branches covered 33 of 33
+VER-02: 12 kinds x 4 SCLK timings, frames per timing 529/509/501/468; fewest 8 (wrong key at timing 1)
+PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK timing

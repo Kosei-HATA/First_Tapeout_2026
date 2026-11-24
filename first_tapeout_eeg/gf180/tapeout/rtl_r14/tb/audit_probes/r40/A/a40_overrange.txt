@@ -1,0 +1,14 @@
+DAC1 full scale at the ADC input: 0.4844 V
+DC 0.30 V: frames before runaway none (3072), extreme codes 0.0 %, mean of the codes as an input 0.2998 V
+DC 0.45 V: frames before runaway none (3072), extreme codes 18.8 %, mean of the codes as an input 0.4497 V
+DC 0.48 V: frames before runaway none (3072), extreme codes 85.9 %, mean of the codes as an input 0.4797 V
+DC 0.49 V: frames before runaway 217, extreme codes 97.7 %, mean of the codes as an input 0.4801 V
+DC 0.51 V: frames before runaway 103, extreme codes 96.1 %, mean of the codes as an input 0.4759 V
+DC 0.52 V: frames before runaway 88, extreme codes 96.6 %, mean of the codes as an input 0.4748 V
+DC 0.86 V: frames before runaway 27, extreme codes 92.6 %, mean of the codes as an input 0.4612 V
+DC 1.20 V: frames before runaway 19, extreme codes 94.7 %, mean of the codes as an input 0.4581 V
+ELD 3/32, DC 0.49 V: frames before runaway 220, extreme codes 97.7 %
+ELD 3/32, DC 0.51 V: frames before runaway 104, extreme codes 97.1 %
+ELD 3/32, DC 0.52 V: frames before runaway 88, extreme codes 96.6 %
+ELD 3/32, DC 0.86 V: frames before runaway 27, extreme codes 92.6 %
+ELD 3/32, DC 1.20 V: frames before runaway 19, extreme codes 94.7 %

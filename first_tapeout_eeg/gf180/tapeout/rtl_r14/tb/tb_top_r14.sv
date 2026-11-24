@@ -115,6 +115,11 @@
 //      word; the header against the whole STATUS of the copy's cycle (AF's model), the word's OVL and ERR against
 //      OVL_NOW and ALERT of its copy's cycle (copies taking any of the five one MCLK late passed all 16 groups;
 //      AF changes only ALERT and CMD_PENDING)
+//   AL audit round 40 (auditor C): the samples' OVERRUN and ERR under standing flags and masks (spec 3.4, FLG-03,
+//      step 6): RESET_FLAG and each other ERR bit alone, each stored with ALERT_MASK 0xFF and with its bit masked;
+//      DFLAG.OVL and DFLAG.OVERRUN alone, stored with ALERT_MASK_D 0x03 and 0x00; FILL's store with DFLAG.OVERRUN
+//      standing after an APPLY in RUN and after STOP and START (copies taking OVERRUN off at FILL's store, leaving
+//      RESET_FLAG out of the samples' ERR or ignoring ALERT_MASK_D there passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -202,8 +207,9 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,500 ms of simulated time (the run ends near 1.13 s since
-// audit round 39's phase AK, 1.33 times less; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
+// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.18 s
+// since audit round 40's phase AL, 1.52 times less; audit round 40: the 1,500 ms would have been 1.27 times
+// it; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
 // 38: the 1,200 ms would have been 1.15 times it; auditor C: this line said 0.82 s after round 37 had made it 0.89 s),
 // so that an RTL error that leaves the bench waiting for an event fails instead of hanging.
@@ -475,8 +481,8 @@ module tb_top_r14;
     // ------------------------------------------------------------------ watchdog (every wait in the bench ends)
     string phase = "start";
     initial begin
-        #(1500.0e6);
-        fail($sformatf("watchdog: not finished after 1,500 ms of simulated time (phase %s)", phase));
+        #(1800.0e6);
+        fail($sformatf("watchdog: not finished after 1,800 ms of simulated time (phase %s)", phase));
         $display("FAIL: tb_top_r14");
         $finish;
     end
@@ -1394,6 +1400,43 @@ module tb_top_r14;
                                    sq_, st_, st_[SMP_OVERRUN_LSB], ad_ovr[sq_[7:0]]));
             end
         end
+    endtask
+    // phase AL (audit round 40, auditor C): every sample read to the empty word against its store's model (ad_exp,
+    // ad_ovr); with chk, the sample of SEQ sq_want also against the case's ERR and OVERRUN, and it must be read
+    integer al_n = 0;
+    task automatic al_read(input string what, input logic [15:0] sq_want, input logic e_err, input logic e_ovr, input bit chk);
+        logic [7:0] st_;
+        logic [15:0] sq_;
+        logic [23:0] d_;
+        bit ok_, seen_;
+        st_ = 8'h80;
+        seen_ = 1'b0;
+        while (st_[SMP_VALID_LSB] === 1'b1) begin
+            r14_sample(st_, sq_, d_, ok_);
+            if (!ok_) begin
+                fail($sformatf("AL %s: a sample read without a valid CRC", what));
+                st_ = 8'h00;
+            end else if (st_[SMP_VALID_LSB] === 1'b1) begin
+                ad_nchk = ad_nchk + 1;
+                if (st_[SMP_ERR_LSB] !== ad_exp[sq_[7:0]] || st_[SMP_OVERRUN_LSB] !== ad_ovr[sq_[7:0]])
+                    fail($sformatf("AL %s: sample SEQ %0d, status 0x%02h; ALERT %b and DFLAG.OVERRUN %b in its store's cycle (spec 3.4)",
+                                   what, sq_, st_, ad_exp[sq_[7:0]], ad_ovr[sq_[7:0]]));
+                if (chk && sq_ == sq_want) begin
+                    seen_ = 1'b1;
+                    if (st_[SMP_ERR_LSB] !== e_err || st_[SMP_OVERRUN_LSB] !== e_ovr)
+                        fail($sformatf("AL %s: sample SEQ %0d, status 0x%02h; ERR %b and OVERRUN %b expected (spec 3.4)",
+                                       what, sq_, st_, e_err, e_ovr));
+                end
+            end
+        end
+        if (chk && !seen_) fail($sformatf("AL %s: the sample of SEQ %0d was not read", what, sq_want));
+        al_n = al_n + 1;
+    endtask
+    task automatic al_next_store(output logic [15:0] sq);   // the next store's SEQ
+        integer n0_;
+        n0_ = ad_n_store;
+        while (ad_n_store == n0_) @(negedge MCLK);
+        sq = ad_seq_store;
     endtask
     task automatic ad_read_one();                      // one sample (the FIFO not empty), checked as above
         logic [7:0] st_;
@@ -4684,6 +4727,125 @@ module tb_top_r14;
                      ak_nb[0], ak_ns[0], ak_na[0], ak_nb[1], ak_ns[1], ak_na[1], ak_nb[2], ak_ns[2], ak_na[2],
                      ak_nb[3], ak_ns[3], ak_na[3], ak_nb[4], ak_ns[4], ak_na[4], ak_nb[5], ak_ns[5], ak_na[5],
                      ak_nb[6], ak_ns[6], ak_na[6], ak_nb[7], ak_ns[7], ak_na[7], errors);
+        end
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        // ---------------- AL (audit round 40, auditor C): the samples' OVERRUN and ERR under standing flags and masks.
+        // Spec 3.4: a sample's OVERRUN is DFLAG.OVERRUN and its ERR is ALERT (|(ERR & ALERT_MASK) | |(DFLAG &
+        // ALERT_MASK_D)) of its store's cycle, FILL's store included; step 6: every word stored until DFLAG.OVERRUN is
+        // written back carries it. No phase read a FILL store's sample with DFLAG.OVERRUN standing, a sample with
+        // RESET_FLAG or FRAME, CRC, RANGE, CFG, STATE or CMD_ERR standing, or one with a standing DFLAG bit masked by
+        // ALERT_MASK_D (the host's own 0x00 of step 3), and copies taking OVERRUN off at FILL's store, leaving RESET_FLAG
+        // out of the samples' ERR or ignoring ALERT_MASK_D there passed all 16 groups. (1) RESET_FLAG alone after a
+        // SOFT_RESET: FILL's store, a RUN store with it masked, one unmasked; (2) in RUN each other ERR bit alone, a store
+        // with ALERT_MASK 0xFF and one with its bit masked; (3) DFLAG.OVL alone and (4) DFLAG.OVERRUN alone, a store with
+        // ALERT_MASK_D 0x03 and one with 0x00; (5) FILL's store with DFLAG.OVERRUN standing, after an APPLY in RUN and
+        // after STOP and START. Every sample read against its store's model (ad_exp, ad_ovr) and the case's sample against
+        // the case's ERR and OVERRUN. Outside the golden comparison (after K)
+        phase = "AL";
+        begin
+            logic [15:0] al_sq;
+            logic [7:0] al_e;
+            integer al_n0;
+            al_n = 0;
+            spi_tidle = 600.0;
+            r14_cmd(8'hA5);                             // SOFT_RESET: RESET_FLAG; ALERT_MASK 0xFF, ALERT_MASK_D 0x03
+            #(1000.0);
+            r14_write(7'h07, 8'hFF);
+            r14_read(7'h06, al_e);
+            if (al_e !== 8'h01) fail($sformatf("AL: ERR 0x%02h after the SOFT_RESET, expected RESET_FLAG alone (0x01)", al_e));
+            al_n0 = ad_n_store;
+            r14_cmd(8'h11);                             // START with RESET_FLAG standing
+            wait_state(4'd6, 15000.0, "AL RUN");
+            while (ad_n_store == al_n0) @(negedge MCLK);
+            al_read("FILL's store, RESET_FLAG standing", ad_seq_store, 1'b1, 1'b0, 1'b1);
+            r14_write(7'h08, 8'hFE);                    // ALERT_MASK without RESET_FLAG
+            al_next_store(al_sq);
+            al_read("RESET_FLAG standing and masked", al_sq, 1'b0, 1'b0, 1'b1);
+            r14_write(7'h08, 8'hFF);
+            al_next_store(al_sq);
+            al_read("RESET_FLAG standing in RUN", al_sq, 1'b1, 1'b0, 1'b1);
+            r14_write(7'h06, 8'h01);                    // its W1C
+            for (int b = 1; b < 8; b++) begin
+                case (b)
+                    1: begin spi_tx[0] = 8'h24; spi_xfer(1, 0); end           // a header-only write: FRAME_ERR
+                    2: begin
+                           r14_write(7'h55, 8'h01);                           // CRC on
+                           bfm_crc_en = 1'b1;
+                           spi_tx[0] = 8'h24; spi_tx[1] = 8'h09; spi_tx[2] = 8'h00; spi_xfer(3, 0);   // a wrong CRC
+                           r14_write(7'h55, 8'h00);                           // CRC off
+                           bfm_crc_en = 1'b0;
+                       end
+                    3: r14_write(7'h7F, 8'h00);                               // undefined: ADDR_ERR
+                    4: r14_write(7'h50, 8'd4);                                // T_WARM 4 (legal 5..255): RANGE_ERR
+                    5: begin
+                           r14_write(7'h22, 8'h01);                           // range 1 with M 200, above its top
+                           r14_write(7'h21, 8'd200);
+                           r14_cmd(8'h33);                                    // APPLY in RUN, refused: CFG_ERR
+                           repeat (700) @(posedge MCLK);
+                           r14_write(7'h21, 8'h00);                           // the shadows as the active copies
+                           r14_write(7'h22, 8'h00);
+                       end
+                    6: begin r14_cmd(8'h11); repeat (700) @(posedge MCLK); end   // START in RUN, refused: STATE_ERR
+                    default: r14_write(7'h10, 8'h99);                         // an undefined command code: CMD_ERR
+                endcase
+                r14_read(7'h06, al_e);
+                if (al_e !== (8'h01 << b)) fail($sformatf("AL: ERR 0x%02h, expected bit %0d alone", al_e, b));
+                if (dut.seq_state !== 4'd6) fail($sformatf("AL: state %0d after ERR bit %0d, expected RUN", dut.seq_state, b));
+                al_next_store(al_sq);
+                al_read($sformatf("ERR bit %0d standing", b), al_sq, 1'b1, 1'b0, 1'b1);
+                r14_write(7'h08, ~(8'h01 << b));        // ALERT_MASK without it
+                al_next_store(al_sq);
+                al_read($sformatf("ERR bit %0d standing and masked", b), al_sq, 1'b0, 1'b0, 1'b1);
+                r14_write(7'h08, 8'hFF);
+                r14_write(7'h06, 8'h01 << b);           // its W1C
+            end
+            r14_read(7'h06, al_e);
+            if (al_e !== 8'h00) fail($sformatf("AL: ERR 0x%02h before the DFLAG cases, expected 0x00", al_e));
+            ovl_force = 1'b1;                           // an overload in RUN: DFLAG.OVL
+            repeat (64 * 32) @(posedge MCLK);
+            ovl_force = 1'b0;
+            repeat (2 * 32768) @(posedge MCLK);
+            al_read("the samples of the overload", 16'h0000, 1'b0, 1'b0, 1'b0);
+            r14_read(7'h07, al_e);
+            if (al_e !== 8'h02) fail($sformatf("AL: DFLAG 0x%02h after an overload in RUN, expected OVL alone (0x02)", al_e));
+            al_next_store(al_sq);
+            al_read("DFLAG.OVL standing, ALERT_MASK_D 0x03", al_sq, 1'b1, 1'b0, 1'b1);
+            r14_write(7'h09, 8'h00);
+            al_next_store(al_sq);
+            al_read("DFLAG.OVL standing, ALERT_MASK_D 0x00", al_sq, 1'b0, 1'b0, 1'b1);
+            r14_write(7'h09, 8'h03);
+            r14_write(7'h07, 8'h02);                    // its W1C
+            repeat ((FD + 2) * 32768) @(posedge MCLK);  // no reads: the FIFO fills, DFLAG.OVERRUN
+            r14_read(7'h07, al_e);
+            if (al_e !== 8'h01) fail($sformatf("AL: DFLAG 0x%02h after a full FIFO, expected OVERRUN alone (0x01)", al_e));
+            al_read("the full FIFO", 16'h0000, 1'b0, 1'b0, 1'b0);
+            al_next_store(al_sq);
+            al_read("DFLAG.OVERRUN standing, ALERT_MASK_D 0x03", al_sq, 1'b1, 1'b1, 1'b1);
+            r14_write(7'h09, 8'h00);
+            al_next_store(al_sq);
+            al_read("DFLAG.OVERRUN standing, ALERT_MASK_D 0x00", al_sq, 1'b0, 1'b1, 1'b1);
+            r14_write(7'h09, 8'h03);
+            r14_cmd(8'h33);                             // APPLY in RUN with DFLAG.OVERRUN standing
+            while (dut.seq_state === 4'd6) @(posedge MCLK);
+            al_n0 = ad_n_store;
+            wait_state(4'd6, 12000.0, "AL RUN after the APPLY");
+            while (ad_n_store == al_n0) @(negedge MCLK);
+            al_read("FILL's store after an APPLY in RUN, DFLAG.OVERRUN standing", ad_seq_store, 1'b1, 1'b1, 1'b1);
+            r14_cmd(8'h22);                             // STOP
+            wait_state(4'd0, 100.0, "AL IDLE");
+            al_n0 = ad_n_store;
+            r14_cmd(8'h11);                             // START with DFLAG.OVERRUN standing
+            wait_state(4'd6, 15000.0, "AL RUN after the START");
+            while (ad_n_store == al_n0) @(negedge MCLK);
+            al_read("FILL's store after STOP and START, DFLAG.OVERRUN standing", ad_seq_store, 1'b1, 1'b1, 1'b1);
+            r14_write(7'h07, 8'h01);                    // its W1C
+            r14_cmd(8'h22);
+            wait_state(4'd0, 100.0, "AL IDLE at the end");
+            if (al_n != 25) fail($sformatf("AL not exercised: %0d read-outs", al_n));
+            $display("AL samples under standing flags and masks: RESET_FLAG and the seven other ERR bits alone, each stored unmasked and masked (ALERT_MASK), DFLAG.OVL and DFLAG.OVERRUN alone with ALERT_MASK_D 0x03 and 0x00, FILL's store with DFLAG.OVERRUN standing after an APPLY in RUN and after STOP and START; %0d read-outs, every sample as its store's model and each case's sample as the case (errors %0d)",
+                     al_n, errors);
         end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);

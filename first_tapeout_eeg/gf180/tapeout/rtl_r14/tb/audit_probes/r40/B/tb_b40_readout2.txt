@@ -1,0 +1,13 @@
+CAPS 0x18: FIFO_DEPTH 8
+RUN at 9.000 ms
+    left unread for 1 output times: 1 DRDY_N edges, longest time without an edge 1.001 ms (DRDY_N 0)
+(1) read right after each output time    : 3 words (2 VALID, 0 with a bad CRC), last SEQ 9, FIFO_DEPTH 8, DFLAG 0x00 (OVERRUN 0)
+    literal 5.4 (i) test 'no read-out returns FIFO_DEPTH words':                    passes;  VALID-word reading:                    passes
+    left unread for 7 output times: 1 DRDY_N edges, longest time without an edge 6.001 ms (DRDY_N 0)
+(2) after FIFO_DEPTH - 1 unread outputs  : 8 words (7 VALID, 0 with a bad CRC), last SEQ 16, FIFO_DEPTH 8, DFLAG 0x00 (OVERRUN 0)
+    literal 5.4 (i) test 'no read-out returns FIFO_DEPTH words': FAILS (round not counted);  VALID-word reading:                    passes
+    left unread for 9 output times: 1 DRDY_N edges, longest time without an edge 8.001 ms (DRDY_N 0)
+(3) after FIFO_DEPTH + 1 unread outputs  : 9 words (8 VALID, 0 with a bad CRC), last SEQ 24, FIFO_DEPTH 8, DFLAG 0x01 (OVERRUN 1)
+    literal 5.4 (i) test 'no read-out returns FIFO_DEPTH words':                    passes;  VALID-word reading: FAILS (round not counted)
+tb_b40_readout done: 0 SPI timing errors
+../../../probes/tb_b40_readout.sv:81: $finish called at 26322426597 (1ps)

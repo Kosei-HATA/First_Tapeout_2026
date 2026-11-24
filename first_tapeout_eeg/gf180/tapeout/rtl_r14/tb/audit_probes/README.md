@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜39 回）
+# 監査の模擬の元（第 24〜40 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -109,3 +109,12 @@
 | 39 | C | `r39/C/tb_c39_status.sv`、`st_clean.txt`、`st_mr1.txt`、`st_mr5.txt` | 500（第 40.3 節） | RUN の STOP を取る tick の e25 をまたぐ STATUS の読み出しの掃き（READY と AFE_RST、清い RTL と写し MR1、MR5） |
 | 39 | C | `r39/C/tb_c39_emptyovl.sv`、`eo_clean.txt`、`eo_mr6.txt` | 500（第 40.3 節） | OVL_NOW の立ち上がりをまたぐ空の FIFO のサンプルの読み出しの掃き（清い RTL と写し MR6） |
 | 39 | C | `r39/C/muts.py`、`mkmut.sh`、`apply_mut.py`、`run_sweeps.sh`、`sweep_c37.txt`、`sweep_c38.txt`、`sweep_regmap.txt` | 第 40.3 節 | RTL の写し（MR1、MR3〜MR7：変異 m208〜m212。MR7 は等価）の作り方、状態遷移表と regmap.REGS の 1 編集の掃きとその結果 |
+| 40 | A | `r40/A/a40_track_meas.py`、`a40_track_meas.txt` | 503（第 41.1 節） | 抽出のビットの重みからの局所の 1 段と、測った 1 段による閾値での行き来の割合 |
+| 40 | A | `r40/A/a40_ovl_onset_eld.py`、`a40_ovl_onset_eld.txt`、`a40_overrange.py`、`a40_overrange.txt` | 504、505（第 41.1 節） | 行動模型（ループの遅れ 3／32）の過負荷の始まりと、範囲を越える DC の走り去り |
+| 40 | A | `r40/A/a40_exitcode2.sh` | 506（第 41.1 節） | pipefail のもとの `! printf | grep -q FAIL` の終了コード |
+| 40 | B | `r40/B/tb_b40_readout.sv`、`tb_b40_readout.txt`、`tb_b40_readout2.txt` | 508、509（第 41.2 節） | 7 回と 9 回の出力の間読まなかったチップの読み切りの語と DFLAG、遅らせたチップの DRDY_N の縁 |
+| 40 | B | `r40/B/b40_step5_budget.py` | 509（第 41.2 節） | 手順 5 を行えるチップの数の見積もり |
+| 40 | B | `r40/B/b40_slip_empty.py`、`b40_slip_false_empty.py`、`b40_slip_valid_sanity.py`、`tb_spi_r14_s40.txt`、`tb_spi_r14_f4.txt` | 第 41.2 節 | 8 バイトのサンプルのフレームの SCLK の故障の模型と、新しい系列の tb_spi_r14 の記録 |
+| 40 | C | `r40/C/tb_c40_first.sv`、`run_probe.sh`、`clean.txt`、`fill_ovr.txt`、`smp_err_norf.txt`、`smp_err_nomaskd.txt` | 511、512（第 41.3 節） | オーバーランのあとの最初のサンプルと、RESET_FLAG や ALERT_MASK_D 0x00 のもとのサンプルの ERR（清い RTL と写し 3 種） |
+| 40 | C | `r40/C/muts.py`、`mkmut.sh`、`apply_mut.py`、`fillstore.py`、`run_mut_fill_ovr.txt`、`run_mut_smp_err_norf.txt`、`run_mut_smp_err_nomaskd.txt` | 511、512（第 41.3 節） | RTL の写し（変異 m213〜m215）の作り方と 15 群の記録 |
+| 40 | C | `r40/C/out_c37.txt`、`out_c38.txt`、`all_pass_now.txt`、`regmap_recheck.py`、`out_regmap_recheck.txt` | 513（第 41.3 節） | 状態遷移表と regmap.REGS の 1 編集の掃きの結果（SEQ_PRIORITY の移動） |

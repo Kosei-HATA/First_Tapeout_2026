@@ -1,0 +1,14 @@
+DFLAG 0x01 before the APPLY
+(1) the first sample after an APPLY in RUN: SEQ 23 (FILL's store) status 0xc8, the store's cycle gives VALID/OVERRUN/ERR 0xc8, CRC 1            
+DFLAG 0x01 before the START
+(2) the first sample after a START: SEQ 32 (FILL's store) status 0xc8, the store's cycle gives VALID/OVERRUN/ERR 0xc8, CRC 1            
+ERR 0x01 before the START (ALERT_MASK at its reset value 0xFF)
+(3) the first sample with RESET_FLAG standing: SEQ 41 (FILL's store) status 0x88, the store's cycle gives VALID/OVERRUN/ERR 0x88, CRC 1            
+(3) the second sample with RESET_FLAG standing: SEQ 42 ( a RUN store) status 0x88, the store's cycle gives VALID/OVERRUN/ERR 0x88, CRC 1            
+DFLAG 0x02 after the overload (ALERT_MASK_D 0x00)
+(4) a sample after an overload, ALERT_MASK_D 0x00: SEQ 51 (FILL's store) status 0x80, the store's cycle gives VALID/OVERRUN/ERR 0x80, CRC 1            
+(4) a sample after an overload, ALERT_MASK_D 0x00: SEQ 52 ( a RUN store) status 0xa8, the store's cycle gives VALID/OVERRUN/ERR 0x80, CRC 1  <- differs
+(4) a sample after an overload, ALERT_MASK_D 0x00: SEQ 53 ( a RUN store) status 0xa8, the store's cycle gives VALID/OVERRUN/ERR 0x80, CRC 1  <- differs
+(4) a sample after an overload, ALERT_MASK_D 0x00: SEQ 54 ( a RUN store) status 0xa8, the store's cycle gives VALID/OVERRUN/ERR 0x80, CRC 1  <- differs
+tb_c40_first: 3 samples differ from the flags of their store's cycle (spi errors 0)
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a40c/probe/tb_c40_first.sv:90: $finish called at 55033259363 (1ps)

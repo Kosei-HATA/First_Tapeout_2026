@@ -1,0 +1,21 @@
+fixed formula T = 0.6 x 301 uV = 180.6 uV
+range >= 2 - largest local step (a bit-0 pair) 331.4 uV, half 165.7 uV
+   T = 0.6 x measured 100.0 uV  =   60.0 uV: offsets in that pair that limit-cycle  63.8 %  (window 211.4 uV), moves in 40 decisions at f = 0.5: 40
+   T = 0.6 x measured 122.0 uV  =   73.2 uV: offsets in that pair that limit-cycle  55.8 %  (window 185.0 uV), moves in 40 decisions at f = 0.5: 40
+   T = 0.6 x measured 222.0 uV  =  133.2 uV: offsets in that pair that limit-cycle  19.6 %  (window  65.0 uV), moves in 40 decisions at f = 0.5: 40
+   T = 0.6 x measured 263.0 uV  =  157.8 uV: offsets in that pair that limit-cycle   4.8 %  (window  15.8 uV), moves in 40 decisions at f = 0.5: 40
+   T = 0.6 x measured 299.8 uV  =  179.9 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+   T = 0.6 x measured 331.4 uV  =  198.8 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+   T = 0.6 x fixed formula      =  180.6 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+range 1 - largest local step (a bit-0 pair) 307.0 uV, half 153.5 uV
+   T = 0.6 x measured 222.0 uV  =  133.2 uV: offsets in that pair that limit-cycle  13.2 %  (window  40.6 uV), moves in 40 decisions at f = 0.5: 40
+   T = 0.6 x measured 299.8 uV  =  179.9 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+   T = 0.6 x measured 307.0 uV  =  184.2 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+   T = 0.6 x fixed formula      =  180.6 uV: offsets in that pair that limit-cycle   0.0 %  (window   0.0 uV), moves in 40 decisions at f = 0.5: 0
+chip example: T from the 995->996 step = 157.8 uV; at M 996 reading +177.6 -> move; at 997 reading -153.7 -> stay
+  the same chip with the offset 12 uV lower (f = 0.500 of the 996/997 pair): 996 reads +165.6, 997 reads -165.7 -> both beyond +-157.8
+mean of both sides at the 255/256 carry: 215.7 uV -> T 129.4 uV, limit-cycle share of the 256/257 pair 21.9 %
+larger side: T = 0.6 x 331.4 = 198.8 uV >= half of the largest step 165.7 uV
+fixed formula 180.6 uV over the largest residual 166.2 uV: margin 8.7 %
+fixed formula 180.6 uV over the largest residual 167.0 uV: margin 8.1 %
+fixed formula 180.6 uV over the largest residual 169.0 uV: margin 6.9 %

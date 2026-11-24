@@ -26,7 +26,7 @@
 #               write of that cycle (6 checks, audit round 31); cfg_ok and nr_ok against regmap over the full 10-bit M
 #               (build/ok_vectors.txt from tb/gen_ok_vectors.py)
 #   tb_fifo, tb_fifo4  the FIFO (depth 8 and 4) against fsm_spec.fifo_step and an identity model
-#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA to AK, listed in the bench's header,
+#   tb_top_r14  the whole block through its pins (phases A to V, K, then W, X, Y, Z, AA to AL, listed in the bench's header,
 #               and the pad monitors, DRDY_N in pulse and in level mode at every MCLK, audit rounds 22 and 25, and the
 #               FILL monitor, ALIGN's clear and FILL's store, audit round 33); samples == golden
 #               CIC (check_top_r14.py); every sequencer event replayed through fsm_spec (check_seq_trace.py)
@@ -142,4 +142,10 @@ run tb_spi_r14 3600 spi_t
 run tb_top_r14_fifo4 5400 top4_t
 run outputs 1200 outputs_t
 printf '%s\n' "${RES[@]}"
-! printf '%s\n' "${RES[@]}" | grep -q FAIL
+# the verdict without a pipe (audit round 40, auditor A: under `set -o pipefail`, `! printf ... | grep -q FAIL` could
+# pass a failed group: grep -q quits at the first FAIL, printf dies of SIGPIPE, the pipeline fails and `!` makes it 0;
+# every group must have its PASS line)
+for r in "${RES[@]}"; do
+    [[ $r == PASS* ]] || exit 1
+done
+exit 0

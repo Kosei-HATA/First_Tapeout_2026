@@ -490,6 +490,10 @@ def check_seq_columns():
                         f"({SPI_PARENT_REQUIRED.get(name)} required)")
     if sorted(SEQ_PRIORITY) != sorted(SEQ_COMMANDS + ["TMR"]):
         errs.append(f"SEQ_PRIORITY {SEQ_PRIORITY} is not an order of the five commands and TMR")
+    if SEQ_PRIORITY[:1] != ["STOP"]:                 # audit round 40, auditor C: seq_resolve lets STOP win its tick before
+        # the order, so STOP's entry was dead and STOP moved last passed every check while the generated order line
+        # contradicted the requirements' rule under it ("STOP は常に優先する")
+        errs.append(f"SEQ_PRIORITY {SEQ_PRIORITY}: STOP is not first, though STOP always wins its tick (seq_resolve; the requirements' rule under the generated order)")
     for name, _c, _p, _a, timer, _m in SEQ_STATES:   # a lone expiry moves as its cell says (a TMR left out of
         cell = SEQ["table"].get((name, "TMR"))      # SEQ_PRIORITY was never taken, and nothing failed)
         if timer is None or not isinstance(cell, list):
@@ -1241,7 +1245,7 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）。一つの欄を、同じ動作と行き先の分岐に分けない（何も変えない条件。第 17 回）。条件は、名指す全ての変数に依り（ほかの変数のある値で、その変数が条件の値を変える）、同じ変数を 2 回名指さない（第 18 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並び、単独のタイマの満了はその欄の行き先へ（第 16 回）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並びで、先頭は STOP（STOP は常に優先する。第 40 回、C）、単独のタイマの満了はその欄の行き先へ（第 16 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす（列挙した組は、列挙とは別に書いた組の集合と一致すること。第 17 回）",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -2162,7 +2166,9 @@ def selftest_runs():
     # the resolution order itself (audit round 5: the timer above APPLY made RECOVER's APPLY lose its transition)
     prio_orig = list(SEQ_PRIORITY)
     for name, order in (("同じ tick でタイマの満了を APPLY より優先", ["STOP", "START", "TMR", "APPLY", "APPLY_NR", "FLUSH"]),
-                        ("同じ tick でタイマの満了を START より優先", ["STOP", "TMR", "START", "APPLY", "APPLY_NR", "FLUSH"])):
+                        ("同じ tick でタイマの満了を START より優先", ["STOP", "TMR", "START", "APPLY", "APPLY_NR", "FLUSH"]),
+                        ("STOP を優先順位の最後に（同じ tick の STOP は常に勝つ）",   # audit round 40, auditor C
+                         ["START", "APPLY", "APPLY_NR", "FLUSH", "TMR", "STOP"])):
         SEQ_PRIORITY[:] = order
         results.append(("SEQ", name, run_checks(verbose=False)[0]))
     SEQ_PRIORITY[:] = prio_orig
@@ -2259,6 +2265,7 @@ def selftest():
 SELFTEST_EXPECT = {
     '同じ tick でタイマの満了を APPLY より優先': ('accepted but its actions not taken (', 'accepted but its transition lost to', 'accepted without applying the settings',),
     '同じ tick でタイマの満了を START より優先': ('accepted but its actions not taken (',),
+    'STOP を優先順位の最後に（同じ tick の STOP は常に勝つ）': (": STOP is not first, though STOP always wins its tick (seq_resolve; the requirements' rule under the generated order)",),
     'RUN/STOP の欄の欠落': (': the cell is not defined',),
     '起こり得る FLUSH を IMP にする': ('FLUSH does not empty the FIFO', ': marked impossible, but the event can occur',),
     'FILL/OUT の条件が網羅的でない': ('(guards must be exclusive and exhaustive)',),

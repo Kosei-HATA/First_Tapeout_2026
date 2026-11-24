@@ -1,0 +1,75 @@
+# progress 0 edits tried, at 0, 2 s
+PASS VERSION.VERSION msb 7->6
+PASS CAPS.FIFO_DEPTH reset 8->4
+# progress 100 edits tried, at 100, 172 s
+PASS CAPS.CRC msb 4->5
+PASS CAPS.CRC shifted +1
+# progress 200 edits tried, at 200, 349 s
+# progress 300 edits tried, at 300, 523 s
+# progress 400 edits tried, at 400, 692 s
+PASS STATE.STATE msb 3->4
+PASS FIFO_LEVEL.LEVEL msb 3->4
+# progress 500 edits tried, at 500, 859 s
+# progress 600 edits tried, at 600, 1027 s
+# progress 700 edits tried, at 700, 1196 s
+# progress 800 edits tried, at 800, 1369 s
+PASS ALERT_MASK_D.ALERT_MASK_D msb 1->2
+# progress 900 edits tried, at 900, 1541 s
+PASS ODR_H.ODR_H msb 7->6
+PASS ODR_H.ODR_H lsb 0->1
+PASS FORMAT addr 0x0C->0x0D
+PASS FORMAT addr 0x0C->0x0E
+PASS FORMAT.QBITS msb 3->4
+PASS FORMAT.QBITS msb 3->2
+PASS FORMAT.QBITS lsb 0->1
+PASS FORMAT.QBITS shifted +1
+# progress 1000 edits tried, at 1000, 1707 s
+PASS OFF_M_H.M_H shifted +1
+# progress 1100 edits tried, at 1100, 1866 s
+PASS OFF_CTRL.SIGN msb 4->5
+PASS OFF_CTRL.SIGN lsb 4->3
+PASS OFF_CTRL.SIGN shifted +1
+PASS OFF_CTRL.SIGN shifted -1
+PASS OFF_CTRL.RANGE msb 2->3
+PASS OFF_CTRL.RANGE shifted +1
+# progress 1200 edits tried, at 1200, 2029 s
+PASS AFE_IBIAS.AFE_IBIAS msb 1->2
+PASS AFE_IBIAS.AFE_IBIAS shifted +1
+PASS CPF_TRIM.CPF_TRIM msb 3->4
+PASS CPF_TRIM.CPF_TRIM shifted +1
+# progress 1300 edits tried, at 1300, 2189 s
+PASS BOOST_TRIM.BTRIM_N msb 5->6
+PASS BOOST_TRIM.BTRIM_N lsb 4->3
+PASS BOOST_TRIM.BTRIM_N shifted +1
+PASS BOOST_TRIM.BTRIM_N shifted -1
+PASS BOOST_TRIM.BTRIM_P msb 1->2
+PASS BOOST_TRIM.BTRIM_P shifted +1
+PASS BOOST_TRIM fields BTRIM_N<->BTRIM_P positions
+PASS CHOP_CFG.CHOP_FAST msb 0->1
+PASS CHOP_CFG.CHOP_FAST shifted +1
+# progress 1400 edits tried, at 1400, 2345 s
+PASS ADC_CFG.DWA_EN msb 4->5
+PASS ADC_CFG.DWA_EN lsb 4->3
+PASS ADC_CFG.DWA_EN shifted +1
+PASS ADC_CFG.DWA_EN shifted -1
+PASS ADC_CFG.CHOP1_RATE msb 2->3
+PASS ADC_CFG.CHOP1_RATE shifted +1
+PASS BLANK.BLANK_LEN msb 3->4
+# progress 1500 edits tried, at 1500, 2491 s
+PASS BLANK.BLANK_LEN shifted +1
+PASS SAMPLE.SAMPLE msb 7->6
+PASS SAMPLE.SAMPLE lsb 0->1
+PASS SAMPLE.SAMPLE legal full
+# progress 1600 edits tried, at 1600, 2636 s
+# progress 1700 edits tried, at 1700, 2781 s
+PASS IF_CFG.DRDY_MODE msb 1->2
+# progress 1800 edits tried, at 1800, 2926 s
+PASS TEST_MUX.ATP_EN msb 4->5
+# progress 1900 edits tried, at 1900, 3071 s
+PASS TEST_CTRL.CHOP_STOP msb 1->2
+PASS TEST_CTRL.CHOP_STOP shifted +1
+PASS TEST_CTRL fields CHOP_STOP<->ADC_ZERO positions
+PASS DEBUG.DBG_SEL msb 2->3
+PASS DEBUG.DBG_SEL shifted +1
+# progress 2000 edits tried, at 2000, 3213 s
+# 2058 edits, 53 pass, 3297 s

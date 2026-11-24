@@ -1,0 +1,11 @@
+--- /private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/r40work/gf180/tapeout/rtl_r14/tb/audit_probes/r39/A/tb_a39_rand.sv	2026-11-24 20:46:01
++++ /private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/audit41_A/probes/tb_a41_rand64.sv	2026-11-25 01:10:32
+@@ -242,7 +242,7 @@
+         if (($urandom(seed) % 3) == 0) r14_write(7'h24, 8'($urandom(seed) % 16));
+         if (($urandom(seed) % 4) == 0) r14_write(7'h25, 8'($urandom(seed)) & 8'h33);
+         if (($urandom(seed) % 5) == 0) r14_write(7'h23, 8'($urandom(seed) % 4));
+-        if (allow_rate && ($urandom(seed) % 4) == 0) r14_write(7'h26, 8'($urandom(seed) % 2));
++        if (allow_rate) r14_write(7'h26, 8'h00);   // audit 41 A: 64 kHz throughout
+         if (($urandom(seed) % 3) == 0) r14_write(7'h27, {3'd0, 1'($urandom(seed) % 2), 1'b0, 3'($urandom(seed) % 6)});
+         if (($urandom(seed) % 3) == 0) r14_write(7'h28, 8'(1 + $urandom(seed) % 15));
+     endtask

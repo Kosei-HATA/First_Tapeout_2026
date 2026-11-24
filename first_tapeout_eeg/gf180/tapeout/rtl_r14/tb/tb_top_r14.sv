@@ -120,6 +120,9 @@
 //      DFLAG.OVL and DFLAG.OVERRUN alone, stored with ALERT_MASK_D 0x03 and 0x00; FILL's store with DFLAG.OVERRUN
 //      standing after an APPLY in RUN and after STOP and START (copies taking OVERRUN off at FILL's store, leaving
 //      RESET_FLAG out of the samples' ERR or ignoring ALERT_MASK_D there passed all 16 groups)
+//   AM audit round 41 (auditor C): the copy instant of a register read's data byte (spec 3.2): STATE reads aimed in
+//      1/4-MCLK steps across the ticks that take START and STOP, FIFO_LEVEL reads across a store; each byte against the
+//      register of its load cycle (a copy taking the read mux one MCLK late passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
@@ -207,8 +210,8 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.18 s
-// since audit round 40's phase AL, 1.52 times less; audit round 40: the 1,500 ms would have been 1.27 times
+// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.21 s
+// since audit round 41's phase AM, 1.49 times less; audit round 40: the 1,500 ms would have been 1.27 times
 // it; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
 // 38: the 1,200 ms would have been 1.15 times it; auditor C: this line said 0.82 s after round 37 had made it 0.89 s),
@@ -1275,6 +1278,28 @@ module tb_top_r14;
             if (ak_now[b] !== ak_q[b]) ak_t_chg[b] = ad_t_pos;
         if (ak_now[3] === 1'b1 && ak_q[3] !== 1'b1) ak_t_ovl_up = ad_t_pos;
         ak_q = ak_now;
+    end
+    // phase AM (audit round 41, auditor C): the copy of a register read's first data byte, made in the cycle of the
+    // synchronized SCLK fall that loads it into MISO's shift register (eeg_spi_slave's S_RREG, code 2): that edge, and
+    // the state and the FIFO level of its cycle as the registers give them; and the edges at which they last changed
+    real         am_t_load = 0.0, am_t_state = 0.0, am_t_level = 0.0, am_lat = 0.0;
+    logic [3:0]  am_state = 4'd0, am_state_q = 4'd0, am_level = 4'd0, am_level_q = 4'd0;
+    bit          am_got = 1'b0;
+    real         am_d [0:2];                         // AM: the changes' offsets from the pass's reference
+    integer      am_nb [0:2], am_ns [0:2], am_na [0:2];   // AM: before / at the start of / after the load cycle
+    always @(negedge CS_N) am_got = 1'b0;
+    always @(posedge MCLK)
+        if (dut.u_spi.sclk_fall === 1'b1 && dut.u_spi.bit_cnt == 3'd0 && dut.u_spi.st == 4'd2 && !am_got) begin
+            am_got    = 1'b1;
+            am_t_load = $realtime;
+            am_state  = dut.seq_state;
+            am_level  = dut.fifo_level;
+        end
+    always @(negedge MCLK) begin
+        if (dut.seq_state !== am_state_q) am_t_state = ad_t_pos;
+        am_state_q = dut.seq_state;
+        if (dut.fifo_level !== am_level_q) am_t_level = ad_t_pos;
+        am_level_q = dut.fifo_level;
     end
     // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
     integer      aj_all [0:8];
@@ -4846,6 +4871,100 @@ module tb_top_r14;
             if (al_n != 25) fail($sformatf("AL not exercised: %0d read-outs", al_n));
             $display("AL samples under standing flags and masks: RESET_FLAG and the seven other ERR bits alone, each stored unmasked and masked (ALERT_MASK), DFLAG.OVL and DFLAG.OVERRUN alone with ALERT_MASK_D 0x03 and 0x00, FILL's store with DFLAG.OVERRUN standing after an APPLY in RUN and after STOP and START; %0d read-outs, every sample as its store's model and each case's sample as the case (errors %0d)",
                      al_n, errors);
+        end
+        r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
+        #(1000.0);
+        r14_write(7'h06, 8'hFF);
+        // ---------------- AM (audit round 41, auditor C): the copy instant of a register read's data byte. Spec 3.2: each
+        // data byte of a read is the register's value in the cycle that loads it into MISO (the synchronized SCLK fall after
+        // the header or the previous byte), a change at that cycle's starting edge included. Neither specified nor tested
+        // before, and a copy taking the read mux one MCLK late passed all 16 groups. (1) In IDLE, START and then STOP, each
+        // written right after a tick (taken at the second tick), and a STATE read aimed so that its load cycle starts from
+        // 2 MCLK before the state's change to 2 MCLK after it in 1/4-MCLK steps; (2) in RUN, a FIFO_LEVEL read aimed likewise
+        // at each store (the sample read after each). Each byte against the register of its load cycle; each change before
+        // the load cycle, at its start and at or after the load edge. Outside the golden comparison (after K)
+        phase = "AM";
+        begin
+            real am_t0, am_tgt, am_dt;
+            logic [7:0] am_v;
+            logic am_new;
+            integer am_n0;
+            for (int c = 0; c < 3; c++) begin am_nb[c] = 0; am_ns[c] = 0; am_na[c] = 0; end
+            r14_write(7'h06, 8'hFF);
+            r14_write(7'h07, 8'hFF);
+            am_t0 = $realtime; r14_read(7'h04, am_v); am_lat = am_t_load - am_t0;   // a call to its data byte's load
+            if (dut.seq_state !== 4'd0) fail("AM: not in IDLE");
+            for (int k = -9; k <= 8; k++) begin
+                for (int c = 0; c < 2; c++) begin           // 0: START (IDLE -> WARMUP), 1: STOP (WARMUP -> IDLE)
+                    @(posedge dut.u_clkgen.tick); am_t0 = $realtime;
+                    r14_cmd((c == 0) ? 8'h11 : 8'h22);
+                    if (k == -9) begin
+                        if (c == 0) while (dut.seq_state !== 4'd1) @(negedge MCLK);
+                        else        while (dut.seq_state !== 4'd0) @(negedge MCLK);
+                        #(TMCLK / 4.0); am_d[c] = am_t_state - am_t0;
+                    end else begin
+                        am_tgt = am_t0 + am_d[c] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                        if (am_tgt > $realtime) #(am_tgt - $realtime);
+                        else fail($sformatf("AM k %0d: the STATE read was due %0.1f ns ago", k, $realtime - am_tgt));
+                        r14_read(7'h04, am_v);
+                        if (c == 0) while (dut.seq_state !== 4'd1) @(negedge MCLK);
+                        else        while (dut.seq_state !== 4'd0) @(negedge MCLK);
+                        #(TMCLK / 4.0);
+                        am_dt = am_t_state - (am_t_load - TMCLK);
+                        if (am_dt < -2.6 * TMCLK || am_dt > 2.6 * TMCLK)
+                            fail($sformatf("AM k %0d: the state changed %0.2f MCLK from the load cycle, outside the sweep", k, am_dt / TMCLK));
+                        if (am_dt < -TMCLK / 2.0)     am_nb[c] = am_nb[c] + 1;
+                        else if (am_dt < TMCLK / 2.0) am_ns[c] = am_ns[c] + 1;
+                        else                          am_na[c] = am_na[c] + 1;
+                        am_new = (am_dt < TMCLK / 2.0);
+                        if (am_state !== ((c == 0) ? {3'd0, am_new} : {3'd0, !am_new}))
+                            fail($sformatf("AM k %0d: state %0d modelled in the load cycle, but it changed %0.2f MCLK from it", k, am_state, am_dt / TMCLK));
+                        if (am_v !== {4'h0, am_state})
+                            fail($sformatf("AM k %0d: STATE read 0x%02h; the state of its data byte's load cycle %0d (spec 3.2)", k, am_v, am_state));
+                    end
+                end
+            end
+            am_n0 = ad_n_store;
+            r14_cmd(8'h11);                             // START: RUN, then FIFO_LEVEL across each store
+            wait_state(4'd6, 15000.0, "AM RUN");
+            while (ad_n_store == am_n0) @(negedge MCLK);
+            for (int k = -9; k <= 8; k++) begin
+                ad_read_all();                          // the FIFO empty
+                am_t0 = ad_t_store;
+                if (k == -9) begin
+                    am_n0 = ad_n_store;
+                    while (ad_n_store == am_n0) @(negedge MCLK);
+                    #(TMCLK / 4.0); am_d[2] = am_t_level - am_t0;
+                    if (dut.fifo_level !== 4'd1) fail($sformatf("AM: FIFO_LEVEL %0d after a store into the empty FIFO", dut.fifo_level));
+                end else begin
+                    am_tgt = am_t0 + am_d[2] + TMCLK + k * TMCLK / 4.0 - am_lat;
+                    if (am_tgt > $realtime) #(am_tgt - $realtime);
+                    else fail($sformatf("AM k %0d: the FIFO_LEVEL read was due %0.1f ns ago", k, $realtime - am_tgt));
+                    am_n0 = ad_n_store;
+                    r14_read(7'h05, am_v);
+                    while (ad_n_store == am_n0) @(negedge MCLK);
+                    #(TMCLK / 4.0);
+                    am_dt = am_t_level - (am_t_load - TMCLK);
+                    if (am_dt < -2.6 * TMCLK || am_dt > 2.6 * TMCLK)
+                        fail($sformatf("AM k %0d: FIFO_LEVEL changed %0.2f MCLK from the load cycle, outside the sweep", k, am_dt / TMCLK));
+                    if (am_dt < -TMCLK / 2.0)     am_nb[2] = am_nb[2] + 1;
+                    else if (am_dt < TMCLK / 2.0) am_ns[2] = am_ns[2] + 1;
+                    else                          am_na[2] = am_na[2] + 1;
+                    am_new = (am_dt < TMCLK / 2.0);
+                    if (am_level !== {3'd0, am_new})
+                        fail($sformatf("AM k %0d: level %0d modelled in the load cycle, but it changed %0.2f MCLK from it", k, am_level, am_dt / TMCLK));
+                    if (am_v !== {4'h0, am_level})
+                        fail($sformatf("AM k %0d: FIFO_LEVEL read 0x%02h; the level of its data byte's load cycle %0d (spec 3.2)", k, am_v, am_level));
+                end
+            end
+            r14_cmd(8'h22);
+            wait_state(4'd0, 100.0, "AM IDLE");
+            for (int c = 0; c < 3; c++)
+                if (am_nb[c] < 1 || am_ns[c] < 1 || am_na[c] < 1)
+                    fail($sformatf("AM not exercised (change %0d): %0d before the load cycle, %0d at its start, %0d at or after the load edge",
+                                   c, am_nb[c], am_ns[c], am_na[c]));
+            $display("AM a register read's data byte against its load cycle (before / at its start / at or after the load edge): STATE at START's tick %0d / %0d / %0d, at STOP's tick %0d / %0d / %0d, FIFO_LEVEL at a store %0d / %0d / %0d (errors %0d)",
+                     am_nb[0], am_ns[0], am_na[0], am_nb[1], am_ns[1], am_na[1], am_nb[2], am_ns[2], am_na[2], errors);
         end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);

@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜40 回）
+# 監査の模擬の元（第 24〜41 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -118,3 +118,11 @@
 | 40 | C | `r40/C/tb_c40_first.sv`、`run_probe.sh`、`clean.txt`、`fill_ovr.txt`、`smp_err_norf.txt`、`smp_err_nomaskd.txt` | 511、512（第 41.3 節） | オーバーランのあとの最初のサンプルと、RESET_FLAG や ALERT_MASK_D 0x00 のもとのサンプルの ERR（清い RTL と写し 3 種） |
 | 40 | C | `r40/C/muts.py`、`mkmut.sh`、`apply_mut.py`、`fillstore.py`、`run_mut_fill_ovr.txt`、`run_mut_smp_err_norf.txt`、`run_mut_smp_err_nomaskd.txt` | 511、512（第 41.3 節） | RTL の写し（変異 m213〜m215）の作り方と 15 群の記録 |
 | 40 | C | `r40/C/out_c37.txt`、`out_c38.txt`、`all_pass_now.txt`、`regmap_recheck.py`、`out_regmap_recheck.txt` | 513（第 41.3 節） | 状態遷移表と regmap.REGS の 1 編集の掃きの結果（SEQ_PRIORITY の移動） |
+| 41 | A | `r41/A/tb_a41_cicwin.sv`、`cicwin.txt` | 第 42.1 節 | eeg_cic3 のみの全精度のくし形の値での単位入力の届く出力とクリア |
+| 41 | A | `r41/A/tb_a41_branches.sv`、`branches.txt` | 第 42.1 節 | tb_top_r14 の記録が取らない分岐 16 個（状態、端子、ERR） |
+| 41 | A | `r41/A/rand_4101.txt`〜`rand_4103.txt`、`rand64_4164.txt`、`tb_a41_rand64_from_a39.diff` | 第 42.1 節 | 第 39 回の不変条件の試験台（`r39/A/tb_a39_rand.sv`）の新しい乱数と 64 kHz のみの形の記録、その差分 |
+| 41 | B | `r41/B/tb_b41_readout.sv`、`rd8.txt`、`rd4.txt` | 516（第 42.2 節） | パルスとレベルのモードの k 回の出力のあとの読み切りのフレームの数と時間（8 段と 4 段） |
+| 41 | B | `r41/B/b41_slip_any.py` | 第 42.2 節 | どの値も受ける滑りの模型の確かめ |
+| 41 | C | `r41/C/tb_c41_rdinstant.sv`、`rdi_clean.txt`、`rdi_rd_data_late.txt` | 520（第 42.3 節） | START と STOP の tick をまたぐ STATE の読みのデータのバイトの写しの瞬間（清い RTL と写し） |
+| 41 | C | `r41/C/muts.py`、`mut_rd_data_late.txt`、`mut_te_latched.txt` | 520（第 42.3 節） | RTL の写し（rd_data_late：変異 m216、te_latched：D3／D4 が捕らえる）と 16 群の記録 |
+| 41 | C | `r41/C/busy_sweep.py`、`busy_all3.py`、`sweep_busy.txt`、`timing_pass.txt`、`sweep_c37.txt`、`sweep_c38.txt`、`sweep_regmap.txt` | 521（第 42.3 節） | TIMING の使用中のサイクルとタイマの編集の掃き、状態遷移表と regmap.REGS の掃きの結果 |

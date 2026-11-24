@@ -1,0 +1,3 @@
+tb_a39_rand seed 12600717: 355 episodes, 19259 ticks, 35 stores (3 with OVL, 16 CHANGED; 4 RUN steps), 16 one-step and 14 other setting changes, 14 AFE_RST releases, 0 SOFT_RESETs; 0 errors
+PASS
+tb_a41_rand_base.sv:337: $finish called at 150458823310 (1ps)

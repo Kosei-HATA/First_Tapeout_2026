@@ -776,6 +776,8 @@ MUTATIONS = [
      'smp_status[SMP_OVERRUN_LSB] = dflag_overrun & (seq_state != ST_FILL);'),
     ('レジスタ：サンプルの ERR（ALERT）に RESET_FLAG を含めない（STATUS の ALERT は保つ）', [('eeg_regs.sv', '    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n', "    assign alert       = |(err & r_mask & ~(8'h01 << ERR_RESET_FLAG_LSB)) || |(dflag_byte & mask_d_byte);\n"), ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;\n', '        status_byte[STATUS_ALERT_LSB]       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n')], None, None),
     ('レジスタ：サンプルの ERR（ALERT）で ALERT_MASK_D を見ない（STATUS の ALERT は保つ）', [('eeg_regs.sv', '    assign alert       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n', '    assign alert       = |(err & r_mask) || |dflag_byte;\n'), ('eeg_regs.sv', '        status_byte[STATUS_ALERT_LSB]       = alert;\n', '        status_byte[STATUS_ALERT_LSB]       = |(err & r_mask) || |(dflag_byte & mask_d_byte);\n')], None, None),
+    # audit round 41, auditor C: a register read's data byte from the read mux one MCLK late (AM)
+    ('SPI：読み出しのデータのバイトを 1 MCLK 前の値から（読み出しの選びをレジスタで受ける）', [('eeg_spi_slave.sv', '    logic        chk_addr;\n', '    logic        chk_addr;\n    logic [7:0]  rdata_q;                         // the read mux, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) rdata_q <= 8\'h00; else rdata_q <= reg_rdata;\n'), ('eeg_spi_slave.sv', 'S_RREG:  tx_next = reg_rdata;', 'S_RREG:  tx_next = rdata_q;')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)

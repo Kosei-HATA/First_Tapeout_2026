@@ -1,0 +1,20 @@
+PASS EQUIV busy_cycles remove 0
+PASS EQUIV busy_cycles remove 1
+PASS EQUIV busy_cycles move 1->17
+PASS EQUIV busy_cycles remove 2
+PASS EQUIV busy_cycles move 2->3
+PASS EQUIV busy_cycles move 2->18
+PASS EQUIV busy_cycles remove 8
+PASS EQUIV busy_cycles move 8->7
+PASS EQUIV busy_cycles move 8->9
+fail busy_cycles move 8->24: 1 violations, e.g. the tick meets a busy frame cycle (tick at cycle 24, outputs at e25): CIC の出力（OUT） at cycle 24
+PASS EQUIV busy_cycles remove 16
+PASS EQUIV busy_cycles move 16->15
+PASS EQUIV busy_cycles move 16->17
+PASS EQUIV busy_cycles add 23
+fail busy_cycles add 24: 1 violations, e.g. the tick meets a busy frame cycle (tick at cycle 24, outputs at e25): x at cycle 24
+fail busy_cycles add 25: 1 violations, e.g. the tick meets a busy frame cycle (tick at cycle 24, outputs at e25): x at cycle 25
+PASS EQUIV busy_cycles add 26
+PASS EQUIV busy_cycles add 31
+PASS EQUIV busy_cycles add 30
+# 19 edits, 16 pass

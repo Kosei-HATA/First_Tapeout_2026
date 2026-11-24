@@ -1,0 +1,6 @@
+A  STOP in ALIGN 1010 frames before its output time: IDLE, no clear (nstb 3), no store
+B  STOP in FILL: IDLE, no store over 4 output times
+D  PRE / PULSE: FLUSH, START, APPLY_NR refused or ignored as the table gives; PRE + PULSE 468.7 us
+tb_a41_branches: 15 refused / ignored cases checked, 0 errors, SPI errors 0
+PASS
+tb_a41_branches.sv:154: $finish called at 27541411611 (1ps)

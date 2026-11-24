@@ -1,0 +1,13 @@
+IF_CFG 0x03
+pulse: drained: 3 valid in 4 frames
+one 8-byte frame (T8) at 1 MHz: 66.00 us
+one 3-byte read (T3) at 1 MHz: 26.00 us
+pulse: deferred 1 outputs: 1 valid + empty = 2 frames, 132.0 us (132.0 us per ms)
+pulse: deferred 2 outputs: 2 valid + empty = 3 frames, 198.0 us (99.0 us per ms)
+pulse: deferred 3 outputs: 3 valid + empty = 4 frames, 264.0 us (88.0 us per ms)
+IF_CFG 0x01
+level: deferred 1 outputs: 1 valid in 1 frames (stop on DRDY_N High), 66.0 us (66.0 us per ms)
+level: deferred 2 outputs: 2 valid in 2 frames (stop on DRDY_N High), 132.0 us (66.0 us per ms)
+level: deferred 3 outputs: 3 valid in 3 frames (stop on DRDY_N High), 198.0 us (66.0 us per ms)
+SPI errors 0
+tb_b41_readout.sv:95: $finish called at 23199096161 (1ps)

@@ -1,0 +1,102 @@
+  change 0 -> 1 at 25558825
+trial 0 START d -3.00: load at 25467271, load edge -3.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 56809257
+trial 1 STOP  d -2.75: load at 56717703, load edge -3.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 88059689
+trial 2 START d -2.50: load at 87968135, load edge -3.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 119310121
+trial 3 STOP  d -2.25: load at 119249085, load edge -2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 150560553
+trial 4 START d -2.00: load at 150499517, load edge -2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 181810985
+trial 5 STOP  d -1.75: load at 181749949, load edge -2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 213061417
+trial 6 START d -1.50: load at 213000381, load edge -2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 244311849
+trial 7 STOP  d -1.25: load at 244281331, load edge -1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 275562281
+trial 8 START d -1.00: load at 275531763, load edge -1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 306812713
+trial 9 STOP  d -0.75: load at 306782195, load edge -1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 338063145
+trial 10 START d -0.50: load at 338032627, load edge -1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 369313577
+trial 11 STOP  d -0.25: load at 369313577, load edge  0.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 400564009
+trial 12 START d  0.00: load at 400564009, load edge  0.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 431814441
+trial 13 STOP  d  0.25: load at 431814441, load edge  0.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 463064873
+trial 14 START d  0.50: load at 463064873, load edge  0.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 494315305
+trial 15 STOP  d  0.75: load at 494345823, load edge  1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 525565737
+trial 16 START d  1.00: load at 525596255, load edge  1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 556816169
+trial 17 STOP  d  1.25: load at 556846687, load edge  1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 588066601
+trial 18 START d  1.50: load at 588097119, load edge  1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 619317033
+trial 19 STOP  d  1.75: load at 619378069, load edge  2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 650567465
+trial 20 START d  2.00: load at 650628501, load edge  2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 681817897
+trial 21 STOP  d  2.25: load at 681878933, load edge  2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 713068329
+trial 22 START d  2.50: load at 713129365, load edge  2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 744318761
+trial 23 STOP  d  2.75: load at 744410315, load edge  3.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 775569193
+trial 24 START d  3.00: load at 775660747, load edge  3.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 806819625
+trial 25 STOP  d -3.00: load at 806728071, load edge -3.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 838070057
+trial 26 START d -2.75: load at 837978503, load edge -3.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 869320489
+trial 27 STOP  d -2.50: load at 869228935, load edge -3.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 900570921
+trial 28 START d -2.25: load at 900509885, load edge -2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 931821353
+trial 29 STOP  d -2.00: load at 931760317, load edge -2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 963071785
+trial 30 START d -1.75: load at 963010749, load edge -2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 994322217
+trial 31 STOP  d -1.50: load at 994261181, load edge -2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 1025572649
+trial 32 START d -1.25: load at 1025542131, load edge -1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 1056823081
+trial 33 STOP  d -1.00: load at 1056792563, load edge -1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 1088073513
+trial 34 START d -0.75: load at 1088042995, load edge -1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 1119323945
+trial 35 STOP  d -0.50: load at 1119293427, load edge -1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 1150574377
+trial 36 START d -0.25: load at 1150574377, load edge  0.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 1181824809
+trial 37 STOP  d  0.00: load at 1181824809, load edge  0.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 1213075241
+trial 38 START d  0.25: load at 1213075241, load edge  0.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 1 -> 0 at 1244325673
+trial 39 STOP  d  0.50: load at 1244325673, load edge  0.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 0 -> 1 at 1275576105
+trial 40 START d  0.75: load at 1275606623, load edge  1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 1306826537
+trial 41 STOP  d  1.00: load at 1306857055, load edge  1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 1338076969
+trial 42 START d  1.25: load at 1338107487, load edge  1.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 1369327401
+trial 43 STOP  d  1.50: load at 1369357919, load edge  1.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 1400577833
+trial 44 START d  1.75: load at 1400638869, load edge  2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 1431828265
+trial 45 STOP  d  2.00: load at 1431889301, load edge  2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 1463078697
+trial 46 START d  2.25: load at 1463139733, load edge  2.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 1494329129
+trial 47 STOP  d  2.50: load at 1494390165, load edge  2.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+  change 0 -> 1 at 1525579561
+trial 48 START d  2.75: load at 1525671115, load edge  3.00 MCLK after the change edge, STATE read 0x01, state in the load cycle 1
+  change 1 -> 0 at 1556829993
+trial 49 STOP  d  3.00: load at 1556921547, load edge  3.00 MCLK after the change edge, STATE read 0x00, state in the load cycle 0
+done (0 late)
+probes/tb_c41_rdinstant.sv:59: $finish called at 1567170035 (1ps)

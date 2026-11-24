@@ -34,6 +34,7 @@ Usage: python3 gf180/tapeout/chip/make_core_netlist.py
 """
 import os
 import re
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TAPEOUT = os.path.dirname(HERE)
@@ -87,7 +88,9 @@ def main():
             base, k = m.groups()
             return {"CODE": "CODE", "SEL1": "SEL1_", "SEL2": "SEL2_", "TH": "TH"}[base] + k
         return w
-    dig = cdl_ports(os.path.join(GDS, "eeg_digital_top.cdl"), "eeg_digital_top")
+    sys.path.insert(0, os.path.join(TAPEOUT, "layout"))
+    import digrev          # the digital macro the chip takes (EEG_DIG_REV; r14 by default)
+    dig = cdl_ports(os.path.join(digrev.DIR, "eeg_digital_top.cdl"), "eeg_digital_top")
     adig = cdl_ports(os.path.join(GDS, "eeg_adc_dig.cdl"), "eeg_adc_dig")
     cl, cw = DECAP_UNIT
     L = ["* eeg_core: the chip core of the GF180 EEG ADC (this rev), written by make_core_netlist.py",

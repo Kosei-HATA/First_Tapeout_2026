@@ -1,10 +1,10 @@
 # Chip-level STA of the digital interface for one corner (run_chip_sta.sh).
-# Environment: PAD_LIB TOP_LIB ADC_LIB Q_LIB SPEF OUT (directory) HERE (this directory)
+# Environment: PAD_LIB TOP_LIB ADC_LIB Q_LIB SPEF OUT (directory) HERE (this directory) BUILD (chip_nets.py's outputs)
 read_liberty $::env(PAD_LIB)
 read_liberty $::env(TOP_LIB)
 read_liberty $::env(ADC_LIB)
 read_liberty $::env(Q_LIB)
-read_verilog $::env(HERE)/build/chip_dig.v
+read_verilog $::env(BUILD)/chip_dig.v
 link_design chip_dig
 read_spef $::env(SPEF)
 read_sdc $::env(HERE)/chip_dig.sdc

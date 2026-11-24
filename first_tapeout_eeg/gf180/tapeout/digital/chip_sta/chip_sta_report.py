@@ -22,7 +22,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "build", "f2_f3")
+B = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "build", "f2_f3")      # run_chip_sta.sh passes the folder
 T = 30.5
 CORNERS = [f"{rc}_{pv}" for pv in ("ss_125C_3v00", "tt_025C_3v30", "ff_n40C_3v60") for rc in ("max", "nom", "min")]
 

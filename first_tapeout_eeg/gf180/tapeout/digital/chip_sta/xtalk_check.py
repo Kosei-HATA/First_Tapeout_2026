@@ -33,14 +33,20 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 import drive_check as dc
+import rev  # the chip: r13 or r14 (EEG_DIG_REV)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-NETS = json.load(open(os.path.join(HERE, "build", "nets.json")))
-XT = json.load(open(os.path.join(HERE, "build", "xtalk.json")))
+NETS = json.load(open(os.path.join(rev.BUILD, "nets.json")))
+XT = json.load(open(os.path.join(rev.BUILD, "xtalk.json")))
 TM = dc.TM
 NSEG = 20
 CELL = {"f2": {}, "d1": {n: "buf_16" for n in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP_EN", "AFE_RST", "CHOP1",
-                                                "ADC_ZERO")} | {"CMP_STROBE": "clkbuf_16"}}
+                                                "ADC_ZERO")} | {"CMP_STROBE": "clkbuf_16"}, "r14": {}}
+# every other line's buffer: buf_1 in the r13 macro (f2, and d1's static trims), clkbuf_2 on all 50 outputs of r14's
+DEFAULT_CELL = {"f2": "buf_1", "d1": "buf_1", "r14": "clkbuf_2"}
+# r13: f2 and the candidate d1, CHOP_DLY 0 and 90; r14: its macro, CHOP_DLY gone (0)
+VERSIONS = ("f2", "d1") if rev.REV == "r13" else ("r14",)
+DLYS = (0, 90) if rev.REV == "r13" else (0,)
 
 
 def r_of(n):
@@ -60,7 +66,7 @@ def bus(lines, version):
     for i, n in enumerate(lines):
         cg = XT[n]["c_iso_fF"] + sum(v for k, v in XT[n]["cpl_fF"].items() if k not in inner)
         r = r_of(n)
-        cell = CELL[version].get(n, "buf_1")
+        cell = CELL[version].get(n, DEFAULT_CELL[version])
         out.append(f"XB_{n} IN_{n} Z_{n} DVDD DVDD 0 0 gf180mcu_fd_sc_mcu9t5v0__{cell}")
         prev = f"Z_{n}"
         for k in range(NSEG):
@@ -187,13 +193,13 @@ def main():
     with ThreadPoolExecutor(6) as ex:
         if a.only in (None, "afe"):
             for c in cs:
-                for ver in ("f2", "d1"):
-                    for dly in (0, 90):
+                for ver in VERSIONS:
+                    for dly in DLYS:
                         for cpf in (0, 1):
                             jobs.append(("afe", (c, ver, dly, cpf), ex.submit(afe, *c, ver, dly, cpf)))
         if a.only in (None, "adc"):
             for c in cs:
-                for ver in ("f2", "d1"):
+                for ver in VERSIONS:
                     jobs.append(("adc", (c, ver), ex.submit(adc, *c, ver)))
         out = {}
         for kind, key, j in jobs:
@@ -207,7 +213,7 @@ def main():
             else:
                 (corner, temp, vdd), ver = key
                 print(f"adc {ver} {corner} {temp:g} C: " + ", ".join(f"{k} {x:.3f}" for k, x in r.items()), flush=True)
-    with open(os.path.join(HERE, "build", "xtalk_check.json"), "w") as f:
+    with open(os.path.join(rev.BUILD, "xtalk_check.json"), "w") as f:
         json.dump(out, f, indent=1)
 
 

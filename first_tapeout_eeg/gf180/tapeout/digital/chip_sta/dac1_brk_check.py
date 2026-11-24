@@ -22,8 +22,9 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "sim", "dac1"))
 import dac1_check as d1  # noqa: E402
 import drive_check as dc  # noqa: E402
+import rev  # noqa: E402  (the chip: r13 or r14, EEG_DIG_REV)
 
-NETS = json.load(open(os.path.join(HERE, "build", "nets.json")))
+NETS = json.load(open(os.path.join(rev.BUILD, "nets.json")))
 _deck = d1.deck
 
 
@@ -51,12 +52,12 @@ def main():
     cases = []
     for c in a.cases:
         corner, temp, vdd = c.split(":")
-        for cell in ("buf_1", "buf_16"):
+        for cell in rev.DRIVE:
             cases.append((corner, float(temp), float(vdd), cell))
     # each case writes its own run directory (dac1_check names it after corner and temp)
     res = []
     for c in cases:
-        d1.HERE = os.path.join(HERE, "build", "spice", f"dac1brk_{c[3]}")
+        d1.HERE = os.path.join(rev.BUILD, "spice", f"dac1brk_{c[3]}")
         os.makedirs(os.path.join(d1.HERE, "runs"), exist_ok=True)
         res.append(one(*c))
     keys = list(res[0][4])

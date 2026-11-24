@@ -16,6 +16,10 @@
 # clock tree's design-rule warnings of the r13 macro (leaf buffers driving 20-22 sinks against the SDC's fanout 10,
 # the root and level-3 buffers 0.26-0.53 pF against 0.2 pF). r14m3: the CTS limits of r14m1 with the density and
 # margins of r14m2.
+# r14f5 (11/24, the macro of the 14th chip): the RTL of the audit (commit e56bc9da, logic unchanged since audit round 10),
+# these settings with eeg_digital_top_r14.sdc (VER-05: the flip-flops' preset / clear arcs timed, the reset exceptions)
+# and the H-tree buffers every 150 um: 9 corners met (setup +0.752 ns at max_ss, hold +0.195 ns at min_ff), no slew,
+# cap or fanout warnings (runs r14f1-f6: README_r14f_20261124.md).
 # Run with run_r14_macro.sh from a Terminal panel tab.
 meta:
   version: 3
@@ -55,8 +59,9 @@ PDN_VWIDTH: 3
 
 RT_MAX_LAYER: Metal4
 
-PNR_SDC_FILE: dir::../eeg_digital_top/eeg_digital_top.sdc
-SIGNOFF_SDC_FILE: dir::../eeg_digital_top/eeg_digital_top.sdc
+# the r13 macro's constraints and the reset exceptions of VER-05's STA with the preset / clear arcs (on in every step)
+PNR_SDC_FILE: dir::eeg_digital_top_r14.sdc
+SIGNOFF_SDC_FILE: dir::eeg_digital_top_r14.sdc
 CELL_LIBS:
   "*_tt_025C_3v30":
   - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_3v30.lib
@@ -78,6 +83,9 @@ DEFAULT_CORNER: nom_tt_025C_3v30
 
 CTS_SINK_CLUSTERING_SIZE: 10          # the SDC's MAX_FANOUT_CONSTRAINT
 CTS_MAX_CAP: 0.2                      # the SDC's MAX_CAPACITANCE_CONSTRAINT (pF)
+# H-tree buffers every 150 um (r14f2 / r14f5, 11/24): without them the root clkbuf_0_MCLK drove 16 level-4 buffers
+# (0.61 pF against 0.2 pF, fanout 16 against 10: r14m3's only cap and fanout warnings)
+CTS_DISTANCE_BETWEEN_BUFFERS: 150
 
 PL_RESIZER_SETUP_SLACK_MARGIN: 1.0
 GRT_RESIZER_SETUP_SLACK_MARGIN: 1.5
@@ -85,6 +93,9 @@ GRT_DESIGN_REPAIR_MAX_SLEW_PCT: 30
 
 RUN_POST_GRT_RESIZER_TIMING: true
 RUN_POST_GRT_DESIGN_REPAIR: true
+
+# VER-05: every STA of the macro times the flip-flops' preset / clear arcs (sta_preset_clear_arcs_enabled 1)
+STA_EXTRA_CORNER_TCL_FILE: dir::sta_preset_clear.tcl
 EXTRA_EXCLUDED_CELLS:
 - gf180mcu_fd_sc_mcu9t5v0__xnor3_4
 - gf180mcu_fd_sc_mcu9t5v0__dffrnq_4

@@ -27,6 +27,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "sim", "quantizer"))
 import quantizer_check as qc  # noqa: E402
+sys.path.insert(0, HERE)
+import rev  # noqa: E402  (the chip: r13 or r14, EEG_DIG_REV)
 from qcmp_check import IQ27  # noqa: E402
 import drive_check as dc  # noqa: E402
 
@@ -109,11 +111,12 @@ quit
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cases", nargs="+", default=["ss:-20:3.0:buf_1", "ss:-20:3.0:buf_16", "ss:85:3.0:buf_1",
-                                                    "ss:125:3.0:buf_1", "typical:27:3.3:buf_1", "typical:27:3.3:buf_16"])
+    d0, d1_ = rev.DRIVE
+    ap.add_argument("--cases", nargs="+", default=[f"ss:-20:3.0:{d0}", f"ss:-20:3.0:{d1_}", f"ss:85:3.0:{d0}",
+                                                    f"ss:125:3.0:{d0}", f"typical:27:3.3:{d0}", f"typical:27:3.3:{d1_}"])
     ap.add_argument("--kc", type=float, default=2.0)
     a = ap.parse_args()
-    nets = json.load(open(os.path.join(HERE, "build", "nets.json")))
+    nets = json.load(open(os.path.join(rev.BUILD, "nets.json")))
     cs = []
     for c in a.cases:
         corner, temp, vdd, cell = c.split(":")

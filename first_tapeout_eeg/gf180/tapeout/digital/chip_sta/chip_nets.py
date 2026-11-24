@@ -43,10 +43,12 @@ REPO = os.path.normpath(os.path.join(HERE, "..", "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "pex"))
 import pex_rin as pr  # noqa: E402  (net_geometry, network, solve, COND, SHEET)
 
-LVSDB = os.path.join(REPO, "gf180", "tapeout", "layout", "runs", "chip_top", "eeg_core.lvsdb")
-BUILD = os.path.join(HERE, "build")
+sys.path.insert(0, HERE)
+import rev  # noqa: E402  (the chip: r13 or r14, EEG_DIG_REV)
+LVSDB = rev.LVSDB
+BUILD = rev.BUILD
 
-DIG_BOX = (3002.0, 542.0, 3442.0, 1242.0)        # eeg_digital_top (mirrored about x)
+DIG_BOX = rev.DIG_BOX                            # eeg_digital_top (mirrored about x; y to 1242 r13, 1442 r14)
 ADIG_BOX = (2298.4, 542.0, 2718.4, 782.0)        # eeg_adc_dig in adc_top (566, 0) + (1732.4, 542)
 PAD_X = 3550.0                                   # MCLK: the core's east edge (pad pin at 3556)
 BAND = 2.0                                       # macro pin band inside the edge (um)

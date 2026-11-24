@@ -37,7 +37,9 @@ PDK = os.path.expanduser("~/.ciel/ciel/gf180mcu/versions/f6eeac7dad085ffcc829ccf
 MODELS = os.path.join(PDK, "libs.tech", "ngspice")
 CELLS = os.path.join(PDK, "libs.ref", "gf180mcu_fd_sc_mcu9t5v0", "spice", "gf180mcu_fd_sc_mcu9t5v0.spice")
 ACLK = os.path.join(REPO, "gf180", "tapeout", "afe", "eeg_afe_clk.spice")
-RUNS = os.path.join(HERE, "build", "spice")
+sys.path.insert(0, HERE)
+import rev  # noqa: E402  (the chip: r13 or r14, EEG_DIG_REV; its build folder and the macro's output buffer)
+RUNS = os.path.join(rev.BUILD, "spice")
 NSEG = 20
 TM = 1 / 32.768e6
 AVDD = 3.3
@@ -198,12 +200,12 @@ def main():
     ap.add_argument("--corners", nargs="+", default=["ss:125:3.0", "typical:27:3.3", "ff:-40:3.6"])
     ap.add_argument("--only", choices=["drive", "aclk", "adcclk"])
     a = ap.parse_args()
-    nets = json.load(open(os.path.join(HERE, "build", "nets.json")))
+    nets = json.load(open(os.path.join(rev.BUILD, "nets.json")))
     cs = [(c.split(":")[0], float(c.split(":")[1]), float(c.split(":")[2])) for c in a.corners]
     out = {}
     with ThreadPoolExecutor(6) as ex:
         if a.only in (None, "drive"):
-            jobs = [ex.submit(drive, nets, c, t, vdd, cell, n) for c, t, vdd in cs for cell in ("buf_1", "buf_16")
+            jobs = [ex.submit(drive, nets, c, t, vdd, cell, n) for c, t, vdd in cs for cell in rev.DRIVE
                     for n in ("CMP_STROBE", "DAC_CLK", "CHOP", "CHOP_BLANK", "CHOP1")]
             print("| net | cell | corner | rise 30-70 / 10-90 / delay (ns) | fall 30-70 / 10-90 / delay (ns) |")
             print("|---|---|---|---|---|")
@@ -214,7 +216,7 @@ def main():
                     f"{r[e]['t3070']:.2f} / {r[e]['t1090']:.2f} / {r[e]['delay']:.2f}" for e in ("rise", "fall")) + " |",
                     flush=True)
         if a.only in (None, "aclk"):
-            jobs = [ex.submit(aclk, nets, c, t, vdd, cell) for c, t, vdd in cs for cell in ("buf_1", "buf_16")]
+            jobs = [ex.submit(aclk, nets, c, t, vdd, cell) for c, t, vdd in cs for cell in rev.DRIVE]
             print("\n| cell | corner | edge | CHOP 10-90 at the driver (ns) | dead time (ns) | CHOP buffer in -> CIA/CIB (ns) "
                   "| AVDD_CLK - AVSS_CLK min (V) | VDD/2 crossings (CIA NCIA CIB NCIB CHOPB, CDA+CDB) |")
             print("|---|---|---|---|---|---|---|---|")
@@ -227,7 +229,7 @@ def main():
                           f"{e['delay_ns']:.2f} | {e['supply_min_V']:.3f} | {g['cia']} {g['ncia']} {g['cib']} {g['ncib']} "
                           f"{g['chopb']}, {g['cda+cdb']} |", flush=True)
         if a.only == "adcclk" or a.only is None:
-            jobs = [ex.submit(adcclk, nets, c, t, vdd, cell) for c, t, vdd in cs for cell in ("buf_1", "buf_16")]
+            jobs = [ex.submit(adcclk, nets, c, t, vdd, cell) for c, t, vdd in cs for cell in rev.DRIVE]
             print("\n| cell | corner | edge | dead (ns) | overlap (ns) | margin 1 / 2 (ns) | CHOP1 buffer in -> commutator (ns) "
                   "| VDD/2 crossings (CIA NCIA CIB NCIB CDA NCDA CDB NCDB) |")
             print("|---|---|---|---|---|---|---|---|")
@@ -237,7 +239,7 @@ def main():
                 for tag, e in r.items():
                     print(f"| {cell} | {c} {t:g} C | {tag} | {e['dead']:.2f} | {e['overlap']:.2f} | {e['margin1']:.2f} / "
                           f"{e['margin2']:.2f} | {e['delay']:.2f} | {' '.join(map(str, e['crossings']))} |", flush=True)
-    with open(os.path.join(HERE, "build", "drive_check.json"), "w") as f:
+    with open(os.path.join(rev.BUILD, "drive_check.json"), "w") as f:
         json.dump(out, f, indent=1)
 
 

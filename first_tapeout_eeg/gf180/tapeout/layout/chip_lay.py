@@ -19,7 +19,8 @@ Floorplan (die um; the pads' inner edges at x 376 / 3556 and y 376 / 2155):
                     the wiring corridor, the test multiplexer at the top
   - ADC adc_top     x 1732.4 .. 2942.4
   - digital block   eeg_digital_top mirrored about x (controls on its south edge) at
-                    x 3002 .. 3442, y 542 .. 1242; DVDD decoupling above it
+                    x 3002 .. 3442, y 542 .. 1442 (the r14 macro, 440 x 900 um; the r13 macro,
+                    440 x 700 um, to y 1242: DIG_REV); DVDD decoupling 10 um above it
   - south band      y 376 .. 542: AVDD / AVSS straps (Metal5), the bias block eeg_bias
                     turned 90 degrees under the ADC (ports to the west, into Ch-A), the
                     control bus from the digital block (Metal3 / Metal4)
@@ -56,6 +57,7 @@ import route
 import assemble as A
 import fets as f
 import afetg_lay as TG
+import digrev
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # the padring run (work copy eeg_padring, RUN_2026-10-23_13-27-25): its GDS (gzipped) and
@@ -70,7 +72,11 @@ GRID = (0.64, 0.8, 0.04, 0.68)
 AFE_O = (482.0, 542.0)
 ADC_O = (1732.4, 542.0)
 CHA = (1582.0, 1732.4)
-DIG_O = (3002.0, 1242.0)                         # mirrored: the macro spans y 542 .. 1242
+# The digital macro eeg_digital_top (tracker C4, E7; digrev.py): r14 (gds/r14/, 440 x 900 um; the 14th chip) or, with
+# EEG_DIG_REV=r13, r13 (gds/, 440 x 700 um; the 13th chip). Only the macro, its Metal5 power straps and the DVDD
+# decoupling above it depend on this (the decoupling 200 um higher with r14).
+DIG_REV, DIG_DIR, DIG_H = digrev.REV, digrev.DIR, digrev.HEIGHT
+DIG_O = (3002.0, 542.0 + DIG_H)                  # mirrored: the macro spans y 542 .. 542 + DIG_H (r13 1242, r14 1442)
 BIAS_O = (2836.4, 425.0)                         # rot 90: x 1745.1 .. 2837.4, y 425.4 .. 534.6
 TM_O = (1595.0, 1940.0)
 REF_O = (669.0, 1995.0)
@@ -277,8 +283,10 @@ def power(a, I):
 # on the west strip and the dvdd pads fed only the east one: the core's DVDD reached no pad)
 IB_DVSS = ((2950.0, 2970.0), (2972.0, 2992.0))
 EG_DVDD = ((3500.0, 3520.0), (3522.0, 3542.0))
+# (r14: one more pair at y 1320 over the macro's 200 um more, the same 140 um pitch)
 DIG_STRAPS = [("DVDD", 642.0, 648.0), ("DVSS", 654.0, 660.0)] + \
-    [(n, y, y + 10.0) for y0 in (760.0, 900.0, 1040.0, 1180.0) for n, y in (("DVDD", y0), ("DVSS", y0 + 14.0))]
+    [(n, y, y + 10.0) for y0 in (760.0, 900.0, 1040.0, 1180.0) + ((1320.0,) if DIG_REV == "r14" else ())
+     for n, y in (("DVDD", y0), ("DVSS", y0 + 14.0))]
 ADC_DRAIL = {"DVDD": (100.0, 106.0), "DVSS": (112.0, 118.0)}   # adc_lay R_DVDD / R_DVSS
 ADC_DRISER = 1203.0                                               # adc_lay X_DVDD
 
@@ -378,7 +386,7 @@ def dpower(a, I):
 
 DECAP_A_X = 1593.0                       # Ch-A decoupling: three units per row under the trunks
 DECAP_A_Y = (556.0, 1924.0)
-DECAP_D = (3003.0, 1252.0, 12, 4)        # DVDD decoupling above the digital block: x0, y0, nx, ny
+DECAP_D = (3003.0, DIG_O[1] + 10.0, 12, 4)   # DVDD decoupling above the digital block: x0, y0 (r13 1252, r14 1452), nx, ny
 
 
 def decaps(a, I):
@@ -738,7 +746,7 @@ NETLISTS = [os.path.join(TAPEOUT, "chip", "eeg_core.spice"), os.path.join(TAPEOU
     [os.path.join(TAPEOUT, "adc", n) for n in ("eeg_adc_otas.spice", "eeg_adc_clk.spice", "eeg_dac1.spice",
                                                 "eeg_dac2.spice", "eeg_quantizer.spice", "eeg_adc.spice", "eeg_ref.spice")] + \
     [os.path.join(TAPEOUT, "bias", "eeg_bias.spice"), os.path.join(TAPEOUT, "test", "eeg_testmux.spice"),
-     os.path.join(HERE, "gds", "eeg_adc_dig.cdl"), os.path.join(HERE, "gds", "eeg_digital_top.cdl")] + \
+     os.path.join(HERE, "gds", "eeg_adc_dig.cdl"), os.path.join(DIG_DIR, "eeg_digital_top.cdl")] + \
     [os.path.join(SCL, f"gf180mcu_fd_sc_mcu{t}t5v0", "spice", f"gf180mcu_fd_sc_mcu{t}t5v0.spice") for t in (7, 9)]
 TIES = [("AVSS_CLK", "AVSS"), ("DVSS", "AVSS")]          # nets the p-substrate joins
 
@@ -1295,7 +1303,9 @@ def build():
     I = {"pads": P}
     I["afe"] = a.put("afe_top", *AFE_O, name="AFE")
     I["adc"] = a.put("adc_top", *ADC_O, name="ADC")
-    I["dig"] = a.put("eeg_digital_top", *DIG_O, mirror=True, name="DIG")
+    I["dig"] = a.put("eeg_digital_top", *DIG_O, mirror=True, name="DIG",
+                     path=os.path.join(DIG_DIR, "eeg_digital_top.gds"))
+    print(f"digital macro {DIG_REV}: {I['dig'].bbox}")
     I["bias"] = a.put("eeg_bias", *BIAS_O, rot=1, name="BIAS", nets={"VDD": "AVDD", "VSS": "AVSS"})
     I["tm"] = a.put("eeg_testmux", *TM_O, name="TM", grid=GRID)
     I["ref"] = a.put("eeg_ref", *REF_O, name="REF", nets={"VSS": "AVSS"})

@@ -52,7 +52,10 @@ BLOCK_PINS = {"afe_top": {"AVDD": "AVDD", "AVSS": "AVSS"},
               "eeg_bias": {"VDD": "AVDD", "VSS": "AVSS"}, "eeg_ref": {"VSS": "AVSS"},
               "eeg_testmux": {"AVDD": "AVDD", "AVSS": "AVSS"}}
 # LibreLane macros: LEF, instance path from the top cell; power pins -> the chip's supply
-MACROS = {"eeg_digital_top": ("eeg_digital_top.lef", ("eeg_digital_top",)),
+# (the digital macro's LEF from the macro the chip takes: gf180/tapeout/layout/digrev.py, EEG_DIG_REV; r14 by default)
+sys.path.insert(0, PC.LAYOUT)
+import digrev  # noqa: E402
+MACROS = {"eeg_digital_top": (os.path.join(digrev.DIR, "eeg_digital_top.lef"), ("eeg_digital_top",)),
           "eeg_adc_dig": ("eeg_adc_dig.lef", ("adc_top", "eeg_adc_dig"))}
 MACRO_PINS = {"VDD": "DVDD", "VSS": "DVSS"}
 SHORT = {"afe_top": "AFE", "adc_top": "ADC", "eeg_bias": "BIAS", "eeg_ref": "REF", "eeg_testmux": "TM",

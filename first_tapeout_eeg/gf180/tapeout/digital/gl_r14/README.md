@@ -21,3 +21,27 @@ LibreLane の最終ネットリスト（`eeg_digital_top_r14/runs/<ラン>/final
 結果は `eeg_digital_top_r14/runs/gl_<ラン>/`（git の対象外）の `gl_top.log`、`gl_spi.log`、`gl_seq_zero.log`、`gl_sdf_<コーナー>.log`、`summary.txt`。判定は、各試験台の検査と検査器が通り（PASS があって FAIL、ERROR、GL MISMATCH がない）、並走の結果の行が「PASS: gate level」であること。
 
 同じマクロを監査の新しい試験台で回し直すときは、ランのフォルダへのリンク（例：`runs/r14f5_20261124_b41 -> r14f5_20261124`）をラン名に与え、結果のフォルダを分ける（`run_gl_r14.sh r14f5_20261124_b41 810a0bc4 prep` のあと `top`、`spi`、`seq`）。11/24〜25 の実行は `gl_r14f5_20261124`（e56bc9da の源。SDF の 3 コーナーを含む）、`gl_r14f5_20261124_b39`（3de8d03b）、`gl_r14f5_20261124_b41`（810a0bc4）、`gl_r14f5_20261124_b44`（ed9c0ebe）で、全て一致（`documentation/gf180_digital_verification_20261024.md` の第 8.6 節）。
+
+## ADC のデジタル部との組（11/25）
+
+r14 の試験台は、eeg_digital_top の入力 CODE を ADC のデジタル部（`rtl/eeg_adc_dig.sv`。マクロ f3、r12〜r14 のチップで同じ）の模型（e2 で変わる）で与えており、ADC のデジタル部そのものは r14 のどの試験にも入っていなかった。これを入れて、二つのブロックを組で確かめる。
+
+| ファイル | 内容 |
+|---|---|
+| `sys_adc_r14.sv` | 試験台を変えずに、ADC のデジタル部の RTL を制御の出力（ADC_RST_N、TH_CAPTURE、DAC_LOAD、DWA_EN）につなぐモジュール。TH は、試験台がその e2 に与えるコード（`SYS_NEXT_CODE`）の温度計。確かめは三つ。(1) 制御が CODE を取る全ての縁（cic_en での CIC と過負荷の検出、RAW が有効なときのフレームのサイクル 31 での RAW。eeg_digital_top の CODE の使い道はこれで全て）で、ADC のデジタル部の CODE が試験台の CODE と等しいこと。等しければ、制御は ADC のデジタル部そのものとつないだときと同じに動き、試験台の全ての確かめが二つの組に成り立つ。(2) SEL1／SEL2 を参照の DWA（`rtl/tb/tb_top.sv` のもの）と比べる。DAC_LOAD の縁ごとに k ＝ 31 − そのフレームで取り込んだコード、DWA_EN はその縁の値。SEL は DAC_LOAD の縁でのみ変わる。CMP_STROBE の立ち上がりで popcount(SEL) ＝ 直前の更新の k。CMP_STROBE から SEL までの時間。DAC_CLK は更新の 1 MCLK 後に立ち上がり、幅 1 MCLK。(3) `SYS_GL` のとき、ADC のデジタル部のネットリスト（`layout/gds/eeg_adc_dig.nl.v`、7 トラックのセル）を RTL と並走させ（CODE、SEL1、SEL2）、その CODE を制御のネットリストに入れる（`gl_shadow_r14.sv` の `GL_CODE_SRC`。ループをゲートレベルで閉じる）。ADC のネットリストの制御の入力は、遅延なしでは RTL の制御の出力（並走で制御のネットリストの出力と毎回等しい。遅延なしのネットリスト同士は、クロックの木の段数の差で同じ時刻の中の順が競るため）、SDF では制御のネットリストの出力。TH は、遅延なしでは試験台の次のコードにすぐ従う。`SYS_TH_LAUNCH` を与えると、CMP_STROBE の立ち上がりのその時間あとに変わり、次の立ち上がりまで保つ（チップの量子化器の形。ADC のデジタル部の制約の入力の遅れは 15 ns）。`+sys_stop_us=<n>` で n µs で止める（短い試し）。|
+| `sys_tb_top_r14.svh`、`sys_sys_sdf_r14.svh` | `sys_adc_r14.sv` の見る、試験台の次のコード（`tb_top_r14` は ovl_force のとき 31、ほかは `build/top_r14.codes` の cidx 番目。`gl_sys_sdf_r14` は next_code）。|
+| `gl_sys_sdf_r14.sv` | 二つの組を遅延込みで回すための試験台。DWA_EN 1 での START から RUN、APPLY で DWA_EN 0（温度計の選択）、APPLY で 1 に戻す、RUN の中の SOFT_RESET（ADC_RST_N は RESET_N のみに従い、ADC のデジタル部は動き続ける）、RESET_N（ADC のデジタル部の非同期のリセットと再開）。それぞれで全てのコードを掃く（7 f ＋ 3 mod 32、k は 0〜31。ほかは CT ループの模型のコード列）。非同期の端子は MCLK の立ち下がりで変える（`gl_sdf_r14.sv` と同じ）。|
+| `run_sys_r14.sh` | `<マクロのラン> <コミット> [rtl\|gl\|all]`。`tb_top_r14` に `sys_adc_r14.sv` を足し、RTL と、両方のネットリストの遅延なし（ループをゲートレベルで閉じる）で回す。結果は `runs/sys_<ラン>/sys_rtl.log`、`sys_gl.log`、`summary.txt`。|
+| `run_sys_sdf_r14.sh` | `<マクロのラン> <コミット> [zero\|sdf\|all]`。`gl_sys_sdf_r14.sv` を、遅延なしと SDF の 3 コーナーで回す（r14 のランの final/sdf と、f3 の回し直しの final/sdf。チップのマクロの SDF）。結果は `runs/sys_<ラン>/syssdf_*.log`、`summary.txt`。|
+| `run_old_sdf_th.sh`、`run_old_sdf_th_full.sh`、`run_old_sdf_e2e_th.sh` | 13 回目のチップの二つのマクロ（f2、f3）の遅延込みのゲートレベルで、11/20 に出た不一致（max ss、nom tt）の切り分け。r13 の試験台の、TH の時刻のみを変えた写しで回す（`rtl/` には書かない）。`run_old_sdf_th_full.sh` は `tb_e2e.sv` の TH の待ち 2.5 MCLK を 15 ns に縮め、同じ手続きの SEL の検査まで早めた（試験台の誤り 23,684 件、ゲートレベルは全サイクルで一致）。待ちを保った形で回し直すのが `run_old_sdf_e2e_th.sh`。|
+
+11/25 の実行は次のとおり。いずれも ed9c0ebe の源で、ランへのリンクで写しを分けた。
+
+- RTL：`runs/sys_r14f5_20261124_b44`
+- 遅延なしのゲートレベル：`runs/sys_r14f5_20261124_b44g`
+- gl_sys_sdf_r14：`runs/sys_r14f5_20261124_b44s`
+- 切り分け：`runs/sys_diag_old_sdf_20261125`、`runs/sys_diag_old_sdf_full_20261125`、`runs/sys_diag_old_sdf_e2e_20261126`
+
+RTL の最初の実行（11/25 20:50〜11/26 0:16）は、検査器の競りで 2 件を誤りと数えた。段 W で RESET_N が DAC_CLK のパルスを 7.248 ns で切ったのを、ADC のデジタル部のリセットの網が同じ時刻の中でまだ落ちる前に判定したもの。RESET_N と ADC_RST_N が高いときのみ判定するよう `sys_adc_r14.sv` を直し、RTL とゲートレベルを回し直した。最初の実行のログは `sys_rtl_checker_race_20261125.log` として残した。
+
+結果は `documentation/gf180_digital_verification_20261024.md` の第 8.8 節と第 6 節。

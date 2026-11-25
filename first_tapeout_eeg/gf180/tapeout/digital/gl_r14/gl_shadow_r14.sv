@@ -3,7 +3,8 @@
 //
 // Compile it as a second root module with +define+TB=<testbench> (tb_top_r14, tb_spi_r14, gl_sdf_r14). The
 // testbench's design under test must be `dut` (eeg_digital_top, DAC_LOAD_CYCLE 2, FIFO_DEPTH 8: the macro's
-// parameters). The netlist gets the testbench's inputs (MCLK, RESET_N, SCLK, CS_N, MOSI, CODE) and every one of its 50
+// parameters). The netlist gets the testbench's inputs (MCLK, RESET_N, SCLK, CS_N, MOSI, CODE; with
+// +define+GL_CODE_SRC=sys_adc_r14.code_gl its CODE comes from the ADC block's netlist instead, sys_adc_r14.sv) and every one of its 50
 // outputs must equal the RTL's (4-state compare, an X in either is a mismatch), and so must the two state registers of
 // NFR-05 (the sequencer's state and the SPI's st, kept as named nets through synthesis).
 //
@@ -36,7 +37,11 @@ module gl_shadow_r14;
     wire        sclk    = `TB.SCLK;
     wire        cs_n    = `TB.CS_N;
     wire        mosi    = `TB.MOSI;
+`ifdef GL_CODE_SRC
+    wire [4:0]  code    = `GL_CODE_SRC;          // the ADC block's netlist (sys_adc_r14.sv): the loop closed at gate level
+`else
     wire [4:0]  code    = `TB.CODE;
+`endif
 
     wire        miso, miso_oe, drdy_n, raw_data, raw_clk, adc_rst_n, th_capture, dac_load, dwa_en;
     wire        cmp_strobe, dac_clk, chop, chop_out, chop_blank, afe_rst, chop_en, chop1, ofs;

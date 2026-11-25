@@ -6,7 +6,7 @@ r14 の RTL（`gf180/tapeout/rtl_r14/`、コミット 5fd5e022 の版。lint の
 
 - `run_trial_20261119.sh`（ターミナルのタブから。効率コア、2 本を並列）。PDK と nix shell は r13 のマクロとその 11/19 の回し直しと同じ。
 - `trial_h700.yaml`：r13 の外形 440 × 700 µm（ランのタグ `t14_h700_20261119`）。`trial_h900.yaml`：440 × 900 µm（`t14_h900_20261119`）。試行の時点の名前は `config.yaml` と `config_h900.yaml`（決定のあと、`config.yaml` は r14 のマクロの設定とした）。
-- 比較：`compare_trial.py`（r13 は `../eeg_digital_top/runs/f2_rerun_20261119`、チップのマクロと同一）。ランのフォルダは git の対象外。
+- 比較：`compare_trial.py`（r13 は `../eeg_digital_top/runs/f2_rerun_20261119`、チップのマクロと同一）。ランのフォルダは git の対象外。試行のランのフォルダ（`t14_h700_20261119`、`t14_h900_20261119`）は、11/25 に内蔵ディスクの空きのため消した。ログ（`runs/*.log`）とこの表は残る。作り直すには `run_trial_20261119.sh` を回す（`compare_trial.py` はそのあとに動く）。
 
 ## 結果
 

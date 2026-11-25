@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜45 回）
+# 監査の模擬の元（第 24〜46 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -162,3 +162,9 @@
 | 45 | C | `r45/C/muts.py`、`mkmut.py`、`runmut.sh`、`runmut_top.sh`、`c1_seqflag_q.txt`、`c2_spiflag_q.txt`、`c3_dflag_q_top.txt` | 542（第 46.3 節） | 旗の立ての信号を 1 段のレジスタに受ける RTL の写し 3 個とその 16 群の記録 |
 | 45 | C | `r45/C/tb_c45_flagcopy.sv`、`tb_c45_flagw1c.sv`、`tb_c45_minhigh.sv`、`fc_clean.txt`、`fc_c1.txt`、`fw_clean.txt`、`fw_c1.txt`、`mh_clean.txt`、`mh_c2.txt` | 542（第 46.3 節） | その効き目：先頭バイトだけの STATUS の読み、CFG_ERR の W1C、誤りのフレームのあとの短い CS_N の High |
 | 45 | C | `r45/C/fsm_sweep45.py`、`sweep_fsm_all.txt`、`sweep_prio.txt`、`regmap_sweep45.py`、`sweep_regmap_K.txt`、`sweep_regmap_M.txt`、`timing_sweep45.py`、`sweep_timing.txt`、`baseline_run.txt` | 第 46.3 節 | 状態遷移表、regmap、TIMING の掃きと、基準の 16 群の記録 |
+| 46 | A | `r46/A/tb_a46_recnr.sv` | 544（第 47.1 節） | RECOVER で受け付けた APPLY_NR のあとの T_ELEC の書き込みと電極の待ち |
+| 46 | A | `r46/A/tb_a46_nrstates.sv`、`nrstates.txt`、`rand_4601_ovl.txt`、`rand64_4664.txt`、`outputs_now.txt` | 第 47.1 節 | RECOVER、WAIT_E、ALIGN、FILL の 1 段の APPLY_NR からクリアまで、第 43 回の不変の台の新しい系列、構造の検査の記録 |
+| 46 | B | `r46/B/tb_b46_pend.sv` | 546、547（第 47.2 節） | 未処理の命令の間の書き込みの確定と旗、旗の立つ時刻（FRAME_ERR、先頭バイトの ADDR_ERR、DFLAG.OVERRUN） |
+| 46 | C | `r46/C/edit_mA.py`、`edit_mA2.py`、`edit_mC.py`、`edit_mS.py`、`apply_edit.py`、`mkcopy.sh`、`start_mS.sh`、`mutC_A2_run.txt`、`mutC_C_run.txt` | 549（第 47.3 節） | SPI の信号を 1 MCLK 遅らせる RTL の写しとその 16 群の記録 |
+| 46 | C | `r46/C/tb_c46_instants.sv`、`tb_c46_pop.sv` | 549（第 47.3 節） | 端子からの確定、CRC_ERR、FRAME_ERR、先頭バイトの ADDR_ERR、写し、DRDY_N の時刻 |
+| 46 | C | `r46/C/fsm_sweep.py`、`fsm_sweep_out.txt`、`spi_walk_equiv.py`、`regmap_sweep.py`、`regmap_sweep_out.txt`、`baseline_run.txt` | 第 47.3 節 | 状態遷移表と regmap の掃きと、基準の 16 群の記録 |

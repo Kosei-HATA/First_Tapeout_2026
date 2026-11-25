@@ -1,0 +1,9 @@
+APPLY_NR in state 2, T_ELEC 0: step -> clear 919.4 us, step -> first store 3919.5 us, ERR 0x01
+APPLY_NR in state 2, T_ELEC 2: step -> clear 2888.2 us, step -> first store 5888.3 us, ERR 0x00
+APPLY_NR in state 3, T_ELEC 2: step -> clear 2638.2 us, step -> first store 5638.3 us, ERR 0x00
+APPLY_NR in state 4, T_ELEC 0: step -> clear 638.2 us, step -> first store 3638.2 us, ERR 0x00
+APPLY_NR in state 4, T_ELEC 2: step -> clear 2638.2 us, step -> first store 5638.3 us, ERR 0x00
+APPLY_NR in state 5, T_ELEC 0: step -> clear 981.9 us, step -> first store 3982.0 us, ERR 0x00
+APPLY_NR in state 5, T_ELEC 2: step -> clear 2981.9 us, step -> first store 5982.0 us, ERR 0x00
+tb_a46_nrstates done: errors 0, SPI errors 0
+../../../probes/tb_a46_nrstates.sv:68: $finish called at 77040320683 (1ps)

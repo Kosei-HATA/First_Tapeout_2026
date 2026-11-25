@@ -46,7 +46,9 @@
 #   tb/gen_reg_tests.py: build/reg_tests.svh and pin_tests.svh): without the code stream tb_top_r14's CODE is X and
 #   every phase fails (audit round 15)
 # Every group has a time limit (about ten times its usual length; audit round 28, auditor C: a bench waiting for an
-# edge that never came hung the whole script): a group still running at its limit is stopped and FAILs.
+# edge that never came hung the whole script): a group still running at its limit is stopped and FAILs. The two
+# tb_top_r14 groups have 10,800 s, about 3.4 times their length under the heavy load of 11/25 (up to about 53 min;
+# audit round 46, auditor C: their 5,400 s had become 1.7-2.0 times it, so a clean run could be stopped as a FAIL).
 # usage: ./run_tests_r14.sh
 set -u
 cd "$(dirname "$0")"
@@ -137,9 +139,9 @@ run tb_rnd_sat 600 rnd_t
 run tb_regs 600 regs_t
 run tb_fifo 900 fifo_t
 run tb_fifo4 900 fifo4_t
-run tb_top_r14 5400 top_t
+run tb_top_r14 10800 top_t
 run tb_spi_r14 3600 spi_t
-run tb_top_r14_fifo4 5400 top4_t
+run tb_top_r14_fifo4 10800 top4_t
 run outputs 1200 outputs_t
 printf '%s\n' "${RES[@]}"
 # the verdict without a pipe (audit round 40, auditor A: under `set -o pipefail`, `! printf ... | grep -q FAIL` could

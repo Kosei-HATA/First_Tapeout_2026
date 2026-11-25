@@ -194,7 +194,9 @@ MSG = {"path": "is not a transition of the table", "lane": ", but the table give
        "chop": ", but fsm_spec.TIMING's rates, tick and CIC output give",
        "chop_lanes": " lanes named so in the chopper diagram, where the check needs exactly",
        "time": ", but the timers' reset values and TIMING give",
-       "drdy_store": ", where every output time stores a sample: DRDY_N pulses in each segment of"}
+       "drdy_store": ", where every output time stores a sample: DRDY_N pulses in each segment of",
+       # audit round 46, auditor C: the startup diagram's RESET_N lane
+       "reset": ", where RESET_N is Low exactly in the state lane's RESET columns: expected"}
 
 
 def sample_labels():
@@ -344,7 +346,7 @@ def lane_values(wave, data=None):
 
 # the lanes of the startup and APPLY diagrams the check compares with the table (audit round 44, auditor C: a missing
 # lane must not pass silently)
-LANES_CHECKED = {"startup": ("状態", "命令", "時間", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "CIC"),
+LANES_CHECKED = {"startup": ("状態", "命令", "時間", "RESET_N", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "CIC"),
                  "apply": ("状態", "命令", "時間", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "アクティブの設定")}
 
 
@@ -441,6 +443,13 @@ def check():
             for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
                 if x is not None and v is not None and v != want(x):
                     errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}{MSG['lane']} {want(x)}")
+        # RESET_N (the startup diagram; audit round 46, auditor C: drawn never released, released after the START or
+        # falling again in RUN, it passed every check): Low exactly in the state lane's RESET columns
+        if "RESET_N" in lanes:
+            for i, (x, v) in enumerate(zip(st, lane_values(lanes["RESET_N"]["wave"]))):
+                w_ = "0" if x == "RESET" else "1"
+                if x is not None and v is not None and v != w_:
+                    errs.append(f"wave_{name}: column {i}: RESET_N {v} in {x}{MSG['reset']} {w_}")
         # the 時間 labels (audit round 45, auditor C): each column's label is its state's, and a timed state, ALIGN and
         # FILL carry one
         tv = lane_values(lanes["時間"]["wave"], lanes["時間"].get("data"))
@@ -672,6 +681,10 @@ def selftest():
         ("APPLY の図：T_PRE と T_RST の時間の札を入れ替える",
          redraw("apply_seq", "時間", "x.=.=.=.=.=.x...", [tt("T_RST"), tt("T_PRE"), tt("T_REC"), "≤ 1 ms", "3 出力"]), "time"),
         ("起動の図：DRDY_N を Low にしない（RUN の格納にパルスなし）", redraw("startup", "DRDY_N", "1" + "." * 14), "drdy_store"),
+        # audit round 46, auditor C: the startup diagram's RESET_N lane
+        ("起動の図：RESET_N を解除しない", redraw("startup", "RESET_N", "0" + "." * 14), "reset"),
+        ("起動の図：RESET_N を START のあと（列 4）に解除", redraw("startup", "RESET_N", "0...1" + "." * 10), "reset"),
+        ("起動の図：RESET_N を RUN で再び下げる", redraw("startup", "RESET_N", "01.........0..."), "reset"),
     ]
     base, missed, used = check(), 0, set()
     for name, apply, key in muts:

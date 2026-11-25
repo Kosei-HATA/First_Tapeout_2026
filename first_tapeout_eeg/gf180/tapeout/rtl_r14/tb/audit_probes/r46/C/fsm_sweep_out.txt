@@ -1,0 +1,66 @@
+baseline: 0 violations
+PASS equivalent SEQ ('ALIGN', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('FILL', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('FILL', 'OUT') pair guard -> 'valid'
+PASS equivalent SEQ ('IDLE', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('IDLE', 'APPLY_NR') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('IDLE', 'START') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('RECOVER', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('RECOVER', 'APPLY_NR') pair guard -> 'nr_ok and cfg_ok'
+PASS equivalent SEQ ('RECOVER', 'TMR') pair guard -> 't_elec0'
+PASS equivalent SEQ ('RUN', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('RUN', 'APPLY_NR') pair guard -> 'nr_ok and cfg_ok'
+PASS equivalent SEQ ('WAIT_E', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('WAIT_E', 'APPLY_NR') pair guard -> 'nr_ok and cfg_ok'
+PASS equivalent SEQ ('WARMUP', 'APPLY') pair guard -> 'cfg_ok'
+PASS equivalent SEQ ('WARMUP', 'APPLY_NR') pair guard -> 'cfg_ok'
+PASS NOT-EQUIVALENT SPI ('HDR', 'CSR') pair guard -> 'last or mid'
+PASS equivalent SPI ('HDR', 'CSR') pair guard -> 'mid'
+PASS NOT-EQUIVALENT SPI ('HDR', 'CSR') pair guard -> 'mid or last'
+PASS equivalent SPI ('RREG', 'BYTE') pair guard -> 'crc_en'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en and not last'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en or last'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en and rw'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en or not rw'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en and not smp'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'crc_en or smp'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'last or crc_en'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'rw and crc_en'
+PASS NOT-EQUIVALENT SPI ('RREG', 'BYTE') pair guard -> 'smp or crc_en'
+PASS NOT-EQUIVALENT SPI ('RREG', 'CSR') pair guard -> 'last or mid'
+PASS equivalent SPI ('RREG', 'CSR') pair guard -> 'mid'
+PASS NOT-EQUIVALENT SPI ('RREG', 'CSR') pair guard -> 'mid or last'
+PASS NOT-EQUIVALENT SPI ('RREG', 'CSR') pair guard -> 'mid or not rw'
+PASS NOT-EQUIVALENT SPI ('RREG', 'CSR') pair guard -> 'mid or smp'
+PASS NOT-EQUIVALENT SPI ('RREG', 'CSR') pair guard -> 'smp or mid'
+PASS NOT-EQUIVALENT SPI ('RSMP', 'BYTE') pair guard -> 'addr_ok and not last'
+PASS NOT-EQUIVALENT SPI ('RSMP', 'BYTE') pair guard -> 'rw and not last'
+PASS NOT-EQUIVALENT SPI ('RSMP', 'BYTE') pair guard -> 'smp and not last'
+PASS NOT-EQUIVALENT SPI ('RSMP', 'BYTE') pair guard -> 'wr_ok or not last'
+PASS equivalent SPI ('RSMP', 'CSR') pair guard -> 'crc_en or mid'
+PASS equivalent SPI ('RSMP', 'CSR') pair guard -> 'mid or crc_en'
+PASS equivalent SPI ('SDONE', 'CSR') pair guard -> 'head'
+PASS NOT-EQUIVALENT SPI ('SDONE', 'CSR') pair guard -> 'head and not mid'
+PASS NOT-EQUIVALENT SPI ('SDONE', 'CSR') pair guard -> 'head or mid'
+PASS NOT-EQUIVALENT SPI ('SDONE', 'CSR') pair guard -> 'mid or head'
+PASS equivalent SPI ('WDAT', 'BYTE') pair guard -> 'crc_en'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'crc_en and not last'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'crc_en or last'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'crc_en and not rw'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'crc_en or rw'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'last or crc_en'
+PASS NOT-EQUIVALENT SPI ('WDAT', 'BYTE') pair guard -> 'rw or crc_en'
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'APPLY', 'START', 'APPLY_NR', 'FLUSH', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'APPLY', 'APPLY_NR', 'START', 'FLUSH', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'APPLY', 'APPLY_NR', 'FLUSH', 'START', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR', 'START']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY_NR', 'APPLY', 'FLUSH', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY_NR', 'FLUSH', 'APPLY', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'APPLY_NR', 'START', 'APPLY', 'FLUSH', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY', 'FLUSH', 'APPLY_NR', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY', 'FLUSH', 'TMR', 'APPLY_NR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'FLUSH', 'START', 'APPLY', 'APPLY_NR', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'FLUSH', 'APPLY', 'APPLY_NR', 'TMR']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY', 'APPLY_NR', 'TMR', 'FLUSH']
+PASS equivalent PRIO SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] -> ['STOP', 'START', 'APPLY', 'TMR', 'APPLY_NR', 'FLUSH']
+done: 7395 edits, 64 pass, 714 s

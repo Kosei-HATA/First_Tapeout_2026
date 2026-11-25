@@ -10,6 +10,9 @@
 // values. Per frame: the bits sent and received, and what the block did (commit, errors, copy, pop), with the
 // conditions that come from outside the SPI (pending command, the FIFO's held copy) at the moment they are used,
 // and the flushes from the copy to the pop request (the checker derives `head` from those and the copied word).
+// The strobes' cycles against the pins (spec 3.2; audit round 46, auditor C): the commit, FRAME_ERR, CRC_ERR and
+// the pop request in the cycle after the 3rd MCLK edge after CS_N's pad rise, the sample's copy after the 2nd and
+// the read header's ADDR_ERR after the 4th edge after the header's 8th SCLK rise, in every frame.
 // Usage: vvp tb_spi_r14.vvp [+n=4000] [+seed=1] [+log=build/spi_trace.txt]
 `timescale 1ns / 1ps
 `default_nettype none
@@ -80,6 +83,68 @@ module tb_spi_r14;
         // every byte loaded into MISO's shift register: (state, address, byte)
         if (dut.u_spi.sclk_fall && dut.u_spi.bit_cnt == 3'd0 && !dut.u_spi.cs_start && !dut.u_spi.cs_end)
             loads = {loads, $sformatf("%0d:%02h:%02h,", dut.u_spi.st, dut.u_spi.reg_addr, dut.u_spi.tx_next)};
+    end
+
+    // ------------------------------------------------------------------ the strobes' cycles against the pins
+    // spec 3.2 (audit round 46, auditor C: the frame-end and read-header strobes were only counted somewhere in the
+    // 6 MCLK after a frame, and copies that moved the write's commit and CRC_ERR, the read header's ADDR_ERR or the
+    // sample's copy by one MCLK passed all 16 groups). Counted in MCLK rising edges after the pad's edge and sampled in
+    // the middle of the cycle: the commit (reg_we), FRAME_ERR, CRC_ERR and the pop request (smp_pop) are high exactly in
+    // the cycle after the 3rd edge after CS_N rises (two synchronizer stages and the SPI's register: 3-4 MCLK after the
+    // pad); the sample's copy (smp_snap) in the cycle after the 2nd edge after the header's 8th SCLK rise, the read
+    // header's ADDR_ERR in the cycle after the 4th. A pad edge at the very instant of an MCLK edge is not judged (which
+    // one the flip-flops see first is not defined). A violation counts as an SPI timing error.
+    integer ic_edges = 0, ic_e_cs = -100, ic_e_s8 = -100, ic_nr = 0, n_ic_bad = 0;
+    real    ic_t_edge = -1.0;
+    bit     ic_amb_cs = 1'b0, ic_amb_s8 = 1'b0;
+    integer n_ic [0:5];                              // judged: reg_we, frame_err, crc_err, smp_pop, smp_snap, addr_err
+    initial for (int i = 0; i < 6; i++) n_ic[i] = 0;
+    always @(posedge MCLK) begin
+        ic_edges  = ic_edges + 1;
+        ic_t_edge = $realtime;
+    end
+    always @(negedge CS_N) ic_nr = 0;
+    always @(posedge SCLK) if (CS_N === 1'b0) begin
+        ic_nr = ic_nr + 1;
+        if (ic_nr == 8) begin
+            ic_e_s8   = ic_edges;
+            ic_amb_s8 = ($realtime == ic_t_edge);
+        end
+    end
+    always @(posedge CS_N) begin
+        ic_e_cs   = ic_edges;
+        ic_amb_cs = ($realtime == ic_t_edge);
+    end
+    always @(negedge MCLK) begin
+        logic [5:0] on_;
+        on_ = {dut.addr_err === 1'b1, dut.smp_snap === 1'b1, dut.smp_pop === 1'b1, dut.crc_err === 1'b1,
+               dut.frame_err === 1'b1, dut.reg_we === 1'b1};
+        for (int j = 0; j < 6; j++) begin
+            integer want_, got_;
+            bit     amb_;
+            string  nm_, from_;
+            want_ = (j < 4) ? 3 : ((j == 4) ? 2 : 4);
+            got_  = (j < 4) ? (ic_edges - ic_e_cs) : (ic_edges - ic_e_s8);
+            amb_  = (j < 4) ? ic_amb_cs : ic_amb_s8;
+            if (on_[j] && !amb_) begin
+                n_ic[j] = n_ic[j] + 1;
+                if (got_ != want_) begin
+                    case (j)
+                        0:       nm_ = "the commit (reg_we)";
+                        1:       nm_ = "FRAME_ERR";
+                        2:       nm_ = "CRC_ERR";
+                        3:       nm_ = "the pop request (smp_pop)";
+                        4:       nm_ = "the sample's copy (smp_snap)";
+                        default: nm_ = "the read header's ADDR_ERR";
+                    endcase
+                    if (j < 4) from_ = "CS_N pad rise";
+                    else       from_ = "header's 8th SCLK pad rise";
+                    n_ic_bad = n_ic_bad + 1;
+                    spi_err($sformatf("%s high in the cycle after MCLK edge %0d after the %s, expected %0d (spec 3.2)",
+                                      nm_, got_, from_, want_));
+                end
+            end
+        end
     end
 
     // ------------------------------------------------------------------ frames
@@ -374,6 +439,10 @@ module tb_spi_r14;
         if (spi_miso_start_checks < 100) $display("ERROR: the frame-start MISO check not exercised");
         if (n_tcls[0] < 100 || n_tcls[1] < 100 || n_tcls[2] < 100 || n_tcls[3] < 100)
             $display("ERROR: an SCLK timing class not exercised");
+        $display("SPI strobe cycles against the pins: reg_we %0d, FRAME_ERR %0d, CRC_ERR %0d, smp_pop %0d, smp_snap %0d, ADDR_ERR %0d judged (errors %0d)",
+                 n_ic[0], n_ic[1], n_ic[2], n_ic[3], n_ic[4], n_ic[5], n_ic_bad);
+        if (n_ic[0] < 10 || n_ic[1] < 10 || n_ic[2] < 10 || n_ic[3] < 10 || n_ic[4] < 10 || n_ic[5] < 10)
+            $display("ERROR: the strobe-cycle check not exercised");
         $display("tb_spi_r14: %0d frames, %0d SPI timing errors, %0d frames of another chip on SCLK -> %s", nfr, spi_errors,
                  n_other, logname);
         $finish;

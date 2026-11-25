@@ -1,0 +1,9 @@
+50 output bits of eeg_digital_top: 47 from flip-flops; CHOP_BLANK: $or of 2 flip-flop output(s) (allowed); CHOP_EN: $not of 1 flip-flop output(s) (allowed); MISO_OE: $and (allowed: as in r13)
+synchronizers: RESET_N released through 2 flip-flops; CS_N through 2 flip-flops (and MISO_OE's cut); SCLK through 2 flip-flops; MOSI through 2 flip-flops
+resets: 762 flip-flop bits, all with an asynchronous reset from RESET_N's release (1 control-reset flop); the FIFO's memory (2 memory cells) without one
+clocks: 127 flip-flop cells and 1 memory write port(s), all on MCLK's rising edge
+state registers: u_seq.state, u_spi.st keep fsm_encoding "none" (NFR-05 through synthesis)
+parameters: DAC_LOAD_CYCLE 2 (fsm_spec.TIMING) in eeg_digital_top.sv [2], eeg_clkgen.sv [2] and 6 bench instantiations of the r14 groups (rtl/tb 3, rtl_r14/tb 3, as recorded; 5 at 2 by name, 0 at the default; 1 exempted: rtl/tb/tb_clkgen.sv dut_b)
+parameter scan self-test: 6 of 6 edits of the benches' texts give a fault
+PASS: every output is a register's (NFR-06); every asynchronous input passes 2 flip-flops; every flip-flop resets asynchronously from the RESET_N release (RST-01); every flip-flop and memory write port on MCLK's rising edge (RST-05); the state registers keep fsm_encoding "none" (NFR-05); DAC_LOAD_CYCLE as fsm_spec.TIMING
+exit=0

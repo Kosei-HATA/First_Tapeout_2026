@@ -7,8 +7,8 @@ baseline must pass. The groups and their benches:
                             (the 8-deep FIFO); before it, tb_tick and tb_clkgen for an edit of eeg_clkgen.sv and
                             tb_cic_arm for eeg_cic3.sv (all three for b00; audit round 22), tb_chop1 for an edit
                             of eeg_chop1.sv or eeg_clkgen.sv (and b00; audit round 27). tb_top_r14 with the
-                            4-deep FIFO (-DFIFO4, about 30 minutes a run under the usual load since round 43's phases: 29.5 and 30.7 min in
-                            audit rounds 44 and 45; audit round 45, auditor C: this said about 11, 12 to 25 under load;
+                            4-deep FIFO (-DFIFO4, about 30 to 50 minutes a run under load since round 43's phases: 29.5 to 49.7 min in
+                            audit rounds 44 to 46; audit round 45, auditor C: this said about 11, 12 to 25 under load;
                             audit round 38, auditor C: it said 6) for b00 and for the mutants whose edits
                             name DEPTH or edit eeg_fifo.sv: the depth reaches eeg_fifo and, through FIFO_DEPTH,
                             eeg_regs's CAPS (audit round 26, auditor C: "the depth is eeg_fifo's alone" was false,
@@ -982,6 +982,48 @@ SPI_MUTATIONS = [
     # after the first byte past a completed frame)
     ("SPI：完了したフレームのあとの（OVF の）MISO のバイトを 0xA5 に", "eeg_spi_slave.sv",
      "            default: tx_next = 8'h00;", "            default: tx_next = (st == S_OVF) ? 8'hA5 : 8'h00;"),
+    # audit round 46, auditor C: the strobes' cycles against the pins (spec 3.2; tb_spi_r14's count of MCLK edges):
+    # the write's CRC compare registered (the commit or CRC_ERR one MCLK later), the read header's ADDR_ERR from a
+    # registered address decode, the sample's copy one MCLK after the header
+    ("SPI：書き込みの CRC の照合を 1 段のレジスタに（確定と CRC_ERR が 1 MCLK 遅れる）", [
+        ("eeg_spi_slave.sv", "    logic        chk_addr;\n",
+         "    logic        chk_addr;\n    logic        wr_chk;                              // a complete write: CRC check next cycle\n"),
+        ("eeg_spi_slave.sv", "            addr_err  <= 1'b0;\n        end else begin",
+         "            addr_err  <= 1'b0;\n            wr_chk    <= 1'b0;\n        end else begin"),
+        ("eeg_spi_slave.sv", "            chk_addr  <= 1'b0;\n            if (cs_start) begin",
+         "            chk_addr  <= 1'b0;\n            wr_chk    <= 1'b0;\n"
+         "            if (wr_chk) begin                            // the registered write check: commit or CRC_ERR\n"
+         "                if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;\n"
+         "                else                                                            reg_we  <= 1'b1;\n"
+         "            end\n"
+         "            if (cs_start) begin"),
+        ("eeg_spi_slave.sv",
+         "                    end else if (st == S_WDONE) begin\n"
+         "                        if (crc_en && (wcrc != crc8_step(crc8_step(8'h00, hdr), wdat))) crc_err <= 1'b1;\n"
+         "                        else                                                            reg_we  <= 1'b1;\n",
+         "                    end else if (st == S_WDONE) begin\n"
+         "                        wr_chk <= 1'b1;\n")], None, None),
+    ("SPI：読み出しの先頭バイトの ADDR_ERR を番地の判定のレジスタから（1 MCLK 遅れる）", [
+        ("eeg_spi_slave.sv", "    logic        chk_addr;\n",
+         "    logic        chk_addr;\n    logic        chk_q, ok_q;                         // the decode registered (timing)\n"),
+        ("eeg_spi_slave.sv", "            addr_err  <= 1'b0;\n        end else begin",
+         "            addr_err  <= 1'b0;\n            chk_q     <= 1'b0;\n            ok_q      <= 1'b1;\n        end else begin"),
+        ("eeg_spi_slave.sv", "            addr_err  <= chk_addr && !reg_addr_ok;       // the read header's address, one cycle later\n",
+         "            chk_q     <= chk_addr;\n            ok_q      <= reg_addr_ok;\n"
+         "            addr_err  <= chk_q && !ok_q;                 // the read header's address, two cycles later\n")], None, None),
+    ("SPI：サンプルの写しを先頭バイトの 1 MCLK あとに（先頭バイトの判定をレジスタで受ける）", [
+        ("eeg_spi_slave.sv",
+         "    assign smp_snap = !cs_start && !cs_end && sclk_rise && (st == S_HDR) && (bit_cnt == 3'd7) && rx_byte[7] &&\n"
+         "                      (rx_byte[6:0] == A_SAMPLE);\n",
+         "    logic snap_now, snap_d;                          // the header decoded, then the copy one MCLK later\n"
+         "    assign snap_now = !cs_start && !cs_end && sclk_rise && (st == S_HDR) && (bit_cnt == 3'd7) && rx_byte[7] &&\n"
+         "                      (rx_byte[6:0] == A_SAMPLE);\n"
+         "    assign smp_snap = snap_d;\n"),
+        ("eeg_spi_slave.sv", "            addr_err  <= 1'b0;\n        end else begin",
+         "            addr_err  <= 1'b0;\n            snap_d    <= 1'b0;\n        end else begin\n"
+         "            snap_d    <= snap_now;\n"
+         "            if (snap_d) shadow <= smp_word;"),
+        ("eeg_spi_slave.sv", "                                        shadow <= smp_word;\n", "")], None, None),
 ]
 
 
@@ -1398,9 +1440,9 @@ def run(i, m, bench="top"):
         """One tb_top_r14 run and its two checkers: ("ok" | "fail", text), or a status without a verdict."""
         try:                                         # the bench's own watchdog (1,800 ms simulated) ends a hang
             v = subprocess.run(["nice", "-n", "10", "vvp", "-n", vvp], cwd=d, capture_output=True, text=True,
-                               timeout=5400)
-        except subprocess.TimeoutExpired:
-            return "TIMEOUT", tag + "no end within 5400 s (undecided: rerun)"
+                               timeout=10800)   # audit round 46, auditor C: 5,400 s was 1.7-2.0 times a run
+        except subprocess.TimeoutExpired:                # under the load of 11/25 (up to about 53 min)
+            return "TIMEOUT", tag + "no end within 10800 s (undecided: rerun)"
         out = v.stdout
         if not bench_ended(v, ("PASS: tb_top_r14", "FAIL")):
             return "SIM ERROR", tag + sim_tail(v, "tb_top_r14")

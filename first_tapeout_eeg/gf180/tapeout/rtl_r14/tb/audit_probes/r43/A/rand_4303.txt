@@ -1,0 +1,3 @@
+tb_a43_rand seed 521149463: 2020 episodes, 124801 ticks, 100 stores (0 with OVL, 33 CHANGED; 8 RUN steps), 188 one-step and 51 other setting changes, 55 AFE_RST releases, 0 SOFT_RESETs; 0 errors
+PASS
+probes/tb_a43_rand.sv:335: $finish called at 1000023723310 (1ps)

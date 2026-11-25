@@ -128,14 +128,18 @@
 //      (auditor C): also STATUS across the tick that takes a START (CMD_PENDING), ERR across the tick that refuses an
 //      APPLY (CFG_ERR), DFLAG across a store into the full FIFO (OVERRUN), OFF_M_L's active copy across an APPLY_NR's
 //      tick and a CRC-off read's second data byte (FIFO_LEVEL after STATE) across a store (a copy reading ERR one
-//      MCLK late passed all 16 groups)
+//      MCLK late passed all 16 groups); audit round 43 (auditor C): also each of the eleven active copies (0x30-0x38,
+//      0x70, 0x71) across the tick of an APPLY_NR in IDLE that changes every apply field (a copy reading OFF_M_H's
+//      active copy one MCLK late passed all 16 groups)
 //   Y  audit round 15 (auditor C): SOFT_RESET returns every register and flag (RST-02), written with CRC off and on:
 //      every writable register away from its reset value (soft_set_all, generated), START, both DFLAG bits set,
 //      samples in the FIFO, ERR holding ADDR_ERR; after it the generated burst over the whole map (ERR exactly 0x01,
 //      DFLAG 0x00, STATUS 0xA1, the timers, masks, settings and active copies), the pins, DRDY_N high, the test
 //      registers locked (a register block keeping the timers, the ALERT masks, DFLAG or DRDY_MODE through a SOFT_RESET
 //      passed every test). On the way, STATUS with READY and DATA apart: RUN with the FIFO empty (READY 1, DATA 0),
-//      IDLE with samples left (READY 0, DATA 1); no check had told them apart
+//      IDLE with samples left (READY 0, DATA 1); no check had told them apart. Audit round 43 (auditor C): the
+//      samples STOP left stay across an APPLY, an APPLY_NR and a STOP in IDLE and a START refused there (SEQ-05, spec
+//      2.3; a top emptying the FIFO at an APPLY in IDLE passed all 16 groups)
 //      Audit round 16 (auditor B): in Y0, a sample read in which the chip misses one SCLK pulse (an 8 ns runt), then
 //      one extra byte of SCLK (the host's re-read rule, 5.4 step 6): FRAME_ERR and no pop
 //   M  audit round 2 (11/20): the sample's ERR bit (ALERT at the store) and reserved bits, ALERT_MASK and
@@ -151,7 +155,10 @@
 //      from regmap.pins_from_active: OFM / OFS / OFEN per range, trims, CHOP_EN, DWA_EN, TEST_CFG, the CHOP_BLANK
 //      length or hold, the chopper's and CHOP1's half periods, the active copies; M above the range's top -> CFG_ERR
 //      and nothing applied), DFLAG.OVL not set by an overload in WARMUP, RECOVER, PRE and PULSE but set in FILL, an
-//      APPLY_NR across a range -> CFG_ERR
+//      APPLY_NR across a range -> CFG_ERR. Audit round 43 (auditor C): the codes had been forced in 12 of PRE's 24
+//      frames only, so no hit (an extreme code while the detector holds: what sets DFLAG.OVL since round 6) fell in
+//      PULSE, and a gate that forgot PULSE passed all 16 groups: the codes are now also forced for 40 frames inside
+//      PULSE, and hits are required in PRE and in PULSE (counted per state as the gate takes them)
 //   P  audit round 4: a command refused because another is pending leaves the pending one (64 kHz: FLUSH pending in
 //      RUN + START refused -> the FIFO is emptied, RUN stays; START pending in IDLE + FLUSH refused -> WARMUP)
 //   S  audit round 4: the host's SOFT_RESET check (requirements 5.4 step 9) in both CRC modes: the mode probe (a 3-byte
@@ -519,6 +526,14 @@ module tb_top_r14;
         fsmp = $fopen("build/top_r14_samples.log", "w");
     end
     logic ovl_force = 1'b0;                       // J: drive the extreme code 31 (an ADC overload)
+    // N (audit round 43, auditor C): overload hits (an extreme code while the detector holds: what sets DFLAG.OVL) per
+    // sequencer state, as DFLAG's gate takes them (the values of the cycle before the edge)
+    integer n_ovl_hit_st [0:15];
+    integer n_hit0 [0:1];
+    integer n_hit_pre = 0, n_hit_pulse = 0;
+    initial for (int i = 0; i < 16; i++) n_ovl_hit_st[i] = 0;
+    always @(posedge MCLK)
+        if (RESET_N === 1'b1 && dut.ovl_hit === 1'b1) n_ovl_hit_st[dut.seq_state] = n_ovl_hit_st[dut.seq_state] + 1;
     logic log_on = 1'b1;                          // K: no logging once SEQ is forced
     logic cic_clear_taken = 1'b0;                 // the CIC's clear at this output (its arm input at step 3; audit
     always @(posedge MCLK) if (dut.u_cic.step[3]) cic_clear_taken <= dut.u_cic.arm;   // round 8: a SOFT_RESET can cancel it)
@@ -774,6 +789,7 @@ module tb_top_r14;
     end
     integer n_drdy_fall = 0;
     integer n_y_slip_smp = 0;                            // Y1: a slipped FIFO_LEVEL read, then a sample read (round 23)
+    integer n_y_idle_cmd = 0;                    // Y: the commands in IDLE with samples left (audit round 43)
     always @(negedge DRDY_N) n_drdy_fall = n_drdy_fall + 1;
     // DRDY_N in pulse mode (audit round 22, auditor C: DAT-04 was checked on three RUN stores of G3 only, and RTL copies
     // with no pulse for FILL's store (the first sample after START and APPLY) or with the pulse ended when the FIFO
@@ -1298,7 +1314,30 @@ module tb_top_r14;
     logic        am_pend_q = 1'b0;
     integer      am_nld = 0;                         // AM: data byte loads in the frame
     real         am_d [0:7];                         // AM: the changes' offsets from the pass's reference
-    integer      am_nb [0:7], am_ns [0:7], am_na [0:7];   // AM: before / at the start of / after the load cycle
+    integer      am_nb [0:18], am_ns [0:18], am_na [0:18];   // AM: before / at the start of / after the load cycle
+    // AM (8) (audit round 43, auditor C): the eleven active copies as the register block holds them, byte j in the layout
+    // of its shadow (eeg_regs_defs.svh, from regmap): j 0..8 the copies 0x30..0x38, 9 and 10 the copies 0x70 and 0x71;
+    // the edge at which each last changed, and the bytes of a read's load cycle
+    wire  [87:0] am_cpw = {
+        (8'(dut.u_regs.a_cstop) << TEST_CTRL_CHOP_STOP_LSB) | (8'(dut.u_regs.a_azero) << TEST_CTRL_ADC_ZERO_LSB),
+        (8'(dut.u_regs.a_atpen) << TEST_MUX_ATP_EN_LSB) | (8'(dut.u_regs.a_atpsel) << TEST_MUX_ATP_SEL_LSB),
+        8'(dut.u_regs.a_blank) << BLANK_BLANK_LEN_LSB,
+        (8'(dut.u_regs.a_dwa) << ADC_CFG_DWA_EN_LSB) | (8'(dut.u_regs.a_c1) << ADC_CFG_CHOP1_RATE_LSB),
+        8'(dut.u_regs.a_fast) << CHOP_CFG_CHOP_FAST_LSB,
+        (8'(dut.u_regs.a_bn) << BOOST_TRIM_BTRIM_N_LSB) | (8'(dut.u_regs.a_bp) << BOOST_TRIM_BTRIM_P_LSB),
+        8'(dut.u_regs.a_cpf) << CPF_TRIM_CPF_TRIM_LSB,
+        8'(dut.u_regs.a_ibias) << AFE_IBIAS_AFE_IBIAS_LSB,
+        (8'(dut.u_regs.a_sign) << OFF_CTRL_SIGN_LSB) | (8'(dut.u_regs.a_range) << OFF_CTRL_RANGE_LSB),
+        8'(dut.u_regs.a_m[7:0]) << OFF_M_L_M_L_LSB,
+        8'(dut.u_regs.a_m[9:8]) << OFF_M_H_M_H_LSB};
+    logic [87:0] am_cpw_q = 88'd0, am_cpv = 88'd0;
+    real         am_t_cp [0:10];
+    real         am8_d [0:1];                        // AM (8): the tick before the command to the copies' change, P -> Q
+    logic        am8_on_q = 1'b0;                    // and Q -> P (the chopper rate in force differs); Q applied
+    // the two settings: every bit of every apply field differs (P: range 3, M 0; Q: range 4, M 1023; both consistent)
+    logic [7:0]  am8_p [0:10] = '{8'h00, 8'h00, 8'h03, 8'h00, 8'h00, 8'h00, 8'h00, 8'h02, 8'h06, 8'h05, 8'h00};
+    logic [7:0]  am8_q [0:10] = '{8'h03, 8'hFF, 8'h14, 8'h03, 8'h0F, 8'h33, 8'h01, 8'h15, 8'h09, 8'h1A, 8'h03};
+    logic [6:0]  am8_a [0:10] = '{7'h20, 7'h21, 7'h22, 7'h23, 7'h24, 7'h25, 7'h26, 7'h27, 7'h28, 7'h60, 7'h61};
     always @(negedge CS_N) am_nld = 0;
     always @(posedge MCLK)
         if (dut.u_spi.sclk_fall === 1'b1 && dut.u_spi.bit_cnt == 3'd0 && dut.u_spi.st == 4'd2) begin
@@ -1311,6 +1350,7 @@ module tb_top_r14;
                 am_err    = dut.u_regs.err;
                 am_dflag  = dut.u_regs.dflag_byte;
                 am_act    = dut.u_regs.a_m[7:0];
+                am_cpv    = am_cpw;
             end else if (am_nld == 2) begin
                 am_t_load2 = $realtime;
                 am_level2  = dut.fifo_level;
@@ -1325,6 +1365,9 @@ module tb_top_r14;
         am_pend_q = dut.u_regs.pend;
         if (dut.u_regs.a_m[7:0] !== am_act_q) am_t_act = ad_t_pos;     // OFF_M_L's active copy
         am_act_q = dut.u_regs.a_m[7:0];
+        for (int j = 0; j < 11; j++)                                     // AM (8): each active copy
+            if (am_cpw[8 * j +: 8] !== am_cpw_q[8 * j +: 8]) am_t_cp[j] = ad_t_pos;
+        am_cpw_q = am_cpw;
     end
     // AM: a change's position from the load cycle (before / at its start / at or after the load edge), counted for
     // change c; a change outside the sweep's 2.6 MCLK fails
@@ -1334,6 +1377,45 @@ module tb_top_r14;
         if (dt < -TMCLK / 2.0)     am_nb[c] = am_nb[c] + 1;
         else if (dt < TMCLK / 2.0) am_ns[c] = am_ns[c] + 1;
         else                       am_na[c] = am_na[c] + 1;
+    endtask
+    // AM (8): one APPLY_NR in IDLE between the settings P and Q, with the shadows written first; k < -8 calibrates the
+    // direction's delay, otherwise the read of copy j is aimed so that its load cycle starts k / 4 MCLK before the change
+    task automatic am8_step(input integer j, input integer k);
+        logic [7:0] v, e_new, e_old, e_ld;
+        logic dir, nw;
+        real t0, tgt, dt;
+        string nm;
+        dir = am8_on_q;                                  // 0: P -> Q, 1: Q -> P
+        for (int i = 0; i < 11; i++) r14_write(am8_a[i], dir ? am8_p[i] : am8_q[i]);
+        e_new = dir ? am8_p[j] : am8_q[j];
+        e_old = dir ? am8_q[j] : am8_p[j];
+        nm = $sformatf("the active copy 0x%02h", am8_a[j] + 7'h10);
+        @(posedge dut.u_clkgen.tick); t0 = $realtime;
+        r14_cmd(8'h44);                                  // APPLY_NR in IDLE: every field applied at its tick
+        if (k < -8) begin
+            while (am_cpw[8 * j +: 8] !== e_new) @(negedge MCLK);
+            #(TMCLK / 4.0); am8_d[dir] = am_t_cp[j] - t0;
+        end else begin
+            tgt = t0 + am8_d[dir] + TMCLK + k * TMCLK / 4.0 - am_lat;
+            if (tgt > $realtime) #(tgt - $realtime);
+            else fail($sformatf("AM (8) k %0d: the read of %s was due %0.1f ns ago", k, nm, $realtime - tgt));
+            r14_read(am8_a[j] + 7'h10, v);
+            while (am_cpw[8 * j +: 8] !== e_new) @(negedge MCLK);
+            #(TMCLK / 4.0);
+            dt = am_t_cp[j] - (am_t_load - TMCLK);
+            am_count(8 + j, dt, k, nm);
+            nw = (dt < TMCLK / 2.0);
+            e_ld = am_cpv[8 * j +: 8];
+            if (e_ld !== (nw ? e_new : e_old))
+                fail($sformatf("AM (8) k %0d: %s 0x%02h modelled in the load cycle, but it changed %0.2f MCLK from it", k, nm, e_ld, dt / TMCLK));
+            if (v !== e_ld)
+                fail($sformatf("AM (8) k %0d: %s read 0x%02h; the copy of its data byte's load cycle 0x%02h (spec 3.2)", k, nm, v, e_ld));
+        end
+        for (int i = 0; i < 11; i++)
+            if (am_t_cp[i] != am_t_cp[j])
+                fail($sformatf("AM (8) k %0d: the active copies 0x%02h and 0x%02h changed at different edges (%0.2f MCLK apart)",
+                               k, am8_a[i] + 7'h10, am8_a[j] + 7'h10, (am_t_cp[i] - am_t_cp[j]) / TMCLK));
+        am8_on_q = !dir;
     endtask
     // phase AJ: the apply matrix (audit round 37, auditor C); run_apply_matrix() in build/pin_tests.svh calls it
     integer      aj_all [0:8];
@@ -2534,12 +2616,23 @@ module tb_top_r14;
         wait_state(4'd6, 3100.0, "N RUN");
         r14_cmd(8'h33);                                 // APPLY: PRE (24 frames), PULSE (104 frames)
         wait_state(4'd7, 50.0, "N PRE");
+        n_hit0[0] = n_ovl_hit_st[7]; n_hit0[1] = n_ovl_hit_st[8];
         ovl_force = 1'b1;
-        repeat (12 * 32) @(posedge MCLK);               // OVL_NOW from 4 frames in, gone 31 frames after (in PULSE)
+        repeat (12 * 32) @(posedge MCLK);               // 12 of PRE's 24 frames: hits from the threshold's code on
+        ovl_force = 1'b0;
+        // audit round 43, auditor C: an overload inside the pulse too (40 of PULSE's 104 frames). Only PRE's codes were
+        // forced before, and the detector's tail in PULSE has no hit, so a gate that forgot PULSE passed all 16 groups
+        wait_state(4'd8, 100.0, "N PULSE");
+        ovl_force = 1'b1;
+        repeat (40 * 32) @(posedge MCLK);
         ovl_force = 1'b0;
         wait_state(4'd2, 200.0, "N RECOVER after the pulse");
         r14_read(7'h07, v);
         if (v[1] !== 1'b0) fail("N overload in PRE and PULSE set DFLAG.OVL");
+        n_hit_pre = n_ovl_hit_st[7] - n_hit0[0];
+        n_hit_pulse = n_ovl_hit_st[8] - n_hit0[1];
+        if (n_hit_pre < 1 || n_hit_pulse < 30)
+            fail($sformatf("N not exercised: %0d overload hits in PRE, %0d in PULSE (at least 1 and 30 required)", n_hit_pre, n_hit_pulse));
         wait_state(4'd6, 5000.0, "N RUN again");
         r14_write(7'h22, 8'h01);                        // RANGE 1, M 0: only the range differs from the active 0
         r14_cmd(8'h44);
@@ -2584,7 +2677,8 @@ module tb_top_r14;
         wait_state(4'd6, 5000.0, "N4 RUN again");
         r14_write(7'h52, 8'd32);
         run_nr_tests();                                 // N5: generated from regmap.nr_ok (ends at the reset values)
-        $display("N  analog pins (generated cases), DFLAG.OVL gating, APPLY_NR across a range, timer limits, nr_ok cases (errors %0d)", errors);
+        $display("N  analog pins (generated cases), DFLAG.OVL gating (overload hits in PRE %0d, in PULSE %0d: DFLAG.OVL 0), APPLY_NR across a range, timer limits, nr_ok cases (errors %0d)",
+                 n_hit_pre, n_hit_pulse, errors);
 
         // ---------------- O: RAW_DATA / RAW_CLK: the code stream (RAW_EN) and the three timing pairs (DBG_SEL)
         phase = "O";
@@ -3959,6 +4053,63 @@ module tb_top_r14;
             wait_state(4'd0, 50.0, "Y IDLE");
             check_status(8'h80 | (8'h01 << STATUS_DATA_LSB) | (8'h01 << STATUS_AFE_RST_LSB), smask,
                          $sformatf("Y%0d: STATUS in IDLE with samples left (READY 0, DATA 1)", pass));
+            // audit round 43, auditor C: the samples STOP left stay in the FIFO across an APPLY, an APPLY_NR and a STOP in
+            // IDLE and a START refused there (SEQ-05, spec 2.3: in IDLE an APPLY or APPLY_NR applies without a pulse and
+            // empties nothing, a STOP is ignored, a refused command does nothing else). No test sent one of them with
+            // samples in the FIFO, and a top emptying the FIFO at an APPLY in IDLE passed all 16 groups. One sample read
+            // first (its SEQ the reference); after each command's tick FIFO_LEVEL unchanged and the state IDLE; then the
+            // next sample VALID with the next SEQ. The shadows and ERR are put back, so the SOFT_RESET below still finds
+            // samples in the FIFO
+            begin
+                logic [7:0] yl0, yv, ys6, ycpf, yctl, ymh, yml, yer6;
+                logic [15:0] yq6, yq7;
+                logic [23:0] yd6;
+                bit yok6;
+                string ycn;
+                r14_sample(ys6, yq6, yd6, yok6);
+                if (!yok6 || ys6[SMP_VALID_LSB] !== 1'b1)
+                    fail($sformatf("Y%0d: no VALID sample in IDLE after STOP (CRC ok %0d, status 0x%02h)", pass, yok6, ys6));
+                r14_read(7'h05, yl0);
+                if (yl0 == 8'd0) fail($sformatf("Y%0d: the FIFO empty after one sample read in IDLE", pass));
+                r14_read(7'h24, ycpf);                      // the shadows the START applied
+                r14_read(7'h22, yctl);
+                r14_read(7'h20, ymh);
+                r14_read(7'h21, yml);
+                for (int c = 0; c < 4; c++) begin           // APPLY, APPLY_NR, STOP, START refused
+                    if (c == 0) begin r14_write(7'h24, ycpf ^ 8'h01); ycn = "an APPLY"; end           // another trim
+                    if (c == 1) begin r14_write(7'h24, ycpf); ycn = "an APPLY_NR"; end                 // and back
+                    if (c == 2) ycn = "a STOP";
+                    if (c == 3) begin                               // range 1, M 200 (> 127): the START refused
+                        r14_write(7'h22, (yctl & 8'hF8) | 8'h01);
+                        r14_write(7'h20, 8'h00);
+                        r14_write(7'h21, 8'd200);
+                        ycn = "a START refused with CFG_ERR";
+                    end
+                    r14_cmd((c == 0) ? 8'h33 : (c == 1) ? 8'h44 : (c == 2) ? 8'h22 : 8'h11);
+                    repeat (3 * 512) @(posedge MCLK);       // past the tick that takes it (64 kHz: every 512 MCLK)
+                    if (dut.seq_state !== 4'd0)
+                        fail($sformatf("Y%0d: state %0d after %s in IDLE, expected IDLE", pass, dut.seq_state, ycn));
+                    r14_read(7'h05, yv);
+                    if (yv !== yl0)
+                        fail($sformatf("Y%0d: FIFO_LEVEL %0d after %s in IDLE, %0d before (SEQ-05: the samples STOP left stay until the next START)",
+                                       pass, yv, ycn, yl0));
+                    if (c < 2 && CPF_TRIM !== ((c == 0) ? 4'(ycpf ^ 8'h01) : 4'(ycpf)))
+                        fail($sformatf("Y%0d: CPF_TRIM %0d after %s in IDLE, expected %0d (applied without a pulse)", pass, CPF_TRIM,
+                                       ycn, (c == 0) ? (ycpf ^ 8'h01) : ycpf));
+                end
+                r14_read(7'h06, yer6);
+                if ((yer6 & 8'hFE) !== 8'h20)
+                    fail($sformatf("Y%0d: ERR 0x%02h after the commands in IDLE, expected CFG_ERR (the refused START) and nothing else", pass, yer6));
+                r14_write(7'h22, yctl);                     // the shadows and ERR back
+                r14_write(7'h20, ymh);
+                r14_write(7'h21, yml);
+                r14_write(7'h06, 8'h20);
+                r14_sample(ys6, yq7, yd6, yok6);
+                if (!yok6 || ys6[SMP_VALID_LSB] !== 1'b1 || yq7 !== yq6 + 16'd1)
+                    fail($sformatf("Y%0d: the sample after the commands in IDLE: CRC ok %0d, VALID %b, SEQ %0d; expected a VALID SEQ %0d",
+                                   pass, yok6, ys6[SMP_VALID_LSB], yq7, yq6 + 16'd1));
+                n_y_idle_cmd = n_y_idle_cmd + 1;
+            end
             r14_write(7'h7F, 8'h00);                            // undefined: ADDR_ERR
             r14_write(7'h06, 8'h01);                            // RESET_FLAG cleared: the SOFT_RESET must set it
             rt_read_expect(7'h06, 8'h08, $sformatf("Y%0d: ERR before the SOFT_RESET", pass));
@@ -3972,7 +4123,7 @@ module tb_top_r14;
             r14_write(7'h06, 8'h01);
             rt_write_check(7'h60, 8'h11, 8'h00, 8'h08, $sformatf("Y%0d: TEST_MUX locked after SOFT_RESET", pass));
         end
-        $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart; a sample read after a slipped FIFO_LEVEL read used (errors %0d)", errors);
+        $display("Y  SOFT_RESET returns every register and flag, CRC off and on; STATUS's READY and DATA apart; a sample read after a slipped FIFO_LEVEL read used; the samples STOP left kept across an APPLY, an APPLY_NR, a STOP and a refused START in IDLE (errors %0d)", errors);
         // ---------------- Z (audit round 30, auditor C): a register write committed in the acknowledge cycle of an
         // applying command. No test committed one in the cycle where a tick takes a pending START, APPLY or APPLY_NR, and
         // a copy whose apply copied the shadows' next state (the racing value applied, unjudged by cfg_ok / nr_ok) and one
@@ -4999,13 +5150,17 @@ module tb_top_r14;
         // active copy across the tick of an APPLY_NR in RUN (M 0 <-> 1, range 0); (5) DFLAG across a store into the full
         // FIFO (OVERRUN set; its W1C before each, no sample read); (4) in IDLE, ERR across the tick that refuses an APPLY
         // (range 1, M 200: CFG_ERR; ERR's W1C before each). Each byte against the register of its load cycle
+        // Audit round 43 (auditor C): AM read one of the eleven active copies, and a copy reading OFF_M_H's one MCLK late
+        // passed all 16 groups. Also: (8) in IDLE, each active copy (0x30-0x38, 0x70, 0x71) across the tick of an
+        // APPLY_NR between two settings that differ in every bit of every apply field (am8_p, am8_q; the test registers
+        // open over the sweep), 17 reads per copy; every copy changes at the one edge of the tick
         phase = "AM";
         begin
             real am_t0, am_tgt, am_dt;
             logic [7:0] am_v;
             logic am_new;
             integer am_n0;
-            for (int c = 0; c < 8; c++) begin am_nb[c] = 0; am_ns[c] = 0; am_na[c] = 0; end
+            for (int c = 0; c < 19; c++) begin am_nb[c] = 0; am_ns[c] = 0; am_na[c] = 0; end
             r14_write(7'h06, 8'hFF);
             r14_write(7'h07, 8'hFF);
             am_t0 = $realtime; r14_read(7'h04, am_v); am_lat = am_t_load - am_t0;   // a call to its data byte's load
@@ -5201,7 +5356,27 @@ module tb_top_r14;
             r14_write(7'h21, 8'd0);
             r14_write(7'h22, 8'h00);
             r14_write(7'h06, 8'hFF);
-            for (int c = 0; c < 8; c++)
+            begin                                       // (8) the eleven active copies at an APPLY_NR's tick in IDLE
+                logic [7:0] am_e8;
+                r14_write(7'h11, 8'h3C);                // TEST_KEY: the test registers open over the sweep
+                for (int i = 0; i < 11; i++) r14_write(am8_a[i], am8_p[i]);
+                r14_cmd(8'h44);                         // P applied (APPLY_NR in IDLE)
+                repeat (3 * 512) @(posedge MCLK);
+                for (int i = 0; i < 11; i++)
+                    if (am_cpw[8 * i +: 8] !== am8_p[i])
+                        fail($sformatf("AM (8): the active copy 0x%02h 0x%02h after the APPLY_NR of P, expected 0x%02h", am8_a[i] + 7'h10,
+                                       am_cpw[8 * i +: 8], am8_p[i]));
+                am8_on_q = 1'b0;
+                am8_step(0, -10);                       // P -> Q, then Q -> P: the delays of both directions
+                am8_step(0, -9);
+                for (int j = 0; j < 11; j++)
+                    for (int k = -8; k <= 8; k++) am8_step(j, k);
+                r14_write(7'h11, 8'h00);                // TEST_KEY: locked
+                r14_read(7'h06, am_e8);
+                if (am_e8 !== 8'h00) fail($sformatf("AM (8): ERR 0x%02h after the sweep, expected 0x00 (every APPLY_NR accepted)", am_e8));
+                if (dut.seq_state !== 4'd0) fail("AM (8): an APPLY_NR left IDLE");
+            end
+            for (int c = 0; c < 19; c++)
                 if (am_nb[c] < 1 || am_ns[c] < 1 || am_na[c] < 1)
                     fail($sformatf("AM not exercised (change %0d): %0d before the load cycle, %0d at its start, %0d at or after the load edge",
                                    c, am_nb[c], am_ns[c], am_na[c]));
@@ -5209,11 +5384,23 @@ module tb_top_r14;
                      am_nb[0], am_ns[0], am_na[0], am_nb[1], am_ns[1], am_na[1], am_nb[2], am_ns[2], am_na[2],
                      am_nb[3], am_ns[3], am_na[3], am_nb[4], am_ns[4], am_na[4], am_nb[5], am_ns[5], am_na[5],
                      am_nb[6], am_ns[6], am_na[6], am_nb[7], am_ns[7], am_na[7], errors);
+            begin
+                string am_s8, am_sep;                   // string variables: a ternary of literals pads the shorter
+                am_s8 = "";
+                am_sep = "";
+                for (int j = 0; j < 11; j++) begin
+                    am_s8 = {am_s8, am_sep, $sformatf("0x%02h %0d / %0d / %0d", am8_a[j] + 7'h10, am_nb[8 + j], am_ns[8 + j], am_na[8 + j])};
+                    am_sep = ", ";
+                end
+                $display("AM (8) the eleven active copies at the tick of an APPLY_NR in IDLE (before / at its start / at or after the load edge): %s (errors %0d)",
+                         am_s8, errors);
+            end
         end
         r14_cmd(8'hA5);                                 // SOFT_RESET: the defaults
         #(1000.0);
         r14_write(7'h06, 8'hFF);
         if (n_y_slip_smp != 1) fail($sformatf("Y1: the sample read after a slipped FIFO_LEVEL read ran %0d times, expected 1", n_y_slip_smp));
+        if (n_y_idle_cmd != 2) fail($sformatf("Y: the commands in IDLE with samples left ran %0d times, expected 2", n_y_idle_cmd));
         if (n_chopout != 0) fail($sformatf("CHOP_OUT differed from CHOP in %0d cycles (CHOP_DLY must be 0)", n_chopout));
         if (n_cb_edges < 1000 || n_cb_w[0] == 0 || n_cb_w[1] == 0)
             fail($sformatf("the CHOP_BLANK monitor not exercised: %0d CHOP_OUT edges, %0d / %0d pulses measured with the DAC off / on",

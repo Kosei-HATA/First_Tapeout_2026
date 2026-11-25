@@ -10,7 +10,8 @@ request's; checked against the FIFO's `held` in the RTL), and busy, which belong
 tick, from the RTL at the moment it is used (a command pending when the write commits).
 Compared: commit / STATE_ERR / ADDR_ERR / CRC_ERR / FRAME_ERR / the read's ADDR_ERR / the copy / the pop request and
 the pop; the outcome of a commit (RANGE_ERR from the legal values, CMD_ERR for an unknown code or a wrong key,
-SOFT_RESET, written or not); and every MISO byte (STATUS, data of the expected address, 0x00, CRC, sample bytes).
+SOFT_RESET, written or not); and every MISO byte (STATUS, data of the expected address, 0x00, CRC, sample bytes;
+the bytes after a completed frame, OVF, are 0x00: audit round 43, auditor B, they were compared with nothing).
 Also reported: which branches of the SPI table the trace covered (all must be).
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl_r14/tb/check_spi_trace.py [build/spi_trace.txt]
@@ -149,7 +150,7 @@ def main():
         return 2
     ST.update(st)
     model = {"crc": 0, "unl": 0}
-    bad, nfr, covered = [], 0, set()
+    bad, nfr, covered, n_ovf = [], 0, set(), 0
     kc = {}                                          # (VER-02 kind, SCLK class) -> frames (audit round 23, C)
     allb = {(s, e, i) for (s, e), cell in T.items() if isinstance(cell, list) for i in range(len(cell))}
     for line in open(path):
@@ -190,6 +191,9 @@ def main():
                 errs.append(f"impossible event {e} in {state}")
                 break
             if cell == FS.IGN:
+                if e == "BYTE" and state == "OVF":   # a byte after a completed frame: MISO 0x00 (audit round 43,
+                    nbyte += 1                          # auditor B: OVF's 0 was checked by nothing; a copy sending
+                    exp_bytes.append(("zero", "ovf"))  # 0xA5 there passed tb_spi_r14 and tb_top_r14)
                 continue
             b = FS.pick(cell, env)
             covered.add((state, e, cell.index(b)))
@@ -294,12 +298,15 @@ def main():
                 want = ld[2]
             if got != want:
                 errs.append(f"MISO byte {j} ({x[0]}): 0x{got:02x}, expected 0x{want:02x}")
+            if x == ("zero", "ovf"):
+                n_ovf += 1
         for k in ver02_kinds(rw, addr, data, nbits, acts, state_at_csr, exp_bytes, env["crc_en"], env["crc_ok"]):
             kc[(k, fr["cls"])] = kc.get((k, fr["cls"]), 0) + 1
         if errs:
             bad.append((fr["idx"], fr["tag"], line.strip()[:160], errs))
     print(f"{nfr} frames replayed through fsm_spec SPI: {len(bad)} frames with mismatches; "
-          f"table branches covered {len(covered & allb)} of {len(allb)}")
+          f"table branches covered {len(covered & allb)} of {len(allb)}; MISO bytes after a completed frame (OVF) "
+          f"compared {n_ovf}")
     for idx, tag, ln, errs in bad[:15]:
         print(f"  frame {idx} ({tag}): {'; '.join(errs[:4])}")
         print(f"    {ln}")
@@ -316,7 +323,7 @@ def main():
     if holes:
         print(f"  VER-02 pairs sent fewer than {VER02_MIN} times: " + ", ".join(f"{k} at timing {c} "
               f"({kc.get((k, c), 0)})" for k, c in holes))
-    ok = nfr > 0 and not bad and not missing and not holes
+    ok = nfr > 0 and not bad and not missing and not holes and n_ovf > 0
     print("PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK "
           "timing" if ok else "FAIL")
     return 0 if ok else 1

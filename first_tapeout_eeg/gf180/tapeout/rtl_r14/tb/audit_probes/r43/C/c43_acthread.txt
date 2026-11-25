@@ -1,0 +1,8 @@
+== probes/run_clean
+tb_c43_acthread: 25 reads of 0x30, the copy's edge before / at the start of / after the load cycle 11 / 4 / 10; 0 mismatches with the register of the load cycle; SPI errors 0
+== muts/b_acth_rd_q
+ERROR j -2: OFF_M_H active copy read 0x00; the register in its load cycle 0x01 (the copy's edge -0.00 MCLK from the load cycle's start)
+ERROR j -1: OFF_M_H active copy read 0x01; the register in its load cycle 0x00 (the copy's edge -0.00 MCLK from the load cycle's start)
+ERROR j 0: OFF_M_H active copy read 0x00; the register in its load cycle 0x01 (the copy's edge -0.00 MCLK from the load cycle's start)
+ERROR j 1: OFF_M_H active copy read 0x01; the register in its load cycle 0x00 (the copy's edge -0.00 MCLK from the load cycle's start)
+tb_c43_acthread: 25 reads of 0x30, the copy's edge before / at the start of / after the load cycle 11 / 4 / 10; 4 mismatches with the register of the load cycle; SPI errors 0

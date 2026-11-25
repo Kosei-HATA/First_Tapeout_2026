@@ -1,0 +1,144 @@
+soft resets 34, during a blanking pulse 0, with the DAC on 5, at 64 kHz 5
+  soft reset in state 0: 26
+  soft reset in state 1: 1
+  soft reset in state 4: 2
+  soft reset in state 6: 5
+blank_len changed during a blanking pulse: 0
+DRDY_MODE changes 23, with the pulse counter running 0
+  ovl_hit in state 0: 109
+  ovl_hit in state 1: 17
+  ovl_hit in state 2: 17
+  ovl_hit in state 3: 17
+  ovl_hit in state 4: 17
+  ovl_hit in state 5: 55
+  ovl_hit in state 6: 383
+  ovl_hit in state 7: 9
+CHOP_FAST active changes 43, CHOP1 rate active changes 55, applies 338
+  addr 00000000: 69 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000001: 42 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000002: 42 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000003: 223 data-byte loads, 4 with the register changed at the load cycle's start
+  addr 00000004: 275 data-byte loads, 8 with the register changed at the load cycle's start
+  addr 00000005: 304 data-byte loads, 8 with the register changed at the load cycle's start
+  addr 00000006: 1263 data-byte loads, 4 with the register changed at the load cycle's start
+  addr 00000007: 1258 data-byte loads, 4 with the register changed at the load cycle's start
+  addr 00000008: 1240 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000009: 149 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000a: 63 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000b: 48 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000c: 37 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000d: 36 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000e: 35 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000000f: 34 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000010: 37 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000011: 43 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000012: 43 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000013: 42 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000014: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000015: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000016: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000017: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000018: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000019: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001a: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000001f: 33 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000020: 50 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000021: 238 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000022: 261 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000023: 360 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000024: 254 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000025: 221 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000026: 121 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000027: 89 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000028: 88 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000029: 72 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002a: 50 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000002f: 33 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000030: 116 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000031: 291 data-byte loads, 4 with the register changed at the load cycle's start
+  addr 00000032: 376 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000033: 378 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000034: 293 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000035: 291 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000036: 288 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000037: 285 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000038: 282 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000039: 200 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003a: 115 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000003f: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000040: 30 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000041: 30 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000042: 30 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000043: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000044: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000045: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000046: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000047: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000048: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000049: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004a: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000004f: 33 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000050: 55 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000051: 71 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000052: 116 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000053: 114 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000054: 129 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000055: 199 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000056: 172 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000057: 142 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000058: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000059: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005a: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000005f: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000060: 59 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000061: 97 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000062: 122 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000063: 91 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000064: 53 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000065: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000066: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000067: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000068: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000069: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006a: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006e: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000006f: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000070: 119 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000071: 203 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000072: 203 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000073: 116 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000074: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000075: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000076: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000077: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000078: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 00000079: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007a: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007b: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007c: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007d: 32 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007e: 34 data-byte loads, 0 with the register changed at the load cycle's start
+  addr 0000007f: 36 data-byte loads, 0 with the register changed at the load cycle's start

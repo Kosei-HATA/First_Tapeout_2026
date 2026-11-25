@@ -1,0 +1,123 @@
+detected アドレスの重なり: 4 violations, the expected one(s) among them
+detected フィールドの重なり: 1 violations, the expected one(s) among them
+detected 合法でない既定値: 4 violations, the expected one(s) among them
+detected アナログに効く設定が即時: 6 violations, the expected one(s) among them
+detected アナログの端子の出どころの欠落: 1 violations, the expected one(s) among them
+detected T_RST の最小値が 100 µs 未満: 3 violations, the expected one(s) among them
+detected 既定値が推奨値でない（AFE_IBIAS 2）: 2 violations, the expected one(s) among them
+detected 命令コードが 1 ビット違い: 2 violations, the expected one(s) among them
+detected STATUS の固定ビットがない: 3 violations, the expected one(s) among them
+detected STATE のコードの欠落: 2 violations, the expected one(s) among them
+detected 範囲 1 の上限の誤り: 2 violations, the expected one(s) among them
+detected nr_ok が範囲の変更を許す: 3 violations, the expected one(s) among them
+detected nr_ok が 2 段を許す: 4 violations, the expected one(s) among them
+detected 過負荷の規則が常に成立: 5 violations, the expected one(s) among them
+detected 写しのアドレスとの重なり: 3 violations, the expected one(s) among them
+detected 過負荷の閾値が 2: 3 violations, the expected one(s) among them
+detected 過負荷の窓が 8 で閾値が 8: 3 violations, the expected one(s) among them
+detected 範囲 0 の M の上限が 0: 1 violations, the expected one(s) among them
+detected CHOP_BLANK の幅に 1 を足さない: 1 violations, the expected one(s) among them
+detected TEST_CFG[4] を CHOP_STOP から取る: 2 violations, the expected one(s) among them
+detected フィールドがバイトの外: 1 violations, the expected one(s) among them
+detected 既定値がフィールドの幅を超える: 5 violations, the expected one(s) among them
+detected 合法な値がフィールドの幅を超える: 3 violations, the expected one(s) among them
+detected シーケンサの駆動する AFE_RST をレジスタも駆動: 2 violations, the expected one(s) among them
+detected どちらの一覧にもない端子: 2 violations, the expected one(s) among them
+detected T_WARM の最大が TIMING と合わない: 2 violations, the expected one(s) among them
+detected ガードするアドレスの欠落: 2 violations, the expected one(s) among them
+detected 範囲 4 の OFEN が G3 を入れない: 2 violations, the expected one(s) among them
+detected PIN_OF_CONTROL の欠落: 1 violations, the expected one(s) among them
+detected pins_from_active の端子の欠落: 3 violations, the expected one(s) among them
+detected BLANK_WITH_DAC がフレームの最長のブランキングでない: 2 violations, the expected one(s) among them
+detected 要件定義が読めない: 2 violations, the expected one(s) among them
+detected 詳細仕様に過負荷の規則の文がない: 3 violations, the expected one(s) among them
+detected nr_ok の模型にない反映の設定: 3 violations, the expected one(s) among them
+detected 全振幅の符号の列がない: 2 violations, the expected one(s) among them
+detected 全振幅の符号の列が 11/19 のものでない: 2 violations, the expected one(s) among them
+detected cfg_ok が範囲の上限 ＋ 1 を受け付ける: 4 violations, the expected one(s) among them
+detected CHOP_STOP の既定値が 1（電源投入からチョッパが止まる）: 1 violations, the expected one(s) among them
+detected ADC_ZERO の既定値が 1（電源投入から ADC の入力が短絡）: 1 violations, the expected one(s) among them
+detected 既定値の定めのない書き込み可能なフィールド: 3 violations, the expected one(s) among them
+detected RW のレジスタに読み出し専用の区分: 3 violations, the expected one(s) among them
+detected RANGE の合法な値に 5: 3 violations, the expected one(s) among them
+detected SIGN の合法な値が 0 のみ: 3 violations, the expected one(s) among them
+detected M_H の合法な値が 0〜2（M ≤ 767）: 2 violations, the expected one(s) among them
+detected ODR_L が ODR_H の次のアドレスでない: 1 violations, the expected one(s) among them
+detected 0x56 を定義する（手順 9 のモードの判定が未定義として読む）: 3 violations, the expected one(s) among them
+detected BLANK_LEN の 0 を合法とする: 4 violations, the expected one(s) among them
+detected T_ELEC の最大が TIMING と合わない: 2 violations, the expected one(s) among them
+detected ERR から CMD_ERR を除く: 1 violations, the expected one(s) among them
+detected 要件にない読み出し専用のフィールド: 1 violations, the expected one(s) among them
+detected STATUS を 0x0D に移す（手順が 0x03 として読む）: 2 violations, the expected one(s) among them
+detected VERSION をデータの窓の区画へ: 5 violations, the expected one(s) among them
+detected ALERT_MASK を施錠する: 3 violations, the expected one(s) among them
+detected T_WARM を書き込み専用に: 5 violations, the expected one(s) among them
+detected 試験の鍵を命令の区分に: 1 violations, the expected one(s) among them
+detected CRC_EN を bit 2 に（手順 9 は bit 0 を読む）: 1 violations, the expected one(s) among them
+detected 読み出し専用の ID を DBG_SEL の端子の出どころに: 2 violations, the expected one(s) among them
+detected STATUS.ALERT の既定値を 0: 1 violations, the expected one(s) among them
+detected CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）: 1 violations, the expected one(s) among them
+detected T_REC の合法な値に穴（100）: 1 violations, the expected one(s) among them
+detected DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）: 2 violations, the expected one(s) among them
+detected BLANK を 0x38 に（写し 0x48 が設定の区画の外）: 7 violations, the expected one(s) among them
+detected SOFT_RESET のコードを 0xA6 に（2 ビットの差は保つ）: 1 violations, the expected one(s) among them
+detected 試験の鍵を 0x3D に: 1 violations, the expected one(s) among them
+detected ERR の FRAME_ERR と CRC_ERR のビットの入れ違い: 2 violations, the expected one(s) among them
+detected サンプルの状態の VALID と OVERRUN の入れ違い: 2 violations, the expected one(s) among them
+detected サンプルの状態から CHANGED の名を除く: 2 violations, the expected one(s) among them
+detected FIFO_LEVEL の値を 0〜7 に: 1 violations, the expected one(s) among them
+detected ODR_L を 0xE9 に（1001 SPS）: 1 violations, the expected one(s) among them
+detected QBITS を 4 に: 1 violations, the expected one(s) among them
+detected SIGN と RANGE の端子の入れ違い: 3 violations, the expected one(s) among them
+detected ERR.CMD_ERR を TEST_CFG[7:6] の出どころに: 1 violations, the expected one(s) among them
+detected VERSION の値に 17 も: 2 violations, the expected one(s) among them
+detected STATUS の READY と DATA の入れ違い: 2 violations, the expected one(s) among them
+detected COMMAND の CMD を 7 ビットに（0xA5 が入らない）: 1 violations, the expected one(s) among them
+detected TEST_KEY の KEY を 7 ビットに: 1 violations, the expected one(s) among them
+detected ID の読み値を定めない（legal None）: 2 violations, the expected one(s) among them
+detected SAMPLE の既定値を 0x5A に: 1 violations, the expected one(s) among them
+detected TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）: 5 violations, the expected one(s) among them
+detected サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）: 6 violations, the expected one(s) among them
+detected CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）: 2 violations, the expected one(s) among them
+detected T_PRE の合法な値を None に: 1 violations, the expected one(s) among them
+detected STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）: 1 violations, the expected one(s) among them
+detected T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）: 1 violations, the expected one(s) among them
+detected T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）: 1 violations, the expected one(s) among them
+detected OFF_M_L の写しの滑りの 1 組を許さない: 1 violations, the expected one(s) among them
+detected BLANK の写しを滑りの一覧から除く: 1 violations, the expected one(s) among them
+detected STATUS の写し（ない）を滑りの一覧に加える: 1 violations, the expected one(s) among them
+detected FIFO_LEVEL を 0x0D に移す（手順が 0x05 として読む）: 1 violations, the expected one(s) among them
+detected FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）: 2 violations, the expected one(s) among them
+detected DEBUG を写しの半分の 0x72 に: 3 violations, the expected one(s) among them
+detected STATUS の滑りの組の数を 61 と記す: 2 violations, the expected one(s) among them
+detected T_REC を滑りの記録から除く（手順 3 の読み戻し）: 1 violations, the expected one(s) among them
+detected CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）: 1 violations, the expected one(s) among them
+detected SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）: 1 violations, the expected one(s) among them
+detected モードの判定の滑りの組を記録から除く（T_RST 0x22）: 1 violations, the expected one(s) among them
+detected T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）: 2 violations, the expected one(s) among them
+detected FIXED_ADDR に REG-01 の一覧にない ODR_H を加える: 1 violations, the expected one(s) among them
+detected T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）: 2 violations, the expected one(s) among them
+detected CRC 無効のチップの到達しうる値に T_RST 0x25 を加える: 3 violations, the expected one(s) among them
+detected CRC 無効のチップの到達しうる値から T_WARM を除く: 1 violations, the expected one(s) among them
+detected IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）: 2 violations, the expected one(s) among them
+detected VERSION の合法な値を 256 通りに（手順 3 の判断の読みに滑りの組ができる）: 2 violations, the expected one(s) among them
+detected VERSION の既定値を 0x11 に（手順 3 の引く 0x10 と合わない）: 3 violations, the expected one(s) among them
+detected 規則 (b) が ID と VERSION を 0xE7 と 0x11 と引く: 1 violations, the expected one(s) among them
+detected VERSION の既定値を 58 に（空の窓で 1 回の滑りが 59 を CRC の合う値として読ませる）: 3 violations, the expected one(s) among them
+detected 要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す: 1 violations, the expected one(s) among them
+detected 要件の T_WARM の滑りの数を読めない形に（17 個の組）: 1 violations, the expected one(s) among them
+detected 要件の FLG-04 の両端の符号を 0 と 30 に: 1 violations, the expected one(s) among them
+detected cfg_ok が範囲 2 の上限（M 255）を拒む: 1 violations, the expected one(s) among them
+detected BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）: 3 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックの END の印を除く（reg_fields）: 1 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックを二重に（commands）: 1 violations, the expected one(s) among them
+detected 詳細仕様がない: 2 violations, the expected one(s) among them
+detected 詳細仕様に生成しない鍵の印を加える（reg_old）: 1 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックの END を BEGIN の前に（commands）: 1 violations, the expected one(s) among them
+detected BLANK_LEN の lsb を −1 に（バイトの外）: 1 violations, the expected one(s) among them
+detected T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）: 4 violations, the expected one(s) among them
+detected OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える: 2 violations, the expected one(s) among them
+detected 要件の T_WARM の滑りの数を 9 組に（第 19 回の数）: 1 violations, the expected one(s) among them
+detected STATE の合法な値を None に: 3 violations, the expected one(s) among them
+detected サンプルの状態の予約のビット 2 を 7 に: 1 violations, the expected one(s) among them
+122 of 122 mutations detected by their expected messages; 96 messages, 96 expected by a mutation; unmutated map: 0 violations

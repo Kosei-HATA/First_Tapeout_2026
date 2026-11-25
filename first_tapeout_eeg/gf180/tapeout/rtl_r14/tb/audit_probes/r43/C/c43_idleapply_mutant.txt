@@ -1,0 +1,6 @@
+== c1 mutant
+  sample 0: status 0x08 SEQ 0 CRC ok 1
+  sample 1: status 0x08 SEQ 0 CRC ok 1
+  sample 2: status 0x08 SEQ 0 CRC ok 1
+  sample 3: status 0x08 SEQ 0 CRC ok 1
+c43 idle apply: FIFO_LEVEL after STOP 3, after APPLY in IDLE 0, after APPLY_NR in IDLE 0; CPF_TRIM pin 5; ERR 0x01; valid samples read 0

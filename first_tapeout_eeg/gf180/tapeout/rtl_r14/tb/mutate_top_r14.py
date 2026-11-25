@@ -786,6 +786,14 @@ MUTATIONS = [
     ('レジスタ：DFLAG の読み出しをレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] dflag_byte, mask_d_byte;\n', "    logic [7:0] dflag_byte, mask_d_byte;\n    logic [7:0] dfl_rd_q;                    // DFLAG's read path, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) dfl_rd_q <= 8'h00; else dfl_rd_q <= dflag_byte;\n"), ('eeg_regs.sv', 'A_DFLAG:          rdata = dflag_byte;', 'A_DFLAG:          rdata = dfl_rd_q;')], None, None),
     ('レジスタ：OFF_M_L のアクティブの写しの読み出しをレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic [7:0] act_rd_q;                    // OFF_M_L's active copy's read path, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) act_rd_q <= 8'h00; else act_rd_q <= a_m[7:0];\n"), ('eeg_regs.sv', 'A_OFF_M_L_ACT:    rdata = a_m[7:0];', 'A_OFF_M_L_ACT:    rdata = act_rd_q;')], None, None),
     ('SPI：CRC 無効の連続読み出しの 2 バイト目からを 1 MCLK 前の値から（最初のデータのバイトは保つ）', [('eeg_spi_slave.sv', '    logic        chk_addr;\n', "    logic        chk_addr;\n    logic [7:0]  rdata_q;                         // the read mux, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) rdata_q <= 8'h00; else rdata_q <= reg_rdata;\n"), ('eeg_spi_slave.sv', '            S_RREG:  tx_next = reg_rdata;', '            S_RREG:  tx_next = (reg_addr == hdr[6:0]) ? reg_rdata : rdata_q;')], None, None),
+    # audit round 43, auditor C: the FIFO emptied by an APPLY or APPLY_NR applied in IDLE (Y), DFLAG.OVL's gate written as
+    # a list of the excluded states that forgets PULSE (N), and three active copies read one MCLK late (AM (8): OFF_M_H,
+    # CHOP_CFG whose change moves the tick, TEST_CTRL of the test half)
+    ('最上位：IDLE で反映した APPLY と APPLY_NR で FIFO を空にする', 'eeg_digital_top.sv', '.clk(MCLK), .rst_n(rst_n), .flush(seq_flush), .push(seq_store),', '.clk(MCLK), .rst_n(rst_n), .flush(seq_flush | (apply && (seq_state == ST_IDLE))), .push(seq_store),'),
+    ('最上位：DFLAG.OVL の状態の条件を除く状態の一覧で書き PULSE を落とす', 'eeg_digital_top.sv', '.ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),', '.ovl_set(ovl_hit && (seq_state != ST_IDLE) && (seq_state != ST_WARMUP) && (seq_state != ST_RECOVER) &&\n                 (seq_state != ST_WAIT_E) && (seq_state != ST_ALIGN) && (seq_state != ST_PRE)),'),
+    ('レジスタ：OFF_M_H のアクティブの写しの読み出しをレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic [1:0] acth_rd_q;                   // OFF_M_H's active copy's read path, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) acth_rd_q <= 2'b00; else acth_rd_q <= a_m[9:8];\n"), ('eeg_regs.sv', 'A_OFF_M_H_ACT:    rdata = {6\'d0, a_m[9:8]};', 'A_OFF_M_H_ACT:    rdata = {6\'d0, acth_rd_q};')], None, None),
+    ('レジスタ：CHOP_CFG のアクティブの写しの読み出しをレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic       fast_rd_q;                   // CHOP_CFG's active copy's read path, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) fast_rd_q <= 1'b1; else fast_rd_q <= a_fast;\n"), ('eeg_regs.sv', 'A_CHOP_CFG_ACT:   rdata = {7\'d0, a_fast};', 'A_CHOP_CFG_ACT:   rdata = {7\'d0, fast_rd_q};')], None, None),
+    ('レジスタ：TEST_CTRL のアクティブの写しの読み出しをレジスタから（1 MCLK 遅れる）', [('eeg_regs.sv', '    logic [7:0] pcode;\n', "    logic [7:0] pcode;\n    logic [1:0] tctl_rd_q;                   // TEST_CTRL's active copy's read path, registered\n    always_ff @(posedge clk or negedge rst_n) if (!rst_n) tctl_rd_q <= 2'b00; else tctl_rd_q <= {a_cstop, a_azero};\n"), ('eeg_regs.sv', 'A_TEST_CTRL_ACT:  rdata = {6\'d0, a_cstop, a_azero};', 'A_TEST_CTRL_ACT:  rdata = {6\'d0, tctl_rd_q};')], None, None),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -963,6 +971,10 @@ SPI_MUTATIONS = [
     ("SPI：CS_N の立ち上がりで MISO の送りのレジスタを 0 にしない（フレームの始まりの 1 MCLK の Low がない）", "eeg_spi_slave.sv",
      "                st    <= S_IDLE;\n                tx_sh <= 8'h00;\n            end else begin",
      "                st    <= S_IDLE;\n            end else begin"),
+    # audit round 43, auditor B: the bytes after a completed frame (OVF) not 0x00 (check_spi_trace compared nothing
+    # after the first byte past a completed frame)
+    ("SPI：完了したフレームのあとの（OVF の）MISO のバイトを 0xA5 に", "eeg_spi_slave.sv",
+     "            default: tx_next = 8'h00;", "            default: tx_next = (st == S_OVF) ? 8'hA5 : 8'h00;"),
 ]
 
 

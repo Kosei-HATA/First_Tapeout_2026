@@ -137,6 +137,11 @@ SEQ_DRIVEN = {"AFE_RST"}
 # debug only, their pad coupling not characterized (requirements 4.10, items 308, 385; audit round 29, auditor A: this
 # said "no analog effect" for DBG_SEL)
 DIGITAL_ONLY = {"TEST_CFG[7:6]", "RAW_DATA／RAW_CLK"}
+# the field that drives each digital-only pin, written from the requirements (REG-08, 4.10) and not from REGS (audit
+# round 43, auditor C: RAW_DATA／RAW_CLK's source was checked only as "exactly one writable", so RAW_EN's pin column
+# moved to ALERT_MASK or any other immediate field passed check and selftest, and the regenerated spec 2.2 named
+# ALERT_MASK as the RAW pads' source; TEST_CFG[7:6] is tied also by the toggle check through pins_from_active)
+REQUIRED_DIGITAL_SOURCE = {"RAW_DATA／RAW_CLK": ("DEBUG", "RAW_EN"), "TEST_CFG[7:6]": ("DEBUG", "DBG_SEL")}
 
 SAMPLE_STATUS = [("VALID", 7, "格納したサンプル（空の FIFO の読み出しでは 0）"), ("OVERRUN", 6, "格納の時点で DFLAG.OVERRUN が立っていた"),
                  ("OVL", 5, "この出力の窓（sinc³ の 3 ms：この出力と直前の 2 個の出力の間隔）のいずれかに、過負荷の検出の成り立つ両端の符号があった"),
@@ -270,7 +275,13 @@ SLIP_COUNTS_RECORDED = {"STATUS": 62, "T_WARM": 17,
 # model only, so the requirements' text could say anything)
 SLIP_COUNT_PATTERNS = {"STATUS": r"STATUS の 64 通りの値で (\d+) 組", "T_WARM": r"T_WARM は (\d+) 組"}
 SLIP_DECIDE_REQUIRED = {"STATE": [], "FIFO_LEVEL": [], "DFLAG": [], "IF_CFG": [], "ERR": [(0x66, 0x67)],
-                        "ID": [], "VERSION": [],   # step 3 decides from them (audit round 37, auditor B)
+                        "ID": [],                    # step 3 decides from them (audit round 37, auditor B)
+                        # VERSION: with a sample in the FIFO a header slip of its read (0x81, MOSI bit 0 doubled)
+                        # gives the window, whose 4th byte (SEQ_L) can put a 1 into the host's 24th bit and read
+                        # 0x10 with a valid CRC: VERSION's only legal value, so no wrong value; step 3 reads VERSION
+                        # with the FIFO empty (check: window_empty) (audit round 43, auditor B: the model left out
+                        # the chip's 4th byte, and this entry was [])
+                        "VERSION": [(-1, 0x10)],
                         "CAPS": [],                  # step 5 from its FIFO_DEPTH (audit round 39, auditor B)
                         "OFF_M_H.ACT": [], "OFF_M_L.ACT": [(0xAA, 0xAB)], "OFF_CTRL.ACT": [], "AFE_IBIAS.ACT": [],
                         "CPF_TRIM.ACT": [], "BOOST_TRIM.ACT": [], "CHOP_CFG.ACT": [], "ADC_CFG.ACT": [],
@@ -393,12 +404,15 @@ def _dup(x, k):
 
 
 def slip_responses(h_, window_empty=False):
-    """The byte pairs the chip can send after the header of a 3-byte CRC read when it decoded the header as h_: a read
-    of a defined readable register (or an active copy) its value and the CRC of the header and the value; of the
-    sample window a valid word's status byte and SEQ's high byte, or an empty word's status byte and 0x00; of a
-    write-only or undefined address 0x00 and its CRC; after a write header zeros."""
+    """The bytes the chip can send after the header of a 3-byte CRC read when it decoded the header as h_, with its
+    4th byte: a read of a defined readable register (or an active copy) its value, the CRC of the header and the
+    value, and RDONE's 0x00; of the sample window a valid word's status byte, SEQ's high byte and SEQ's low byte, or
+    an empty word's status byte and zeros; of a write-only or undefined address 0x00, its CRC and 0x00; after a write
+    header zeros. Of the 4th byte only the top bit matters: an extra pulse or a bounce makes the host skip one chip
+    bit, and its 24th bit is then the chip's 25th; so 0x00 and 0x80 stand for SEQ's low byte (audit round 43,
+    auditor B: the model left the 4th byte out, as 0x00, and with a sample in the FIFO VERSION's read had a pair)."""
     if not h_ & 0x80:
-        return [(0, 0)]
+        return [(0, 0, 0)]
     a = h_ & 0x7F
     by = {r[0]: r for r in REGS}
     copies = {r[0] + SHADOW_MIRROR: r for r in REGS if any(f["cls"] == "apply" for f in r[4])}
@@ -412,13 +426,14 @@ def slip_responses(h_, window_empty=False):
         for b_ in empty_flags:
             empty |= {v | (1 << b_) for v in empty}
         if window_empty:                                  # the FIFO empty: the window answers empty words only (step 3,
-            return [(s, 0) for s in sorted(empty)]        # right after a reset; audit round 38, auditor C)
-        return [(s, q) for s in sorted(valid) for q in range(256)] + [(s, 0) for s in sorted(empty)]
+            return [(s, 0, 0) for s in sorted(empty)]     # right after a reset; audit round 38, auditor C)
+        return ([(s, q, l) for s in sorted(valid) for q in range(256) for l in (0x00, 0x80)]
+                + [(s, 0, 0) for s in sorted(empty)])
     if a in by and by[a][2] != "WO":
-        return [(w, crc8([h_, w])) for w in sorted(reg_values(by[a][1]))]
+        return [(w, crc8([h_, w]), 0) for w in sorted(reg_values(by[a][1]))]
     if a in copies:
-        return [(w, crc8([h_, w])) for w in sorted(reg_values(copies[a][1]))]
-    return [(0, crc8([h_, 0]))]
+        return [(w, crc8([h_, w]), 0) for w in sorted(reg_values(copies[a][1]))]
+    return [(0, crc8([h_, 0]), 0)]
 
 
 def slip_target(key):
@@ -465,10 +480,10 @@ def slip_hazards(key, any_value=False, window_empty=False):
         for k in range(23 if ki == 3 else 24):
             h_ = chip(k) >> 24                                   # the header the chip decoded
             if h_ not in cache:
-                cache[h_] = np.array(slip_responses(h_, window_empty), dtype=np.int64).reshape(-1, 2)
-            b1, b2 = cache[h_][:, 0], cache[h_][:, 1]
+                cache[h_] = np.array(slip_responses(h_, window_empty), dtype=np.int64).reshape(-1, 3)
+            b1, b2, b3 = cache[h_][:, 0], cache[h_][:, 1], cache[h_][:, 2]
             for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
-                hs = host((st << 24) | (b1 << 16) | (b2 << 8), k)  # what the host sampled
+                hs = host((st << 24) | (b1 << 16) | (b2 << 8) | b3, k)   # what the host sampled
                 d, c = (hs >> 16) & 0xFF, (hs >> 8) & 0xFF
                 hit = ((hs >> 30) == 2) & legal[d] & (c == want_crc[d])
                 if h_ == h:
@@ -502,8 +517,8 @@ def probe_slip_hazards():
     names = {0x80 | a: n for a, n, *_ in REGS}
     names.update({0x80 | (a + SHADOW_MIRROR): n + ".ACT" for a, n, _acc, _l, fl, _ in REGS
                   if any(f["cls"] == "apply" for f in fl)})
-    own = np.array([(v, crc8([h, v])) for v in sorted(reg_values("IF_CFG")) if v >> crc_bit & 1],
-                   dtype=np.int64).reshape(-1, 2)
+    own = np.array([(v, crc8([h, v]), 0) for v in sorted(reg_values("IF_CFG")) if v >> crc_bit & 1],
+                   dtype=np.int64).reshape(-1, 3)
     kinds = ((lambda k: _skip(mosi, k), lambda x, k: _dup(x, k)),       # a missed pulse k
              (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k)),       # an extra pulse in a low phase before pulse k
              (lambda k: _dup(mosi, k), lambda x, k: _skip(x, k + 1)),   # a bounce in pulse k's high phase
@@ -516,17 +531,17 @@ def probe_slip_hazards():
                 pairs = own
             else:
                 if h_ not in cache:
-                    cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
+                    cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 3)
                 pairs = cache[h_]
-            b1, b2 = pairs[:, 0], pairs[:, 1]
+            b1, b2, b3 = pairs[:, 0], pairs[:, 1], pairs[:, 2]
             for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
-                hs = host((st << 24) | (b1 << 16) | (b2 << 8), k)  # what the host sampled
+                hs = host((st << 24) | (b1 << 16) | (b2 << 8) | b3, k)   # what the host sampled
                 hit = ((hs >> 30) == 2) & (((hs >> (16 + crc_bit)) & 1) == 0) & (((hs >> 8) & 0xFF) == 0)
                 out |= {(names.get(h_, f"0x{h_:02X}"), int(v)) for v in b1[hit]}
     for b in range(7):                                   # one MOSI flip of an address bit of the header (audit round
         h_ = h ^ (1 << b)                                # 33, auditor B; bit 7, R/W, always gives the CRC-off form)
         if h_ not in cache:
-            cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 2)
+            cache[h_] = np.array(slip_responses(h_), dtype=np.int64).reshape(-1, 3)
         b1, b2 = cache[h_][:, 0], cache[h_][:, 1]
         hit = (((b1 >> crc_bit) & 1) == 0) & (b2 == 0)    # STATUS unshifted: rule (a) holds
         out |= {(names.get(h_, f"0x{h_:02X}"), int(v)) for v in b1[hit]}
@@ -621,12 +636,13 @@ def probe_off_hazards():
             vals[a + SHADOW_MIRROR] = v
     t8 = np.array([crc8([h, x]) for x in range(256)], dtype=np.int64)
 
-    def pairs_of(h_):                                   # (byte 2, byte 3) the chip sends after the header it decoded
-        if not h_ & 0x80:
-            return np.zeros((1, 2), dtype=np.int64)     # a write: 0x00 after the header
+    def pairs_of(h_):                                   # (byte 2, byte 3, byte 4) the chip sends after the header it
+        if not h_ & 0x80:                               # decoded; of byte 4 (CRC off: the value two addresses on)
+            return np.zeros((1, 3), dtype=np.int64)     # only the top bit can reach the host (audit round 43, B)
         a = h_ & 0x7F
-        return np.array([(x, y) for x in vals.get(a, [0]) for y in vals.get((a + 1) & 0x7F, [0])],
-                        dtype=np.int64).reshape(-1, 2)
+        return np.array([(x, y, z) for x in vals.get(a, [0]) for y in vals.get((a + 1) & 0x7F, [0])
+                         for z in sorted({w & 0x80 for w in vals.get((a + 2) & 0x7F, [0])})],
+                        dtype=np.int64).reshape(-1, 3)
 
     def hits(hs, b1):                                   # the host's view of a CRC-on answer
         d = (hs >> 16) & 0xFF
@@ -642,9 +658,9 @@ def probe_off_hazards():
         for k in range(23 if ki == 3 else 24):
             h_ = chip(k) >> 24
             pr = pairs_of(h_)
-            b1, b2 = pr[:, 0], pr[:, 1]
+            b1, b2, b3 = pr[:, 0], pr[:, 1], pr[:, 2]
             for st in (range(0x80, 0xC0) if k <= 8 else (0x80,)):
-                out |= {(names.get(h_, f"0x{h_:02X}"), int(v)) for v in hits(host((st << 24) | (b1 << 16) | (b2 << 8), k), b1)}
+                out |= {(names.get(h_, f"0x{h_:02X}"), int(v)) for v in hits(host((st << 24) | (b1 << 16) | (b2 << 8) | b3, k), b1)}
     for b in range(7):
         h_ = h ^ (1 << b)
         pr = pairs_of(h_)
@@ -691,13 +707,13 @@ CHECKS = [
     "STATE の値は fsm_spec のシーケンサの状態のコードと一致する",
     "STATUS は固定のビット（bit 7 ＝ 1、bit 6 ＝ 0）を持ち、0x00 と 0xFF にならない",
     "命令コードと試験の鍵は互いに、また 0x00、0xFF と 2 ビット以上異なる（1 ビットの誤りで別の命令にならない）",
-    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR と、手順 4 と共通の規則 (c) の読むアクティブの写しの全て。第 20 回）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 と、OFF_M_L の写しの 0xAA → 0xAB の 2 組のみ。後者は両方の向きに効き、0xAA が新しい値なら実行済みの命令を未実行と（変化のない出し直し）、古い値なら（上向きの 1 段）実行されなかった命令を実行済みと読ませるので、手順 4 と規則 (c) はアクティブの写しを 2 回続けて同じ値のときのみ使う（第 24 回、第 26 回）。STATUS は 62 組で通るので、手順は READY、DATA、AFE_RST を STATUS から判断せず（AFE_RST は第 42 回、B）、CMD_PENDING ＝ 0 は真の値が 0 となる命令の 17 フレームのあとの読み出しでのみ受け入れる（0 を 1 とする 16 組の偽りの 1 は読み直す。第 24 回）。第 18 回）。アクティブの写しの全てがこの一覧にあること（第 20 回）。滑りは 3 バイトの全ての 24 パルスで考え、先頭バイトの中の滑りではチップの復号した番地（書き込み、窓、未定義を含む）の応答と、ホストの規則 (a) を入れる。最初のバイトの中の滑りでは STATUS の全ての値（0x80〜0xBF）を入れる（取りこぼしでは STATUS の bit 0（AFE_RST）がホストの受けるデータのバイトの最上位となる。第 20 回）。先頭バイトの滑りでサンプルの窓の読み出しとなる読めるアドレスは 0x00、0x01、0x20、0x50、0x60 のみ（ホストは 0x00、0x50、0x60 を 2 回読み、0x01 は手順 3 で CRC を有効にした直後（リセットのあとの IDLE で FIFO は空）にのみ 2 回読む。第 19 回。第 37 回、B で訂正：前は「0x01 は読まない」）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
+    "範囲の上限の表を、DAC の群（G0 は M0〜M6、G1〜G3 は M7〜M9）と範囲の公称の電圧（±39／79／159／318 mV、公称 0.311 mV／段）から独立に確かめる。サンプルの窓（0x40）と 1 ビットだけ違う定義済みの読めるアドレス（アクティブの写しを含む。第 17 回）は、ホスト手順が 2 回読む 0x00、0x50、0x60 のみ（第 16 回）。サンプルの読み出しの先頭バイト（SMP_HDR ＝ 0xC0）とその CRC（CRC_SMP_HDR）を窓のアドレスから生成し、RTL、BFM、試験台、照合器はこれを使う。SPI の表の RSMP の文がこの先頭バイトを名指すこと（第 17 回）。ホスト手順が判断に使う CRC 付きの読み出し（STATE、FIFO_LEVEL、DFLAG、IF_CFG、ERR と、手順 4 と共通の規則 (c) の読むアクティブの写しの全て。第 20 回）は、SCLK の 1 回の滑り（取りこぼしか余分な縁）で別の合法な値が CRC を通らない（ERR の 0x66 → 0x67 と、OFF_M_L の写しの 0xAA → 0xAB の 2 組のみ。後者は両方の向きに効き、0xAA が新しい値なら実行済みの命令を未実行と（変化のない出し直し）、古い値なら（上向きの 1 段）実行されなかった命令を実行済みと読ませるので、手順 4 と規則 (c) はアクティブの写しを 2 回続けて同じ値のときのみ使う（第 24 回、第 26 回）。STATUS は 62 組で通るので、手順は READY、DATA、AFE_RST を STATUS から判断せず（AFE_RST は第 42 回、B）、CMD_PENDING ＝ 0 は真の値が 0 となる命令の 17 フレームのあとの読み出しでのみ受け入れる（0 を 1 とする 16 組の偽りの 1 は読み直す。第 24 回）。第 18 回）。アクティブの写しの全てがこの一覧にあること（第 20 回）。滑りは 3 バイトの全ての 24 パルスで考え、先頭バイトの中の滑りではチップの復号した番地（書き込み、窓、未定義を含む）の応答と、ホストの規則 (a) を入れる。チップの 4 番目のバイト（レジスタの読み出しでは 0x00、サンプルの窓では SEQ の下位、CRC 無効では 2 つ先の番地の値）も入れる（余分なパルスか跳ねでホストはチップの 1 ビットを飛ばし、ホストの 24 番目のビットがその最上位となる。第 43 回、B：前は 4 番目のバイトを常に 0 とし、FIFO にサンプルのある間の VERSION の読み出しの組 (−1、0x10) を見落としていた。0x10 は VERSION の唯一の値で誤った値でなく、手順 3 は FIFO の空の間に読む）。最初のバイトの中の滑りでは STATUS の全ての値（0x80〜0xBF）を入れる（取りこぼしでは STATUS の bit 0（AFE_RST）がホストの受けるデータのバイトの最上位となる。第 20 回）。先頭バイトの滑りでサンプルの窓の読み出しとなる読めるアドレスは 0x00、0x01、0x20、0x50、0x60 のみ（ホストは 0x00、0x50、0x60 を 2 回読み、0x01 は手順 3 で CRC を有効にした直後（リセットのあとの IDLE で FIFO は空）にのみ 2 回読む。第 19 回。第 37 回、B で訂正：前は「0x01 は読まない」）。サンプルの状態のバイトの表は bit 0〜7 をちょうど 1 回ずつ持つ（予約の 0 の行を含む。第 18 回）",
     "cfg_ok と nr_ok：全ての範囲の上限で境界の値を確かめる（M が上限なら可、上限＋1 なら不可。±1 段は可、±2 段と範囲の変更と他の設定の変更は不可）",
     "過負荷の規則は、フルスケールの行動モデルのコード列（s4、s20）で 1 回も成立しない（誤検出なし）。過負荷の規則（窓、閾値、両端の符号）は要件 FLG-04 と詳細仕様の第 5 節の文と一致し（第 7 回）、両端の符号の集合は RTL へ OVL_EXT_CODES として生成する（第 11 回）",
     "範囲 0 は全ての M を受け付ける。端子の規則（pins_from_active）は、詳細仕様の文から独立に書いた式と、各欄を独立に乱数で選んだ 6,000 通りの設定で一致する（第 7、8 回）。BLANK_LEN ＝ 0 の模型はパルスなし（第 10 回）",
     "既定値と合法な値：書き込み可能な全てのフィールドの既定値と合法な値は、要件から書いた表（REQUIRED_RESET、REQUIRED_LEGAL）と一致する（試験の設定は既定で切、オフセット DAC は範囲 0、タイマは SEQ-02、03、14、AFE_IBIAS の 0〜2 は書き込み可能。第 10、11 回）。リセットのあとの STATUS、STATE、FIFO_LEVEL の値も同じ表による",
     "フィールドとアドレス（第 10 回）：要件の名指す全てのフィールドがあり、ほかの読み出し専用のフィールドはない。ホスト手順の名指すアドレス（FIXED_ADDR：要件と詳細仕様の文の「名（0xNN）」の全てと、ほかの形で名指すもの。第 20 回で FIFO_LEVEL と TEST_MUX、第 29 回で TEST_CTRL、第 31 回で TEST_KEY と DEBUG、第 32 回で守るレジスタの全て、第 36 回で VERSION、第 39 回で CAPS、第 40 回で ALERT_MASK_D を加えた。REG-01 の一覧はこれに等しく、詳細仕様 2.3 と要件の CRC 無効の注記の範囲の文は guarded_addrs() に等しい。第 32 回）、手順 3 と規則 (b) の引く ID と VERSION の値は既定値のバイトに等しく（第 37 回、第 38 回、C）、空の FIFO の窓では 1 回の SCLK の滑りがその CRC 付きの読みに CRC の合う誤った値を作らない（規則 (b)。第 38 回、C）と、STATUS の固定のビット、IF_CFG の CRC_EN（bit 0）と DRDY_MODE（bit 1）の位置は変わらない。区画はレジスタとアクティブの写しの半分に分けて確かめる（設定 0x20〜0x2F と写し 0x30〜0x3F、試験 0x60〜0x6F と写し 0x70〜0x7F。第 20 回）。モードの判定のフレームが SCLK の 1 回の故障か先頭のアドレスの 1 ビットの化けで CRC 無効の答えを返す組（" + "、".join(f"{n_} 0x{v_:02X}" for n_, v_ in sorted(PROBE_SLIP_RECORDED)) + "）を記録して確かめ、どれもリセット値でないことを求める（第 32 回。化けは第 33 回）。リセット値と、手順の CRC 無効のフレームの 1 回の故障で残る値（PROBE_OFF_REACHABLE）の CRC 無効のチップが、1 回の故障で CRC 有効の答えに読まれないことも確かめる（第 33 回、第 34 回）。PROBE_OFF_REACHABLE は、手順の CRC 無効のフレーム（PROBE_OFF_FRAMES）の番地かデータの 1 ビットの化けを番地の復号と範囲の検査に通して導いた組に等しく、要件の規則 (c) の文がその全てを名指す（第 35 回）。文書の記す滑りの組の数（STATUS " + str(SLIP_COUNTS_RECORDED["STATUS"]) + " 組、T_WARM " + str(SLIP_COUNTS_RECORDED["T_WARM"]) + " 組）を確かめ、要件 5.4 の (b) の文の数とも照合する（第 20、21 回）。手順 3 が書いて 2 回読み戻すレジスタの組の数（" + "、".join(f"{k_} {v_} 組" for k_, v_ in SLIP_COUNTS_RECORDED.items() if k_ not in ("STATUS", "T_WARM") and v_) + "、ほかは 0 組）も記録して確かめ、書き込み可能な全てのレジスタがこの記録か判断に使う一覧にあることを求める（第 27 回）。REG-01 の区画（アクティブの写しも、そのレジスタの区画に。第 12 回）、施錠は試験の区画のみ（REG-08）、書き込み専用は命令と試験の鍵のみ、アクセスと区分の整合、8 ビットを超えるフィールドは連続したアドレスに上位から（REG-04）、0x56 は未定義（手順 9 の判定）",
-    "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
+    "端子の出どころ（第 10 回）：デジタルのみの端子（RAW、DBG_SEL）にも書き込み可能な出どころがちょうど 1 個で、要件の名指すフィールド（RAW_DATA／RAW_CLK は DEBUG.RAW_EN、TEST_CFG[7:6] は DEBUG.DBG_SEL。第 43 回、C：RAW_EN の端子の欄をほかの即時のフィールドに移しても通った）。ALERT_MASK は ERR の、ALERT_MASK_D は DFLAG の全てのビットを覆う（第 11 回）",
     "コードとビット（第 13 回）：命令のコードと試験の鍵、ERR、DFLAG、STATE、FIFO_LEVEL のビットの位置、サンプルの状態のバイトの並び、読み出し専用のフィールドの値の集合は、要件の値と一致する。ODR は MCLK とデシメーションの出力の速さ、QBITS は量子化器の符号のビット数。端子の欄は、各フィールドを変えて動く端子と一致し、読み出し専用の定数の値は既定値のみ（第 14 回）。STATUS のほかの 6 ビット（ALERT、CMD_PENDING、READY、DATA、OVL_NOW、AFE_RST）の位置、命令のコードと試験の鍵が 1 バイトの全体であること、読み出し専用の定数の読み値の定め、SAMPLE の既定値 0（第 15 回）。STATE の値の文は fsm_spec の状態の表から生成する（第 16 回）",
     "生成のブロック（第 32 回）：詳細仕様の生成のブロック（GEN_KEYS の 5 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、詳細仕様が読める（gen と fresh は印のないブロックと詳細仕様のない場合を黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
 ]
@@ -847,6 +863,9 @@ def check(verbose=True):
         s_ = src.get(pin, [])
         if len(s_) != 1 or s_[0][2] == "ro":
             errs.append(f"{pin}: sources {s_} (a digital-only control needs exactly one, writable)")
+        elif (s_[0][0], s_[0][1]) != REQUIRED_DIGITAL_SOURCE.get(pin):
+            want_ = REQUIRED_DIGITAL_SOURCE.get(pin)
+            errs.append(f"{pin}: source {s_[0][0]}.{s_[0][1]}, not the field the requirements name ({want_}; REG-08, 4.10)")
     # timers against the analog minimums (fsm_spec.TIMING) on both tick grids
     unit = {"T_REC": 8, "T_PRE": 8, "T_RST": 8, "T_WARM": 1024, "T_ELEC": 1024}   # frames per register step
     frame_s = FS.FRAME / FS.MCLK
@@ -1450,7 +1469,7 @@ def selftest():
                                              "BLANK_WITH_DAC", "REQ_DOC", "DOC", "HERE", "FULLSCALE_SHA256",
                                              "FIXED_ADDR", "SLIP_COUNTS_RECORDED", "SLIP_COUNT_PATTERNS")}
     keep_fn = {"nr_ok": nr_ok, "cfg_ok": cfg_ok, "pins_from_active": pins_from_active, "guarded_addrs": guarded_addrs,
-               "ofen_of_range": ofen_of_range}
+               "ofen_of_range": ofen_of_range, "slip_responses": slip_responses}
     tmp = tempfile.mkdtemp()
     req_slip9 = os.path.join(tmp, "req_slip9.md")      # audit round 21, auditor C: the requirements' T_WARM count
     with open(req_slip9, "w", encoding="utf-8") as fo:   # as round 19 recorded it
@@ -1717,6 +1736,9 @@ def selftest():
     def m_pin_w1c():
         fld("ERR", "CMD_ERR")["pin"], fld("DEBUG", "DBG_SEL")["pin"] = "TEST_CFG[7:6]", None
 
+    def m_raw_pin_move():                                # audit round 43, auditor C: the RAW pads' source
+        fld("ALERT_MASK", "ALERT_MASK")["pin"], fld("DEBUG", "RAW_EN")["pin"] = "RAW_DATA／RAW_CLK", None
+
     def m_ro_const():
         fld("VERSION", "VERSION")["legal"] = [16, 17]
 
@@ -1782,6 +1804,10 @@ def selftest():
     def m_slip_twarm_afe():                              # audit round 20, auditor B: T_WARM's pairs as round 19's
         g["SLIP_DECIDE_REQUIRED"]["T_WARM"] = [(-1, 0x40), (-1, 0x44), (-1, 0x48), (-1, 0x4C), (-1, 0x50),   # model
                                                (-1, 0x54), (-1, 0x58), (-1, 0x5C), (0x8A, 0x8B)]   # (AFE_RST 0)
+
+    def m_slip_fourth_byte():                            # audit round 43, auditor B: the chip's 4th byte left out of
+        orig_ = keep_fn["slip_responses"]               # the slip model (0x00: the window's SEQ_L never reaches
+        g["slip_responses"] = lambda h_, window_empty=False: [(a_, b_, 0) for a_, b_, _c in orig_(h_, window_empty)]
 
     def m_slip_copy_pair():                              # audit round 20, auditor B: OFF_M_L's copy, its pair not
         g["SLIP_DECIDE_REQUIRED"]["OFF_M_L.ACT"] = []    # tolerated
@@ -1935,6 +1961,7 @@ def selftest():
             ("FIFO_LEVEL の値を 0〜7 に", m_level_ro),
             ("ODR_L を 0xE9 に（1001 SPS）", m_odr), ("QBITS を 4 に", m_qbits),
             ("SIGN と RANGE の端子の入れ違い", m_pin_swap), ("ERR.CMD_ERR を TEST_CFG[7:6] の出どころに", m_pin_w1c),
+            ("RAW_EN の端子の欄を ALERT_MASK に移す", m_raw_pin_move),
             ("VERSION の値に 17 も", m_ro_const),
             ("STATUS の READY と DATA の入れ違い", m_status_swap), ("COMMAND の CMD を 7 ビットに（0xA5 が入らない）", m_cmd_narrow),
             ("TEST_KEY の KEY を 7 ビットに", m_key_narrow), ("ID の読み値を定めない（legal None）", m_ro_none),
@@ -1945,6 +1972,7 @@ def selftest():
             ("STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）", m_slip_status),
             ("T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）", m_slip_twarm),
             ("T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）", m_slip_twarm_afe),
+            ("滑りの模型でチップの 4 番目のバイトを常に 0 に（窓の SEQ の下位を落とす）", m_slip_fourth_byte),
             ("OFF_M_L の写しの滑りの 1 組を許さない", m_slip_copy_pair),
             ("BLANK の写しを滑りの一覧から除く", m_slip_copy_missing),
             ("STATUS の写し（ない）を滑りの一覧に加える", m_slip_copy_unknown),
@@ -2134,6 +2162,7 @@ SELFTEST_EXPECT = {
     'QBITS を 4 に': ("; the quantizer's codes 0..",),
     'SIGN と RANGE の端子の入れ違い': (', but changing it moves',),
     'ERR.CMD_ERR を TEST_CFG[7:6] の出どころに': (', but changing it moves',),
+    'RAW_EN の端子の欄を ALERT_MASK に移す': (', not the field the requirements name (',),
     'VERSION の値に 17 も': (': read-only constant values',),
     'STATUS の READY と DATA の入れ違い': (', the requirements read it at bit',),
     'COMMAND の CMD を 7 ビットに（0xA5 が入らない）': ('; the requirements compare the whole byte (REG-02, SPI-09, REG-08: the command codes and the test key)',),
@@ -2145,6 +2174,7 @@ SELFTEST_EXPECT = {
     'T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     # audit round 20, auditor B
     'T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
+    '滑りの模型でチップの 4 番目のバイトを常に 0 に（窓の SEQ の下位を落とす）': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     'OFF_M_L の写しの滑りの 1 組を許さない': (': one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs',),
     'BLANK の写しを滑りの一覧から除く': ('(step 4 confirms APPLY and APPLY_NR by the active copies and rule (c) compares them; audit round 20)',),
     'STATUS の写し（ない）を滑りの一覧に加える': (': in the slip list, but neither a register nor an active copy (audit round 20)',),

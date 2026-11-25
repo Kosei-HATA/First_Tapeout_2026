@@ -1,0 +1,11 @@
+PASS [swap pin] ALERT_MASK.ALERT_MASK <-> DEBUG.RAW_EN
+PASS [swap pin] ALERT_MASK_D.ALERT_MASK_D <-> DEBUG.RAW_EN
+PASS [swap pin] TEST_KEY.KEY <-> DEBUG.RAW_EN
+PASS [swap pin] T_WARM.T_WARM <-> DEBUG.RAW_EN
+PASS [swap pin] T_ELEC.T_ELEC <-> DEBUG.RAW_EN
+PASS [swap pin] T_REC.T_REC <-> DEBUG.RAW_EN
+PASS [swap pin] T_PRE.T_PRE <-> DEBUG.RAW_EN
+PASS [swap pin] T_RST.T_RST <-> DEBUG.RAW_EN
+PASS [swap pin] IF_CFG.DRDY_MODE <-> DEBUG.RAW_EN
+PASS [swap pin] IF_CFG.CRC_EN <-> DEBUG.RAW_EN
+# 406 edits, 10 pass, 616 s

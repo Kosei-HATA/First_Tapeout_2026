@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜42 回）
+# 監査の模擬の元（第 24〜43 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -135,3 +135,12 @@
 | 42 | C | `r42/C/tb_c42_telec.sv`、`telec_clean.txt`、`telec_te_seq_latched.txt` | 525（第 43.3 節） | WARMUP で書いた T_ELEC の RECOVER の満了での扱い（清い RTL と写し） |
 | 42 | C | `r42/C/muts.py`、`mut_err_rd_q.txt`、`mut_te_seq_latched.txt`、`mut_st_hdrcopy.txt`、`baseline_run.txt` | 524、525（第 43.3 節） | RTL の写しの定義と 16 群の記録 |
 | 42 | C | `r42/C/th_swap_selftest.py`、`busy_sweep.py`、`sweep_timing.txt`、`fsm_sweep_c42.py`、`sweep_c42.txt`、`sweep_c37.txt`、`sweep_c38.txt`、`regmap_sweep_c42.py`、`sweep_regmap_c42.txt`、`dut_refs.txt` | 526（第 43.3 節） | TH の札の入れ替えと TIMING の掃き、状態遷移表と regmap.REGS の掃きの結果、`dut.` の参照の一覧 |
+| 43 | A | `r43/A/tb_a43_rand.sv`、`tb_a43_rand64.sv`、`rand_4301.txt`〜`rand_4305.txt`、`rand64_4364.txt` | 第 44.1 節 | 第 39 回の乱数のホストを広げた試験台（タイマの書き込みを合法な範囲の全体に、RUN でのタイマの書き直し、CHOP_FAST の変化）と 6 回の記録 |
+| 43 | B | `r43/B/tb_b43_ver_bounce.sv`、`slip4.py`、`probe4.py` | 527（第 44.2 節） | FIFO にサンプルのある間の VERSION の読みの跳ねと、4 番目のバイトを入れた滑りの模型 |
+| 43 | B | `r43/B/tb_spi_mut.txt`、`tb_top_mut.txt`、`check_top_mut.txt`、`check_seq_mut.txt` | 528（第 44.2 節） | OVF の MISO を 0xA5 とする写しの tb_spi_r14 と tb_top_r14 の記録 |
+| 43 | B | `r43/B/fake_empty.py`、`smp_slip_crc.py`、`reset_crcform.py`、`tb_spi_4343.txt`、`check_4343.txt`、`run_all.txt` | 第 44.2 節 | サンプルの読みの滑りと CRC、リセットされたチップの CRC の形の読み、新しい系列の tb_spi_r14 |
+| 43 | C | `r43/C/tb_c43_idleapply.sv`、`c43_idleapply_clean.txt`、`c43_idleapply_mutant.txt`、`screen_c1.txt` | 530（第 44.3 節） | STOP の残したサンプルと IDLE の APPLY、APPLY_NR（清い RTL と写し、写しの 16 群） |
+| 43 | C | `r43/C/tb_c43_ovlpulse.sv`、`c43_ovlpulse.txt`、`mon43.sv`、`mon43_8deep.txt`、`screen_k.txt` | 531（第 44.3 節） | PULSE の中の過負荷と DFLAG.OVL、状態ごとの hit と読みの監視 |
+| 43 | C | `r43/C/tb_c43_acthread.sv`、`c43_acthread.txt`、`screen_b.txt` | 532（第 44.3 節） | OFF_M_H の写しの読みの瞬間（清い RTL と写し） |
+| 43 | C | `r43/C/regmap_sweep_c43.py`、`sweep_regmap_c43.txt`、`regmap_check.txt`、`regmap_selftest.txt` | 533（第 44.3 節） | regmap.REGS のフィールドの間の入れ替えの掃きと、RAW_EN の端子を ALERT_MASK に移した通しの確かめ |
+| 43 | C | `r43/C/muts43.py`、`fsm_sweep_c43.py`、`sweep_c43.txt`、`baseline_run.txt`、`a43_dutrefs_now.txt` | 第 44.3 節 | RTL の写しの定義、状態遷移表の新しい類の掃き、基準の 16 群の記録、`dut.` の参照の一覧 |

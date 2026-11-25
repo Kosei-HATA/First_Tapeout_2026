@@ -1,0 +1,17 @@
+PASS  codes  2 s
+PASS  tb_top_r14  1241 s
+PASS  tb_spi_r14  198 s
+PASS  tb_seq  14 s
+PASS  tb_regs  4 s
+PASS  tb_fifo  6 s
+PASS  tb_fifo4  6 s
+PASS  tb_tick  4 s
+PASS  tb_clkgen  2 s
+PASS  tb_chop1  4 s
+PASS  tb_cic_arm  4 s
+PASS  tb_ovl  2 s
+PASS  tb_rnd_sat  2 s
+PASS  outputs  2 s
+PASS  tb_top_r14_fifo4  1086 s
+PASS  spec  258 s
+SCREEN: ALL PASSED

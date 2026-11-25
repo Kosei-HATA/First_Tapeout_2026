@@ -20,4 +20,4 @@ LibreLane の最終ネットリスト（`eeg_digital_top_r14/runs/<ラン>/final
 
 結果は `eeg_digital_top_r14/runs/gl_<ラン>/`（git の対象外）の `gl_top.log`、`gl_spi.log`、`gl_seq_zero.log`、`gl_sdf_<コーナー>.log`、`summary.txt`。判定は、各試験台の検査と検査器が通り（PASS があって FAIL、ERROR、GL MISMATCH がない）、並走の結果の行が「PASS: gate level」であること。
 
-同じマクロを監査の新しい試験台で回し直すときは、ランのフォルダへのリンク（例：`runs/r14f5_20261124_b41 -> r14f5_20261124`）をラン名に与え、結果のフォルダを分ける（`run_gl_r14.sh r14f5_20261124_b41 810a0bc4 prep` のあと `top`、`spi`、`seq`）。11/24〜25 の実行は `gl_r14f5_20261124`（e56bc9da の源。SDF の 3 コーナーを含む）、`gl_r14f5_20261124_b39`（3de8d03b）、`gl_r14f5_20261124_b41`（810a0bc4）で、全て一致（`documentation/gf180_digital_verification_20261024.md` の第 8.6 節）。
+同じマクロを監査の新しい試験台で回し直すときは、ランのフォルダへのリンク（例：`runs/r14f5_20261124_b41 -> r14f5_20261124`）をラン名に与え、結果のフォルダを分ける（`run_gl_r14.sh r14f5_20261124_b41 810a0bc4 prep` のあと `top`、`spi`、`seq`）。11/24〜25 の実行は `gl_r14f5_20261124`（e56bc9da の源。SDF の 3 コーナーを含む）、`gl_r14f5_20261124_b39`（3de8d03b）、`gl_r14f5_20261124_b41`（810a0bc4）、`gl_r14f5_20261124_b44`（ed9c0ebe）で、全て一致（`documentation/gf180_digital_verification_20261024.md` の第 8.6 節）。

@@ -1,0 +1,11 @@
+SOFT_RESET committed in cycle 1 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 2 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 3 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 4 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 5 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 6 of ALIGN's output frame: clear cancelled, state 0, AFE_RST 1, CIC nstb 3, i1 not 0
+SOFT_RESET committed in cycle 7 of ALIGN's output frame: clear     taken, state 0, AFE_RST 1, CIC nstb 0, i1 not 0
+ERROR: commit in cycle 7: clear     taken (SEQ-13: cycles up to 7 cancel it, 8 comes after it)
+SOFT_RESET committed in cycle 8 of ALIGN's output frame: clear     taken, state 0, AFE_RST 1, CIC nstb 0, i1 not 0
+tb_a44_softclr done: errors 1, SPI errors 0
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a44_tools/tb_a44_softclr.sv:57: $finish called at 48004441761 (1ps)

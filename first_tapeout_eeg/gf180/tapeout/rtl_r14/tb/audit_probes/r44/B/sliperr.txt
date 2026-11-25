@@ -1,0 +1,4 @@
+ACC ctx=7 a=06 fault=2 k=23 st=a1 read=66 true=66 dec=86
+ACC ctx=7 a=06 fault=3 k=15 st=a1 read=67 true=66 dec=86
+ACC ctx=7 a=06 fault=4 k=14 st=a1 read=67 true=66 dec=86
+ACC ctx=7 a=06 fault=4 k=23 st=a1 read=66 true=66 dec=86

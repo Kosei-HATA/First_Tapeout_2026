@@ -1,0 +1,4 @@
+# progress 0 edits tried, at 1700, 2 s
+PASS IF_CFG.DRDY_MODE msb 1->2
+# progress 100 edits tried, at 1800, 210 s
+# 150 edits, 1 pass, 380 s

@@ -1,0 +1,3 @@
+12:54:39 c44_dbg3_genblank: DBG_SEL 3: RAW_CLK from the generator's blanking, not the CHOP_BLANK pad (files ['eeg_digital_top.sv'])
+12:58:27 tb_spi_r14 passes (229 s)
+13:21:01 DETECTED by tb_top_r14 (8-deep): ERROR @248116757000: RAW: DBG_SEL 3 without the stream: RAW_CLK / RAW_DATA 0 / 0, its pair one MCLK before 1 / 0 [after 1353 s wall]

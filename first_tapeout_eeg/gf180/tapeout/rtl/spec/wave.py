@@ -59,7 +59,7 @@ def frame():
         {"name": "ADC：CMP_STROBE", "wave": levels(n, hi({c_cmp}))},
         {"name": f"ADC：TH_CAPTURE（e{c_th} で取り込み）", "wave": levels(n, hi({c_th - 1}))},
         {"name": f"ADC：DAC_LOAD（e{d + 1} で SEL 更新）", "wave": levels(n, hi({d}))},
-        {"name": "ADC：CIC の入力", "wave": levels(n, hi({3}))},                 # eeg_clkgen's cic_en (tb_clkgen)
+        {"name": "ADC：CIC の入力", "wave": levels(n, hi({T["cic_in_cycle"]}))},  # eeg_clkgen's cic_en (TIMING, round 44)
         {"name": "ADC：DAC_CLK", "wave": levels(n, hi({d + 2}))},
         {},
         {"name": "縁のフレーム：CHOP／CHOP_OUT", "wave": levels(n, set(range(1, n)))},
@@ -161,8 +161,14 @@ MSG = {"path": "is not a transition of the table", "lane": ", but the table give
        "spi_accept": "that the table completes without an error flag",
        "spi_status": "MISO does not load STATUS at the frame's start (CS_N falling)",
        "spi_sample": "sample bytes loaded by the table, but fsm_spec.SAMPLE_BYTES names",
-       "frame": ", but fsm_spec.TIMING's busy cycles give",   # audit round 35, auditor C
-       "frame_lanes": " lanes named so in the frame diagram, where the check needs exactly"}   # audit round 36, C
+       "frame": ", but fsm_spec.TIMING gives",   # audit round 35, auditor C (round 44: CIC input, CHOP, CHOP_BLANK)
+       "frame_lanes": " lanes named so in the frame diagram, where the check needs exactly",   # audit round 36, C
+       # audit round 44, auditor C: the FIFO, DRDY_N, active-setting and CIC lanes and a missing lane
+       "fifo": ", but the table's flush (the command's tick) and first store give",
+       "active": ", but the table's apply (the command's tick) gives",
+       "cic": ", but the table's cic_clear and first store give (undrawn before the clear)",
+       "drdy": ", where no output time stores a sample: DRDY_N pulses only in",
+       "missing": " missing; the check compares these lanes with the table:"}
 
 
 def sample_labels():
@@ -310,16 +316,87 @@ def lane_values(wave, data=None):
     return out
 
 
+# the lanes of the startup and APPLY diagrams the check compares with the table (audit round 44, auditor C: a missing
+# lane must not pass silently)
+LANES_CHECKED = {"startup": ("状態", "命令", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "CIC"),
+                 "apply": ("状態", "命令", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "アクティブの設定")}
+
+
+def store_states():
+    """The states an output time stores a sample in (DRDY_N pulses only there): the state of an OUT branch with
+    'store' that stays, and the state such a branch enters (FILL's first valid output is stored on entering RUN)."""
+    out = set()
+    for (s, e), cell in FS.SEQ["table"].items():
+        if e == "OUT" and isinstance(cell, list):
+            out |= {br["next"] or s for br in cell if isinstance(br, dict) and "store" in br["actions"]}
+    return out
+
+
+def action_lanes(name, lanes, st):
+    """The FIFO, アクティブの設定, CIC and DRDY_N（パルス） lanes against the actions of the table's branches on the
+    drawn path (audit round 44, auditor C: they were drawn by hand and compared with nothing; eight wrong lanes passed).
+    The drawn command's branch is the one that enters the next drawn state: at that state's first column (the
+    command's tick) 'flush' empties the FIFO ('空…') and 'apply' applies the settings ('新しい値…'). Where an OUT branch
+    with 'cic_clear' enters its state the CIC starts filling (undrawn before); where one with 'store' enters its state
+    the CIC is valid ('有効') and the FIFO stores ('格納'). Each of these lanes changes exactly there. DRDY_N pulses (Low)
+    only in a state an output time stores in."""
+    errs, tag, tbl = [], f"wave_{name}", FS.SEQ["table"]
+    branches = lambda s, e: [b for b in (tbl.get((s, e)) if isinstance(tbl.get((s, e)), list) else []) if isinstance(b, dict)]
+    seg = [(x, i) for i, x in enumerate(st) if x is not None and (i == 0 or st[i - 1] != x)]
+    want = {"FIFO": {}, "アクティブの設定": {}, "CIC": {}}
+    cmd = lane_values(lanes["命令"]["wave"], lanes["命令"].get("data"))
+    for c in [i for i, v in enumerate(cmd) if v is not None and (i == 0 or cmd[i - 1] != v)]:
+        nxt = next(((x, i) for x, i in seg if i > c), None)
+        br = next((b for b in branches(st[c], cmd[c]) if nxt is not None and b["next"] == nxt[0]), None)
+        if br is None:
+            errs.append(f"{tag}: {cmd[c]} in {st[c]} then {nxt[0] if nxt else 'no state'} {MSG['path']}")
+            continue
+        if "flush" in br["actions"]:
+            want["FIFO"][nxt[1]] = "空"
+        if "apply" in br["actions"]:
+            want["アクティブの設定"][nxt[1]] = "新しい値"
+    for (a, _i0), (b, i1) in zip(seg, seg[1:]):
+        for br in branches(a, "OUT"):
+            if br["next"] == b and "cic_clear" in br["actions"]:
+                want["CIC"][i1] = ""                     # the filling: any drawn value
+            if br["next"] == b and "store" in br["actions"]:
+                want["CIC"][i1] = "有効"
+                want["FIFO"][i1] = "格納"
+    for lane, key in (("FIFO", "fifo"), ("アクティブの設定", "active"), ("CIC", "cic")):
+        if lane not in lanes:
+            continue
+        vals = lane_values(lanes[lane]["wave"], lanes[lane].get("data"))
+        got = {i: vals[i] for i in range(1, len(vals)) if vals[i] != vals[i - 1]}
+        w = want[lane]
+        bad = set(got) ^ set(w) or {i for i in w if got[i] is None or not str(got[i]).startswith(w[i])}
+        if lane == "CIC" and w:
+            bad |= {i for i in range(min(w)) if vals[i] is not None}
+        if bad:
+            errs.append(f"{tag}: {lane} changes at columns {sorted(got.items())}{MSG[key]} {sorted(w.items())}")
+    dv = lane_values(lanes["DRDY_N（パルス）"]["wave"])
+    sst = store_states()
+    off = [i for i, v in enumerate(dv) if v == "0" and st[i] not in sst]
+    if off:
+        errs.append(f"{tag}: DRDY_N Low in columns {off} ({', '.join(str(st[i]) for i in off)}){MSG['drdy']} {sorted(sst)}")
+    return errs
+
+
 def check():
     """The startup and APPLY diagrams against fsm_spec's table (audit round 4: the waveforms are written here, only
     their durations came from the timers): the drawn states form a path of the table, and the AFE_RST and READY lanes
-    are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN). The SPI diagram's frames are generated
-    from the SPI table (spi_lanes): each must complete without an error flag, load STATUS during its header, and a
-    sample load as many bytes as fsm_spec.SAMPLE_BYTES names (audit round 15)."""
+    are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN); the FIFO, DRDY_N, active-setting and
+    CIC lanes follow the actions of the branches the path takes (action_lanes; audit round 44, auditor C). The frame
+    diagram's lanes are TIMING's (strobes, the CIC input, CHOP's edge at e0, CHOP_BLANK, the CIC output, CHOP1's edge).
+    The SPI diagram's frames are generated from the SPI table (spi_lanes): each must complete without an error flag,
+    load STATUS during its header, and a sample load as many bytes as fsm_spec.SAMPLE_BYTES names (audit round 15)."""
     errs = []
     afe = {x[0]: str(x[3]) for x in FS.SEQ_STATES}
     for name, fn in (("startup", startup), ("apply", apply_seq)):
-        lanes = {ln["name"]: ln for ln in fn()["signal"] if isinstance(ln, dict)}
+        lanes = {ln["name"]: ln for ln in fn()["signal"] if isinstance(ln, dict) and "name" in ln}
+        miss = [ln for ln in LANES_CHECKED[name] if ln not in lanes]
+        if miss:
+            errs.append(f"wave_{name}: lane(s) {miss}{MSG['missing']} {list(LANES_CHECKED[name])}")
+            continue
         st = lane_values(lanes["状態"]["wave"], lanes["状態"]["data"])
         seq = [x for i, x in enumerate(st) if x is not None and (i == 0 or st[i - 1] != x)]
         for a, b in zip(seq, seq[1:]):
@@ -330,13 +407,19 @@ def check():
             for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
                 if x is not None and v is not None and v != want(x):
                     errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}{MSG['lane']} {want(x)}")
+        errs += action_lanes(name, lanes, st)
     # the frame diagram's strobes against fsm_spec.TIMING's busy cycles (audit round 35, auditor C)
     busy = FS.busy_all()
     one = lambda prefix: [c for c, s in busy.items() if s.startswith(prefix)]
     pos = [31] + list(range(32))
-    d = FS.TIMING["dac_load_cycle"]
+    T = FS.TIMING
+    d = T["dac_load_cycle"]
+    # -1: cycle 31 of the previous frame. CHOP's edge at e0 (the chopper period starts with the frame: TIMING's rates
+    # count the tick from it), CHOP_BLANK from 1 MCLK before it for blank_max + 1 cycles (audit round 44, auditor C)
     want = {"ADC：CMP_STROBE": {c - 0 for c in one("CMP_STROBE")}, "ADC：TH_CAPTURE": {c - 1 for c in one("TH の取り込み")},
-            "ADC：DAC_LOAD": {c - 1 for c in one("SEL1／SEL2")}, "ADC：DAC_CLK": set(one("DAC_CLK（DAC1")),
+            "ADC：DAC_LOAD": {c - 1 for c in one("SEL1／SEL2")}, "ADC：CIC の入力": {T["cic_in_cycle"]},
+            "ADC：DAC_CLK": set(one("DAC_CLK（DAC1")), "縁のフレーム：CHOP／CHOP_OUT": set(range(32)),
+            "縁のフレーム：CHOP_BLANK": {-1} | set(range(T["blank_max"])),
             "出力のフレーム：CIC の出力": set(one("CIC の出力")), "CHOP1 の縁のフレーム：CHOP1": set(one("CHOP1"))}
     seen = {k: 0 for k in want}                       # each expected lane exactly once (audit round 36, auditor C: a
     for ln in frame()["signal"]:                      # renamed or dropped lane was skipped)
@@ -347,10 +430,14 @@ def check():
             continue
         seen[key] += 1
         vals = lane_values(ln["wave"])
-        hi_ = {pos[i] for i, v in enumerate(vals) if v == "1" and i > 0}
-        got = {min(hi_)} if key.startswith("CHOP1") and hi_ else hi_    # CHOP1: its edge, the first high cycle
+        hi_ = {(pos[i] if i else -1) for i, v in enumerate(vals) if v == "1"}
+        if key.startswith("CHOP1"):                     # CHOP1: its edge, the first high cycle
+            got = {min(c for c in hi_ if c >= 0)} if any(c >= 0 for c in hi_) else set()
+        else:
+            got = hi_
         if got != want[key]:
-            errs.append(f"wave_frame: {key}: high in cycles {sorted(got)}{MSG['frame']} {sorted(want[key])} (dac_load_cycle {d})")
+            errs.append(f"wave_frame: {key}: high in cycles {sorted(got)} (-1: cycle 31 of the previous frame){MSG['frame']} "
+                        f"{sorted(want[key])} (dac_load_cycle {d}, cic_in_cycle {T['cic_in_cycle']}, blank_max {T['blank_max']})")
     for key, n_ in seen.items():
         if n_ != 1:
             errs.append(f"wave_frame: {key}: {n_}{MSG['frame_lanes']} 1")
@@ -421,6 +508,35 @@ def selftest():
         globals()["startup"] = drawn
         return lambda: globals().__setitem__("startup", orig)
 
+    def redraw(fn_name, prefix, wave, data=None):  # audit round 44, auditor C: a lane drawn otherwise
+        def apply():
+            orig = globals()[fn_name]
+
+            def drawn():
+                d_ = orig()
+                for ln in d_["signal"]:
+                    if isinstance(ln, dict) and ln.get("name", "").startswith(prefix):
+                        ln["wave"] = wave
+                        if data is not None:
+                            ln["data"] = data
+                return d_
+            globals()[fn_name] = drawn
+            return lambda: globals().__setitem__(fn_name, orig)
+        return apply
+
+    def drop_lane(fn_name, lane):                  # audit round 44, auditor C: a lane dropped
+        def apply():
+            orig = globals()[fn_name]
+
+            def drawn():
+                d_ = orig()
+                d_["signal"] = [ln for ln in d_["signal"] if not (isinstance(ln, dict) and ln.get("name") == lane)]
+                return d_
+            globals()[fn_name] = drawn
+            return lambda: globals().__setitem__(fn_name, orig)
+        return apply
+
+    low = lambda n_, cols: levels(n_, set(range(n_)) - set(cols))   # DRDY_N Low (a pulse) at the columns cols
     muts = [
         ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
         ("起動の図：READY を FILL で立ち上げる", ready_in_fill, "lane"),
@@ -432,6 +548,23 @@ def selftest():
         ("SPI の図：先頭バイトの間に STATUS を載せない", table(FS.SPI, ("IDLE", "CSF"), [B(A, [], "HDR")]), "spi_status"),
         ("SPI の図：サンプルの最後のバイトでも次のバイトを載せる",
          table(FS.SPI, ("RSMP", "BYTE"), [B("not last", ["next_byte"]), B("last", ["next_byte"], "SDONE")]), "spi_sample"),
+        # audit round 44, auditor C: the lanes the check compared with nothing (each of these passed before)
+        ("APPLY の図：FIFO を RECOVER の入口で空に（APPLY の tick でなく）",
+         redraw("apply_seq", "FIFO", "=.....=.....=...", ["旧い設定のサンプル", "空（APPLY の tick で空にする）", "格納"]), "fifo"),
+        ("APPLY の図：設定を RECOVER の入口で反映（PRE の入口の tick でなく）",
+         redraw("apply_seq", "アクティブの設定", "=.....=.........", ["旧い値", "新しい値（PRE の入口の tick で一括）"]), "active"),
+        ("APPLY の図：DRDY_N を PRE と PULSE でもパルスに", redraw("apply_seq", "DRDY_N", low(16, {0, 2, 4, 12, 14})), "drdy"),
+        ("起動の図：FIFO を RUN の入口で空に（START の tick でなく）",
+         redraw("startup", "FIFO", "=..........=.=.", ["", "空（START の tick）", "格納"]), "fifo"),
+        ("起動の図：DRDY_N を FILL からパルスに", redraw("startup", "DRDY_N", low(15, {9, 11, 13})), "drdy"),
+        ("起動の図：CIC を ALIGN から有効に", redraw("startup", "CIC", "x......=.......", ["有効"]), "cic"),
+        ("起動の図：FIFO の線を除く", drop_lane("startup", "FIFO"), "missing"),
+        ("フレームの図：CIC の入力をサイクル 4 に（TIMING の cic_in_cycle 3 と合わない）",
+         redraw("frame", "ADC：CIC の入力", levels(33, {5})), "frame"),
+        ("フレームの図：CHOP_BLANK を 3 サイクルに（見出しは TIMING の blank_max 15）",
+         redraw("frame", "縁のフレーム：CHOP_BLANK", levels(33, {0, 1, 2})), "frame"),
+        ("フレームの図：CHOP の縁を e1 に（フレームの境の e0 でなく）",
+         redraw("frame", "縁のフレーム：CHOP／CHOP_OUT", levels(33, set(range(2, 33)))), "frame"),
     ]
     base, missed, used = check(), 0, set()
     for name, apply, key in muts:

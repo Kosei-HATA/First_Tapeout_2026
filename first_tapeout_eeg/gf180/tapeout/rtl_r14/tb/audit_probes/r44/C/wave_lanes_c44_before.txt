@@ -1,0 +1,8 @@
+PASSES check, selftest rc 0, lane changed True :: apply: FIFO emptied at RECOVER's entry instead of the APPLY's tick (SEQ-05)
+PASSES check, selftest rc 0, lane changed True :: apply: active settings change at RECOVER's entry instead of PRE's
+PASSES check, selftest rc 0, lane changed True :: apply: DRDY_N pulses during PRE and PULSE (DAT-01: stores only in FILL->RUN and RUN)
+PASSES check, selftest rc 0, lane changed True :: startup: FIFO emptied at RUN, not at START's tick
+PASSES check, selftest rc 0, lane changed True :: startup: DRDY_N pulses from FILL's entry
+PASSES check, selftest rc 0, lane changed True :: startup: CIC valid from ALIGN
+PASSES check, selftest rc 0, lane changed True :: frame: CIC input at cycle 4
+PASSES check, selftest rc 0, lane changed True :: frame: CHOP_BLANK 3 cycles (BLANK 2) under the caption of 15

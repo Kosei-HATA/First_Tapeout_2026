@@ -1,0 +1,313 @@
+PASS [code] IDLE 0 <-> WARMUP 1: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> RECOVER 2: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> WAIT_E 3: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> ALIGN 4: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> FILL 5: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] IDLE 0 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> RECOVER 2: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> WAIT_E 3: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> ALIGN 4: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> FILL 5: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] WARMUP 1 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> WAIT_E 3: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> ALIGN 4: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> FILL 5: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] RECOVER 2 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] WAIT_E 3 <-> ALIGN 4: behaviour same; codes CHANGED
+PASS [code] WAIT_E 3 <-> FILL 5: behaviour same; codes CHANGED
+PASS [code] WAIT_E 3 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] WAIT_E 3 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] WAIT_E 3 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] ALIGN 4 <-> FILL 5: behaviour same; codes CHANGED
+PASS [code] ALIGN 4 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] ALIGN 4 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] ALIGN 4 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] FILL 5 <-> RUN 6: behaviour same; codes CHANGED
+PASS [code] FILL 5 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] FILL 5 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] RUN 6 <-> PRE 7: behaviour same; codes CHANGED
+PASS [code] RUN 6 <-> PULSE 8: behaviour same; codes CHANGED
+PASS [code] PRE 7 <-> PULSE 8: behaviour same; codes CHANGED
+caught [code] IDLE 0 -> 9: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 10: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 11: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 12: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 13: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 14: STATE field does not match the sequencer's state codes
+caught [code] IDLE 0 -> 15: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 9: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 10: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 11: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 12: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 13: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 14: STATE field does not match the sequencer's state codes
+caught [code] WARMUP 1 -> 15: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 9: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 10: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 11: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 12: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 13: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 14: STATE field does not match the sequencer's state codes
+caught [code] RECOVER 2 -> 15: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 9: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 10: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 11: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 12: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 13: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 14: STATE field does not match the sequencer's state codes
+caught [code] WAIT_E 3 -> 15: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 9: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 10: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 11: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 12: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 13: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 14: STATE field does not match the sequencer's state codes
+caught [code] ALIGN 4 -> 15: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 9: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 10: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 11: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 12: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 13: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 14: STATE field does not match the sequencer's state codes
+caught [code] FILL 5 -> 15: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 9: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 10: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 11: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 12: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 13: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 14: STATE field does not match the sequencer's state codes
+caught [code] RUN 6 -> 15: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 9: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 10: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 11: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 12: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 13: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 14: STATE field does not match the sequencer's state codes
+caught [code] PRE 7 -> 15: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 9: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 10: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 11: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 12: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 13: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 14: STATE field does not match the sequencer's state codes
+caught [code] PULSE 8 -> 15: STATE field does not match the sequencer's state codes
+PASS [order] SPI_STATES rows 0 <-> 1: behaviour same; codes same
+PASS [order] SPI_STATES rows 1 <-> 2: behaviour same; codes same
+PASS [order] SPI_STATES rows 2 <-> 3: behaviour same; codes same
+PASS [order] SPI_STATES rows 3 <-> 4: behaviour same; codes same
+PASS [order] SPI_STATES rows 4 <-> 5: behaviour same; codes same
+PASS [order] SPI_STATES rows 5 <-> 6: behaviour same; codes same
+PASS [order] SPI_STATES rows 6 <-> 7: behaviour same; codes same
+PASS [order] SPI_STATES rows 7 <-> 8: behaviour same; codes same
+PASS [order] SPI_STATES rows 8 <-> 9: behaviour same; codes same
+PASS [order] SPI_STATES rows 9 <-> 10: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 0 <-> 1: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 1 <-> 2: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 2 <-> 3: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 3 <-> 4: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 4 <-> 5: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 5 <-> 6: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 6 <-> 7: behaviour same; codes same
+PASS [order] SEQ_EVENTS rows 7 <-> 8: behaviour same; codes same
+PASS [order] SPI_EVENTS rows 0 <-> 1: behaviour same; codes same
+PASS [order] SPI_EVENTS rows 1 <-> 2: behaviour same; codes same
+PASS [order] SPI_EVENTS rows 2 <-> 3: behaviour same; codes same
+PASS [order] SEQ_COMMANDS rows 0 <-> 1: behaviour same; codes same
+PASS [order] SEQ_COMMANDS rows 1 <-> 2: behaviour same; codes same
+PASS [order] SEQ_COMMANDS rows 2 <-> 3: behaviour same; codes same
+PASS [order] SEQ_COMMANDS rows 3 <-> 4: behaviour same; codes same
+PASS [order] SEQ_STATES rows 0 <-> 1: behaviour same; codes same
+PASS [order] SEQ_STATES rows 1 <-> 2: behaviour same; codes same
+PASS [order] SEQ_STATES rows 2 <-> 3: behaviour same; codes same
+PASS [order] SEQ_STATES rows 3 <-> 4: behaviour same; codes same
+PASS [order] SEQ_STATES rows 4 <-> 5: behaviour same; codes same
+PASS [order] SEQ_STATES rows 5 <-> 6: behaviour same; codes same
+PASS [order] SEQ_STATES rows 6 <-> 7: behaviour same; codes same
+PASS [order] SEQ_STATES rows 7 <-> 8: behaviour same; codes same
+PASS [order] SEQ_STATES rows 8 <-> 9: behaviour same; codes same
+caught [corder] SEQ_COMMANDS drop START: SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] is not an order of the five commands and TMR
+caught [corder] SEQ_COMMANDS drop STOP: SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] is not an order of the five commands and TMR
+caught [corder] SEQ_COMMANDS drop APPLY: SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] is not an order of the five commands and TMR
+caught [corder] SEQ_COMMANDS drop APPLY_NR: SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] is not an order of the five commands and TMR
+caught [corder] SEQ_COMMANDS drop FLUSH: SEQ_PRIORITY ['STOP', 'START', 'APPLY', 'APPLY_NR', 'FLUSH', 'TMR'] is not an order of the five commands and TMR
+caught [cdel] SEQ_CONDS drop cfg_ok: SEQ IDLE/START: undefined conditions ['cfg_ok']
+caught [cdel] SEQ_CONDS drop nr_ok: SEQ RECOVER/APPLY_NR: undefined conditions ['nr_ok']
+caught [cdel] SEQ_CONDS drop t_elec0: exception NameError("name 't_elec0' is not defined")
+caught [cdel] SEQ_CONDS drop valid: SEQ FILL/OUT: undefined conditions ['valid']
+caught [cdel] SPI_CONDS drop rw: SPI HDR/BYTE: undefined conditions ['rw']
+caught [cdel] SPI_CONDS drop smp: SPI HDR/BYTE: undefined conditions ['smp']
+caught [cdel] SPI_CONDS drop addr_ok: SPI HDR/BYTE: undefined conditions ['addr_ok']
+caught [cdel] SPI_CONDS drop crc_en: SPI RREG/BYTE: undefined conditions ['crc_en']
+caught [cdel] SPI_CONDS drop last: SPI RSMP/BYTE: undefined conditions ['last']
+caught [cdel] SPI_CONDS drop mid: SPI HDR/CSR: undefined conditions ['mid']
+caught [cdel] SPI_CONDS drop crc_ok: SPI WDONE/CSR: undefined conditions ['crc_ok']
+caught [cdel] SPI_CONDS drop wr_ok: SPI WDONE/CSR: undefined conditions ['wr_ok']
+caught [cdel] SPI_CONDS drop busy: SPI WDONE/CSR: undefined conditions ['busy']
+caught [cdel] SPI_CONDS drop head: SPI SDONE/CSR: undefined conditions ['head']
+caught [cdel] SEQ_ACTIONS drop apply: SEQ IDLE/START: undefined action apply
+caught [cdel] SEQ_ACTIONS drop flush: SEQ IDLE/START: undefined action flush
+caught [cdel] SEQ_ACTIONS drop cic_clear: SEQ ALIGN/OUT: undefined action cic_clear
+caught [cdel] SEQ_ACTIONS drop store: SEQ FILL/OUT: undefined action store
+caught [cdel] SEQ_ACTIONS drop discard: SEQ RESET/OUT: undefined action discard
+caught [cdel] SEQ_ACTIONS drop seq_inc: SEQ RESET/OUT: undefined action seq_inc
+caught [cdel] SEQ_ACTIONS drop mark: SEQ RUN/APPLY_NR: undefined action mark
+caught [cdel] SEQ_ACTIONS drop CFG_ERR: SEQ IDLE/START: undefined action CFG_ERR
+caught [cdel] SEQ_ACTIONS drop STATE_ERR: SEQ WARMUP/START: undefined action STATE_ERR
+caught [cdel] SEQ_ACTIONS drop restart: SEQ WARMUP/APPLY: undefined action restart
+caught [cdel] SPI_ACTIONS drop load_status: SPI IDLE/CSF: undefined action load_status
+caught [cdel] SPI_ACTIONS drop snapshot: SPI HDR/BYTE: undefined action snapshot
+caught [cdel] SPI_ACTIONS drop load_data: SPI HDR/BYTE: undefined action load_data
+caught [cdel] SPI_ACTIONS drop load_zero: SPI HDR/BYTE: undefined action load_zero
+caught [cdel] SPI_ACTIONS drop addr_inc: SPI RREG/BYTE: undefined action addr_inc
+caught [cdel] SPI_ACTIONS drop load_crc: SPI RREG/BYTE: undefined action load_crc
+caught [cdel] SPI_ACTIONS drop next_byte: SPI RSMP/BYTE: undefined action next_byte
+caught [cdel] SPI_ACTIONS drop latch_addr: SPI HDR/BYTE: undefined action latch_addr
+caught [cdel] SPI_ACTIONS drop latch_data: SPI WDAT/BYTE: undefined action latch_data
+caught [cdel] SPI_ACTIONS drop latch_crc: SPI WCRC/BYTE: undefined action latch_crc
+caught [cdel] SPI_ACTIONS drop commit: SPI WDONE/CSR: undefined action commit
+caught [cdel] SPI_ACTIONS drop pop: SPI SDONE/CSR: undefined action pop
+caught [cdel] SPI_ACTIONS drop FRAME_ERR: SPI HDR/CSR: undefined action FRAME_ERR
+caught [cdel] SPI_ACTIONS drop CRC_ERR: SPI WDONE/CSR: undefined action CRC_ERR
+caught [cdel] SPI_ACTIONS drop ADDR_ERR: SPI HDR/BYTE: undefined action ADDR_ERR
+caught [cdel] SPI_ACTIONS drop STATE_ERR: SPI WDONE/CSR: undefined action STATE_ERR
+caught [poss] seq_possible(RESET, RST) flipped to False: SEQ RESET/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, REL) flipped to False: SEQ RESET/REL: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, STOP) flipped to False: SEQ RESET/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, START) flipped to False: SEQ RESET/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, APPLY) flipped to False: SEQ RESET/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, APPLY_NR) flipped to False: SEQ RESET/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, FLUSH) flipped to False: SEQ RESET/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RESET, TMR) flipped to True: SEQ RESET/TMR: marked impossible, but the event can occur
+caught [poss] seq_possible(RESET, OUT) flipped to False: SEQ RESET/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, RST) flipped to False: SEQ IDLE/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, REL) flipped to True: SEQ IDLE/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(IDLE, STOP) flipped to False: SEQ IDLE/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, START) flipped to False: SEQ IDLE/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, APPLY) flipped to False: SEQ IDLE/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, APPLY_NR) flipped to False: SEQ IDLE/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, FLUSH) flipped to False: SEQ IDLE/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(IDLE, TMR) flipped to True: SEQ IDLE/TMR: marked impossible, but the event can occur
+caught [poss] seq_possible(IDLE, OUT) flipped to False: SEQ IDLE/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, RST) flipped to False: SEQ WARMUP/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, REL) flipped to True: SEQ WARMUP/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(WARMUP, STOP) flipped to False: SEQ WARMUP/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, START) flipped to False: SEQ WARMUP/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, APPLY) flipped to False: SEQ WARMUP/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, APPLY_NR) flipped to False: SEQ WARMUP/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, FLUSH) flipped to False: SEQ WARMUP/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, TMR) flipped to False: SEQ WARMUP/TMR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WARMUP, OUT) flipped to False: SEQ WARMUP/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, RST) flipped to False: SEQ RECOVER/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, REL) flipped to True: SEQ RECOVER/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(RECOVER, STOP) flipped to False: SEQ RECOVER/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, START) flipped to False: SEQ RECOVER/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, APPLY) flipped to False: SEQ RECOVER/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, APPLY_NR) flipped to False: SEQ RECOVER/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, FLUSH) flipped to False: SEQ RECOVER/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, TMR) flipped to False: SEQ RECOVER/TMR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RECOVER, OUT) flipped to False: SEQ RECOVER/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, RST) flipped to False: SEQ WAIT_E/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, REL) flipped to True: SEQ WAIT_E/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(WAIT_E, STOP) flipped to False: SEQ WAIT_E/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, START) flipped to False: SEQ WAIT_E/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, APPLY) flipped to False: SEQ WAIT_E/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, APPLY_NR) flipped to False: SEQ WAIT_E/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, FLUSH) flipped to False: SEQ WAIT_E/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, TMR) flipped to False: SEQ WAIT_E/TMR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(WAIT_E, OUT) flipped to False: SEQ WAIT_E/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, RST) flipped to False: SEQ ALIGN/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, REL) flipped to True: SEQ ALIGN/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(ALIGN, STOP) flipped to False: SEQ ALIGN/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, START) flipped to False: SEQ ALIGN/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, APPLY) flipped to False: SEQ ALIGN/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, APPLY_NR) flipped to False: SEQ ALIGN/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, FLUSH) flipped to False: SEQ ALIGN/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(ALIGN, TMR) flipped to True: SEQ ALIGN/TMR: marked impossible, but the event can occur
+caught [poss] seq_possible(ALIGN, OUT) flipped to False: SEQ ALIGN/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, RST) flipped to False: SEQ FILL/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, REL) flipped to True: SEQ FILL/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(FILL, STOP) flipped to False: SEQ FILL/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, START) flipped to False: SEQ FILL/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, APPLY) flipped to False: SEQ FILL/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, APPLY_NR) flipped to False: SEQ FILL/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, FLUSH) flipped to False: SEQ FILL/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(FILL, TMR) flipped to True: SEQ FILL/TMR: marked impossible, but the event can occur
+caught [poss] seq_possible(FILL, OUT) flipped to False: SEQ FILL/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, RST) flipped to False: SEQ RUN/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, REL) flipped to True: SEQ RUN/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(RUN, STOP) flipped to False: SEQ RUN/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, START) flipped to False: SEQ RUN/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, APPLY) flipped to False: SEQ RUN/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, APPLY_NR) flipped to False: SEQ RUN/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, FLUSH) flipped to False: SEQ RUN/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(RUN, TMR) flipped to True: SEQ RUN/TMR: marked impossible, but the event can occur
+caught [poss] seq_possible(RUN, OUT) flipped to False: SEQ RUN/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, RST) flipped to False: SEQ PRE/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, REL) flipped to True: SEQ PRE/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(PRE, STOP) flipped to False: SEQ PRE/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, START) flipped to False: SEQ PRE/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, APPLY) flipped to False: SEQ PRE/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, APPLY_NR) flipped to False: SEQ PRE/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, FLUSH) flipped to False: SEQ PRE/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, TMR) flipped to False: SEQ PRE/TMR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PRE, OUT) flipped to False: SEQ PRE/OUT: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, RST) flipped to False: SEQ PULSE/RST: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, REL) flipped to True: SEQ PULSE/REL: marked impossible, but the event can occur
+caught [poss] seq_possible(PULSE, STOP) flipped to False: SEQ PULSE/STOP: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, START) flipped to False: SEQ PULSE/START: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, APPLY) flipped to False: SEQ PULSE/APPLY: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, APPLY_NR) flipped to False: SEQ PULSE/APPLY_NR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, FLUSH) flipped to False: SEQ PULSE/FLUSH: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, TMR) flipped to False: SEQ PULSE/TMR: the event cannot occur, but the cell is defined
+caught [poss] seq_possible(PULSE, OUT) flipped to False: SEQ PULSE/OUT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(IDLE, CSF) flipped to False: SPI IDLE/CSF: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(IDLE, BIT) flipped to False: SPI IDLE/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(IDLE, BYTE) flipped to True: SPI IDLE/BYTE: marked impossible, but the event can occur
+caught [poss] spi_possible(IDLE, CSR) flipped to True: SPI IDLE/CSR: marked impossible, but the event can occur
+caught [poss] spi_possible(HDR, CSF) flipped to True: SPI HDR/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(HDR, BIT) flipped to False: SPI HDR/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(HDR, BYTE) flipped to False: SPI HDR/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(HDR, CSR) flipped to False: SPI HDR/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RREG, CSF) flipped to True: SPI RREG/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(RREG, BIT) flipped to False: SPI RREG/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RREG, BYTE) flipped to False: SPI RREG/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RREG, CSR) flipped to False: SPI RREG/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RCRC, CSF) flipped to True: SPI RCRC/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(RCRC, BIT) flipped to False: SPI RCRC/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RCRC, BYTE) flipped to False: SPI RCRC/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RCRC, CSR) flipped to False: SPI RCRC/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RDONE, CSF) flipped to True: SPI RDONE/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(RDONE, BIT) flipped to False: SPI RDONE/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RDONE, BYTE) flipped to True: SPI RDONE/BYTE: marked impossible, but the event can occur
+caught [poss] spi_possible(RDONE, CSR) flipped to False: SPI RDONE/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RSMP, CSF) flipped to True: SPI RSMP/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(RSMP, BIT) flipped to False: SPI RSMP/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RSMP, BYTE) flipped to False: SPI RSMP/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(RSMP, CSR) flipped to False: SPI RSMP/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(SDONE, CSF) flipped to True: SPI SDONE/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(SDONE, BIT) flipped to False: SPI SDONE/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(SDONE, BYTE) flipped to True: SPI SDONE/BYTE: marked impossible, but the event can occur
+caught [poss] spi_possible(SDONE, CSR) flipped to False: SPI SDONE/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WDAT, CSF) flipped to True: SPI WDAT/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(WDAT, BIT) flipped to False: SPI WDAT/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WDAT, BYTE) flipped to False: SPI WDAT/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WDAT, CSR) flipped to False: SPI WDAT/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WCRC, CSF) flipped to True: SPI WCRC/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(WCRC, BIT) flipped to False: SPI WCRC/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WCRC, BYTE) flipped to False: SPI WCRC/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WCRC, CSR) flipped to False: SPI WCRC/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WDONE, CSF) flipped to True: SPI WDONE/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(WDONE, BIT) flipped to False: SPI WDONE/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(WDONE, BYTE) flipped to True: SPI WDONE/BYTE: marked impossible, but the event can occur
+caught [poss] spi_possible(WDONE, CSR) flipped to False: SPI WDONE/CSR: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(OVF, CSF) flipped to True: SPI OVF/CSF: marked impossible, but the event can occur
+caught [poss] spi_possible(OVF, BIT) flipped to False: SPI OVF/BIT: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(OVF, BYTE) flipped to False: SPI OVF/BYTE: the event cannot occur, but the cell is defined
+caught [poss] spi_possible(OVF, CSR) flipped to False: SPI OVF/CSR: the event cannot occur, but the cell is defined
+# 312 edits, 70 pass both checks, 498 s

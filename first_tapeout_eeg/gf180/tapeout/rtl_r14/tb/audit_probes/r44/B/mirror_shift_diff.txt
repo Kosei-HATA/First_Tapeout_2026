@@ -1,0 +1,11 @@
+--- /Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg/gf180/tapeout/rtl/spec/regmap.py	2026-11-25 11:37:07
++++ gf180/tapeout/rtl/spec/regmap.py	2026-11-25 13:13:49
+@@ -123,7 +123,7 @@
+     (0x62, "DEBUG", "RW", True, [F("DBG_SEL", 2, 1, 0, rng(0, 3), "imm", "RAW のパッドに時刻の信号（RAW_EN ＝ 0 のとき）", "TEST_CFG[7:6]"),
+                                  F("RAW_EN", 0, 0, 0, [0, 1], "imm", "生の符号の出力", "RAW_DATA／RAW_CLK")], "デバッグの出力"),
+ ]
+-SHADOW_MIRROR = 0x10                            # active copy of a shadowed register at addr + 0x10 (read only)
++SHADOW_MIRROR = 0x17                            # active copy of a shadowed register at addr + 0x10 (read only)
+ 
+ COMMANDS = {"START": 0x11, "STOP": 0x22, "APPLY": 0x33, "APPLY_NR": 0x44, "FLUSH": 0x55, "SOFT_RESET": 0xA5}
+ TEST_KEY = 0x3C

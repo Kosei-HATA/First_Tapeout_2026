@@ -1,0 +1,9 @@
+SCLK high/low 250/250 ns, t_css 300, t_csh 200, CS_N high 600 ns, CRC on
+64 kHz, no injection : taken at most 16.11 frames after CS_N; of 128 phases, header CMD_PENDING 1 in reads 1/2/3: 0/0/0, CRC data byte CMD_PENDING 1: 0/0/0
+64 kHz, injection    : taken at most 32.11 frames after CS_N; of 128 phases, header CMD_PENDING 1 in reads 1/2/3: 121/16/0, CRC data byte CMD_PENDING 1: 88/0/0
+64 kHz: the second read's data byte is loaded at the earliest 34.31 frames after the command's CS_N rise
+128 kHz, no injection : taken at most 8.11 frames after CS_N; of 64 phases, header CMD_PENDING 1 in reads 1/2/3: 0/0/0, CRC data byte CMD_PENDING 1: 0/0/0
+128 kHz, injection    : taken at most 16.11 frames after CS_N; of 64 phases, header CMD_PENDING 1 in reads 1/2/3: 0/0/0, CRC data byte CMD_PENDING 1: 0/0/0
+128 kHz: the second read's data byte is loaded at the earliest 34.31 frames after the command's CS_N rise
+tb_r44_pend_data done: 192 injections, errors 0, SPI errors 0
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/r44_verify/tb_r44_pend_data.sv:105: $finish called at 40871693752 (1ps)

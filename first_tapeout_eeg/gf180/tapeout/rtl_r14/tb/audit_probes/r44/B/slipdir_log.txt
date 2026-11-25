@@ -1,0 +1,3 @@
+tb_b44_slipdir: 1030 faulted reads, 58 accepted, 30 accepted with a value other than the true one
+../../../probes/b44/tb_b44_slipdir.sv:155: $finish called at 80505600000 (1ps)
+exit 0

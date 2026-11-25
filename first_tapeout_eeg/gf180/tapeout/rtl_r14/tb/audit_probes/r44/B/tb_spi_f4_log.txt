@@ -1,0 +1,5 @@
+SCLK timing: 680 frames at 2 MHz, 638 at 1 MHz, 666 with the minimum high, 616 with the minimum low (every VER-02 kind at each: check_spi_trace)
+VER-02 preamble: 228 frames (every kind at each SCLK timing, three times, CRC off and on); MISO Low at 2600 frame starts
+tb_spi_r14: 2600 frames, 0 SPI timing errors, 315 frames of another chip on SCLK -> spi_trace_f4.txt
+../../../probes/b44/tb_spi_r14_f4.sv:379: $finish called at 685082727899 (1ps)
+exit 0

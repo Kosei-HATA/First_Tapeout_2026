@@ -1,0 +1,15 @@
+  T_REC minimum: code 29 = 226.5625 us
+  T_REC default: code 32 = 250.0000 us
+  T_PRE minimum: code 3 = 23.4375 us
+  T_PRE default: code 3 = 23.4375 us
+  T_RST minimum: code 13 = 101.5625 us
+  T_RST default: code 13 = 101.5625 us
+  T_WARM minimum: code 5 = 5000.0000 us
+  T_WARM default: code 5 = 5000.0000 us
+  T_ELEC minimum: code 0 = 0.0000 us
+  T_ELEC default: code 0 = 0.0000 us
+  STATUS: 62 slip pairs read as another legal value with a valid CRC (the host decides READY, DATA, AFE_RST and CMD_PENDING otherwise); T_WARM: 17 (read twice)
+3 violations
+  s4.codes not found: the overload false-alarm check cannot run
+  s20.codes not found: the overload false-alarm check cannot run
+  OFF_M_L.ACT: one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs [('0xb4', '0xb6'), ('0xb6', '0xb7')], where the host procedure decides from it (tolerated: [(170, 171)]; 5.4 (b))

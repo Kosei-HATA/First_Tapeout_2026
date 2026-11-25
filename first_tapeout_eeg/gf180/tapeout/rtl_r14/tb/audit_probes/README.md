@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜43 回）
+# 監査の模擬の元（第 24〜44 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -144,3 +144,13 @@
 | 43 | C | `r43/C/tb_c43_acthread.sv`、`c43_acthread.txt`、`screen_b.txt` | 532（第 44.3 節） | OFF_M_H の写しの読みの瞬間（清い RTL と写し） |
 | 43 | C | `r43/C/regmap_sweep_c43.py`、`sweep_regmap_c43.txt`、`regmap_check.txt`、`regmap_selftest.txt` | 533（第 44.3 節） | regmap.REGS のフィールドの間の入れ替えの掃きと、RAW_EN の端子を ALERT_MASK に移した通しの確かめ |
 | 43 | C | `r43/C/muts43.py`、`fsm_sweep_c43.py`、`sweep_c43.txt`、`baseline_run.txt`、`a43_dutrefs_now.txt` | 第 44.3 節 | RTL の写しの定義、状態遷移表の新しい類の掃き、基準の 16 群の記録、`dut.` の参照の一覧 |
+| 44 | A | `r44/A/tb_a44_pend.sv`、`a44pend.txt`、`a44pend_crc1m.txt`、`a44pend_crc2m.txt` | 535（第 45.1 節） | 命令を取るはずの tick の不正な状態の値と CMD_PENDING の読み（先頭バイトで数えたもの） |
+| 44 | A | `r44/A/tb_r44_pend_data.sv`、`pend_data_2m.txt`、`pend_data_fast.txt`、`pend_data_1m.txt` | 535（第 45.1 節） | 対応の側の数え直し：規則 (b) の判断する CRC 付きのデータのバイトと、最速の合法なタイミング |
+| 44 | A | `r44/A/timing_model.py`、`changed_model.py`、`tb_a44_softclr.sv`、`a44softclr.txt`、`a44softclr2.txt`、`rand_4401.txt`、`rand_4402.txt`、`rand64_4464.txt` | 第 45.1 節 | RTL から書いた時刻の模型、ALIGN の出力のフレームの SOFT_RESET、第 43 回の不変の台の新しい系列 |
+| 44 | B | `r44/B/tb_b44_slipall.sv`、`tb_b44_slipall.py`、`slipall.txt`、`slipall2.txt`、`slipall_log.txt`、`slipall2_log.txt` | 第 45.2 節 | 読める全てのレジスタとアクティブの写しの CRC 付きの読み出しへの 1 回の故障と、受け入れた誤った値の記録の組との照合 |
+| 44 | B | `r44/B/tb_b44_slipdir.sv`、`tb_b44_slipdir.py`、`slipdir.txt`、`slipdir_log.txt`、`tb_b44_sliperr.sv`、`sliperr.txt` | 第 45.2 節 | 記録の組を持つ値と ERR 0x66 の滑り |
+| 44 | B | `r44/B/tb_b44_minhigh.sv`、`minhigh_log.txt`、`tb_spi_r14_f4.sv`、`tb_spi_f4_log.txt`、`tb_spi_s4401_log.txt`、`crc.py`、`hdrslip.py`、`mirror_shift_diff.txt`、`mirror_shift_check.txt` | 第 45.2 節 | 誤りのフレームのあとの最短の CS_N の High と ALERT、FIFO 4 段と新しい系列の tb_spi_r14、サンプルの先頭バイトの滑り、アクティブの写しの番地をずらした regmap の検査 |
+| 44 | C | `r44/C/wave_lanes_c44.py`、`wave_lanes_c44_before.txt`、`wave_lanes_c44_after.txt` | 536（第 45.3 節） | タイミング図の線の8 通りの書き換え（31000048 で全て通り、直した版で全て検出） |
+| 44 | C | `r44/C/r44_c2_variant.txt` | 537（第 45.3 節） | 対応の側の確かめ：段 AG の (3) の APPLY_NR を FILL に移した試験台の写し |
+| 44 | C | `r44/C/fsm_sweep_c44.py`、`fsm_sweep_sig.py`、`sweep_fsm_c44.txt`、`regmap_sweep2.py`、`sweep_regmap_std.txt`、`sweep_regmap_std_mid.txt`、`sweep_regmap_std_tail.txt`、`regmap_fmove_c44.py`、`sweep_regmap_fmove.txt` | 第 45.3 節 | 状態遷移表の新しい類と regmap.REGS の掃き |
+| 44 | C | `r44/C/muts44.py`、`c44_dbg3_genblank.screen.txt`、`m224.screen.txt`、`chk_spi_ovfkind.py`、`baseline_run.txt` | 第 45.3 節 | RTL の写しの定義とその記録、OVF の種類の照合、基準の 16 群の記録 |

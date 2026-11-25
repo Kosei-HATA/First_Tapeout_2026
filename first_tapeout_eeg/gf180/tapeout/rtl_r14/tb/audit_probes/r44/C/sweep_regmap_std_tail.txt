@@ -1,0 +1,10 @@
+# progress 0 edits tried, at 1850, 2 s
+PASS TEST_MUX.ATP_EN msb 4->5
+PASS TEST_CTRL.CHOP_STOP msb 1->2
+PASS TEST_CTRL.CHOP_STOP shifted +1
+# progress 100 edits tried, at 1950, 201 s
+PASS TEST_CTRL fields CHOP_STOP<->ADC_ZERO positions
+PASS DEBUG.DBG_SEL msb 2->3
+PASS DEBUG.DBG_SEL shifted +1
+# progress 200 edits tried, at 2050, 535 s
+# 208 edits, 6 pass, 556 s

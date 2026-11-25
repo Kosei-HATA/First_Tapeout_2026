@@ -4715,6 +4715,11 @@ module tb_top_r14;
                 fail($sformatf("AG (2): state %0d after RECOVER with T_ELEC 0 written in WARMUP, expected ALIGN (spec 4.2)", dut.seq_state));
             r14_write(7'h51, 8'd2);                     // (3) T_ELEC 2 written in ALIGN, then an APPLY_NR (no change)
             r14_cmd(8'h44);
+            while (dut.apply !== 1'b1) @(posedge MCLK);
+            // the APPLY_NR must be taken in ALIGN (audit round 44, auditor C: the wait below also let FILL's row, which
+            // goes to WAIT_E too, pass; an earlier change of timing could move the command there untested)
+            if (dut.seq_state !== 4'd4)
+                fail($sformatf("AG (3) not exercised: the APPLY_NR was taken in state %0d, expected ALIGN (table 5.1-2's ALIGN row)", dut.seq_state));
             while (dut.seq_state === 4'd4 || dut.seq_state === 4'd5) @(posedge MCLK);
             if (dut.seq_state !== 4'd3)
                 fail($sformatf("AG (3): state %0d after an APPLY_NR with T_ELEC 2 written in ALIGN, expected WAIT_E (table 5.1-2: T_ELEC at the APPLY_NR's tick)", dut.seq_state));

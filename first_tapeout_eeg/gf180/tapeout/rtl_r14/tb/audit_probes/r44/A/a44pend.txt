@@ -1,0 +1,6 @@
+64 kHz, no injection                                              : taken at most 16.08 frames after CS_N (offset 240 MCLK after a tick); 0 of 128 phases had rule (b)'s first read (17 frames) return CMD_PENDING 1, 0 of them two reads
+64 kHz, illegal state value 9 in the cycle of the taking tick     : taken at most 32.08 frames after CS_N (offset 240 MCLK after a tick); 121 of 128 phases had rule (b)'s first read (17 frames) return CMD_PENDING 1, 15 of them two reads
+128 kHz, no injection                                              : taken at most 8.08 frames after CS_N (offset 240 MCLK after a tick); 0 of 64 phases had rule (b)'s first read (17 frames) return CMD_PENDING 1, 0 of them two reads
+128 kHz, illegal state value 9 in the cycle of the taking tick     : taken at most 16.08 frames after CS_N (offset 240 MCLK after a tick); 0 of 64 phases had rule (b)'s first read (17 frames) return CMD_PENDING 1, 0 of them two reads
+tb_a44_pend done: 192 injections, errors 0, SPI errors 0
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a44_tools/tb_a44_pend.sv:97: $finish called at 29498086936 (1ps)

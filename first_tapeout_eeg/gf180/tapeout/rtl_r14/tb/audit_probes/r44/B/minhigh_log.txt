@@ -1,0 +1,2 @@
+tb_b44_minhigh: 48 frame pairs, 0 errors, 0 SPI errors
+../../../probes/b44/tb_b44_minhigh.sv:63: $finish called at 2445796094 (1ps)

@@ -1,0 +1,215 @@
+caught ERR.CMD_ERR -> DFLAG[2:2]: DFLAG.CMD_ERR: at bit 2, the requirements read it at bit 7
+caught ERR.CMD_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.CMD_ERR: at bit 2, the requirements read it at bit 7
+caught ERR.CMD_ERR -> OFF_M_H[2:2]: OFF_M_H.CMD_ERR: at bit 2, the requirements read it at bit 7
+caught ERR.CMD_ERR -> OFF_CTRL[3:3]: OFF_CTRL.CMD_ERR: at bit 3, the requirements read it at bit 7
+caught ERR.CMD_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.CMD_ERR: at bit 2, the requirements read it at bit 7
+caught ERR.CMD_ERR -> CPF_TRIM[4:4]: CPF_TRIM.CMD_ERR: at bit 4, the requirements read it at bit 7
+caught ERR.CMD_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.CMD_ERR: at bit 2, the requirements read it at bit 7
+caught ERR.CMD_ERR -> CHOP_CFG[1:1]: CHOP_CFG.CMD_ERR: at bit 1, the requirements read it at bit 7
+caught ERR.CMD_ERR -> ADC_CFG[3:3]: ADC_CFG.CMD_ERR: at bit 3, the requirements read it at bit 7
+caught ERR.CMD_ERR -> BLANK[4:4]: BLANK.CMD_ERR: at bit 4, the requirements read it at bit 7
+caught ERR.CMD_ERR -> IF_CFG[2:2]: IF_CFG holds CMD_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught ERR.CMD_ERR -> TEST_MUX[5:5]: TEST_MUX holds CMD_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.CMD_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds CMD_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught ERR.CMD_ERR -> DEBUG[3:3]: DEBUG holds CMD_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught ERR.STATE_ERR -> DFLAG[2:2]: DFLAG.STATE_ERR: at bit 2, the requirements read it at bit 6
+caught ERR.STATE_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.STATE_ERR: at bit 2, the requirements read it at bit 6
+caught ERR.STATE_ERR -> OFF_M_H[2:2]: OFF_M_H.STATE_ERR: at bit 2, the requirements read it at bit 6
+caught ERR.STATE_ERR -> OFF_CTRL[3:3]: OFF_CTRL.STATE_ERR: at bit 3, the requirements read it at bit 6
+caught ERR.STATE_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.STATE_ERR: at bit 2, the requirements read it at bit 6
+caught ERR.STATE_ERR -> CPF_TRIM[4:4]: CPF_TRIM.STATE_ERR: at bit 4, the requirements read it at bit 6
+caught ERR.STATE_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.STATE_ERR: at bit 2, the requirements read it at bit 6
+caught ERR.STATE_ERR -> CHOP_CFG[1:1]: CHOP_CFG.STATE_ERR: at bit 1, the requirements read it at bit 6
+caught ERR.STATE_ERR -> ADC_CFG[3:3]: ADC_CFG.STATE_ERR: at bit 3, the requirements read it at bit 6
+caught ERR.STATE_ERR -> BLANK[4:4]: BLANK.STATE_ERR: at bit 4, the requirements read it at bit 6
+caught ERR.STATE_ERR -> IF_CFG[2:2]: IF_CFG holds STATE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.STATE_ERR -> TEST_MUX[5:5]: TEST_MUX holds STATE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; a
+caught ERR.STATE_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds STATE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; 
+caught ERR.STATE_ERR -> DEBUG[3:3]: DEBUG holds STATE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audi
+caught ERR.CFG_ERR -> DFLAG[2:2]: DFLAG.CFG_ERR: at bit 2, the requirements read it at bit 5
+caught ERR.CFG_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.CFG_ERR: at bit 2, the requirements read it at bit 5
+caught ERR.CFG_ERR -> OFF_M_H[2:2]: OFF_M_H.CFG_ERR: at bit 2, the requirements read it at bit 5
+caught ERR.CFG_ERR -> OFF_CTRL[3:3]: OFF_CTRL.CFG_ERR: at bit 3, the requirements read it at bit 5
+caught ERR.CFG_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.CFG_ERR: at bit 2, the requirements read it at bit 5
+caught ERR.CFG_ERR -> CPF_TRIM[4:4]: CPF_TRIM.CFG_ERR: at bit 4, the requirements read it at bit 5
+caught ERR.CFG_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.CFG_ERR: at bit 2, the requirements read it at bit 5
+caught ERR.CFG_ERR -> CHOP_CFG[1:1]: CHOP_CFG.CFG_ERR: at bit 1, the requirements read it at bit 5
+caught ERR.CFG_ERR -> ADC_CFG[3:3]: ADC_CFG.CFG_ERR: at bit 3, the requirements read it at bit 5
+caught ERR.CFG_ERR -> BLANK[4:4]: BLANK.CFG_ERR: at bit 4, the requirements read it at bit 5
+caught ERR.CFG_ERR -> IF_CFG[2:2]: IF_CFG holds CFG_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught ERR.CFG_ERR -> TEST_MUX[5:5]: TEST_MUX holds CFG_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.CFG_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds CFG_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught ERR.CFG_ERR -> DEBUG[3:3]: DEBUG holds CFG_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught ERR.RANGE_ERR -> DFLAG[2:2]: DFLAG.RANGE_ERR: at bit 2, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.RANGE_ERR: at bit 2, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> OFF_M_H[2:2]: OFF_M_H.RANGE_ERR: at bit 2, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> OFF_CTRL[3:3]: OFF_CTRL.RANGE_ERR: at bit 3, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.RANGE_ERR: at bit 2, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> CPF_TRIM[4:4]: CPF_TRIM.RANGE_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.RANGE_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.RANGE_ERR: at bit 2, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> CHOP_CFG[1:1]: CHOP_CFG.RANGE_ERR: at bit 1, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> ADC_CFG[3:3]: ADC_CFG.RANGE_ERR: at bit 3, the requirements read it at bit 4
+caught ERR.RANGE_ERR -> BLANK[4:4]: BLANK.RANGE_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.RANGE_ERR -> IF_CFG[2:2]: IF_CFG holds RANGE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.RANGE_ERR -> TEST_MUX[5:5]: TEST_MUX holds RANGE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; a
+caught ERR.RANGE_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds RANGE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; 
+caught ERR.RANGE_ERR -> DEBUG[3:3]: DEBUG holds RANGE_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audi
+caught ERR.ADDR_ERR -> DFLAG[2:2]: DFLAG.ADDR_ERR: at bit 2, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.ADDR_ERR: at bit 2, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> OFF_M_H[2:2]: OFF_M_H.ADDR_ERR: at bit 2, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> OFF_CTRL[3:3]: OFF_CTRL.ADDR_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.ADDR_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.ADDR_ERR: at bit 2, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> CPF_TRIM[4:4]: CPF_TRIM.ADDR_ERR: at bit 4, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.ADDR_ERR: at bit 2, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> CHOP_CFG[1:1]: CHOP_CFG.ADDR_ERR: at bit 1, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> ADC_CFG[3:3]: ADC_CFG.ADDR_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.ADDR_ERR -> BLANK[4:4]: BLANK.ADDR_ERR: at bit 4, the requirements read it at bit 3
+caught ERR.ADDR_ERR -> IF_CFG[2:2]: IF_CFG holds ADDR_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audi
+caught ERR.ADDR_ERR -> TEST_MUX[5:5]: TEST_MUX holds ADDR_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught ERR.ADDR_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds ADDR_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; a
+caught ERR.ADDR_ERR -> DEBUG[3:3]: DEBUG holds ADDR_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught ERR.CRC_ERR -> DFLAG[2:2]: ALERT_MASK_D does not cover DFLAG's bits [2] (a flag that no mask bit masks)
+caught ERR.CRC_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.CRC_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.CRC_ERR -> OFF_M_H[2:2]: OFF_M_H.CRC_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.CRC_ERR -> OFF_CTRL[3:3]: OFF_CTRL.CRC_ERR: at bit 3, the requirements read it at bit 2
+caught ERR.CRC_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.CRC_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.CRC_ERR -> CPF_TRIM[4:4]: CPF_TRIM.CRC_ERR: at bit 4, the requirements read it at bit 2
+caught ERR.CRC_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.CRC_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.CRC_ERR -> CHOP_CFG[1:1]: CHOP_CFG.CRC_ERR: at bit 1, the requirements read it at bit 2
+caught ERR.CRC_ERR -> ADC_CFG[3:3]: ADC_CFG.CRC_ERR: at bit 3, the requirements read it at bit 2
+caught ERR.CRC_ERR -> BLANK[4:4]: BLANK.CRC_ERR: at bit 4, the requirements read it at bit 2
+caught ERR.CRC_ERR -> IF_CFG[2:2]: IF_CFG holds CRC_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught ERR.CRC_ERR -> TEST_MUX[5:5]: TEST_MUX holds CRC_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.CRC_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds CRC_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught ERR.CRC_ERR -> DEBUG[3:3]: DEBUG holds CRC_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught ERR.FRAME_ERR -> DFLAG[2:2]: DFLAG.FRAME_ERR: at bit 2, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> ALERT_MASK_D[2:2]: ALERT_MASK_D.FRAME_ERR: at bit 2, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> OFF_M_H[2:2]: OFF_M_H.FRAME_ERR: at bit 2, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> OFF_CTRL[3:3]: OFF_CTRL.FRAME_ERR: at bit 3, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> AFE_IBIAS[2:2]: AFE_IBIAS.FRAME_ERR: at bit 2, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> CPF_TRIM[4:4]: CPF_TRIM.FRAME_ERR: at bit 4, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> BOOST_TRIM[2:2]: BOOST_TRIM.FRAME_ERR: at bit 2, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> CHOP_CFG[1:1]: CHOP_CFG.FRAME_ERR: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught ERR.FRAME_ERR -> ADC_CFG[3:3]: ADC_CFG.FRAME_ERR: at bit 3, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> BLANK[4:4]: BLANK.FRAME_ERR: at bit 4, the requirements read it at bit 1
+caught ERR.FRAME_ERR -> IF_CFG[2:2]: IF_CFG holds FRAME_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught ERR.FRAME_ERR -> TEST_MUX[5:5]: TEST_MUX holds FRAME_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; a
+caught ERR.FRAME_ERR -> TEST_CTRL[2:2]: TEST_CTRL holds FRAME_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; 
+caught ERR.FRAME_ERR -> DEBUG[3:3]: DEBUG holds FRAME_ERR, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audi
+caught ERR.RESET_FLAG -> DFLAG[2:2]: DFLAG.RESET_FLAG: at bit 2, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> ALERT_MASK_D[2:2]: ALERT_MASK_D.RESET_FLAG: at bit 2, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> OFF_M_H[2:2]: OFF_M_H.RESET_FLAG: at bit 2, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> OFF_CTRL[3:3]: OFF_CTRL.RESET_FLAG: at bit 3, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> AFE_IBIAS[2:2]: AFE_IBIAS.RESET_FLAG: at bit 2, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> CPF_TRIM[4:4]: CPF_TRIM.RESET_FLAG: at bit 4, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> BOOST_TRIM[2:2]: BOOST_TRIM.RESET_FLAG: at bit 2, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> CHOP_CFG[1:1]: CHOP_CFG.RESET_FLAG: at bit 1, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> ADC_CFG[3:3]: ADC_CFG.RESET_FLAG: at bit 3, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> BLANK[4:4]: BLANK.RESET_FLAG: at bit 4, the requirements read it at bit 0
+caught ERR.RESET_FLAG -> IF_CFG[2:2]: IF_CFG holds RESET_FLAG, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught ERR.RESET_FLAG -> TEST_MUX[5:5]: TEST_MUX holds RESET_FLAG, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; 
+caught ERR.RESET_FLAG -> TEST_CTRL[2:2]: TEST_CTRL holds RESET_FLAG, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN;
+caught ERR.RESET_FLAG -> DEBUG[3:3]: DEBUG holds RESET_FLAG, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught DFLAG.OVL -> ALERT_MASK_D[2:2]: ALERT_MASK_D.OVL: at bit 2, the requirements read it at bit 1
+caught DFLAG.OVL -> OFF_M_H[2:2]: OFF_M_H.OVL: at bit 2, the requirements read it at bit 1
+caught DFLAG.OVL -> OFF_CTRL[3:3]: OFF_CTRL.OVL: at bit 3, the requirements read it at bit 1
+caught DFLAG.OVL -> AFE_IBIAS[2:2]: AFE_IBIAS.OVL: at bit 2, the requirements read it at bit 1
+caught DFLAG.OVL -> CPF_TRIM[4:4]: CPF_TRIM.OVL: at bit 4, the requirements read it at bit 1
+caught DFLAG.OVL -> BOOST_TRIM[2:2]: BOOST_TRIM.OVL: at bit 2, the requirements read it at bit 1
+caught DFLAG.OVL -> CHOP_CFG[1:1]: CHOP_CFG.OVL: access RW with class w1c (RO: ro; W1C: w1c; RW: apply or imm; WO: cmd or imm)
+caught DFLAG.OVL -> ADC_CFG[3:3]: ADC_CFG.OVL: at bit 3, the requirements read it at bit 1
+caught DFLAG.OVL -> BLANK[4:4]: BLANK.OVL: at bit 4, the requirements read it at bit 1
+caught DFLAG.OVL -> IF_CFG[2:2]: IF_CFG holds OVL, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit rou
+caught DFLAG.OVL -> TEST_MUX[5:5]: TEST_MUX holds OVL, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit r
+caught DFLAG.OVL -> TEST_CTRL[2:2]: TEST_CTRL holds OVL, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught DFLAG.OVL -> DEBUG[3:3]: DEBUG holds OVL, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit roun
+caught DFLAG.OVERRUN -> ALERT_MASK_D[2:2]: ALERT_MASK_D.OVERRUN: at bit 2, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> OFF_M_H[2:2]: OFF_M_H.OVERRUN: at bit 2, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> OFF_CTRL[3:3]: OFF_CTRL.OVERRUN: at bit 3, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> AFE_IBIAS[2:2]: AFE_IBIAS.OVERRUN: at bit 2, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> CPF_TRIM[4:4]: CPF_TRIM.OVERRUN: at bit 4, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> BOOST_TRIM[2:2]: BOOST_TRIM.OVERRUN: at bit 2, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> CHOP_CFG[1:1]: CHOP_CFG.OVERRUN: at bit 1, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> ADC_CFG[3:3]: ADC_CFG.OVERRUN: at bit 3, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> BLANK[4:4]: BLANK.OVERRUN: at bit 4, the requirements read it at bit 0
+caught DFLAG.OVERRUN -> IF_CFG[2:2]: IF_CFG holds OVERRUN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught DFLAG.OVERRUN -> TEST_MUX[5:5]: TEST_MUX holds OVERRUN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; aud
+caught DFLAG.OVERRUN -> TEST_CTRL[2:2]: TEST_CTRL holds OVERRUN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; au
+caught DFLAG.OVERRUN -> DEBUG[3:3]: DEBUG holds OVERRUN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught ALERT_MASK_D.ALERT_MASK_D -> DFLAG[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> OFF_M_H[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> OFF_CTRL[6:5]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> AFE_IBIAS[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> CPF_TRIM[5:4]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> BOOST_TRIM[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> CHOP_CFG[2:1]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> ADC_CFG[6:5]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> BLANK[5:4]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> IF_CFG[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> TEST_MUX[6:5]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> TEST_CTRL[3:2]: exception StopIteration()
+caught ALERT_MASK_D.ALERT_MASK_D -> DEBUG[4:3]: exception StopIteration()
+caught OFF_M_H.M_H -> DFLAG[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> ALERT_MASK_D[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> OFF_CTRL[6:5]: exception StopIteration()
+caught OFF_M_H.M_H -> AFE_IBIAS[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> CPF_TRIM[5:4]: exception StopIteration()
+caught OFF_M_H.M_H -> BOOST_TRIM[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> CHOP_CFG[2:1]: exception StopIteration()
+caught OFF_M_H.M_H -> ADC_CFG[6:5]: exception StopIteration()
+caught OFF_M_H.M_H -> BLANK[5:4]: exception StopIteration()
+caught OFF_M_H.M_H -> IF_CFG[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> TEST_MUX[6:5]: exception StopIteration()
+caught OFF_M_H.M_H -> TEST_CTRL[3:2]: exception StopIteration()
+caught OFF_M_H.M_H -> DEBUG[4:3]: exception StopIteration()
+caught OFF_CTRL.SIGN -> DFLAG[2:2]: DFLAG at 0x07: outside the settings region of REG-01 (0x20-0x2F)
+caught OFF_CTRL.SIGN -> ALERT_MASK_D[2:2]: ALERT_MASK_D at 0x09: outside the settings region of REG-01 (0x20-0x2F)
+PASS OFF_CTRL.SIGN -> OFF_M_H[2:2]
+PASS OFF_CTRL.SIGN -> AFE_IBIAS[2:2]
+PASS OFF_CTRL.SIGN -> CPF_TRIM[4:4]
+PASS OFF_CTRL.SIGN -> BOOST_TRIM[2:2]
+PASS OFF_CTRL.SIGN -> CHOP_CFG[1:1]
+PASS OFF_CTRL.SIGN -> ADC_CFG[3:3]
+PASS OFF_CTRL.SIGN -> BLANK[4:4]
+caught OFF_CTRL.SIGN -> IF_CFG[2:2]: IF_CFG at 0x55: outside the settings region of REG-01 (0x20-0x2F)
+caught OFF_CTRL.SIGN -> TEST_MUX[5:5]: TEST_MUX holds SIGN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit 
+caught OFF_CTRL.SIGN -> TEST_CTRL[2:2]: TEST_CTRL holds SIGN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught OFF_CTRL.SIGN -> DEBUG[3:3]: DEBUG holds SIGN, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit rou
+caught OFF_CTRL.RANGE -> DFLAG[4:2]: DFLAG at 0x07: outside the settings region of REG-01 (0x20-0x2F)
+caught OFF_CTRL.RANGE -> ALERT_MASK_D[4:2]: ALERT_MASK_D at 0x09: outside the settings region of REG-01 (0x20-0x2F)
+PASS OFF_CTRL.RANGE -> OFF_M_H[4:2]
+caught OFF_CTRL.RANGE -> AFE_IBIAS[4:2]: AFE_IBIAS.ACT: one SCLK slip in its CRC read gives another legal value with a valid CRC for the pairs [('0x11', '0x12'), ('0x12', '0x11')], 
+PASS OFF_CTRL.RANGE -> CPF_TRIM[6:4]
+PASS OFF_CTRL.RANGE -> CHOP_CFG[3:1]
+PASS OFF_CTRL.RANGE -> ADC_CFG[7:5]
+PASS OFF_CTRL.RANGE -> BLANK[6:4]
+caught OFF_CTRL.RANGE -> IF_CFG[4:2]: IF_CFG at 0x55: outside the settings region of REG-01 (0x20-0x2F)
+caught OFF_CTRL.RANGE -> TEST_MUX[7:5]: TEST_MUX holds RANGE, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit
+caught OFF_CTRL.RANGE -> TEST_CTRL[4:2]: TEST_CTRL holds RANGE, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audi
+caught OFF_CTRL.RANGE -> DEBUG[5:3]: DEBUG holds RANGE, a field the requirements do not put there (REG-08 locks only the test fields; IF_CFG holds DRDY_MODE and CRC_EN; audit ro
+caught AFE_IBIAS.AFE_IBIAS -> DFLAG[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> ALERT_MASK_D[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> OFF_M_H[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> OFF_CTRL[6:5]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> CPF_TRIM[5:4]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> BOOST_TRIM[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> CHOP_CFG[2:1]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> ADC_CFG[6:5]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> BLANK[5:4]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> IF_CFG[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> TEST_MUX[6:5]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> TEST_CTRL[3:2]: exception StopIteration()
+caught AFE_IBIAS.AFE_IBIAS -> DEBUG[4:3]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> DFLAG[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> ALERT_MASK_D[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> OFF_M_H[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> AFE_IBIAS[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> CHOP_CFG[4:1]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> BLANK[7:4]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> IF_CFG[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> TEST_CTRL[5:2]: exception StopIteration()
+caught CPF_TRIM.CPF_TRIM -> DEBUG[6:3]: exception StopIteration()
+caught BOOST_TRIM.BTRIM_N -> DFLAG[3:2]: DFLAG at 0x07: outside the settings region of REG-01 (0x20-0x2F)
+caught BOOST_TRIM.BTRIM_N -> ALERT_MASK_D[3:2]: ALERT_MASK_D at 0x09: outside the settings region of REG-01 (0x20-0x2F)
+PASS BOOST_TRIM.BTRIM_N -> OFF_M_H[3:2]
+PASS BOOST_TRIM.BTRIM_N -> OFF_CTRL[6:5]

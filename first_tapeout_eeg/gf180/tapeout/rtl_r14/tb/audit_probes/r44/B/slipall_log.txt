@@ -1,0 +1,5 @@
+context 0 (run 0): state 0, FIFO 0
+context 1 (run 1): state 6, FIFO 4
+tb_b44_slipall: 8652 faulted reads, 516 accepted, 22 accepted with a value other than the true one
+../../../probes/b44/tb_b44_slipall.sv:171: $finish called at 686552300000 (1ps)
+exit 0

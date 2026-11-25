@@ -1,0 +1,8 @@
+caught check, selftest rc 1, lane changed True :: apply: FIFO emptied at RECOVER's entry instead of the APPLY's tick (SEQ-05) [wave_apply: FIFO changes at columns [(6, '空（APPLY の tick で空にする）'), (12, '格納')], ]
+caught check, selftest rc 1, lane changed True :: apply: active settings change at RECOVER's entry instead of PRE's [wave_apply: アクティブの設定 changes at columns [(6, '新しい値（PRE の入口の tick で一括）')], but th]
+caught check, selftest rc 1, lane changed True :: apply: DRDY_N pulses during PRE and PULSE (DAT-01: stores only in FILL->RUN and RUN) [wave_apply: DRDY_N Low in columns [3, 5] (PRE, PULSE), where no output time stor]
+caught check, selftest rc 1, lane changed True :: startup: FIFO emptied at RUN, not at START's tick [wave_startup: FIFO changes at columns [(11, '空（START の tick）'), (12, '格納')], but]
+caught check, selftest rc 1, lane changed True :: startup: DRDY_N pulses from FILL's entry [wave_startup: DRDY_N Low in columns [9] (FILL), where no output time stores a sa]
+caught check, selftest rc 1, lane changed True :: startup: CIC valid from ALIGN [wave_startup: CIC changes at columns [(7, 'クリア後の充填'), (9, '有効')], but the table']
+caught check, selftest rc 1, lane changed True :: frame: CIC input at cycle 4 [wave_frame: ADC：CIC の入力: high in cycles [4] (-1: cycle 31 of the previous frame)]
+caught check, selftest rc 1, lane changed True :: frame: CHOP_BLANK 3 cycles (BLANK 2) under the caption of 15 [wave_frame: 縁のフレーム：CHOP_BLANK: high in cycles [-1, 0, 1] (-1: cycle 31 of the pr]

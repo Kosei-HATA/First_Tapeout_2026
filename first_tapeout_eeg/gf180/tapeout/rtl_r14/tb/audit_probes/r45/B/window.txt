@@ -1,0 +1,26 @@
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7874.9 ns (-16.7); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7880.2 ns (-11.4); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7885.5 ns (-6.1); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7890.8 ns (-0.8); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7865.5 ns (-26.0); load - t_p = -138.8 ns; FIFO_LEVEL 0                                     
+class 0 (high 500.0 / low 500.0 ns): formula instant 7891.6 ns after CS_N, actual load 7870.8 ns (-20.7); load - t_p = -138.8 ns; FIFO_LEVEL 0                                     
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8210.6 ns (+319.0); load - t_p = +227.5 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8215.9 ns (+324.3); load - t_p = +227.4 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8221.2 ns (+329.6); load - t_p = +227.4 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8226.5 ns (+334.9); load - t_p = +227.5 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8231.8 ns (+340.2); load - t_p = +227.4 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 1 (high 847.1 / low 152.9 ns): formula instant 7891.6 ns after CS_N, actual load 8237.1 ns (+345.5); load - t_p = +227.4 ns; FIFO_LEVEL 1  <- an aligned chip read as advanced
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4124.9 ns (-16.7); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4130.2 ns (-11.4); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4135.5 ns (-6.1); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4140.8 ns (-0.8); load - t_p = -108.2 ns; FIFO_LEVEL 0                                     
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4115.5 ns (-26.0); load - t_p = -138.8 ns; FIFO_LEVEL 0                                     
+class 2 (high 250.0 / low 250.0 ns): formula instant 4141.6 ns after CS_N, actual load 4120.8 ns (-20.7); load - t_p = -138.8 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4216.4 ns (+74.9); load - t_p = -16.7 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4221.7 ns (+80.2); load - t_p = -16.7 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4227.0 ns (+85.5); load - t_p = -16.7 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4232.3 ns (+90.8); load - t_p = -16.7 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4237.6 ns (+96.1); load - t_p = -16.7 ns; FIFO_LEVEL 0                                     
+class 3 (high 347.1 / low 152.9 ns): formula instant 4141.6 ns after CS_N, actual load 4212.4 ns (+70.8); load - t_p = -47.2 ns; FIFO_LEVEL 0                                     
+tb_b45_window: 6 of 24 first reads returned a nonzero FIFO_LEVEL for the chip compared with itself
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b45/probe/tb_b45_window.sv:79: $finish called at 33008687364 (1ps)

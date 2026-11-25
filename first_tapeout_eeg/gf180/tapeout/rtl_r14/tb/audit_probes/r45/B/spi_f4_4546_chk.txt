@@ -1,0 +1,3 @@
+3195 frames replayed through fsm_spec SPI: 0 frames with mismatches; table branches covered 33 of 33; MISO bytes after a completed frame (OVF) compared 83
+VER-02: 12 kinds x 4 SCLK timings, frames per timing 818/810/808/759; fewest 8 (wrong key at timing 0)
+PASS: SPI RTL == specification on every frame, every branch covered, every VER-02 kind at every SCLK timing

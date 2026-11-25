@@ -1,0 +1,36 @@
+== startup_drdy_never: check violations 1
+   wave_startup: DRDY_N not Low in RUN (columns 11..14), where every output time stores a sample: DRDY_N pulses in each segment of ['RUN'] 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_startup.json, wave_startup.png
+== frame_tick_c23: check violations 1
+   wave_frame: 新設：tick: high in cycles [23] (-1: cycle 31 of the previous frame), but fsm_spec.TIMING gives [24] (dac_load_cycle 2, cic_in_cycle 3, blank_max 15, tick_cycle 24) 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_frame.json, wave_frame.png
+== frame_out_e24: check violations 1
+   wave_frame: 新設：AFE_RST・設定の出力: changes in cycles [24] (-1: cycle 31 of the previous frame), but fsm_spec.TIMING gives [25] (dac_load_cycle 2, cic_in_cycle 3, blank_max 15, tick_cycle 24) 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_frame.json, wave_frame.png
+== chop_cic_f14: check violations 1
+   wave_chop: CIC の出力: high in slots [28] (two 16-MCLK slots a frame), but fsm_spec.TIMING's rates, tick and CIC output give [30] (tick cycle 24, decimation 1024) 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_chop.json, wave_chop.png
+== chop_128_phaseB: check violations 1
+   wave_chop: 128 kHz：CHOP: high in slots [8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31] (two 16-MCLK slots a frame), but fsm_spec.TIMING's rates, tick and CIC output give [0, 1, 2, 3, 4, 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_chop.json, wave_chop.png
+== chop_64_tick_B: check violations 1
+   wave_chop: 64 kHz：tick: high in slots [23] (two 16-MCLK slots a frame), but fsm_spec.TIMING's rates, tick and CIC output give [7] (tick cycle 24, decimation 1024) 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 1 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_chop.json, wave_chop.png
+== startup_fill_2ms: check violations 2
+   wave_startup: column 9: 時間 '2 出力（2 ms）' in FILL, but the timers' reset values and TIMING give ['3 出力', '3 出力（3 ms）']
+   wave_startup: column 10: 時間 '2 出力（2 ms）' in FILL, but the timers' reset values and TIMING give ['3 出力', '3 出力（3 ms）'] 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 2 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_startup.json, wave_startup.png
+== apply_pre_trst: check violations 4
+   wave_apply: column 2: 時間 'T_RST 101.6 µs' in PRE, but the timers' reset values and TIMING give ['T_PRE 23.44 µs']
+   wave_apply: column 3: 時間 'T_RST 101.6 µs' in PRE, but the timers' reset values and TIMING give ['T_PRE 23.44 µs']
+   wave_apply: column 4: 時間 'T_PRE 23.44 µs' in PULSE, but the timers' reset values and TIMING give ['T_RST 101.6 µs']
+   wave_apply: column 5: 時間 'T_PRE 23.44 µs' in PULSE, but the timers' reset values and TIMING give ['T_RST 101.6 µs'] 
+   selftest rc 1 27 of 27 mutations detected by their expected messages; 16 check messages; unmutated sources: 4 violations
+   fresh rc 1 STALE (run wave.py): (the diagrams disagree with the table), wave_apply.json, wave_apply.png

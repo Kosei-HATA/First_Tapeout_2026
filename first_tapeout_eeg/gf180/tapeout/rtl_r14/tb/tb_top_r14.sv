@@ -223,8 +223,9 @@
 // (auditor C): every SOFT_RESET commit raises soft_req in its own cycle (R forces soft_req at the cycles it tests).
 // Audit round 19 (auditor B): after each slipped frame in Y the very next header (CS_N high 4 MCLK) shows ALERT
 // (FRAME_ERR alone in ALERT_MASK), which the host procedure uses to find the frame that slipped.
-// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.28 s
-// since audit round 42's additions to AM and AG, 1.40 times less; audit round 41: near 1.21 s, 1.49 times;
+// A watchdog ends the run as FAIL if it has not finished by 1,800 ms of simulated time (the run ends near 1.31 s
+// since audit round 43's additions to Y, N and AM, 1,307.7 ms, 1.38 times less; audit round 45, auditor C: this said
+// 1.28 s and 1.40 times, the length after round 42; audit round 42: near 1.28 s; audit round 41: near 1.21 s, 1.49 times;
 // audit round 40: the 1,500 ms would have been 1.27 times
 // it; audit round 15, auditor C: the 600 ms, written as about 1.6 times the run, had become 1.13 times it; audit round 31,
 // auditor C: the 800 ms had become 1.17 times it; audit round 35: the 1,000 ms had become 1.22 times it; audit round
@@ -870,6 +871,70 @@ module tb_top_r14;
     end
     integer n_rawclk = 0;
     always @(posedge RAW_CLK) n_rawclk = n_rawclk + 1;
+
+    // ERR and DFLAG set instants (spec 3.2, FLG-02; audit round 45, auditor C: copies that registered the sequencer's
+    // refusal strobes, the SPI's error strobes or DFLAG's set strobes on their way into eeg_regs, one MCLK late, passed
+    // all 16 groups: every check aimed around eeg_regs' own flags or built the expected STATUS from them). Sampled in
+    // the middle of every cycle: each source strobe of the cycle before has set its flag at the edge between (a set
+    // wins over a W1C of its cycle), and a flag rose only after one of its sources or a write's commit (a write's own
+    // refusal flags: ADDR_ERR, STATE_ERR, RANGE_ERR, CMD_ERR). The sources are the blocks' own outputs, upstream of
+    // the wiring into eeg_regs: the sequencer's STATE_ERR and CFG_ERR (a refused command at its tick, an illegal state
+    // value), the SPI's FRAME_ERR, CRC_ERR and read-header ADDR_ERR, the FIFO's dropped store, an overload hit in FILL
+    // or RUN. Every rise after a source is counted (the flag 0 before it); each source must give one.
+    bit         fm_ok = 1'b0;
+    logic [7:0] fm_err_p = 8'h00, fm_src_p = 8'h00;     // ERR, and its sources, of the cycle before
+    logic [1:0] fm_dfl_p = 2'b00, fm_dsrc_p = 2'b00;    // DFLAG ({OVL, OVERRUN}) and its sources
+    logic       fm_we_p = 1'b0;                         // a write committed at the edge between
+    integer     n_fm_rise [0:9];                        // ERR bits 0..7, OVERRUN, OVL: rises after their source
+    integer     n_fm_bad = 0;
+    initial for (int i = 0; i < 10; i++) n_fm_rise[i] = 0;
+    always @(negedge MCLK) begin
+        logic [7:0] e_, s_;
+        logic [1:0] d_, ds_;
+        bit own_;
+        if (dut.rst_n !== 1'b1) fm_ok = 1'b0;
+        else begin
+            e_ = dut.u_regs.err;
+            d_ = dut.u_regs.dflag;
+            if (fm_ok) begin
+                for (int b = 0; b < 10; b++) begin
+                    logic was_, now_, src_;
+                    string nm_;
+                    if (b < 8)       nm_ = $sformatf("ERR bit %0d", b);
+                    else if (b == 8) nm_ = "DFLAG.OVERRUN";
+                    else             nm_ = "DFLAG.OVL";
+                    was_ = (b < 8) ? fm_err_p[b] : fm_dfl_p[b - 8];
+                    now_ = (b < 8) ? e_[b] : d_[b - 8];
+                    src_ = (b < 8) ? fm_src_p[b] : fm_dsrc_p[b - 8];
+                    own_ = fm_we_p && b < 8 && (b == ERR_ADDR_ERR_LSB || b == ERR_STATE_ERR_LSB ||
+                                                 b == ERR_RANGE_ERR_LSB || b == ERR_CMD_ERR_LSB);
+                    if (src_ === 1'b1 && now_ !== 1'b1) begin
+                        n_fm_bad = n_fm_bad + 1;
+                        if (n_fm_bad <= 5) fail($sformatf("flag instants: %s's source in the cycle before, but the flag is still 0 after the edge (spec 3.2: set at the edge that ends the source's cycle)", nm_));
+                    end else if (src_ === 1'b1 && was_ === 1'b0)
+                        n_fm_rise[b] = n_fm_rise[b] + 1;
+                    if (now_ === 1'b1 && was_ === 1'b0 && src_ !== 1'b1 && !own_) begin
+                        n_fm_bad = n_fm_bad + 1;
+                        if (n_fm_bad <= 5) fail($sformatf("flag instants: %s rose without its source in the cycle before (no strobe of the sequencer, the SPI, the FIFO or the overload detector, no write's commit)", nm_));
+                    end
+                end
+            end
+            s_ = 8'h00;
+            s_[ERR_STATE_ERR_LSB] = dut.u_seq.state_err === 1'b1;
+            s_[ERR_CFG_ERR_LSB]   = dut.u_seq.cfg_err === 1'b1;
+            s_[ERR_FRAME_ERR_LSB] = dut.u_spi.frame_err === 1'b1;
+            s_[ERR_CRC_ERR_LSB]   = dut.u_spi.crc_err === 1'b1;
+            s_[ERR_ADDR_ERR_LSB]  = dut.u_spi.addr_err === 1'b1;
+            ds_ = {dut.u_ovl.ovl_hit === 1'b1 && (dut.u_seq.state === ST_FILL || dut.u_seq.state === ST_RUN),
+                   dut.u_fifo.ovr_set === 1'b1};
+            fm_err_p  = e_;
+            fm_dfl_p  = d_;
+            fm_src_p  = s_;
+            fm_dsrc_p = ds_;
+            fm_we_p   = dut.u_regs.we === 1'b1;
+            fm_ok     = 1'b1;
+        end
+    end
 
     // ------------------------------------------------------------------ R: SOFT_RESET committed in this cycle
     // called 1 ns after a rising MCLK edge (before the falling edge where the sequencer trace samples its inputs):
@@ -5427,6 +5492,12 @@ module tb_top_r14;
         $display("RAW: %0d frames of the stream with 8 RAW_CLK rises, %0d MCLK of a timing pair one MCLK later (errors %0d)",
                  n_raw_frames, n_raw_pairs, n_raw_cut + n_raw_pair);
         if (n_raw_frames < 20 || n_raw_pairs < 1000) fail("RAW monitors not exercised");
+        $display("flag instants: rises after their source STATE_ERR %0d, CFG_ERR %0d, FRAME_ERR %0d, CRC_ERR %0d, ADDR_ERR %0d, DFLAG.OVERRUN %0d, DFLAG.OVL %0d (errors %0d)",
+                 n_fm_rise[ERR_STATE_ERR_LSB], n_fm_rise[ERR_CFG_ERR_LSB], n_fm_rise[ERR_FRAME_ERR_LSB],
+                 n_fm_rise[ERR_CRC_ERR_LSB], n_fm_rise[ERR_ADDR_ERR_LSB], n_fm_rise[8], n_fm_rise[9], n_fm_bad);
+        if (n_fm_rise[ERR_STATE_ERR_LSB] < 1 || n_fm_rise[ERR_CFG_ERR_LSB] < 1 || n_fm_rise[ERR_FRAME_ERR_LSB] < 1 ||
+            n_fm_rise[ERR_CRC_ERR_LSB] < 1 || n_fm_rise[ERR_ADDR_ERR_LSB] < 1 || n_fm_rise[8] < 1 || n_fm_rise[9] < 1)
+            fail("the flag-instant monitor not exercised: a source never raised its flag from 0");
 
         $fclose(flog);
         $fclose(fsmp);

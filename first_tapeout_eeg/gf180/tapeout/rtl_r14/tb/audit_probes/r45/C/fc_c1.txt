@@ -1,0 +1,28 @@
+calibration: copy 87.0 ns after the read's start; ack edge 15655.7 ns after the tick; CFG_ERR set 1.00 MCLK after the ack edge
+k -12: copy -3.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k -11: copy -3.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k -10: copy -3.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -9: copy -3.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -8: copy -2.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -7: copy -2.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -6: copy -2.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -5: copy -2.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -4: copy -1.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -3: copy -1.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -2: copy -1.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k  -1: copy -1.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k   0: copy  0.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k   1: copy  0.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k   2: copy  0.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k   3: copy  0.00 MCLK from the ack edge: STATUS 0x91 CMD_PENDING 1 ALERT 0
+k   4: copy  1.00 MCLK from the ack edge: STATUS 0x81 CMD_PENDING 0 ALERT 0
+k   5: copy  1.00 MCLK from the ack edge: STATUS 0x81 CMD_PENDING 0 ALERT 0
+k   6: copy  1.00 MCLK from the ack edge: STATUS 0x81 CMD_PENDING 0 ALERT 0
+k   7: copy  1.00 MCLK from the ack edge: STATUS 0x81 CMD_PENDING 0 ALERT 0
+k   8: copy  2.00 MCLK from the ack edge: STATUS 0xa1 CMD_PENDING 0 ALERT 1
+k   9: copy  2.00 MCLK from the ack edge: STATUS 0xa1 CMD_PENDING 0 ALERT 1
+k  10: copy  2.00 MCLK from the ack edge: STATUS 0xa1 CMD_PENDING 0 ALERT 1
+k  11: copy  2.00 MCLK from the ack edge: STATUS 0xa1 CMD_PENDING 0 ALERT 1
+k  12: copy  3.00 MCLK from the ack edge: STATUS 0xa1 CMD_PENDING 0 ALERT 1
+tb_c45_flagcopy: STATUS copies (CMD_PENDING, ALERT): (1,0) 16, (0,1) 5, (0,0) 4, (1,1) 0; errors 0, SPI errors 0
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a45C_probe/tb_c45_flagcopy.sv:79: $finish called at 2098892411 (1ps)

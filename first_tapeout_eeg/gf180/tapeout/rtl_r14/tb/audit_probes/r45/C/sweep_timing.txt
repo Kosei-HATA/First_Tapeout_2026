@@ -1,0 +1,14 @@
+PASS busy_cycles.0 label +suffix
+PASS busy_cycles.1 label +suffix
+PASS busy_cycles.2 label +suffix
+PASS busy_cycles.8 label +suffix
+PASS busy_cycles.16 label +suffix
+PASS timers.T_ELEC[0] 0.0->0.0
+PASS timers.T_ELEC[0] 0.0->0.0
+PASS timers.T_ELEC[0] 0.0->0.0
+PASS timers.T_ELEC[0] 0.0->0.0
+PASS timers.T_ELEC[1] 0.0->0.0
+PASS timers.T_ELEC[1] 0.0->0.0
+PASS timers.T_ELEC[1] 0.0->0.0
+PASS timers.T_ELEC[1] 0.0->0.0
+# 114 edits, 13 pass

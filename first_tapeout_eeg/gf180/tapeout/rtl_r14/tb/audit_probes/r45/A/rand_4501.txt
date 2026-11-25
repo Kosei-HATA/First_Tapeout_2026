@@ -1,0 +1,4 @@
+tb_a43_rand seed 44967174: 580 episodes, 35967 ticks, 68 stores (0 with OVL, 44 CHANGED; 11 RUN steps), 38 one-step and 23 other setting changes, 22 AFE_RST releases, 2 SOFT_RESETs; 0 errors
+PASS
+tb/audit_probes/r43/A/tb_a43_rand.sv:335: $finish called at 300648823310 (1ps)
+exit=0

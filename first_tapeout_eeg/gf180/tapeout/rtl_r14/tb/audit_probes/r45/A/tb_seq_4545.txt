@@ -1,0 +1,4 @@
+timer sweep: settings 0..255 of all five timers loaded; T_WARM and T_ELEC 255 run to expiry
+tb_seq: 187640 ticks, 75372 output times, 47 resets traced; 0 direct errors
+PASS: tb_seq direct checks (trace in /private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a45/seq_trace_4545.txt)
+tb/tb_seq.sv:301: $finish called at 50518215444 (1ps)

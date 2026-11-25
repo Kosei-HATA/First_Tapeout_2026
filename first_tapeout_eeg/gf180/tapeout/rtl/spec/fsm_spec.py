@@ -1136,6 +1136,9 @@ TIMING = dict(
     decimation=1024, cic_order=3,
     chop1_periods_frames=[1024, 512, 256, 128, 64],    # 1, 2, 4, 8, 16 kHz full periods
     spi_sclk_max=2e6, spi_write_bits=16,
+    # spec 3.1's SCLK and CS_N limits and the data byte's load (MISO, at most 3 MCLK after the host's SCLK fall), from
+    # which check_timing computes the read instants 5.4 step 5 (ii) quotes (audit round 45, auditor B)
+    spi_high_min_mclk=4, spi_low_min_mclk=5, spi_tcss_min_mclk=5, spi_tcss_rec=1e-6, spi_load_mclk=3,
 )
 
 
@@ -1166,6 +1169,11 @@ TIMERS_REQUIRED = {"T_WARM": (5e-3, 5e-3, 255e-3), "T_REC": (0.22e-3, 0.25e-3, 2
                    "T_PRE": (20e-6, 20e-6, 255 * 256 / MCLK), "T_RST": (100e-6, 100e-6, 255 * 256 / MCLK),
                    "T_ELEC": (0.0, 0.0, 255e-3)}
 SPI_REQUIRED = {"spi_sclk_max": 2e6, "spi_write_bits": 16}
+# spec 3.1's SCLK High and Low minimums, CS_N's fall to the first SCLK rise (minimum and recommendation) and the data
+# byte's load at most 3 MCLK after the host's SCLK fall (synchronizer 2-3 MCLK): the numbers WINDOW_QUOTES are computed
+# from (audit round 45, auditor B)
+SPI_TIMING_REQUIRED = {"spi_high_min_mclk": 4, "spi_low_min_mclk": 5, "spi_tcss_min_mclk": 5, "spi_tcss_rec": 1e-6,
+                       "spi_load_mclk": 3}
 
 
 def busy_all(T=None):
@@ -1179,6 +1187,45 @@ def busy_all(T=None):
 # the timing note of 5.0, R-21; audit round 25, auditor C: the hand-written 2.3 x 10^-9 was compared with nothing)
 WEIGHT_QUOTES = (r"旧い速さに残る CIC の重みは、切と入の切り替えで (\S+ × 10\S+?)（", r"（重み (\S+ × 10\S+?)、ANA-04",
                  r"旧い相に残る CIC の重みは (\S+ × 10\S+?)（", r"旧い相に残る重みは、切と入の切り替えで (\S+ × 10\S+?)（")
+
+
+# where 5.4 step 5 (ii) quotes the window method's read instant from the host's CS_N fall, t_css + 7 T_SCLK + t_high +
+# the data byte's load after the 8th SCLK fall, at 1 MHz and at TIMING's SCLK limit (2 MHz): at a 50 % duty, and at the
+# longest High spec 3.1 allows (Low at its minimum), for t_css 0.3 us (the benches' BFM), spec 3.1's recommended 1 us
+# and its minimum. Audit round 45, auditor B: the formula and its examples assumed a 50 % duty without saying so, and
+# a 5-MCLK Low loads the byte 0.347 us (1 MHz) / 0.097 us (2 MHz) later, more than w's 3-MCLK allowance; items 529 and
+# 539 had corrected two of the hand-written numbers before
+WINDOW_QUOTES = {
+    "50 % duty": r"デューティ 50 % では SCLK 1 MHz で t_css ＋ ([\d.]+) µs ＋ 3 MCLK、2 MHz で t_css ＋ ([\d.]+) µs ＋ 3 MCLK："
+                 r"t_css 0\.3 µs で約 ([\d.]+)／([\d.]+) µs、詳細仕様 3\.1 の推奨の 1 µs で ([\d.]+)／([\d.]+) µs、"
+                 r"最小の 5 MCLK で ([\d.]+)／([\d.]+) µs",
+    "longest High": r"最も長い High（Low 5 MCLK）では 1 MHz で ([\d.]+) µs、2 MHz で ([\d.]+) µs 遅い t_css ＋ ([\d.]+)／"
+                    r"([\d.]+) µs ＋ 3 MCLK：t_css 0\.3 µs で約 ([\d.]+)／([\d.]+) µs、推奨の 1 µs で ([\d.]+)／([\d.]+) µs、"
+                    r"最小の 5 MCLK で ([\d.]+)／([\d.]+) µs",
+}
+BENCH_TCSS = 0.3e-6                                  # the benches' BFM (spi_tcss): the first example's t_css
+
+
+def window_instants(T=None):
+    """The numbers each WINDOW_QUOTES pattern reads, as TIMING gives them (audit round 45, auditor B): for the longest
+    High first the delays against a 50 % duty at 1 and 2 MHz (us, 3 decimals); then 7 T_SCLK + t_high at both rates
+    (us, at most 2 decimals), and t_css + 7 T_SCLK + t_high + the load for t_css 0.3 us (1 decimal), the recommended
+    t_css and its minimum (2 decimals)."""
+    T = TIMING if T is None else T
+    tm = 1 / MCLK
+    tcss = (BENCH_TCSS, T["spi_tcss_rec"], T["spi_tcss_min_mclk"] * tm)
+    periods = (1e-6, 1 / T["spi_sclk_max"])
+    us2 = lambda x: f"{x * 1e6:.2f}".rstrip("0").rstrip(".")
+    out = {}
+    for case in ("50 % duty", "longest High"):
+        high = [P / 2 if case == "50 % duty" else P - T["spi_low_min_mclk"] * tm for P in periods]
+        offs = [7 * P + h for P, h in zip(periods, high)]
+        q = [f"{(h - P / 2) * 1e6:.3f}" for P, h in zip(periods, high)] if case == "longest High" else []
+        q += [us2(o) for o in offs]
+        for k_, tc in enumerate(tcss):
+            q += [(f"{x * 1e6:.1f}" if k_ == 0 else us2(x)) for x in (tc + o + T["spi_load_mclk"] * tm for o in offs)]
+        out[case] = tuple(q)
+    return out
 
 
 def check_timing():
@@ -1201,6 +1248,9 @@ def check_timing():
     for tn_, want_ in TIMERS_REQUIRED.items():
         if T["timers"].get(tn_) != want_:
             errs.append(f"{tn_}: TIMING gives the analog minimum, nominal and maximum {T['timers'].get(tn_)} s; SEQ-02, SEQ-03, SEQ-14 and the register's 255 steps give {want_} s")
+    got_t = {k_: T.get(k_) for k_ in SPI_TIMING_REQUIRED}          # audit round 45, auditor B
+    if got_t != SPI_TIMING_REQUIRED:
+        errs.append(f"TIMING's SPI timing differs from spec 3.1's SCLK High and Low minimums (4 and 5 MCLK), CS_N-to-SCLK minimum and recommendation (5 MCLK, 1 us) and MISO's load (at most 3 MCLK after the SCLK fall): {got_t}")
     if any(T[k_] != v_ for k_, v_ in SPI_REQUIRED.items()):
         errs.append(f"TIMING's SPI numbers (SCLK {T['spi_sclk_max']} Hz, a write frame of {T['spi_write_bits']} bits) differ from SPI-01's 2 MHz and the 16-bit write frame")
     if T["dac_load_cycle"] != DAC_LOAD_CYCLE_REQUIRED:
@@ -1261,10 +1311,15 @@ def check_timing():
         doc_ = open(DOC, encoding="utf-8").read()
         quoted = [q for pat in WEIGHT_QUOTES for q in re.findall(pat, doc_)]
     except OSError as ex:
-        quoted = [f"unreadable ({ex})"]
+        doc_, quoted = "", [f"unreadable ({ex})"]
     if len(quoted) != len(WEIGHT_QUOTES) or any(q != want for q in quoted):
         errs.append(f"the requirements quote the CHOP1 rate-change weight as {quoted} (one quote each in ANA-04, "
                     f"the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes {want}")
+    want_w = window_instants(T)                    # audit round 45, auditor B
+    for case_, pat_ in WINDOW_QUOTES.items():
+        got_w = re.findall(pat_, doc_)
+        if len(got_w) != 1 or got_w[0] != want_w[case_]:
+            errs.append(f"the window method's read instants from CS_N's fall, t_css + 7 T_SCLK + t_high + the data byte's load, quoted in 5.4 step 5 (ii) ({case_}): {got_w}; TIMING's SPI numbers give {want_w[case_]}")
     return errs, notes
 
 
@@ -1306,7 +1361,7 @@ CHECKS = [
     "命令の結果（第 9 回で追加）：全ての状態と命令と条件の値で、命令の結果（受け付け、CFG_ERR、STATE_ERR、無視）を、要件（SEQ-05、07、08、15 と IDLE の STOP）から表とは独立に書いた規則と照合する。START は IDLE でのみ、設定が整合すれば受け付けて WARMUP へ。APPLY と APPLY_NR は PRE と PULSE では STATE_ERR、ほかでは整合すれば受け付けて反映する（AFE の動作中の APPLY は PRE へ、APPLY_NR はさらに ±1 段のときのみ）。FLUSH は全ての状態で受け付ける。C の 6,267 通りの掃引で、通る書き換えは等価なもののみ（28 通り：SPI の先頭バイトの条件 2 通り、優先順位の移動 26 通り）。第 10 回の C の掃引（15,282 通り。1 分岐の欄を条件で分ける種類を加えた）では、下の第 10 回の性質を加えたあとに通るのは 262 通りで、全て等価（シーケンサ 27 通りと優先順位 26 通りは全ての tick の組み合わせで同じ、SPI 209 通りは全てのフレームで観測できる動作が同じで、その状態で成り立たない条件の組み合わせのみを変える）",
     "SPI の性質（第 10 回で追加）：全ての CS_N の立ち下がりの分岐は STATUS を写して HDR へ入る（SPI-03）。分岐の条件は、その事象で分かるもののみ（CS_N の立ち下がりでは条件なし、mid は CS_N の立ち上がりのみ）。途中のバイトで終わるフレームでも MISO への読み込みを照合する。第 11 回：ビットとバイトの分岐の条件は、それまでのフレームで決まるもの（rw、smp、addr_ok、wr_ok、crc_en、last）のみ、busy、head、crc_ok は CS_N の立ち上がりのみ（SPI_EVENT_CONDS。未処理の命令はフレームの途中の tick で消える）。自己試験の一覧（CHECK_FUNCS）は全ての検査の関数を含み、それぞれ run_checks から呼ばれる第 13 回：WDONE に至る全ての書き込みは、確定の有無によらず、アドレス、データ（CRC 有効なら CRC）を保持する",
     "自己試験（第 9 回で改めた）：各変異は、書いた目的の違反の文（その固定の文字列）を生むときのみ検出とし、検査の全ての違反の文（関数の構文木から取る）が、それを生む変異の目的の文であることを求める（どの検査も、壊れたり空になったりすれば自己試験が失敗する）。文は互いに区別できる。表が未定義の名前を使うときは、表の検査のみ行う",
-    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある。DAC の選択の更新のサイクル（dac_load_cycle）は 2（ADC のループの遅れ 3/32 と tick の位置）で、DAC の忙しいサイクル（選択の更新と DAC_CLK の縁）はそこから導く。RTL の既定値と試験台の値は構造の検査が照合する（第 33 回）。使用中のフレームサイクル（比較器 0、TH の確定 1 と取り込み 2、CIC の出力 8、CHOP1 の縁 16。札は頭で照合し、二つの TH のサイクルの入れ違いも捕らえる：第 42 回、C）、タイマのアナログの最小・公称・最大（SEQ-02、SEQ-03、SEQ-14 とレジスタの 255 段）、SPI の SCLK の上限 2 MHz と書き込みの 16 ビットは、RTL と要件から書いた表（BUSY_CYCLES_REQUIRED、TIMERS_REQUIRED、SPI_REQUIRED）に等しい（第 41 回、C）。CIC の入力のサイクル（cic_in_cycle）は 3（eeg_clkgen の cic_en、tb_clkgen、詳細仕様 4.1。CIC_IN_CYCLE_REQUIRED。タイミング図のフレームの図はここから描き、`wave.py check` が照合する：第 44 回、C）",
+    "時刻（アナログとの関係）：tick のサイクルが比較器、TH、DAC、CIC の出力、CHOP1 の縁、ブランキングの窓と重ならない。tick はチョッパの相 A の中ほど（半周期の 25〜75 %）。1 ms がチョッパの周期の整数倍。CHOP1 の全ての周期が 1 ms を割り切り、速さの切り替えで旧い相に残る CIC の重みが 1e−6 以下。tick の間に命令が 2 つ届きうる場合に SPI の未処理の規則がある。DAC の選択の更新のサイクル（dac_load_cycle）は 2（ADC のループの遅れ 3/32 と tick の位置）で、DAC の忙しいサイクル（選択の更新と DAC_CLK の縁）はそこから導く。RTL の既定値と試験台の値は構造の検査が照合する（第 33 回）。使用中のフレームサイクル（比較器 0、TH の確定 1 と取り込み 2、CIC の出力 8、CHOP1 の縁 16。札は頭で照合し、二つの TH のサイクルの入れ違いも捕らえる：第 42 回、C）、タイマのアナログの最小・公称・最大（SEQ-02、SEQ-03、SEQ-14 とレジスタの 255 段）、SPI の SCLK の上限 2 MHz と書き込みの 16 ビットは、RTL と要件から書いた表（BUSY_CYCLES_REQUIRED、TIMERS_REQUIRED、SPI_REQUIRED）に等しい（第 41 回、C）。CIC の入力のサイクル（cic_in_cycle）は 3（eeg_clkgen の cic_en、tb_clkgen、詳細仕様 4.1。CIC_IN_CYCLE_REQUIRED。タイミング図のフレームの図はここから描き、`wave.py check` が照合する：第 44 回、C）。SPI の時刻（詳細仕様 3.1 の SCLK の High と Low の最小 4、5 MCLK、CS_N の立ち下がりから最初の SCLK の立ち上がりまでの最小 5 MCLK と推奨 1 µs、MISO の読み込みは SCLK の立ち下がりの 3 MCLK 以内）は SPI_TIMING_REQUIRED に等しく、要件 5.4 の手順 5 (ii) の窓の方法の読み出しの時刻の例（t_css ＋ 7・T_SCLK ＋ t_high ＋ 3 MCLK を、デューティ 50 % と詳細仕様 3.1 の許す最も長い High で、t_css 0.3 µs、推奨の 1 µs、最小の 5 MCLK について）はここから計算した値に等しい（第 45 回、B：例はデューティ 50 % を断らずに置き、手書きの数を 2 回直していた）",
     "生成のブロック（第 32 回）：要件の生成のブロック（GEN_KEYS の 14 個）の全てに BEGIN と END の印が 1 個ずつ順にあり、ほかの鍵の印はなく、要件が読める（gen と fresh は印のないブロックを黙って飛ばし、手で直した文を自らと比べていた。二重のブロックも比べなかった）",
 ]
 
@@ -2182,6 +2237,8 @@ def selftest_runs():
         ("TIME", "SPI の SCLK の上限を 4 MHz に（SPI-01 の 2 MHz と異なる）", lambda: setitem(TIMING, "spi_sclk_max", 4e6)),
         # audit round 44, auditor C: the CIC's input cycle (wave.py's frame diagram draws it from TIMING)
         ("TIME", "CIC の入力をサイクル 4 に（eeg_clkgen の cic_en 3 と異なる）", lambda: setitem(TIMING, "cic_in_cycle", 4)),
+        # audit round 45, auditor B: spec 3.1's SPI timing and the window method's read instants of 5.4 step 5 (ii)
+        ("TIME", "SCLK の Low の最小を 4 MCLK に（詳細仕様 3.1 の 5 MCLK と異なる）", lambda: setitem(TIMING, "spi_low_min_mclk", 4)),
         # audit round 12, auditor C: the state table's columns and the frame enumeration
         ("SEQ", "PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）", swap_timers),
         ("SEQ", "PRE で AFE_RST を 1 に（状態の表）", lambda: setitem(SEQ_STATES, i_pre, SEQ_STATES[i_pre][:3] + (1,) + SEQ_STATES[i_pre][4:])),
@@ -2204,6 +2261,8 @@ def selftest_runs():
         ("TIME", "DAC の選択の更新をサイクル 1 の終わりに（TH の取り込みの前）", lambda: setitem(TIMING, "dac_load_cycle", 1)),
         # audit round 34, auditor C: a quote of the CHOP1 rate-change weight the pattern no longer reads (the count of
         # WEIGHT_QUOTES; every other mutation of the weight changed its value)
+        ("DOC", "窓の方法の時刻の例をデューティ 50 % の値に（最も長い High の推奨の 1 µs で 8.59／4.84 µs）",
+         doc_edit(lambda t: t.replace("推奨の 1 µs で 8.94／4.94 µs", "推奨の 1 µs で 8.59／4.84 µs", 1))),
         ("DOC", "R-21 の重みの引用を読めない形に（2.3e-9）",
          doc_edit(lambda t: t.replace("旧い相に残る重みは、切と入の切り替えで 2.3 × 10⁻⁹（",
                                       "旧い相に残る重みは、切と入の切り替えで 2.3e-9（", 1))),
@@ -2528,6 +2587,8 @@ SELFTEST_EXPECT = {
     'T_REC のアナログの最小を 0.11 ms に（SEQ-03 の 0.22 ms と異なる）': ("s; SEQ-02, SEQ-03, SEQ-14 and the register's 255 steps give",),
     'SPI の SCLK の上限を 4 MHz に（SPI-01 の 2 MHz と異なる）': ("bits) differ from SPI-01's 2 MHz and the 16-bit write frame",),
     'CIC の入力をサイクル 4 に（eeg_clkgen の cic_en 3 と異なる）': ("in TIMING, but eeg_clkgen's cic_en and tb_clkgen fix the CIC's input at frame cycle",),
+    'SCLK の Low の最小を 4 MCLK に（詳細仕様 3.1 の 5 MCLK と異なる）': ("TIMING's SPI timing differs from spec 3.1's SCLK High and Low minimums (4 and 5 MCLK), CS_N-to-SCLK minimum and recommendation (5 MCLK, 1 us) and MISO's load (at most 3 MCLK after the SCLK fall):",),
+    '窓の方法の時刻の例をデューティ 50 % の値に（最も長い High の推奨の 1 µs で 8.59／4.84 µs）': ("the window method's read instants from CS_N's fall, t_css + 7 T_SCLK + t_high + the data byte's load, quoted in 5.4 step 5 (ii) (",),
     'CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）': (
         "; eeg_cic3, the golden CIC and the requirements' sinc^3 (SEQ-06's three marked outputs, ANA-04's weight) fix it at",
         '(one quote each in ANA-04, the CHOP1 row of 4.10, the timing note of 5.0 and R-21), but check_timing computes'),

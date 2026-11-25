@@ -78,16 +78,20 @@ def frame():
 
 
 def chop():
-    # 16 frames, 2 slots (16 MCLK) per frame
+    # 16 frames, 2 slots (16 MCLK) per frame; every lane from fsm_spec.TIMING (audit round 45, auditor C: the CHOP
+    # halves and the CIC output's frame and cycle were hand-written, and check compared no lane of this diagram)
+    T = FS.TIMING
     n = 32
     slot = lambda f, c: 2 * f + c // 16
-    r128, r64 = FS.TIMING["rates"]["128k"], FS.TIMING["rates"]["64k"]
-    tc = FS.TIMING["tick_cycle"]
+    r128, r64 = T["rates"]["128k"], T["rates"]["64k"]
+    tc = T["tick_cycle"]
     t128 = {slot(f, tc) for f in range(16) if f % r128["period_frames"] == r128["tick_frame"]}
     t64 = {slot(f, tc) for f in range(16) if f % r64["period_frames"] == r64["tick_frame"]}
-    out = {slot(15, 8)}
-    c128 = {i for i in range(n) if (i // 2) % 8 < 4}
-    c64 = {i for i in range(n) if (i // 2) % 16 < 8}
+    f_out = (T["decimation"] - 1) % 16                  # the output frame (the ms's last) among the 16 drawn
+    c_out = next(c for c, s in FS.busy_all(T).items() if s.startswith("CIC の出力"))
+    out = {slot(f_out, c_out)}
+    half = lambda r: {i for i in range(n) if (i // 2) % r["period_frames"] < r["period_frames"] // 2}   # phase A
+    c128, c64 = half(r128), half(r64)
     sig = [
         {"name": "フレーム", "wave": "=." * 16, "data": [str(f) for f in range(16)]},
         {},
@@ -102,7 +106,8 @@ def chop():
     return {"signal": sig,
             "head": {"text": f"チョッパの周期と tick（CHOP の 1 は相 A）：相 A の中ほど（128 kHz で縁から {r128['tick_frame'] * 32 + tc} MCLK、"
                              f"64 kHz で {r64['tick_frame'] * 32 + tc} MCLK）に 1 周期 1 回"},
-            "foot": {"text": "CIC の出力は 1,024 フレーム目（フレーム番号 ≡ 15 mod 16）の cycle 8。tick とは同じサイクルにならない"},
+            "foot": {"text": f"CIC の出力は {T['decimation']:,} フレーム目（フレーム番号 ≡ {f_out} mod 16）の cycle {c_out}。"
+                             "tick とは同じサイクルにならない"},
             "config": {"hscale": 1}}
 
 
@@ -113,6 +118,22 @@ def timer_text(name):
         return f"{name} {v} ms"
     us = v * 8 * FS.FRAME / FS.MCLK * 1e6
     return f"{name} {us:.4g} µs" if us < 1000 else f"{name} {us / 1000:.4g} ms"
+
+
+def time_label(state):
+    """The 時間 labels the startup and APPLY diagrams may show in a state (audit round 45, auditor C: they were written
+    here and compared with nothing; FILL's 3 outputs drawn as 2 and the T_PRE and T_RST labels swapped passed every
+    check): a timed state its timer's reset value (timer_text of SEQ_TIMERS_REQUIRED's timer, written apart from the
+    table), FILL the outputs from the CIC's clear to its first valid output (the CIC's order, with or without their
+    duration), ALIGN at most one output interval, RUN one output an interval; None in a state with no duration (RESET,
+    IDLE's '設定')."""
+    T = FS.TIMING
+    ms = T["decimation"] * FS.FRAME / FS.MCLK * 1e3          # the output interval
+    if state in FS.SEQ_TIMERS_REQUIRED:
+        return {timer_text(FS.SEQ_TIMERS_REQUIRED[state])}
+    k = T["cic_order"]
+    return {"FILL": {f"{k} 出力", f"{k} 出力（{k * ms:g} ms）"}, "ALIGN": {f"≤ {ms:g} ms"},
+            "RUN": {f"{ms:g} ms ごと"}}.get(state)
 
 
 def startup():
@@ -168,7 +189,12 @@ MSG = {"path": "is not a transition of the table", "lane": ", but the table give
        "active": ", but the table's apply (the command's tick) gives",
        "cic": ", but the table's cic_clear and first store give (undrawn before the clear)",
        "drdy": ", where no output time stores a sample: DRDY_N pulses only in",
-       "missing": " missing; the check compares these lanes with the table:"}
+       "missing": " missing; the check compares these lanes with the table:",
+       # audit round 45, auditor C: the chopper diagram, the 時間 labels and DRDY_N's pulse in each storing segment
+       "chop": ", but fsm_spec.TIMING's rates, tick and CIC output give",
+       "chop_lanes": " lanes named so in the chopper diagram, where the check needs exactly",
+       "time": ", but the timers' reset values and TIMING give",
+       "drdy_store": ", where every output time stores a sample: DRDY_N pulses in each segment of"}
 
 
 def sample_labels():
@@ -318,8 +344,8 @@ def lane_values(wave, data=None):
 
 # the lanes of the startup and APPLY diagrams the check compares with the table (audit round 44, auditor C: a missing
 # lane must not pass silently)
-LANES_CHECKED = {"startup": ("状態", "命令", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "CIC"),
-                 "apply": ("状態", "命令", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "アクティブの設定")}
+LANES_CHECKED = {"startup": ("状態", "命令", "時間", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "CIC"),
+                 "apply": ("状態", "命令", "時間", "AFE_RST", "READY", "FIFO", "DRDY_N（パルス）", "アクティブの設定")}
 
 
 def store_states():
@@ -339,7 +365,8 @@ def action_lanes(name, lanes, st):
     command's tick) 'flush' empties the FIFO ('空…') and 'apply' applies the settings ('新しい値…'). Where an OUT branch
     with 'cic_clear' enters its state the CIC starts filling (undrawn before); where one with 'store' enters its state
     the CIC is valid ('有効') and the FIFO stores ('格納'). Each of these lanes changes exactly there. DRDY_N pulses (Low)
-    only in a state an output time stores in."""
+    only in a state an output time stores in, and in each segment of such a state (audit round 45, auditor C: a DRDY_N
+    never Low passed)."""
     errs, tag, tbl = [], f"wave_{name}", FS.SEQ["table"]
     branches = lambda s, e: [b for b in (tbl.get((s, e)) if isinstance(tbl.get((s, e)), list) else []) if isinstance(b, dict)]
     seg = [(x, i) for i, x in enumerate(st) if x is not None and (i == 0 or st[i - 1] != x)]
@@ -378,6 +405,10 @@ def action_lanes(name, lanes, st):
     off = [i for i, v in enumerate(dv) if v == "0" and st[i] not in sst]
     if off:
         errs.append(f"{tag}: DRDY_N Low in columns {off} ({', '.join(str(st[i]) for i in off)}){MSG['drdy']} {sorted(sst)}")
+    for k_, (x, i0) in enumerate(seg):                 # a pulse in each storing segment (audit round 45, auditor C)
+        i1 = seg[k_ + 1][1] if k_ + 1 < len(seg) else len(st)
+        if x in sst and not any(dv[i] == "0" for i in range(i0, i1)):
+            errs.append(f"{tag}: DRDY_N not Low in {x} (columns {i0}..{i1 - 1}){MSG['drdy_store']} {sorted(sst)}")
     return errs
 
 
@@ -385,8 +416,11 @@ def check():
     """The startup and APPLY diagrams against fsm_spec's table (audit round 4: the waveforms are written here, only
     their durations came from the timers): the drawn states form a path of the table, and the AFE_RST and READY lanes
     are the drawn state's at every column (SEQ_STATES' AFE_RST; READY = RUN); the FIFO, DRDY_N, active-setting and
-    CIC lanes follow the actions of the branches the path takes (action_lanes; audit round 44, auditor C). The frame
-    diagram's lanes are TIMING's (strobes, the CIC input, CHOP's edge at e0, CHOP_BLANK, the CIC output, CHOP1's edge).
+    CIC lanes follow the actions of the branches the path takes (action_lanes; audit round 44, auditor C); the 時間
+    labels are each state's (time_label; audit round 45, auditor C). The frame diagram's lanes are TIMING's (strobes,
+    the CIC input, CHOP's edge at e0, CHOP_BLANK, the CIC output, CHOP1's edge, and since audit round 45 the tick and
+    the edge its outputs change at), and so are the chopper diagram's (CHOP's phase A at each rate, the ticks, the CIC
+    output).
     The SPI diagram's frames are generated from the SPI table (spi_lanes): each must complete without an error flag,
     load STATUS during its header, and a sample load as many bytes as fsm_spec.SAMPLE_BYTES names (audit round 15)."""
     errs = []
@@ -407,6 +441,18 @@ def check():
             for i, (x, v) in enumerate(zip(st, lane_values(lanes[lane]["wave"]))):
                 if x is not None and v is not None and v != want(x):
                     errs.append(f"wave_{name}: column {i}: {lane} {v} in {x}{MSG['lane']} {want(x)}")
+        # the 時間 labels (audit round 45, auditor C): each column's label is its state's, and a timed state, ALIGN and
+        # FILL carry one
+        tv = lane_values(lanes["時間"]["wave"], lanes["時間"].get("data"))
+        for i, (x, v) in enumerate(zip(st, tv)):
+            ok_ = time_label(x) if x is not None else None
+            if ok_ is not None and v is not None and v not in ok_:
+                errs.append(f"wave_{name}: column {i}: 時間 {v!r} in {x}{MSG['time']} {sorted(ok_)}")
+        segs_ = [(x, i) for i, x in enumerate(st) if x is not None and (i == 0 or st[i - 1] != x)]
+        for k_, (x, i0) in enumerate(segs_):
+            i1 = segs_[k_ + 1][1] if k_ + 1 < len(segs_) else len(st)
+            if (x in FS.SEQ_TIMERS_REQUIRED or x in ("ALIGN", "FILL")) and all(tv[i] is None for i in range(i0, i1)):
+                errs.append(f"wave_{name}: {x} (columns {i0}..{i1 - 1}) drawn without its 時間{MSG['time']} {sorted(time_label(x))}")
         errs += action_lanes(name, lanes, st)
     # the frame diagram's strobes against fsm_spec.TIMING's busy cycles (audit round 35, auditor C)
     busy = FS.busy_all()
@@ -420,7 +466,9 @@ def check():
             "ADC：DAC_LOAD": {c - 1 for c in one("SEL1／SEL2")}, "ADC：CIC の入力": {T["cic_in_cycle"]},
             "ADC：DAC_CLK": set(one("DAC_CLK（DAC1")), "縁のフレーム：CHOP／CHOP_OUT": set(range(32)),
             "縁のフレーム：CHOP_BLANK": {-1} | set(range(T["blank_max"])),
-            "出力のフレーム：CIC の出力": set(one("CIC の出力")), "CHOP1 の縁のフレーム：CHOP1": set(one("CHOP1"))}
+            "出力のフレーム：CIC の出力": set(one("CIC の出力")), "CHOP1 の縁のフレーム：CHOP1": set(one("CHOP1")),
+            # audit round 45, auditor C: the tick (its cycle) and the analog outputs (the edge that ends the tick cycle)
+            "新設：tick": {T["tick_cycle"]}, "新設：AFE_RST・設定の出力": {(T["tick_cycle"] + 1) % 32}}
     seen = {k: 0 for k in want}                       # each expected lane exactly once (audit round 36, auditor C: a
     for ln in frame()["signal"]:                      # renamed or dropped lane was skipped)
         if not isinstance(ln, dict) or "name" not in ln:
@@ -431,16 +479,46 @@ def check():
         seen[key] += 1
         vals = lane_values(ln["wave"])
         hi_ = {(pos[i] if i else -1) for i, v in enumerate(vals) if v == "1"}
-        if key.startswith("CHOP1"):                     # CHOP1: its edge, the first high cycle
+        data_lane = key == "新設：AFE_RST・設定の出力"
+        if data_lane:                                   # a data lane: the cycle its value changes in (round 45)
+            dv_ = lane_values(ln["wave"], ln.get("data"))
+            got = {pos[i] for i in range(1, len(dv_)) if dv_[i] != dv_[i - 1]}
+        elif key.startswith("CHOP1"):                   # CHOP1: its edge, the first high cycle
             got = {min(c for c in hi_ if c >= 0)} if any(c >= 0 for c in hi_) else set()
         else:
             got = hi_
         if got != want[key]:
-            errs.append(f"wave_frame: {key}: high in cycles {sorted(got)} (-1: cycle 31 of the previous frame){MSG['frame']} "
-                        f"{sorted(want[key])} (dac_load_cycle {d}, cic_in_cycle {T['cic_in_cycle']}, blank_max {T['blank_max']})")
+            errs.append(f"wave_frame: {key}: {'changes' if data_lane else 'high'} in cycles {sorted(got)} (-1: cycle 31 of the previous frame){MSG['frame']} "
+                        f"{sorted(want[key])} (dac_load_cycle {d}, cic_in_cycle {T['cic_in_cycle']}, blank_max {T['blank_max']}, tick_cycle {T['tick_cycle']})")
     for key, n_ in seen.items():
         if n_ != 1:
             errs.append(f"wave_frame: {key}: {n_}{MSG['frame_lanes']} 1")
+    # the chopper diagram against TIMING (audit round 45, auditor C: no lane of it was compared; CHOP inverted, a tick
+    # in phase B and the CIC output in frame 14 passed every check): CHOP high in the first half of each rate's period
+    # (phase A, from the frame boundary), the tick in frame tick_frame of each period at the tick cycle's slot, the CIC
+    # output in frame (decimation - 1) mod 16 at its cycle (two 16-MCLK slots a frame); each lane exactly once
+    slot = lambda f, c: 2 * f + c // 16
+    cwant = {}
+    for k_, r_ in T["rates"].items():
+        P_ = r_["period_frames"]
+        cwant[f"{k_[:-1]} kHz：CHOP"] = {i for i in range(32) if (i // 2) % P_ < P_ // 2}
+        cwant[f"{k_[:-1]} kHz：tick"] = {slot(f, T["tick_cycle"]) for f in range(16) if f % P_ == r_["tick_frame"]}
+    cwant["CIC の出力"] = {slot((T["decimation"] - 1) % 16, c) for c in one("CIC の出力")}
+    cseen = {k: 0 for k in cwant}
+    for ln in chop()["signal"]:
+        if not isinstance(ln, dict) or "name" not in ln:
+            continue
+        key = next((k for k in cwant if ln["name"].startswith(k)), None)
+        if key is None:
+            continue
+        cseen[key] += 1
+        got = {i for i, v in enumerate(lane_values(ln["wave"])) if v == "1"}
+        if got != cwant[key]:
+            errs.append(f"wave_chop: {key}: high in slots {sorted(got)} (two 16-MCLK slots a frame){MSG['chop']} "
+                        f"{sorted(cwant[key])} (tick cycle {T['tick_cycle']}, decimation {T['decimation']})")
+    for key, n_ in cseen.items():
+        if n_ != 1:
+            errs.append(f"wave_chop: {key}: {n_}{MSG['chop_lanes']} 1")
     for _t, kind, crc_en, length in SPI_FRAMES:           # the SPI diagram (audit round 15)
         errs += spi_lanes(kind, crc_en, length)[2]
     return errs
@@ -536,7 +614,22 @@ def selftest():
             return lambda: globals().__setitem__(fn_name, orig)
         return apply
 
+    def rename(fn_name, old, new):                 # audit round 45, auditor C: a lane renamed
+        def apply():
+            orig = globals()[fn_name]
+
+            def drawn():
+                d_ = orig()
+                for ln in d_["signal"]:
+                    if isinstance(ln, dict) and ln.get("name") == old:
+                        ln["name"] = new
+                return d_
+            globals()[fn_name] = drawn
+            return lambda: globals().__setitem__(fn_name, orig)
+        return apply
+
     low = lambda n_, cols: levels(n_, set(range(n_)) - set(cols))   # DRDY_N Low (a pulse) at the columns cols
+    tt = timer_text
     muts = [
         ("起動の図：WARMUP から出る遷移を表から除く", table(FS.SEQ, "WARMUP", None), "path"),
         ("起動の図：READY を FILL で立ち上げる", ready_in_fill, "lane"),
@@ -565,6 +658,20 @@ def selftest():
          redraw("frame", "縁のフレーム：CHOP_BLANK", levels(33, {0, 1, 2})), "frame"),
         ("フレームの図：CHOP の縁を e1 に（フレームの境の e0 でなく）",
          redraw("frame", "縁のフレーム：CHOP／CHOP_OUT", levels(33, set(range(2, 33)))), "frame"),
+        # audit round 45, auditor C: the lanes still compared with nothing (each of these passed before)
+        ("フレームの図：tick をサイクル 23 に（TIMING の tick_cycle 24 と合わない）", redraw("frame", "新設：tick", levels(33, {24})), "frame"),
+        ("フレームの図：設定の出力を e24 に（tick の終わりの縁 e25 でなく）",
+         redraw("frame", "新設：AFE_RST・設定の出力", "=" + "." * 24 + "=" + "." * 7, ["旧い値", "新しい値"]), "frame"),
+        ("チョッパの図：CIC の出力をフレーム 14 に", redraw("chop", "CIC の出力", levels(32, {28})), "chop"),
+        ("チョッパの図：128 kHz の CHOP を反転（tick を相 B に描く）",
+         redraw("chop", "128 kHz：CHOP", levels(32, {i for i in range(32) if (i // 2) % 8 >= 4})), "chop"),
+        ("チョッパの図：64 kHz の tick を相 B（フレーム 11）に", redraw("chop", "64 kHz：tick", levels(32, {23})), "chop"),
+        ("チョッパの図：64 kHz の tick の線を改名", rename("chop", "64 kHz：tick", "64 kHz の tick"), "chop_lanes"),
+        ("起動の図：FILL の時間を 2 出力（2 ms）に",
+         redraw("startup", "時間", "x=.=.=.=.=.=...", ["設定", tt("T_WARM"), tt("T_REC"), "≤ 1 ms", "2 出力（2 ms）", "1 ms ごと"]), "time"),
+        ("APPLY の図：T_PRE と T_RST の時間の札を入れ替える",
+         redraw("apply_seq", "時間", "x.=.=.=.=.=.x...", [tt("T_RST"), tt("T_PRE"), tt("T_REC"), "≤ 1 ms", "3 出力"]), "time"),
+        ("起動の図：DRDY_N を Low にしない（RUN の格納にパルスなし）", redraw("startup", "DRDY_N", "1" + "." * 14), "drdy_store"),
     ]
     base, missed, used = check(), 0, set()
     for name, apply, key in muts:

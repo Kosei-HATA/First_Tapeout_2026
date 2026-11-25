@@ -1,0 +1,27 @@
+k -12: W1C committed -3.00 MCLK from the ack edge: ERR 0x20 afterwards
+k -11: W1C committed -3.00 MCLK from the ack edge: ERR 0x20 afterwards
+k -10: W1C committed -3.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -9: W1C committed -2.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -8: W1C committed -2.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -7: W1C committed -2.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -6: W1C committed -2.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -5: W1C committed -1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -4: W1C committed -1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -3: W1C committed -1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -2: W1C committed -1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k  -1: W1C committed  0.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   0: W1C committed  0.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   1: W1C committed  0.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   2: W1C committed  0.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   3: W1C committed  1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   4: W1C committed  1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   5: W1C committed  1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   6: W1C committed  1.00 MCLK from the ack edge: ERR 0x20 afterwards
+k   7: W1C committed  2.00 MCLK from the ack edge: ERR 0x00 afterwards
+k   8: W1C committed  2.00 MCLK from the ack edge: ERR 0x00 afterwards
+k   9: W1C committed  2.00 MCLK from the ack edge: ERR 0x00 afterwards
+k  10: W1C committed  2.00 MCLK from the ack edge: ERR 0x00 afterwards
+k  11: W1C committed  3.00 MCLK from the ack edge: ERR 0x00 afterwards
+k  12: W1C committed  3.00 MCLK from the ack edge: ERR 0x00 afterwards
+tb_c45_flagw1c: CFG_ERR kept by the W1C 19 times, cleared 6 times; errors 0, SPI errors 0
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a45C_probe/tb_c45_flagw1c.sv:57: $finish called at 1652984711 (1ps)

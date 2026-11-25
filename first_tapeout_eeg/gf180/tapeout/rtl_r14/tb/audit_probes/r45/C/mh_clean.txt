@@ -1,0 +1,2 @@
+tb_b44_minhigh: 28 frame pairs, 0 errors, 0 SPI errors
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a45C_probe/tb_c45_minhigh.sv:63: $finish called at 1823286923 (1ps)

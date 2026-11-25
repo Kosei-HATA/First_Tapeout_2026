@@ -1,0 +1,18 @@
+made /private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/a45C_mut/c3_dflag_q
+Wed Nov 25 17:16:09 JST 2026
+build/top_r14.codes: 262144 frames; build/ovl.codes: 5649 overload (2 runs, 39 synthetic bursts and 5 at the edge of the extreme set) + 300000 full-scale frames
+wrote ../build/reg_tests.svh: 1733 checks (1728 with an 8-deep FIFO, 1728 with a 4-deep one; 16 guarded registers)
+wrote ../build/pin_tests.svh: 31 pin cases
+0
+vvp rc=1
+tb_top_r14: 12954 SPI transfers, 160 samples, 579 analog pin changes (223 of AFE_RST), 0 SPI errors, 0 errors, ended at 1307.714 ms
+PASS: tb_top_r14
+579 output times logged: SEQ 0, 1, 2, ... at every one
+160 samples compared with the golden CIC (35 clears at SEQ [57, 67, 76, 89, 129, 184, 191, 204, 263, 267, 277, 281, 285, 292, 297, 303, 312, 329, 338, 348, 358, 374, 381, 409, 443, 487, 496, 525, 542, 544, 545, 551, 557, 566, 575]): 0 mismatches, 0 logged twice
+160 sample status bytes against the flags of their store (228 stores logged): VALID, OVERRUN, ERR = ALERT and the reserved bits: 0 mismatches, 0 SEQ stored twice
+PASS: every sample == golden CIC output of its SEQ, its status flags as at its store
+check_top rc=0
+157256 events replayed through fsm_spec.seq_tick: 0 mismatches; table branches covered 49 of 87 (state, event and guard; audit round 37, auditor C: this said cells); timer modelled (755 loads, 10 restarts)
+PASS: sequencer RTL == specification on every traced event
+check_seq rc=0
+Wed Nov 25 17:42:23 JST 2026

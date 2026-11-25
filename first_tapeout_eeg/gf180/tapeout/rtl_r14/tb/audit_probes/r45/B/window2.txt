@@ -1,0 +1,27 @@
+simulated MCLK period 30.518000 ns; 1 ms = 32768 of them
+class 0 (high 500.0 / low 500.0) chip 0 MCLK early: load -30.5 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 0 (high 500.0 / low 500.0) chip 0 MCLK early: load -22.8 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 0 (high 500.0 / low 500.0) chip 0 MCLK early: load -15.1 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 0 (high 500.0 / low 500.0) chip 1 MCLK early: load -30.5 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 0 (high 500.0 / low 500.0) chip 1 MCLK early: load -22.8 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 0 (high 500.0 / low 500.0) chip 1 MCLK early: load -15.1 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 1 (high 847.1 / low 152.9) chip 0 MCLK early: load +335.7 ns vs the formula; load - reference's predicted fall +244.1 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 1 (high 847.1 / low 152.9) chip 0 MCLK early: load +343.4 ns vs the formula; load - reference's predicted fall +244.1 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 1 (high 847.1 / low 152.9) chip 0 MCLK early: load +320.6 ns vs the formula; load - reference's predicted fall +213.6 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 1 (high 847.1 / low 152.9) chip 1 MCLK early: load +335.7 ns vs the formula; load - reference's predicted fall +244.1 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 1 (high 847.1 / low 152.9) chip 1 MCLK early: load +343.4 ns vs the formula; load - reference's predicted fall +244.1 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 1 (high 847.1 / low 152.9) chip 1 MCLK early: load +320.6 ns vs the formula; load - reference's predicted fall +213.6 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 2 (high 250.0 / low 250.0) chip 0 MCLK early: load -30.5 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 2 (high 250.0 / low 250.0) chip 0 MCLK early: load -22.8 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 2 (high 250.0 / low 250.0) chip 0 MCLK early: load -15.1 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 2 (high 250.0 / low 250.0) chip 1 MCLK early: load -30.5 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 2 (high 250.0 / low 250.0) chip 1 MCLK early: load -22.8 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 2 (high 250.0 / low 250.0) chip 1 MCLK early: load -15.1 ns vs the formula; load - reference's predicted fall -122.1 ns; FIFO_LEVEL 0                                 
+class 3 (high 347.1 / low 152.9) chip 0 MCLK early: load +91.6 ns vs the formula; load - reference's predicted fall +0.0 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 3 (high 347.1 / low 152.9) chip 0 MCLK early: load +68.7 ns vs the formula; load - reference's predicted fall -30.5 ns; FIFO_LEVEL 0                                 
+class 3 (high 347.1 / low 152.9) chip 0 MCLK early: load +76.4 ns vs the formula; load - reference's predicted fall -30.5 ns; FIFO_LEVEL 0                                 
+class 3 (high 347.1 / low 152.9) chip 1 MCLK early: load +91.6 ns vs the formula; load - reference's predicted fall +0.0 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 3 (high 347.1 / low 152.9) chip 1 MCLK early: load +68.7 ns vs the formula; load - reference's predicted fall -30.5 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+class 3 (high 347.1 / low 152.9) chip 1 MCLK early: load +76.4 ns vs the formula; load - reference's predicted fall -30.5 ns; FIFO_LEVEL 1  <- aligned chip judged advanced
+tb_b45_window2: 10 of 24 first reads nonzero for an aligned chip
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b45/probe/tb_b45_window2.sv:84: $finish called at 33039138731 (1ps)

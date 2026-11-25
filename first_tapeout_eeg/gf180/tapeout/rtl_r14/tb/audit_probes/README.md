@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜44 回）
+# 監査の模擬の元（第 24〜45 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -154,3 +154,11 @@
 | 44 | C | `r44/C/r44_c2_variant.txt` | 537（第 45.3 節） | 対応の側の確かめ：段 AG の (3) の APPLY_NR を FILL に移した試験台の写し |
 | 44 | C | `r44/C/fsm_sweep_c44.py`、`fsm_sweep_sig.py`、`sweep_fsm_c44.txt`、`regmap_sweep2.py`、`sweep_regmap_std.txt`、`sweep_regmap_std_mid.txt`、`sweep_regmap_std_tail.txt`、`regmap_fmove_c44.py`、`sweep_regmap_fmove.txt` | 第 45.3 節 | 状態遷移表の新しい類と regmap.REGS の掃き |
 | 44 | C | `r44/C/muts44.py`、`c44_dbg3_genblank.screen.txt`、`m224.screen.txt`、`chk_spi_ovfkind.py`、`baseline_run.txt` | 第 45.3 節 | RTL の写しの定義とその記録、OVF の種類の照合、基準の 16 群の記録 |
+| 45 | A | `r45/A/a45_timing.py`、`tb_a45_rawsoft.sv`、`rand_4501.txt`、`rand_4502_ovl.txt`、`rand64_4564.txt`、`rand64_4565_ovl.txt`、`tb_seq_4545.txt` | 第 46.1 節 | RTL のフレームの時刻からの計算、RAW のストリームとフレームの各サイクルの SOFT_RESET、第 43 回の不変の台の新しい系列（過負荷の続く系列を含む）、tb_seq の新しい系列 |
+| 45 | B | `r45/B/tb_b45_window.sv`、`tb_b45_window2.sv`、`window.txt`、`window2.txt` | 540（第 46.2 節） | 手順 5 (ii) の窓の方法の読み出しの時刻の式（デューティ 50 % の前提）と、High の長い SCLK での揃ったチップの FIFO_LEVEL |
+| 45 | B | `r45/B/tb_r45_window_fix.sv`、`window_fix.txt` | 540（第 46.2 節） | 対応の側の確かめ：新しい式で置いた読み出しを 6 通りの SCLK の形で（揃ったチップは 0、6 MCLK 進んだチップは 1） |
+| 45 | B | `r45/B/crcoff_reads.py`、`smp_hdr_flip.py`、`spi_4545.txt`、`spi_4545_chk.txt`、`spi_f4_4546.txt`、`spi_f4_4546_chk.txt` | 第 46.2 節 | CRC 無効に戻ったチップの CRC の形の読み出し、サンプルの先頭バイトの化け、tb_spi_r14 の新しい系列と FIFO 4 段の写し（台は第 44 回の `r44/B/tb_spi_r14_f4.sv` と同じ） |
+| 45 | C | `r45/C/wave_exp.py`、`wave_exp_after.py`、`wave_exp_after.txt` | 541（第 46.3 節） | タイミング図の 8 通りの書き換え（ed9c0ebe で全て通り、直した版で全て検出） |
+| 45 | C | `r45/C/muts.py`、`mkmut.py`、`runmut.sh`、`runmut_top.sh`、`c1_seqflag_q.txt`、`c2_spiflag_q.txt`、`c3_dflag_q_top.txt` | 542（第 46.3 節） | 旗の立ての信号を 1 段のレジスタに受ける RTL の写し 3 個とその 16 群の記録 |
+| 45 | C | `r45/C/tb_c45_flagcopy.sv`、`tb_c45_flagw1c.sv`、`tb_c45_minhigh.sv`、`fc_clean.txt`、`fc_c1.txt`、`fw_clean.txt`、`fw_c1.txt`、`mh_clean.txt`、`mh_c2.txt` | 542（第 46.3 節） | その効き目：先頭バイトだけの STATUS の読み、CFG_ERR の W1C、誤りのフレームのあとの短い CS_N の High |
+| 45 | C | `r45/C/fsm_sweep45.py`、`sweep_fsm_all.txt`、`sweep_prio.txt`、`regmap_sweep45.py`、`sweep_regmap_K.txt`、`sweep_regmap_M.txt`、`timing_sweep45.py`、`sweep_timing.txt`、`baseline_run.txt` | 第 46.3 節 | 状態遷移表、regmap、TIMING の掃きと、基準の 16 群の記録 |

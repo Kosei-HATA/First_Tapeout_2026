@@ -1,0 +1,5 @@
+PASS RANGE_MAX_M 0<->4
+PASS SAMPLE_STATUS bits of 0<->0
+PASS SAMPLE_STATUS bits of 0<->0
+PASS SAMPLE_STATUS bits of 0<->0
+# 142 edits, 4 pass, 338 s

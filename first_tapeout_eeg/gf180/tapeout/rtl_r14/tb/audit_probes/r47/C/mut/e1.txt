@@ -1,0 +1,18 @@
+edits applied: 1
+3
+PASS  codes  1 s
+PASS  tb_regs  3 s
+PASS  tb_seq  15 s
+PASS  tb_fifo  7 s
+PASS  tb_fifo4  6 s
+PASS  tb_tick  3 s
+PASS  tb_clkgen  2 s
+PASS  tb_chop1  4 s
+PASS  tb_cic_arm  4 s
+PASS  tb_ovl  2 s
+PASS  tb_rnd_sat  1 s
+PASS  outputs  1 s
+FAIL  tb_spi_r14  (build/tb_spi_r14.log)
+DETECTED by tb_spi_r14
+exit 1
+rc 1

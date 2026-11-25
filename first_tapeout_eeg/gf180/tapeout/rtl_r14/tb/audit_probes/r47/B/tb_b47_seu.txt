@@ -1,0 +1,5 @@
+read 0 (upset 2): header 0x8c ALERT 0, SEQ 0008, crc_ok 1, pops 0, FRAME_ERR 0, level 4
+read 1 (upset -1): header 0x8c ALERT 0, SEQ 0008, crc_ok 1, pops 1, FRAME_ERR 0, level 3
+read 2 (upset -1): header 0x8c ALERT 0, SEQ 0009, crc_ok 1, pops 1, FRAME_ERR 0, level 2
+write CPF_TRIM 0x0B with WDONE -> HDR: MISO 8c 00 00, rule (a) 1, shadow 08, ERR 00
+tb_b47_seu.sv:102: $finish called at 12280487458 (1ps)

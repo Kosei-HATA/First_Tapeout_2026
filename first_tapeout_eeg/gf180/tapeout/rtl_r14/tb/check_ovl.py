@@ -25,7 +25,7 @@ def main():
     b = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "build")
     R = regmap.OVL_RULE
     c = np.loadtxt(os.path.join(b, "ovl.codes"), dtype=int)
-    g = np.loadtxt(os.path.join(b, "ovl.out"), dtype=int).reshape(-1, 2)
+    g = np.loadtxt(os.path.join(b, "ovl.out"), dtype=int).reshape(-1, 3)
     v = np.loadtxt(os.path.join(b, "ovl_iv.out"), dtype=int).reshape(-1)
     segs = [ln.split() for ln in open(os.path.join(b, "ovl.split")) if ln.strip()]
     full = [sg for sg in segs if sg[0] == "full"]
@@ -40,12 +40,15 @@ def main():
     n = len(g)
     bad_det = int((g[:, 0] != det[:n]).sum()) if n == len(c) else -1
     bad_hit = int((g[:, 1] != hit[:n]).sum()) if n == len(c) else -1
+    # OVL_NOW during a frame's own input cycle is still the rule of the frames before it (audit round 47, auditor C)
+    det_before = np.concatenate(([0], det[:-1]))
+    bad_in = int((g[:, 2] != det_before[:n]).sum()) if n == len(c) else -1
     ni = n // K
     want_iv = hit[:ni * K].reshape(ni, K).max(axis=1)
     bad_iv = int((v[:ni] != want_iv).sum()) if len(v) == ni else -1
     tails = int(((det[:ni * K].reshape(ni, K).max(axis=1) == 1) & (want_iv == 0)).sum())
-    print(f"{n} of {len(c)} frames: detector {bad_det} mismatches, hits {bad_hit}; {ni} intervals of {K} frames: "
-          f"{bad_iv} mismatches ({int(want_iv.sum())} flagged, {tails} with only the detector's tail, unflagged); "
+    print(f"{n} of {len(c)} frames: detector {bad_det} mismatches, hits {bad_hit}, detector in the input cycle {bad_in}; "
+          f"{ni} intervals of {K} frames: {bad_iv} mismatches ({int(want_iv.sum())} flagged, {tails} with only the detector's tail, unflagged); "
           f"detections: overload runs {int(det[:split].sum())}, full scale {int(det[split:].sum())}")
     run_ok = True
     for _, a, e, name in runs:                         # each extracted run on its own (audit round 7)
@@ -59,7 +62,7 @@ def main():
         print(f"  run {name}: frames {a}..{e - 1}, {len(xi)} extreme codes, sustained overload from frame {onset}, "
               f"first detection at frame {int(di[0]) if len(di) else None} ({len(di)} frames detected)"
               + ("" if good else "  <- FAIL"))
-    ok = (bad_det == 0 and bad_hit == 0 and bad_iv == 0 and run_ok and det[split:].sum() == 0 and tails > 0)
+    ok = (bad_det == 0 and bad_hit == 0 and bad_in == 0 and bad_iv == 0 and run_ok and det[split:].sum() == 0 and tails > 0)
     print("PASS" if ok else "FAIL")
     return 0 if ok else 1
 

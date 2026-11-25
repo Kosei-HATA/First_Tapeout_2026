@@ -75,6 +75,10 @@ SEQ_STATES = [
 # apart from the table (audit round 12, auditor C: PRE's T_PRE and PULSE's T_RST swapped passed every check, as the RTL,
 # the trace checker and the timing diagrams name the timers by hand)
 SEQ_TIMERS_REQUIRED = {"WARMUP": "T_WARM", "RECOVER": "T_REC", "WAIT_E": "T_ELEC", "PRE": "T_PRE", "PULSE": "T_RST"}
+# the STATE codes as SEQ-01 gives them (host-visible: the STATE register 0x04 and READY = RUN; audit round 47, auditor C:
+# only their uniqueness and regmap's ordered list pinned them, and RUN and PRE swapped with their rows passed every check)
+SEQ_CODES_REQUIRED = {"RESET": None, "IDLE": 0, "WARMUP": 1, "RECOVER": 2, "WAIT_E": 3, "ALIGN": 4, "FILL": 5, "RUN": 6,
+                      "PRE": 7, "PULSE": 8}
 SEQ_AFE_RST_REQUIRED = {"RESET": 1, "IDLE": 1, "WARMUP": 1, "PULSE": 1}      # held in reset; released in the others
 # the composite states (SEQ-01: ACTIVE from START to STOP, AFE_ON while the AFE runs; audit round 13, auditor C: WARMUP
 # moved into AFE_ON passed every check, and the diagram drew it inside "the AFE running")
@@ -465,7 +469,9 @@ def check_seq_columns():
     composites' parents and initial substates and the SPI states' frame membership equal the requirements'; SEQ_PRIORITY
     orders every command and the timer, and a lone timer expiry takes its cell's next state (audit round 16)."""
     errs = []
-    for name, _code, _parent, afe_rst, timer, _meaning in SEQ_STATES:
+    for name, code_, _parent, afe_rst, timer, _meaning in SEQ_STATES:
+        if code_ != SEQ_CODES_REQUIRED.get(name, "?"):          # audit round 47, auditor C
+            errs.append(f"SEQ {name}: STATE code {code_}, but SEQ-01 gives {SEQ_CODES_REQUIRED.get(name, '?')} (the host reads it from STATE, 0x04)")
         if timer != SEQ_TIMERS_REQUIRED.get(name):
             errs.append(f"SEQ {name}: timer {timer}, but SEQ-02, 03 and 14 give {SEQ_TIMERS_REQUIRED.get(name)} "
                         f"(the timer column)")
@@ -1329,7 +1335,7 @@ CHECKS = [
     "決定性：各欄の条件は排他的かつ網羅的（条件の全ての組み合わせを列挙して確認）。成り立たない条件の分岐（死んだ分岐）はない（第 12 回）。一つの欄を、同じ動作と行き先の分岐に分けない（何も変えない条件。第 17 回）。条件は、名指す全ての変数に依り（ほかの変数のある値で、その変数が条件の値を変える）、同じ変数を 2 回名指さない（第 18 回）",
     "到達性：全ての状態が初期状態から到達できる",
     "行き止まりがない：シーケンサは全ての状態から、リセットを使わずに IDLE と RUN へ到達できる。SPI は全ての状態から IDLE へ到達できる",
-    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並びで、先頭は STOP（STOP は常に優先する。第 40 回、C）、単独のタイマの満了はその欄の行き先へ（第 16 回）",
+    "タイマ：タイマを持つ状態は、満了で必ずその状態を出る（満了の欄の全ての分岐）。状態の表のタイマと AFE_RST の欄は、要件から書いた一覧（SEQ-02、03、14、ANA-01、SEQ-13）と一致する（第 12 回）。状態の所属（ACTIVE、AFE_ON）も要件から書いた一覧と一致する（第 13 回）。STATE の符号は SEQ-01 の値（SEQ_CODES_REQUIRED。第 47 回、C）。apply は START、APPLY、APPLY_NR の欄にのみ（REG-03）、数え直しの欄は受け付ける全ての分岐で数え直す、tick の位置は SEQ-13 の値（第 14 回）。合成状態の始まりの状態（ACTIVE は WARMUP、AFE_ON は RECOVER、FRAME は HDR）とその所属、SPI の状態のフレームへの所属は要件の値、SEQ_PRIORITY は 5 個の命令と TMR の並びで、先頭は STOP（STOP は常に優先する。第 40 回、C）、単独のタイマの満了はその欄の行き先へ（第 16 回）",
     "語彙：動作と条件の一覧の全ての項目が表で使われ、表で使う全ての項目が一覧にある（古い項目が残らない）",
     "同時の事象（シーケンサ）：1 tick の命令（0〜1 個）とタイマの満了の全ての組み合わせ、および出力の時刻（tick と同じサイクルにはならない）について、全ての条件の値で、優先順位の規則による結果が次の性質を満たす（列挙した組は、列挙とは別に書いた組の集合と一致すること。第 17 回）",
     "  状態を変えるのは、表とは独立に書いた出口の一覧（SEQ_EXITS）にある（状態、その tick で状態を決めた事象）の組のみ：タイマの待ち（WARMUP、RECOVER、WAIT_E、PRE、PULSE）を出るのは、その満了、STOP、AFE の動作中の APPLY（PRE へ）のみ。FLUSH は状態を変えない。START は IDLE からのみ。APPLY_NR で状態が変わるのは RUN の前（ALIGN、FILL から電極の待ちかクリアへ）のみ。RUN を出るのは STOP と APPLY のみ",
@@ -2138,6 +2144,12 @@ def selftest_runs():
     i_pre = next(k for k, x in enumerate(SEQ_STATES) if x[0] == "PRE")
     i_warm = next(k for k, x in enumerate(SEQ_STATES) if x[0] == "WARMUP")
 
+    def swap_codes():                                 # audit round 47, auditor C
+        i, j = [k for k, x in enumerate(SEQ_STATES) if x[0] in ("RUN", "PRE")]
+        a, b = SEQ_STATES[i], SEQ_STATES[j]
+        SEQ_STATES[i], SEQ_STATES[j] = b[:1] + (a[1],) + b[2:], a[:1] + (b[1],) + a[2:]
+        return lambda: (SEQ_STATES.__setitem__(i, a), SEQ_STATES.__setitem__(j, b))
+
     def swap_timers():                                # audit round 12
         i, j = [k for k, x in enumerate(SEQ_STATES) if x[0] in ("PRE", "PULSE")]
         a, b = SEQ_STATES[i], SEQ_STATES[j]
@@ -2242,6 +2254,8 @@ def selftest_runs():
         # audit round 12, auditor C: the state table's columns and the frame enumeration
         ("SEQ", "PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）", swap_timers),
         ("SEQ", "PRE で AFE_RST を 1 に（状態の表）", lambda: setitem(SEQ_STATES, i_pre, SEQ_STATES[i_pre][:3] + (1,) + SEQ_STATES[i_pre][4:])),
+        # audit round 47, auditor C: the STATE codes (RUN and PRE swapped with their rows: the list stays in order)
+        ("SEQ", "RUN と PRE の STATE の符号の入れ替え（行の並びも入れ替える）", swap_codes),
         # audit round 13, auditor C: the composites
         ("SEQ", "WARMUP を AFE_ON の中に（状態の表）", lambda: setitem(SEQ_STATES, i_warm, SEQ_STATES[i_warm][:2] + ("AFE_ON",) + SEQ_STATES[i_warm][3:])),
         ("SEQ", "AFE_ON を ACTIVE の外に", lambda: setitem(SEQ_COMPOSITES, "AFE_ON", (None,) + SEQ_COMPOSITES["AFE_ON"][1:])),
@@ -2541,6 +2555,7 @@ SELFTEST_EXPECT = {
     '標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）': (', but spi_expect gives',),
     'PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）': (', but SEQ-02, 03 and 14 give',),
     'PRE で AFE_RST を 1 に（状態の表）': (', but ANA-01 and SEQ-13 give',),
+    'RUN と PRE の STATE の符号の入れ替え（行の並びも入れ替える）': ("(the host reads it from STATE, 0x04)",),
     'WARMUP を AFE_ON の中に（状態の表）': (', but SEQ-01 places the state in',),
     'WARMUP の STOP で反映する（REG-03）': ('(REG-03: only START, APPLY and APPLY_NR reach the active copies)',),
     'IDLE の出力の時刻で反映する（REG-03）': ('settings applied in a tick without START, APPLY or APPLY_NR (REG-03)',),

@@ -59,7 +59,7 @@ REGS = [
                                  F("CRC", 4, 4, 1, [1], "ro", "CRC を持つ（1）")], "機能"),
     (0x03, "STATUS", "RO", False, [F("MARK1", 7, 7, 1, [1], "ro", "固定の 1（MISO の無応答と区別）"),
                                    F("MARK0", 6, 6, 0, [0], "ro", "固定の 0"),
-                                   F("ALERT", 5, 5, 1, [0, 1], "ro", "マスクしないエラーのフラグがある（リセット直後は RESET_FLAG で 1）"),
+                                   F("ALERT", 5, 5, 1, [0, 1], "ro", "マスクしないエラー（ERR ∧ ALERT_MASK）かデータのフラグ（DFLAG ∧ ALERT_MASK_D）がある（リセット直後は RESET_FLAG で 1）"),
                                    F("CMD_PENDING", 4, 4, 0, [0, 1], "ro", "命令が tick での処理を待っている"),
                                    F("READY", 3, 3, 0, [0, 1], "ro", "状態が RUN"),
                                    F("DATA", 2, 2, 0, [0, 1], "ro", "FIFO が空でない"),
@@ -352,10 +352,11 @@ def guarded_addrs():
     """Writes refused (STATE_ERR) while a command is pending: the registers with fields applied at the tick (the
     shadows) and the timers, so that no write lands between a command and its tick. Read at the command's tick are
     T_WARM (START; an APPLY or APPLY_NR in WARMUP restarts its count, audit round 21), T_PRE (APPLY) and T_ELEC
-    (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); a
-    START's or an APPLY's T_RST, T_REC and T_ELEC, and T_REC and T_ELEC after an APPLY_NR taken in WARMUP or RECOVER
-    (RECOVER's expiry decides its electrode wait; audit round 46, auditor A), are read when each wait starts, after
-    the guard, so the host writes them only in IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
+    (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); the
+    others are read when each wait starts (its state's entry), after the guard: a START's T_REC at WARMUP's expiry and
+    T_ELEC at RECOVER's, an APPLY's T_RST at PRE's, T_REC at PULSE's and T_ELEC at RECOVER's expiry, an APPLY_NR's in
+    RECOVER T_ELEC at RECOVER's expiry (audit rounds 46 and 47, auditor A); a running wait keeps its length. So the
+    host writes them only in IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
     return sorted({a for a, n, acc, lock, fields, _ in REGS
                    if any(f["cls"] == "apply" for f in fields) or n in ("T_WARM", "T_ELEC", "T_REC", "T_PRE", "T_RST")})
 
@@ -1083,7 +1084,10 @@ def check(verbose=True):
         errs.append("sample status: a bit DAT-02 names is missing")
     for a_, n_, acc_, _l, fl_, _ in REGS:
         for f in fl_:
-            if f["cls"] == "ro" and f["name"] in REQUIRED_RO_LEGAL and f["legal"] != REQUIRED_RO_LEGAL[f["name"]]:
+            # compared as sets (audit round 47, auditor C: an ordered compare caught a STATE-code swap only by the
+            # list's order; fsm_spec.SEQ_CODES_REQUIRED pins the codes. None reads as no values, as in the STATE check)
+            if (f["cls"] == "ro" and f["name"] in REQUIRED_RO_LEGAL
+                    and sorted(f["legal"] or []) != sorted(REQUIRED_RO_LEGAL[f["name"]])):
                 errs.append(f"{n_}.{f['name']}: read values {f['legal']} are not the ones the requirements give "
                             f"(REQUIRED_RO_LEGAL)")
     fv = {f["name"]: f["reset"] for *_r, fl_, _d in REGS for f in fl_}

@@ -1,0 +1,381 @@
+checked: SEQ 10 states x 9 events, 2688 tick combinations; SPI 11 states x 4 events, 14208 branches, 14080 frames; FIFO 144 cases
+  timing: 128k: tick 56 MCLK after the phase-A edge (0.438 of the half period), every 7.8125 us
+  timing: 64k: tick 120 MCLK after the phase-A edge (0.469 of the half period), every 15.6250 us
+  timing: 64k: a write frame (8.0 us) is shorter than the tick period: one pending command, a second one gets STATE_ERR (SPI 'busy')
+  timing: CHOP1 rate change between off and on: a frame and a half of the new window's first inputs see the old phase, sinc^3 weight 2.3e-09 (plus a bounded loop-state term)
+no violations
+detected SEQ  同じ tick でタイマの満了を APPLY より優先: 48 violations, the expected one(s) among them
+detected SEQ  同じ tick でタイマの満了を START より優先: 48 violations, the expected one(s) among them
+detected SEQ  STOP を優先順位の最後に（同じ tick の STOP は常に勝つ）: 1 violations, the expected one(s) among them
+detected SEQ  RUN/STOP の欄の欠落: 17 violations, the expected one(s) among them
+detected SEQ  PULSE の満了の条件に何も変えない valid を足す: 1 violations, the expected one(s) among them
+detected SEQ  FILL の OUT の条件に何も変えない cfg_ok を足す（2 個の条件）: 1 violations, the expected one(s) among them
+detected SEQ  PRE の FLUSH を cfg_ok で同じ二つの分岐に分ける: 1 violations, the expected one(s) among them
+detected SEQ  起こり得る FLUSH を IMP にする: 17 violations, the expected one(s) among them
+detected SEQ  FILL/OUT の条件が網羅的でない: 1 violations, the expected one(s) among them
+detected SEQ  RECOVER/TMR の条件の重なり: 1 violations, the expected one(s) among them
+detected SEQ  WARMUP から RUN へ直行: 192 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY_NR に印なし: 5 violations, the expected one(s) among them
+detected SEQ  FILL のまま APPLY_NR: 6 violations, the expected one(s) among them
+detected SEQ  AFE 動作中の APPLY_NR で段数を検査しない: 9 violations, the expected one(s) among them
+detected SEQ  APPLY で整合を検査しない: 25 violations, the expected one(s) among them
+detected SEQ  PRE から PULSE を飛ばす: 161 violations, the expected one(s) among them
+detected SEQ  STOP で IDLE に戻らない: 64 violations, the expected one(s) among them
+detected SEQ  ALIGN で CIC をクリアしない: 33 violations, the expected one(s) among them
+detected SEQ  PULSE のタイマが状態を出ない: 2 violations, the expected one(s) among them
+detected SEQ  WAIT_E の STOP を黙って捨てる: 65 violations, the expected one(s) among them
+detected SEQ  RUN の START を黙って捨てる: 18 violations, the expected one(s) among them
+detected SEQ  RUN へ入れない: 19 violations, the expected one(s) among them
+detected SEQ  WARMUP の STOP で反映する（REG-03）: 17 violations, the expected one(s) among them
+detected SEQ  IDLE の出力の時刻で反映する（REG-03）: 9 violations, the expected one(s) among them
+detected SEQ  WAIT_E の APPLY_NR で T_ELEC ＝ 0 なら数え直さない: 1 violations, the expected one(s) among them
+detected SEQ  FILL の有効な出力で、nr_ok のときのみ RUN へ: 4 violations, the expected one(s) among them
+detected SEQ  FILL から RUN への分岐の条件が成り立たない: 13 violations, the expected one(s) among them
+detected SEQ  START で FIFO を空にしない: 8 violations, the expected one(s) among them
+detected SEQ  RUN から SETTLE へ黙って戻る: 9 violations, the expected one(s) among them
+detected SEQ  WARMUP の APPLY で解除までの待ちを数え直さない: 17 violations, the expected one(s) among them
+detected SEQ  WARMUP の APPLY_NR で解除までの待ちを数え直さない: 17 violations, the expected one(s) among them
+detected SEQ  APPLY（パルスあり）で FIFO を空にしない: 8 violations, the expected one(s) among them
+detected SEQ  WAIT_E の APPLY_NR で電極の待ちを数え直さない: 5 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY_NR で電極を待たない: 2 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY_NR で電極を待たない: 2 violations, the expected one(s) among them
+detected SEQ  PULSE の満了の一部の分岐が状態を出ない: 1 violations, the expected one(s) among them
+detected SEQ  FILL/OUT で有効の条件を使わない（条件 valid が未使用）: 9 violations, the expected one(s) among them
+detected SEQ  ALIGN から WAIT_E へ黙って戻る: 41 violations, the expected one(s) among them
+detected SEQ  WARMUP の FLUSH で AFE_RST を解除（T_WARM より前）: 33 violations, the expected one(s) among them
+detected SEQ  PULSE の FLUSH でパルスを短くする: 33 violations, the expected one(s) among them
+detected SEQ  PRE の FLUSH で T_PRE を飛ばす: 33 violations, the expected one(s) among them
+detected SEQ  RECOVER の FLUSH で復帰待ちを飛ばす: 49 violations, the expected one(s) among them
+detected SEQ  WAIT_E の FLUSH で電極の待ちを飛ばす: 33 violations, the expected one(s) among them
+detected SEQ  RUN の FLUSH で IDLE へ: 17 violations, the expected one(s) among them
+detected SEQ  WARMUP の START で AFE_RST を解除: 33 violations, the expected one(s) among them
+detected SEQ  PULSE の START でパルスを短くする: 33 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY_NR で復帰待ちを飛ばす: 12 violations, the expected one(s) among them
+detected SEQ  SOFT_RESET の間の出力の時刻を数えない（RESET/OUT を IMP）: 148 violations, the expected one(s) among them
+detected SEQ  RECOVER の満了の分岐の入れ違い（T_ELEC ＞ 0 で電極の待ちを飛ばす）: 72 violations, the expected one(s) among them
+detected SEQ  RUN の出力を格納しない: 16 violations, the expected one(s) among them
+detected SEQ  IDLE の FLUSH を無視する: 34 violations, the expected one(s) among them
+detected SEQ  有効でない出力で RUN に入る: 9 violations, the expected one(s) among them
+detected SEQ  WARMUP の APPLY が数え直すだけで反映しない: 18 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY_NR が反映しない: 17 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY_NR が印を付けるだけ: 6 violations, the expected one(s) among them
+detected SEQ  RESET の出力の時刻で格納する: 145 violations, the expected one(s) among them
+detected SEQ  RESET の APPLY を反映する: 1 violations, the expected one(s) among them
+detected SEQ  RUN のリセットで、そのサイクルの出力を格納する: 97 violations, the expected one(s) among them
+detected SEQ  PULSE のリセットで RECOVER へ（AFE_RST を解除）: 192 violations, the expected one(s) among them
+detected SEQ  RUN の拒否した APPLY_NR が CHANGED の印を付ける: 2 violations, the expected one(s) among them
+detected SEQ  WARMUP の拒否した APPLY が T_WARM を数え直す: 2 violations, the expected one(s) among them
+detected SEQ  PULSE の拒否した APPLY が T_RST を数え直す（パルスが伸びる）: 3 violations, the expected one(s) among them
+detected SEQ  WAIT_E の拒否した START が T_ELEC を数え直す: 3 violations, the expected one(s) among them
+detected SEQ  FILL の拒否した APPLY_NR が ALIGN へ: 1 violations, the expected one(s) among them
+detected SEQ  PRE の FLUSH が T_PRE を数え直す: 3 violations, the expected one(s) among them
+detected SEQ  RUN の FLUSH が CHANGED の印を付ける: 2 violations, the expected one(s) among them
+detected SEQ  PULSE の APPLY を無視（IGN）: 34 violations, the expected one(s) among them
+detected SEQ  RUN の START を無視（IGN）: 18 violations, the expected one(s) among them
+detected SEQ  WAIT_E の APPLY_NR を無視（IGN）: 35 violations, the expected one(s) among them
+detected SEQ  RUN の出力の時刻を数えない: 1 violations, the expected one(s) among them
+detected SEQ  RESET の出力の時刻を数えない: 146 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY で格納する: 1 violations, the expected one(s) among them
+detected SEQ  拒否に旗を 2 つ立てる: 2 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY_NR で数え直す: 1 violations, the expected one(s) among them
+detected SEQ  IDLE の出力の時刻を無視（IGN）: 1 violations, the expected one(s) among them
+detected SEQ  IDLE の出力の時刻を捨てない（数えるのみ）: 1 violations, the expected one(s) among them
+detected SEQ  PULSE の出力の時刻を無視（IGN）: 1 violations, the expected one(s) among them
+detected SEQ  リセット中の出力の時刻を捨てない: 145 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ: 3 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY_NR（T_ELEC ＝ 0）で WAIT_E へ: 3 violations, the expected one(s) among them
+detected SEQ  IDLE の STOP を STATE_ERR で拒む: 2 violations, the expected one(s) among them
+detected SEQ  WARMUP のタイマの満了を無視（IGN）: 11 violations, the expected one(s) among them
+detected SEQ  IDLE のタイマの満了の欄を定義する（IDLE にタイマはない）: 1 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY の条件に未定義の名前: 1 violations, the expected one(s) among them
+detected SEQ  RUN の STOP の行き先が未定義の状態: 1 violations, the expected one(s) among them
+detected SEQ  RUN の FLUSH に未定義の動作: 1 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY_NR で数え直す（RUN にタイマはない）: 5 violations, the expected one(s) among them
+detected SEQ  ALIGN の出力の時刻で格納する: 16 violations, the expected one(s) among them
+detected SEQ  FILL の有効でない出力の時刻で CIC をクリアする: 16 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY で PRE を飛ばして PULSE へ: 37 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY が反映せずに PRE へ: 17 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY_NR で FIFO を空にする: 4 violations, the expected one(s) among them
+detected SEQ  PULSE の APPLY を設定によって STATE_ERR で拒む: 2 violations, the expected one(s) among them
+detected SEQ  IDLE の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  IDLE の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok）: 2 violations, the expected one(s) among them
+detected SEQ  WAIT_E の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and t_elec0）: 2 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and not t_elec0）: 2 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and t_elec0）: 2 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY_NR の整合する分岐を CFG_ERR で拒む（cfg_ok and nr_ok and not t_elec0）: 2 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY の整合する分岐を CFG_ERR で拒む（cfg_ok）: 2 violations, the expected one(s) among them
+detected SEQ  IDLE の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  IDLE の APPLY_NR を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  RECOVER の APPLY_NR を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  WAIT_E の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  ALIGN の APPLY_NR を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  FILL の APPLY_NR を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SEQ  RUN の APPLY を STATE_ERR で拒む: 1 violations, the expected one(s) among them
+detected SPI  RCRC の BYTE を rw で分け、取られない分岐を足す: 1 violations, the expected one(s) among them
+detected SPI  HDR の rw and smp を (rw and smp) and smp に: 1 violations, the expected one(s) among them
+detected SPI  CS_N が High の間の SCLK で状態が進む（他のチップのフレーム）: 2 violations, the expected one(s) among them
+detected SPI  読み出しの先頭バイトで書き込みのアドレスを取り込む: 1 violations, the expected one(s) among them
+detected SPI  WDAT の BIT を自分自身への遷移と書く（IGN と同じ意味の別の書き方）: 1 violations, the expected one(s) among them
+detected SPI  CRC を検査せずに確定: 252 violations, the expected one(s) among them
+detected SPI  不完全な書き込みを通知しない: 1792 violations, the expected one(s) among them
+detected SPI  短い読み出しで取り出す: 497 violations, the expected one(s) among them
+detected SPI  先頭バイトの条件が網羅的でない: 5134 violations, the expected one(s) among them
+detected SPI  CS_N の立ち上がりで IDLE に戻らない: 770 violations, the expected one(s) among them
+detected SPI  バイトの途中の CS_N を通知しない: 2848 violations, the expected one(s) among them
+detected SPI  読み出し専用への書き込みを確定: 267 violations, the expected one(s) among them
+detected SPI  未処理の命令を上書き: 86 violations, the expected one(s) among them
+detected SPI  先頭でなくなった写しでも取り出す: 201 violations, the expected one(s) among them
+detected SPI  読み終えたサンプルを取り出さない: 202 violations, the expected one(s) among them
+detected SPI  2 バイト目でサンプルを終える: 1222 violations, the expected one(s) among them
+detected SPI  CRC 無効でも CRC のバイトを待つ（3 バイトの書き込み）: 80 violations, the expected one(s) among them
+detected SPI  未処理の間の書き込みを STATE_ERR なしで捨てる: 13 violations, the expected one(s) among them
+detected SPI  書き込めないアドレスへの書き込みを ADDR_ERR なしで捨てる: 36 violations, the expected one(s) among them
+detected SPI  未定義のアドレスの読み出しで ADDR_ERR を立てない: 2560 violations, the expected one(s) among them
+detected SPI  サンプルの読み出しで FIFO の先頭を写さない: 1281 violations, the expected one(s) among them
+detected SPI  CRC 有効時の短いサンプルを通す: 56 violations, the expected one(s) among them
+detected SPI  CRC のバイトのない読み出しを通す: 32 violations, the expected one(s) among them
+detected SPI  CRC 有効時も連続読み出しを続ける: 4871 violations, the expected one(s) among them
+detected SPI  書き込みの完了のあとの 1 ビットで読み出しの完了へ（確定も旗もなし）: 80 violations, the expected one(s) among them
+detected SPI  連続読み出しで先頭バイトに戻る（アドレスを進めない）: 2048 violations, the expected one(s) among them
+detected SPI  書き込みのデータを保持しない: 93 violations, the expected one(s) among them
+detected SPI  CS_N の立ち上がりで先頭を写す: 1 violations, the expected one(s) among them
+detected SPI  先頭バイトでアドレスを進める: 2561 violations, the expected one(s) among them
+detected SPI  サンプルの先頭バイトでレジスタのデータを載せる: 160 violations, the expected one(s) among them
+detected SPI  CRC 有効の読み出しでもアドレスを進める: 1 violations, the expected one(s) among them
+detected SPI  RREG の CS_N の立ち上がりを起こり得ない（IMP）とする: 2818 violations, the expected one(s) among them
+detected SPI  CS_N の立ち下がりで読み出しのときだけ STATUS を写す: 3 violations, the expected one(s) among them
+detected SPI  CS_N の立ち下がりで STATUS を写さない: 2 violations, the expected one(s) among them
+detected SPI  連続読み出しのバイトで、途中で終わるフレームには 0x00 を載せる（先を知る）: 2020 violations, the expected one(s) among them
+detected SPI  未処理の命令の間は書き込みのデータを保持しない（バイトで busy を見る）: 22 violations, the expected one(s) among them
+detected SPI  WDAT のバイトで FRAME_ERR を立てる: 82 violations, the expected one(s) among them
+detected SPI  書き込めないアドレスへの書き込みで CRC のバイトを保持しない: 24 violations, the expected one(s) among them
+detected SPI  標本の窓への書き込みの先頭バイトも写す（smp のみで分ける）: 1280 violations, the expected one(s) among them
+detected FIFO FLUSH と同じサイクルの格納を捨てる: 72 violations, the expected one(s) among them
+detected FIFO 取り出しより先に格納（満杯で取り出しと同時の格納が OVERRUN）: 4 violations, the expected one(s) among them
+detected FIFO フラッシュで写しの印を消さない（送っていない語を取り出しうる）: 16 violations, the expected one(s) among them
+detected FIFO 空の語の写しにも印を付ける（あとの格納を取り出しうる）: 2 violations, the expected one(s) among them
+detected FIFO 満杯への格納で深さを超える: 18 violations, the expected one(s) among them
+detected FIFO SPI が送っていない先頭も取り出す（写しの印を見ない）: 48 violations, the expected one(s) among them
+detected FIFO 送った語を取り出さない: 48 violations, the expected one(s) among them
+detected SEQ  同じ tick でタイマの満了が拒否の旗を消す: 200 violations, the expected one(s) among them
+detected SEQ  SOFT_RESET の確定のサイクルの出力の時刻で SEQ を数えない: 144 violations, the expected one(s) among them
+detected SEQ  STATE の符号の重複（RECOVER を WARMUP と同じ 1 に）: 1 violations, the expected one(s) among them
+detected TIME tick を CHOP1 の縁のサイクル（16）に: 2 violations, the expected one(s) among them
+detected TIME tick をブランキングの窓の中（サイクル 12）に: 2 violations, the expected one(s) among them
+detected TIME 128 kHz の tick を相 A の終わり近く（フレーム 3）に: 2 violations, the expected one(s) among them
+detected TIME 128 kHz の tick をフレーム 2 に（窓の中、アナログの評価の位相と異なる）: 1 violations, the expected one(s) among them
+detected TIME SPI に未処理の規則（busy）がない: 2 violations, the expected one(s) among them
+detected TIME チョッパの周期が 1 ms を割り切らない（12 フレーム）: 2 violations, the expected one(s) among them
+detected TIME CHOP1 の周期が 1 ms を割り切らない（384 フレーム）: 1 violations, the expected one(s) among them
+detected TIME CIC が 1 次（速さの切り替えで旧い相に残る重みが大きい）: 3 violations, the expected one(s) among them
+detected TIME CIC が 4 次（RTL と要件の sinc³ と異なり、ANA-04 の重みとも合わない）: 2 violations, the expected one(s) among them
+detected TIME CIC の出力をサイクル 9 に（RTL の STORE_CYCLE 8 と異なる）: 1 violations, the expected one(s) among them
+detected TIME CHOP1 の縁を e17 に（eeg_chop1 の e16 と異なる）: 1 violations, the expected one(s) among them
+detected TIME TH の確定と取り込みのサイクルの札を入れ替える（取り込みを e1 に）: 1 violations, the expected one(s) among them
+detected TIME T_REC のアナログの最小を 0.11 ms に（SEQ-03 の 0.22 ms と異なる）: 1 violations, the expected one(s) among them
+detected TIME SPI の SCLK の上限を 4 MHz に（SPI-01 の 2 MHz と異なる）: 3 violations, the expected one(s) among them
+detected TIME CIC の入力をサイクル 4 に（eeg_clkgen の cic_en 3 と異なる）: 1 violations, the expected one(s) among them
+detected TIME SCLK の Low の最小を 4 MCLK に（詳細仕様 3.1 の 5 MCLK と異なる）: 2 violations, the expected one(s) among them
+detected SEQ  PRE と PULSE のタイマの入れ違い（T_PRE と T_RST）: 2 violations, the expected one(s) among them
+detected SEQ  PRE で AFE_RST を 1 に（状態の表）: 1 violations, the expected one(s) among them
+detected SEQ  WARMUP を AFE_ON の中に（状態の表）: 1 violations, the expected one(s) among them
+detected SEQ  AFE_ON を ACTIVE の外に: 1 violations, the expected one(s) among them
+detected SPI  フレームの列挙で、書き込みの先頭バイトを標本の窓に向けない（旧い列挙）: 1 violations, the expected one(s) among them
+detected SPI  サンプルのフレームで SEQ と DATA の順の入れ違い: 1 violations, the expected one(s) among them
+detected SEQ  AFE_ON の始まりを PULSE に: 2 violations, the expected one(s) among them
+detected SPI  フレームの始まりを WDONE に: 1 violations, the expected one(s) among them
+detected SPI  IDLE をフレームの中に: 1 violations, the expected one(s) among them
+detected SEQ  TMR を優先順位から除く: 6 violations, the expected one(s) among them
+detected SEQ  tick の列挙で単独のタイマの満了を除く: 1 violations, the expected one(s) among them
+detected TIME DAC の選択の更新をサイクル 22 の終わりに（DAC_CLK の立ち下がりが tick の出力の縁 e25）: 3 violations, the expected one(s) among them
+detected TIME DAC の選択の更新をサイクル 1 の終わりに（TH の取り込みの前）: 2 violations, the expected one(s) among them
+detected DOC  窓の方法の時刻の例をデューティ 50 % の値に（最も長い High の推奨の 1 µs で 8.59／4.84 µs）: 1 violations, the expected one(s) among them
+detected DOC  R-21 の重みの引用を読めない形に（2.3e-9）: 1 violations, the expected one(s) among them
+detected DOC  要件の生成のブロックの BEGIN の印を除く（seq_priority）: 1 violations, the expected one(s) among them
+detected DOC  要件の生成のブロックを二重に（seq_table）: 1 violations, the expected one(s) among them
+detected DOC  要件の文書がない: 4 violations, the expected one(s) among them
+detected DOC  要件に生成しない鍵の印を加える（seq_priority_old）: 1 violations, the expected one(s) among them
+detected DOC  要件の生成のブロックの END を BEGIN の前に（checks）: 1 violations, the expected one(s) among them
+200 of 200 mutations detected by their expected messages; 138 check messages, 138 expected by a mutation; unmutated specification: 0 violations
+  T_REC minimum: code 29 = 226.5625 us
+  T_REC default: code 32 = 250.0000 us
+  T_PRE minimum: code 3 = 23.4375 us
+  T_PRE default: code 3 = 23.4375 us
+  T_RST minimum: code 13 = 101.5625 us
+  T_RST default: code 13 = 101.5625 us
+  T_WARM minimum: code 5 = 5000.0000 us
+  T_WARM default: code 5 = 5000.0000 us
+  T_ELEC minimum: code 0 = 0.0000 us
+  T_ELEC default: code 0 = 0.0000 us
+  overload rule on s4: 4106240 frames, codes 7..27, 0 detections
+  overload rule on s20: 20490240 frames, codes 3..25, 0 detections
+  STATUS: 62 slip pairs read as another legal value with a valid CRC (the host decides READY, DATA, AFE_RST and CMD_PENDING otherwise); T_WARM: 17 (read twice)
+no violations
+detected アドレスの重なり: 3 violations, the expected one(s) among them
+detected フィールドの重なり: 1 violations, the expected one(s) among them
+detected 合法でない既定値: 4 violations, the expected one(s) among them
+detected アナログに効く設定が即時: 6 violations, the expected one(s) among them
+detected アナログの端子の出どころの欠落: 1 violations, the expected one(s) among them
+detected T_RST の最小値が 100 µs 未満: 3 violations, the expected one(s) among them
+detected 既定値が推奨値でない（AFE_IBIAS 2）: 2 violations, the expected one(s) among them
+detected 命令コードが 1 ビット違い: 2 violations, the expected one(s) among them
+detected STATUS の固定ビットがない: 3 violations, the expected one(s) among them
+detected STATE のコードの欠落: 2 violations, the expected one(s) among them
+detected 範囲 1 の上限の誤り: 2 violations, the expected one(s) among them
+detected nr_ok が範囲の変更を許す: 3 violations, the expected one(s) among them
+detected nr_ok が 2 段を許す: 4 violations, the expected one(s) among them
+detected 過負荷の規則が常に成立: 5 violations, the expected one(s) among them
+detected 写しのアドレスとの重なり: 3 violations, the expected one(s) among them
+detected 過負荷の閾値が 2: 3 violations, the expected one(s) among them
+detected 過負荷の窓が 8 で閾値が 8: 3 violations, the expected one(s) among them
+detected 範囲 0 の M の上限が 0: 1 violations, the expected one(s) among them
+detected CHOP_BLANK の幅に 1 を足さない: 1 violations, the expected one(s) among them
+detected TEST_CFG[4] を CHOP_STOP から取る: 2 violations, the expected one(s) among them
+detected フィールドがバイトの外: 1 violations, the expected one(s) among them
+detected 既定値がフィールドの幅を超える: 5 violations, the expected one(s) among them
+detected 合法な値がフィールドの幅を超える: 3 violations, the expected one(s) among them
+detected シーケンサの駆動する AFE_RST をレジスタも駆動: 2 violations, the expected one(s) among them
+detected どちらの一覧にもない端子: 2 violations, the expected one(s) among them
+detected T_WARM の最大が TIMING と合わない: 2 violations, the expected one(s) among them
+detected ガードするアドレスの欠落: 2 violations, the expected one(s) among them
+detected 範囲 4 の OFEN が G3 を入れない: 2 violations, the expected one(s) among them
+detected PIN_OF_CONTROL の欠落: 1 violations, the expected one(s) among them
+detected pins_from_active の端子の欠落: 3 violations, the expected one(s) among them
+detected BLANK_WITH_DAC がフレームの最長のブランキングでない: 2 violations, the expected one(s) among them
+detected 要件定義が読めない: 2 violations, the expected one(s) among them
+detected 詳細仕様に過負荷の規則の文がない: 3 violations, the expected one(s) among them
+detected nr_ok の模型にない反映の設定: 3 violations, the expected one(s) among them
+detected 全振幅の符号の列がない: 2 violations, the expected one(s) among them
+detected 全振幅の符号の列が 11/19 のものでない: 2 violations, the expected one(s) among them
+detected cfg_ok が範囲の上限 ＋ 1 を受け付ける: 4 violations, the expected one(s) among them
+detected CHOP_STOP の既定値が 1（電源投入からチョッパが止まる）: 1 violations, the expected one(s) among them
+detected ADC_ZERO の既定値が 1（電源投入から ADC の入力が短絡）: 1 violations, the expected one(s) among them
+detected 既定値の定めのない書き込み可能なフィールド: 3 violations, the expected one(s) among them
+detected RW のレジスタに読み出し専用の区分: 2 violations, the expected one(s) among them
+detected RANGE の合法な値に 5: 3 violations, the expected one(s) among them
+detected SIGN の合法な値が 0 のみ: 3 violations, the expected one(s) among them
+detected M_H の合法な値が 0〜2（M ≤ 767）: 2 violations, the expected one(s) among them
+detected ODR_L が ODR_H の次のアドレスでない: 1 violations, the expected one(s) among them
+detected 0x56 を定義する（手順 9 のモードの判定が未定義として読む）: 3 violations, the expected one(s) among them
+detected BLANK_LEN の 0 を合法とする: 4 violations, the expected one(s) among them
+detected T_ELEC の最大が TIMING と合わない: 2 violations, the expected one(s) among them
+detected ERR から CMD_ERR を除く: 1 violations, the expected one(s) among them
+detected 要件にない読み出し専用のフィールド: 1 violations, the expected one(s) among them
+detected STATUS を 0x0D に移す（手順が 0x03 として読む）: 2 violations, the expected one(s) among them
+detected VERSION をデータの窓の区画へ: 4 violations, the expected one(s) among them
+detected ALERT_MASK を施錠する: 3 violations, the expected one(s) among them
+detected T_WARM を書き込み専用に: 5 violations, the expected one(s) among them
+detected 試験の鍵を命令の区分に: 1 violations, the expected one(s) among them
+detected CRC_EN を bit 2 に（手順 9 は bit 0 を読む）: 1 violations, the expected one(s) among them
+detected 読み出し専用の ID を DBG_SEL の端子の出どころに: 2 violations, the expected one(s) among them
+detected STATUS.ALERT の既定値を 0: 1 violations, the expected one(s) among them
+detected CHOP1_RATE の合法な値を 0〜4 に（16 kHz を書けない）: 1 violations, the expected one(s) among them
+detected T_REC の合法な値に穴（100）: 1 violations, the expected one(s) among them
+detected DFLAG.OVL を bit 2 に（ALERT_MASK_D が覆わない）: 2 violations, the expected one(s) among them
+detected BLANK を 0x38 に（写し 0x48 が設定の区画の外）: 7 violations, the expected one(s) among them
+detected SOFT_RESET のコードを 0xA6 に（2 ビットの差は保つ）: 1 violations, the expected one(s) among them
+detected 試験の鍵を 0x3D に: 1 violations, the expected one(s) among them
+detected ERR の FRAME_ERR と CRC_ERR のビットの入れ違い: 2 violations, the expected one(s) among them
+detected サンプルの状態の VALID と OVERRUN の入れ違い: 3 violations, the expected one(s) among them
+detected サンプルの状態から CHANGED の名を除く: 2 violations, the expected one(s) among them
+detected FIFO_LEVEL の値を 0〜7 に: 1 violations, the expected one(s) among them
+detected ODR_L を 0xE9 に（1001 SPS）: 1 violations, the expected one(s) among them
+detected QBITS を 4 に: 1 violations, the expected one(s) among them
+detected SIGN と RANGE の端子の入れ違い: 3 violations, the expected one(s) among them
+detected ERR.CMD_ERR を TEST_CFG[7:6] の出どころに: 2 violations, the expected one(s) among them
+detected RAW_EN の端子の欄を ALERT_MASK に移す: 1 violations, the expected one(s) among them
+detected VERSION の値に 17 も: 2 violations, the expected one(s) among them
+detected STATUS の READY と DATA の入れ違い: 2 violations, the expected one(s) among them
+detected COMMAND の CMD を 7 ビットに（0xA5 が入らない）: 1 violations, the expected one(s) among them
+detected TEST_KEY の KEY を 7 ビットに: 1 violations, the expected one(s) among them
+detected ID の読み値を定めない（legal None）: 2 violations, the expected one(s) among them
+detected SAMPLE の既定値を 0x5A に: 1 violations, the expected one(s) among them
+detected TEST_MUX を 0x68 に（窓の 1 ビットの隣が変わる）: 5 violations, the expected one(s) among them
+detected サンプルの窓を 0x4F に（SPI の表の文が古い先頭バイトのまま）: 7 violations, the expected one(s) among them
+detected CHOP1_RATE の合法な値に 6 を加える（端子の規則にない値）: 2 violations, the expected one(s) among them
+detected T_PRE の合法な値を None に: 1 violations, the expected one(s) among them
+detected STATUS を判断に使う一覧に加える（滑りで別の値が CRC を通る）: 1 violations, the expected one(s) among them
+detected T_WARM を判断に使う一覧に加える（先頭バイトの滑りで窓の読み出しとなる）: 1 violations, the expected one(s) among them
+detected T_WARM の滑りを AFE_RST ＝ 0 のみの 9 組で許す（第 19 回の模型の数）: 1 violations, the expected one(s) among them
+detected 滑りの模型でチップの 4 番目のバイトを常に 0 に（窓の SEQ の下位を落とす）: 1 violations, the expected one(s) among them
+detected OFF_M_L の写しの滑りの 1 組を許さない: 1 violations, the expected one(s) among them
+detected BLANK の写しを滑りの一覧から除く: 1 violations, the expected one(s) among them
+detected STATUS の写し（ない）を滑りの一覧に加える: 1 violations, the expected one(s) among them
+detected FIFO_LEVEL を 0x0D に移す（手順が 0x05 として読む）: 1 violations, the expected one(s) among them
+detected FIXED_ADDR から TEST_MUX を除く（要件が 0x60 と名指す）: 2 violations, the expected one(s) among them
+detected DEBUG を写しの半分の 0x72 に: 3 violations, the expected one(s) among them
+detected STATUS の滑りの組の数を 61 と記す: 2 violations, the expected one(s) among them
+detected T_REC を滑りの記録から除く（手順 3 の読み戻し）: 1 violations, the expected one(s) among them
+detected CHOP_STOP を CHOP_CFG に移す（試験の欄を施錠しないレジスタへ）: 1 violations, the expected one(s) among them
+detected SIGN を TEST_CTRL に移す（運転の欄を施錠するレジスタへ）: 1 violations, the expected one(s) among them
+detected モードの判定の滑りの組を記録から除く（T_RST 0x22）: 1 violations, the expected one(s) among them
+detected T_RST の既定値を 0x22 に（モードの判定が 1 回の故障で CRC 無効に読める値）: 2 violations, the expected one(s) among them
+detected FIXED_ADDR に REG-01 の一覧にない ODR_H を加える: 1 violations, the expected one(s) among them
+detected T_RST の既定値を 0x25 に（CRC 無効のチップがモードの判定で CRC 有効と読める値）: 2 violations, the expected one(s) among them
+detected CRC 無効のチップの到達しうる値に T_RST 0x25 を加える: 3 violations, the expected one(s) among them
+detected CRC 無効のチップの到達しうる値から T_WARM を除く: 1 violations, the expected one(s) among them
+detected IF_CFG の CRC_EN の lsb を 1 に（msb 0：バイトの外の形）: 2 violations, the expected one(s) among them
+detected VERSION の合法な値を 256 通りに（手順 3 の判断の読みに滑りの組ができる）: 2 violations, the expected one(s) among them
+detected VERSION の既定値を 0x11 に（手順 3 の引く 0x10 と合わない）: 3 violations, the expected one(s) among them
+detected 規則 (b) が ID と VERSION を 0xE7 と 0x11 と引く: 1 violations, the expected one(s) among them
+detected VERSION の既定値を 58 に（空の窓で 1 回の滑りが 59 を CRC の合う値として読ませる）: 4 violations, the expected one(s) among them
+detected 要件の規則 (c) が T_WARM の到達しうる値を 0xA5 と記す: 1 violations, the expected one(s) among them
+detected 要件の T_WARM の滑りの数を読めない形に（17 個の組）: 1 violations, the expected one(s) among them
+detected 要件の FLG-04 の両端の符号を 0 と 30 に: 1 violations, the expected one(s) among them
+detected cfg_ok が範囲 2 の上限（M 255）を拒む: 1 violations, the expected one(s) among them
+detected BLANK を 0x29 に移す（詳細仕様 2.3 の守る範囲の外）: 3 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックの END の印を除く（reg_fields）: 1 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックを二重に（commands）: 1 violations, the expected one(s) among them
+detected 詳細仕様がない: 2 violations, the expected one(s) among them
+detected 詳細仕様に生成しない鍵の印を加える（reg_old）: 1 violations, the expected one(s) among them
+detected 詳細仕様の生成のブロックの END を BEGIN の前に（commands）: 1 violations, the expected one(s) among them
+detected BLANK_LEN の lsb を −1 に（バイトの外）: 1 violations, the expected one(s) among them
+detected T_WARM の lsb を −1 に（滑りの模型の読むレジスタ）: 4 violations, the expected one(s) among them
+detected OFF_M_H と OFF_M_L の端子の欄の OFM の範囲を入れ替える: 2 violations, the expected one(s) among them
+detected 要件の T_WARM の滑りの数を 9 組に（第 19 回の数）: 1 violations, the expected one(s) among them
+detected STATE の合法な値を None に: 3 violations, the expected one(s) among them
+detected サンプルの状態の予約のビット 2 を 7 に: 1 violations, the expected one(s) among them
+124 of 124 mutations detected by their expected messages; 97 messages, 97 expected by a mutation; unmutated map: 0 violations
+detected 起動の図：WARMUP から出る遷移を表から除く: 1 violations
+detected 起動の図：READY を FILL で立ち上げる: 2 violations
+detected フレームの図：DAC_CLK をサイクル 5 に（TIMING の dac_load_cycle と合わない）: 1 violations
+detected フレームの図：TH_CAPTURE の線を改名してサイクル 4 に: 1 violations
+detected APPLY の図：PRE で AFE_RST を 1 に（状態の表）: 2 violations
+detected SPI の図：CRC 付きの読み出しの CRC のあとを長すぎるフレームに: 1 violations
+detected SPI の図：先頭バイトの間に STATUS を載せない: 5 violations
+detected SPI の図：サンプルの最後のバイトでも次のバイトを載せる: 1 violations
+detected APPLY の図：FIFO を RECOVER の入口で空に（APPLY の tick でなく）: 1 violations
+detected APPLY の図：設定を RECOVER の入口で反映（PRE の入口の tick でなく）: 1 violations
+detected APPLY の図：DRDY_N を PRE と PULSE でもパルスに: 1 violations
+detected 起動の図：FIFO を RUN の入口で空に（START の tick でなく）: 1 violations
+detected 起動の図：DRDY_N を FILL からパルスに: 1 violations
+detected 起動の図：CIC を ALIGN から有効に: 1 violations
+detected 起動の図：FIFO の線を除く: 1 violations
+detected フレームの図：CIC の入力をサイクル 4 に（TIMING の cic_in_cycle 3 と合わない）: 1 violations
+detected フレームの図：CHOP_BLANK を 3 サイクルに（見出しは TIMING の blank_max 15）: 1 violations
+detected フレームの図：CHOP の縁を e1 に（フレームの境の e0 でなく）: 1 violations
+detected フレームの図：tick をサイクル 23 に（TIMING の tick_cycle 24 と合わない）: 1 violations
+detected フレームの図：設定の出力を e24 に（tick の終わりの縁 e25 でなく）: 1 violations
+detected チョッパの図：CIC の出力をフレーム 14 に: 1 violations
+detected チョッパの図：128 kHz の CHOP を反転（tick を相 B に描く）: 1 violations
+detected チョッパの図：64 kHz の tick を相 B（フレーム 11）に: 1 violations
+detected チョッパの図：64 kHz の tick の線を改名: 1 violations
+detected 起動の図：FILL の時間を 2 出力（2 ms）に: 2 violations
+detected APPLY の図：T_PRE と T_RST の時間の札を入れ替える: 4 violations
+detected 起動の図：DRDY_N を Low にしない（RUN の格納にパルスなし）: 1 violations
+detected 起動の図：RESET_N を解除しない: 14 violations
+detected 起動の図：RESET_N を START のあと（列 4）に解除: 3 violations
+detected 起動の図：RESET_N を RUN で再び下げる: 4 violations
+30 of 30 mutations detected by their expected messages; 17 check messages; unmutated sources: 0 violations
+generated files up to date
+generated files up to date
+timing diagrams up to date
+PASS: spec checks, self-tests, generated files up to date

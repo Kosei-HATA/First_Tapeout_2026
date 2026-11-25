@@ -72,9 +72,13 @@ comp() {   # out.vvp, iverilog arguments...
     [ $rc -eq 0 ] && [ -f "$out" ]
 }
 killtree() { local c; for c in $(pgrep -P "$1"); do killtree "$c"; done; kill -TERM "$1" 2>/dev/null; }
-run() {   # name, time limit [s], command
-    local name=$1 lim=$2; shift 2
-    local t0=$SECONDS rc
+# The benches' closing lines each group needs, as "count:text" separated by "|" ("-": none). Audit round 47, auditor C:
+# vvp ends with exit status 0 even on SIGTERM, and the checkers print PASS for a partial log, so a 4-deep run stopped
+# at event 83,446 of 153,108 passed its group; a stray $finish would too. The mutation runner's bench_ended is the same
+# rule.
+run() {   # name, time limit [s], the closing lines, command
+    local name=$1 lim=$2 ends=$3; shift 3
+    local t0=$SECONDS rc ok=1 e n s
     "$@" > "build/$name.log" 2>&1 &
     local pid=$!
     while kill -0 "$pid" 2>/dev/null && (( SECONDS - t0 < lim )); do sleep 1; done
@@ -86,7 +90,16 @@ run() {   # name, time limit [s], command
         return
     fi
     wait "$pid"; rc=$?
-    if [ $rc -eq 0 ] && grep -q "PASS" "build/$name.log" && ! grep -qE "FAIL|ERROR" "build/$name.log"; then
+    if [ "$ends" != "-" ]; then
+        while IFS= read -r e; do
+            n=${e%%:*}; s=${e#*:}
+            if [ "$(grep -cF -- "$s" "build/$name.log")" -lt "$n" ]; then
+                ok=0
+                echo "FAIL: $name ended without its closing line \"$s\" ($n times): a bench stopped early" >> "build/$name.log"
+            fi
+        done < <(printf '%s\n' "$ends" | tr '|' '\n')
+    fi
+    if [ $rc -eq 0 ] && [ $ok -eq 1 ] && grep -q "PASS" "build/$name.log" && ! grep -qE "FAIL|ERROR" "build/$name.log"; then
         RES+=("PASS  $name  $((SECONDS - t0)) s")
     else
         RES+=("FAIL  $name  (build/$name.log)")
@@ -107,10 +120,10 @@ clkgen_t() { comp build/tb_clkgen.vvp eeg_clkgen.sv ../rtl/tb/tb_clkgen.sv && vv
 # CHOP1 with the r14 clock generator: rates, e16 edges, phase lengths, the rate taken at the 1 ms boundary (ANA-04)
 chop1_t() { comp build/tb_chop1.vvp eeg_clkgen.sv ../rtl/eeg_chop1.sv ../rtl/tb/tb_chop1.sv && vvp -n build/tb_chop1.vvp; }
 cic_t() { $PY tb/check_cic_arm.py gen 7 13 && comp build/tb_cic_arm.vvp eeg_cic3.sv ../rtl/eeg_rnd_sat.sv tb/tb_cic_arm.sv &&
-          for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k > /dev/null && $PY tb/check_cic_arm.py check $k || return 1; done &&
-          for k2 in 6 7; do vvp -n build/tb_cic_arm.vvp +k=5 +k2=$k2 > /dev/null && $PY tb/check_cic_arm.py check 5 $k2 || return 1; done; }
+          for k in 3 5 7 9; do vvp -n build/tb_cic_arm.vvp +k=$k && $PY tb/check_cic_arm.py check $k || return 1; done &&
+          for k2 in 6 7; do vvp -n build/tb_cic_arm.vvp +k=5 +k2=$k2 && $PY tb/check_cic_arm.py check 5 $k2 || return 1; done; }
 # the overload rule on every frame of the extracted overload runs (it must fire) and of the full scale (never)
-ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp > /dev/null && $PY tb/check_ovl.py; }
+ovl_t() { comp build/tb_ovl.vvp eeg_ovl.sv tb/tb_ovl.sv && vvp -n build/tb_ovl.vvp && $PY tb/check_ovl.py; }
 regs_t() { $PY tb/gen_ok_vectors.py && comp build/tb_regs.vvp eeg_regs.sv tb/tb_regs.sv && vvp -n build/tb_regs.vvp; }
 rnd_t() { $PY -c "import sys; sys.path.insert(0, '../rtl/model'); import gen_vectors as G; G.gen_rnd_sat('build', sys.stdout)" &&
           comp build/tb_rnd_sat.vvp ../rtl/eeg_rnd_sat.sv ../rtl/tb/tb_rnd_sat.sv && vvp -n build/tb_rnd_sat.vvp +vec=build/rnd_sat.vec; }
@@ -127,22 +140,22 @@ spi_t() { comp build/tb_spi_r14.vvp $RTL tb/tb_spi_r14.sv &&
 top4_t() { comp build/tb_top_r14_f4.vvp -DFIFO4 $RTL tb/tb_top_r14.sv &&
            vvp -n build/tb_top_r14_f4.vvp && $PY tb/check_top_r14.py &&
            $PY tb/check_seq_trace.py build/top_seq_trace.txt --no-cover; }
-run spec 1800 spec
-run codes 600 codes
-run tb_seq 1200 seq_t
-run tb_tick 600 tick_t
-run tb_clkgen 600 clkgen_t
-run tb_chop1 600 chop1_t
-run tb_cic_arm 600 cic_t
-run tb_ovl 600 ovl_t
-run tb_rnd_sat 600 rnd_t
-run tb_regs 600 regs_t
-run tb_fifo 900 fifo_t
-run tb_fifo4 900 fifo4_t
-run tb_top_r14 10800 top_t
-run tb_spi_r14 3600 spi_t
-run tb_top_r14_fifo4 10800 top4_t
-run outputs 1200 outputs_t
+run spec 1800 "1:PASS: spec checks" spec
+run codes 600 "1:PASS: code streams" codes
+run tb_seq 1200 "1:PASS: tb_seq direct checks|1:tb_seq_exh: " seq_t
+run tb_tick 600 "1:PASS: tick in the middle of phase A" tick_t
+run tb_clkgen 600 "1:PASS: tb_clkgen (" clkgen_t
+run tb_chop1 600 "1:PASS: chop1 rates" chop1_t
+run tb_cic_arm 600 "6:tb_cic_arm: " cic_t
+run tb_ovl 600 "1:tb_ovl: " ovl_t
+run tb_rnd_sat 600 "1:PASS: tb_rnd_sat (" rnd_t
+run tb_regs 600 "1:PASS: tb_regs (" regs_t
+run tb_fifo 900 "1:PASS: tb_fifo stimulus" fifo_t
+run tb_fifo4 900 "1:PASS: tb_fifo stimulus" fifo4_t
+run tb_top_r14 10800 "1:PASS: tb_top_r14" top_t
+run tb_spi_r14 3600 "1: SPI timing errors, " spi_t
+run tb_top_r14_fifo4 10800 "1:PASS: tb_top_r14" top4_t
+run outputs 1200 - outputs_t
 printf '%s\n' "${RES[@]}"
 # the verdict without a pipe (audit round 40, auditor A: under `set -o pipefail`, `! printf ... | grep -q FAIL` could
 # pass a failed group: grep -q quits at the first FAIL, printf dies of SIGPIPE, the pipeline fails and `!` makes it 0;

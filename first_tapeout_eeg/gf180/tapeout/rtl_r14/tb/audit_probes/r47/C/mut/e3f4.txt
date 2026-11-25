@@ -1,0 +1,5 @@
+build/top_r14.codes: 262144 frames; build/ovl.codes: 5649 overload (2 runs, 39 synthetic bursts and 5 at the edge of the extreme set) + 300000 full-scale frames
+wrote ../build/reg_tests.svh: 1733 checks (1728 with an 8-deep FIFO, 1728 with a 4-deep one; 16 guarded registers)
+wrote ../build/pin_tests.svh: 31 pin cases
+rc 0 0 0
+PASS  tb_top_r14_fifo4

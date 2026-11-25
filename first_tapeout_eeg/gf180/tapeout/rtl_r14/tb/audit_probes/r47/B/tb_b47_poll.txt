@@ -1,0 +1,2 @@
+header-only CRC reads in RUN: 44 clean, 83 ADDR_ERR, 1 FRAME_ERR (addresses 00000040), 0 other
+tb_b47_poll.sv:96: $finish called at 14938051387 (1ps)

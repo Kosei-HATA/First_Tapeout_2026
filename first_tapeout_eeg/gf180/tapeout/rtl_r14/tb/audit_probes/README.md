@@ -1,4 +1,4 @@
-# 監査の模擬の元（第 24〜46 回）
+# 監査の模擬の元（第 24〜47 回）
 
 デジタル制御の監査（`documentation/gf180_digital_control_audit_20261120.md`）の独立の監査人が、各自の写しで走らせた試験台と写しの作り方の元。監査の記録が引く模擬の結果を、後から読み直し、走らせ直せるように残す（第 26 回、C の付記：第 24、25 回の A と B の試験台はリポジトリになく、記録の数を確かめられなかった）。
 
@@ -168,3 +168,10 @@
 | 46 | C | `r46/C/edit_mA.py`、`edit_mA2.py`、`edit_mC.py`、`edit_mS.py`、`apply_edit.py`、`mkcopy.sh`、`start_mS.sh`、`mutC_A2_run.txt`、`mutC_C_run.txt` | 549（第 47.3 節） | SPI の信号を 1 MCLK 遅らせる RTL の写しとその 16 群の記録 |
 | 46 | C | `r46/C/tb_c46_instants.sv`、`tb_c46_pop.sv` | 549（第 47.3 節） | 端子からの確定、CRC_ERR、FRAME_ERR、先頭バイトの ADDR_ERR、写し、DRDY_N の時刻 |
 | 46 | C | `r46/C/fsm_sweep.py`、`fsm_sweep_out.txt`、`spi_walk_equiv.py`、`regmap_sweep.py`、`regmap_sweep_out.txt`、`baseline_run.txt` | 第 47.3 節 | 状態遷移表と regmap の掃きと、基準の 16 群の記録 |
+| 47 | A | `r47/A/tb_a47_inprog.sv`、`tb_a47_waitstart.sv` | 552、553（第 48.1 節） | 走っている待ちへの書き込み（変わらない）と、進行中の APPLY のまだ始まっていない待ちへの書き込み（効く） |
+| 47 | B | `r47/B/tb_b47_seu.sv`、`tb_b47_seu.txt` | 556（第 48.2 節） | SPI の状態のレジスタの正しい符号の間の 1 ビットの化けと、同じ SEQ の語の 2 回の返り |
+| 47 | B | `r47/B/tb_b47_drdy.sv`、`tb_b47_drdy.txt` | 557（第 48.2 節） | CS_N を ¼ MCLK ずつ動かした DRDY_N の High のパルスと FIFO に書く縁 |
+| 47 | B | `r47/B/tb_b47_mosi.sv`、`tb_b47_sclk.sv`、`tb_b47_rst.sv`、`tb_b47_poll.sv` と各 `.txt` | 第 48.2 節 | MOSI の 1 ビットの化け、SCLK の 4 種の故障、思わぬ RESET_N、全ての番地の先頭バイトのみの読み出し |
+| 47 | C | `r47/C/tb_c47_ovlnow.sv`、`mut/e1.py`、`mut/e2.py`、`mut/e3.py`、`mut/run_mut.sh`、`mut/vvp_watch.sh`、`mut/*.txt` | 558、559（第 48.3 節） | OVL_NOW を 1 MCLK 早く変える写し e3、RTL の変異 e1、e2、途中で止めた 4 段の記録 |
+| 47 | C | `r47/C/sig/t.sv`、`sig/out.txt` | 559（第 48.3 節） | vvp は SIGTERM でも終了コード 0 を返す |
+| 47 | C | `r47/C/specswap/specswap.diff.txt`、`specswap3.diff.txt`、`sweeps/`、`run_base.txt` | 560（第 48.3 節） | STATE の符号の入れ替え（RUN と PRE）、状態遷移表、SPI の表、優先順位、TIMING、regmap の掃きと、基準の 16 群の記録 |

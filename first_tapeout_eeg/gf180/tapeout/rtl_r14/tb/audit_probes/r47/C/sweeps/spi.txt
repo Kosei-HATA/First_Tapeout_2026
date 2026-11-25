@@ -1,0 +1,12 @@
+# spi part 0/1: 3846 edits
+PASS EQUIV ndiff=0 :: ('HDR', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('OVF', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('RCRC', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('RREG', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('RSMP', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('WCRC', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('WDAT', 'CSR')[0] refused FRAME_ERR
+PASS EQUIV ndiff=0 :: ('WDONE', 'CSR')[1] refused STATE_ERR
+PASS EQUIV ndiff=0 :: ('WDONE', 'CSR')[2] refused ADDR_ERR
+PASS EQUIV ndiff=0 :: ('WDONE', 'CSR')[3] refused CRC_ERR
+# done 3846 edits, 10 pass, 326 s

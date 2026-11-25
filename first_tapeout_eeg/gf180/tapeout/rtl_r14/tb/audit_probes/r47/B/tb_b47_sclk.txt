@@ -1,0 +1,3 @@
+tb_b47_sclk: 255 slipped sample reads; FRAME_ERR without a pop in all but 0; next header without ALERT 0; host copies passing the sample CRC 2 (missed 1, extra 0, bounce 1, merge 0)
+tb_b47_sclk.sv:113: $finish called at 42977078579 (1ps)
+exit 0

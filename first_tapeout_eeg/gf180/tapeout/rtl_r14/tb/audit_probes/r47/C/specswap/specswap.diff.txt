@@ -1,0 +1,13 @@
+--- a/gf180/tapeout/rtl/spec/fsm_spec.py
++++ b/gf180/tapeout/rtl/spec/fsm_spec.py
+@@ -67,8 +67,8 @@
+     ("WAIT_E", 3, "AFE_ON", 0, "T_ELEC", "電極の整定を待つ（T_ELEC > 0 のときのみ）"),
+     ("ALIGN", 4, "AFE_ON", 0, None, "次の出力の時刻を待ち、その時刻に CIC をクリアする"),
+     ("FILL", 5, "AFE_ON", 0, None, "CIC の充填。最初の有効な出力を待つ"),
+-    ("RUN", 6, "AFE_ON", 0, None, "変換。有効な出力ごとに FIFO へ格納する"),
+-    ("PRE", 7, "ACTIVE", 0, "T_PRE", "一括反映の直後、AFE_RST の前の待ち"),
++    ("RUN", 7, "AFE_ON", 0, None, "変換。有効な出力ごとに FIFO へ格納する"),
++    ("PRE", 6, "ACTIVE", 0, "T_PRE", "一括反映の直後、AFE_RST の前の待ち"),
+     ("PULSE", 8, "ACTIVE", 1, "T_RST", "AFE_RST のワンショット"),
+ ]
+ # The timer and AFE_RST columns of SEQ_STATES as the requirements give them (SEQ-02, 03, 14; ANA-01, SEQ-13), written

@@ -1,0 +1,63 @@
+--- a/documentation/gf180_digital_control_spec_20261119.md
++++ b/documentation/gf180_digital_control_spec_20261119.md
+@@ -95,7 +95,7 @@
+ | STATUS | [2] | DATA | 0 | 0、1 | 読み出し専用 | — | FIFO が空でない |
+ | STATUS | [1] | OVL_NOW | 0 | 0、1 | 読み出し専用 | — | 過負荷を検出中（直近 32 フレームに両端の符号が 4 個以上） |
+ | STATUS | [0] | AFE_RST | 1 | 0、1 | 読み出し専用 | — | AFE_RST の出力の現在値 |
+-| STATE | [3:0] | STATE | 0 | 0〜8 | 読み出し専用 | — | シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 RUN、7 PRE、8 PULSE） |
++| STATE | [3:0] | STATE | 0 | 0〜8 | 読み出し専用 | — | シーケンサの状態（0 IDLE、1 WARMUP、2 RECOVER、3 WAIT_E、4 ALIGN、5 FILL、6 PRE、7 RUN、8 PULSE） |
+ | FIFO_LEVEL | [3:0] | LEVEL | 0 | 0〜8 | 読み出し専用 | — | FIFO のサンプルの数 |
+ | ERR | [7] | CMD_ERR | 0 | 0、1 | W1C | — | 未定義の命令コード、または TEST_KEY への 0x3C と 0x00 以外の値 |
+ | ERR | [6] | STATE_ERR | 0 | 0、1 | W1C | — | その状態で受け付けない命令、未処理の命令への上書き、または未処理の命令がある間のシャドウとタイマへの書き込み（SOFT_RESET は常に受け付ける）、シーケンサの不正な状態の値（直ちに IDLE へ。NFR-05） |
+@@ -155,10 +155,10 @@
+ | 命令 | コード | 受け付ける状態（fsm_spec の状態遷移表） |
+ |---|---|---|
+ | START | 0x11 | IDLE |
+-| STOP | 0x22 | IDLE（何もしない）、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、RUN、PRE、PULSE |
++| STOP | 0x22 | IDLE（何もしない）、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、PRE、RUN、PULSE |
+ | APPLY | 0x33 | IDLE、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、RUN |
+ | APPLY_NR | 0x44 | IDLE、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、RUN |
+-| FLUSH | 0x55 | IDLE、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、RUN、PRE、PULSE |
++| FLUSH | 0x55 | IDLE、WARMUP、RECOVER、WAIT_E、ALIGN、FILL、PRE、RUN、PULSE |
+ | SOFT_RESET | 0xA5 | 全て（未処理の命令があっても受け付け、CS_N の立ち上がりで直ちにリセット） |
+ | （試験の鍵） | 0x3C（TEST_KEY へ。0x00 で施錠、その他の値は施錠して CMD_ERR） | — |
+ <!-- END GENERATED commands -->
+--- a/gf180/tapeout/rtl/spec/eeg_regs_defs.svh
++++ b/gf180/tapeout/rtl/spec/eeg_regs_defs.svh
+@@ -156,8 +156,8 @@
+     localparam logic [3:0] ST_WAIT_E = 4'd3;
+     localparam logic [3:0] ST_ALIGN = 4'd4;
+     localparam logic [3:0] ST_FILL = 4'd5;
+-    localparam logic [3:0] ST_RUN = 4'd6;
+-    localparam logic [3:0] ST_PRE = 4'd7;
++    localparam logic [3:0] ST_PRE = 4'd6;
++    localparam logic [3:0] ST_RUN = 4'd7;
+     localparam logic [3:0] ST_PULSE = 4'd8;
+     localparam logic [3:0] BLANK_WITH_DAC = 4'd15;   // CHOP_BLANK length, DAC on
+     function automatic logic [9:0] range_max_m(input logic [2:0] r);   // cfg_ok: the largest M
+--- a/gf180/tapeout/rtl/spec/eeg_regs_pkg.sv
++++ b/gf180/tapeout/rtl/spec/eeg_regs_pkg.sv
+@@ -163,8 +163,8 @@
+     localparam logic [3:0] ST_WAIT_E = 4'd3;
+     localparam logic [3:0] ST_ALIGN = 4'd4;
+     localparam logic [3:0] ST_FILL = 4'd5;
+-    localparam logic [3:0] ST_RUN = 4'd6;
+-    localparam logic [3:0] ST_PRE = 4'd7;
++    localparam logic [3:0] ST_PRE = 4'd6;
++    localparam logic [3:0] ST_RUN = 4'd7;
+     localparam logic [3:0] ST_PULSE = 4'd8;
+     localparam logic [3:0] BLANK_WITH_DAC = 4'd15;   // CHOP_BLANK length, DAC on
+     function automatic logic [9:0] range_max_m(input logic [2:0] r);   // cfg_ok: the largest M
+--- a/gf180/tapeout/rtl/spec/fsm_spec.py
++++ b/gf180/tapeout/rtl/spec/fsm_spec.py
+@@ -67,8 +67,8 @@
+     ("WAIT_E", 3, "AFE_ON", 0, "T_ELEC", "電極の整定を待つ（T_ELEC > 0 のときのみ）"),
+     ("ALIGN", 4, "AFE_ON", 0, None, "次の出力の時刻を待ち、その時刻に CIC をクリアする"),
+     ("FILL", 5, "AFE_ON", 0, None, "CIC の充填。最初の有効な出力を待つ"),
+-    ("RUN", 6, "AFE_ON", 0, None, "変換。有効な出力ごとに FIFO へ格納する"),
+-    ("PRE", 7, "ACTIVE", 0, "T_PRE", "一括反映の直後、AFE_RST の前の待ち"),
++    ("PRE", 6, "ACTIVE", 0, "T_PRE", "一括反映の直後、AFE_RST の前の待ち"),
++    ("RUN", 7, "AFE_ON", 0, None, "変換。有効な出力ごとに FIFO へ格納する"),
+     ("PULSE", 8, "ACTIVE", 1, "T_RST", "AFE_RST のワンショット"),
+ ]
+ # The timer and AFE_RST columns of SEQ_STATES as the requirements give them (SEQ-02, 03, 14; ANA-01, SEQ-13), written

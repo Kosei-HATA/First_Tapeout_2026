@@ -801,6 +801,9 @@ MUTATIONS = [
     ('最上位：シーケンサの拒否の信号（STATE_ERR、CFG_ERR）を 1 段のレジスタで受ける（1 MCLK 遅れる）', [('eeg_digital_top.sv', '    logic        seq_afe_rst, seq_flush, seq_store, seq_mark, seq_serr, seq_cerr;\n', '    logic        seq_afe_rst, seq_flush, seq_store, seq_mark, seq_serr, seq_cerr;\n    logic        seq_serr_q, seq_cerr_q;                   // the refusal strobes, registered\n'), ('eeg_digital_top.sv', '.seq_state_err(seq_serr), .seq_cfg_err(seq_cerr),', '.seq_state_err(seq_serr_q), .seq_cfg_err(seq_cerr_q),'), ('eeg_digital_top.sv', '    assign AFE_RST = seq_afe_rst;\n', "    assign AFE_RST = seq_afe_rst;\n    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n) begin seq_serr_q <= 1'b0; seq_cerr_q <= 1'b0; end\n        else        begin seq_serr_q <= seq_serr; seq_cerr_q <= seq_cerr; end\n    end\n")], None, None),
     ('最上位：SPI の誤りの信号（FRAME_ERR、CRC_ERR、先頭バイトの ADDR_ERR）を 1 段のレジスタで受ける（1 MCLK 遅れる）', [('eeg_digital_top.sv', '    logic        reg_addr_ok, reg_we, frame_err, crc_err, addr_err, cmd_valid, cmd_ack;\n', '    logic        reg_addr_ok, reg_we, frame_err, crc_err, addr_err, cmd_valid, cmd_ack;\n    logic        frame_err_q, crc_err_q, addr_err_q;      // the SPI\'s error strobes, registered\n'), ('eeg_digital_top.sv', '.frame_err_set(frame_err), .crc_err_set(crc_err), .addr_err_set(addr_err),', '.frame_err_set(frame_err_q), .crc_err_set(crc_err_q), .addr_err_set(addr_err_q),'), ('eeg_digital_top.sv', '    assign AFE_RST = seq_afe_rst;\n', "    assign AFE_RST = seq_afe_rst;\n    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n) begin frame_err_q <= 1'b0; crc_err_q <= 1'b0; addr_err_q <= 1'b0; end\n        else        begin frame_err_q <= frame_err; crc_err_q <= crc_err; addr_err_q <= addr_err; end\n    end\n")], None, None),
     ('最上位：DFLAG の立ての信号（OVL、OVERRUN）を 1 段のレジスタで受ける（1 MCLK 遅れる）', [('eeg_digital_top.sv', '    logic        fifo_nonempty, ovr_set, push_ok, smp_snap, smp_pop;\n', '    logic        fifo_nonempty, ovr_set, push_ok, smp_snap, smp_pop;\n    logic        ovl_set_q, ovr_set_q;                    // DFLAG\'s set strobes, registered\n'), ('eeg_digital_top.sv', '        .ovl_now(ovl_now), .ovr_set(ovr_set),\n        .ovl_set(ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN))),\n', '        .ovl_now(ovl_now), .ovr_set(ovr_set_q),\n        .ovl_set(ovl_set_q),\n'), ('eeg_digital_top.sv', '    assign AFE_RST = seq_afe_rst;\n', "    assign AFE_RST = seq_afe_rst;\n    always_ff @(posedge MCLK or negedge rst_n) begin\n        if (!rst_n) begin ovl_set_q <= 1'b0; ovr_set_q <= 1'b0; end\n        else begin ovl_set_q <= ovl_hit && ((seq_state == ST_FILL) || (seq_state == ST_RUN));\n                   ovr_set_q <= ovr_set; end\n    end\n")], None, None),
+    # audit round 47, auditor C: OVL_NOW from the count including the code in its input cycle (1 MCLK early; phase AK)
+    ('過負荷：OVL_NOW を入力のサイクルの符号を数えた値から（1 MCLK 早い）', 'eeg_ovl.sv',
+     'assign ovl_now = (cnt >= OVL_THRESHOLD);', 'assign ovl_now = ((en ? cnt_nxt : cnt) >= OVL_THRESHOLD);'),
 ]
 
 # the unmutated block, run as the top bench's baseline (b00)
@@ -1206,6 +1209,9 @@ OVL_MUTATIONS = [
     # audit round 11, auditor A: the codes next to the rails counted as extremes (the edge bursts of build/ovl.codes)
     ("過負荷：両端の隣の符号（1、30）も両端と数える", "eeg_ovl.sv",
      "assign ext     = OVL_EXT_CODES[code];", "assign ext     = OVL_EXT_CODES[code] || (code == 5'd1) || (code == 5'd30);"),
+    # audit round 47, auditor C: OVL_NOW from the count including the code in its input cycle (1 MCLK early)
+    ("過負荷：OVL_NOW を入力のサイクルの符号を数えた値から（1 MCLK 早い）", "eeg_ovl.sv",
+     "assign ovl_now = (cnt >= OVL_THRESHOLD);", "assign ovl_now = ((en ? cnt_nxt : cnt) >= OVL_THRESHOLD);"),
 ]
 
 TAG = dict(spi="s", seq="q", fifo="f", regs="r", chop1="c", rnd="n", struct="g", ovl="v")

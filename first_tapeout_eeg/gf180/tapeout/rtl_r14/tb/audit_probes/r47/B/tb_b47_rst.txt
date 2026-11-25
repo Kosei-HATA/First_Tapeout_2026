@@ -1,0 +1,11 @@
+before: header 0x8c, word 88 0008 03e177 crc_ok 1
+after:  sample read: header 0xa1 (ALERT 1 DATA 0), word 08 0000 000000 crc_ok 1
+after:  FIFO_LEVEL CRC read: a1 00 01 crc_ok 0
+after:  FIFO_LEVEL CRC read again: crc_ok 0
+after:  ERR CRC read: a1 01 00 crc_ok 0
+after:  STATUS CRC read: a1 a1 00 crc_ok 0
+after:  CRC write of ERR: MISO a1 00 00 (rule (a) 1), ERR now 03
+after:  CRC command APPLY_NR: MISO a1 00 00 (rule (a) 1), pending 0
+after:  mode probe: a1 00 00
+after:  DRDY_N edges in the next 3 ms: 0 (DRDY_N 1, IF_CFG 00)
+tb_b47_rst.sv:115: $finish called at 14377502829 (1ps)

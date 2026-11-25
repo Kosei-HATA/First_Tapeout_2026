@@ -5029,6 +5029,12 @@ module tb_top_r14;
                             if (k == -9) begin
                                 while (dut.ovl_now !== 1'b1) @(negedge MCLK);
                                 #(TMCLK / 4.0); ak_d[0] = ak_t_ovl_up - ak_t0;
+                                // the rise at the edge that takes the 4th extreme code: frame 15's input cycle 3 ends,
+                                // 483.5 MCLK after the reference (the falling edge in frame 0's cycle 0; spec 3.4;
+                                // audit round 47, auditor C: an OVL_NOW from the count including the code in its input
+                                // cycle rose 1 MCLK early and passed every group: this only printed the time)
+                                if (ak_d[0] < 483.25 * TMCLK || ak_d[0] > 483.75 * TMCLK)
+                                    fail($sformatf("AK: OVL_NOW rose %0.2f MCLK after the frame start, expected 483.5 (the edge that takes the 4th extreme code)", ak_d[0] / TMCLK));
                                 $display("AK OVL_NOW rises %0.3f us after the frame start (the extreme codes from frame 12)", ak_d[0] / 1000.0);
                             end else begin
                                 ak_tgt = ak_t0 + ak_d[0] + TMCLK + k * TMCLK / 4.0 - ak_lat[s];

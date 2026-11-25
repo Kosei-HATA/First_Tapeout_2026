@@ -1,0 +1,11 @@
+poll flip 0: header 0x03 -> ferr 1 aerr 0 ev 00
+poll flip 1: header 0xc3 -> ferr 0 aerr 1 ev 00
+poll flip 2: header 0xa3 -> ferr 0 aerr 0 ev 00
+poll flip 3: header 0x93 -> ferr 0 aerr 1 ev 00
+poll flip 4: header 0x8b -> ferr 0 aerr 0 ev 00
+poll flip 5: header 0x87 -> ferr 0 aerr 0 ev 00
+poll flip 6: header 0x81 -> ferr 0 aerr 0 ev 00
+poll flip 7: header 0x82 -> ferr 0 aerr 0 ev 00
+tb_b47_mosi: 1152 faulted frames, accepted 818, rejected 326, flagged 293, intended-commit-despite-flip 0, BAD 0, SPI errors 0
+tb_b47_mosi.sv:130: $finish called at 84852479929 (1ps)
+exit 0

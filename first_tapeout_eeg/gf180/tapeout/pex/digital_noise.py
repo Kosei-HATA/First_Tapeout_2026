@@ -36,6 +36,14 @@ Cases (each a folder in runs/digital_noise/):
   b2     b1 with the host reading a sample over SPI (2 MHz, 48 bits, 8..34 us into the window)
   b3     b1 with the raw debug stream on (RAW_CLK = MCLK / 4, RAW_DATA random)
   A      (--adc only) the base deck itself over the window: the reference in place of the chain's own chunk
+  S      (11/25) the chip versions side by side in ONE deck (--copies, default A,r13,r14): each a copy of the base
+         deck's top level in its own subcircuit (its own board, ring, pads, AFE, ADC), A as it is, every other one
+         as b1 with that version's digital side (DIGREV: its macros' current per edge, their own VDD-VSS
+         capacitance, its chip-level DVDD / DVSS). The copies share nothing but ground, and the simulator solves
+         them on the same time points: a copy minus A is that version's coupling without the numerical noise
+         that separate decks have between them (b1iso - the chain's chunk: 0.13..0.27 nV, the size of the
+         coupling itself). In <runs>/S/ (with --chain r12: the 12th chip's chain, AFE and ADC; the 13th and 14th
+         chips' AFE differs from it only in INN's Metal4 blankets in afe_top)
 
 Not in it: the substrate between DVSS and AVSS (the chip joins them through it), resistance
 inside the blocks, the chip-level wiring of the control lines (the deck's sources stay ideal
@@ -56,7 +64,18 @@ usage:
         extraction on chipnets_r12) in place of r9's, in runs/digital_noise_r12/. 'base' copies its chunk 14 deck
         (the same window, 6.1735 ms on, and the same element names as r9's); 'A' is that chain's own chunk, as for
         r9. The chip-level DVDD / DVSS (R_DIST) are r12's too: its supply check gives r9's values to the mΩ
+  --copies A,r13,r14 (make / run / compare S): the copies of the S deck, A and DIGREV's versions
+  --profile FILE | REV=FILE: the eeg_digital_top current profile (current_profile.py's json) of the single cases
+        (FILE; default r13's, build/current_profile.json) or of version REV's copy in S (default DIGREV)
   --nice n (run): below the chain's priority
+
+  S, e.g. (11/25, the 13th and the 14th chip on the 12th chip's chain; ngspice from a Terminal panel tab):
+    gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py --rev r14
+    gf180/tools/venv310/bin/python gf180/tapeout/digital/power/cell_decap.py --rev r14   (and --rev r13)
+    gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 make S
+    cd gf180/tapeout/pex/runs/digital_noise_r12/S && caffeinate -i -s /opt/homebrew/bin/ngspice -b -r out.raw tb.spice > run.log 2>&1
+    gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 compare S
+    gf180/tools/venv310/bin/python gf180/tapeout/viz/r14_digital_noise_fig.py     (figure 57 of r14_20261124)
 """
 import argparse
 import json
@@ -104,6 +123,26 @@ PAD_SKEW = 0.125e-9                 # b2, b3: the core's drive of the output pad
 FROM_DIG = {"BIB1", "BIB0", "BBP1", "BBP0", "BBN1", "BBN0", "BCHEN", "BAZ", "BCMP", "BDCK", "BCHOP",
             "BCHOPO", "BBLK", "BCH1", "BRST"}
 CASES = ("b1", "b1iso", "b2", "b3")
+# the digital side per chip version, for the copies of the S deck (11/25):
+#   profile  each macro's charge per MCLK edge (gf180/tapeout/digital/power/current_profile.py --rev; eeg_adc_dig is
+#            the same macro, f3, in both chips: r13's file)
+#   MACRO_C  each macro's own VDD-VSS capacitance (F) and its series resistance (ohm): cell_decap.py --rev, the cells
+#            (r13's eeg_digital_top 92.4 pF as on 11/8) plus the n-well from the macro's GDS (33.5 / 43.8 / 12.0 pF; the
+#            11/8 MACRO_C above estimated 25 / 8 pF). eeg_adc_dig's cells are 20.5 pF (11/8: 25.6 pF, not reproduced)
+#   R_DIST   the chip-level DVDD / DVSS from the pads (supply_check.py of that chip's assembly:
+#            layout/runs/chip_top/build_r13_20261119.log, build_r14_20261124.log)
+POWER = os.path.join(REPO, "gf180", "tapeout", "digital", "power", "build")
+DIGREV = {
+    "r13": {"profile": {"eeg_digital_top": os.path.join(POWER, "current_profile.json"),
+                        "eeg_adc_dig": os.path.join(POWER, "current_profile.json")},
+            "MACRO_C": {"DIG": (125.85e-12, 0.5), "ADD": (32.47e-12, 1.5)},
+            "R_DIST": {"DIG": (0.192, 1.118), "DEC": (0.673, 1.500), "ADD": (4.317, 1.410)}},
+    "r14": {"profile": {"eeg_digital_top": os.path.join(POWER, "r14", "current_profile.json"),
+                        "eeg_adc_dig": os.path.join(POWER, "current_profile.json")},
+            "MACRO_C": {"DIG": (162.86e-12, 0.5), "ADD": (32.47e-12, 1.5)},
+            "R_DIST": {"DIG": (0.184, 1.081), "DEC": (0.657, 1.446), "ADD": (4.317, 1.410)}},
+}
+COPIES = ("A", "r13", "r14")
 # --adc: the decks with another extraction of eeg_adc (use_adc). "" = the chain's own, runs/adc_top_c_r7 (adc_top last
 # changed in r7: pex_e2e._ADC_REV)
 ADC_REV = ""
@@ -240,15 +279,27 @@ def scaled(name, node, rail):
     return f"B{name} {node} 0 V=v(DVSS_{rail})+v(DVDD_{rail},DVSS_{rail})*v({name})\n"
 
 
-def digital_model(case, e0, tstop, tw=2e-9, lead=2e-9, ring=("DVDDC", "DVSSC"), sfx=""):
-    """the model text; ring = the pad ring's nodes it hangs on (b1iso: a copy of its own)"""
-    P = profile()
+def dig_side(rev):
+    """chip version rev's digital side (DIGREV) with its profiles loaded, for digital_model() / ics()"""
+    d = DIGREV[rev]
+    return {"rev": rev, "P": {m: json.load(open(p))[m] for m, p in d["profile"].items()},
+            "profile_files": dict(d["profile"]), "R_DIST": d["R_DIST"], "MACRO_C": d["MACRO_C"]}
+
+
+def digital_model(case, e0, tstop, tw=2e-9, lead=2e-9, ring=("DVDDC", "DVSSC"), sfx="", dig=None):
+    """the model text; ring = the pad ring's nodes it hangs on (b1iso: a copy of its own); dig = a chip version's
+    digital side (dig_side()), else the single cases' profile (PROFILE) with R_DIST and MACRO_C above"""
+    P = dig["P"] if dig else profile()
+    rdist = dig["R_DIST"] if dig else R_DIST
+    macc = dig["MACRO_C"] if dig else MACRO_C
     rv, rs = ring
     s = sfx
-    L = [f"* ---- digital side (digital_noise.py, case {case}) ----\n"]
-    for blk, (ru, rl) in R_DIST.items():
+    L = [f"* ---- digital side (digital_noise.py, case {case}"
+         + (f", chip {dig['rev']}: " + ", ".join(f"{m} {os.path.relpath(f, REPO)}" for m, f in dig["profile_files"].items())
+            if dig else "") + ") ----\n"]
+    for blk, (ru, rl) in rdist.items():
         L.append(f"RDV{blk}{s} {rv} DVDD_{blk}{s} {ru}\nRDS{blk}{s} DVSS_{blk}{s} {rs} {rl}\n")
-    for blk, (c, esr) in MACRO_C.items():
+    for blk, (c, esr) in macc.items():
         L.append(f"CMAC{blk}{s} DVDD_{blk}{s} MACC_{blk}{s} {c:.4e}\nRMAC{blk}{s} MACC_{blk}{s} DVSS_{blk}{s} {esr}\n")
     td = e0 - lead
     for blk, macro in MACRO_OF.items():       # (ngspice's PWL repeats only in a V source: a 1 S VCCS)
@@ -371,6 +422,19 @@ def iso_ring(s):
     return "".join(L)
 
 
+def to_rails(name, blk):
+    """an element of the base deck (its lines) onto the rails of the block that drives it (b1, b2, b3, the S copies):
+    the AFE's digital pins and the digital block's lines on DVDD_DIG / DVSS_DIG, the ADC's digital part and its
+    controller on DVDD_ADD / DVSS_ADD, the DVDD decoupling on DVDD_DEC / DVSS_DEC"""
+    if name in FROM_DIG or name in ("XDUT",):
+        return [re.sub(r"\bDVSSC\b", "DVSS_DIG", re.sub(r"\bDVDDC\b", "DVDD_DIG", x)) for x in blk]
+    if re.match(r"^BSEL\d+$", name) or name in ("XADC", "XCTRL"):
+        return [re.sub(r"\bDVSSC\b", "DVSS_ADD", re.sub(r"\bDVDDC\b", "DVDD_ADD", x)) for x in blk]
+    if name == "XDECD":
+        return [re.sub(r"\bDVSSC\b", "DVSS_DEC", re.sub(r"\bDVDDC\b", "DVDD_DEC", x)) for x in blk]
+    return blk
+
+
 def patch(case, tw=2e-9, lead=2e-9, twin=None):
     """the B deck: the base chunk deck with the digital side, over its first twin seconds"""
     text = open(os.path.join(BASE, "tb.spice")).read()
@@ -392,12 +456,7 @@ def patch(case, tw=2e-9, lead=2e-9, twin=None):
             j += 1
         blk = lines[i:j]
         if not iso:
-            if name in FROM_DIG or name in ("XDUT",):
-                blk = [re.sub(r"\bDVSSC\b", "DVSS_DIG", re.sub(r"\bDVDDC\b", "DVDD_DIG", x)) for x in blk]
-            elif re.match(r"^BSEL\d+$", name) or name in ("XADC", "XCTRL"):
-                blk = [re.sub(r"\bDVSSC\b", "DVSS_ADD", re.sub(r"\bDVDDC\b", "DVDD_ADD", x)) for x in blk]
-            elif name == "XDECD":
-                blk = [re.sub(r"\bDVSSC\b", "DVSS_DEC", re.sub(r"\bDVDDC\b", "DVDD_DEC", x)) for x in blk]
+            blk = to_rails(name, blk)
         if name == ".options" and "acct" in ln:
             if iso:
                 out.append(iso_ring("_X"))
@@ -427,14 +486,15 @@ def plain(twin):
     return text.replace("* this deck:", "* digital_noise.py case A (the base deck over the window)\n* this deck:", 1)
 
 
-def ics(text, P, iso):
+def ics(text, P, iso, rdist=None):
     """.ic lines for the new nodes"""
+    rdist = rdist or R_DIST
     get = lambda n: float(re.search(rf"v\({n}\)=([-+0-9.eE]+)", text).group(1))
     vd, vs = get("dvddc"), get("dvssc")
     I = {"DIG": P["eeg_digital_top"]["I_avg_mA"] * 1e-3, "ADD": P["eeg_adc_dig"]["I_avg_mA"] * 1e-3, "DEC": 0.0}
     s = "_X" if iso else ""
     v = {}
-    for blk, (ru, rl) in R_DIST.items():
+    for blk, (ru, rl) in rdist.items():
         v[f"dvdd_{blk}{s}"] = vd - I[blk] * ru
         v[f"dvss_{blk}{s}"] = vs + I[blk] * rl
         if blk in MACRO_C:
@@ -471,6 +531,135 @@ SAVE_NEW = ["v(dvdd_dig)", "v(dvss_dig)", "v(dvdd_add)", "v(dvss_add)", "v(dvdd_
 def save_line(iso):
     new = SAVE_NEW if not iso else [x.replace(")", "_x)") for x in SAVE_NEW] + ["v(dvddc_x)", "v(dvssc_x)"]
     return ".save " + " ".join(SAVE + new)
+
+
+# ---------------------------------------------------------------- S: the chip versions side by side in one deck
+# what each copy saves (what compare needs; the board's DVDD current as i(v.<prefix>.vdvdd))
+SAVE_S = ["v(outp_adc)", "v(outn_adc)", "v(xadc.o1p)", "v(xadc.o1n)", "v(o2p)", "v(o2n)", "v(elp)", "v(eln)", "v(chop)",
+          "v(dvddc)", "v(dvssc)"] + [f"v(xctrl.ca{k})" for k in range(5)]
+SAVE_S_DIG = ["v(dvdd_dig)", "v(dvss_dig)", "v(dvdd_add)", "v(dvss_add)"]
+
+
+def copy_prefix(c):
+    """copy c's instance in the S deck: its nodes are <prefix>.<node>"""
+    return "xc" + c.lower()
+
+
+def prefix_ic(s, p):
+    return re.sub(r"\bv\(([^)]+)\)", lambda m: f"v({p}.{m.group(1)})", s)
+
+
+def split_top(text):
+    """the base deck: its head (comments, includes, subcircuits) up to the last .ends, and its top level after it as
+    element blocks (each with its '+' lines) and dot-line blocks"""
+    lines = text.split("\n")
+    depth, last, elems = 0, None, []
+    for k, ln in enumerate(lines):
+        lo = ln.lower()
+        if lo.startswith(".subckt"):
+            depth += 1
+        elif lo.startswith(".ends"):
+            depth -= 1
+            last = k if depth == 0 else last
+        elif depth == 0 and ln and ln[0] not in ".*+":
+            elems.append(k)
+    assert last is not None and elems and min(elems) > last, "an element before the last .ends at the top level"
+    head, top = lines[:last + 1], lines[last + 1:]
+    blocks, dots, i = [], [], 0
+    while i < len(top):
+        j = i + 1
+        while j < len(top) and top[j].startswith("+"):
+            j += 1
+        if top[i].startswith("."):
+            dots.append(top[i:j])
+        elif top[i] and not top[i].startswith("*"):
+            blocks.append(top[i:j])
+        i = j
+    return head, blocks, dots
+
+
+def same_deck(copies, tw=2e-9, lead=2e-9, twin=None):
+    """the S deck: per entry of copies a copy of the base deck's top level in its own subcircuit ('A' as it is, a
+    DIGREV version as b1 with that version's digital side), all over the first twin seconds"""
+    text = open(os.path.join(BASE, "tb.spice")).read()
+    e0, tstop = frame_e0(text), tstop_of(text)
+    if twin:
+        tstop = min(tstop, twin)
+    head, blocks, dots = split_top(text)
+    first = [d[0].split()[0].lower() for d in dots]
+    assert set(first) <= {".temp", ".options", ".model", ".ic", ".save", ".tran", ".end"}, set(first)
+    ic = "\n".join(x for d in dots if d[0].lower().startswith(".ic") for x in d)
+    out = list(head)
+    out += [x for d in dots if d[0].split()[0].lower() in (".temp", ".options", ".model") for x in d]
+    ics_out, save = [], []
+    for c in copies:
+        p = copy_prefix(c)
+        body = []
+        if c == "A":
+            for blk in blocks:
+                body += blk
+        else:
+            dig = dig_side(c)
+            for blk in blocks:
+                body += to_rails(blk[0].split(" ", 1)[0], blk)
+            body.append(digital_model("b1", e0, tstop, tw, lead, dig=dig).rstrip("\n"))
+            ics_out.append(prefix_ic(ics(text, dig["P"], False, dig["R_DIST"]), p))
+        out += [f"* ---- copy {c} ----", f".subckt copy_{c} cg_{c}", *body, f".ends copy_{c}", f"{p} 0 copy_{c}"]
+        ics_out.append(prefix_ic(ic, p) + "\n")
+        save += [prefix_ic(v, p) for v in SAVE_S + (SAVE_S_DIG if c != "A" else [])] + [f"v.{p}.vdvdd#branch"]
+    tran = next(d[0] for d in dots if d[0].lower().startswith(".tran"))
+    tran = re.sub(r"^(\.tran \S+) \S+ ", lambda m: f"{m.group(1)} {tstop:.9e} ", tran)
+    out += ["".join(ics_out).rstrip("\n"), ".save " + " ".join(save), tran, ".end", ""]
+    note = (f"* digital_noise.py case S (tw {tw:g}, lead {lead:g}): copies {', '.join(copies)} of the top level below, each"
+            f" in its own subcircuit (instance x<copy> = {', '.join(copy_prefix(c) for c in copies)}), on the same time"
+            f" points; A as it is, the others as b1 with their version's digital side (DIGREV)\n")
+    return "\n".join(out).replace("* this deck:", note + "* this deck:", 1)
+
+
+def load_same(copies):
+    """the S run's vectors per copy, under the single decks' names (i(vdvdd): the board's DVDD current)"""
+    raw = read_raw(os.path.join(RUNS, "S", "out.raw"))
+    R = {}
+    for c in copies:
+        p = copy_prefix(c)
+        r = {"time": raw["time"]}
+        for k, v in raw.items():
+            if k.startswith(f"v({p}."):
+                r["v(" + k[len(p) + 3:]] = v
+            elif k == f"i(v.{p}.vdvdd)":
+                r["i(vdvdd)"] = v
+        R[c] = r
+    return R
+
+
+def compare_same(copies):
+    """S: every copy against A (the coupling of that version) and the versions against each other, on the same
+    time points (runs/.../S/compare.json)"""
+    text = open(os.path.join(BASE, "tb.spice")).read()
+    R = load_same(copies)
+    t = R[copies[0]]["time"]
+    tend = t[-1]
+    vers = [c for c in copies if c != "A"]
+    pairs = [(c, "A") for c in vers] + [(b, a) for i, a in enumerate(vers) for b in vers[i + 1:]]
+    res = {"adc": f"{CHAIN_REV or 'r9'} (the chain's)", "copies": list(copies)}
+    res.update(analyse(R, pairs, text, tend))
+    m = t > 2e-6
+    for c in copies:
+        r, x = R[c], res["cases"][c]
+        if "i(vdvdd)" in r:
+            x["i_dvdd_mean_mA"] = -integ(t, r["i(vdvdd)"], 2e-6, tend) / (tend - 2e-6) * 1e3
+        if c != "A":
+            x["dig"] = {k: v for k, v in DIGREV[c].items() if k != "profile"}
+            x["dig"]["profile"] = {mm: os.path.relpath(f, REPO) for mm, f in DIGREV[c]["profile"].items()}
+    for c in vers:                       # the same time points: the difference point by point too
+        d = res["diff"][f"{c}-A"]
+        for nm, a in (("ring_vdd", "v(dvddc)"), ("ring_vss", "v(dvssc)")):
+            dv = R[c][a][m] - R["A"][a][m]
+            d[nm + "_diff_pp_mV"] = float(np.ptp(dv) * 1e3)
+    print("board DVDD current (mean after 2 us): " + ", ".join(f"{c} {res['cases'][c].get('i_dvdd_mean_mA', np.nan):.3f} mA"
+                                                            for c in copies))
+    json.dump(res, open(os.path.join(RUNS, "S", "compare.json"), "w"), indent=1)
+    return res
 
 
 # ---------------------------------------------------------------- the small deck (ring bounce)
@@ -562,11 +751,37 @@ def main():
     ap.add_argument("--adc", default="", choices=("", *ADC_PEX), help="the decks with this extraction of eeg_adc")
     ap.add_argument("--chain", default="", choices=("", *CHAINS), help="the decks on this chip's own chain")
     ap.add_argument("--nice", type=int, default=0, help="run: nice level of the runs")
+    ap.add_argument("--copies", default=",".join(COPIES), help="S: its copies, A and versions of DIGREV")
+    ap.add_argument("--profile", action="append", default=[],
+                    help="FILE: the single cases' eeg_digital_top profile; REV=FILE: version REV's in S")
     a = ap.parse_args()
     if a.adc and a.chain:
         raise SystemExit("--adc or --chain, not both")
     use_adc(a.adc)
     use_chain(a.chain)
+    global PROFILE
+    for pr in a.profile:
+        rev, _, f = pr.rpartition("=")
+        f = os.path.abspath(f)
+        if rev:
+            DIGREV[rev]["profile"]["eeg_digital_top"] = f
+        else:
+            PROFILE = f
+    copies = tuple(a.copies.split(","))
+    assert copies[0] == "A" and all(c in DIGREV for c in copies[1:]), copies
+    if "S" in a.cases:
+        if a.mode in ("make", "run"):
+            d = os.path.join(RUNS, "S")
+            os.makedirs(d, exist_ok=True)
+            for f in ("quantizer.spice", "events.txt"):
+                open(os.path.join(d, f), "w").write(open(os.path.join(BASE, f)).read())
+            open(os.path.join(d, "tb.spice"), "w").write(same_deck(copies, a.tw, a.lead, a.twin))
+            print("S", os.path.join(d, "tb.spice"), run_bg(d, nice=a.nice) if a.mode == "run" else "")
+        elif a.mode == "compare":
+            compare_same(copies)
+        else:
+            raise SystemExit("S: make, run or compare")
+        return
     if a.mode == "base":
         if CHAIN_REV:
             print(copy_chain_base())
@@ -704,16 +919,24 @@ def input_pp(ra, rb, text, after=50e-9, before=5e-9):
 
 def compare(cases=None):
     text = open(os.path.join(BASE, "tb.spice")).read()
-    e0 = frame_e0(text)
     cases = cases or ["A"] + list(CASES)
     R = {c: load_case(c) for c in cases}
     R = {c: r for c, r in R.items() if r is not None}
     tend = min(r["time"][-1] for c, r in R.items() if c != "A")
     if "A" in R:
         tend = min(tend, R["A"]["time"][-1])
+    res = {"adc": ADC_REV or (f"{CHAIN_REV} (the chain's)" if CHAIN_REV else "r7 (the chain's)")}
+    res.update(analyse(R, [("b1iso", "A"), ("b1", "b1iso"), ("b1", "A"), ("b2", "b1"), ("b3", "b1")], text, tend))
+    json.dump(res, open(os.path.join(RUNS, "compare.json"), "w"), indent=1)
+    return res
+
+
+def analyse(R, pairs, text, tend):
+    """the cases' AFE output per chopper period (and the ADC's integrators, codes, rails, input), and each pair
+    (p, q) of pairs as p - q split into offset + the 16 kHz tone + rest"""
+    e0 = frame_e0(text)
     P = periods(tend)
-    res = {"adc": ADC_REV or (f"{CHAIN_REV} (the chain's)" if CHAIN_REV else "r7 (the chain's)"), "tend_us": tend * 1e6,
-           "periods_us": [[a * 1e6, b * 1e6] for a, b in P], "cases": {}}
+    res = {"tend_us": tend * 1e6, "periods_us": [[a * 1e6, b * 1e6] for a, b in P], "cases": {}}
     # the electrode's 16 kHz tone: its per-period means are exact, so a difference splits into offset + tone + rest
     m = re.search(r"^VSIG SIG 0 DC \S+ SIN\((\S+) (\S+) (\S+) (\S+)\)", text, re.M)
     fsig, td = float(m.group(3)), float(m.group(4))
@@ -748,7 +971,6 @@ def compare(cases=None):
     k = np.linalg.lstsq(X, np.array(ref), rcond=None)[0]
     tone = float(np.hypot(k[1], k[2]))                   # the tone at the AFE output, per-period means (uV)
     res["tone"] = {"f_Hz": fsig, "td_s": td, "out_uV": tone}
-    pairs = [("b1iso", "A"), ("b1", "b1iso"), ("b1", "A"), ("b2", "b1"), ("b3", "b1")]
     res["diff"] = {}
     print(f"window {tend * 1e6:.2f} us, {len(P)} chopper periods from "
           + ", ".join(f"{a * 1e6:.2f}" for a, _ in P) + f" us; the tone at the AFE output {tone / 1e3:.1f} mV")
@@ -779,7 +1001,6 @@ def compare(cases=None):
         extra = " ".join(f"{k} {v:.2f}" for k, v in x.items() if k.endswith("_pp_mV") or k.endswith("_mean_mV"))
         dm = (" vin demod (uV) " + " ".join(f"{v:+.3f}" for v in x["vin_demod_uV"])) if "vin_demod_uV" in x else ""
         print(f"{c:5s}: {extra}{dm}")
-    json.dump(res, open(os.path.join(RUNS, "compare.json"), "w"), indent=1)
     return res
 
 

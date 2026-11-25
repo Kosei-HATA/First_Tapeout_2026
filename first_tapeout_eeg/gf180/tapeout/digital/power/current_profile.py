@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""Supply current of the two digital macros per MCLK edge, for the chip-level supply-noise
-deck (gf180/tapeout/pex/digital_noise.py; written 11/8).
+"""Supply current of the digital macros per MCLK edge, for the chip-level supply-noise
+deck (gf180/tapeout/pex/digital_noise.py; written 11/8, the chip version selectable since 11/25).
 
-Sources (all from the 10/29 power run, run_power.sh, tt 25 C 3.3 V):
-  - OpenSTA's report_power with the gate-level VCD activity (build/power_<macro>_tt_025C_3v30_vcd.log):
+Sources (tt 25 C 3.3 V), per chip version (REVS):
+  r13  the 10/29 power run of the two macros of the 13th chip (run_power.sh: eeg_digital_top f2 and
+       eeg_adc_dig f3 in one VCD, build/macros.vcd) -> build/current_profile.json
+  r14  the 11/24 power run of the 14th chip's macro (run_power_r14.sh: eeg_digital_top r14f5_20261124,
+       build/r14/macro.vcd) -> build/r14/current_profile.json. eeg_adc_dig is the same macro (f3) in
+       both chips and is not in this VCD: digital_noise.py takes it from r13's file.
+  - OpenSTA's report_power with the gate-level VCD activity (power_<macro>_tt_025C_3v30_vcd.log):
     the totals by group (sequential / combinational / clock, internal / switching).
   - The liberty (tt_025C_3v30): every flip-flop's CLK internal energy on the rising and on the
     falling edge (how the sequential internal power splits between the two edges), and the
     input-pin capacitance of every cell (the SPEF is PIN_CAP NONE: wire only).
   - The final netlist and the nominal SPEF: the clock tree from MCLK (its nets' polarity, so
     which edge charges them) and every net's capacitance (wire + fanout pins).
-  - The VCD (build/macros.vcd, 1 ms, 32768 cycles): every data net's 0 -> 1 transitions by the
-    frame cycle (0..31, frame cycle 0 = CMP_STROBE high) in which they happen.
+  - The VCD (1 ms, 32768 cycles, RUN with the host reading the samples): every data net's 0 -> 1
+    transitions by the frame cycle (0..31, frame cycle 0 = CMP_STROBE high) in which they happen.
 
 Per macro the result is the charge drawn from VDD (returned to VSS) at each MCLK edge:
   rising edge of frame cycle c:  seq_int * f_rise + clk_int / 2 + clk_sw * f_clk_rise + data[c]
@@ -21,9 +26,10 @@ OpenSTA's combinational + sequential-switching power over the frame cycles in pr
 VCD's switched capacitance (C_net * VDD per 0 -> 1 transition). Zero-delay simulation: every
 data transition is at a rising MCLK edge, glitches are not in it.
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py
-writes build/current_profile.json
+usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py [--rev r13|r14] [--out FILE]
+writes REVS[rev]["out"] (or FILE)
 """
+import argparse
 import json
 import os
 import re
@@ -39,7 +45,18 @@ PDK = os.environ.get("PDK_ROOT_D", "/Users/noah/.ciel/ciel/gf180mcu/versions/"
 VDD = 3.3
 FMCLK = 32.768e6
 NCYC = 32                                    # MCLK cycles per modulator frame
-MACROS = {"eeg_digital_top": (9, "f2", "g_top"), "eeg_adc_dig": (7, "f3", "g_adc")}
+# per chip version: the VCD, the folder of OpenSTA's logs, the output, and each macro's cell library track, LibreLane
+# run (final/nl, final/spef/nom) and VCD scope. r13's runs f2 / f3 are archived; their 11/19 reruns have the same
+# netlists (sha256 = gf180/tapeout/layout/gds/eeg_*.nl.v) and reproduce the 11/8 file (every charge to the bit; only
+# eeg_adc_dig's C_clock_pF rise, a sum over a set, differs in its last digit with the summing order).
+REVS = {
+    "r13": {"vcd": os.path.join(BUILD, "macros.vcd"), "logs": BUILD, "out": os.path.join(BUILD, "current_profile.json"),
+            "macros": {"eeg_digital_top": (9, "eeg_digital_top/runs/f2_rerun_20261119", ("gl_shadow", "g_top")),
+                       "eeg_adc_dig": (7, "eeg_adc_dig/runs/f3_rerun_20261119", ("gl_shadow", "g_adc"))}},
+    "r14": {"vcd": os.path.join(BUILD, "r14", "macro.vcd"), "logs": os.path.join(BUILD, "r14"),
+            "out": os.path.join(BUILD, "r14", "current_profile.json"),
+            "macros": {"eeg_digital_top": (9, "eeg_digital_top_r14/runs/r14f5_20261124", ("gl_shadow_r14", "g"))}},
+}
 BUFS = re.compile(r"__(clk)?buf_\d+$")        # clock-tree cells (CTS uses clkbuf / buf)
 INVS = re.compile(r"__(clk)?inv_\d+$")
 
@@ -105,10 +122,10 @@ def spef(path):
     return caps
 
 
-def opensta(macro):
+def opensta(macro, logs=BUILD):
     """OpenSTA's tt VCD power groups (W): {(group, kind): value}."""
     out = {}
-    for line in open(os.path.join(BUILD, f"power_{macro}_tt_025C_3v30_vcd.log")):
+    for line in open(os.path.join(logs, f"power_{macro}_tt_025C_3v30_vcd.log")):
         m = re.match(r"(Sequential|Combinational|Clock)\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)", line)
         if m:
             g = m.group(1)
@@ -116,18 +133,19 @@ def opensta(macro):
     return out
 
 
-def vcd_activity(scope, netcap):
-    """Switched capacitance (pF, 0 -> 1 transitions) of the scope's data nets per frame cycle,
-    and the frame cycle phase from CMP_STROBE (g_top) / TH_CAPTURE (both)."""
-    path = os.path.join(BUILD, "macros.vcd")
+def vcd_activity(scope, netcap, path=os.path.join(BUILD, "macros.vcd")):
+    """Switched capacitance (pF, 0 -> 1 transitions) of the scope's data nets per MCLK cycle, the
+    MCLK rising edges, and the rising edges of TH_CAPTURE (the frame phase) and of CMP_STROBE (where
+    the scope has it: a check of that phase). scope: the VCD's scope path, e.g. ("gl_shadow", "g_top")."""
     ids, stack = {}, []
+    strobe_rise = []
     with open(path) as f:
         for line in f:
             if line.startswith("$scope"):
                 stack.append(line.split()[2])
             elif line.startswith("$upscope"):
                 stack.pop()
-            elif line.startswith("$var") and stack == ["gl_shadow", scope]:
+            elif line.startswith("$var") and stack == list(scope):
                 p = line.split()
                 w, code, name = int(p[2]), p[3], p[4].lstrip("\\")
                 ids.setdefault(code, []).append((name, w))
@@ -135,6 +153,7 @@ def vcd_activity(scope, netcap):
                 break
         clk = next(c for c, v in ids.items() if any(n == "MCLK" for n, _ in v))
         mark = next((c for c, v in ids.items() if any(n == "TH_CAPTURE" for n, _ in v)), None)
+        strobe = next((c for c, v in ids.items() if any(n == "CMP_STROBE" for n, _ in v)), None)
         val = {}
         t = 0
         rises = []                                   # MCLK rising edge times
@@ -150,6 +169,8 @@ def vcd_activity(scope, netcap):
                 v, code = line[1:].split()
             else:
                 continue
+            if code == strobe and v == "1" and val.get(code) == "0":     # (its switching stays in the data below)
+                strobe_rise.append(t)
             if code == clk:
                 if v == "1" and val.get(code) == "0":
                     rises.append(t)
@@ -179,13 +200,14 @@ def vcd_activity(scope, netcap):
             for i, (a, b) in enumerate(zip(o[::-1], nn[::-1])):
                 if a == "0" and b == "1":
                     sw[n] += c[i] if i < len(c) else (np.mean(c) if c else 0.0)
-    return rises, np.array(mark_rise), sw
+    return rises, np.array(mark_rise), sw, np.array(strobe_rise)
 
 
-def main():
+def main(rev="r13", out_path=None):
+    R_ = REVS[rev]
     out = {}
-    for macro, (t, run, scope) in MACROS.items():
-        R = os.path.join(DIG, macro, "runs", run, "final")
+    for macro, (t, run, scope) in R_["macros"].items():
+        R = os.path.join(DIG, run, "final")
         lib = liberty(t)
         insts = netlist(os.path.join(R, "nl", f"{macro}.nl.v"))
         wire = spef(os.path.join(R, "spef", "nom", f"{macro}.nom.spef"))
@@ -224,17 +246,21 @@ def main():
             if ck and "CLK" in conn:
                 er, ef, nff = er + ck[0], ef + ck[1], nff + 1
         f_rise = er / (er + ef) if er + ef else 0.5
-        P = opensta(macro)
+        P = opensta(macro, R_["logs"])
         q = lambda w: w / (VDD * FMCLK)                     # W -> C per MCLK cycle
         seq_int, clk_int, clk_sw = q(P[("Sequential", "int")]), q(P[("Clock", "int")]), q(P[("Clock", "sw")])
         data_tot = q(P[("Combinational", "int")] + P[("Combinational", "sw")] + P[("Sequential", "sw")])
         # VCD: switched capacitance per frame cycle (clock nets excluded)
         netcap_data = {n: c for n, c in netcap.items() if n not in clk_nets}
-        rises, marks, sw = vcd_activity(scope, netcap_data)
+        rises, marks, sw, strobes = vcd_activity(scope, netcap_data, R_["vcd"])
         # frame phase: TH_CAPTURE rises at the edge that starts frame cycle MARK_CYCLE
         n_mark = np.searchsorted(rises, marks, side="right") - 1
         ph = int(np.bincount(n_mark % NCYC).argmax())
         cyc = (np.arange(len(rises)) - ph + MARK_CYCLE) % NCYC
+        if len(strobes):                                    # frame cycle 0 = CMP_STROBE high
+            n_s = np.searchsorted(rises, strobes, side="right") - 1
+            c_s = np.bincount(cyc[n_s[n_s >= 0]], minlength=NCYC)
+            assert c_s.argmax() == 0 and c_s.sum() == c_s[0], f"{macro}: CMP_STROBE rises in frame cycles {c_s}"
         per_c = np.array([sw[cyc == c].mean() for c in range(NCYC)])
         data = data_tot * per_c / per_c.sum() * NCYC if per_c.sum() else np.full(NCYC, data_tot / NCYC)
         f_clk_rise = c_clk_rise / (c_clk_rise + c_clk_fall) if c_clk_rise + c_clk_fall else 1.0
@@ -257,11 +283,18 @@ def main():
         print(f"   VCD {len(rises)} cycles, data switched {sw.mean():.3f} pF/cycle; per frame cycle (pF): "
               + " ".join(f"{x:.2f}" for x in per_c))
         print(f"   charge per edge: rising {q_rise.min()*1e12:.1f}..{q_rise.max()*1e12:.1f} pC "
-              f"(mean {q_rise.mean()*1e12:.1f}), falling {q_fall*1e12:.1f} pC; mean current {o['I_avg_mA']:.3f} mA")
-    json.dump(out, open(os.path.join(BUILD, "current_profile.json"), "w"), indent=1)
+              f"(mean {q_rise.mean()*1e12:.1f}), falling {q_fall*1e12:.1f} pC; mean current {o['I_avg_mA']:.3f} mA"
+              + (f"; CMP_STROBE rises {len(strobes)} times, all in frame cycle 0" if len(strobes) else ""))
+    out_path = out_path or R_["out"]
+    json.dump(out, open(out_path, "w"), indent=1)
+    print("wrote", out_path)
 
 
 MARK_CYCLE = 1          # TH_CAPTURE is high in frame cycle 1 (eeg_adc_dig samples TH at e2)
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--rev", default="r13", choices=tuple(REVS), help="the chip version (default r13)")
+    ap.add_argument("--out", default=None, help="write here instead of the version's file")
+    a = ap.parse_args()
+    main(a.rev, a.out)

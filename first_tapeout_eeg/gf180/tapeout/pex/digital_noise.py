@@ -43,7 +43,10 @@ Cases (each a folder in runs/digital_noise/):
          them on the same time points: a copy minus A is that version's coupling without the numerical noise
          that separate decks have between them (b1iso - the chain's chunk: 0.13..0.27 nV, the size of the
          coupling itself). In <runs>/S/ (with --chain r12: the 12th chip's chain, AFE and ADC; the 13th and 14th
-         chips' AFE differs from it only in INN's Metal4 blankets in afe_top)
+         chips' AFE differs from it only in INN's Metal4 blankets in afe_top). compare S also sets A against the
+         chain's own chunk (A - chain: the same circuit in another deck, the floor of separate decks) and gives
+         each offset's standard error and the plain mean of the periods (11/26: r13 - A 0.00 +- 0.18 nV,
+         r14 - A +0.55 +- 0.08 nV, A - chain +0.40 +- 0.31 nV)
 
 Not in it: the substrate between DVSS and AVSS (the chip joins them through it), resistance
 inside the blocks, the chip-level wiring of the control lines (the deck's sources stay ideal
@@ -641,6 +644,11 @@ def compare_same(copies):
     tend = t[-1]
     vers = [c for c in copies if c != "A"]
     pairs = [(c, "A") for c in vers] + [(b, a) for i, a in enumerate(vers) for b in vers[i + 1:]]
+    # the chain's own chunk is A's circuit in another deck: A - chain is the floor of comparing separate decks
+    ch = load_case("A") if "A" in copies and CHAIN_REV and not ADC_REV else None
+    if ch is not None and ch["time"][-1] >= tend - 1e-9:
+        R["chain"] = ch
+        pairs.append(("A", "chain"))
     res = {"adc": f"{CHAIN_REV or 'r9'} (the chain's)", "copies": list(copies)}
     res.update(analyse(R, pairs, text, tend))
     m = t > 2e-6
@@ -983,7 +991,12 @@ def analyse(R, pairs, text, tend):
             dc = sum(a != b for a, b in zip(Xc["codes"][:n], Yc["codes"][:n]))
             k = np.linalg.lstsq(X, np.array(dv), rcond=None)[0]
             rest = np.array(dv) - X @ k
-            fit = {"offset_nV": k[0] / GAIN * 1e3, "tone_ppm": float(np.hypot(k[1], k[2])) / tone * 1e6,
+            # the offset's standard error from the rest (n - 3 degrees of freedom): the tone's per-period means and the
+            # constant are far from orthogonal over the few periods, so the offset is less sure than the rest suggests
+            se = (float(np.sqrt(np.sum(rest ** 2) / (len(dv) - 3) * np.linalg.inv(X.T @ X)[0, 0])) / GAIN * 1e3
+                  if len(dv) > 3 else float("nan"))
+            fit = {"offset_nV": k[0] / GAIN * 1e3, "offset_se_nV": se, "mean_nV": float(np.mean(dv)) / GAIN * 1e3,
+                   "tone_ppm": float(np.hypot(k[1], k[2])) / tone * 1e6,
                    "tone_uV": [k[1], k[2]], "rest_nV_rms": float(np.sqrt(np.mean(rest ** 2))) / GAIN * 1e3}
             d = {"vo_uV": dv, "electrode_uV": [v / GAIN for v in dv], "o1_uV": do1, "codes_differ": dc, "frames": n,
                  "fit": fit}
@@ -993,8 +1006,8 @@ def analyse(R, pairs, text, tend):
             print(f"{p:5s} - {q:5s}: AFE out per period (uV) " + " ".join(f"{v:+8.2f}" for v in dv)
                   + "   electrode (nV) " + " ".join(f"{v / GAIN * 1e3:+7.1f}" for v in dv)
                   + f"   codes differ {dc}/{n}")
-            print(f"{'':15s}offset {fit['offset_nV']:+.3f} nV, tone {fit['tone_ppm']:.2f} ppm, "
-                  f"rest {fit['rest_nV_rms']:.3f} nV rms"
+            print(f"{'':15s}offset {fit['offset_nV']:+.3f} nV (SE {fit['offset_se_nV']:.3f}; plain mean "
+                  f"{fit['mean_nV']:+.3f}), tone {fit['tone_ppm']:.2f} ppm, rest {fit['rest_nV_rms']:.3f} nV rms"
                   + ("; AFE input: CM {cm_pp_mV:.2f} mV p-p, differential {diff_pp_uV:.2f} uV p-p away from the CHOP "
                      "edges ({diff_pp_all_uV:.2f} with them)".format(**d["input"]) if "input" in d else ""))
     for c, x in res["cases"].items():

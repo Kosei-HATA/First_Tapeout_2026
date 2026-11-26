@@ -351,12 +351,14 @@ def blank_w(length):
 def guarded_addrs():
     """Writes refused (STATE_ERR) while a command is pending: the registers with fields applied at the tick (the
     shadows) and the timers, so that no write lands between a command and its tick. Read at the command's tick are
-    T_WARM (START; an APPLY or APPLY_NR in WARMUP restarts its count, audit round 21), T_PRE (APPLY) and T_ELEC
-    (APPLY_NR: the restart, ALIGN / FILL -> WAIT_E, the mark's length); the
-    others are read when each wait starts (its state's entry), after the guard: a START's T_REC at WARMUP's expiry and
-    T_ELEC at RECOVER's, an APPLY's T_RST at PRE's, T_REC at PULSE's and T_ELEC at RECOVER's expiry, an APPLY_NR's in
-    RECOVER T_ELEC at RECOVER's expiry (audit rounds 46 and 47, auditor A); a running wait keeps its length. So the
-    host writes them only in IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
+    T_WARM (START; an APPLY or APPLY_NR in WARMUP restarts its count, audit round 21), T_PRE (an APPLY taken while the
+    AFE runs) and T_ELEC (an APPLY_NR in WAIT_E, ALIGN, FILL or RUN: the restart, ALIGN / FILL -> WAIT_E, the mark's
+    length). The others are read when each wait starts (its state's entry), after the guard: a START reads T_REC at
+    WARMUP's expiry and T_ELEC at RECOVER's; an APPLY taken while the AFE runs, T_RST at PRE's, T_REC at PULSE's and
+    T_ELEC at RECOVER's expiry; an APPLY or APPLY_NR taken in WARMUP (no PRE, no PULSE), T_REC at WARMUP's and T_ELEC
+    at RECOVER's expiry, as a START; an APPLY_NR taken in RECOVER, T_ELEC at RECOVER's expiry (audit rounds 46 to 48,
+    auditor A; round 48: the WARMUP case was missing). A running wait keeps its length. So the host writes them only in
+    IDLE or RUN (5.4 steps 4 and 7; audit round 20, auditor A)."""
     return sorted({a for a, n, acc, lock, fields, _ in REGS
                    if any(f["cls"] == "apply" for f in fields) or n in ("T_WARM", "T_ELEC", "T_REC", "T_PRE", "T_RST")})
 

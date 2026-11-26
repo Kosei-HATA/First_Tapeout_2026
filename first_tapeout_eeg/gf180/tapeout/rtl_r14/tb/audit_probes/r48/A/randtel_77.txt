@@ -1,0 +1,2 @@
+tb_a48_rand seed 5318314: 920 ops, 400.3 ms; setting changes 84 (one-step 49), pulses 22, releases 23, stored 9 (CHANGED 5, required 5); CHOP1 boundaries 25, rate switches 13, blank-width changes 15; cmds IDLE APPLY 2 NR 1 START 8, WARMUP A/NR 6 STOP 2, pre-RUN NR 56 APPLY 13 STOP 5, RUN NR 3 APPLY 3 STOP 0 SOFT 1 TEST 0; SPI errors 0; errors 0
+probes/tb_a48_rand.sv:329: $finish called at 400295866769 (1ps)

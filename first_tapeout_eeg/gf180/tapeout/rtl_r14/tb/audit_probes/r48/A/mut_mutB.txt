@@ -1,0 +1,8 @@
+ERROR @16999747000: M3: stored window starts 1073.3 us after the release (>= 0.22 ms + T_ELEC 2 ms)
+ERROR @17999761000: M3: stored window starts 2073.3 us after the release (>= 0.22 ms + T_ELEC 2 ms)
+ERROR @29999926000: M3: stored window starts 854.3 us after the release (>= 0.22 ms + T_ELEC 3 ms)
+ERROR @30999940000: M3: stored window starts 1854.3 us after the release (>= 0.22 ms + T_ELEC 3 ms)
+ERROR @31999954000: M3: stored window starts 2854.3 us after the release (>= 0.22 ms + T_ELEC 3 ms)
+ERROR @138001419000: M3: stored window starts 378.2 us after the release (>= 0.22 ms + T_ELEC 1 ms)
+tb_a48_rand seed 1519519: 287 ops, 150.1 ms; setting changes 43 (one-step 21), pulses 16, releases 17, stored 46 (CHANGED 24, required 24); CHOP1 boundaries 15, rate switches 6, blank-width changes 5; cmds IDLE APPLY 0 NR 0 START 4, WARMUP A/NR 6 STOP 0, pre-RUN NR 12 APPLY 5 STOP 4, RUN NR 9 APPLY 5 STOP 0 SOFT 0 TEST 1; SPI errors 0; errors 6
+probes/tb_a48_rand.sv:323: $finish called at 150074941265 (1ps)

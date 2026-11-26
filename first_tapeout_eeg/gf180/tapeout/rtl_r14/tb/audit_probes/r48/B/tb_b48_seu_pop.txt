@@ -1,0 +1,15 @@
+read A (normal): 64 bits, header 0x8c ALERT 0, SEQ 0008, crc_ok 1, pop requests 1, pops 1, FRAME_ERR 0, held 0, level 4
+read B (CRC taken as bad: 8 extra SCLKs): 72 bits, header 0x8c ALERT 0, SEQ 0009, crc_ok 1, pop requests 0, pops 0, FRAME_ERR 1, held 1, level 4
+after the FRAME_ERR clear: ERR 0x00, held 1, level 4
+  upset: st 4 -> 6
+FIFO_LEVEL CRC read with the upset: MISO 8c 04 eb (CRC ok 1), pop requests 1, pops 1, FRAME_ERR 0, level 3, ERR 0x00
+read C (the re-read): 64 bits, header 0x8c ALERT 0, SEQ 000a, crc_ok 1, pop requests 1, pops 1, FRAME_ERR 0, held 0, level 2
+read E (CRC taken as bad: 8 extra SCLKs): 72 bits, header 0x8c ALERT 0, SEQ 000b, crc_ok 1, pop requests 0, pops 0, FRAME_ERR 1, held 1, level 2
+  upset: st 2 -> 6
+header-only poll 0x83 with the upset: MISO 8c, pop requests 1, pops 1, FRAME_ERR 0, level 1
+read F (the re-read): 64 bits, header 0x8c ALERT 0, SEQ 000c, crc_ok 1, pop requests 1, pops 1, FRAME_ERR 0, held 0, level 0
+read G (stopped after its header, step 8): 8 bits, header 0x8c ALERT 0, SEQ 000c, crc_ok 1, pop requests 0, pops 0, FRAME_ERR 1, held 1, level 2
+  upset: st 4 -> 6
+ERR CRC read with the upset: MISO 8c 00 c8, pop requests 1, pops 1, FRAME_ERR 0, level 1
+read H (the next read): 64 bits, header 0x8c ALERT 0, SEQ 000e, crc_ok 1, pop requests 1, pops 1, FRAME_ERR 0, held 0, level 1
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b48run/tb_b48_seu_pop.sv:100: $finish called at 16625729469 (1ps)

@@ -318,15 +318,14 @@
 | ブロック | 変更 |
 |---|---|
 | eeg_spi_slave | 先頭バイトの R/W とアドレス、STATUS の返送、固定長の書き込みと CRC、連続読み出し、FRAME_ERR／CRC_ERR と読み出しの先頭バイトの ADDR_ERR、サンプルの写しと取り出しの要求 |
-| eeg_regs | 第 2.1 節のレジスタ、シャドウとアクティブ、W1C、命令の保持（CMD_PENDING）と未処理の間の命令と守るレジスタへの書き込みの拒否（STATE_ERR）、書き込みの ADDR_ERR と CMD_ERR、範囲の検査（RANGE_ERR）、試験の鍵、ALERT とマスク。定数、範囲の表、OFEN は生成した `eeg_regs_defs.svh` を読み込む |
-| シーケンサ（新設） | `fsm_spec.py` の状態遷移表、tick（相 A の中ほどの cycle 24）、タイマ、cfg_ok と nr_ok、AFE_RST の駆動 |
+| eeg_regs | 第 2.1 節のレジスタ、シャドウとアクティブ、W1C、命令の保持（CMD_PENDING）と未処理の間の命令と守るレジスタへの書き込みの拒否（STATE_ERR）、書き込みの ADDR_ERR と CMD_ERR、範囲の検査（RANGE_ERR）、試験の鍵、ALERT とマスク、cfg_ok と nr_ok（シャドウの範囲と、AFE の動作中の APPLY_NR の 1 段の変化の判定。シーケンサが命令の受け付けに使う）。定数、範囲の表、OFEN は生成した `eeg_regs_defs.svh` を読み込む |
+| シーケンサ（新設） | `fsm_spec.py` の状態遷移表、tick（相 A の中ほどの cycle 24）、タイマ、cfg_ok と nr_ok（eeg_regs の判定）による命令の受け付け、AFE_RST の駆動 |
 | eeg_cic3 | クリアを出力の時刻に合わせる（間引きの計数は止めない）。有効の判定は現行の NSKIP ＝ 2 |
 | eeg_fifo | START、APPLY（パルスあり）、FLUSH で空にする（11/20 の監査で APPLY を追加）。写しが先頭のままの印（held） |
-| eeg_digital_top（最上位） | サンプルの状態のバイトの新しい項目と空の語。DRDY_N のレベルとパルスのモード。SEQ は RESET_N の解除からの出力の番号（全ての状態で、SOFT_RESET の間も加算）。ブロックのつなぎ（第 47 回、B で、命令の保持、STATE_ERR、試験の鍵を eeg_spi_slave の行から eeg_regs の行へ、サンプルの状態のバイト、DRDY_N のモード、SEQ を eeg_fifo の行からこの行へ移した：RTL のとおり） |
+| eeg_digital_top（最上位） | 端子は変えない（CHOP_DLY などの内部の信号の整理のみ）。サンプルの状態のバイトの新しい項目と空の語。DRDY_N のレベルとパルスのモード（DRDY_N はレジスタの出力）。SEQ は RESET_N の解除からの出力の番号（全ての状態で、SOFT_RESET の間も加算）。SOFT_RESET は制御のみを戻し、時刻とデータの経路は RESET_N から続ける。OVL は 3 個の出力の間隔の窓、CHANGED は 3 ＋ T_ELEC 個で RUN を出ると取り消す（11/20 の監査）。ブロックのつなぎ（第 47 回、B で、命令の保持、STATE_ERR、試験の鍵を eeg_spi_slave の行から eeg_regs の行へ、サンプルの状態のバイト、DRDY_N のモード、SEQ を eeg_fifo の行からこの行へ移した：RTL のとおり。第 48 回、B で、同じブロックの二つの行を一つにし、cfg_ok と nr_ok をシーケンサの行から eeg_regs の行へ移した） |
 | 過負荷の検出（新設） | 32 フレームの窓で両端の符号を数える |
 | eeg_clkgen | CHOP_DLY を廃止（最上位で遅延の入力を 0 に固定。eeg_clkgen の遅延の論理は残り、合成で畳まれる。CHOP_OUT ＝ CHOP を tb_top_r14 で常時確かめる。11/20 の監査の第 5 回で記述を訂正）。シーケンサの tick の出力を追加（相 A の中ほど、サイクル 24。位置は `fsm_spec.TIMING` から生成した定数による。第 13 回）。それ以外は変えない |
 | eeg_chop1、eeg_raw、eeg_adc_dig | 変えない |
-| eeg_digital_top | 端子は変えない（CHOP_DLY などの内部の信号の整理のみ）。SOFT_RESET は制御のみを戻し、時刻とデータの経路は RESET_N から続ける。OVL は 3 個の出力の間隔の窓、CHANGED は 3 ＋ T_ELEC 個で RUN を出ると取り消す、DRDY_N はレジスタの出力（11/20 の監査） |
 
 ## 7. r14 の RTL と検証（11/19 夜、11/20 の監査で更新）
 

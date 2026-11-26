@@ -19,9 +19,9 @@
 //   integrators, on every accepted input (all three use OLD register values,
 //   i.e. the classic pipelined Hogenauer form; one adder per path):
 //       i1 <= i1 + x;   i2 <= i2 + i1;   i3 <= i3 + i2;
-//   on the R-th accepted input (counted since reset/clear) a decimation event
-//   starts the comb pipeline, which runs one step per MCLK cycle using the
-//   updated i3:
+//   on the R-th accepted input (counted since reset only: an armed clear leaves the count running, so the output
+//   grid never moves; audit round 48) a decimation event starts the comb pipeline, which runs one step per MCLK
+//   cycle using the updated i3:
 //       step 1: acc <= i3  - d1;  d1 <= i3;
 //       step 2: acc <= acc - d2;  d2 <= acc;
 //       step 3: acc <= acc - d3;  d3 <= acc;

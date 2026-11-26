@@ -110,7 +110,7 @@ module eeg_digital_top #(
     logic [23:0] cic_data;
     logic        cic_stb, cic_valid, cic_arm;
     /* verilator lint_off UNUSEDSIGNAL */
-    logic        cic_settling;                    // not used by r14 (the sequencer counts the outputs)
+    logic        cic_settling;                    // not used by r14 (FILL waits for cic_valid, the CIC's NSKIP count)
     /* verilator lint_on UNUSEDSIGNAL */
 
     // The CIC takes ALIGN's clear at the edge that starts the output-time cycle, from cic_arm in the cycle before

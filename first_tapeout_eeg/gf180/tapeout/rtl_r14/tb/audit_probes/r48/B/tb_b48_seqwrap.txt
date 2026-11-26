@@ -1,0 +1,7 @@
+read before STOP: header 0x8c ALERT 0, word 88 0008 03e177, CRC ok 1
+read before STOP: header 0x8c ALERT 0, word 80 0009 03c67b, CRC ok 1
+read before STOP: header 0x8c ALERT 0, word 80 000a 04b629, CRC ok 1
+last word used before STOP: SEQ 0x000a
+first read after START: header 0x8c ALERT 0, word 80 000a 0394c9, CRC ok 1
+first word after START: VALID 1, SEQ 0x000a (last used 0x000a): same SEQ, different bytes
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/b48run/tb_b48_seqwrap.sv:72: $finish called at 23069696723 (1ps)

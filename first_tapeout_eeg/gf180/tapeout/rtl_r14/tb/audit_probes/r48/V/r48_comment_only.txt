@@ -1,0 +1,13 @@
+comment-only    gf180/tapeout/rtl_r14/eeg_digital_top.sv  (1 lines differ only in comments; 289 lines in both; code sha256 80d52502ff88fa16)
+byte-identical  gf180/tapeout/rtl_r14/eeg_seq.sv
+byte-identical  gf180/tapeout/rtl_r14/eeg_regs.sv
+byte-identical  gf180/tapeout/rtl_r14/eeg_spi_slave.sv
+byte-identical  gf180/tapeout/rtl_r14/eeg_fifo.sv
+byte-identical  gf180/tapeout/rtl_r14/eeg_ovl.sv
+comment-only    gf180/tapeout/rtl_r14/eeg_cic3.sv  (3 lines differ only in comments; 154 lines in both; code sha256 e8973453e80cad2a)
+byte-identical  gf180/tapeout/rtl_r14/eeg_clkgen.sv
+byte-identical  gf180/tapeout/rtl/eeg_chop1.sv
+byte-identical  gf180/tapeout/rtl/eeg_raw.sv
+byte-identical  gf180/tapeout/rtl/eeg_rnd_sat.sv
+byte-identical  gf180/tapeout/rtl/spec/eeg_regs_defs.svh
+PASS: only comments differ

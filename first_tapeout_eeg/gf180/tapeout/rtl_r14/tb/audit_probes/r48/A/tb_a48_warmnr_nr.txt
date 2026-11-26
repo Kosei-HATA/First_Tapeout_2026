@@ -1,0 +1,2 @@
+APPLY_NR in WARMUP: ERR after the writes 0x00; PRE entered 0, PULSE entered 0; WARMUP 6.024 ms (restarted at the APPLY_NR), RECOVER 781.26 us (T_REC 100 read at WARMUP's expiry, not 32 at the APPLY_NR's tick), WAIT_E 2.000 ms (T_ELEC 2 read at RECOVER's expiry)
+/private/tmp/claude-501/-Users-noah-Codings-First-Tapeout-2026-first-tapeout-eeg/e6a9fc49-8f0a-407f-94bd-50b555db57a9/scratchpad/r48_verify/tb_a48_warmnr.sv:54: $finish called at 11999692859 (1ps)

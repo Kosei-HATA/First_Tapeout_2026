@@ -284,6 +284,24 @@ module gl_sdf_r15;
         wait_state(ST_RUN, 12000.0, "3 START");
         if (OFM !== 10'd10 || OFEN !== ofen_of_range(3'd1)) fail($sformatf("3 OFM %0d OFEN %b after START", OFM, OFEN));
         for (int i = 0; i < 2; i++) sample("3 RUN", st);
+`ifdef GL_WAVE_VCD
+        // the waveform capture (gl_r15/run_wave_r15.sh, wave_sim_r15.py; 11/28): the pins of the RTL (this module's
+        // nets) and of the netlist (gl_shadow_r15's), and the RTL's frame cycle, from here: 40 frames, the LATEST read,
+        // a sample read, 40 frames; then the run ends (its own PASS line, and the lockstep's over the run)
+        $dumpfile(`GL_WAVE_VCD);
+        $dumpvars(1, gl_sdf_r15);
+        $dumpvars(1, gl_shadow_r15);
+        $dumpvars(0, gl_sdf_r15.dut.cycle);
+        repeat (32 * 40) @(negedge MCLK);
+        lat_expect("3 LATEST in RUN (captured)", 1);
+        sample("3 RUN (captured)", st);
+        repeat (32 * 40) @(negedge MCLK);
+        $dumpoff;
+        if (spi_errors != 0) fail($sformatf("%0d SPI errors", spi_errors));
+        if (errors == 0) $display("PASS: gl_sdf_r15 (wave capture, %0d SPI frames, %0d LATEST reads)", spi_xfers, n_lat);
+        else             $display("FAIL: gl_sdf_r15 (wave capture), %0d errors", errors);
+        $finish;
+`endif
         lat_expect("3 LATEST in RUN", 1);
         lat_expect("3 LATEST in RUN, read again", 1);
         // APPLY_NR: one step

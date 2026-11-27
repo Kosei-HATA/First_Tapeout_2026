@@ -9,7 +9,7 @@ next to this file:
   apply    APPLY in RUN: PRE, PULSE, RECOVER, ALIGN, FILL, RUN with the FIFO emptied at the APPLY's tick (schematic;
            the durations from regmap.py)
   spi      the SPI frames at byte level: write, write with CRC, register read (burst), read with CRC, sample read
-           (generated from fsm_spec's SPI table and SAMPLE_BYTES; audit round 15)
+           (generated from fsm_spec's SPI table and SAMPLE_BYTES; audit round 15), and r15's LATEST read (11/28)
 
 Usage: gf180/tools/venv310/bin/python gf180/tapeout/rtl/spec/wave.py [fresh | selftest]
 """
@@ -176,7 +176,8 @@ def apply_seq():
 # the frames of the SPI diagram: (title, kind, CRC on, length). A write and a sample take the length at which the
 # table commits or pops (None); the reads show 3 bytes (CRC on: the data and its CRC; off: two addresses).
 SPI_FRAMES = [("書き込み", "write", 0, None), ("書き込み（CRC）", "write", 1, None), ("読み出し（連続）", "read", 0, 3),
-              ("読み出し（CRC）", "read", 1, 3), ("サンプル", "sample", 1, None)]
+              ("読み出し（CRC）", "read", 1, 3), ("サンプル", "sample", 1, None),
+              ("最新値（LATEST、r15）", "latest", 1, None)]   # r15 (11/28): the LATEST window, never popped
 # check's messages (selftest: each is expected by a mutation, each mutation gives its own)
 MSG = {"path": "is not a transition of the table", "lane": ", but the table gives",
        "spi_accept": "that the table completes without an error flag",
@@ -196,7 +197,10 @@ MSG = {"path": "is not a transition of the table", "lane": ", but the table give
        "time": ", but the timers' reset values and TIMING give",
        "drdy_store": ", where every output time stores a sample: DRDY_N pulses in each segment of",
        # audit round 46, auditor C: the startup diagram's RESET_N lane
-       "reset": ", where RESET_N is Low exactly in the state lane's RESET columns: expected"}
+       "reset": ", where RESET_N is Low exactly in the state lane's RESET columns: expected",
+       # r15 (11/28): the LATEST read frame (the window 0x4F, the sample frame's bytes, never popped)
+       "spi_latest": ", where the LATEST frame must read R＋ its window's address and carry the sample frame's MISO bytes:",
+       "spi_latest_pop": "the LATEST frame pops the FIFO through the table (its copy is not the head, head 0)"}
 
 
 def sample_labels():
@@ -215,8 +219,9 @@ def spi_lanes(kind, crc_en, length):
     during the header, then what the table loads at the end of each byte (a write loads nothing: 0x00; a sample
     loads its copy's bytes, named from fsm_spec.SAMPLE_BYTES)."""
     tag = f"wave_spi: {kind} frame (CRC {'on' if crc_en else 'off'})"
-    env = dict(rw=int(kind != "write"), smp=int(kind == "sample"), crc_en=crc_en, addr_ok=1,
-               wr_ok=int(kind == "write"), busy=0, crc_ok=1, head=1)
+    win = kind in ("sample", "latest")                    # the two data windows (r15: LATEST, the copy not the head)
+    env = dict(rw=int(kind != "write"), smp=int(win), crc_en=crc_en, addr_ok=1,
+               wr_ok=int(kind == "write"), busy=0, crc_ok=1, head=int(kind != "latest"))
     goal = {"write": "commit", "sample": "pop"}.get(kind)
     found = None
     for n in ([length] if length else range(1, 11)):
@@ -229,9 +234,13 @@ def spi_lanes(kind, crc_en, length):
         return None, None, [f"{tag}: no {length or '1..10'}-byte frame {MSG['spi_accept']}"]
     n, tr = found
     smp_addr = next(a for a, nm, *_ in RM.REGS if nm == "SAMPLE")
-    mosi = [{"write": "W＋adr", "read": "R＋adr"}.get(kind, f"R＋0x{smp_addr:02X}")]
+    lat_addr = next(a for a, nm, *_ in RM.REGS if nm == "LATEST")
+    probs = []
+    mosi = [{"write": "W＋adr", "read": "R＋adr", "latest": f"R＋0x{lat_addr:02X}"}.get(kind, f"R＋0x{smp_addr:02X}")]
+    if kind == "latest" and any("pop" in a for _e, a in tr):
+        probs.append(f"{tag}: {MSG['spi_latest_pop']}")
     csf = [a for e, a in tr if e == "CSF"]
-    miso, probs = ["STATUS" if csf and "load_status" in csf[0] else "?"], []
+    miso = ["STATUS" if csf and "load_status" in csf[0] else "?"]
     if miso[0] != "STATUS":
         probs.append(f"{tag}: {MSG['spi_status']}")
     byte_acts = [a for e, a in tr if e == "BYTE"]
@@ -251,7 +260,7 @@ def spi_lanes(kind, crc_en, length):
             else:
                 miso.append("0x00")                       # load_zero, or a write (its MISO is 0x00)
         k_s += smp
-    if kind == "sample" and k_s != len(names):
+    if win and k_s != len(names):
         probs.append(f"{tag}: {k_s} {MSG['spi_sample']} {len(names)}")
     return mosi, miso, probs
 
@@ -268,7 +277,8 @@ def spi():
         mosi, miso, _p = spi_lanes(kind, crc_en, length)
         sig += ([{}] if sig else []) + [frame_(title, mosi or ["?"], miso or ["?"])]
     return {"signal": sig, "head": {"text": "SPI のフレーム（1 区切り ＝ 8 SCLK、モード 0、MSB 先頭）"},
-            "foot": {"text": "先頭バイト：bit 7 ＝ R/W（1 ＝ 読み出し）、bit 6:0 ＝ アドレス"},
+            "foot": {"text": "先頭バイト：bit 7 ＝ R/W（1 ＝ 読み出し）、bit 6:0 ＝ アドレス。最新値（r15）の CRC は 0xCF から、"
+                             "サンプルは 0xC0 から。最新値は取り出さない"},
             "config": {"hscale": 2}}
 
 
@@ -530,6 +540,20 @@ def check():
             errs.append(f"wave_chop: {key}: {n_}{MSG['chop_lanes']} 1")
     for _t, kind, crc_en, length in SPI_FRAMES:           # the SPI diagram (audit round 15)
         errs += spi_lanes(kind, crc_en, length)[2]
+    # r15 (11/28): the LATEST frame as drawn: R＋ the LATEST window's address, the sample frame's MISO bytes (the same
+    # 8-byte frame), and the sample frame's header R＋ the SAMPLE window's
+    drawn = {grp[0]: {ln["name"]: ln for ln in grp[1:] if isinstance(ln, dict) and "name" in ln}
+             for grp in spi()["signal"] if isinstance(grp, list) and grp}
+    lat_a = next(a for a, nm, *_ in RM.REGS if nm == "LATEST")
+    smp_a = next(a for a, nm, *_ in RM.REGS if nm == "SAMPLE")
+    lt = next((v for k, v in drawn.items() if k.startswith("最新値")), None)
+    sm = drawn.get("サンプル")
+    if lt is None or sm is None or "MOSI" not in lt or "MISO" not in lt or "MOSI" not in sm or "MISO" not in sm:
+        errs.append(f"wave_spi: no LATEST or sample frame{MSG['spi_latest']} R＋0x{lat_a:02X}")
+    elif (lt["MOSI"]["data"][0] != f"R＋0x{lat_a:02X}" or sm["MOSI"]["data"][0] != f"R＋0x{smp_a:02X}"
+          or lt["MISO"]["data"] != sm["MISO"]["data"]):
+        errs.append(f"wave_spi: LATEST frame {lt['MOSI']['data'][0]} / {lt['MISO']['data']}{MSG['spi_latest']} "
+                    f"R＋0x{lat_a:02X} / {sm['MISO']['data']}")
     return errs
 
 
@@ -637,6 +661,23 @@ def selftest():
             return lambda: globals().__setitem__(fn_name, orig)
         return apply
 
+    def spi_redraw(prefix, lane, k, value):        # r15 (11/28): one byte of a drawn SPI frame changed
+        def apply():
+            orig = spi
+
+            def drawn():
+                d_ = orig()
+                for grp in d_["signal"]:
+                    if isinstance(grp, list) and grp and grp[0].startswith(prefix):
+                        for ln in grp[1:]:
+                            if isinstance(ln, dict) and ln.get("name") == lane:
+                                ln["data"] = list(ln["data"])
+                                ln["data"][k] = value
+                return d_
+            globals()["spi"] = drawn
+            return lambda: globals().__setitem__("spi", orig)
+        return apply
+
     low = lambda n_, cols: levels(n_, set(range(n_)) - set(cols))   # DRDY_N Low (a pulse) at the columns cols
     tt = timer_text
     muts = [
@@ -685,6 +726,10 @@ def selftest():
         ("起動の図：RESET_N を解除しない", redraw("startup", "RESET_N", "0" + "." * 14), "reset"),
         ("起動の図：RESET_N を START のあと（列 4）に解除", redraw("startup", "RESET_N", "0...1" + "." * 10), "reset"),
         ("起動の図：RESET_N を RUN で再び下げる", redraw("startup", "RESET_N", "01.........0..."), "reset"),
+        # r15 (11/28): the LATEST frame
+        ("SPI の図：最新値のフレームの先頭バイトを SAMPLE の 0x40 に", spi_redraw("最新値", "MOSI", 0, "R＋0x40"), "spi_latest"),
+        ("SPI の表：先頭でない写しも CS_N の立ち上がりで取り出す（最新値の読み出しで FIFO が減る）",
+         table(FS.SPI, ("SDONE", "CSR"), [B(A, ["pop"], "IDLE")]), "spi_latest_pop"),
     ]
     base, missed, used = check(), 0, set()
     for name, apply, key in muts:

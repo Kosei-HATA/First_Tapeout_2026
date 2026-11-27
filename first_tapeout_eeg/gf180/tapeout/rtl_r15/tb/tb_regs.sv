@@ -381,7 +381,63 @@ module tb_regs;
             $display("tb_regs: the decisions of an applying tick against a write on the port: 6 checks, %0d errors", njd);
             errors = errors + njd;
         end
-        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap; the ack cycle)");
+        // ---------------- r15 (11/28): CFG_GEN (0x0D) and DROP_CNT (0x0E) at the cycle level, read through rdata. The pin
+        // bench tb_r15 meets a drop in the very cycle of the OVERRUN clear only by chance; here every case is driven:
+        //   CFG_GEN: 0 after a reset; +1 at every apply cycle and only there (apply held 3 cycles: +3); 255 + 1 = 0
+        //   DROP_CNT: 0 after a reset; +1 at every ovr_set; stops at 255; a DFLAG write with OVERRUN (bit 0) returns it
+        //   to 0, one with OVL alone (bit 1) keeps it; a drop in the cycle of the clear counts (1), from 255 too
+        begin
+            logic [7:0] g;
+            integer nr, k;
+            nr = 0;
+            @(negedge clk); rst_n = 1'b0;
+            @(negedge clk); rst_n = 1'b1;
+            read_reg(7'h0D, g); if (g !== 8'h00) begin $display("ERROR: CFG_GEN 0x%02h after a reset", g); nr++; end
+            read_reg(7'h0E, g); if (g !== 8'h00) begin $display("ERROR: DROP_CNT 0x%02h after a reset", g); nr++; end
+            k = 0;
+            for (int i = 0; i < 300; i++) begin
+                @(negedge clk); apply = 1'b1;
+                @(negedge clk); apply = 1'b0;
+                k = k + 1;
+                @(negedge clk);                             // a cycle without apply changes nothing
+                if (k == 1 || k == 100 || k == 255 || k == 256 || k == 300) begin
+                    read_reg(7'h0D, g);
+                    if (g !== 8'(k)) begin $display("ERROR: CFG_GEN 0x%02h after %0d applies", g, k); nr++; end
+                end
+            end
+            @(negedge clk); apply = 1'b1;
+            repeat (3) @(negedge clk);
+            apply = 1'b0;
+            read_reg(7'h0D, g); if (g !== 8'(k + 3)) begin $display("ERROR: CFG_GEN 0x%02h after apply held 3 cycles", g); nr++; end
+            for (int i = 0; i < 10; i++) begin @(negedge clk); ovr_set = 1'b1; @(negedge clk); ovr_set = 1'b0; end
+            read_reg(7'h0E, g); if (g !== 8'd10) begin $display("ERROR: DROP_CNT 0x%02h after 10 drops", g); nr++; end
+            @(negedge clk); addr = A_DFLAG; we = 1'b1; wdata = 8'h02;            // OVL alone: DROP_CNT kept
+            @(negedge clk); we = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'd10) begin $display("ERROR: DROP_CNT 0x%02h after a DFLAG write of OVL alone", g); nr++; end
+            @(negedge clk); addr = A_DFLAG; we = 1'b1; wdata = 8'h01;            // OVERRUN: 0
+            @(negedge clk); we = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'd0) begin $display("ERROR: DROP_CNT 0x%02h after the OVERRUN clear", g); nr++; end
+            for (int i = 0; i < 5; i++) begin @(negedge clk); ovr_set = 1'b1; @(negedge clk); ovr_set = 1'b0; end
+            @(negedge clk); addr = A_DFLAG; we = 1'b1; wdata = 8'h01; ovr_set = 1'b1;   // a drop in the clear's cycle
+            @(negedge clk); we = 1'b0; ovr_set = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'd1) begin $display("ERROR: DROP_CNT 0x%02h after a drop in the cycle of the OVERRUN clear (1: the drop counts)", g); nr++; end
+            @(negedge clk); ovr_set = 1'b1;                                      // 260 drops in a row: stops at 255
+            repeat (260) @(negedge clk);
+            ovr_set = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'hFF) begin $display("ERROR: DROP_CNT 0x%02h after 261 drops (stops at 255)", g); nr++; end
+            @(negedge clk); addr = A_DFLAG; we = 1'b1; wdata = 8'h01; ovr_set = 1'b1;   // the clear at 255 with a drop
+            @(negedge clk); we = 1'b0; ovr_set = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'd1) begin $display("ERROR: DROP_CNT 0x%02h after a drop in the cycle of the clear at 255", g); nr++; end
+            @(negedge clk); addr = A_DFLAG; we = 1'b1; wdata = 8'hFF;            // both bits: 0
+            @(negedge clk); we = 1'b0;
+            read_reg(7'h0E, g); if (g !== 8'd0) begin $display("ERROR: DROP_CNT 0x%02h after a DFLAG write of 0xFF", g); nr++; end
+            @(negedge clk); rst_n = 1'b0;
+            @(negedge clk); rst_n = 1'b1;
+            read_reg(7'h0D, g); if (g !== 8'h00) begin $display("ERROR: CFG_GEN 0x%02h after the second reset", g); nr++; end
+            $display("tb_regs: r15 CFG_GEN and DROP_CNT: 17 checks, %0d errors", nr);
+            errors = errors + nr;
+        end
+        if (errors == 0) $display("PASS: tb_regs (a set in the cycle of its W1C clear wins; cfg_ok and nr_ok == regmap; the ack cycle; r15 CFG_GEN and DROP_CNT)");
         else             $display("FAIL: tb_regs");
         $finish;
     end

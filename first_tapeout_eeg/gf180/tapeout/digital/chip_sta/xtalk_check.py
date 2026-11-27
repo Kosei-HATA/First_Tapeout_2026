@@ -41,12 +41,12 @@ XT = json.load(open(os.path.join(rev.BUILD, "xtalk.json")))
 TM = dc.TM
 NSEG = 20
 CELL = {"f2": {}, "d1": {n: "buf_16" for n in ("CHOP", "CHOP_OUT", "CHOP_BLANK", "CHOP_EN", "AFE_RST", "CHOP1",
-                                                "ADC_ZERO")} | {"CMP_STROBE": "clkbuf_16"}, "r14": {}}
+                                                "ADC_ZERO")} | {"CMP_STROBE": "clkbuf_16"}, "r14": {}, "r15": {}}
 # every other line's buffer: buf_1 in the r13 macro (f2, and d1's static trims), clkbuf_2 on all 50 outputs of r14's
-DEFAULT_CELL = {"f2": "buf_1", "d1": "buf_1", "r14": "clkbuf_2"}
+DEFAULT_CELL = {"f2": "buf_1", "d1": "buf_1", "r14": "clkbuf_2", "r15": "clkbuf_2"}
 # r13: f2 and the candidate d1, CHOP_DLY 0 and 90; r14: its macro, CHOP_DLY gone (0). XTALK_VERSIONS=f2 leaves d1 out
 # (the 13th chip's own wiring, 11/24)
-VERSIONS = tuple(os.environ.get("XTALK_VERSIONS", "f2,d1" if rev.REV == "r13" else "r14").split(","))
+VERSIONS = tuple(os.environ.get("XTALK_VERSIONS", "f2,d1" if rev.REV == "r13" else rev.REV).split(","))
 DLYS = (0, 90) if rev.REV == "r13" else (0,)
 
 

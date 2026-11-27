@@ -1,7 +1,8 @@
 // tb_r15 - the r15 additions taken from the Test4-1 draft (11/27), at the pins of eeg_digital_top:
 //   (a) VERSION 0x11; CFG_GEN, DROP_CNT and the LATEST window after a reset (0, 0, the empty word with its CRC);
 //   (b) CFG_GEN: +1 at every load of the active copies (START, APPLY, APPLY_NR), counted against dut.apply;
-//   (c) LATEST: the last pushed output (SEQ and DATA equal the monitor's last push), read twice the same, never popped
+//   (c) LATEST: the last pushed output (status byte, SEQ and DATA equal the monitor's last push; an empty word's status
+//       byte the live flags of the copy's cycle, as the empty sample's; 11/28), read twice the same, never popped
 //       (FIFO_LEVEL unchanged apart from the pushes during the read), the empty word right after an apply, its CRC
 //       started from LAT_HDR (a CRC started from SMP_HDR fails), and it follows the outputs while the FIFO is full;
 //   (d) DROP_CNT: equal to the FIFO's drops (ovr_set pulses) since the last OVERRUN clear, back to 0 by the W1C of
@@ -44,17 +45,21 @@ module tb_r15;
     endtask
 
     // ---------------- monitors: applies, pushes (the last pushed word), drops since the last OVERRUN clear
-    integer n_apply = 0, n_drop = 0;
+    integer n_apply = 0, n_drop = 0, n_empty_ovr = 0;
     logic [15:0] last_seq;
     logic [23:0] last_data;
+    logic [7:0]  last_st;
     logic        last_v = 1'b0;
+    logic [7:0]  snap_empty_st = 8'h00;            // the top's empty status byte in the cycle LATEST was copied
     always @(posedge MCLK) begin
         if (dut.apply) n_apply <= n_apply + 1;
         // the OVERRUN clear from the committed write at the SPI's port (not the RTL's own drop_clr)
         if (dut.reg_we && dut.reg_addr == A_DFLAG && dut.reg_wdata[DFLAG_OVERRUN_LSB]) n_drop <= dut.ovr_set ? 1 : 0;
         else if (dut.ovr_set)    n_drop <= n_drop + 1;
         if (dut.apply)            last_v <= 1'b0;
-        else if (dut.u_fifo.push) begin last_v <= 1'b1; last_seq <= dut.seq_cnt; last_data <= dut.cic_data; end
+        else if (dut.u_fifo.push) begin last_v <= 1'b1; last_seq <= dut.seq_cnt; last_data <= dut.cic_data;
+                                        last_st <= dut.smp_status; end
+        if (dut.lat_snap) snap_empty_st <= dut.empty_status;
         else if (dut.seq_flush)   last_v <= 1'b0;
         if (!dut.rst_n) begin n_apply <= 0; n_drop <= 0; last_v <= 1'b0; end
     end
@@ -88,7 +93,11 @@ module tb_r15;
         if (st[SMP_VALID_LSB] !== v) fail($sformatf("%s: LATEST VALID %b, expected %b", what, st[SMP_VALID_LSB], v));
         if (v && (sq !== es || d !== ed))
             fail($sformatf("%s: LATEST SEQ %0d DATA %06h, expected %0d %06h", what, sq, d, es, ed));
+        if (v && st !== last_st) fail($sformatf("%s: LATEST status 0x%02h, the output's 0x%02h", what, st, last_st));
         if (!v && (sq !== 16'h0 || d !== 24'h0)) fail($sformatf("%s: empty LATEST with SEQ %0d DATA %06h", what, sq, d));
+        if (!v && st !== snap_empty_st)
+            fail($sformatf("%s: empty LATEST status 0x%02h, the empty status of its copy 0x%02h", what, st, snap_empty_st));
+        if (!v && snap_empty_st[SMP_OVERRUN_LSB]) n_empty_ovr = n_empty_ovr + 1;
     endtask
 
     task automatic rd(input logic [6:0] a, output logic [7:0] v);
@@ -172,6 +181,12 @@ module tb_r15;
         @(negedge MCLK); dut.u_regs.drop_cnt = 8'd253; n_drop = 253;
         repeat (4) #1.0e6;
         rd(A_DROP_CNT, v); expect8(v, 8'hFF, "DROP_CNT stops at 255");
+        // FLUSH in RUN with DFLAG.OVERRUN set: the empty LATEST carries the live flags (11/28)
+        r14_cmd(CMD_FLUSH);
+        while (dut.seq_flush !== 1'b1) @(posedge MCLK);
+        @(negedge MCLK);
+        lat_expect("LATEST right after FLUSH in RUN, OVERRUN set");
+        checks++; if (n_empty_ovr == 0) fail("no empty LATEST read with OVERRUN set");
         r14_write(A_DFLAG, 8'h01);
         // (b, c) APPLY in RUN: CFG_GEN + 1, LATEST empty right after the apply
         a0 = n_apply;

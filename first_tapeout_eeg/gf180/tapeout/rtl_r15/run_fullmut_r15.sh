@@ -1,0 +1,40 @@
+#!/bin/zsh
+# The complete mutation run of the r15 tree on one committed version, in its own copy (rtl_r14/run_fullmut_r14.sh for
+# rtl_r15, 11/28: tb/mutate_top_r15.py, the r14 groups and the group r15). The copy is a git archive of the version under
+# gf180/tapeout/rtl_r15/build/fullrun_<version>/ (git-ignored), with the inputs outside version control linked
+# read-only; nothing edits it, so the run ends on its own. Run from a Terminal panel tab:
+#   gf180/tapeout/rtl_r15/run_fullmut_r15.sh <version>
+# The record is build/fullrun_<version>/gf180/tapeout/rtl_r15/build/mutate_<date>-<pid>.log.
+H=${1:?usage: run_fullmut_r15.sh <version>}
+C=/Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg
+PY=$C/gf180/tools/venv310/bin/python
+H=$(git -C $C rev-parse --short "$H") || exit 1
+D=$C/gf180/tapeout/rtl_r15/build/fullrun_$H
+# never over a copy that exists (audit round 27, auditor C: rm -rf here removed a running run's copy of the same
+# version); remove an old one by hand first
+if [[ -e $D ]]; then
+    print -r -- "$D exists (a run of $H, perhaps still running): remove it by hand first"
+    exit 1
+fi
+mkdir -p $D && cd $D || exit 1
+git -C $C archive $H gf180/tapeout/rtl gf180/tapeout/rtl_r15 documentation/gf180_digital_control_spec_r15_20261127.md \
+    documentation/gf180_digital_control_requirements_r15_20261127.md | tar -x || exit 1
+mkdir -p gf180/tapeout/rtl/build/e2e
+ln -s $C/gf180/tapeout/rtl/build/e2e/s4.codes $C/gf180/tapeout/rtl/build/e2e/s20.codes gf180/tapeout/rtl/build/e2e/
+for R in typical_ov2.5V_150u_then_dc-39mV_300u typical_ov2.5V_50u_rec60u_f20k_a0.28; do
+    mkdir -p gf180/tapeout/pex/runs/adc_overload_r12/$R
+    ln -s $C/gf180/tapeout/pex/runs/adc_overload_r12/$R/out.csv gf180/tapeout/pex/runs/adc_overload_r12/$R/out.csv
+done
+cd gf180/tapeout/rtl_r15 || exit 1
+# the version, for the record (audit round 25, auditor C: this copy lies inside the checkout, so git run here answers
+# for the checkout; the runner compares every file of the copy with this version at the start and the end)
+print -r -- "$(git -C $C rev-parse "$H") $C" > FULLRUN_VERSION || exit 1
+# the version check before the long run (audit round 28: the check failed in every copy for a git path error, which a
+# run showed only in its header and at its end, hours later): the runner's own run_version must find every file of
+# the copy equal to the version
+$PY -c 'import sys; sys.path.insert(0, "tb"); import mutate_top_r15 as m; v, f = m.run_version(); print(v); sys.exit(0 if f is not None and not f() and "equal" in v else 1)' || {
+    print -r -- "the copy does not check as $H: not started"; exit 1; }
+date "+the complete mutation run of $H: start %Y-%m-%d %H:%M:%S"
+$PY tb/mutate_top_r15.py -j 3
+echo "mutate_top_r15.py rc $?"
+date "+end %Y-%m-%d %H:%M:%S"

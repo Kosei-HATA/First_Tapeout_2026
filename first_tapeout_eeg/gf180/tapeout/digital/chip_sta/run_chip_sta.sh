@@ -28,8 +28,12 @@ NIXDIR=${NIXDIR:-/Users/noah/Codings/ws_gf180/eeg_padring}
 IO=$NIXDIR/gf180mcu/gf180mcuD/libs.ref/gf180mcu_fd_io/lib
 REV=${EEG_DIG_REV:-r14}
 R14_RUN=r14f5_20261124           # the r14 macro on the 14th chip (gf180/tapeout/layout/gds/r14/README.md)
+R15_RUN=r15m1_20261127           # the r15 macro on the 15th chip (gf180/tapeout/layout/gds/r15/README.md)
 if [ "$REV" = r13 ]; then
     TOP_RUN=${TOP_RUN:-f2}; ADC_RUN=${ADC_RUN:-f3}; TOP_DIR=eeg_digital_top; BUILD=${CHIP_STA_BUILD:-$HERE/build}
+elif [ "$REV" = r15 ]; then
+    TOP_RUN=${TOP_RUN:-$R15_RUN}; ADC_RUN=${ADC_RUN:-f3_rerun_20261119}; TOP_DIR=eeg_digital_top_r15
+    BUILD=${CHIP_STA_BUILD:-$HERE/build/$REV}
 else
     TOP_RUN=${TOP_RUN:-$R14_RUN}; ADC_RUN=${ADC_RUN:-f3_rerun_20261119}; TOP_DIR=eeg_digital_top_r14
     BUILD=${CHIP_STA_BUILD:-$HERE/build/$REV}

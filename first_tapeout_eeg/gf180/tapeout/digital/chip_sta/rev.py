@@ -6,6 +6,10 @@ macro the chip takes: gf180/tapeout/layout/digrev.py, EEG_DIG_REV, r14 by defaul
   r14  the 14th chip: the r14 macro (gf180/tapeout/digital/eeg_digital_top_r14), the core LVS of the 14th chip
        (layout/runs/chip_top/), results in build/r14/, the macro's output buffers clkbuf_2 (all 50 outputs; buf_16
        for comparison, as in r13's tables)
+  r15  the 15th chip (11/27): the r15 macro (gf180/tapeout/digital/eeg_digital_top_r15, the same pins as r14, its 50
+       outputs clkbuf_2), the core LVS database of the 15th chip from the precheck image's KLayout (layout/runs/
+       chip_top_r15/lvs_img/eeg_core.lvsdb: the macOS KLayout stops after the compare, gf180_chip_assembly_20261023.md,
+       15th assembly), results in build/r15/
 
 CHIP_LVSDB overrides the LVS database, CHIP_STA_BUILD the results folder. build/ holds r13's macros with the chip
 wiring of 10/24 (the 4th assembly: the numbers of gf180_digital_verification_20261024.md, section 5); the 13th chip's own
@@ -22,8 +26,9 @@ import digrev  # noqa: E402
 REV = digrev.REV
 CHIPRUNS = os.path.join(REPO, "gf180", "tapeout", "layout", "runs", "chip_top")
 LVSDB = os.environ.get("CHIP_LVSDB") or {"r13": os.path.join(CHIPRUNS, "r13_20261119", "eeg_core.lvsdb"),
-                                         "r14": os.path.join(CHIPRUNS, "eeg_core.lvsdb")}[REV]
+                                         "r14": os.path.join(CHIPRUNS, "eeg_core.lvsdb"),
+                                         "r15": os.path.join(CHIPRUNS + "_r15", "lvs_img", "eeg_core.lvsdb")}[REV]
 BUILD = os.environ.get("CHIP_STA_BUILD") or (os.path.join(HERE, "build") if REV == "r13"
                                               else os.path.join(HERE, "build", REV))
 DIG_BOX = (3002.0, 542.0, 3442.0, 542.0 + digrev.HEIGHT)       # eeg_digital_top (mirrored about x)
-DRIVE = {"r13": ("buf_1", "buf_16"), "r14": ("clkbuf_2", "buf_16")}[REV]   # the macro's output buffer, the comparison
+DRIVE = {"r13": ("buf_1", "buf_16"), "r14": ("clkbuf_2", "buf_16"), "r15": ("clkbuf_2", "buf_16")}[REV]   # the macro's output buffer, the comparison

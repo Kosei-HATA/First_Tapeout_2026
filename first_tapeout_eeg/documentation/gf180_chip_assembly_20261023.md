@@ -886,3 +886,43 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
   - 組み立てのあとに precheck を始める待ち受け（`pgrep -f` で組み立ての台本の終わりを待つもの）が、自分自身のコマンド行に一致して終わらず、precheck は始まっていなかった。3 時 36 分に手で起動した（約 5 時間の遅れ。以後の待ち受けは記録のファイルの中身で判じる）。
 - 14 回目は、KLayout のチップ全体の LVS、コアの LVS、DRC、穴埋めのあとの全 DRC、precheck、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）、Magic／Netgen のチップ全体の LVS が通った。
 - チップの STA とトランジスタの水準の確かめ（VER-08）は `gf180_digital_verification_20261024.md` の第 8.4、8.5 節、図 55、56。
+
+## 組み直し（11/27、15 回目：r15 のデジタル制御のマクロ）
+
+**目的**
+
+- r15 のデジタル制御（記録表 C4。r14 の RTL に、Test4-1 のレジスタマップ案から CFG_GEN（0x0D）、DROP_CNT（0x0E）、最新値の窓 LATEST（0x4F）を取り入れ、VERSION を 0x11 とした版。`gf180/tapeout/rtl_r15/`、コミット 8cbe4bd7）のマクロを入れたチップの組み立て。
+- 14 回目（r14）の組み立て（`runs/chip_top`）は変えない。採否（r13／r14／r15）はユーザーが 12/10〜12 に決める。発注の候補は r12 のまま（記録表 E8）。
+
+**変更**
+
+- デジタルのマクロ eeg_digital_top：LibreLane のラン r15m1_20261127（r14f5 と同じ設定で、源だけ r15。440 × 900 µm、使用率 85.0 %）。
+  - 外形、LEF の端子 30 個の名前と形と位置、CDL の端子 62 本の並びは r14 のマクロと同じ（11/27 に照合）。コアのネットリスト `gf180/tapeout/chip/eeg_core.spice` は不変。
+  - GDS、LEF、ネットリスト、CDL は `gf180/tapeout/layout/gds/r15/`（`gf180/tapeout/digital/eeg_digital_top_r15/install_r15_macro.sh r15m1_20261127` で写す。sha256 は `SHA256SUMS`）。
+- `digrev.py` に r15 を加えた（`EEG_DIG_REV=r15`、高さ 900 µm、組む場所 `runs/chip_top_r15`）。既定は r14 のまま。
+- `chip_lay.py`：マクロの上の Metal5 の DVDD／DVSS の帯の追加（y 1320 µm）の条件を版の名前からマクロの高さ 900 µm に替え（r14 と r15）、組む場所を `digrev.RUNS` から取る。r14 では条件も組む場所も元と同じ。
+
+**確認（11/27〜28）**
+
+- **組み立て**（`runs/chip_top_r15/run_chip_r15.sh`、15:39〜16:44）
+  - パッドリング込みのつながりの確認と、GDS のみからの電源の確認（タップの規則を含む）は問題なし（「result: ok」）。チップの配線の抵抗（DVDD：DIG 0.184 Ω、デカップリング 0.657 Ω。DVSS：DIG 1.081 Ω、デカップリング 1.446 Ω）とパッドの電流は r14 と同じ。
+  - DRC：違反なし（「chip_top DRC: clean」、`runs/chip_top_r15/build_r15_20261127.log`）。
+  - DRC と LVS をつけた 2 回目の組み立ては、1 回目と同一の GDS を書いた。
+- **XOR（14 回目と比べる、穴埋め前）**：形の違いのある 12 層は、どれもマクロの外形（x 3002〜3442、y 542〜1442 µm）の中だけ。外形の外で違う層は 0、外形の外のラベルの違いも 0（`runs/chip_top_r15/xor_r14_r15_chip_top_20261127.log`）。AFE、ADC、バイアス、基準電圧、試験用マルチプレクサ、パッドリング、デカップリング、チップの配線は r14 と同一。
+- **穴埋め**（`runs/chip_top_r15/run_fill_r15.sh`、16:46〜17:00）：穴埋めのあとの全規則の DRC は違反なし（「chip_top (filled) DRC: clean」、`runs/chip_top_r15/fill_r15_20261127.log`）。`chip_top_fill.gds` は 225,928,134 バイト（sha256 `f18a0a92ed1eb209f96241856c9881e5322302d3084e3680bdef436c1a3fb48d`）で、`gf180/tapeout/chip/gds/chip_top_fill_r15_20261127.gds.gz` に置いた（42,324,798 バイト、sha256 f898fa8d…。`gzip -9 -n`）。
+- **wafer.space の precheck**
+  - **タグ pre_20261127_r15：通った**（passed、exit 0、11/27 17:33〜18:24、51 分）。11/26 に出た最新のイメージ v1.8.1（revision 493be696、PDK 2fdf40d5、KLayout 0.30.13。ESD と FuseWindow_D の層の検査を加えた版。11/27 のレジストリの最新で、index の digest a375c181…）を `--slot 1x0p5 --cob` で回した（`runs/chip_top_r15/run_precheck_r15.sh`、記録は `runs/chip_top_r15/precheck_r15_20261127.log`）。
+  - 密度、ゼロ面積の図形、アンテナ、Magic DRC、KLayout DRC は、どれも 0 件。大きさ（3932 × 2531 µm）とパッドマスクも一致し、ID を入れた。Magic DRC は最後まで走った（「DRC Checking DONE」）。
+  - LibreLane の `warning.log` と `error.log` は空。出力の警告は、イメージの設定の古い変数名の 3 件（`KLAYOUT_*_OPTIONS`、r14 の回と同じ）、precheck.py 自身の DeprecationWarning（`run_pya_script`、v1.8.1 から）、Magic が GDS を読むときの決まった一文（「Calma reading is not undoable!」）だけで、どれも設計によるものではない。
+- **KLayout の LVS**
+  - 組み立ての中のチップ全体の LVS（パッドリング込み）とコアの LVS は、どちらも KLayout（macOS、0.30.12）が「Trace/BPT trap: 5」（rc 133）で落ち、判定が出なかった（`chip_lay.py` は一致の文がないので「MISMATCH」と表示）。同じ GDS でチップ全体の LVS を回し直しても同じ（`runs/chip_top_r15/run_lvs_retry_r15.sh`）。
+  - 落ちる所は比べの段（デッキに印を入れた写しで「Starting GF180 LVS comparison section」のあと）。precheck のイメージ（v1.8.1）の KLayout 0.30.13 と同じイメージの PDK のデッキでコアの LVS を回しても、比べたあとの対応表の並べ替えで落ちた（SIGSEGV。`NetlistComparer::compare_impl` → `NetlistCrossReference::end_circuit` → `sort_circuit`）。
+  - 切り分け（macOS、コアの GDS の一部を除いたり替えたりした写し）：落ちるのは r15 のマクロと ADC が共にある写しだけ。r15 のコアのマクロを r14 のものに替えた写し、ADC を除いた写しなど 7 通りは落ちずに比べ終えた（除いたり替えたりした写しは回路図と違うので、判定は不一致）。
+  - 回し方：比べる直前に二つのネットリスト（抽出と回路図）を書き出す 3 行をデッキに入れ、precheck のイメージの KLayout 0.30.13 と PDK のデッキで回した。スイッチ、`max_depth(32)`、`max_branch_complexity(65536)` は `gf180lay.lvs()` と同じ（台本と記録は `runs/chip_top_r15/lvs_img/`）。
+    - コアの LVS：**一致**（「Congratulations! Netlists match.」、27.5 分、11/27 19:35）。
+    - チップ全体の LVS（パッドリング込み。`chip_lay.lvs_chip()` が書いた `lvs_chip/chip_top.oas` と `lvs_chip/chip_top.cdl`）：**一致**（「Congratulations! Netlists match.」、32.2 分、11/28 0:04）。
+    - 二つとも、警告は PDK のデッキが常に出す一文（「Comp labels are ignored, as comp is not defined as a valid conductive layer」）だけ。
+  - 判断：落ちるのは比べたあとの対応表の並べ替えの中で、書き出しを入れると落ちなくなる。KLayout の側の不具合（メモリの置き方などで出たり出なかったりする類い）と見る。回路の不一致ではない（Magic／Netgen のチップ全体の LVS も一致、次項）。
+- **Magic と Netgen のチップ全体の LVS**（`runs/chip_top_r15/run_netgen_r15.sh`、17:32〜20:14、2 時間 42 分）：一致（「Circuits match uniquely」。IO セルの中の 863 個のセルを平らにし、「no such node」による併合の失われ 0 件。`runs/chip_top_r15/netgen_r15_20261127.log`、`runs/chip_top_r15/lvs_netgen/`）。
+- 15 回目は、DRC、穴埋めのあとの全 DRC、precheck（v1.8.1）、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）、Magic／Netgen のチップ全体の LVS、KLayout のコアとチップ全体の LVS（比べる直前に書き出す回し方）が通った。
+- 未了：r15 のマクロを入れたチップの STA とゲートの水準の試験、r15 の全変異の試験（記録表 C4）。r13 と r14 の GDS は v1.8.1 の precheck では回していない。

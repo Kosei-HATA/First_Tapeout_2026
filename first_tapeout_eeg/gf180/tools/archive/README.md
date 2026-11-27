@@ -10,6 +10,7 @@
 |---|---|
 | `MANIFEST_20261030.tsv` | 10/30 に移した分（4,898 ファイル、63.6 GB）。SSD の上のパス、バイト数、更新時刻（ns）、sha256 |
 | `MANIFEST_20261113.tsv`、`MANIFEST_20261113c.tsv`〜`MANIFEST_20261113g.tsv`、`MANIFEST_20261114a.tsv` | 11/13〜14 に移した分（7 回、11,097 ファイル、39.3 GB）。リポジトリからの相対パス、バイト数、sha256 |
-| `move_runs.py` | 移す道具。ファイルごとに写し、ページキャッシュを通さずに読み直して sha256 を比べ、元がまだ同じときだけ元を消してリンクに替える。Bash から起こしたプロセスは SSD を読めない（EPERM）ので、ターミナルのタブから回す。移し先は環境変数 `EEG_ARCHIVE`（既定は `/Volumes/mukiebi/first_tapeout_archive`） |
+| `MANIFEST_20261127.tsv`、`LIST_20261127.txt` | 11/27 に外付けの SSD `mukigani`（`/Volumes/mukigani/first_tapeout_archive`、ユーザーの指定）へ移した分：r14 の全変異の試験の写し 7 個（`gf180/tapeout/rtl_r14/build/fullrun_*`、44,975 ファイル、22.71 GB）。新しい precheck のイメージ（v1.8.1）の場所を空けるため。写しの中の、リポジトリのファイルを指すリンク（各 4 本）はリンクのまま写した（目録では `symlink:<先>`） |
+| `move_runs.py` | 移す道具。ファイルごとに写し、ページキャッシュを通さずに読み直して sha256 を比べ、元がまだ同じときだけ元を消してリンクに替える。Bash から起こしたプロセスは SSD を読めない（EPERM）ので、ターミナルのタブから回す。移し先は環境変数 `EEG_ARCHIVE`（既定は `/Volumes/mukiebi/first_tapeout_archive`）。`EEG_ARCHIVE_KEEP_LINKS=1` では、中のシンボリックリンクを同じ先を指すリンクとして写す（11/27。無いときはリンクを見つけて止まる） |
 
 使い方：`EEG_ARCHIVE=<移し先> python3 gf180/tools/archive/move_runs.py <目録> <リスト>`（リストはリポジトリからの相対パスを 1 行に 1 つ）。

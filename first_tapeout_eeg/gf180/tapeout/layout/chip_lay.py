@@ -73,7 +73,8 @@ AFE_O = (482.0, 542.0)
 ADC_O = (1732.4, 542.0)
 CHA = (1582.0, 1732.4)
 # The digital macro eeg_digital_top (tracker C4, E7; digrev.py): r14 (gds/r14/, 440 x 900 um; the 14th chip) or, with
-# EEG_DIG_REV=r13, r13 (gds/, 440 x 700 um; the 13th chip). Only the macro, its Metal5 power straps and the DVDD
+# EEG_DIG_REV=r13, r13 (gds/, 440 x 700 um; the 13th chip), or with EEG_DIG_REV=r15, r15 (gds/r15/, 440 x 900 um, the
+# same pins as r14; the 15th chip, built in runs/chip_top_r15). Only the macro, its Metal5 power straps and the DVDD
 # decoupling above it depend on this (the decoupling 200 um higher with r14).
 DIG_REV, DIG_DIR, DIG_H = digrev.REV, digrev.DIR, digrev.HEIGHT
 DIG_O = (3002.0, 542.0 + DIG_H)                  # mirrored: the macro spans y 542 .. 542 + DIG_H (r13 1242, r14 1442)
@@ -283,9 +284,9 @@ def power(a, I):
 # on the west strip and the dvdd pads fed only the east one: the core's DVDD reached no pad)
 IB_DVSS = ((2950.0, 2970.0), (2972.0, 2992.0))
 EG_DVDD = ((3500.0, 3520.0), (3522.0, 3542.0))
-# (r14: one more pair at y 1320 over the macro's 200 um more, the same 140 um pitch)
+# (r14 and r15: one more pair at y 1320 over the macro's 200 um more, the same 140 um pitch)
 DIG_STRAPS = [("DVDD", 642.0, 648.0), ("DVSS", 654.0, 660.0)] + \
-    [(n, y, y + 10.0) for y0 in (760.0, 900.0, 1040.0, 1180.0) + ((1320.0,) if DIG_REV == "r14" else ())
+    [(n, y, y + 10.0) for y0 in (760.0, 900.0, 1040.0, 1180.0) + ((1320.0,) if DIG_H == 900.0 else ())
      for n, y in (("DVDD", y0), ("DVSS", y0 + 14.0))]
 ADC_DRAIL = {"DVDD": (100.0, 106.0), "DVSS": (112.0, 118.0)}   # adc_lay R_DVDD / R_DVSS
 ADC_DRISER = 1203.0                                               # adc_lay X_DVDD
@@ -1333,7 +1334,7 @@ def main():
     ap.add_argument("--netgen", action="store_true",
                     help="only the full-chip LVS with Magic and Netgen (netgen_chip, about 75 min) of chip_top.gds")
     args = ap.parse_args()
-    runs = os.path.join(HERE, "runs", TOP)
+    runs = os.path.join(HERE, "runs", digrev.RUNS)        # chip_top (r13, r14) or chip_top_r15
     os.makedirs(runs, exist_ok=True)
     os.chdir(runs)
     t0 = time.time()

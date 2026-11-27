@@ -17,7 +17,8 @@ import sys
 import time
 
 REPO = "/Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg"
-ARCH = os.environ.get("EEG_ARCHIVE", "/Volumes/mukiebi/first_tapeout_archive")   # 11/16: set EEG_ARCHIVE for the SSD that replaces mukiebi
+ARCH = os.environ.get("EEG_ARCHIVE", "/Volumes/mukiebi/first_tapeout_archive")
+KEEP_LINKS = os.environ.get("EEG_ARCHIVE_KEEP_LINKS") == "1"    # 11/27: symlinks inside a run copied as symlinks   # 11/16: set EEG_ARCHIVE for the SSD that replaces mukiebi
 F_NOCACHE = getattr(fcntl, "F_NOCACHE", 48)
 BUF = 8 << 20
 
@@ -81,13 +82,20 @@ def move(rel, manifest):
     t0 = time.time()
     fl = files_of(src)
     links = [f for f in fl if os.path.islink(f)]
-    if links:
-        print(f"STOP {rel}: symlinks inside ({links[:3]})", flush=True)
+    if links and not KEEP_LINKS:
+        print(f"STOP {rel}: symlinks inside ({links[:3]}; EEG_ARCHIVE_KEEP_LINKS=1 copies them as symlinks)", flush=True)
         return 0
     rows = []
     for f in fl:
         d = os.path.join(dst, os.path.relpath(f, src)) if os.path.isdir(src) else dst
         os.makedirs(os.path.dirname(d), exist_ok=True)
+        if os.path.islink(f):                            # copied as the same symlink (its target unchanged)
+            os.symlink(os.readlink(f), d)
+            if os.readlink(d) != os.readlink(f):
+                print(f"STOP {rel}: the symlink {f} copied differently", flush=True)
+                return 0
+            rows.append((os.path.relpath(f, REPO), 0, "symlink:" + os.readlink(f)))
+            continue
         h1 = copy_hash(f, d)
         h2 = sha_file(d, nocache=True)
         if h1 != h2:
@@ -100,7 +108,9 @@ def move(rel, manifest):
     with open(manifest, "a") as m:
         for p, n, h in rows:
             m.write(f"{p}\t{n}\t{h}\n")
-    changed = [p for p, n, h in rows if sha_file(os.path.join(REPO, p)) != h]
+    changed = [p for p, n, h in rows
+               if (("symlink:" + os.readlink(os.path.join(REPO, p))) if h.startswith("symlink:")
+                   else sha_file(os.path.join(REPO, p))) != h]
     if changed or len(files_of(src)) != len(rows):
         print(f"KEEP {rel}: changed while copying ({changed[:3]}); copy left at {dst}", flush=True)
         return 0

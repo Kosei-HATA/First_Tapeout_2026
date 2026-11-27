@@ -1,0 +1,78 @@
+{
+ "signal": [
+  {
+   "name": "RESET_N",
+   "wave": "01............."
+  },
+  {
+   "name": "命令",
+   "wave": "x.=x...........",
+   "data": [
+    "START"
+   ]
+  },
+  {
+   "name": "状態",
+   "wave": "==.=.=.=.=.=...",
+   "data": [
+    "RESET",
+    "IDLE",
+    "WARMUP",
+    "RECOVER",
+    "ALIGN",
+    "FILL",
+    "RUN"
+   ]
+  },
+  {
+   "name": "時間",
+   "wave": "x=.=.=.=.=.=...",
+   "data": [
+    "設定",
+    "T_WARM 5 ms",
+    "T_REC 250 µs",
+    "≤ 1 ms",
+    "3 出力（3 ms）",
+    "1 ms ごと"
+   ]
+  },
+  {
+   "name": "AFE_RST",
+   "wave": "1....0........."
+  },
+  {
+   "name": "CIC",
+   "wave": "x........=.=...",
+   "data": [
+    "クリア後の充填",
+    "有効"
+   ]
+  },
+  {
+   "name": "READY",
+   "wave": "0..........1..."
+  },
+  {
+   "name": "FIFO",
+   "wave": "=..=.......=...",
+   "data": [
+    "",
+    "空（START の tick）",
+    "格納"
+   ]
+  },
+  {
+   "name": "DRDY_N（パルス）",
+   "wave": "1..........0101"
+  }
+ ],
+ "head": {
+  "text": "起動（模式図、時間の比は実際と異なる。T_ELEC ＞ 0 なら RECOVER のあとに WAIT_E）"
+ },
+ "foot": {
+  "text": "AFE_RST の縁と設定の反映は tick（相 A の中ほど）で。SEQ は RESET_N の解除から数え続ける"
+ },
+ "config": {
+  "hscale": 2
+ }
+}

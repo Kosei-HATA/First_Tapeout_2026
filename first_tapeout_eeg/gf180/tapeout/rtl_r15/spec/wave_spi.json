@@ -1,0 +1,150 @@
+{
+ "signal": [
+  [
+   "書き込み",
+   {
+    "name": "CS_N",
+    "wave": "10...1"
+   },
+   {
+    "name": "MOSI",
+    "wave": "x=.=.x",
+    "data": [
+     "W＋adr",
+     "データ"
+    ]
+   },
+   {
+    "name": "MISO",
+    "wave": "z=.=.z",
+    "data": [
+     "STATUS",
+     "0x00"
+    ]
+   }
+  ],
+  {},
+  [
+   "書き込み（CRC）",
+   {
+    "name": "CS_N",
+    "wave": "10.....1"
+   },
+   {
+    "name": "MOSI",
+    "wave": "x=.=.=.x",
+    "data": [
+     "W＋adr",
+     "データ",
+     "CRC"
+    ]
+   },
+   {
+    "name": "MISO",
+    "wave": "z=.=.=.z",
+    "data": [
+     "STATUS",
+     "0x00",
+     "0x00"
+    ]
+   }
+  ],
+  {},
+  [
+   "読み出し（連続）",
+   {
+    "name": "CS_N",
+    "wave": "10.....1"
+   },
+   {
+    "name": "MOSI",
+    "wave": "x=.=.=.x",
+    "data": [
+     "R＋adr",
+     "0x00",
+     "0x00"
+    ]
+   },
+   {
+    "name": "MISO",
+    "wave": "z=.=.=.z",
+    "data": [
+     "STATUS",
+     "[adr]",
+     "[adr＋1]"
+    ]
+   }
+  ],
+  {},
+  [
+   "読み出し（CRC）",
+   {
+    "name": "CS_N",
+    "wave": "10.....1"
+   },
+   {
+    "name": "MOSI",
+    "wave": "x=.=.=.x",
+    "data": [
+     "R＋adr",
+     "0x00",
+     "0x00"
+    ]
+   },
+   {
+    "name": "MISO",
+    "wave": "z=.=.=.z",
+    "data": [
+     "STATUS",
+     "[adr]",
+     "CRC"
+    ]
+   }
+  ],
+  {},
+  [
+   "サンプル",
+   {
+    "name": "CS_N",
+    "wave": "10...............1"
+   },
+   {
+    "name": "MOSI",
+    "wave": "x=.=.=.=.=.=.=.=.x",
+    "data": [
+     "R＋0x40",
+     "0x00",
+     "0x00",
+     "0x00",
+     "0x00",
+     "0x00",
+     "0x00",
+     "0x00"
+    ]
+   },
+   {
+    "name": "MISO",
+    "wave": "z=.=.=.=.=.=.=.=.z",
+    "data": [
+     "STATUS",
+     "状態",
+     "SEQ 上",
+     "SEQ 下",
+     "DATA 上",
+     "DATA 中",
+     "DATA 下",
+     "CRC"
+    ]
+   }
+  ]
+ ],
+ "head": {
+  "text": "SPI のフレーム（1 区切り ＝ 8 SCLK、モード 0、MSB 先頭）"
+ },
+ "foot": {
+  "text": "先頭バイト：bit 7 ＝ R/W（1 ＝ 読み出し）、bit 6:0 ＝ アドレス"
+ },
+ "config": {
+  "hscale": 2
+ }
+}

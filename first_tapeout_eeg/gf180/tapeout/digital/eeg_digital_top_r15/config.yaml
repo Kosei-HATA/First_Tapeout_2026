@@ -1,0 +1,105 @@
+# r15 (11/27): the r14f5 settings (this file is eeg_digital_top_r14/config.yaml with the sources moved) on the RTL of
+# gf180/tapeout/rtl_r15 (r14 plus CFG_GEN, DROP_CNT and the LATEST window from the Test4-1 draft; VERSION 0x11) and its
+# spec include directory rtl_r15/spec. The r14 macro and its RTL are left as they are.
+# LibreLane (v3, Classic flow) hard macro: eeg_digital_top r14 (gf180/tapeout/rtl_r14/): the new digital control
+# (sequencer, registers with shadow and active copies, SPI, FIFO, overload detection; the same ports as the r13 macro).
+# Outline 440 x 900 um: the user's decision "Yes, 440 x 900" (11/19) after the area trial (README_trial_20261119.md:
+# 440 x 700 um does not place, 92 % utilization). In the chip like the r13 macro, in the east digital column of the
+# core, with the DVDD decoupling above it moved 200 um up.
+# Settings of the r13 macro (../eeg_digital_top/config.yaml: 9-track library, 3.3 V corners, SDC, pin order, PDN,
+# excluded cells, placement density 55 %, CTS defaults), plus:
+#   - the design repair after global routing, with a slew margin that covers the routed wires (the trial's reset tree
+#     reached 4.76 ns once routed, limit 3 ns; r14m1 repaired it, a few logic nets still reached 3.33 ns at ss);
+#   - setup margins for the timing repair after placement and after global routing, so that the routed CIC output
+#     path (comb -> round and saturate, about 29.6 ns of a 30.5 ns period at ss / 125 C) keeps a positive slack;
+#   - TIMESCALEMOD off for the PDK cells' blackbox stubs only (they carry no `timescale; the RTL lints clean with
+#     Verilator -Wall).
+# r14m1 (11/20) also tried CTS clusters of 10 sinks / 0.2 pF and 80 % placement density: the clock buffers tripled and
+# setup failed by 0.436 ns at ss; r14m2 (r13's CTS, 55 %, the margins below) met timing (ss +1.007 ns) but kept the
+# clock tree's design-rule warnings of the r13 macro (leaf buffers driving 20-22 sinks against the SDC's fanout 10,
+# the root and level-3 buffers 0.26-0.53 pF against 0.2 pF). r14m3: the CTS limits of r14m1 with the density and
+# margins of r14m2.
+# r14f5 (11/24, the macro of the 14th chip): the RTL of the audit (commit e56bc9da, logic unchanged since audit round 10),
+# these settings with eeg_digital_top_r15.sdc (VER-05: the flip-flops' preset / clear arcs timed, the reset exceptions)
+# and the H-tree buffers every 150 um: 9 corners met (setup +0.752 ns at max_ss, hold +0.195 ns at min_ff), no slew,
+# cap or fanout warnings (runs r14f1-f6: README_r14f_20261124.md).
+# Run with run_r14_macro.sh from a Terminal panel tab.
+meta:
+  version: 3
+  flow: Classic
+
+DESIGN_NAME: eeg_digital_top
+VERILOG_FILES:
+- dir::../../rtl_r15/eeg_digital_top.sv
+- dir::../../rtl_r15/eeg_seq.sv
+- dir::../../rtl_r15/eeg_regs.sv
+- dir::../../rtl_r15/eeg_spi_slave.sv
+- dir::../../rtl_r15/eeg_fifo.sv
+- dir::../../rtl_r15/eeg_ovl.sv
+- dir::../../rtl_r15/eeg_cic3.sv
+- dir::../../rtl_r15/eeg_clkgen.sv
+- dir::../../rtl/eeg_chop1.sv
+- dir::../../rtl/eeg_rnd_sat.sv
+- dir::../../rtl/eeg_raw.sv
+VERILOG_INCLUDE_DIRS:
+- dir::../../rtl_r15/spec
+USE_SLANG: true
+LINTER_DISABLE_WARNINGS_BLACKBOX: [UNDRIVEN, UNUSEDSIGNAL, TIMESCALEMOD]
+
+CLOCK_PORT: MCLK
+CLOCK_PERIOD: 30.5          # 32.768 MHz
+
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 440, 900]
+PL_TARGET_DENSITY_PCT: 55
+FP_PIN_ORDER_CFG: dir::../eeg_digital_top/pin_order.cfg
+
+VDD_NETS: [VDD]
+GND_NETS: [VSS]
+PDN_MULTILAYER: false
+PDN_VPITCH: 40
+PDN_VWIDTH: 3
+
+RT_MAX_LAYER: Metal4
+
+# the r13 macro's constraints and the reset exceptions of VER-05's STA with the preset / clear arcs (on in every step)
+PNR_SDC_FILE: dir::eeg_digital_top_r15.sdc
+SIGNOFF_SDC_FILE: dir::eeg_digital_top_r15.sdc
+CELL_LIBS:
+  "*_tt_025C_3v30":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_3v30.lib
+  "*_ss_125C_3v00":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ss_125C_3v00.lib
+  "*_ff_n40C_3v60":
+  - pdk_dir::libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__ff_n40C_3v60.lib
+STA_CORNERS:
+- nom_tt_025C_3v30
+- nom_ss_125C_3v00
+- nom_ff_n40C_3v60
+- min_tt_025C_3v30
+- min_ss_125C_3v00
+- min_ff_n40C_3v60
+- max_tt_025C_3v30
+- max_ss_125C_3v00
+- max_ff_n40C_3v60
+DEFAULT_CORNER: nom_tt_025C_3v30
+
+CTS_SINK_CLUSTERING_SIZE: 10          # the SDC's MAX_FANOUT_CONSTRAINT
+CTS_MAX_CAP: 0.2                      # the SDC's MAX_CAPACITANCE_CONSTRAINT (pF)
+# H-tree buffers every 150 um (r14f2 / r14f5, 11/24): without them the root clkbuf_0_MCLK drove 16 level-4 buffers
+# (0.61 pF against 0.2 pF, fanout 16 against 10: r14m3's only cap and fanout warnings)
+CTS_DISTANCE_BETWEEN_BUFFERS: 150
+
+PL_RESIZER_SETUP_SLACK_MARGIN: 1.0
+GRT_RESIZER_SETUP_SLACK_MARGIN: 1.5
+GRT_DESIGN_REPAIR_MAX_SLEW_PCT: 30
+
+RUN_POST_GRT_RESIZER_TIMING: true
+RUN_POST_GRT_DESIGN_REPAIR: true
+
+# VER-05: every STA of the macro times the flip-flops' preset / clear arcs (sta_preset_clear_arcs_enabled 1)
+STA_EXTRA_CORNER_TCL_FILE: dir::sta_preset_clear.tcl
+EXTRA_EXCLUDED_CELLS:
+- gf180mcu_fd_sc_mcu9t5v0__xnor3_4
+- gf180mcu_fd_sc_mcu9t5v0__dffrnq_4
+- gf180mcu_fd_sc_mcu9t5v0__dly*

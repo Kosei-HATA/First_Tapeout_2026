@@ -143,12 +143,13 @@ rep("""        cmd(CMD_START);
         for (int i = 0; i < 2; i++) sample("3 RUN", st);
 `ifdef GL_WAVE_VCD
         // the waveform capture (gl_r15/run_wave_r15.sh, wave_sim_r15.py; 11/28): the pins of the RTL (this module's
-        // nets) and of the netlist (gl_shadow_r15's), and the RTL's frame cycle, from here: 40 frames, the LATEST read,
+        // nets) and of the netlist (gl_shadow_r15's), the RTL's frame cycle and blanking length, from here: 40 frames, the LATEST read,
         // a sample read, 40 frames; then the run ends (its own PASS line, and the lockstep's over the run)
         $dumpfile(`GL_WAVE_VCD);
         $dumpvars(1, gl_sdf_r15);
         $dumpvars(1, gl_shadow_r15);
         $dumpvars(0, gl_sdf_r15.dut.cycle);
+        $dumpvars(0, gl_sdf_r15.dut.a_blank_len);     // the blanking length in effect (15 while the offset DAC is on)
         repeat (32 * 40) @(negedge MCLK);
         lat_expect("3 LATEST in RUN (captured)", 1);
         sample("3 RUN (captured)", st);

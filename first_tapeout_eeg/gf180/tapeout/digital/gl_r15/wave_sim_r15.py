@@ -10,8 +10,9 @@ generates from the specification sources (gf180/tapeout/rtl_r15/spec/wave_frame.
            when every output of that edge has settled): CMP_STROBE, TH_CAPTURE, DAC_LOAD and DAC_CLK high exactly in
            the cycles the frame diagram draws them (its columns are cycle 31 of the previous frame and cycles 0..31);
            CHOP and CHOP_OUT change only at e0 (the edge into cycle 0), every 4 frames at 128 kHz (CHOP_FAST's reset
-           value) and together; CHOP_BLANK high exactly from cycle 31 before such an edge for BLANK_LEN + 1 cycles
-           (the diagram draws BLANK_LEN 15, the run has the reset value 7: the rule, not the drawn length, is compared);
+           value) and together; CHOP_BLANK high exactly from cycle 31 before such an edge for L + 1 cycles, L the
+           blanking length in effect at the pulse's start (the RTL's a_blank_len in the capture: BLANK_WITH_DAC 15
+           while the offset DAC is on, as in this run's RUN with range 1, which the diagram draws, else BLANK);
            CHOP1 changes only at e16. For the RTL and for the netlist.
   delay    the netlist's output changes after the MCLK edge that launched them (the pin edge; clock tree, flip-flop
            and output buffer, as the SDF gives them): per pin, the shortest and the longest.
@@ -22,6 +23,7 @@ generates from the specification sources (gf180/tapeout/rtl_r15/spec/wave_frame.
            bytes equal the RTL's; MISO's change after each SCLK falling edge and its setup before the next rising edge.
 
 usage: wave_sim_r15.py <run folder gl_<tag>>      writes <run>/wave/wave_sim.json and prints the verdicts
+       wave_sim_r15.py selftest <vcd>             each listed error, put into the capture or the diagram, must be found
 """
 import bisect
 import json
@@ -128,22 +130,29 @@ def crc8(data, init=0):
     return c
 
 
-def analyse(vcd):
-    TB, SH, DUT = "gl_sdf_r15", "gl_shadow_r15", "gl_sdf_r15.dut"
-    want = {(TB, "MCLK"), (DUT, "cycle")} | {(TB, p) for p in PINS + SPI_PINS} | {(SH, p.lower()) for p in PINS}
-    sig = read_vcd(vcd, want)
+TB, SH, DUT = "gl_sdf_r15", "gl_shadow_r15", "gl_sdf_r15.dut"
+WANT = ({(TB, "MCLK"), (DUT, "cycle"), (DUT, "a_blank_len")} | {(TB, p) for p in PINS + SPI_PINS}
+        | {(SH, p.lower()) for p in PINS})
+
+
+def analyse(vcd, mut=None, sig=None):
+    """mut(sig, S): a self-test's change of the capture or the diagram before the comparison"""
+    want = WANT
+    sig = sig if sig is not None else read_vcd(vcd, want)
     miss = sorted(k for k in want if not sig.get(k))
     if miss:
         return {"error": f"signals missing in {vcd}: {miss}"}
     S = spec_frame()
-    blank_len = regs_defs("BLANK_BLANK_LEN_RST")
+    if mut is not None:
+        mut(sig, S)
+    blen = sig[(DUT, "a_blank_len")]
     mclk = sig[(TB, "MCLK")]
     rise = [t for (t, v), (_t0, v0) in zip(mclk[1:], mclk[:-1]) if v == "1" and v0 == "0"]
     half = (rise[1] - rise[0]) / 2
     cyc = sig[(DUT, "cycle")]
     # the cycle of each interval [rise[i], rise[i+1]): the RTL's counter after the edge rise[i]
     cyc_of = [int(value_at(cyc, r + half), 2) if value_at(cyc, r + half) not in ("x", "z") else None for r in rise]
-    res = {"cycles": len(rise) - 1, "blank_len": blank_len, "frame": {}, "delay": {}, "spi": {}}
+    res = {"cycles": len(rise) - 1, "frame": {}, "delay": {}, "spi": {}}
     # complete frames: intervals from a cycle 31 (the column before the frame) through the frame's cycle 31
     starts = [i for i in range(1, len(rise) - 33) if cyc_of[i] == 0 and cyc_of[i - 1] == 31]
     res["frames"] = len(starts)
@@ -177,10 +186,12 @@ def analyse(vcd):
         gaps = sorted({(b - a) for a, b in zip(edges, edges[1:])})
         if gaps and gaps != [128]:
             bad.append(f"CHOP edges {gaps} MCLK apart, spec 128 (128 kHz, 4 frames)")
-        # CHOP_BLANK: high from the cycle 31 before each edge for BLANK_LEN + 1 cycles, low otherwise (checked from the
-        # first edge's cycle 31 to the last edge's blank)
-        for i in (range(max(1, edges[0] - 1), min(len(rise) - 1, edges[-1] + blank_len + 1)) if edges else ()):
-            exp = "1" if any(e - 1 <= i <= e - 1 + blank_len for e in edges) else "0"
+        # CHOP_BLANK: high from the cycle 31 before each edge for L + 1 cycles (L in effect at that cycle 31), low
+        # otherwise (checked from the first edge's cycle 31 to the last edge's blank)
+        L = {e: int(value_at(blen, rise[e - 1] + half), 2) for e in edges}
+        res["blank_len"] = sorted(set(L.values()))
+        for i in (range(max(1, edges[0] - 1), min(len(rise) - 1, edges[-1] + max(L.values()) + 1)) if edges else ()):
+            exp = "1" if any(e - 1 <= i <= e - 1 + L[e] for e in edges) else "0"
             n_chk += 1
             if lvl["CHOP_BLANK"][i] != exp:
                 bad.append(f"CHOP_BLANK cycle {cyc_of[i]} at {rise[i] / 1e3:.1f} ns: {lvl['CHOP_BLANK'][i]}, spec {exp}")
@@ -261,7 +272,75 @@ def analyse(vcd):
     return res
 
 
+def selftest(vcd):
+    """Each listed error, put into a copy of the capture or into the diagram, must give mismatches; the capture as it
+    is must give none."""
+    import copy
+    base = read_vcd(vcd, WANT)
+    mclk = base[(TB, "MCLK")]
+    rise = [t for (t, v), (_t, v0) in zip(mclk[1:], mclk[:-1]) if v == "1" and v0 == "0"]
+    T = rise[1] - rise[0]
+
+    def shift(key, dt, which=None):              # move the changes of one signal (only rises "1" / falls "0" if which)
+        def m(sig, S):
+            sig[key] = sorted((t + dt if which in (None, v) else t, v) for t, v in sig[key])
+        return m
+
+    def spec_strobe(pin, cycles):
+        def m(sig, S):
+            S["strobes"][pin] = (S["strobes"][pin][0], cycles)
+        return m
+
+    def flip_bit(key, k_byte):                   # one bit of the LATEST frame's byte k inverted (at its SCLK rise)
+        def m(sig, S):
+            cs, sclk = sig[(TB, "CS_N")], sig[(TB, "SCLK")]
+            mo = sig[(TB, "MOSI")]
+            for tf in [t for t, v in cs if v == "0"]:
+                tr = next(t for t, v in cs if v == "1" and t > tf)
+                sr = [t for t, v in sclk if tf < t < tr and v == "1"]
+                hdr = "".join(value_at(mo, x + 1) for x in sr[:8])
+                if hdr == "11001111":
+                    t0 = sr[8 * k_byte + 3]
+                    v0 = value_at(sig[key], t0 + 1)
+                    nv = "0" if v0 == "1" else "1"
+                    ch = [(t, v) for t, v in sig[key] if not (t0 - T < t < t0 + T)]
+                    ch += [(t0 - T // 2, nv), (t0 + T // 2, v0)]
+                    sig[key] = sorted(ch)
+                    return
+        return m
+    muts = [
+        ("the diagram's CMP_STROBE drawn in cycle 1", spec_strobe("CMP_STROBE", [1]), "frame"),
+        ("the diagram's DAC_CLK drawn in cycle 5", spec_strobe("DAC_CLK", [5]), "frame"),
+        ("the netlist's DAC_CLK one MCLK late", shift((SH, "dac_clk"), T), "frame"),
+        ("the netlist's TH_CAPTURE ends one MCLK late", shift((SH, "th_capture"), T, "0"), "frame"),
+        ("the RTL's CHOP and CHOP_OUT edges one MCLK late", lambda s, S: (shift((TB, "CHOP"), T)(s, S),
+                                                            shift((TB, "CHOP_OUT"), T)(s, S)), "frame"),
+        ("the netlist's CHOP_OUT edge one MCLK late (CHOP not)", shift((SH, "chop_out"), T), "frame"),
+        ("the netlist's CHOP_BLANK one MCLK longer", shift((SH, "chop_blank"), T, "0"), "frame"),
+        ("the netlist's MISO bit inverted in the LATEST frame's CRC byte", flip_bit((SH, "miso"), 7), "spi"),
+        ("the RTL's and the netlist's MISO bit inverted in the LATEST word's DATA",
+         lambda s, S: (flip_bit((SH, "miso"), 5)(s, S), flip_bit((TB, "MISO"), 5)(s, S)), "spi"),
+        ("MOSI's LATEST header 0xCF read as 0xC0 (a sample read's CRC)",
+         lambda s, S: s.__setitem__((TB, "MOSI"), s[(TB, "MOSI")]), "none"),
+    ][:-1]
+    r0 = analyse(vcd, sig=copy.deepcopy(base))
+    clean = ("error" not in r0 and all(r0["frame"][x]["mismatches"] == 0 for x in ("rtl", "netlist"))
+             and r0["spi"]["mismatches"] == 0)
+    print(f"{'clean' if clean else 'NOT CLEAN'}: the capture as it is")
+    missed = 0
+    for name, m, part in muts:
+        r = analyse(vcd, mut=m, sig=copy.deepcopy(base))
+        n = (sum(r["frame"][x]["mismatches"] for x in ("rtl", "netlist")) if part == "frame" else r["spi"]["mismatches"])
+        missed += n == 0
+        first = (r["frame"]["rtl"]["first"] + r["frame"]["netlist"]["first"] if part == "frame" else r["spi"]["first"])
+        print(f"{'detected' if n else 'MISSED  '} {name}: {n} mismatches" + (f" ({first[0][:90]})" if first else ""))
+    print(f"{len(muts) - missed} of {len(muts)} errors detected" + ("" if clean else "; the clean capture fails"))
+    return 0 if clean and not missed else 1
+
+
 def main():
+    if len(sys.argv) > 2 and sys.argv[1] == "selftest":
+        return selftest(sys.argv[2])
     run = sys.argv[1]
     out, ok = {}, True
     for c in CORNERS:

@@ -41,12 +41,13 @@ rep("""//   6  SOFT_RESET: RESET_FLAG, the registers back to their reset values"
 rep("module gl_sdf_r14;", "module gl_sdf_r15;")
 rep("""    integer n_inj_seq = 0, n_inj_spi_in = 0, n_inj_spi_out = 0;""",
     """    // ---------------- r15: monitors (applies, the last output pushed (stored or dropped), drops since the OVERRUN clear)
-    integer n_apply = 0, n_drop = 0, n_push = 0;
+    integer n_apply = 0, n_drop = 0, n_push = 0, n_apply_all = 0;   // n_apply_all: not cleared by the resets
     logic [15:0] mon_seq = 16'h0;
     logic [23:0] mon_data = 24'h0;
     logic        mon_v = 1'b0;
     always @(posedge MCLK) begin
         if (dut.apply) n_apply <= n_apply + 1;
+        if (dut.apply) n_apply_all <= n_apply_all + 1;
         if (dut.reg_we && dut.reg_addr == A_DFLAG && dut.reg_wdata[DFLAG_OVERRUN_LSB]) n_drop <= dut.ovr_set ? 1 : 0;
         else if (dut.ovr_set)    n_drop <= n_drop + 1;
         if (dut.u_fifo.push)     n_push <= n_push + 1;
@@ -250,7 +251,7 @@ rep("""        rd_expect(A_IF_CFG, 8'h00, "6 IF_CFG after SOFT_RESET");
         $display("6  SOFT_RESET, CFG_GEN 0, DROP_CNT 0, LATEST empty (errors %0d)", errors);""")
 rep("""        if (errors == 0) $display("PASS: gl_sdf_r14 (%0d SPI frames)", spi_xfers);
         else             $display("FAIL: gl_sdf_r14, %0d errors", errors);""",
-    """        if (errors == 0) $display("PASS: gl_sdf_r15 (%0d SPI frames, %0d LATEST reads, %0d applies)", spi_xfers, n_lat, n_apply);
+    """        if (errors == 0) $display("PASS: gl_sdf_r15 (%0d SPI frames, %0d LATEST reads, %0d applies)", spi_xfers, n_lat, n_apply_all);
         else             $display("FAIL: gl_sdf_r15, %0d errors", errors);""")
 left = [l for l in t.splitlines() if ("gl_sdf_r14" in l and "gl_r14/gl_sdf_r14.sv" not in l) or "gl_shadow_r14" in l]
 assert not left, left

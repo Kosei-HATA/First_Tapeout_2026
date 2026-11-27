@@ -4,7 +4,7 @@
 # wire to the output buffer; max cap at max_ss / tt / ff on the clock leaf buffer clkbuf_5_24_0_MCLK, 0.21 pF against
 # 0.2): the r15m1 settings (config.yaml, the H-tree buffers every 150 um) plus the overrides given. The same PDK, nix
 # shell and RTL record as r15m1. Run from a Terminal tab.
-# usage: run_r15_trial.sh <tag> [-c VAR=value ...]
+# usage: [DIST=<um>] run_r15_trial.sh <tag> [-c VAR=value ...]   (DIST: CTS_DISTANCE_BETWEEN_BUFFERS, 150 as r15m1)
 [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 command -v nix-shell > /dev/null || { echo "no nix-shell"; exit 1; }
 cd /Users/noah/Codings/ws_gf180/eeg_padring || exit 1
@@ -16,8 +16,9 @@ src() { (cd $T && git log -1 --format='HEAD %H %ad' --date=iso && git status --s
          shasum -a 256 rtl_r15/*.sv rtl/eeg_chop1.sv rtl/eeg_rnd_sat.sv rtl/eeg_raw.sv rtl_r15/spec/*.svh) }
 src > $D/runs/${TAG}_src_before.txt
 date
-echo "overrides: -c CTS_DISTANCE_BETWEEN_BUFFERS=150 $*" > $D/runs/${TAG}_overrides.txt
-taskpolicy -b nix-shell --run "librelane $D/config.yaml $OPTS --run-tag $TAG -c CTS_DISTANCE_BETWEEN_BUFFERS=150 $*" > $D/runs/$TAG.log 2>&1
+DIST=${DIST:-150}
+echo "overrides: -c CTS_DISTANCE_BETWEEN_BUFFERS=$DIST $*" > $D/runs/${TAG}_overrides.txt
+taskpolicy -b nix-shell --run "librelane $D/config.yaml $OPTS --run-tag $TAG -c CTS_DISTANCE_BETWEEN_BUFFERS=$DIST $*" > $D/runs/$TAG.log 2>&1
 echo "librelane rc $?"
 date
 src > $D/runs/${TAG}_src_after.txt

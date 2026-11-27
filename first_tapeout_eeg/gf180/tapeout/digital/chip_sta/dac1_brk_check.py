@@ -40,8 +40,21 @@ def deck_with_buffer(o, sels, nframes, seed, save):
 
 
 def one(corner, temp, dvdd, cell):
-    o = types.SimpleNamespace(corner=corner, temp=temp, tol="A", voff=0.0, dvdd=dvdd, cell=cell)
-    return corner, temp, dvdd, cell, d1.brk(o)
+    """One case; a transient that stops with "Timestep too small" (11/28: buf_16 at ss 125 C on the rebuilt 15th chip,
+    at a SEL0 edge of frame 5, after the measured frames) is run again with a smaller maximum step (0.5 -> 0.2 ->
+    0.1 ns; the deck and the measurement unchanged), and the step used is reported."""
+    for tmax in (0.5, 0.2, 0.1):
+        o = types.SimpleNamespace(corner=corner, temp=temp, tol="A", voff=0.0, dvdd=dvdd, cell=cell, tmax=tmax)
+        try:
+            r = d1.brk(o)
+        except RuntimeError as e:
+            if "Timestep too small" not in str(e) or tmax == 0.1:
+                raise
+            print(f"{cell} {corner} {temp:g} C: {e}; again with a maximum step of {0.2 if tmax == 0.5 else 0.1} ns",
+                  flush=True)
+            continue
+        r["maximum step (ns)"] = tmax
+        return corner, temp, dvdd, cell, r
 
 
 def main():

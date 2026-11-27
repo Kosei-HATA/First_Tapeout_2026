@@ -1,0 +1,9 @@
+# 11/28: finished run output moved to mukigani to make room for the precheck image's LVS of the rebuilt 15th chip
+# (the docker VM grows on the internal disk; two LVS runs stopped with "No space left on device")
+gf180/tapeout/layout/runs/chip_top_r15/r15m1_20261127
+gf180/tapeout/digital/eeg_digital_top_r15/runs/r15m1_20261127
+gf180/tapeout/digital/eeg_digital_top_r15/runs/gl_r15m1_20261127
+gf180/tapeout/digital/eeg_digital_top_r15/runs/gl_r15m1_20261127_bench8cbe4bd7
+gf180/tapeout/layout/runs/precheck/runs/pre_20261119_r13
+gf180/tapeout/layout/runs/precheck/runs/pre_20261124_r14
+gf180/tapeout/layout/runs/precheck/runs/pre_20261127_r15

@@ -7,6 +7,9 @@
 //   (d) DROP_CNT: equal to the FIFO's drops (ovr_set pulses) since the last OVERRUN clear, back to 0 by the W1C of
 //       DFLAG.OVERRUN (a write of DFLAG with OVERRUN 0 keeps it), stops at 255 (deposited at 253);
 //   (e) SOFT_RESET: CFG_GEN 0, DROP_CNT 0, LATEST empty; with CRC on, every read checked by its CRC.
+// RESET_N and every SPI frame change at an MCLK falling edge or between edges, never at a rising edge (11/28: the gate
+// level in lockstep, gl_r15/gl_shadow_r15.sv, found the release at a rising edge taken one cycle apart by the RTL and the
+// netlist, a race of the bench; the RTL alone takes it either way).
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -97,20 +100,21 @@ module tb_r15;
         t0 = $realtime;
         while (dut.seq_state !== ST_RUN && ($realtime - t0) < 60.0e6) @(posedge MCLK);
         if (dut.seq_state !== ST_RUN) fail($sformatf("%s: not in RUN", what));
+        @(negedge MCLK);
     endtask
 
     task automatic wait_cmd_taken();
         while (dut.u_regs.pend !== 1'b0) @(posedge MCLK);
-        repeat (4) @(posedge MCLK);
+        repeat (4) @(negedge MCLK);
     endtask
 
     logic [7:0] v, lv0, lv1;
     integer a0, k, pushes;
     logic [7:0] st; logic [15:0] sq, sq2; logic [23:0] d, d2; bit ok, oks;
     initial begin
-        repeat (20) @(posedge MCLK);
+        repeat (20) @(negedge MCLK);
         RESET_N = 1'b1;
-        repeat (200) @(posedge MCLK);
+        repeat (200) @(negedge MCLK);
 
         // (a) after the reset
         rd(A_VERSION, v);  expect8(v, 8'h11, "VERSION");
@@ -135,6 +139,7 @@ module tb_r15;
             begin lat_expect("LATEST in RUN (1)"); lat_expect("LATEST in RUN (2)"); end
             begin repeat (2000) begin @(posedge MCLK); if (dut.u_fifo.push_ok) pushes++; end end
         join
+        @(negedge MCLK);
         lv1 = dut.fifo_level;
         checks++;
         if (lv1 !== 8'(lv0 + pushes) && lv1 !== 8'(FD)) fail($sformatf("LATEST reads changed FIFO_LEVEL %0d -> %0d (pushes %0d)", lv0, lv1, pushes));
@@ -147,6 +152,7 @@ module tb_r15;
             lat_expect("LATEST after a short sample read");
             begin repeat (1000) begin @(posedge MCLK); if (dut.u_fifo.push_ok) pushes++; end end
         join
+        @(negedge MCLK);
         lv1 = dut.fifo_level;
         checks++;
         if (lv1 !== 8'(lv0 + pushes)) fail($sformatf("a LATEST read after a short sample read popped: FIFO_LEVEL %0d -> %0d (pushes %0d)", lv0, lv1, pushes));
@@ -171,6 +177,7 @@ module tb_r15;
         a0 = n_apply;
         r14_cmd(CMD_APPLY);
         while (n_apply == a0) @(posedge MCLK);
+        @(negedge MCLK);
         lat_expect("LATEST right after APPLY");
         rd(A_CFG_GEN, v); expect8(v, 8'(n_apply), "CFG_GEN after APPLY"); expect8(v, 8'h02, "CFG_GEN = 2 after APPLY");
         wait_run("APPLY");
@@ -185,6 +192,7 @@ module tb_r15;
         a0 = n_apply;
         r14_cmd(CMD_APPLY_NR);
         while (n_apply == a0) @(posedge MCLK);
+        @(negedge MCLK);
         lat_expect("LATEST right after APPLY_NR");
         rd(A_CFG_GEN, v); expect8(v, 8'(n_apply), "CFG_GEN after APPLY_NR"); expect8(v, 8'h04, "CFG_GEN = 4");
         repeat (5) #1.0e6;
@@ -200,7 +208,7 @@ module tb_r15;
         rd(A_CFG_GEN, v); expect8(v, 8'(n_apply), "CFG_GEN with CRC");
         rd(A_DROP_CNT, v); expect8(v, 8'(n_drop), "DROP_CNT with CRC");
         r14_cmd(CMD_SOFT_RESET); bfm_crc_en = 1'b0;
-        repeat (400) @(posedge MCLK);
+        repeat (400) @(negedge MCLK);
         rd(A_CFG_GEN, v);  expect8(v, 8'h00, "CFG_GEN after SOFT_RESET");
         rd(A_DROP_CNT, v); expect8(v, 8'h00, "DROP_CNT after SOFT_RESET");
         lat_expect("LATEST after SOFT_RESET");

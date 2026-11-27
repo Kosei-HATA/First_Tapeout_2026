@@ -926,3 +926,23 @@ AFE の AVSS の電流（AFE_IBIAS 3 で 21.5 mA、モンテカルロで 21.6 ±
 - **Magic と Netgen のチップ全体の LVS**（`runs/chip_top_r15/run_netgen_r15.sh`、17:32〜20:14、2 時間 42 分）：一致（「Circuits match uniquely」。IO セルの中の 863 個のセルを平らにし、「no such node」による併合の失われ 0 件。`runs/chip_top_r15/netgen_r15_20261127.log`、`runs/chip_top_r15/lvs_netgen/`）。
 - 15 回目は、DRC、穴埋めのあとの全 DRC、precheck（v1.8.1）、パッドリング込みのつながりと GDS だけの電源の確認（タップの規則を含む）、Magic／Netgen のチップ全体の LVS、KLayout のコアとチップ全体の LVS（比べる直前に書き出す回し方）が通った。
 - 未了：r15 のマクロを入れたチップの STA とゲートの水準の試験、r15 の全変異の試験（記録表 C4）。r13 と r14 の GDS は v1.8.1 の precheck では回していない。
+
+## 組み直し（11/28、15 回目の組み直し：マクロ r15m13）
+
+- **理由**：11/27 に入れた r15 のマクロ r15m1_20261127 は、LibreLane の最後の警告の一覧に Max Slew（max ss の 2 件：DAC_LOAD のレジスタから出力の緩衝器までの 0.39 mm の線で 3.07 ns、上限 3.0 ns）と Max Cap（3 コーナーの 1 件：H 木の緩衝器で 0.2065 pF、上限 0.2 pF）を残していた（11/27 の記録で見落とし）。12 本の試しのランで警告のない r15m13_20261128 に替えた（`gf180/tapeout/digital/eeg_digital_top_r15/README_r15m_20261128.md`）。端子（LEF の 30 個の名前・形・位置）と外形 440 × 900 µm は r15m1 と同じで、組み直しの台本（`runs/chip_top_r15/run_chip_r15b.sh`）が照合する。
+- **組み立ての道具の直し**（77f3f769）：最初の組み直しのチップの DRC で M3.2a（Metal3 の間隔）が 1 か所出た（チップ座標 (3441.46〜3441.5, 1396.08〜1396.5)）。`assemble.macro_pads` が東西の縁の Metal3 の端子ごとに 3 × 1.4 µm の四角を外形の 0.5 µm 内側まで置き、MCLK の端子の上 0.42 µm でマクロ自身の Metal3（r15m13 の配線）と 0.04 µm に近づいたもの。LibreLane はチップの図形を知らずにマクロを配線するので、r15 では `neck=True` とした：外形の内側は端子の外側の 0.28 µm だけに重ね（端子と同じ高さの首）、1.4 µm の四角は外形の 0.5 µm 外から置く。r13／r14 の形は変えない。
+- **XOR**（穴埋めの前、11/27 の r15m1 のチップと）：違いはマクロの外形の中と、東西の縁の 3 µm の帯の中だけ（全 31 層、帯の外は同じ）。マクロの縁の近くでチップとマクロの Metal3 の間隔が 0.28 µm 未満の組は 0。
+- **つながり、GDS だけの電源の確認、DRC**：問題なし、違反なし。穴埋めのあとの全 DRC も違反なし。`chip_top_fill.gds` の sha256 816484ef…、gz は `chip/gds/chip_top_fill_r15_20261128.gds.gz`（42,323,691 バイト、sha256 3a8aa2d9…）。
+- **precheck**（pre_20261128_r15b、最新のイメージ v1.8.1（digest a375c181…）、`--slot 1x0p5 --cob`）：密度、面積 0 の多角形、アンテナ、Magic DRC、KLayout DRC が全て 0 件、パッドマスク一致、Magic DRC は最後まで走った、警告と誤りのログは空（11/28 6:13）。
+- **KLayout の LVS**：
+  - macOS の 0.30.12（`chip_lay.py --lvs`）：コアとチップ全体とも、11/27 と同じく比べたあとで落ちた。
+  - precheck のイメージの 0.30.13：コアを 3 通り回し、3 回とも比べたあとの対応表の並べ替え（`NetlistCrossReference::sort_circuit`）で落ちた（SIGSEGV）。3 通りは、比べる直前に両方のネットリストを書き出す形（スレッド 8 と 4）と、書き出さない形。11/27 に一致まで通った書き出しの形も、今回は落ちた。
+  - 回し直しの 1 回目は docker の VM のディスクの不足で始まらなかった。各コンテナが /workspace を約 3.8 GB 写し、VM のディスクは内蔵ディスクの上で伸びる。そこで終わったランの出力 4.95 GB を外付けの SSD へ移した（`gf180/tools/archive/MANIFEST_20261128.tsv`）。
+  - `/Applications` の KLayout 0.30.9 で、同じデッキ（`layout/shims/gf180mcu_deep.lvs`：PDK のデッキに `max_depth(32)`、`max_branch_complexity(65536)`）と同じスイッチ（`gf180lay.lvs()`）で回した：
+    - コア：**一致**（「Congratulations! Netlists match.」、7.5 分。`runs/chip_top_r15/lvs_k309/`、`run_lvs_k309_r15b.sh`）。
+    - チップ全体（パッドリング込み。`lvs_chip/chip_top.oas` と `chip_top.cdl`）：**一致**（51 分。`runs/chip_top_r15/lvs_k309_chip/`、`run_lvs_k309_chip_r15b.sh`）。
+  - 判断：落ちるのは 0.30.12／0.30.13 の側の不具合で、回路の不一致ではない。チップの STA は 0.30.9 のコアのデータベースを読む（`gf180/tapeout/digital/chip_sta/rev.py`）。
+- **Magic と Netgen のチップ全体の LVS**（`runs/chip_top_r15/run_netgen_r15b.sh`、05:03〜08:44、3 時間 41 分。朝の負荷で 11/27 より長い）：一致（「Circuits match uniquely」。IO セルの中の 863 個のセルを平らにし、「no such node」による併合の失われ 0 件。`runs/chip_top_r15/netgen_r15b_20261128.log`）。
+- **チップの STA とトランジスタの水準の確かめ**：全て満たした（`gf180_digital_verification_20261024.md` 第 9.7 節）。
+- 組み直した 15 回目は、DRC、穴埋めのあとの全 DRC、precheck（v1.8.1）、パッドリング込みのつながりと GDS だけの電源の確認、Magic／Netgen のチップ全体の LVS、KLayout（0.30.9）のコアとチップ全体の LVS、チップの STA、トランジスタの水準の確かめが通った。
+- 11/27 の r15m1 のチップの GDS（`chip_top_fill_r15_20261127.gds.gz`）は使わない（マクロに LibreLane の警告）。11/27 の組み立ての出力は外付けの SSD へ移した（`runs/chip_top_r15/r15m1_20261127` はリンク）。

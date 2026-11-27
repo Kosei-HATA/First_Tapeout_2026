@@ -629,7 +629,7 @@ def signals(a, I):
               ("bias", lambda n: n), ("tm", lambda n: TM_NET.get(n, n)))
     for k, fn in blocks:                  # chip net names first: the pads below take them
         rename_pins(I[k], fn)
-    A.macro_pads(a, I["dig"])
+    A.macro_pads(a, I["dig"], neck=(DIG_REV == "r15"))   # r15: the pads off the macro's own Metal3 (11/28)
     pin_pads(a, I["bias"])
     a.cover(I["tm"])
     for k, fn in blocks:

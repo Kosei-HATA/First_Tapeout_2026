@@ -241,11 +241,17 @@ class Assembly(g.Block):
             r.via_keepout(*box)
 
 
-def macro_pads(a, inst):
+def macro_pads(a, inst, neck=False):
     """Router pins outside a LibreLane macro for its edge pins: Metal3 pads (1.4 um tall)
     on the outer ends of the horizontal Metal3 pins (west / east edges), so that each
     holds a router node, and 3 um Metal2 extensions of the vertical Metal2 pins (north /
-    south edges). The macro's own pins are replaced by these in inst.pins."""
+    south edges). The macro's own pins are replaced by these in inst.pins.
+    neck (the r15 digital macro, 11/28): inside the macro's outline the chip's Metal3 overlaps
+    the pin alone; the 1.4 um pad starts 0.5 um outside the outline, joined to the pin by a
+    neck as tall as the pin (overlapping the pin's outer 0.28 um). The pad reaching 0.5 um into the macro, 0.42 um above and below
+    its pin, came 0.04 um from the r15m13 macro's own Metal3 beside its MCLK pin (M3.2a;
+    LibreLane routes a macro without the chip's shapes). The default keeps the r13 / r14
+    chips' geometry."""
     x1m, y1m, x2m, y2m = inst.bbox
     for net, segs in inst.pins.items():
         new = []
@@ -255,9 +261,17 @@ def macro_pads(a, inst):
             if lay == "metal3" and y2 - y1 <= 1.0:
                 yc = (y1 + y2) / 2
                 if abs(x1 - x1m) < 0.01:
-                    box = ("metal3", x1 - 2.5, yc - 0.7, x1 + 0.5, yc + 0.7)
+                    if neck:
+                        a.wire("metal3", x1 - 0.5, y1, x1 + min(0.28, x2 - x1), y2, net)   # over the pin only
+                        box = ("metal3", x1 - 2.5, yc - 0.7, x1 - 0.5, yc + 0.7)
+                    else:
+                        box = ("metal3", x1 - 2.5, yc - 0.7, x1 + 0.5, yc + 0.7)
                 elif abs(x2 - x2m) < 0.01:
-                    box = ("metal3", x2 - 0.5, yc - 0.7, x2 + 2.5, yc + 0.7)
+                    if neck:
+                        a.wire("metal3", x2 - min(0.28, x2 - x1), y1, x2 + 0.5, y2, net)   # over the pin only
+                        box = ("metal3", x2 + 0.5, yc - 0.7, x2 + 2.5, yc + 0.7)
+                    else:
+                        box = ("metal3", x2 - 0.5, yc - 0.7, x2 + 2.5, yc + 0.7)
             elif lay == "metal2":
                 if abs(y2 - y2m) < 0.01:
                     box = ("metal2", x1, y2 - 0.5, x2, y2 + 3.0)

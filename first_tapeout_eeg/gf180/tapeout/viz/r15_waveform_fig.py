@@ -23,13 +23,13 @@ sys.path.insert(0, HERE)
 import vizstyle as V  # noqa: E402
 from vizstyle import HAIR, INK, INK2, LIGHT, MUTED  # noqa: E402
 
-V.CHIP, V.CHIP_DATE = "r15", "20261127"
-V.CHIP_LABEL = "Chip r15 (fifteenth assembly, 27 Nov 2026)"
+V.CHIP, V.CHIP_DATE = "r15", "20261128"
+V.CHIP_LABEL = "Chip r15 (fifteenth assembly rebuilt with macro r15m13, 28 Nov 2026)"
 sys.path.insert(0, os.path.join(REPO, "gf180", "tapeout", "digital", "gl_r15"))
 import wave_sim_r15 as W  # noqa: E402
 
 RUN = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "gf180", "tapeout", "digital", "eeg_digital_top_r15",
-                                                         "runs", "gl_r15m1_20261127")
+                                                         "runs", "gl_r15m13_20261128")
 OUT = os.environ.get("R15_FIG_OUT") or os.path.join(REPO, "documentation", "figures", "gf180", f"{V.CHIP}_{V.CHIP_DATE}", "viz")
 # the corners: one hue each in a fixed order, and a line style as the second code (never colour alone)
 CORN = [("max_ss_125C_3v00", "max ss 125 °C 3.0 V", "#1d4ed8", "-"),
@@ -69,7 +69,7 @@ def fig59(sig, res):
                         "wave_sim_r15.py in every frame and cycle, the value just before the edge that ends the cycle. "
                         "CHOP_BLANK by its rule (cycle 31 and cycles 0 .. L − 1 of an edge frame, L the length in "
                         "effect: 15 while the offset DAC is on, as in this RUN with range 1 and in the diagram). Times "
-                        "from the MCLK pin edge e0 of the frame.")
+                        "from the MCLK pin edge e0 of the frame. (b) leaves out MISO_OE, which follows CS_N, not MCLK.")
     gs = fig.add_gridspec(1, 2, width_ratios=[2.15, 1.0])
     ax = fig.add_subplot(gs[0, 0])
     s0 = sig[CORN[0][0]]
@@ -107,18 +107,18 @@ def fig59(sig, res):
     for j in range(34):
         ax.axvline(j * T / 1e3, color=HAIR, lw=0.5, zorder=0)
     ax.set_xlim(0, 33 * T / 1e3)
-    ax.set_ylim(-0.4, yb * 1.6)
+    ax.set_ylim(-0.4, yb * 1.6 + 0.5)
     ax.set_yticks([])
     ax.grid(False)
     ax.set_xticks([(j + 0.5) * T / 1e3 for j in range(0, 33, 2)])
     ax.set_xticklabels(["31" if j == 0 else str(j - 1) for j in range(0, 33, 2)])
     ax.set_xlabel("frame cycle (column 0 is cycle 31 of the previous frame; 30.5 ns each)")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.035), ncol=4, fontsize=8)
+    ax.legend(loc="upper right", ncol=2, fontsize=8, framealpha=0.95)
     r0 = res[CORN[0][0]]
-    ax.set_title("(a) A chopper-edge frame at the pins: grey = the specification's level in each cycle", pad=26)
+    ax.set_title("(a) A chopper-edge frame at the pins: grey = the specification's level in each cycle")
     # (b) delays
     bx = fig.add_subplot(gs[0, 1])
-    pins = [p for p in W.PINS if all(p in res[c]["delay"] for c, *_ in CORN)]
+    pins = [p for p in W.PINS if p != "MISO_OE" and all(p in res[c]["delay"] for c, *_ in CORN)]   # MISO_OE: from CS_N
     for i, p in enumerate(pins):
         y = len(pins) - 1 - i
         for m, (c, lab, col, ls) in enumerate(CORN):
@@ -132,7 +132,7 @@ def fig59(sig, res):
     bx.set_xlim(0, 32)
     bx.axvline(30.5, color=LIGHT, lw=0.8, ls="--")
     bx.text(30.2, len(pins) - 0.4, "one MCLK\nperiod", ha="right", va="top", fontsize=7.5, color=MUTED)
-    bx.legend(loc="lower right", fontsize=7.5)
+    bx.legend(loc="center right", fontsize=7.5)
     worst = max(res[c]["delay"][p]["max_ns"] for c, *_ in CORN for p in pins if p not in ("MISO_OE",))
     bx.set_title(f"(b) Output delays, netlist with SDF (longest {worst:.1f} ns)")
     # the verdict line

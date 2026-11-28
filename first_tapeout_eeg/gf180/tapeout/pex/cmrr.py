@@ -46,7 +46,8 @@ chopper's eight switches alone in a small AC deck (the PDK's models): their shar
 conductance ngspice's default gmin (1 pS x M per junction) puts on each leg through them. The start deck keeps the
 default gmin, so the legs' conductance from these runs carries it; silicon does not.
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/pex/cmrr.py      (every common-mode run of r12; runs/cmrr_r12/results.json)
+Usage: [EEG_PEX_REV=r13] gf180/tools/venv310/bin/python gf180/tapeout/pex/cmrr.py
+       (every common-mode run of the chip, r12 by default; runs/cmrr_<rev>/results.json)
 """
 import glob
 import json
@@ -59,8 +60,8 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RUNS = os.path.join(HERE, "runs", "startup")
-OUT = os.path.join(HERE, "runs", "cmrr_r12")
-REV = "r12"
+REV = os.environ.get("EEG_PEX_REV") or "r12"     # 11/28: the chip of the runs (r13: the current AFE, run_cmrr_r13.sh)
+OUT = os.path.join(HERE, "runs", f"cmrr_{REV}")
 TCH = 256 / 32.768e6
 T0 = 6e-3
 SINE_RUN = f"start_c1e-08_v3.3_typical_+0mV_sine0.943mV2000Hz_afe5ms_ib3_chip_{REV}"     # figure 38's typical run

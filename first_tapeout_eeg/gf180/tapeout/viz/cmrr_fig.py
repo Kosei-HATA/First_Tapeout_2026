@@ -14,7 +14,12 @@ each) or ELP 100 ohm + 51 kohm || 47 nF. Vcm is the body's own movement against 
   (d) the conversion through an electrode imbalance: |Vdm / Vcm| = |Y| |dZ| per frequency, with the runs' points
       and the chip's own conversion (balanced legs).
 
-Usage: gf180/tools/venv310/bin/python gf180/tapeout/viz/cmrr_fig.py     (after gf180/tapeout/pex/cmrr.py)
+11/28: EEG_PEX_REV=r13 takes cmrr.py's runs of the 13th assembly's afe_top (run_cmrr_r13.sh). That afe_top is the
+current chip's (r15 differs from r13 and r14 only inside the digital macro; outside afe_top the analog wiring is r12's
+by XOR), so the figure goes to r15's folder with r15's label, and panel (e) adds r12's values. The AFE alone's chopped
+transients (panel (c)'s open markers) exist for r12 only (runs/viz_r12/afe_zin.csv) and are left out there.
+
+Usage: [EEG_PEX_REV=r13] gf180/tools/venv310/bin/python gf180/tapeout/viz/cmrr_fig.py     (after gf180/tapeout/pex/cmrr.py)
 """
 import csv
 import json
@@ -27,6 +32,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import vizstyle as V  # noqa: E402
 from vizstyle import ACCENT, BAD, INK, INK2, LIGHT, MUTED, plt  # noqa: E402
+
+REV = os.environ.get("EEG_PEX_REV") or "r12"          # the runs' chip, as cmrr.py reads it
+if REV == "r13":                                       # 11/28: the current chip's AFE (see the docstring)
+    V.CHIP, V.CHIP_DATE = "r15", "20261128"
+    V.CHIP_LABEL = "Chip r15 (fifteenth assembly rebuilt with macro r15m13, 28 Nov 2026)"
 
 REPO = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
 PEX = os.path.join(REPO, "gf180", "tapeout", "pex")
@@ -107,7 +117,10 @@ def trace_inband(r):
 
 
 def afe_alone():
-    """the AFE alone's chopped transients (per leg, common mode): (f, G nS, B nS) for the extraction and the schematic"""
+    """the AFE alone's chopped transients (per leg, common mode): (f, G nS, B nS) for the extraction and the schematic;
+    None where the chip has none (r15: r12's only)"""
+    if not os.path.exists(ZIN):
+        return None
     rows = {"pex": [], "sch": []}
     with open(ZIN, encoding="utf-8") as fh:
         for row in csv.DictReader(fh):
@@ -155,6 +168,7 @@ def main():
     r50b = runs.get((50.0, BAL))
     tau_cm = 1 / (2 * np.pi * 50 * np.tan(np.radians(r50b["incm_phase"]))) if r50b else None
     g_cin = r1b["incm_ratio"] * CIN / tau_cm if tau_cm else None
+    alone = afe_alone()
     waiting = []
     if not have50:
         waiting.append("the 50 Hz runs (to 26 ms) are still running")
@@ -194,13 +208,15 @@ def main():
                            f"(out of band: {r1b['inband']['chopped_mv']:.1f} mV pk for {r1b['inband']['vcm_mv']:.1f} mV pk "
                            "at 1 kHz" + (f", {r50b['inband']['chopped_mv']:.1f} mV for {r50b['inband']['vcm_mv']:.1f} mV at "
                                          "50 Hz" if r50b else "")
-                           + f"), and gave {r1b['vdm_uv']:.2f} µV ({r1b['cmrr_db']:.0f} dB) for them at 1 kHz until then; "
+                           + f"), and {'gave' if REV == 'r12' else 'give'} {r1b['vdm_uv']:.2f} µV ({r1b['cmrr_db']:.0f} dB) for "
+                           f"them at 1 kHz{' until then' if REV == 'r12' else ''}; "
                            f"with 51 kΩ || 47 nF the two agree to {abs(r1i['inband']['vdm_uv'] / r1i['vdm_uv'] - 1) * 100:.2f} %. ")
                         + "The start deck keeps "
                         "ngspice's default gmin, which puts 1 pS × M across every junction: "
                         f"{sw['g_gmin_ns_leg']:.1f} nS per leg through the input chopper's switches, not in silicon "
-                        "(the switches alone in a small AC deck with the PDK's models). The AFE alone's chopped "
-                        "transients (figures 23 and 24; gmin 1e-15) have no pads or bond wires."
+                        "(the switches alone in a small AC deck with the PDK's models)."
+                        + (" The AFE alone's chopped transients (figures 23 and 24; gmin 1e-15) have no pads or bond "
+                           "wires." if alone else "")
                         + (" Interim: " + "; ".join(waiting) + "." if waiting else "")))
     gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 0.4])
 
@@ -261,9 +277,8 @@ def main():
             ax.loglog([f], [w * rr[f"c{leg}_pf"] * 1e-3], mk, color=PLUM, ms=5.5,
                       label=f"this deck, {'ELP' if leg == 'p' else 'ELN'} (filled: ωC purple, G amber)" if f == freqs[0] else None)
             ax.loglog([f], [rr[f"g{leg}_ns"]], mk, color=AMBER, ms=5.5)
-    alone = afe_alone()
-    for net, mk, lab in (("pex", "D", "the AFE alone, extracted (chopped transients; open)"),
-                         ("sch", "^", "the AFE alone, schematic (chopped transients; open)")):
+    for net, mk, lab in ((("pex", "D", "the AFE alone, extracted (chopped transients; open)"),
+                          ("sch", "^", "the AFE alone, schematic (chopped transients; open)")) if alone else ()):
         pts = alone[net]
         fs = np.array([p[0] for p in pts])
         gg = np.array([p[1] for p in pts])
@@ -349,10 +364,27 @@ def main():
     if g_cin:
         right.append(f"Of the {g_ref * 1e9:.1f} nS: {sw['g_gmin_ns_leg']:.1f} gmin, {g_cin * 1e9:.1f} through Cin "
                      f"(the input CM's {tau_cm * 1e3:.0f} ms), {g_ref * 1e9 - sw['g_gmin_ns_leg'] - g_cin * 1e9:.1f} the rest")
-    right.append(f"The AFE alone (chopped transient, extracted): {alone['pex'][1][1]:.1f} nS, "
-                 f"{alone['pex'][1][2] / (2 * np.pi * 1e3) * 1e3:.1f} pF at 1 kHz; DC {1e3 / alone['pex'][0][1]:.1f} MΩ")
+    if alone:
+        right.append(f"The AFE alone (chopped transient, extracted): {alone['pex'][1][1]:.1f} nS, "
+                     f"{alone['pex'][1][2] / (2 * np.pi * 1e3) * 1e3:.1f} pF at 1 kHz; DC {1e3 / alone['pex'][0][1]:.1f} MΩ")
     right.append(minus(f"50 Hz, 51 kΩ || 47 nF ({'run' if r50i else tag}): {db50:.1f} dB, {uv50:.0f} µV pk per 100 mV pk;"
                        f" without the gmin {db50r:.1f} dB, {uv50r:.0f} µV pk"))
+    if REV != "r12":                                  # 11/28: the 12th assembly's runs (11/17-18), the same decks
+        o = {(r["fcm"], r["zp"]): r for r in json.load(open(os.path.join(PEX, "runs", "cmrr_r12", "results.json"),
+                                                            encoding="utf-8"))["runs"] if r["zn"] == BAL}
+        right.append("Against r12's afe_top (the same decks, 11/17–18; r12's values in brackets):")
+        for f in freqs:
+            if (f, IMB) in o and (f, BAL) in o:
+                a, b = o[(f, IMB)], runs[(f, IMB)]
+                right.append(f"  {f:g} Hz: 51 kΩ || 47 nF {b['cmrr_db']:.2f} dB ({a['cmrr_db']:.2f}); balanced, in band "
+                             f"{runs[(f, BAL)]['inband']['cmrr_db']:.0f} dB ({o[(f, BAL)]['inband']['cmrr_db']:.0f})")
+        ob = o[(1000.0, BAL)]
+        right.append(f"  legs at 1 kHz {g_ref * 1e9:.1f} nS + {c_ref * 1e12:.1f} pF ({0.5 * (ob['gp_ns'] + ob['gn_ns']):.1f} nS"
+                     f" + {0.5 * (ob['cp_pf'] + ob['cn_pf']):.1f} pF)")
+        right.append(f"  between the choppers at 1 kHz: {r1b['inband']['chopped_mv']:.1f} mV pk at the ADC's input "
+                     f"({ob['inband']['chopped_mv']:.1f})" + ("; r13 matched INN's wiring" if REV == "r13" else ""))
+        if REV == "r13":
+            right.append("    over the amplifier to INP's (11/19; the same change took PSRR's conversion 1.10 to 0.17 V/V)")
     ax.text(0.0, 0.98, minus("\n".join(left)), transform=ax.transAxes, va="top", fontsize=8.5, color=INK, linespacing=1.5)
     ax.text(0.55, 0.98, "\n".join(right), transform=ax.transAxes, va="top", fontsize=8.5, color=INK, linespacing=1.5)
 

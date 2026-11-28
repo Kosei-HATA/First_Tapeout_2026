@@ -392,7 +392,10 @@ def main():
     for d in sorted(glob.glob(os.path.join(RUNS, f"start_*_cm*Hz*_chip_{REV}"))):
         if os.path.exists(os.path.join(d, "tr.csv")):
             runs.append((d, json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))))
-    sw = switches(os.path.join(runs[0][0], "tb.spice"))
+    # the switches' deck: that of a run analysed here (typical, no Monte Carlo seed). switches() keeps only the typical
+    # model library, and since 11/19 the first run in name order is psrr.py's ripple run at ff (r12 and r13 alike)
+    sw = switches(os.path.join(next(d for d, m in runs if m.get("cm") and m.get("corner") == "typical"
+                                    and m.get("seed") is None), "tb.spice"))
     print(f"the input chopper's switches alone ({sw['devices']} devices, one phase on, {sw['vcm']} V, {sw['f']:g} Hz): "
           f"{sw['c_pf_leg']:.2f} pF per leg; ngspice's default gmin puts {sw['g_gmin_ns_leg']:.3f} nS per leg across their "
           f"junctions (with gmin 1e-15: {sw['g_real_ns_leg']:.4f} nS); a conducting pair's on-resistance {sw['ron_ohm']:.3f} ohm")

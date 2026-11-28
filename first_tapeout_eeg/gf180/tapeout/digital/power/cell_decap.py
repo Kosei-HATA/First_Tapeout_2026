@@ -13,7 +13,7 @@
 The 11/8 numbers in digital_noise.py (eeg_digital_top 92.4 pF of cells, of it 35 pF fillcap, + 25 pF of
 n-well; eeg_adc_dig 25.6 + 8 pF) came from this method by hand; the script reproduces the cells' part.
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/cell_decap.py [--rev r13|r14]
+usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/cell_decap.py [--rev r13|r14|r15]
        writes build/cell_decap_<rev>.json
 """
 import argparse
@@ -38,7 +38,10 @@ VDD = 3.3
 REVS = {"r13": {"eeg_digital_top": (9, os.path.join(GDS, "eeg_digital_top.nl.v"), os.path.join(GDS, "eeg_digital_top.gds")),
                 "eeg_adc_dig": (7, os.path.join(GDS, "eeg_adc_dig.nl.v"), os.path.join(GDS, "eeg_adc_dig.gds"))},
         "r14": {"eeg_digital_top": (9, os.path.join(GDS, "r14", "eeg_digital_top.nl.v"),
-                                    os.path.join(GDS, "r14", "eeg_digital_top.gds"))}}
+                                    os.path.join(GDS, "r14", "eeg_digital_top.gds"))},
+        # r15 (11/28): the macro r15m13_20261128 as installed for the rebuilt 15th chip (layout/gds/r15)
+        "r15": {"eeg_digital_top": (9, os.path.join(GDS, "r15", "eeg_digital_top.nl.v"),
+                                    os.path.join(GDS, "r15", "eeg_digital_top.gds"))}}
 
 
 def cells(t):

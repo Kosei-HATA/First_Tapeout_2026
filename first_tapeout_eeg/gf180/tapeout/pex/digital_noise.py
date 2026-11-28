@@ -78,6 +78,12 @@ usage:
     gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 make S
     cd gf180/tapeout/pex/runs/digital_noise_r12/S && caffeinate -i -s /opt/homebrew/bin/ngspice -b -r out.raw tb.spice > run.log 2>&1
     gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 compare S
+  the rebuilt 15th chip (11/28, macro r15m13) in its own deck S15 with r14's for the direct difference:
+    gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py --rev r15   (after run_power_r15.sh)
+    gf180/tools/venv310/bin/python gf180/tapeout/digital/power/cell_decap.py --rev r15
+    gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 make S --set S15 --copies A,r14,r15
+    cd gf180/tapeout/pex/runs/digital_noise_r12/S15 && caffeinate -i -s /opt/homebrew/bin/ngspice -b -r out.raw tb.spice > run.log 2>&1
+    gf180/tools/venv310/bin/python gf180/tapeout/pex/digital_noise.py --chain r12 compare S --set S15 --copies A,r14,r15
     gf180/tools/venv310/bin/python gf180/tapeout/viz/r14_digital_noise_fig.py     (figure 57 of r14_20261124)
 """
 import argparse
@@ -144,8 +150,16 @@ DIGREV = {
                         "eeg_adc_dig": os.path.join(POWER, "current_profile.json")},
             "MACRO_C": {"DIG": (162.86e-12, 0.5), "ADD": (32.47e-12, 1.5)},
             "R_DIST": {"DIG": (0.184, 1.081), "DEC": (0.657, 1.446), "ADD": (4.317, 1.410)}},
+    # r15 (11/28): the rebuilt 15th chip, macro r15m13_20261128 (run_power_r15.sh, current_profile.py --rev r15:
+    # 6.30 mA; cell_decap.py --rev r15: 156.42 pF); the chip-level DVDD / DVSS as r14's (supply_check.py of
+    # layout/runs/chip_top_r15/build_r15b_20261128.log: the same values)
+    "r15": {"profile": {"eeg_digital_top": os.path.join(POWER, "r15", "current_profile.json"),
+                        "eeg_adc_dig": os.path.join(POWER, "current_profile.json")},
+            "MACRO_C": {"DIG": (156.42e-12, 0.5), "ADD": (32.47e-12, 1.5)},
+            "R_DIST": {"DIG": (0.184, 1.081), "DEC": (0.657, 1.446), "ADD": (4.317, 1.410)}},
 }
 COPIES = ("A", "r13", "r14")
+SET = "S"                               # --set: the folder of the S-type deck (11/28: S15 = A, r14, r15)
 # --adc: the decks with another extraction of eeg_adc (use_adc). "" = the chain's own, runs/adc_top_c_r7 (adc_top last
 # changed in r7: pex_e2e._ADC_REV)
 ADC_REV = ""
@@ -621,7 +635,7 @@ def same_deck(copies, tw=2e-9, lead=2e-9, twin=None):
 
 def load_same(copies):
     """the S run's vectors per copy, under the single decks' names (i(vdvdd): the board's DVDD current)"""
-    raw = read_raw(os.path.join(RUNS, "S", "out.raw"))
+    raw = read_raw(os.path.join(RUNS, SET, "out.raw"))
     R = {}
     for c in copies:
         p = copy_prefix(c)
@@ -666,7 +680,7 @@ def compare_same(copies):
             d[nm + "_diff_pp_mV"] = float(np.ptp(dv) * 1e3)
     print("board DVDD current (mean after 2 us): " + ", ".join(f"{c} {res['cases'][c].get('i_dvdd_mean_mA', np.nan):.3f} mA"
                                                             for c in copies))
-    json.dump(res, open(os.path.join(RUNS, "S", "compare.json"), "w"), indent=1)
+    json.dump(res, open(os.path.join(RUNS, SET, "compare.json"), "w"), indent=1)
     return res
 
 
@@ -760,6 +774,7 @@ def main():
     ap.add_argument("--chain", default="", choices=("", *CHAINS), help="the decks on this chip's own chain")
     ap.add_argument("--nice", type=int, default=0, help="run: nice level of the runs")
     ap.add_argument("--copies", default=",".join(COPIES), help="S: its copies, A and versions of DIGREV")
+    ap.add_argument("--set", default="S", help="S: the deck's folder under the runs (11/28: S15 for A,r14,r15)")
     ap.add_argument("--profile", action="append", default=[],
                     help="FILE: the single cases' eeg_digital_top profile; REV=FILE: version REV's in S")
     a = ap.parse_args()
@@ -777,14 +792,16 @@ def main():
             PROFILE = f
     copies = tuple(a.copies.split(","))
     assert copies[0] == "A" and all(c in DIGREV for c in copies[1:]), copies
+    global SET
+    SET = a.set
     if "S" in a.cases:
         if a.mode in ("make", "run"):
-            d = os.path.join(RUNS, "S")
+            d = os.path.join(RUNS, SET)
             os.makedirs(d, exist_ok=True)
             for f in ("quantizer.spice", "events.txt"):
                 open(os.path.join(d, f), "w").write(open(os.path.join(BASE, f)).read())
             open(os.path.join(d, "tb.spice"), "w").write(same_deck(copies, a.tw, a.lead, a.twin))
-            print("S", os.path.join(d, "tb.spice"), run_bg(d, nice=a.nice) if a.mode == "run" else "")
+            print(SET, os.path.join(d, "tb.spice"), run_bg(d, nice=a.nice) if a.mode == "run" else "")
         elif a.mode == "compare":
             compare_same(copies)
         else:

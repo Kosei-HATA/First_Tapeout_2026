@@ -26,7 +26,7 @@ OpenSTA's combinational + sequential-switching power over the frame cycles in pr
 VCD's switched capacitance (C_net * VDD per 0 -> 1 transition). Zero-delay simulation: every
 data transition is at a rising MCLK edge, glitches are not in it.
 
-usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py [--rev r13|r14] [--out FILE]
+usage: gf180/tools/venv310/bin/python gf180/tapeout/digital/power/current_profile.py [--rev r13|r14|r15] [--out FILE]
 writes REVS[rev]["out"] (or FILE)
 """
 import argparse
@@ -56,6 +56,10 @@ REVS = {
     "r14": {"vcd": os.path.join(BUILD, "r14", "macro.vcd"), "logs": os.path.join(BUILD, "r14"),
             "out": os.path.join(BUILD, "r14", "current_profile.json"),
             "macros": {"eeg_digital_top": (9, "eeg_digital_top_r14/runs/r14f5_20261124", ("gl_shadow_r14", "g"))}},
+    # r15 (11/28): the 15th chip rebuilt with the macro r15m13_20261128 (run_power_r15.sh, build/r15/macro.vcd)
+    "r15": {"vcd": os.path.join(BUILD, "r15", "macro.vcd"), "logs": os.path.join(BUILD, "r15"),
+            "out": os.path.join(BUILD, "r15", "current_profile.json"),
+            "macros": {"eeg_digital_top": (9, "eeg_digital_top_r15/runs/r15m13_20261128", ("gl_shadow_r15", "g"))}},
 }
 BUFS = re.compile(r"__(clk)?buf_\d+$")        # clock-tree cells (CTS uses clkbuf / buf)
 INVS = re.compile(r"__(clk)?inv_\d+$")

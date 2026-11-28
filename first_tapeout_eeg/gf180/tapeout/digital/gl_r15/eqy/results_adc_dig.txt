@@ -1,0 +1,41 @@
+# 11/28: eeg_adc_dig's netlist (layout/gds/eeg_adc_dig.nl.v, sha256 c39fe2cf..., 7-track cells) against rtl/eeg_adc_dig.sv, eeg_therm2bin.sv, eeg_dwa.sv
+
+## the complete check: run_comb_step.sh (every register shared by name, BDD collapse in ABC)
+146 register bits shared, 36 input bits; 213 miter outputs (69 already constant 0), 6280 AND gates -> step.aag
+213 of 213 miter outputs found, 0 not constant 0
+STEP PASS
+
+## eqy, supplementary: EQY_DESIGN=adc_dig run_eqy_r15.sh adc_dig (PDR, 1 h timeout per partition)
+gold: 146 flip-flop bits; gate: 146 flip-flop bits
+matched: 9 ports + 79 flip-flop names (0 renamed by the synthesis)
+RTL flip-flops without a counterpart in the netlist: 0
+netlist flip-flops without a matched name: 0
+eqy rc 2
+partitions: 9
+proved by pdr: 6
+not proved:
+  eeg_adc_dig.u_dwa1.rot_q.0
+  eeg_adc_dig.u_dwa1.k_q.0
+  eeg_adc_dig.u_dwa2.rot_q.0
+EQY 12:44:51 [eqy_r15] DONE (FAIL, rc=2)
+compare points: 146 of 146 matched bits are partition outputs; output ports compared: 3 of 3 (67 bits)
+COVER PASS
+  CODE: PDR PASS 0 1799
+  u_dwa1.k_q.0: PDR TIMEOUT 0 0
+  u_dwa1.rot_q.0: PDR TIMEOUT 0 0
+  u_dwa2.rot_q.0: PDR TIMEOUT 0 0
+  ABC dprove on the same miters (by hand, 11/28): CODE and u_dwa1.k_q.0 equivalent in 1.2 / 1.3 s; u_dwa1/u_dwa2.rot_q.0 undecided (default limits 91 s; -C 100000 -G 2e8 -T 2400: timeout 3000 s)
+
+## netlist mutants (mutate_eqy_r15.py adc_logic adc_reset adc_port adc_rot; run_comb_step.sh must fail)
+| mutant | change | result | not proved |
+|---|---|---|---|
+| adc_logic | eeg_adc_dig の論理：DWA1 の加算の xor2 を xnor2 に（_1716_） | detected | step: next:u_dwa2.ptr[4], step: next:u_dwa2.ptr[3], step: next:u_dwa2.ptr[2], step: next:u_dwa2.ptr[1] |
+| adc_reset | eeg_adc_dig のリセット値：k_q[0] のフリップフロップを 1 に set する型に（_3004_） | detected | step: next:u_dwa1.k_q[0] |
+| adc_port | eeg_adc_dig の出力端子：CODE[0] の出力の緩衝器を反転器に（output33） | detected | FAIL: comb_step |
+| adc_rot | eeg_adc_dig の回転：DWA1 の rot_q[0] と rot_q[1] の D の入れ替え（_3014_、_3015_） | detected | step: next:CODE[0], step: next:u_dwa1.rot_q[0], step: next:u_dwa2.rot_q[30] |
+
+## sources
+82fc82b46e1bb335a2f73ea5aee91d4258a6aa71d2cf4b816c26e2786c2b2570  rtl/eeg_adc_dig.sv
+c3759076a8be80346be089ad90de70371a9beda922e95e44998b7e68ce70cb31  rtl/eeg_therm2bin.sv
+58031599995b3c5e0bdc85cfa682d4d4819c03490991ae9da4bf853d0ab33547  rtl/eeg_dwa.sv
+c39fe2cf4e05b693c5d910edd81bd9692db386048de8b5e18996b0c7fa63260d  /Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg/gf180/tapeout/layout/gds/eeg_adc_dig.nl.v

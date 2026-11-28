@@ -1,0 +1,92 @@
+# 11/28: eqy proof of the r15 macro's netlist (r15m13, nl.v sha256 a8d1c089...) against rtl_r15 (8cbe4bd7's sources)
+# run_eqy_r15.sh r15m13 (PDR only) and mutate_eqy_r15.py; the sources' sha256 in work_r15m13/src_sha256.txt (below)
+
+## match points (ff_names.py)
+gold: 1220 flip-flop bits; gate: 1172 flip-flop bits
+matched: 31 ports + 1125 flip-flop names (32 renamed by the synthesis)
+RTL flip-flops without a counterpart in the netlist: 48
+  gold-only u_clkgen.dly_q[0]
+  gold-only u_clkgen.dly_q[1]
+  gold-only u_clkgen.dly_q[2]
+  gold-only u_clkgen.dly_q[3]
+  gold-only u_clkgen.dly_q[4]
+  gold-only u_clkgen.dly_q[5]
+  gold-only u_clkgen.dly_q[6]
+  gold-only u_clkgen.dly_q[7]
+  gold-only u_clkgen.fast_prev
+  gold-only u_clkgen.live_prev
+  gold-only u_fifo.mem[0][40]
+  gold-only u_fifo.mem[0][41]
+  gold-only u_fifo.mem[0][42]
+  gold-only u_fifo.mem[0][47]
+  gold-only u_fifo.mem[1][40]
+  gold-only u_fifo.mem[1][41]
+  gold-only u_fifo.mem[1][42]
+  gold-only u_fifo.mem[1][47]
+  gold-only u_fifo.mem[2][40]
+  gold-only u_fifo.mem[2][41]
+  gold-only u_fifo.mem[2][42]
+  gold-only u_fifo.mem[2][47]
+  gold-only u_fifo.mem[3][40]
+  gold-only u_fifo.mem[3][41]
+  gold-only u_fifo.mem[3][42]
+  gold-only u_fifo.mem[3][47]
+  gold-only u_fifo.mem[4][40]
+  gold-only u_fifo.mem[4][41]
+  gold-only u_fifo.mem[4][42]
+  gold-only u_fifo.mem[4][47]
+  gold-only u_fifo.mem[5][40]
+  gold-only u_fifo.mem[5][41]
+  gold-only u_fifo.mem[5][42]
+  gold-only u_fifo.mem[5][47]
+  gold-only u_fifo.mem[6][40]
+  gold-only u_fifo.mem[6][41]
+  gold-only u_fifo.mem[6][42]
+  gold-only u_fifo.mem[6][47]
+  gold-only u_fifo.mem[7][40]
+  gold-only u_fifo.mem[7][41]
+  gold-only u_fifo.mem[7][42]
+  gold-only u_fifo.mem[7][47]
+  gold-only u_fifo.lat[40]
+  gold-only u_fifo.lat[41]
+  gold-only u_fifo.lat[42]
+  gold-only u_spi.shadow[40]
+  gold-only u_spi.shadow[41]
+  gold-only u_spi.shadow[42]
+netlist flip-flops without a matched name: 0
+problems: 0
+
+## eqy
+eqy rc 0
+partitions: 223
+proved by pdr: 223
+not proved:
+EQY 11:12:14 [eqy_r15] DONE (PASS, rc=0)
+compare points: 1175 of 1175 matched bits are partition outputs; output ports compared: 25 of 25 (50 bits)
+COVER PASS
+Elapsed clock time [H:MM:SS (secs)]: 0:00:49 (49)
+
+## the netlist mutants (mutate_eqy_r15.py; each must fail)
+| mutant | change | result | not proved |
+|---|---|---|---|
+| logic | 論理：OFS を取り込む条件の oai21 を aoi21 に（_09213_） | detected | eeg_digital_top.OFS |
+| reset | リセット値：TEST_CFG[5]（a_azero）のフリップフロップを 1 に set する型に（_11660_） | detected | eeg_digital_top.TEST_CFG.5 |
+| swap | 配線：FIFO の語 0 のデータの 0 と 1 ビットの D の入れ替え（_11042_、_11043_） | detected | eeg_digital_top.MISO |
+| port | 出力端子：TEST_CFG[5] の出力の緩衝器を反転器に（output56） | detected | eeg_digital_top.chg_cnt.0, eeg_digital_top.u_regs.cfg_gen.0, eeg_digital_top.u_regs.err.0, eeg_digital_top.u_regs.a_m.0 |
+
+## sources
+HEAD aa5fe5c399a47ae7870c23920e64532db6e09293 2026-11-28 10:29:24 +0900
+32a51ae2d3821b140be6a0ce023499c869ec49c86030307cd5a6aa98525647dc  rtl_r15/eeg_cic3.sv
+b212ad0522955629d10bc4d37a8d2d698210397e77902371fc3fc073b4fa8fdd  rtl_r15/eeg_clkgen.sv
+0d8ecb9be6a69019c8e181594e9f6fe57c3d7e37321e38a291d6ae3df691b13d  rtl_r15/eeg_digital_top.sv
+374c88ea4964f3b593b2610cca636dde612dbca0209b84963a548be27dacbd04  rtl_r15/eeg_fifo.sv
+b74fe6acf1f34af0e1274a144f59cb24efae5353bd9fe5db87fe030e52239b5a  rtl_r15/eeg_ovl.sv
+77d53c7b8751b851d6132845f550e1f445a143e829beada655d2445038648055  rtl_r15/eeg_regs.sv
+1be945d957a3fe47f2cd4ddbdde69bd19c62268ecba476346b0fd631568f4e6c  rtl_r15/eeg_seq.sv
+1a7dacaa4b8f63e0dcf74ae915a231b9685bd764bd3fb2fd234d712592af21a6  rtl_r15/eeg_spi_slave.sv
+c8f36674bc055ae40e9bd722495510ead92ea1fba16b2427a26d02fc50b77b2b  rtl/eeg_chop1.sv
+a0322a1165b03e9008c02e0a723b4c7c3064091958f5f6b43d05a3b9bbba6547  rtl/eeg_raw.sv
+9de2c72fb5d192a4efbbf8ee3ee57e4ed6bfe8c159afb06a3d0b0a61bea22ff8  rtl/eeg_rnd_sat.sv
+ae4b174ad27fa977ad96a1b560d96caa2cfb543d8ead6c59642fde7535cc2b7c  rtl_r15/spec/eeg_regs_defs.svh
+a8d1c0895c7d82d96f064385e16d02082809fe5d4ca851c8aadb885347ad0b9d  layout/gds/r15/eeg_digital_top.nl.v
+a8d1c0895c7d82d96f064385e16d02082809fe5d4ca851c8aadb885347ad0b9d  /Users/noah/Codings/First_Tapeout_2026/first_tapeout_eeg/gf180/tapeout/layout/gds/r15/eeg_digital_top.nl.v
